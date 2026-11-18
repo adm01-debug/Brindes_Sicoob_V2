@@ -8,6 +8,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { KitState } from '@/lib/kit-builder';
+import { buildCustomKitPayload } from '@/lib/kit-builder/custom-kit-payload';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
@@ -38,6 +39,9 @@ function createSnapshot(kitState: KitState, kitQuantity: number): string {
     name: kitState.name,
     kitType: kitState.kitType,
     qty: kitQuantity,
+    // A identidade entra no snapshot porque entrou no payload: sem isso, trocar
+    // cor, ícone, etiqueta, descrição ou favorito não dispararia autosave algum.
+    identity: kitState.identity,
   });
 }
 
@@ -60,31 +64,12 @@ function isCreatedKitAdoption(
   return currentKitId === persistedKitId && currentScope === `${userId}:new`;
 }
 
-function buildAutoSavePayload(userId: string, kitState: KitState, kitQuantity: number) {
-  return {
-    user_id: userId,
-    name: kitState.name || 'Kit sem nome',
-    status: 'draft' as const,
-    kit_type: kitState.kitType || 'montado',
-    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-    items_data: JSON.parse(JSON.stringify(kitState.items)),
-    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-    kit_quantity: kitQuantity,
-    box_price: kitState.boxPrice,
-    items_price: kitState.itemsPrice,
-    personalization_price: kitState.personalizationPrice,
-    total_price: kitState.totalPrice,
-    volume_usage_percent: kitState.volumeUsagePercent,
-    updated_at: new Date().toISOString(),
-  };
-}
-
 function isEmptyKit(kitState: KitState) {
   return !kitState.box && kitState.items.length === 0;
 }
 
 async function persistAutoSave(
-  payload: ReturnType<typeof buildAutoSavePayload>,
+  payload: ReturnType<typeof buildCustomKitPayload>,
   kitId: string | null,
   userId: string,
 ) {
@@ -137,7 +122,7 @@ export function useKitAutoSave(
     // Don't auto-save empty kits
     if (isEmptyKit(kitState)) return;
 
-    const payload = buildAutoSavePayload(user.id, kitState, kitQuantity);
+    const payload = buildCustomKitPayload(user.id, kitState, kitQuantity);
 
     const operationGeneration = scopeGenerationRef.current;
     const operationUserId = user.id;

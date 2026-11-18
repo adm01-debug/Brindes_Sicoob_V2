@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { isOverlayDismissEvent } from "@/lib/overlay";
 
 interface KeyboardShortcutsProps {
   onGenerate: () => void;
@@ -44,7 +45,9 @@ function runDownloadShortcut(event: KeyboardEvent, props: KeyboardShortcutsProps
 
 function runResetShortcut(event: KeyboardEvent, props: KeyboardShortcutsProps) {
   const commandReset = hasCommandModifier(event) && event.key === "r" && !event.shiftKey;
-  const escapeReset = event.key === "Escape" && !props.isLoading;
+  // Escape que veio de fechar um overlay (Voltar) não pode limpar o formulário
+  // nem apagar o rascunho salvo — só Escape digitado pelo usuário faz isso.
+  const escapeReset = event.key === "Escape" && !props.isLoading && !isOverlayDismissEvent(event);
   if (!commandReset && !escapeReset) return false;
   event.preventDefault();
   props.onReset();
