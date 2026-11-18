@@ -352,8 +352,23 @@ export function useKitAutoSave(
   }, [loadedUpdatedAt]);
 
   const syncPersistedVersion = useCallback((updatedAt: string | null) => {
+    // Descarta o que estiver na fila do autosave antes de adotar a versão nova.
+    // Cada gravação enfileirada carrega um payload fotografado ANTES do
+    // salvamento manual e só lê `knownUpdatedAtRef` na hora de gravar: adotar a
+    // versão manual sem invalidar a fila deixaria uma dessas gravações velhas
+    // passar pela trava e sobrescrever o que o "Salvar" acabou de confirmar.
+    // A geração é o mesmo mecanismo que a troca de kit já usa (saveToDb
+    // compara `operationGeneration` depois de esperar a fila).
+    scopeGenerationRef.current += 1;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = undefined;
+    }
     knownUpdatedAtRef.current = updatedAt;
     persistedSnapshotRef.current = latestSnapshotRef.current;
+    // O contador não é zerado: o `finally` de cada gravação descartada ainda
+    // decrementa o seu. Quem some com o "Salvando…" é esta linha.
+    setIsSaving(false);
     setLastSavedAt(new Date());
     setLastSaveError(null);
     setLastSaveConflict(false);

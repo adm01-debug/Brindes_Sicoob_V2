@@ -303,6 +303,43 @@ describe('useKitAutoSave', () => {
     expect(insert).toHaveBeenCalledTimes(1);
   });
 
+  it('autosave ja enfileirado nao grava por cima do salvamento manual', async () => {
+    // O payload de cada gravacao e fotografado antes de entrar na fila e so le
+    // a versao conhecida na hora de gravar. Sem invalidar a fila, a versao
+    // adotada do salvamento manual liberaria uma gravacao velha a passar pela
+    // trava e sobrescrever o que o "Salvar" acabou de confirmar.
+    let liberaPrimeira: ((v: unknown) => void) | undefined;
+    maybeSingle
+      .mockImplementationOnce(() => new Promise((resolve) => { liberaPrimeira = resolve; }))
+      .mockResolvedValue({ data: { id: 'kit-1', updated_at: 'versao-D' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Antigo' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    rerender({ kit: { ...initialKit, name: 'Intermediario' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    // o "Salvar" terminou e devolveu a versao B
+    act(() => { result.current.syncPersistedVersion('versao-B'); });
+
+    // a primeira gravacao da fila responde agora; a segunda nao pode gravar
+    await act(async () => {
+      liberaPrimeira?.({ data: null, error: null });
+      // A primeira gravacao ainda percorre a releitura de versao antes de
+      // liberar a fila; sem esvaziar a fila de microtarefas, a segunda nem
+      // chegaria a tentar gravar e o teste passaria por acidente.
+      for (let i = 0; i < 30; i += 1) await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Antigo' });
+  });
+
   it('nao sobrescreve em silencio o kit que outra aba alterou', async () => {
     // Esta aba abriu a linha na versao A; outra aba gravou e a linha esta na B.
     // O UPDATE com trava nao casa nenhuma linha, e a releitura mostra que a
