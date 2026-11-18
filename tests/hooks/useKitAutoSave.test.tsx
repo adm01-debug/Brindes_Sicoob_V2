@@ -223,6 +223,28 @@ describe('useKitAutoSave', () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it('conteudo lido e fim da hidratacao no mesmo render tambem nao regravam', async () => {
+    // O React 18 agrupa o setState do conteudo lido e o da hidratacao: o hook
+    // ve um unico render com `pronto: true` e o conteudo ja na tela. Com o
+    // gate olhando so `!isReady`, esse render caia no caminho de edicao e
+    // reagendava a gravacao do que acabara de ser lido.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+
+    rerender({ kit: kitCarregado, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    rerender({ kit: { ...kitCarregado, name: 'Agora sim o usuario editou' }, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
   it('depois de carregado, a primeira edicao de verdade grava', async () => {
     maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
 

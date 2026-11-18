@@ -120,6 +120,12 @@ export function useKitAutoSave(
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
   const pendingSavesRef = useRef(0);
   const isFirstRender = useRef(true);
+  // Vira true no primeiro render em que `isReady` é true. O React 18 agrupa a
+  // chegada do conteúdo lido e a conclusão da hidratação num mesmo render:
+  // nesse render `isReady` já é true e o baseline ainda é o do kit vazio, logo
+  // o teste `!isReady` sozinho não segura a regravação. O baseline é adotado
+  // na transição para pronto, não enquanto não-pronto.
+  const hasReadyBaselineRef = useRef(false);
 
   const adoptCreatedId = useCallback((createdId: string | null) => {
     if (!createdId) return;
@@ -177,6 +183,7 @@ export function useKitAutoSave(
       const initialSnapshot = createSnapshot(kitState, kitQuantity);
       persistedSnapshotRef.current = initialSnapshot;
       latestSnapshotRef.current = initialSnapshot;
+      hasReadyBaselineRef.current = isReady;
       return;
     }
 
@@ -184,6 +191,14 @@ export function useKitAutoSave(
     latestSnapshotRef.current = newSnapshot;
 
     if (!isReady) {
+      persistedSnapshotRef.current = newSnapshot;
+      hasReadyBaselineRef.current = false;
+      return;
+    }
+
+    if (!hasReadyBaselineRef.current) {
+      // Primeiro render pronto: o que está na tela é o que foi lido do banco.
+      hasReadyBaselineRef.current = true;
       persistedSnapshotRef.current = newSnapshot;
       return;
     }
