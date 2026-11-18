@@ -2,6 +2,26 @@
 
 Índice e regra em [`README.md`](README.md).
 
+## Vereditos revistos pela segunda rodada
+
+A tabela abaixo nasceu da **primeira** rodada. A segunda — descrita em
+[`reauditoria.md`](reauditoria.md) — derrubou sete desses "nada a recuperar", e os itens que
+ela resgatou estão em [`itens.md`](itens.md) com a marca `(resgatado na refutação)`. A tabela
+foi reconciliada com o anexo: esses sete passam a dizer **REVISTO → RECUPERAR**, com a
+contagem real de itens. Veredito e anexo não podem divergir — é a tabela que autoriza apagar
+a ref, e nenhuma destas sete pode ser apagada enquanto os itens não voltarem.
+
+| PR | itens resgatados na segunda rodada |
+|---|---|
+| #85 | 2 |
+| #97 | 5 |
+| #137 | 1 |
+| #149 | 1 |
+| #154 | 6 |
+| #158 | 1 |
+| #161 | 1 |
+
+
 ## As 32 PRs fechadas sem merge
 
 | PR | veredito | itens a recuperar | detalhe |
@@ -13,19 +33,19 @@
 | #81 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-81) |
 | #82 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-82) |
 | #84 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-84) |
-| #85 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-85) |
+| #85 | **REVISTO → RECUPERAR** | 2 | [abaixo](#pr-85) |
 | #94 | RECUPERAR | 3 | [abaixo](#pr-94) |
-| #97 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-97) |
+| #97 | **REVISTO → RECUPERAR** | 5 | [abaixo](#pr-97) |
 | #112 | RECUPERAR | 22 | [abaixo](#pr-112) |
 | #119 | RECUPERAR | 24 | [abaixo](#pr-119) |
-| #137 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-137) |
+| #137 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-137) |
 | #145 | RECUPERAR | 9 | [abaixo](#pr-145) |
 | #148 | RECUPERAR | 2 | [abaixo](#pr-148) |
-| #149 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-149) |
-| #154 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-154) |
-| #158 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-158) |
+| #149 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-149) |
+| #154 | **REVISTO → RECUPERAR** | 6 | [abaixo](#pr-154) |
+| #158 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-158) |
 | #160 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-160) |
-| #161 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-161) |
+| #161 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-161) |
 | #164 | RECUPERAR | 1 | [abaixo](#pr-164) |
 | #165 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-165) |
 | #172 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-172) |
