@@ -15,15 +15,26 @@ const { range, historico, chamadas, eqSpies } = vi.hoisted(() => ({
 
 vi.mock('@/integrations/supabase/client', () => {
   function construtor(registro: Record<string, unknown>) {
+    // `applySellerScope` agora entra logo depois do `.from(...)`, no meio da
+    // cadeia: o `.eq` precisa devolver o builder, não o resultado.
+    const eq = vi.fn((coluna: string, valor: string) => {
+      registro.eq = [coluna, valor];
+      if (!eqSpies.includes(eq)) eqSpies.push(eq);
+      return builder;
+    });
     const builder: Record<string, unknown> = {
+      eq,
       select: vi.fn((colunas: string) => { registro.colunas = colunas; return builder; }),
       neq: vi.fn((coluna: string, valor: string) => { registro.neq = [coluna, valor]; return builder; }),
       gte: vi.fn((coluna: string, valor: string) => { registro.gte = [coluna, valor]; return builder; }),
       lt: vi.fn((coluna: string, valor: string) => { registro.lt = [coluna, valor]; return builder; }),
       order: vi.fn((coluna: string) => { registro.order = coluna; return builder; }),
-      range: vi.fn((de: number, ate: number) => { registro.range = [de, ate]; return range(registro); }),
-      // A consulta de histórico anterior termina no `.in`, sem paginar.
-      in: vi.fn((coluna: string, valores: string[]) => { registro.in = [coluna, valores]; return historico(registro); }),
+      range: vi.fn((de: number, ate: number) => {
+        registro.range = [de, ate];
+        // A consulta de histórico anterior também pagina: é o `.in` que a distingue.
+        return registro.in ? historico(registro) : range(registro);
+      }),
+      in: vi.fn((coluna: string, valores: string[]) => { registro.in = [coluna, valores]; return builder; }),
     };
     return builder;
   }
@@ -52,9 +63,7 @@ function resposta(data: Linha[] | null, error: unknown = null) {
     then: (ok: (v: unknown) => unknown, falha?: (e: unknown) => unknown) =>
       Promise.resolve({ data, error }).then(ok, falha),
   };
-  const eq = vi.fn(() => encadeado);
-  encadeado.eq = eq;
-  eqSpies.push(eq);
+  encadeado.eq = vi.fn(() => encadeado);
   return encadeado;
 }
 
@@ -72,7 +81,7 @@ function programar(filas: {
   mes?: Linha[][];
   janela?: Linha[][];
   anterior?: Linha[][];
-  historico?: Linha[];
+  historico?: Linha[] | Linha[][];
   erroEm?: 'mes' | 'janela' | 'anterior';
 }) {
   const pendentes: Record<string, Linha[][]> = {
@@ -85,7 +94,10 @@ function programar(filas: {
     if (filas.erroEm === chave) return resposta(null, new Error('RLS negou'));
     return resposta(pendentes[chave]?.shift() ?? []);
   });
-  historico.mockImplementation(() => resposta(filas.historico ?? []));
+  const paginasDeHistorico: Linha[][] = Array.isArray(filas.historico?.[0])
+    ? ([...(filas.historico as Linha[][])])
+    : [((filas.historico ?? []) as Linha[])];
+  historico.mockImplementation(() => resposta(paginasDeHistorico.shift() ?? []));
 }
 
 describe('fetchClientsPortfolioKpis', () => {
@@ -126,6 +138,23 @@ describe('fetchClientsPortfolioKpis', () => {
 
     expect(kpis.clientesComPedidoNoMes).toBe(2);
     expect(kpis.primeiraCompraNoMes).toBe(1);
+  });
+
+  it('pagina o historico anterior: cliente antigo so na segunda pagina nao vira primeira compra', async () => {
+    // A resposta traz uma linha por PEDIDO anterior, não por cliente. Sem
+    // paginar, o cliente cujos pedidos caíram fora do teto era contado como
+    // primeira compra do mês.
+    const primeiraPagina: Linha[] = Array.from({ length: 1000 }, () => ({ client_id: 'antigo-1' }));
+    programar({
+      mes: [[{ client_id: 'antigo-1' }, { client_id: 'antigo-2' }]],
+      historico: [primeiraPagina, [{ client_id: 'antigo-2' }]],
+    });
+
+    const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
+
+    expect(kpis.clientesComPedidoNoMes).toBe(2);
+    // Nenhum dos dois é novo: `antigo-2` só aparece na segunda página.
+    expect(kpis.primeiraCompraNoMes).toBe(0);
   });
 
   it('retenção é quem voltou a comprar, sobre quem comprava na janela anterior', async () => {

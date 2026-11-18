@@ -103,16 +103,19 @@ async function lerPedidos(
   const linhas: Array<{ client_id?: string | null; total?: number | null }> = [];
   for (let pagina = 0; pagina < MAX_PAGES; pagina += 1) {
     const inicio = pagina * PAGE_SIZE;
-    const base = supabase
-      .from('orders')
-      .select(colunas)
-      .neq('status', 'cancelado')
-      .gte('created_at', desde);
-    const comTeto = ate ? base.lt('created_at', ate) : base;
-    const consulta = applySellerScope(
-      comTeto.order('id', { ascending: true }).range(inicio, inicio + PAGE_SIZE - 1),
+    // O escopo de vendedor entra logo depois do `.from(...)`, na mesma
+    // expressão: é assim que `scripts/check-seller-scope.mjs` enxerga que a
+    // consulta está sob escopo. Adiá-lo para o fim da cadeia esconde isso dele.
+    const base = applySellerScope(
+      supabase
+        .from('orders')
+        .select(colunas)
+        .neq('status', 'cancelado')
+        .gte('created_at', desde),
       { scope, userId },
     );
+    const comTeto = ate ? base.lt('created_at', ate) : base;
+    const consulta = comTeto.order('id', { ascending: true }).range(inicio, inicio + PAGE_SIZE - 1);
     const { data, error } = await consulta;
     if (error) throw error;
     const lote = (data ?? []) as Array<{ client_id?: string | null; total?: number | null }>;
@@ -142,19 +145,46 @@ async function clientesComHistoricoAnterior(
   for (let inicio = 0; inicio < clientes.length; inicio += 100) {
     const lote = clientes.slice(inicio, inicio + 100);
     if (lote.length === 0) break;
+    (await historicoDoLote(lote, antesDe, { scope, userId })).forEach((id) => antigos.add(id));
+  }
+  return antigos;
+}
+
+/**
+ * A resposta traz uma linha por PEDIDO anterior, não por cliente: 100 clientes
+ * com muito histórico passam do teto do PostgREST numa só resposta. Sem
+ * paginar, o cliente cujos pedidos ficaram de fora era contado como primeira
+ * compra do mês. Pára cedo quando todos os clientes do lote já apareceram.
+ */
+async function historicoDoLote(
+  lote: string[],
+  antesDe: string,
+  escopo: { scope: SalesScope; userId: string | undefined },
+): Promise<Set<string>> {
+  const encontrados = new Set<string>();
+  for (let pagina = 0; pagina < MAX_PAGES; pagina += 1) {
+    const inicio = pagina * PAGE_SIZE;
     const { data, error } = await applySellerScope(
       supabase
         .from('orders')
         .select('client_id')
         .neq('status', 'cancelado')
         .lt('created_at', antesDe)
-        .in('client_id', lote),
-      { scope, userId },
+        .in('client_id', lote)
+        .order('id', { ascending: true })
+        .range(inicio, inicio + PAGE_SIZE - 1),
+      escopo,
     );
     if (error) throw error;
-    clientesDe((data ?? []) as Array<{ client_id?: string | null }>).forEach((id) => antigos.add(id));
+    const linhas = (data ?? []) as Array<{ client_id?: string | null }>;
+    clientesDe(linhas).forEach((id) => encontrados.add(id));
+    if (linhas.length < PAGE_SIZE || encontrados.size >= lote.length) return encontrados;
   }
-  return antigos;
+  logger.warn(
+    `[clientes-kpi] histórico anterior do lote passou de ${MAX_PAGES * PAGE_SIZE} pedidos; `
+    + 'clientes ainda não vistos podem ser contados como primeira compra',
+  );
+  return encontrados;
 }
 
 export async function fetchClientsPortfolioKpis(
