@@ -7,12 +7,14 @@
  * lugar. Recupera o componente da PR #157, fechada sem merge, com os quatro
  * estados: carregando, erro, sem verba cadastrada e perfil sem cooperativa.
  */
-import { AlertCircle, Building2, ClipboardList, Wallet } from 'lucide-react';
+import { AlertCircle, Building2, ClipboardList, Timer, Wallet } from 'lucide-react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useManagerDashboardStats } from '@/hooks/sicoob/useManagerDashboardStats';
+import { usePurchasingMetrics } from '@/hooks/sicoob/usePurchasingMetrics';
+import { metricLabel } from '@/lib/orders/purchasing-sla';
 import { formatCurrency } from '@/lib/format';
 
 function Indicador({ icon: Icon, rotulo, valor }: {
@@ -55,6 +57,46 @@ function ConsumoDaVerba({ consumida, total }: { consumida: number; total: number
       >
         <div className="h-full rounded-full bg-primary" style={{ width: `${percentual}%` }} />
       </div>
+    </div>
+  );
+}
+
+/**
+ * SLA e totais do mês. Mostram "—" quando o universo consultado não está
+ * completo: um agregado parcial apresentado como total vira decisão errada.
+ */
+function MetricasDaFila({ cooperativeId }: { cooperativeId: string }) {
+  const { data: metrics, isLoading, isError } = usePurchasingMetrics(cooperativeId);
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <p className="rounded-xl border border-dashed border-border/60 p-4 text-xs text-muted-foreground">
+        SLA e totais do mês indisponíveis: a consulta falhou. Nenhum valor foi estimado.
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Indicador
+        icon={Timer}
+        rotulo="Aprovados em 24h"
+        valor={metricLabel(metrics?.slaPercent ?? null, (v) => `${Math.round(v)}%`)}
+      />
+      <Indicador
+        icon={Wallet}
+        rotulo="Pedidos do mês"
+        valor={metricLabel(metrics?.monthlyTotal ?? null, formatCurrency)}
+      />
     </div>
   );
 }
@@ -110,6 +152,9 @@ export function GestorComprasMetrics({ cooperativeId }: { cooperativeId: string 
           Nenhuma verba mensal foi cadastrada para esta cooperativa.
         </p>
       )}
+      <div className="sm:col-span-2">
+        <MetricasDaFila cooperativeId={cooperativeId} />
+      </div>
     </div>
   );
 }
