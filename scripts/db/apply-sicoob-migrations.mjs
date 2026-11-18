@@ -169,6 +169,10 @@ const TARGETS = [
     sha256: "3f828b9fac8ec95fa1ad9bfd3280ffec27f96a8525a9b5f86ee4e2f36fd4f55e",
   },
   {
+    file: "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
+    sha256: "5e4528b380fa6d48fbe92fad8c8b68282337c2012c1202c871726ff6208a400b",
+  },
+  {
     file: "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
     sha256: "46ff18f7c50bdeaa409fe4cd5d174e704653a8e5bf38dc73fc742bd2ff5ff27a",
   },
