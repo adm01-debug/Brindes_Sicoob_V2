@@ -170,7 +170,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
-    sha256: "4b1f933eced70b074ed7cd41bac4d1e9bb92edc0819879794a6fb288f52cdae5",
+    sha256: "46ff18f7c50bdeaa409fe4cd5d174e704653a8e5bf38dc73fc742bd2ff5ff27a",
   },
   {
     file: "supabase/migrations/20261118130100_enable_scoped_business_realtime.sql",
@@ -186,7 +186,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261118130400_pin_custom_kit_atomically.sql",
-    sha256: "04f6ee6de2f93b18beda5db952710cc73754f9ad8a8486d3f68adeda5ac855a0",
+    sha256: "5a5700002f293cb72f31c5db7c4892c48cb5667cc61d99ea133e1b99b5d758cc",
   },
   {
     file: "supabase/migrations/20261118130500_block_permissive_allow_all_policies.sql",

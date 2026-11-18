@@ -88,11 +88,17 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
       .upload(finalPath, bytes, { contentType: detected.mime, upsert: false });
     if (finalUploadError) throw finalUploadError;
 
+    // `sha256` amarra a evidência ao arquivo inspecionado. A RPC
+    // register_sicoob_clean_document e a constraint
+    // sicoob_document_registry_scan_evidence_sha256_match exigem que este campo
+    // seja igual a p_sha256; sem ele o registro falha com 22023 e o upload é
+    // desfeito. Publicar esta função ANTES de aplicar a migration.
     const evidence = {
       clean: true,
       engine: verdict.engine,
       signatureVersion: verdict.signatureVersion,
       inspectedAt: new Date().toISOString(),
+      sha256,
     };
     const { error: registerError } = await adminClient.rpc('register_sicoob_clean_document', {
       p_document_id: documentId,

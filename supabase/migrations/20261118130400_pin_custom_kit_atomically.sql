@@ -7,6 +7,35 @@
 -- Garante que cada usuário tenha no máximo um kit fixado e que a troca de
 -- destaque seja uma única operação transacional no servidor.
 
+-- ADAPTACAO 18/11/2026 (backup exigido por CONTRIBUTING.md:69-75): a
+-- normalizacao abaixo desafixa os destaques excedentes e sobrescreve updated_at.
+-- Depois do commit nao haveria como saber quais linhas foram alteradas nem o
+-- valor anterior. Guardamos o estado previo das linhas afetadas antes de mexer.
+CREATE TABLE IF NOT EXISTS public._backup_custom_kits_pinned_20261118 (
+  id uuid PRIMARY KEY,
+  user_id uuid,
+  is_pinned boolean,
+  last_used_at timestamptz,
+  updated_at timestamptz,
+  backed_up_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public._backup_custom_kits_pinned_20261118 ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public._backup_custom_kits_pinned_20261118
+  FROM PUBLIC, anon, authenticated, service_role;
+
+INSERT INTO public._backup_custom_kits_pinned_20261118 (
+  id, user_id, is_pinned, last_used_at, updated_at
+)
+SELECT kit.id, kit.user_id, kit.is_pinned, kit.last_used_at, kit.updated_at
+  FROM public.custom_kits AS kit
+ WHERE kit.is_pinned
+ON CONFLICT (id) DO NOTHING;
+
+COMMENT ON TABLE public._backup_custom_kits_pinned_20261118 IS
+'Estado de is_pinned/last_used_at/updated_at dos kits fixados imediatamente antes de 20261118130400_pin_custom_kit_atomically. RLS habilitada sem policy: somente superusuario e o owner da tabela leem.';
+
 WITH ranked_pins AS (
   SELECT
     id,
