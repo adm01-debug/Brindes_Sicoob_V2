@@ -360,10 +360,21 @@ export default function KitBuilderPage() {
     goToStep('box');
   }
 
+  // Recarregar busca a versao de quem gravou do outro lado e descarta o que
+  // esta na tela — e o conflito so aparece porque a gravacao automatica falhou,
+  // ou seja, sempre ha alteracao nao salva aqui. Perguntar antes.
+  function recarregarAposConflito() {
+    const confirmado = window.confirm(
+      'Recarregar traz a versao salva em outro lugar e descarta as alteracoes desta tela, '
+      + 'que nao foram salvas. Deseja recarregar?',
+    );
+    if (confirmado) window.location.reload();
+  }
+
   function BuilderHeader() {
     return <><KitBuilderHeader kitName={kitState.name} onKitNameChange={setKitName} isValid={kitState.isValid}
       isSaving={isSaving} isAutoSaving={isAutoSaving} lastSavedAt={lastSavedAt} autoSaveError={lastSaveError}
-      autoSaveConflict={lastSaveConflict} onReloadAfterConflict={() => window.location.reload()}
+      autoSaveConflict={lastSaveConflict} onReloadAfterConflict={recarregarAposConflito}
       onRetryAutoSave={retryAutoSave} hasContent={hasContent} isExistingKit={isExistingKit} canUndo={canUndo}
       canRedo={canRedo} identity={kitState.identity} onIdentityChange={setIdentity} onSave={handleSaveKit}
       onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit} kitState={kitState}
