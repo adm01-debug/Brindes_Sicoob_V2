@@ -3,11 +3,13 @@
  * Estratégia:
  * 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade
  * 2) Chama RPC get_industry_top_products(_company_ids, _days)
- * 3) Se RPC vazia → fallback mock determinístico
+ * 3) Se a amostra estiver vazia, devolve estado vazio explícito: o conjunto
+ *    simulado é só do cliente de demonstração
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchIndustryPeerIds } from "@/lib/crm-db";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends, type MockIndustryTrend } from "@/lib/bi/mockData";
 
 export interface IndustryTopProduct {
@@ -61,13 +63,21 @@ function mockToItem(m: MockIndustryTrend): IndustryTrendItem {
   };
 }
 
-export function useIndustryTrends(ramoAtividade?: string | null) {
+export function useIndustryTrends(ramoAtividade?: string | null, clientId?: string | null) {
+  const demo = isDemoClient(clientId);
   return useQuery<IndustryTrendsResult>({
-    queryKey: ["bi-industry-trends-v2", ramoAtividade],
-    enabled: !!ramoAtividade,
+    queryKey: ["bi-industry-trends-v2", ramoAtividade, demo],
+    enabled: !!ramoAtividade || demo,
     queryFn: async () => {
+      if (demo) {
+        return {
+          isMock: true,
+          companiesInRamo: 24,
+          trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
+        };
+      }
       if (!ramoAtividade) {
-        return { isMock: true, companiesInRamo: 0, trends: getMockIndustryTrends(null).map(mockToItem) };
+        return { isMock: false, companiesInRamo: 0, trends: [] };
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
@@ -89,7 +99,10 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
           _limit: 10,
         });
 
-        const real = (!error && Array.isArray(data) ? data : []) as IndustryTopProduct[];
+        // O erro deixa de virar lista vazia que cai no mock: o setor passava a
+        // ter "tendências" que ninguém mediu.
+        if (error) throw error;
+        const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
         if (real.length > 0) {
           return {
             isMock: false,
@@ -108,11 +121,10 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
         }
       }
 
-      // 3) Fallback mock
       return {
-        isMock: true,
+        isMock: false,
         companiesInRamo: companyIds.length,
-        trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
+        trends: [],
       };
     },
     staleTime: 10 * 60 * 1000,
