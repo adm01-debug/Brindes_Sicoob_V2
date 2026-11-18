@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `71d515bd8a` · branch `main` · 2026-11-18 16:15 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `eeb3c4ee2a` · branch `main` · 2026-11-18 17:31 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1256,7 +1256,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `approved_singular` | compara, filtra | `src/components/quotes/QuoteConvertToOrder.tsx`<br>`src/pages/QuotesListPage.tsx`<br>`src/services/QuoteService.ts` |
 | `status` | `aprovado_gestor` | escreve | `src/pages/GestorApprovalsPage.tsx` |
 | `status` | `blocked` | compara, escreve | `src/pages/admin/qa/QARunDetailPage.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-delivery.ts` |
-| `status` | `cancelado` | compara, escreve | `src/components/orders/OrderCard.tsx`<br>`src/hooks/bi/useClientBI.ts`<br>`src/hooks/useClientOrdersHistory.ts`<br>`src/pages/GestorApprovalsPage.tsx` |
+| `status` | `cancelado` | compara, escreve, filtra | `src/components/orders/OrderCard.tsx`<br>`src/hooks/bi/useClientBI.ts`<br>`src/hooks/useClientOrdersHistory.ts`<br>`src/hooks/useClientsPortfolioKpis.ts`<br>`src/pages/GestorApprovalsPage.tsx` |
 | `status` | `cancelled` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/components/common/StatusTimeline.tsx`<br>`src/components/orders/OrderStatusTimeline.tsx`<br>… +5 |
 | `status` | `clean` | compara | `supabase/functions/sicoob-document-ingest/registration-state.ts` |
 | `status` | `client-only` | escreve | `src/components/bi/ClientCategoryRadar.tsx` |
@@ -4474,6 +4474,7 @@ _nenhum item encontrado_
 | `transition={{ delay: i * 0.1 }}` | `src/components/sicoob/orders/AIOrderPredictor.tsx` |
 | `const reserved = Math.floor(baseStock * 0.1);` | `src/components/simulator/StockAlert.tsx` |
 | `transition={{ delay: idx * 0.04 }}` | `src/components/simulator/wizard/StepLocation.tsx` |
+| `* "Ticket Médio" = R$ 4,2k e "Taxa Retenção" = 94% — sob o comentário` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `const pull = Math.min(distance * 0.4, options.threshold + 20);` | `src/hooks/usePullToRefresh.ts` |
 | `score += popularityScore * 0.3; // 30% do peso para popularidade` | `src/hooks/useTechniqueRecommendations.ts` |
 | `const aScore = a.count * 0.7 + aRecency * 10 * 0.3;` | `src/hooks/useVoiceCommandHistory.ts` |
@@ -4749,6 +4750,9 @@ _nenhum item encontrado_
 | `MAX_PAGES` | `100` | `src/hooks/useCatalogMarketing.ts` |
 | `RELATION_PAGE_SIZE` | `500` | `src/hooks/useCatalogRelationFilters.ts` |
 | `MAX_RELATION_RECORDS` | `100` | `src/hooks/useCatalogRelationFilters.ts` |
+| `TICKET_WINDOW_DAYS` | `90` | `src/hooks/useClientsPortfolioKpis.ts` |
+| `PAGE_SIZE` | `1000` | `src/hooks/useClientsPortfolioKpis.ts` |
+| `MAX_PAGES` | `50` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `HEALTHY_INTERVAL` | `60` | `src/hooks/useCloudStatus.ts` |
 | `DOWN_AUTO_STOP_MS` | `30` | `src/hooks/useCloudStatus.ts` |
 | `CHUNK_SIZE` | `80` | `src/hooks/useColorEnrichment.ts` |
@@ -4847,10 +4851,7 @@ _nenhum item encontrado_
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
 | `AUTO_RESET_INTERVAL_MS` | `15` | `src/lib/notifications-metrics.ts` |
 | `MAX_SIGNATURE_RETRIES_ON_IDENTITY_CHANGE` | `2` | `src/lib/private-storage.ts` |
-| `SUPERVISOR_DESCRIPTION` | `"Aprova orçamentos e descontos, gerencia equipe e operação."` | `src/lib/roles.ts` |
-| `BULLET` | `"\u2022"` | `src/lib/sensitive-masking.ts` |
-| `BUFFER_MAX` | `50` | `src/lib/sentry.ts` |
-| … +150 linhas — lista completa em `context.json` | | |
+| … +153 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -4988,6 +4989,8 @@ _nenhum item encontrado_
 | `staleTime: 30 * 60 * 1000, // 30 min (dados estáveis)` | `src/hooks/useCategoryIcons.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useClientOrdersHistory.ts` |
 | `staleTime: 10 * 60 * 1000,` | `src/hooks/useClientTopProducts.ts` |
+| `return new Date(agora.getTime() - TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();` | `src/hooks/useClientsPortfolioKpis.ts` |
+| `staleTime: 5 * 60 * 1000,` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `gcTime: 15 * 60 * 1000,` | `src/hooks/useColorEnrichment.ts` |
 | `staleTime: 5 * 60 * 1000, // 5 minutes (reduced redundant background fetches)` | `src/hooks/useColorEnrichment.ts` |
 | `gcTime: 24 * 60 * 60 * 1000, // 24 horas` | `src/hooks/useColorSystem.ts` |
@@ -5154,9 +5157,7 @@ _nenhum item encontrado_
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| `expires_at timestamptz NOT NULL DEFAULT (now() + interval '24 hours')` | `supabase/migrations/20260418131950_ac0f8ad7-b1bf-4c81-8849-6cd759e19198.sql` |
-| `ALTER COLUMN expires_at SET DEFAULT (now() + interval '30 days');` | `supabase/migrations/20260419025022_7d122b20-2611-49b6-874d-b1d72d133ad3.sql` |
-| … +79 linhas — lista completa em `context.json` | |
+| … +81 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5686,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6556 testes em 629 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6563 testes em 630 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5959,6 +5960,7 @@ _nenhum item encontrado_
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/hooks/useAdvancedFilters.test.ts` | 7 | useAdvancedFilters - Reset Logic · defaultAdvancedFilters has all string arrays empty · defaultAdvancedFilters has all booleans as false · defaultAdvancedFilters has correct range defaults … |
+| `tests/hooks/useClientsPortfolioKpis.test.ts` | 7 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · exclui pedido cancelado nas duas consultas · pagina até esgotar a janela, em vez de usar só a primeira resposta … |
 | `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
 | `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
@@ -5989,8 +5991,7 @@ _nenhum item encontrado_
 | `tests/components/GlobalConfirmDialog.test.tsx` | 6 | GlobalConfirmDialog · exibe título/descrição e confirma com o rótulo customizado · Escape cancela e devolve o foco para quem abriu a confirmação · devolve o foco para o botão de dentro de outro diálogo … |
 | `tests/components/NotificationDrawer-trigger-to-fetch-timing.test.tsx` | 6 | NotificationDrawer — trigger→prefetch end-to-end timing · records a timing sample after a single hover→prefetch cycle (well within TTL) · attributes coalesced count from a hover burst to ONE sample · debounceMs is roughly equal to the configured delay (proves it measures FROM first event) … |
 | `tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx` | 6 | PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts · thresholdDays=${threshold} · ${surface} (${variant}) · fresh em ${days.fresh}d aplica verde + CheckCircle2 · ${surface} (${variant}) · aging em ${days.aging}d aplica âmbar + Clock … |
-| `tests/components/QuoteBuilderSummaryColumn.staleFilter.test.tsx` | 6 | QuoteBuilderSummaryColumn — filtro/contador de preços a confirmar · NÃO renderiza o chip quando todos os itens estão fresh · conta apenas aging/stale com price_confirmed_at vazio · badge inline some no item após confirmar e o contador decrementa … |
-| … +329 linhas — lista completa em `context.json` | | |
+| … +330 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6329,6 +6330,7 @@ _nenhum item encontrado_
 | ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob | `src/hooks/useCatalogFiltering.ts` |
 | * Prefetch do catálogo SOMENTE após autenticação (#6). | `src/hooks/useCatalogPrefetch.ts` |
 | O label é apenas apresentação e pode ser "Grande" enquanto value é "G". | `src/hooks/useCatalogRelationFilters.ts` |
+| - "taxa de retenção" exige uma definição de negócio que não existe no | `src/hooks/useClientsPortfolioKpis.ts` |
 | * Hook para buscar apenas os grupos de cor (para filtros rápidos) | `src/hooks/useColorSystem.ts` |
 | * Hook para buscar apenas as nuances/acabamentos | `src/hooks/useColorSystem.ts` |
 | @param limit - Limite de resultados (padrão: 100) | `src/hooks/useCommemorativeDates.ts` |
@@ -6474,5 +6476,4 @@ _nenhum item encontrado_
 | Validação observacional do payload bruto (apenas formatos não-nested) | `src/lib/personalization/adapters/price-response.adapter.ts` |
 | * Versão simplificada — devolve apenas o flat canônico. | `src/lib/personalization/adapters/price-response.adapter.ts` |
 | Prazo / quantidade | `src/lib/personalization/adapters/raw-row.types.ts` |
-| Faturamento mínimo | `src/lib/personalization/adapters/raw-row.types.ts` |
-| … +235 linhas — lista completa em `context.json` | |
+| … +237 linhas — lista completa em `context.json` | |

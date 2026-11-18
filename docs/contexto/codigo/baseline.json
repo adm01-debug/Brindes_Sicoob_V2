@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "71d515bd8a7a47fadf0a4d6f5b29098516392909",
+  "commit": "eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755",
   "branch": "main",
-  "data_commit": "2026-11-18T15:27:46Z",
+  "data_commit": "2026-11-18T17:30:55Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "eeb3c4e",
+    "data": "2026-11-18",
+    "assunto": "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)"
+   },
    {
     "sha": "71d515b",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "d9bca60",
     "data": "2026-11-12",
     "assunto": "fix(edge): commita trabalho pendente — contratos Edge Functions + etapa 17 secretNormalizers (#174)"
-   },
-   {
-    "sha": "387de05",
-    "data": "2026-11-12",
-    "assunto": "fix(busca): corrige rota de detalhes de clientes (#168)"
    }
   ],
-  "arquivos_mudados_7d": 339,
+  "arquivos_mudados_7d": 340,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 97
+    "mudancas": 96
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 96
+    "mudancas": 95
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 127
+    "commits": 128
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4322,
-  "arquivos_codigo": 3032,
-  "linhas_codigo": 478840,
+  "arquivos_total": 4324,
+  "arquivos_codigo": 3034,
+  "linhas_codigo": 479154,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
   "componentes": 1172,
-  "hooks": 388,
+  "hooks": 389,
   "edge_functions": 106,
   "tabelas": 291,
   "migrations": 619,
   "cron_jobs": 27,
-  "testes": 804,
+  "testes": 805,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -791,8 +791,8 @@
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 309,
-   "linhas": 45715
+   "arquivos": 310,
+   "linhas": 45838
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50856
+   "linhas": 50897
   },
   "src/routes": {
    "arquivos": 9,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 122,
-   "linhas": 12809
+   "arquivos": 123,
+   "linhas": 12959
   },
   "tests/integration": {
    "arquivos": 4,

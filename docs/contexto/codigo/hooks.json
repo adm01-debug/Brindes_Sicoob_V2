@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 388,
+ "total": 389,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -1681,7 +1681,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 153,
+   "usado_por": 154,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -4432,6 +4432,29 @@
     "src/pages/ClientDetailPage.tsx"
    ],
    "coberto_por_testes": 0
+  },
+  {
+   "arquivo": "src/hooks/useClientsPortfolioKpis.ts",
+   "hooks_exportados": [
+    "useClientsPortfolioKpis"
+   ],
+   "linhas": 123,
+   "dominio": "hooks",
+   "tabelas": [
+    "orders"
+   ],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [
+    "useAuth",
+    "useSalesScope"
+   ],
+   "canais_realtime": [],
+   "usado_por": 1,
+   "usado_por_arquivos": [
+    "src/pages/ClientsPage.tsx"
+   ],
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useClientTopProducts.ts",
@@ -9145,12 +9168,13 @@
     "useAuth"
    ],
    "canais_realtime": [],
-   "usado_por": 13,
+   "usado_por": 14,
    "usado_por_arquivos": [
     "src/components/common/ScopeBadge.tsx",
     "src/components/intelligence/ConversionFunnel.tsx",
     "src/components/orders/OrderStatsBar.tsx",
     "src/hooks/quotes/useQuotes.ts",
+    "src/hooks/useClientsPortfolioKpis.ts",
     "src/hooks/useCommercialIntelligence.ts",
     "src/hooks/useProductInsights.ts",
     "src/hooks/useSalesHistory.ts",

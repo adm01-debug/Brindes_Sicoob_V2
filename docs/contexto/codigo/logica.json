@@ -671,7 +671,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 400,
+   "usado_por": 401,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -1009,7 +1009,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 6,
+   "usado_por": 7,
    "usado_por_modulos": [
     "components/intelligence",
     "hooks",
@@ -1257,7 +1257,7 @@
    "papeis": [
     "supervisor"
    ],
-   "usado_por": 13,
+   "usado_por": 14,
    "usado_por_modulos": [
     "components/common",
     "components/intelligence",
@@ -2950,7 +2950,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 79,
+   "usado_por": 80,
    "usado_por_modulos": [
     "components/admin",
     "components/compare",

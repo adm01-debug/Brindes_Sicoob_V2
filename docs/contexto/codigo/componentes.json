@@ -15799,7 +15799,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 153,
+   "usado_por": 154,
    "orfao": false
   },
   {
@@ -17004,9 +17004,10 @@
     "ClientsPage"
    ],
    "export_default": "ClientsPage",
-   "linhas": 198,
+   "linhas": 239,
    "dominio": "pages",
    "hooks_locais": [
+    "useClientsPortfolioKpis",
     "useCrmCompanies"
    ],
    "tabelas": [],

@@ -3153,33 +3153,63 @@
    "definida_em": "src/App.tsx",
    "redireciona": null,
    "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useCallback",
+    "useClientsPortfolioKpis",
+    "useContext",
     "useCrmCompanies",
     "useCrmCompaniesLegacy",
     "useCrmCompany",
     "useCrmCompanyLegacy",
     "useCrmCompanySelector",
     "useCrmCustomer",
+    "useEffect",
+    "useMemo",
     "useNavigate",
-    "useState"
+    "useRef",
+    "useSalesScope",
+    "useState",
+    "useUserProfile",
+    "useUserRoles"
    ],
    "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useClientsPortfolioKpis",
     "useCrmCompanies",
     "useCrmCompaniesLegacy",
     "useCrmCompany",
     "useCrmCompanyLegacy",
     "useCrmCompanySelector",
-    "useCrmCustomer"
+    "useCrmCustomer",
+    "useSalesScope",
+    "useUserProfile",
+    "useUserRoles"
    ],
-   "tabelas": [],
-   "rpcs": [],
-   "edges": [],
+   "tabelas": [
+    "orders",
+    "profiles",
+    "user_roles"
+   ],
+   "rpcs": [
+    "get_sicoob_access_state"
+   ],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
    "canais_realtime": [],
    "flags": [],
    "papeis": [
+    "admin",
     "link",
-    "presentation"
+    "manager",
+    "presentation",
+    "supervisor"
    ],
-   "arquivos_puxados": 22
+   "arquivos_puxados": 45
   },
   {
    "protegida": false,

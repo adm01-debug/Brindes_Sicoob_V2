@@ -11,7 +11,7 @@
    "src/contexts (9)"
   ],
   "hooks": [
-   "src/hooks (282)",
+   "src/hooks (283)",
    "src/components (66)",
    "src/pages (22)"
   ],
@@ -21,7 +21,7 @@
    "src/services (22)"
   ],
   "testes": [
-   "tests/ (557)",
+   "tests/ (558)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
    "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)",
    "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)",
    "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)",
-   "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)",
-   "fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)"
+   "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

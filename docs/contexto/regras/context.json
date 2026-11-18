@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "71d515bd8a7a47fadf0a4d6f5b29098516392909",
+  "sha": "eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 16:15 UTC",
-  "files_total": 4324,
-  "code_files": 3686,
-  "code_lines": 539584
+  "generated_at": "2026-11-18 17:31 UTC",
+  "files_total": 4326,
+  "code_files": 3688,
+  "code_lines": 539898
  },
  "version": "1.3.2",
- "facts_hash": "1c430b092601ecf8",
+ "facts_hash": "6de2dd23fd8c00cb",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1427,
+   ".ts": 1429,
    ".tsx": 1403,
    ".sql": 672,
    ".mjs": 134,
@@ -54518,9 +54518,13 @@
     "file": "src/pages/ClientsPage.tsx",
     "component": "ClientsPage",
     "tables_transitive": [
+     "orders",
+     "profiles",
+     "quotes",
      "seller_cart_items",
      "seller_carts",
-     "user_onboarding"
+     "user_onboarding",
+     "user_roles"
     ],
     "invokes_transitive": [
      "crm-db-bridge",
@@ -54529,7 +54533,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 54
+    "deps_count": 71
    },
    {
     "path": "",
@@ -61407,6 +61411,10 @@
     "file": "src/hooks/useClientTopProducts.ts"
    },
    {
+    "name": "useClientsPortfolioKpis",
+    "file": "src/hooks/useClientsPortfolioKpis.ts"
+   },
+   {
     "name": "useCloudStatus",
     "file": "src/hooks/useCloudStatus.ts"
    },
@@ -63682,8 +63690,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 309,
-   "lines": 45715,
+   "files": 310,
+   "lines": 45838,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -63798,6 +63806,7 @@
     "useCategoryIcons.ts: CategoryIcon, useCategoryIcons, getCategoryIcon",
     "useClientOrdersHistory.ts: ClientOrdersHistory, useClientOrdersHistory",
     "useClientTopProducts.ts: useClientTopProducts",
+    "useClientsPortfolioKpis.ts: ClientsPortfolioKpis, fetchClientsPortfolioKpis, useClientsPortfolioKpis",
     "useCloudStatus.ts: useCloudStatus",
     "useCollections.ts: CollectionVariantInfo, CollectionProductItem, Collection, useCollections",
     "useCollectionsGlobalShortcuts.ts: useCollectionsGlobalShortcuts",
@@ -63813,8 +63822,7 @@
     "useConnectionTestDetails.ts: TestDetails, useConnectionTestDetails",
     "useConnectionTestHistory.ts: TestHistoryItem, useConnectionTestHistory",
     "useConnectionTester.ts: ConnectionType, ErrorKind, TestResult, useConnectionTester",
-    "useConnectionsOverview.ts: OverviewRow, useConnectionsOverview",
-    "useConnectionsOverviewFilters.ts: OverviewStatusFilter, OverviewWindowFilter, OverviewFilters, applyFilters, useConnectionsOverviewFilters"
+    "useConnectionsOverview.ts: OverviewRow, useConnectionsOverview"
    ],
    "docs": [
     "useAIRecommendations.ts: useAIRecommendations — Hook para consumir a edge function ai-recommendations. Recebe perfil de cliente + lista de produtos e retorna recomendações rankeadas por IA. Features: - AbortController para cancelamento de requisições em andamento - Retry com backoff exponencial (até 2 tentativas em erros 5x …",
@@ -63876,6 +63884,7 @@
     "src/hooks/useCategoryIcons.ts",
     "src/hooks/useClientOrdersHistory.ts",
     "src/hooks/useClientTopProducts.ts",
+    "src/hooks/useClientsPortfolioKpis.ts",
     "src/hooks/useCloudStatus.ts",
     "src/hooks/useCollections.ts",
     "src/hooks/useCollectionsGlobalShortcuts.ts",
@@ -63929,8 +63938,7 @@
     "src/hooks/useGlobalShortcuts.ts",
     "src/hooks/useGravacaoPriceV2.ts",
     "src/hooks/useGravacaoV2.ts",
-    "src/hooks/useIPValidation.ts",
-    "src/hooks/useInfiniteScroll.ts"
+    "src/hooks/useIPValidation.ts"
    ]
   },
   {
@@ -64129,7 +64137,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 50856,
+   "lines": 50897,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65120,8 +65128,8 @@
   },
   {
    "module": "tests",
-   "files": 575,
-   "lines": 79721,
+   "files": 576,
+   "lines": 79871,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -66405,6 +66413,7 @@
      "src/components/quotes/QuoteOrderBadge.tsx",
      "src/hooks/useClientOrdersHistory.ts",
      "src/hooks/useClientTopProducts.ts",
+     "src/hooks/useClientsPortfolioKpis.ts",
      "src/hooks/useCommercialIntelligence.ts",
      "src/hooks/useProductInsights.ts",
      "src/hooks/useSalesHistory.ts",
@@ -79129,6 +79138,10 @@
     "text": "O label é apenas apresentação e pode ser \"Grande\" enquanto value é \"G\"."
    },
    {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "text": "- \"taxa de retenção\" exige uma definição de negócio que não existe no"
+   },
+   {
     "file": "src/hooks/useColorSystem.ts",
     "text": "* Hook para buscar apenas os grupos de cor (para filtros rápidos)"
    },
@@ -79827,6 +79840,10 @@
    {
     "file": "src/pages/BusinessIntelligencePage.tsx",
     "text": "* Business Intelligence — Central de inteligência comercial 360° por cliente."
+   },
+   {
+    "file": "src/pages/ClientsPage.tsx",
+    "text": "de negócio que não existe no repositório. Eram os dois números digitados à"
    },
    {
     "file": "src/pages/FavoritesPage.tsx",
@@ -92472,6 +92489,21 @@
     "value": "100"
    },
    {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "name": "TICKET_WINDOW_DAYS",
+    "value": "90"
+   },
+   {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "name": "PAGE_SIZE",
+    "value": "1000"
+   },
+   {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "name": "MAX_PAGES",
+    "value": "50"
+   },
+   {
     "file": "src/hooks/useCloudStatus.ts",
     "name": "HEALTHY_INTERVAL",
     "value": "60"
@@ -98059,6 +98091,12 @@
     "field": "status",
     "value": "cancelado",
     "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "field": "status",
+    "value": "cancelado",
+    "kind": "filtra"
    },
    {
     "file": "src/hooks/useCloudStatus.ts",
@@ -109057,6 +109095,14 @@
     "line": "staleTime: 10 * 60 * 1000,"
    },
    {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "line": "return new Date(agora.getTime() - TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();"
+   },
+   {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "line": "staleTime: 5 * 60 * 1000,"
+   },
+   {
     "file": "src/hooks/useColorEnrichment.ts",
     "line": "gcTime: 15 * 60 * 1000,"
    },
@@ -110341,6 +110387,10 @@
    {
     "file": "src/components/simulator/wizard/StepLocation.tsx",
     "line": "transition={{ delay: idx * 0.04 }}"
+   },
+   {
+    "file": "src/hooks/useClientsPortfolioKpis.ts",
+    "line": "* \"Ticket Médio\" = R$ 4,2k e \"Taxa Retenção\" = 94% — sob o comentário"
    },
    {
     "file": "src/hooks/usePullToRefresh.ts",
@@ -124103,6 +124153,34 @@
    {
     "file": "tests/hooks/useCategories.test.tsx",
     "name": "generates slugs from category names"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "fetchClientsPortfolioKpis"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "conta clientes distintos do mês e calcula o ticket médio da janela"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "exclui pedido cancelado nas duas consultas"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "pagina até esgotar a janela, em vez de usar só a primeira resposta"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "devolve ticket nulo quando não houve pedido na janela, em vez de zero"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "propaga erro da consulta em vez de devolver número inventado"
+   },
+   {
+    "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "name": "recorta a janela do mês e a de 90 dias a partir da data informada"
    },
    {
     "file": "tests/hooks/useCollections.react.test.tsx",
@@ -157083,7 +157161,8 @@
       "compara:src/components/orders/OrderCard.tsx",
       "compara:src/hooks/bi/useClientBI.ts",
       "compara:src/hooks/useClientOrdersHistory.ts",
-      "escreve:src/pages/GestorApprovalsPage.tsx"
+      "escreve:src/pages/GestorApprovalsPage.tsx",
+      "filtra:src/hooks/useClientsPortfolioKpis.ts"
      ],
      "revision": [
       "compara:src/components/orders/PilotApprovalPanel.tsx",
@@ -199419,6 +199498,61 @@
     "staleTime: 10 * 60 * 1000,"
    ]
   },
+  "src/hooks/useClientsPortfolioKpis.ts": {
+   "path": "src/hooks/useClientsPortfolioKpis.ts",
+   "lines": 123,
+   "exports": [
+    "interface ClientsPortfolioKpis",
+    "function fetchClientsPortfolioKpis",
+    "function useClientsPortfolioKpis"
+   ],
+   "tables": [
+    {
+     "table": "orders",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "orders": [
+     "created_at",
+     "status"
+    ]
+   },
+   "params": [
+    {
+     "name": "TICKET_WINDOW_DAYS",
+     "value": "90"
+    },
+    {
+     "name": "PAGE_SIZE",
+     "value": "1000"
+    },
+    {
+     "name": "MAX_PAGES",
+     "value": "50"
+    }
+   ],
+   "status_values": [
+    {
+     "field": "status",
+     "value": "cancelado",
+     "kind": "filtra"
+    }
+   ],
+   "rule_comments": [
+    "- \"taxa de retenção\" exige uma definição de negócio que não existe no"
+   ],
+   "hooks": [
+    "useClientsPortfolioKpis"
+   ],
+   "temporal": [
+    "return new Date(agora.getTime() - TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();",
+    "staleTime: 5 * 60 * 1000,"
+   ],
+   "percents": [
+    "* \"Ticket Médio\" = R$ 4,2k e \"Taxa Retenção\" = 94% — sob o comentário"
+   ]
+  },
   "src/hooks/useCloudStatus.ts": {
    "path": "src/hooks/useCloudStatus.ts",
    "lines": 110,
@@ -213714,13 +213848,16 @@
   },
   "src/pages/ClientsPage.tsx": {
    "path": "src/pages/ClientsPage.tsx",
-   "lines": 198,
+   "lines": 239,
    "exports": [
     "function ClientsPage"
    ],
    "navigates": [
     "/",
     "/clientes/"
+   ],
+   "rule_comments": [
+    "de negócio que não existe no repositório. Eram os dois números digitados à"
    ]
   },
   "src/pages/CollectionDetailPage.tsx": {
@@ -240800,6 +240937,21 @@
     "generates slugs from category names"
    ]
   },
+  "tests/hooks/useClientsPortfolioKpis.test.ts": {
+   "path": "tests/hooks/useClientsPortfolioKpis.test.ts",
+   "lines": 150,
+   "is_test": true,
+   "doc": "Os indicadores da tela /clientes têm de sair de medição, não de constante. Antes, \"Novos (Mês)\" era `\"12\"` e \"Taxa Retenção\" era `\"94%\"`, digitados no componente sob o comentário \"Indicadores mockados para demonstração\".",
+   "tests": [
+    "fetchClientsPortfolioKpis",
+    "conta clientes distintos do mês e calcula o ticket médio da janela",
+    "exclui pedido cancelado nas duas consultas",
+    "pagina até esgotar a janela, em vez de usar só a primeira resposta",
+    "devolve ticket nulo quando não houve pedido na janela, em vez de zero",
+    "propaga erro da consulta em vez de devolver número inventado",
+    "recorta a janela do mês e a de 90 dias a partir da data informada"
+   ]
+  },
   "tests/hooks/useCollections.react.test.tsx": {
    "path": "tests/hooks/useCollections.react.test.tsx",
    "lines": 55,
@@ -247589,10 +247741,21 @@
   }
  },
  "git": {
-  "sha": "71d515bd8a7a47fadf0a4d6f5b29098516392909",
+  "sha": "eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "eeb3c4e",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
+    "files": [
+     "src/hooks/useClientsPortfolioKpis.ts",
+     "src/pages/ClientsPage.tsx",
+     "tests/hooks/useClientsPortfolioKpis.test.ts"
+    ]
+   },
    {
     "sha": "71d515b",
     "date": "2026-11-18",
@@ -248120,27 +248283,6 @@
      "tests/edge-functions/authorize-jwt-structure.test.ts",
      "tests/scenarios/edge-authorization.mjs"
     ]
-   },
-   {
-    "sha": "e1cc783",
-    "date": "2026-11-12",
-    "author": "adm01-debug",
-    "subject": "Corrige autenticação interna e retry dos webhooks (#173)",
-    "files": [
-     ".github/workflows/ci.yml",
-     "PENDENCIAS.md",
-     "RELATORIO_CI.md",
-     "docs/EDGE_FUNCTIONS.md",
-     "docs/secrets.md",
-     "scripts/automation.config.json",
-     "scripts/qa/simular-webhook-internal-auth.py",
-     "src/integrations/supabase/types.ts",
-     "supabase/functions/_shared/webhook-dispatcher-contract.ts",
-     "supabase/functions/webhook-dispatcher/index.ts",
-     "supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql",
-     "tests/contracts/webhookDispatcherModes.test.ts",
-     "tests/scenarios/operacoes-internas-seguras.mjs"
-    ]
    }
   ],
   "hot_files": [
@@ -248150,22 +248292,10 @@
    ],
    [
     "scripts/automation.config.json",
-    4
+    3
    ],
    [
     ".github/workflows/ci.yml",
-    4
-   ],
-   [
-    "src/integrations/supabase/types.ts",
-    3
-   ],
-   [
-    "PENDENCIAS.md",
-    3
-   ],
-   [
-    "RELATORIO_CI.md",
     3
    ],
    [
@@ -248197,12 +248327,32 @@
     2
    ],
    [
+    "src/integrations/supabase/types.ts",
+    2
+   ],
+   [
     ".github/workflows/security.yml",
     2
    ],
    [
-    "docs/secrets.md",
+    "PENDENCIAS.md",
     2
+   ],
+   [
+    "RELATORIO_CI.md",
+    2
+   ],
+   [
+    "src/hooks/useClientsPortfolioKpis.ts",
+    1
+   ],
+   [
+    "src/pages/ClientsPage.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useClientsPortfolioKpis.test.ts",
+    1
    ],
    [
     "src/contexts/AuthContext.tsx",
@@ -248214,14 +248364,6 @@
    ],
    [
     "tests/lib/auth/sensitive-browser-data.test.ts",
-    1
-   ],
-   [
-    "src/components/admin/telemetry/BreakerStatusCard.tsx",
-    1
-   ],
-   [
-    "src/components/admin/telemetry/ColdVsWarmCrmCard.tsx",
     1
    ]
   ]

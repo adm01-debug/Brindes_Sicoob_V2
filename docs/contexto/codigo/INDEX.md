@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `71d515bd8a7a47fadf0a4d6f5b29098516392909` (2026-11-18T15:27:46Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755` (2026-11-18T17:30:55Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2832), SQL (672), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
+- linguagens: TypeScript (2834), SQL (672), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,21 +34,21 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4322 |
-| arquivos_codigo | 3032 |
-| linhas_codigo | 478840 |
+| arquivos_total | 4324 |
+| arquivos_codigo | 3034 |
+| linhas_codigo | 479154 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 84 |
 | modulos | 145 |
 | componentes | 1172 |
-| hooks | 388 |
+| hooks | 389 |
 | edge_functions | 106 |
 | tabelas | 291 |
 | migrations | 619 |
 | cron_jobs | 27 |
-| testes | 804 |
+| testes | 805 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 246 |
@@ -56,9 +56,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Onde ficam as coisas
 - telas: src/pages (115)
 - componentes: src/components (998), src/pages (162), src/contexts (9)
-- hooks: src/hooks (282), src/components (66), src/pages (22)
+- hooks: src/hooks (283), src/components (66), src/pages (22)
 - servicos_logica: src/lib (161), src/utils (37), src/services (22)
-- testes: tests/ (557), e2e/ (149), outro (51)
+- testes: tests/ (558), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -107,7 +107,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/simulator | 0 | 0 | 23 | 23 | 4 | 4 |
 | components/ui | 0 | 0 | 59 | 6 | 0 | 0 |
 | contexts | 0 | 0 | 10 | 23 | 4 | 10 |
-| hooks | 0 | 0 | 207 | 375 | 21 | 97 |
+| hooks | 0 | 0 | 208 | 376 | 21 | 97 |
 | hooks/bi | 0 | 0 | 13 | 24 | 3 | 4 |
 | hooks/catalog | 0 | 0 | 6 | 89 | 2 | 4 |
 | hooks/gravacao | 0 | 0 | 6 | 12 | 2 | 0 |
@@ -128,7 +128,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/system | 0 | 0 | 5 | 4 | 3 | 2 |
 | lib/telemetry | 0 | 0 | 8 | 0 | 0 | 0 |
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
-| pages | 33 | 77 | 69 | 380 | 33 | 95 |
+| pages | 33 | 77 | 69 | 381 | 33 | 95 |
 | pages/admin | 25 | 38 | 69 | 155 | 28 | 86 |
 | pages/sicoob | 12 | 19 | 19 | 31 | 7 | 30 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
@@ -468,14 +468,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28293 nós · 52363 arestas · 2046 comunidades · grafo do commit `71d515bd`
-- comunidades maiores: ref_hooks (525), ref_integrations (476), ref_components (410), ref_lib (290), react (239), react-router-dom (218), framer-motion (194), expert-chat/index.ts (185), getCorsHeaders (170), postgres_ready.py (135), ref_node_path (135), external-db-bridge/index.ts (132)
+- 28308 nós · 52390 arestas · 2024 comunidades · grafo do commit `eeb3c4ee`
+- comunidades maiores: ref_hooks (500), react (325), ref_lib (243), ref_integrations (239), sonner (225), lucide-react (215), date-fns (177), react-router-dom (170), expert-chat/index.ts (167), framer-motion (164), ref_components (157), external-db-bridge/index.ts (153)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (97)
-- docs/correcoes-validacao-2026-09-14.md (96)
+- docs/plano-melhorias-50-etapas.md (96)
+- docs/correcoes-validacao-2026-09-14.md (95)
 - package.json (20)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `eeb3c4e` fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)
 - 2026-11-18 `71d515b` fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)
 - 2026-11-18 `90a9cb3` feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)
 - 2026-11-18 `ca0c320` feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-17 `19e692d` fix: historico de itens do pedido Sicoob sem embed irresolvivel (#302)
 - 2026-11-17 `004e313` fix: sonda de REST aceita raiz protegida e para de repetir healthcheck negado (#300)
 - 2026-11-17 `4f2531e` fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)
-- 2026-11-17 `35f9ee2` feat: rota /gestor/delegacoes para o gestor gerenciar delegacoes de aprovacao (#295)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

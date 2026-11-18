@@ -8461,6 +8461,13 @@
   "src/hooks/useClientTopProducts.ts": [
    "src/integrations/supabase/client.ts"
   ],
+  "src/hooks/useClientsPortfolioKpis.ts": [
+   "src/contexts/AuthContext.tsx",
+   "src/integrations/supabase/client.ts",
+   "src/lib/auth/apply-seller-scope.ts",
+   "src/lib/auth/visibility-scope.ts",
+   "src/lib/logger.ts"
+  ],
   "src/hooks/useCloudStatus.ts": [
    "src/lib/cloud-status.ts"
   ],
@@ -9791,6 +9798,7 @@
    "src/components/ui/dropdown-menu.tsx",
    "src/components/ui/input.tsx",
    "src/components/ui/skeleton.tsx",
+   "src/hooks/useClientsPortfolioKpis.ts",
    "src/hooks/useCrmCompanies.ts",
    "src/types/crm.ts"
   ],
