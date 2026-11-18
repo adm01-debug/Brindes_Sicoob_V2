@@ -6,7 +6,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { getMockSeasonality } from "@/lib/bi/mockData";
 
 const MONTH_LABELS = [
@@ -293,12 +293,10 @@ export function useClientSeasonality(
       let companiesCount = 0;
       if (ramoAtividade) {
         try {
-          const companies = await selectCrm<{ id: string }>("companies", {
-            select: "id",
-            filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-            limit: 500,
-          });
-          const ids = companies.map((c) => c.id).filter((id) => id && id !== clientId);
+          // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+          // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+          const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+          const ids = peerIds.filter((id) => id && id !== clientId);
           companiesCount = ids.length;
           if (ids.length > 0) {
             const { data: indData, error: indErr } = await supabase.rpc(

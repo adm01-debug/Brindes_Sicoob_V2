@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Flame, RefreshCw, Snowflake, Thermometer } from 'lucide-react';
-import { getSupabaseFunctionUrl, supabasePublishableKey } from '@/integrations/supabase/client';
+import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from '@/integrations/supabase/client';
 
 interface DiagSnapshot {
   ok: boolean;
@@ -85,9 +85,19 @@ export function ColdVsWarmCrmCard() {
         throw new Error('Configuração do backend indisponível para diagnóstico.');
       }
 
+      // O bridge exige sessao autenticada com papel dev para os diagnosticos.
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error('Sessao expirada. Entre novamente para ver o diagnostico.');
+      }
+
       const res = await fetch(functionUrl, {
         method: 'GET',
-        headers: { apikey: supabasePublishableKey },
+        headers: {
+          apikey: supabasePublishableKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as DiagSnapshot;

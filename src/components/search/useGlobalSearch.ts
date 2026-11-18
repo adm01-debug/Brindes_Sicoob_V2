@@ -22,7 +22,6 @@ import { useVoiceSearchAction } from '@/hooks/search/useVoiceSearchAction';
 import Fuse from 'fuse.js';
 import { createProductFuseOptions, rankProductSearchResults } from '@/utils/product-search';
 import type { PromobrindProduct } from '@/lib/external-db';
-import type { CrmCompany } from '@/types/crm';
 import { clientDetailPath } from '@/routes/clientRoutes';
 
 export type SearchResultType =
@@ -331,13 +330,14 @@ async function executeProductSearch(
 
 export async function executeClientSearch(intent: SearchIntent): Promise<SearchResult[]> {
   try {
-    const { searchCrm } = await import('@/lib/crm-db');
-    const searchTerm = intent.filters.clientName || intent.keywords.join(' ');
-    if (!searchTerm) return [];
+    // O `search` genérico do CRM é negado para vendedor e agente; o contrato
+    // fechado `quote_directory` é o único liberado e exige termo com 2+
+    // caracteres, então o corte abaixo evita uma ida ao Edge que voltaria 403.
+    const { fetchQuoteDirectoryCompanies } = await import('@/lib/crm-db');
+    const searchTerm = (intent.filters.clientName || intent.keywords.join(' ')).trim();
+    if (searchTerm.length < 2) return [];
 
-    const companies = await searchCrm<CrmCompany>('companies', 'razao_social', searchTerm, {
-      limit: 5,
-    });
+    const companies = await fetchQuoteDirectoryCompanies({ term: searchTerm, limit: 5 });
     return companies.map((c) => ({
       id: c.id,
       title: c.nome_fantasia || c.razao_social,
