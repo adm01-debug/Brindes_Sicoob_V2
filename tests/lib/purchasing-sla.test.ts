@@ -135,6 +135,22 @@ describe('mapApprovalDecisions', () => {
     expect(decisoes.size).toBe(1);
   });
 
+  it.each([
+    ['entrada antes', ['waiting_approval', 'confirmed']],
+    ['aprovação antes', ['confirmed', 'waiting_approval']],
+  ])('confirmação na mesma transação (%s) vira decisão em zero hora', (_rotulo, ordem) => {
+    // `now()` é constante na transação: os dois eventos saem com o mesmo
+    // carimbo e a ordem de retorno do Postgres não é garantida.
+    const carimbo = '2026-10-13T10:00:00.000Z';
+    const decisoes = mapApprovalDecisions(
+      ordem.map((new_status) => ({ order_id: 'order-1', new_status, created_at: carimbo })),
+    );
+
+    const par = decisoes.get('order-1');
+    expect(par?.submittedAtMs).toBe(Date.parse(carimbo));
+    expect(par?.decidedAtMs).toBe(Date.parse(carimbo));
+  });
+
   it('pedido ainda na fila não entra como decidido', () => {
     const decisoes = mapApprovalDecisions([
       { order_id: 'order-1', new_status: 'waiting_approval', created_at: '2026-10-13T10:00:00.000Z' },

@@ -82,7 +82,13 @@ function eventoDeFila(event: SicoobOrderHistoryStatusEvent): EventoDeFila | null
 
 /** Último par (última ida à fila, aprovação seguinte) de uma linha do tempo. */
 function ultimaDecisao(linha: EventoDeFila[]): ApprovalDecision | null {
-  linha.sort((a, b) => a.ms - b.ms);
+  // Desempate explícito: confirmação dentro da alçada grava `waiting_approval`
+  // e o status aprovado na MESMA transação, e `now()` é constante ali — os dois
+  // eventos saem com o mesmo carimbo. Sem isto, a ordem em que o Postgres
+  // devolvesse as linhas decidiria se o par existe; vindo a aprovação primeiro,
+  // o pedido ficava sem par e um único caso desses zerava o SLA inteiro.
+  // Entrada na fila sempre antes da aprovação no empate: decisão em zero hora.
+  linha.sort((a, b) => a.ms - b.ms || Number(a.aprovado) - Number(b.aprovado));
   let entrada: number | null = null;
   let decisao: ApprovalDecision | null = null;
   for (const evento of linha) {
