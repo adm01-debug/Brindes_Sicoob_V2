@@ -52298,6 +52298,43 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_schedule text",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
+              "hits": 6
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.get_connections_auto_test_interval"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog"
+        ],
+        "definition": null,
+        "definition_sha": "10b9b48ed528bd0a",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "connections_auto_test_interval_from_schedule",
+        "owner": "postgres",
+        "returns": "integer",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "immutable"
+      },
+      {
         "args": "p_singular_id uuid, p_quote_ids uuid[], p_notes text",
         "callers": {
           "code": [
@@ -54429,9 +54466,13 @@
             {
               "file": "supabase/migrations/20260429163414_schedule_connections_auto_test_cron.sql",
               "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 3,
+          "code_total_files": 4,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -54439,10 +54480,10 @@
         },
         "comment": null,
         "config": [
-          "search_path=public"
+          "search_path=pg_catalog, public, cron"
         ],
         "definition": null,
-        "definition_sha": "b204f8415df70945",
+        "definition_sha": "de3ac1e337b446d8",
         "execute_api_roles": "authenticated, service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -78200,6 +78241,12 @@
         "statements": 1,
         "statements_sha": "dcf7ec63b5471fac",
         "version": "20261118130700"
+      },
+      {
+        "name": "fix_connections_auto_test_interval_hourly",
+        "statements": 1,
+        "statements_sha": "0e02e3e43d7057e8",
+        "version": "20261118150000"
       }
     ],
     "policies": [
