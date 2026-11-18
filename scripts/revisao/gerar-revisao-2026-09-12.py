@@ -57,8 +57,8 @@ GRUPOS = {
     'organizacao': ['src/contexts/OrganizationContext.tsx', 'src/contexts/AuthContext.tsx'],
     'rotas': ['src/routes/config/public.ts', 'src/routes/config/products.ts', 'src/routes/config/quotes.ts', 'src/routes/config/admin.ts', 'src/pages/PublicQuoteApprovalPage.tsx', 'src/pages/ResetPassword.tsx'],
     'busca': ['src/hooks/useSearch.ts', 'src/components/catalog/CatalogHeader.tsx', 'src/hooks/catalog/useCatalogSearchState.ts', 'tests/hooks/useSearch.test.ts'],
-    'armazenamento': ['src/stores/useRecentlyViewedStore.ts', 'src/contexts/AuthContext.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.tsx', ATUAL+'testes-dirigidos.json'],
-    'kit': ['src/hooks/useKitAutoSave.ts', 'src/hooks/useKitStockValidation.ts', 'src/components/kit-builder/KitSummary.tsx', 'src/hooks/useKitBuilder.ts', 'tests/hooks/useKitAutoSave.test.tsx', 'tests/hooks/useKitStockValidation.test.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.tsx', ATUAL+'testes-dirigidos.json'],
+    'armazenamento': ['src/stores/useRecentlyViewedStore.ts', 'src/contexts/AuthContext.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx', ATUAL+'testes-dirigidos.json'],
+    'kit': ['src/hooks/useKitAutoSave.ts', 'src/hooks/useKitStockValidation.ts', 'src/components/kit-builder/KitSummary.tsx', 'src/hooks/useKitBuilder.ts', 'tests/hooks/useKitAutoSave.test.tsx', 'tests/hooks/useKitStockValidation.test.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx', ATUAL+'testes-dirigidos.json'],
     'versoes': ['src/services/quotes/quoteVersionService.ts', 'src/hooks/useQuoteVersions.ts', 'supabase/migrations/20260912100000_quote_versioning_atomic.sql', 'supabase/migrations/20260912130000_quote_versioning_family_roots.sql', 'supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql', EVID+'versionamento-orcamento-atomico.json', 'tests/services/quoteVersionService.test.ts'],
     'recompra': ['src/components/orders/OneClickReorder.tsx', 'src/services/sicoob/orderService.ts', 'src/routes/config/quotes.ts'],
     'eventos': ['supabase/migrations/20260912110000_sicoob_order_status_events.sql', 'src/services/sicoob/orderService.ts', EVID+'eventos-status-sicoob.json', 'tests/services/sicoobOrderService.test.ts'],
@@ -180,7 +180,7 @@ novos = [
 for ident, prioridade, titulo, grupo, diagnostico, ids, fechamento in novos:
     achados.append({'id': ident, 'titulo': titulo, 'prioridade': prioridade, 'evidencia_tipo': 'Simulação local delimitada' if ident != 'A19' else 'Inspeção de asserções e CI',
         'referencias': GRUPOS[grupo], 'subetapas': ids, 'diagnostico': diagnostico,
-        'reproducao': 'scripts/revisao/simular-pendencias-2026-09-12.py' if ident in ('A17','A18') else 'scripts/revisao/pendencias-2026-09-12.cenarios.tsx' if ident == 'A20' else 'e2e/routes/_factories.ts',
+        'reproducao': 'scripts/revisao/simular-pendencias-2026-09-12.py' if ident in ('A17','A18') else 'scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx' if ident == 'A20' else 'e2e/routes/_factories.ts',
         'condicao_fechamento': fechamento, 'estado': 'Aberto', 'validado_em_producao': False})
 
 for s in matriz['subetapas']:
