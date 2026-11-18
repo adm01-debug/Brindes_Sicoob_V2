@@ -301,6 +301,7 @@ export interface QuoteDirectoryCompany {
   logo_url: string | null;
   cidade: string | null;
   estado: string | null;
+  website: string | null;
 }
 
 export interface QuoteDirectoryPeer {

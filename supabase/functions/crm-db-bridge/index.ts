@@ -872,7 +872,7 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
 }
 
 const QUOTE_COMPANY_SELECT =
-  "id, title, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url, cidade, estado";
+  "id, title, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url, cidade, estado, website";
 /**
  * Teto fixo no servidor para o universo de pares do mesmo ramo. O cliente nao
  * escolhe: a projecao e so o id, usado como chave nas RPCs get_industry_* do
@@ -949,6 +949,9 @@ async function handleQuoteCompanies(crm: SupabaseClient, body: CrmQuery): Promis
     logo_url: row.logo_url == null ? null : String(row.logo_url),
     cidade: row.cidade == null ? null : String(row.cidade),
     estado: row.estado == null ? null : String(row.estado),
+    // A ficha do cliente oferece o link do site (ClientDetailHeader); sem este
+    // campo o link desaparecia para quem só alcança o contrato fechado.
+    website: row.website == null ? null : String(row.website),
   }));
   return jsonResponse({ data: companies, count: companies.length });
 }

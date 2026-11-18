@@ -61,6 +61,12 @@ function directoryRowToCrmCompany(row: QuoteDirectoryCompany): CrmCompany {
     logo_url: row.logo_url,
     cidade: row.cidade,
     estado: row.estado,
+    website: row.website,
+    // O Edge só devolve empresa com is_customer = true neste contrato, então o
+    // selo "Cliente" da ficha pode ser afirmado. `is_supplier` não é inferível
+    // daqui e fica fora: o selo "Fornecedor" não aparece para quem só tem o
+    // contrato fechado.
+    is_customer: true,
   } as CrmCompany;
 }
 

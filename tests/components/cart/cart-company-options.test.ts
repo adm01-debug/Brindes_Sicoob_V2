@@ -18,6 +18,7 @@ function company(id: string, name: string): QuoteDirectoryCompany {
     logo_url: null,
     cidade: null,
     estado: null,
+    website: null,
   };
 }
 

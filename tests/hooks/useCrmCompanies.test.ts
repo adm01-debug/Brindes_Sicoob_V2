@@ -37,6 +37,7 @@ function directoryCompany(id: string, name: string): QuoteDirectoryCompany {
     logo_url: null,
     cidade: 'Goiânia',
     estado: 'GO',
+    website: null,
   };
 }
 
