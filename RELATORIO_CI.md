@@ -866,8 +866,11 @@ fora do bundle). As 16 que divergiam:
 `secrets-manager`, `sicoob-seed`, `sicoob-seed-qa`, `sync-quote-bitrix` e
 `trends-insights`.
 
-Todas **fora da allowlist de publicação**, portanto o deploy oficial nunca as
-corrige. `crm-db-bridge` está nessa lista e é exatamente o alvo da PR #311, em
+Quinze delas **fora da allowlist de publicação** daquela data, portanto o
+deploy oficial nunca as corrigia. A exceção é `get-app-logs`, que **hoje consta
+da allowlist** (`.github/workflows/deploy-sicoob-functions.yml:52`) — a lista
+mudou depois da medição, e a leitura de 18/11 abaixo já não acusa divergência
+nela. `crm-db-bridge` continua fora e é exatamente o alvo da PR #311, em
 aberto.
 
 **Ressalva honesta:** é medição de **28/10/2026** e não foi refeita. A medição
@@ -932,4 +935,27 @@ apenas "sem evidência de divergência".
 
 As 100 funções estão `ACTIVE`. Nenhuma escrita foi feita: só `GET` de lista e
 de corpo.
+
+#### 4.1. Causa encontrada e publicação executada em 18/11/2026
+
+`git log -S` sobre as strings ausentes aponta o mesmo commit para
+`expert-chat`, `sicoob-document-ingest`, `connections-auto-test` e
+`crm-db-bridge`: `90a9cb37b` (PR #309, mergeada em 18/11). Ou seja — para as
+duas que estão na allowlist, não era allowlist errada, era **código mergeado e
+nunca publicado**. Pela regra do `AGENTS.md` ("'Pronto' = PR mergeada + deploy
+confirmado"), aquele merge não estava pronto.
+
+Publicação disparada pelo fluxo oficial (`deploy-sicoob-functions.yml`,
+`workflow_dispatch` com `PUBLICAR`, run 44402706738, `success` às 21:34 UTC de
+18/11/2026). Medição refeita logo depois, mesmo método:
+
+| função | antes | depois |
+|---|---|---|
+| `expert-chat` | 38 strings ausentes | **0 de 84** |
+| `sicoob-document-ingest` | 3 ausentes | **0 de 25** |
+| `connections-auto-test` | 2 ausentes | 2 de 20 (fora da allowlist) |
+| `crm-db-bridge` | 2 ausentes | 2 de 76 (fora da allowlist) |
+
+As duas que continuam divergindo não estão na allowlist: `crm-db-bridge`
+depende da decisão da PR #311 e `connections-auto-test` não tem PR.
 
