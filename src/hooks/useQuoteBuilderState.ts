@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
-import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
+import { findMergeableQuoteItemIndex, getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
 import { buildQuoteDraftScope } from "@/lib/quotes/quote-draft-scope";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
