@@ -19,6 +19,7 @@ import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
 import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
+import { buildQuoteDraftScope } from "@/lib/quotes/quote-draft-scope";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
@@ -620,8 +621,13 @@ export function useQuoteBuilderState() {
     });
   }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
+  const draftScopeId = useMemo(
+    () => buildQuoteDraftScope(user?.id, profile?.cooperativa_id, profile?.pa_id),
+    [profile?.cooperativa_id, profile?.pa_id, user?.id],
+  );
+
   return {
-    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
+    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user, draftScopeId,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,
