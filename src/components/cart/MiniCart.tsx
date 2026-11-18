@@ -19,6 +19,7 @@ import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 function MiniCartItem({ item, isUpdating, getQuantity, onQuantityChange, onRemove }: { item: CartItem; isUpdating: boolean; getQuantity: (id: string) => number; onQuantityChange: (id: string, quantity: number) => void; onRemove: (id: string) => void }) {
   const quantity = getQuantity(item.id);
@@ -54,8 +55,8 @@ export function MiniCart() {
   const thresholdProgress = threshold > 0 ? Math.min((subtotal / threshold) * 100, 100) : 0;
   const remaining = Math.max(0, threshold - subtotal);
 
-  const handleReset = () => {
-    if (confirm("Deseja realmente redefinir o carrinho para o padrão (vazio)?")) {
+  const handleReset = async () => {
+    if (await askConfirm({ title: 'Redefinir carrinho?', description: 'O carrinho voltará ao padrão (vazio).', variant: 'destructive', confirmLabel: 'Redefinir' })) {
       clearCart.mutate();
     }
   };

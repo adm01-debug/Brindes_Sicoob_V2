@@ -13,6 +13,7 @@ import { Check, X, Clock, AlertTriangle, Eye, ArrowLeft, ShieldCheck } from "luc
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 const usesDelegatedAuthority = (approval: {
   approve: { source: string };
@@ -59,9 +60,9 @@ export default function GestorApprovalsPage() {
     }
   });
 
-  const handleApprove = (id: string, orderId: string, delegated: boolean) => {
+  const handleApprove = async (id: string, orderId: string, delegated: boolean) => {
     const origin = delegated ? " Você atuará com autoridade temporariamente delegada." : "";
-    if (confirm(`Tem certeza que deseja aprovar este pedido?${origin}`)) {
+    if (await askConfirm({ title: 'Aprovar pedido?', description: `Confirma a aprovação deste pedido?${origin}`, confirmLabel: 'Aprovar' })) {
       approveMutation.mutate({ id, orderId });
     }
   };

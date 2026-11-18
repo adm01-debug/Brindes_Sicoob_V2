@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
 import { type ExternalTechnique, type PrintAreaTechnique, type EnrichedArea, type WizardStep, type DetailFormState, DEFAULT_DETAIL_FORM } from "./types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 function chooseDisplayAreas(
   isEdit: boolean,
@@ -167,8 +168,8 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     resetWizard();
   }, [selectedComponent, selectedLocation, selectedTechnique, detailForm, productId, isEdit, displayAreas.length, createMutation, resetWizard]);
 
-  const handleDeleteArea = useCallback((area: EnrichedArea) => {
-    if (!confirm('Remover esta área de personalização?')) return;
+  const handleDeleteArea = useCallback(async (area: EnrichedArea) => {
+    if (!(await askConfirm({ title: 'Remover área de personalização?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Remover' }))) return;
     if (isEdit && area.id && !area.id.startsWith('local-')) {
       deleteMutation.mutate(area.id);
     } else {

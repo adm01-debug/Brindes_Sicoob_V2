@@ -31,6 +31,7 @@ import { Plus, Pencil, Trash2, Search, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type PaRow = Tables<'postos_atendimento'> & {
   cooperativa: Pick<Tables<'cooperativas'>, 'nome' | 'codigo'> | null;
@@ -183,8 +184,8 @@ function PAList({
                     variant="ghost"
                     size="icon"
                     className="text-destructive"
-                    onClick={() => {
-                      if (confirm('Deseja realmente remover este PA?')) remove(pa.id);
+                    onClick={async () => {
+                      if (await askConfirm({ title: 'Remover PA?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Remover' })) remove(pa.id);
                     }}
                   >
                     <Trash2 className="h-4 w-4" />

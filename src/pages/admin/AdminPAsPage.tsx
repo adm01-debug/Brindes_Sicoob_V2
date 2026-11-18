@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type PaRow = Tables<"postos_atendimento"> & { cooperativas: Pick<Tables<"cooperativas">, "nome" | "codigo"> | null };
 type SingularOption = Pick<Tables<"cooperativas">, "id" | "nome" | "codigo">;
@@ -73,7 +74,7 @@ export default function AdminPAsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este PA?")) return;
+    if (!(await askConfirm({ title: 'Excluir PA?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('postos_atendimento').delete().eq('id', id);
       if (error) throw error;
