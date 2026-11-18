@@ -88,11 +88,23 @@ async function persistAutoSave(
   return requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
 }
 
+/**
+ * @param isReady  false enquanto o kit ainda está sendo carregado do banco.
+ *   Abrir `/montar-kit?kit=ID` monta o hook com o ID já definido e o kit ainda
+ *   vazio, então o baseline nascia vazio; quando a leitura chegava, o estado
+ *   passava a diferir do baseline e o autosave regravava no banco, 5s depois,
+ *   exatamente o que acabara de ler — mexendo em `updated_at` (a lista "Meus
+ *   kits" reordena por ele), acendendo "salvo automaticamente" sem edição e
+ *   abrindo uma janela para sobrescrever o que outra aba tivesse gravado.
+ *   Enquanto `isReady` é false, mudança de estado é chegada de dado lido, não
+ *   edição: vira baseline em vez de gravação.
+ */
 export function useKitAutoSave(
   kitState: KitState,
   kitQuantity: number,
   currentKitId: string | undefined,
   onKitIdCreated?: (id: string) => void,
+  isReady = true,
 ): AutoSaveResult {
   const { user } = useAuth();
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -171,6 +183,11 @@ export function useKitAutoSave(
     const newSnapshot = createSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
 
+    if (!isReady) {
+      persistedSnapshotRef.current = newSnapshot;
+      return;
+    }
+
     if (newSnapshot === persistedSnapshotRef.current) return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -179,7 +196,7 @@ export function useKitAutoSave(
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [kitState, kitQuantity, saveToDb]);
+  }, [kitState, kitQuantity, saveToDb, isReady]);
 
   // Uma troca de usuário/kit invalida timers e respostas pendentes. Gravações
   // já enviadas terminam no registro de origem, mas nunca contaminam o novo
