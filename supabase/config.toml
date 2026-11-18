@@ -80,3 +80,20 @@ verify_jwt = false
 # teste e replay usam JWT de supervisor no próprio handler.
 [functions.webhook-dispatcher]
 verify_jwt = false
+
+# Liveness publico para uptime monitors; sem dependencias internas.
+[functions.health-check]
+verify_jwt = false
+
+# Gateway exige JWT; a autorizacao fina continua no proprio handler.
+[functions.sicoob-artwork-register]
+verify_jwt = true
+
+[functions.sicoob-document-ingest]
+verify_jwt = true
+
+[functions.sicoob-approval-reconciliation]
+verify_jwt = true
+
+[functions.external-connections-sync]
+verify_jwt = true

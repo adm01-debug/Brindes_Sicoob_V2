@@ -35,6 +35,11 @@ type SavedSimulationRawRow = {
 
 const SAVED_SIMULATIONS_QUERY_KEY = "saved-simulations";
 
+/** Teto por página do contrato fechado do CRM (limit > 100 volta 403). */
+const SIMULATOR_CLIENTS_PAGE = 100;
+/** Mesmo teto de clientes de antes da migração para o contrato fechado. */
+const SIMULATOR_CLIENTS_MAX = 500;
+
 function externalNumber(value: unknown, fallback = 0): number {
   return typeof value === "number" ? value : fallback;
 }
@@ -130,15 +135,28 @@ export function useSimulation() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // A rota /simulador não tem guarda de papel, e o `select` genérico do CRM é
+  // negado para vendedor e agente. O contrato fechado impõe tabela, projeção,
+  // `is_customer`, `deleted_at` e a ordem por razao_social; aqui só paginamos
+  // até o mesmo teto de 500 de antes. `ramo` e `nicho` não existem na tabela
+  // `companies` do CRM (src/types/crm.ts:339 já os fixa em null): o campo real
+  // é `ramo_atividade`, que o contrato projeta.
   const { data: clients } = useQuery({
     queryKey: ["simulator-clients"],
-    queryFn: async () => {
-      const { selectCrm } = await import("@/lib/crm-db");
-      const companies = await selectCrm<{ id: string; razao_social?: string; nome_fantasia?: string; ramo?: string; nicho?: string; logo_url?: string }>("companies", {
-        select: "id, razao_social, nome_fantasia, ramo, nicho, logo_url",
-        filters: { deleted_at: null }, orderBy: { column: "razao_social", ascending: true }, limit: 500,
-      });
-      return companies.map(c => ({ id: c.id, name: c.nome_fantasia || c.razao_social || '', ramo: c.ramo, nicho: c.nicho, logo_url: c.logo_url })) as Client[];
+    queryFn: async (): Promise<Client[]> => {
+      const { fetchQuoteDirectoryCompanies } = await import("@/lib/crm-db");
+      const companies = [];
+      for (let offset = 0; companies.length < SIMULATOR_CLIENTS_MAX; offset += SIMULATOR_CLIENTS_PAGE) {
+        const page = await fetchQuoteDirectoryCompanies({ limit: SIMULATOR_CLIENTS_PAGE, offset });
+        companies.push(...page);
+        if (page.length < SIMULATOR_CLIENTS_PAGE) break;
+      }
+      return companies.slice(0, SIMULATOR_CLIENTS_MAX).map(c => ({
+        id: c.id,
+        name: c.nome_fantasia || c.razao_social || '',
+        ramo: c.ramo_atividade ?? undefined,
+        logo_url: c.logo_url ?? undefined,
+      })) as Client[];
     },
   });
 

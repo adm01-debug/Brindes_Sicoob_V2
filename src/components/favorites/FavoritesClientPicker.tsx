@@ -10,8 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { selectCrm, searchCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
+import { fetchQuoteDirectoryCompanies } from "@/lib/crm-db";
 
 interface CompanyItem {
   id: string;
@@ -39,15 +38,13 @@ export function FavoritesClientPicker({ selectedClientId, selectedClientName, on
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
     queryKey: ["fav-client-picker-local"],
     queryFn: async () => {
-      const companies = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, logo_url, ramo_atividade",
-        filters: { deleted_at: null, is_customer: true },
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 100,
-      });
+      // O `select` genérico do CRM é negado para vendedor e agente. O contrato
+      // fechado `quote_directory` já impõe is_customer, deleted_at, a projeção e
+      // a ordenação por razao_social — o cliente só escolhe o tamanho da página.
+      const companies = await fetchQuoteDirectoryCompanies({ limit: 100 });
       return companies.map((c): CompanyItem => ({
         id: c.id,
-        name: getCompanyDisplayName(c),
+        name: c.name,
         ramo: c.ramo_atividade || null,
         logo_url: c.logo_url || null,
       }));
@@ -59,13 +56,10 @@ export function FavoritesClientPicker({ selectedClientId, selectedClientName, on
     queryKey: ["fav-client-picker-search", debounced],
     queryFn: async () => {
       if (debounced.length < 3) return [];
-      const results = await searchCrm<CrmCompany>("companies", "razao_social", debounced, {
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 20,
-      });
+      const results = await fetchQuoteDirectoryCompanies({ term: debounced, limit: 20 });
       return results.map((c): CompanyItem => ({
         id: c.id,
-        name: getCompanyDisplayName(c),
+        name: c.name,
         ramo: c.ramo_atividade || null,
         logo_url: c.logo_url || null,
       }));
