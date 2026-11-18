@@ -170,7 +170,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
-    sha256: "153dd28fc64c460512d31c1cb07d472580e6135b2c3e193be928f2228be783bf",
+    sha256: "103b571803d9893c137d56f78f7b4bbadc360de96e9d2cf1dc63e5cecc4e603e",
   },
   {
     file: "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
