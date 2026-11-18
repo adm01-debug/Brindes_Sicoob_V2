@@ -409,7 +409,8 @@ BEGIN
 
   SELECT to_jsonb(q) INTO v_result
     FROM public.quotes AS q
-   WHERE q.id = v_existing.quote_id;
+   WHERE q.id = v_existing.quote_id
+     AND q.deleted_at IS NULL;
   IF v_result IS NULL THEN
     RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'O orçamento associado à chave de idempotência não está disponível.';
   END IF;

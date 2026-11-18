@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  locationFromStorageUrl,
   readBoundedBody,
   unwrapSuccessfulRpcEnvelope,
   verifyQuoteCatalogItem,
@@ -269,5 +270,17 @@ describe('atestação de preço do orçamento', () => {
         quantity: 2,
       },
     )).toThrow('Preço ou custo do item diverge');
+  });
+
+  it('não trata URL assinada de storage em origem diferente do projeto como privada', () => {
+    const origin = new URL('https://projeto-sicoob.supabase.co').origin;
+    expect(locationFromStorageUrl(
+      'https://atacante.invalid/storage/v1/object/sign/personalization-images/foto.png',
+      origin,
+    )).toBeNull();
+    expect(locationFromStorageUrl(
+      'https://projeto-sicoob.supabase.co/storage/v1/object/sign/personalization-images/foto.png',
+      origin,
+    )).toEqual({ bucket: 'personalization-images', path: 'foto.png' });
   });
 });

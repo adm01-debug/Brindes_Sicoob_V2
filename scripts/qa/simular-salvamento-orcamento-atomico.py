@@ -16,6 +16,7 @@ GOVERNANCE_MIGRATION = ROOT / "supabase/migrations/20261013120512_fix_quote_gove
 MIGRATION = ROOT / "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
 GATE_MIGRATION = ROOT / "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
 IDEMPOTENCY_MIGRATION = ROOT / "supabase/migrations/20260928162048_quote_save_idempotency.sql"
+HARDEN_IDEMPOTENCY_MIGRATION = ROOT / "supabase/migrations/20260928173500_harden_quote_save_idempotency.sql"
 SELLER = "11111111-1111-4111-8111-111111111111"
 ORG = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 OTHER_ORG = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
@@ -199,6 +200,7 @@ try:
     sql(governance_sql[guard_start:guard_end])
     sql(MIGRATION.read_text())
     sql(IDEMPOTENCY_MIGRATION.read_text())
+    sql(HARDEN_IDEMPOTENCY_MIGRATION.read_text())
     sql(GATE_MIGRATION.read_text())
 
     assert scalar(sql("""
@@ -361,6 +363,28 @@ try:
         f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
     )))
     assert replay_out["id"] == idem_quote_id
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "3"
+    hash_len = scalar(sql(
+        "SELECT length(payload_hash) FROM public.quote_save_idempotency "
+        f"WHERE idempotency_key='{idem_key}'::uuid;"))
+    assert hash_len == "64", f"SHA-256 esperado (64), obtido {hash_len}"
+    sha_replay = json.loads(scalar(actor_sql(
+        "SELECT public.get_quote_save_idempotent_replay("
+        f"'{idem_key}'::uuid, $quote${quote_sql}$quote$::jsonb, "
+        f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
+    )))
+    assert sha_replay["id"] == idem_quote_id
+    altered_quote_sql = json.dumps(
+        dict(header, **{"price_attestation_id": att_idem, "notes": "conteúdo alterado pós-gravação"}),
+        ensure_ascii=False, separators=(",", ":"),
+    )
+    sha_change = actor_sql(
+        "SELECT public.get_quote_save_idempotent_replay("
+        f"'{idem_key}'::uuid, $quote${altered_quote_sql}$quote$::jsonb, "
+        f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
+        check=False,
+    )
+    assert sha_change.returncode != 0 and "conteúdo diferente" in sha_change.stderr
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "3"
 
     result.update({

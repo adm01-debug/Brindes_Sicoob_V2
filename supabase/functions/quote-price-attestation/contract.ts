@@ -136,9 +136,23 @@ function parsePrivateStorageReference(value: string): { bucket: string; path: st
   }
 }
 
-function locationFromStorageUrl(value: string): { bucket: string; path: string } | null {
+function trustedStorageOrigin(): string | null {
+  const raw = typeof Deno !== 'undefined' ? Deno.env.get('SUPABASE_URL') : undefined;
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
+export function locationFromStorageUrl(
+  value: string,
+  trustedOrigin: string | null | undefined = trustedStorageOrigin(),
+): { bucket: string; path: string } | null {
   try {
     const parsed = new URL(value);
+    if (parsed.origin !== trustedOrigin) return null;
     const pathname = parsed.pathname;
     if (!/^\/storage\/v1\/object\/(?:sign|public|authenticated)\//.test(pathname)) return null;
     for (const bucket of PRIVATE_STORAGE_BUCKETS) {
@@ -155,7 +169,7 @@ function locationFromStorageUrl(value: string): { bucket: string; path: string }
 }
 
 function privateStorageLocation(value: string): { bucket: string; path: string } | null {
-  return parsePrivateStorageReference(value) ?? locationFromStorageUrl(value);
+  return parsePrivateStorageReference(value) ?? locationFromStorageUrl(value, trustedStorageOrigin());
 }
 
 function sameImageIdentity(left: string, right: string): boolean {
