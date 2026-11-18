@@ -144,6 +144,23 @@ existem na `main`**. Cruzando os 138 com o ledger inteiro, 119 já estavam citad
 
 ### 13 arquivos de teste — executados contra a `main`, 18/11/2026
 
+**Andamento (18/11/2026, 23h):** 2 dos 13 já foram recuperados **com a regra que
+eles cobram**, não só copiados:
+
+| fatia | PR | o que entrou |
+|---|---|---|
+| 1 | [#346](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/346) | `ClientOverview360.availability` + `client-vs-industry-origem`. `useClientBI` parava de devolver `MOCK_CLIENT_STATS` para qualquer cliente sem pedido (LTV de outra empresa nos números grandes); `useClientVsIndustry` ganhou `hasClientData`/`isClientDataUnavailable` e `isMock` deixou de ser `true` quando a amostra do ramo não fechava. Absorveu a PR #326 |
+| 2 | [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `ClientHealthHero.availability`. `useClientSeasonality` parava de devolver `getMockSeasonality()` com menos de 3 meses de histórico (picos fictícios carimbados "Dados reais"); `useClientHealthScore` somava pesos fixos sobre fallbacks inventados (10 pedidos, R$ 2.500, potencial de R$ 30.000) e agora normaliza os pesos entre as fontes confiáveis |
+
+Em ambas, duas coisas da branch de origem foram **deliberadamente não trazidas**,
+porque a `main` está mais correta: a troca de `fetchIndustryPeerIds` por
+`selectCrmStrict` genérico (negado para vendedor e agente pela política do portal)
+e a remoção do gráfico de forecast do mapa de calor. É por isso que a recuperação
+é feita por fatia, com teste, e não por cópia da árvore.
+
+Restam **11**, listados abaixo.
+
+
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
 1 passa**. Não entram na `main` como estão (CI vermelha); são **mapa de lacuna**, igual
 aos 52 da `pr/119`, e cada um nomeia uma capacidade que falta:
