@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fcb4b9a6e48cf19874f8f29404ee19e1760e4aac` (2026-11-18T19:54:54Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `8b0910c8cee9aedde902e975155f9dc9b1ba7b47` (2026-11-18T20:32:10Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4335 |
 | arquivos_codigo | 3044 |
-| linhas_codigo | 480069 |
+| linhas_codigo | 480054 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -468,14 +468,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28361 nós · 52475 arestas · 2014 comunidades · grafo do commit `fcb4b9a6`
+- 28361 nós · 52475 arestas · 2014 comunidades · grafo do commit `8b0910c8`
 - comunidades maiores: ref_hooks (475), ref_components (429), ref_integrations (366), ref_lib (263), ref_node_fs (186), react-router-dom (176), ref_contexts (175), sonner (170), ai-usage.ts (156), ref_stores (152), react (151), date-fns (150)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (91)
-- docs/correcoes-validacao-2026-09-14.md (90)
+- docs/plano-melhorias-50-etapas.md (90)
+- docs/correcoes-validacao-2026-09-14.md (89)
 - package.json (21)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `8b0910c` chore(catálogo): remove o selo "dados ilustrativos" que nunca podia aparecer (#321)
 - 2026-11-18 `fcb4b9a` chore(deps): remove chave autoprefixer duplicada no package.json (#320)
 - 2026-11-18 `f2db0f8` fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)
 - 2026-11-18 `d8d7dcd` fix(bi): caminho de dado real para de devolver categoria fictícia (#316)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `4b45855` infra: contar na cota de IA os streams interrompidos com consumo real (#299)
 - 2026-11-18 `6e81460` fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)
 - 2026-11-18 `5ecb93f` fix: isola rascunho de orcamento por cooperativa e PA (#304)
-- 2026-11-17 `c2b0099` fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

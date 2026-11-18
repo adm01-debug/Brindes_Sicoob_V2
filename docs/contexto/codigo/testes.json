@@ -3694,7 +3694,7 @@
   {
    "arquivo": "tests/hooks/intelligence-badges.test.ts",
    "tipo": "unit",
-   "linhas": 172,
+   "linhas": 170,
    "testa": [
     "src/hooks/useProductIntelligenceBadges.ts",
     "src/hooks/useStockHistory.ts"

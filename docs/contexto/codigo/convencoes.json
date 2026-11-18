@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)",
    "chore(deps): remove chave autoprefixer duplicada no package.json (#320)",
    "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
    "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)",
-   "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)",
-   "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)"
+   "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

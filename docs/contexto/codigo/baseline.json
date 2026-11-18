@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "fcb4b9a6e48cf19874f8f29404ee19e1760e4aac",
+  "commit": "8b0910c8cee9aedde902e975155f9dc9b1ba7b47",
   "branch": "main",
-  "data_commit": "2026-11-18T19:54:54Z",
+  "data_commit": "2026-11-18T20:32:10Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "8b0910c",
+    "data": "2026-11-18",
+    "assunto": "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)"
+   },
    {
     "sha": "fcb4b9a",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "223fcf7",
     "data": "2026-11-14",
     "assunto": "chore: contexto agendado de 10 min para 1x/hora (#280)"
-   },
-   {
-    "sha": "6b52c0e",
-    "data": "2026-11-13",
-    "assunto": "fix(db): corrige contadores do contrato para split public/protected real (57/165) (#277)"
    }
   ],
-  "arquivos_mudados_7d": 355,
+  "arquivos_mudados_7d": 348,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 91
+    "mudancas": 90
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 90
+    "mudancas": 89
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 133
+    "commits": 134
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4335,
   "arquivos_codigo": 3044,
-  "linhas_codigo": 480069,
+  "linhas_codigo": 480054,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1129,
-   "linhas": 165454
+   "linhas": 165447
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 311,
-   "linhas": 45965
+   "linhas": 45961
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50897
+   "linhas": 50895
   },
   "src/routes": {
    "arquivos": 9,
@@ -916,7 +916,7 @@
   },
   "tests/hooks": {
    "arquivos": 126,
-   "linhas": 13399
+   "linhas": 13397
   },
   "tests/integration": {
    "arquivos": 4,

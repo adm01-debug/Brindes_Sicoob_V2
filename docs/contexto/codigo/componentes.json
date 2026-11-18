@@ -5504,7 +5504,7 @@
     "IntelligenceBadges"
    ],
    "export_default": null,
-   "linhas": 132,
+   "linhas": 125,
    "dominio": "components/common",
    "hooks_locais": [],
    "tabelas": [],
@@ -17721,7 +17721,7 @@
     "ProductDetail"
    ],
    "export_default": "ProductDetail",
-   "linhas": 420,
+   "linhas": 418,
    "dominio": "pages",
    "hooks_locais": [
     "useFavoritesStore",

@@ -7006,7 +7006,7 @@
    "hooks_exportados": [
     "useProductIntelligenceBadges"
    ],
-   "linhas": 176,
+   "linhas": 172,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
