@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type SingularRow = Tables<"cooperativas"> & { sicoob_centrais: Pick<Tables<"sicoob_centrais">, "name"> | null };
 type CentralOption = Pick<Tables<"sicoob_centrais">, "id" | "name">;
@@ -71,7 +72,7 @@ export default function AdminSingularesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta singular? Isso pode afetar usuários vinculados.")) return;
+    if (!(await askConfirm({ title: 'Excluir singular?', description: 'Isso pode afetar usuários vinculados. Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('cooperativas').delete().eq('id', id);
       if (error) throw error;

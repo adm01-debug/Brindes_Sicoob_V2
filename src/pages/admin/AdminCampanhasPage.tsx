@@ -18,6 +18,7 @@ import { format, startOfDay, endOfDay } from "date-fns";
 import { logAdminAction } from "@/utils/adminAudit";
 import { campaignRowsToCsv } from "@/utils/campaignExport";
 import type { Tables } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 // XLSX will be loaded dynamically when needed
 
 type Campaign = Tables<"campaigns">;
@@ -138,7 +139,7 @@ export default function AdminCampanhasPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta campanha?")) return;
+    if (!(await askConfirm({ title: 'Excluir campanha?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;

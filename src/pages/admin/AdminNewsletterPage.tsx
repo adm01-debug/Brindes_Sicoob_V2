@@ -11,6 +11,7 @@ import { ImportExportManager } from "@/components/admin/common/ImportExportManag
 // XLSX will be loaded dynamically when needed
 import { logAdminAction } from "@/utils/adminAudit";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type NewsletterSubscriber = Tables<"newsletter_subscribers">;
 type NewsletterImportRow = Record<string, unknown>;
@@ -47,7 +48,7 @@ export default function AdminNewsletterPage() {
   useEffect(() => { fetchData(); }, []);
 
   const handleDelete = async (id: string, email: string) => {
-    if (!confirm(`Tem certeza que deseja excluir o assinante ${email}?`)) return;
+    if (!(await askConfirm({ title: 'Excluir assinante?', description: `Você está prestes a excluir ${email}. Esta ação não pode ser desfeita.`, variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('newsletter_subscribers').delete().eq('id', id);
       if (error) throw error;

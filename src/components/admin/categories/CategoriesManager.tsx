@@ -19,6 +19,7 @@ import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/admin/useAdminPermissions";
 import { getErrorMessage } from "@/components/admin/utils/errors";
 import type { Json } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 interface Category {
   id: string;
@@ -140,7 +141,7 @@ export function CategoriesManager() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Tem certeza que deseja excluir a categoria "${name}"?`)) return;
+    if (!(await askConfirm({ title: 'Excluir categoria?', description: `Você está prestes a excluir "${name}". Esta ação não pode ser desfeita.`, variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase
         .from('product_categories')
