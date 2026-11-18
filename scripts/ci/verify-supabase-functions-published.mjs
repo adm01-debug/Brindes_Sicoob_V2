@@ -15,6 +15,7 @@ export const requiredFunctions = [
   'get-visitor-info',
   'secure-upload',
   'auth-integrity-check',
+  'crm-db-bridge',
 ];
 
 function getFunctions(payload, label) {

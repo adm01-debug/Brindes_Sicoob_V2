@@ -79,7 +79,7 @@ describe('verifyPublishedFunctions', () => {
   });
 
   it('cobre as 7 canônicas e as 6 endurecidas (total 13)', () => {
-    expect(requiredFunctions).toHaveLength(13);
+    expect(requiredFunctions).toHaveLength(14);
     for (const slug of [
       'bi-copilot',
       'comparison-ai-advisor',

@@ -52,7 +52,8 @@ jobs:
             get-app-logs \
             get-visitor-info \
             secure-upload \
-            auth-integrity-check
+            auth-integrity-check \
+            crm-db-bridge
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
