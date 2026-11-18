@@ -54,7 +54,6 @@ describe('buildBadgeResult', () => {
       badges: [],
       turnoverScore: null,
       demandLevel: null,
-      isDemo: false,
     });
   });
 
@@ -73,7 +72,6 @@ describe('buildBadgeResult', () => {
     expect(result.badges.map(({ type }) => type)).toEqual(['featured', 'new-arrival', 'on-sale']);
     expect(result.turnoverScore).toBeNull();
     expect(result.demandLevel).toBeNull();
-    expect(result.isDemo).toBe(false);
   });
 
   it('derives market badges and metrics from real intelligence and velocity', () => {

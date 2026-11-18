@@ -29,8 +29,6 @@ export interface CatalogFlags {
   featured?: boolean;
   newArrival?: boolean;
   onSale?: boolean;
-  lowStock?: boolean; // stockStatus === "low-stock"
-  stock?: number;
 }
 
 export interface ProductIntelligenceBadgesResult {
@@ -38,7 +36,6 @@ export interface ProductIntelligenceBadgesResult {
   turnoverScore: number | null;
   demandLevel: 'muito-alta' | 'alta' | 'moderada' | 'baixa' | null;
   isLoading: boolean;
-  isDemo: boolean;
 }
 
 function catalogBadges(flags: CatalogFlags | undefined) {
@@ -147,7 +144,7 @@ export function buildBadgeResult(
   const [catalogFlags, isLoading] = state;
   const badges = catalogBadges(catalogFlags);
   if (!intelligence) {
-    return { badges, turnoverScore: null, demandLevel: null, isLoading, isDemo: false };
+    return { badges, turnoverScore: null, demandLevel: null, isLoading };
   }
   const velocityPeak = bestVelocity(velocity ?? []);
   addMarketBadges(badges, intelligence, velocityPeak);
@@ -157,7 +154,6 @@ export function buildBadgeResult(
     turnoverScore: finiteTurnoverScore(intelligence.turnover_score),
     demandLevel: demandLevel(avgDaily),
     isLoading,
-    isDemo: false,
   };
 }
 
