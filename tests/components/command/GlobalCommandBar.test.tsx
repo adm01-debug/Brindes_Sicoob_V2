@@ -101,6 +101,6 @@ describe("GlobalCommandBar", () => {
 
     fireEvent.keyDown(document.body, { key: "k", ctrlKey: true });
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeTruthy();
   });
 });
