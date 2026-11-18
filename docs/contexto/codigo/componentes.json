@@ -14120,10 +14120,11 @@
     "GestorComprasMetrics"
    ],
    "export_default": null,
-   "linhas": 116,
+   "linhas": 161,
    "dominio": "components/sicoob",
    "hooks_locais": [
-    "useManagerDashboardStats"
+    "useManagerDashboardStats",
+    "usePurchasingMetrics"
    ],
    "tabelas": [],
    "edges": [],

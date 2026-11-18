@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "57346a642264ff9562f62938c2b3dca283804703",
+  "sha": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 21:57 UTC",
-  "files_total": 4341,
-  "code_files": 3703,
-  "code_lines": 541353
+  "generated_at": "2026-11-18 22:16 UTC",
+  "files_total": 4344,
+  "code_files": 3706,
+  "code_lines": 541957
  },
  "version": "1.3.2",
- "facts_hash": "a441c21a8d95eeec",
+ "facts_hash": "c7545abb460a1c52",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1438,
+   ".ts": 1441,
    ".tsx": 1408,
    ".sql": 673,
    ".mjs": 134,
@@ -54898,6 +54898,7 @@
      "seller_cart_items",
      "seller_carts",
      "sicoob_approval_requests",
+     "sicoob_order_history",
      "sicoob_order_invoices",
      "sicoob_order_item_logs",
      "sicoob_order_items",
@@ -54930,7 +54931,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 139
+    "deps_count": 141
    },
    {
     "path": "",
@@ -56209,11 +56210,12 @@
      "pa_budgets",
      "postos_atendimento",
      "sicoob_approval_requests",
+     "sicoob_order_history",
      "sicoob_orders"
     ],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 10
+    "deps_count": 14
    },
    {
     "path": "",
@@ -56251,6 +56253,7 @@
      "seller_cart_items",
      "seller_carts",
      "sicoob_approval_requests",
+     "sicoob_order_history",
      "sicoob_order_invoices",
      "sicoob_order_item_logs",
      "sicoob_order_items",
@@ -56281,7 +56284,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 126
+    "deps_count": 128
    },
    {
     "path": "",
@@ -61257,6 +61260,10 @@
     "file": "src/hooks/sicoob/usePaDashboardStats.ts"
    },
    {
+    "name": "usePurchasingMetrics",
+    "file": "src/hooks/sicoob/usePurchasingMetrics.ts"
+   },
+   {
     "name": "useSellerDashboardStats",
     "file": "src/hooks/sicoob/useSellerDashboardStats.ts"
    },
@@ -63440,7 +63447,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 165580,
+   "lines": 165625,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -63772,8 +63779,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 312,
-   "lines": 46014,
+   "files": 313,
+   "lines": 46061,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64050,8 +64057,8 @@
   },
   {
    "module": "src/lib",
-   "files": 165,
-   "lines": 22354,
+   "files": 166,
+   "lines": 22550,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64488,7 +64495,7 @@
   {
    "module": "src/services",
    "files": 23,
-   "lines": 3243,
+   "lines": 3301,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -64535,7 +64542,7 @@
     "documentIngestService.ts: SicoobDocumentPurpose, sicoobDocumentIngestService",
     "fulfillmentService.ts: UpdateSicoobShipmentInput, sicoobFulfillmentService",
     "logisticsReportService.ts: SicoobLogisticsStatus, SicoobLogisticsTracking, listSicoobLogisticsTracking",
-    "managerStatsService.ts: GestorOrderSummary, GestorStats, getCooperativeDashboardStats",
+    "managerStatsService.ts: GestorOrderSummary, GestorStats, getCooperativeDashboardStats, loadPurchasingOrders, loadManagerApprovalHistory",
     "orderService.ts: sicoobOrderService",
     "reorderIdempotency.ts: beginReorderIntent, completeReorderIntent",
     "statsService.ts: sicoobStatsService",
@@ -65212,8 +65219,8 @@
   },
   {
    "module": "tests",
-   "files": 582,
-   "lines": 80666,
+   "files": 583,
+   "lines": 80924,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67327,7 +67334,8 @@
    "sicoob_order_history": {
     "select": [
      "src/hooks/useSicoobOrderHistory.ts",
-     "src/pages/sicoob/reports/SicoobKpiPage.tsx"
+     "src/pages/sicoob/reports/SicoobKpiPage.tsx",
+     "src/services/sicoob/managerStatsService.ts"
     ],
     "ref": [
      "src/services/sicoob/statsService.ts"
@@ -93422,6 +93430,11 @@
     "value": "90"
    },
    {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "name": "DIA_EM_MS",
+    "value": "24"
+   },
+   {
     "file": "src/lib/personalization/adapters/schema-detection.ts",
     "name": "MAX_RECENT",
     "value": "20"
@@ -100240,6 +100253,18 @@
     "kind": "escreve"
    },
    {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "field": "new_status",
+    "value": "waiting_approval",
+    "kind": "compara"
+   },
+   {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "field": "status",
+    "value": "cancelled",
+    "kind": "compara"
+   },
+   {
     "file": "src/lib/rbac/route-matrix.ts",
     "field": "role",
     "value": "public",
@@ -102151,6 +102176,12 @@
     "file": "src/services/sicoob/managerStatsService.ts",
     "field": "status",
     "value": "pending",
+    "kind": "filtra"
+   },
+   {
+    "file": "src/services/sicoob/managerStatsService.ts",
+    "field": "status",
+    "value": "waiting_approval",
     "kind": "filtra"
    },
    {
@@ -107502,6 +107533,18 @@
     "body": "if (isDevOnlyPath(pathname)) return opts.isDev; if (isAdminOnlyPath(pathname)) return opts.isAdmin || opts.isDev; return true;"
    },
    {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "name": "calculateApprovalSla",
+    "params": "monthlyResult: OrderListResult, count: number | null, decisions: ReadonlyMap<string, ApprovalDecision> | undefined,",
+    "body": "if (!hasCompleteResult(monthlyResult, count) || !decisions) return null; const aprovados = monthlyResult.data.filter((order) => APPROVED_STATUSES.has(order.status)); if (aprovados.length === 0) return null; const pares = aprovados.map((order) => decisions.get(order.id)); // Faltou carimbo de algum aprovado: a amostra não é o universo, não estimamos. if (pares.some((par) => !par)) return null; const dentroDoSla = pares.filter( (par) => par && par.decidedAtMs - par.submittedAtMs <= DIA_EM_MS, ).le …"
+   },
+   {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "name": "calculatePurchasingMetrics",
+    "params": "pendingResult: OrderListResult, monthlyResult: OrderListResult, decisions?: ReadonlyMap<string, ApprovalDecision>,",
+    "body": "const pendingCount = resultCount(pendingResult); const monthlyCount = resultCount(monthlyResult); return { pendingCount, slaPercent: calculateApprovalSla(monthlyResult, monthlyCount, decisions), monthlyTotal: sumCompleteOrders( monthlyResult, monthlyCount, (order) => order.status !== 'cancelled', ), approvedTotal: sumCompleteOrders(monthlyResult, monthlyCount, (order) => APPROVED_STATUSES.has(order.status), ), };"
+   },
+   {
     "file": "src/lib/personalization/calculators.ts",
     "name": "calculatePrice",
     "params": "table: PriceTableInput, params: PriceCalculationParams",
@@ -109722,6 +109765,10 @@
     "line": "await new Promise(resolve => setTimeout(resolve, 1000 * consecutiveErrors));"
    },
    {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "line": "const DIA_EM_MS = 24 * 60 * 60 * 1000;"
+   },
+   {
     "file": "src/pages/ProductDetail.tsx",
     "line": "staleTime: 5 * 60 * 1000,"
    },
@@ -110678,6 +110725,14 @@
    {
     "file": "src/lib/kit-builder/volume-calculator.ts",
     "line": "const VOLUME_WARNING_THRESHOLD = 0.85; // 85%"
+   },
+   {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "line": "* `sicoob_order_history`). Contar pedido ainda pendente daria 100% num mês"
+   },
+   {
+    "file": "src/lib/orders/purchasing-sla.ts",
+    "line": "* mostrar 100% num mês em que ninguém aprovou nada — bastava a fila ser nova."
    },
    {
     "file": "src/lib/personalization/validators.ts",
@@ -130158,6 +130213,66 @@
     "name": "não solicita a coluna legada dimensions"
    },
    {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "métricas canônicas da gestão de compras"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "calcula pendências, SLA e totais a partir dos pedidos visíveis"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "fila recém-criada e nenhuma aprovação não viram 100%"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "não apresenta agregado parcial quando a consulta trunca"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "aprovado sem carimbo de envio zera o SLA em vez de estimar"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "cancelado sai do total do mês e não conta como aprovado"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "mapApprovalDecisions"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "usa a entrada na fila imediatamente anterior à aprovação"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "confirmação na mesma transação (%s) vira decisão em zero hora"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "pedido ainda na fila não entra como decidido"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "aprovação sem entrada na fila registrada é descartada, não estimada"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "descarta evento com data inválida"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "metricLabel"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "mostra travessão quando não há universo completo"
+   },
+   {
+    "file": "tests/lib/purchasing-sla.test.ts",
+    "name": "formata o número quando ele é confiável"
+   },
+   {
     "file": "tests/lib/query-config-extended.test.ts",
     "name": "CACHE_TIMES constants"
    },
@@ -132368,6 +132483,18 @@
    {
     "file": "tests/pages/GestorCompras.metrics.test.tsx",
     "name": "perfil sem cooperativa não dispara consulta nenhuma"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "mostra travessão no SLA e no total do mês quando a consulta trunca"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "mostra o SLA medido quando o universo está completo"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "consulta só a cooperativa do perfil"
    },
    {
     "file": "tests/pages/GestorCompras.test.tsx",
@@ -155021,6 +155148,14 @@
    },
    {
     "file": "src/services/sicoob/managerStatsService.ts",
+    "limit": "0"
+   },
+   {
+    "file": "src/services/sicoob/managerStatsService.ts",
+    "limit": "10"
+   },
+   {
+    "file": "src/services/sicoob/managerStatsService.ts",
     "limit": "5"
    },
    {
@@ -157186,6 +157321,7 @@
       "compara:src/components/settings/NotificationOmnichannelPanel.tsx",
       "compara:src/components/sicoob/orders/OrderPaymentsTab.tsx",
       "compara:src/lib/auth/invoke-full-scope.ts",
+      "compara:src/lib/orders/purchasing-sla.ts",
       "compara:src/pages/admin/DevChallengeExamplesPage.tsx",
       "escreve:src/hooks/useNotificationOmnichannel.ts",
       "escreve:src/lib/auth/invoke-full-scope.ts",
@@ -157697,6 +157833,7 @@
      "waiting_approval": [
       "compara:src/pages/sicoob/orders/OrderDetailPage.tsx",
       "escreve:supabase/functions/sicoob-seed-qa/index.ts",
+      "filtra:src/services/sicoob/managerStatsService.ts",
       "filtra:src/services/sicoob/statsService.ts"
      ],
      "slow": [
@@ -157984,6 +158121,9 @@
     "new_status": {
      "string": [
       "compara:src/components/orders/OrderAuditTimeline.tsx"
+     ],
+     "waiting_approval": [
+      "compara:src/lib/orders/purchasing-sla.ts"
      ],
      "completed": [
       "filtra:src/pages/sicoob/reports/SicoobKpiPage.tsx"
@@ -197319,7 +197459,7 @@
   },
   "src/components/sicoob/GestorComprasMetrics.tsx": {
    "path": "src/components/sicoob/GestorComprasMetrics.tsx",
-   "lines": 116,
+   "lines": 161,
    "exports": [
     "function GestorComprasMetrics"
    ],
@@ -208551,6 +208691,17 @@
     "usePaDashboardStats"
    ]
   },
+  "src/hooks/sicoob/usePurchasingMetrics.ts": {
+   "path": "src/hooks/sicoob/usePurchasingMetrics.ts",
+   "lines": 47,
+   "exports": [
+    "function usePurchasingMetrics"
+   ],
+   "doc": "Métricas da fila de compras: pendências, SLA de 24h e totais do mês. O SLA depende do histórico de aprovação dos pedidos pendentes, então a consulta é encadeada: primeiro os pedidos, depois o histórico deles.",
+   "hooks": [
+    "usePurchasingMetrics"
+   ]
+  },
   "src/hooks/sicoob/useSellerDashboardStats.ts": {
    "path": "src/hooks/sicoob/useSellerDashboardStats.ts",
    "lines": 17,
@@ -212573,6 +212724,57 @@
      "params": "pathname: string, opts: { isDev: boolean; isAdmin: boolean }",
      "body": "if (isDevOnlyPath(pathname)) return opts.isDev; if (isAdminOnlyPath(pathname)) return opts.isAdmin || opts.isDev; return true;"
     }
+   ]
+  },
+  "src/lib/orders/purchasing-sla.ts": {
+   "path": "src/lib/orders/purchasing-sla.ts",
+   "lines": 196,
+   "exports": [
+    "interface SicoobOrderHistoryStatusEvent",
+    "interface PurchasingOrder",
+    "type OrderListResult",
+    "interface PurchasingMetrics",
+    "interface ApprovalDecision",
+    "function mapApprovalDecisions",
+    "function calculatePurchasingMetrics",
+    "function metricLabel"
+   ],
+   "params": [
+    {
+     "name": "DIA_EM_MS",
+     "value": "24"
+    }
+   ],
+   "status_values": [
+    {
+     "field": "new_status",
+     "value": "waiting_approval",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "cancelled",
+     "kind": "compara"
+    }
+   ],
+   "calc_fns": [
+    {
+     "name": "calculateApprovalSla",
+     "params": "monthlyResult: OrderListResult, count: number | null, decisions: ReadonlyMap<string, ApprovalDecision> | undefined,",
+     "body": "if (!hasCompleteResult(monthlyResult, count) || !decisions) return null; const aprovados = monthlyResult.data.filter((order) => APPROVED_STATUSES.has(order.status)); if (aprovados.length === 0) return null; const pares = aprovados.map((order) => decisions.get(order.id)); // Faltou carimbo de algum aprovado: a amostra não é o universo, não estimamos. if (pares.some((par) => !par)) return null; const dentroDoSla = pares.filter( (par) => par && par.decidedAtMs - par.submittedAtMs <= DIA_EM_MS, ).le …"
+    },
+    {
+     "name": "calculatePurchasingMetrics",
+     "params": "pendingResult: OrderListResult, monthlyResult: OrderListResult, decisions?: ReadonlyMap<string, ApprovalDecision>,",
+     "body": "const pendingCount = resultCount(pendingResult); const monthlyCount = resultCount(monthlyResult); return { pendingCount, slaPercent: calculateApprovalSla(monthlyResult, monthlyCount, decisions), monthlyTotal: sumCompleteOrders( monthlyResult, monthlyCount, (order) => order.status !== 'cancelled', ), approvedTotal: sumCompleteOrders(monthlyResult, monthlyCount, (order) => APPROVED_STATUSES.has(order.status), ), };"
+    }
+   ],
+   "temporal": [
+    "const DIA_EM_MS = 24 * 60 * 60 * 1000;"
+   ],
+   "percents": [
+    "* `sicoob_order_history`). Contar pedido ainda pendente daria 100% num mês",
+    "* mostrar 100% num mês em que ninguém aprovou nada — bastava a fila ser nova."
    ]
   },
   "src/lib/pdf/auto-table.ts": {
@@ -221549,11 +221751,13 @@
   },
   "src/services/sicoob/managerStatsService.ts": {
    "path": "src/services/sicoob/managerStatsService.ts",
-   "lines": 102,
+   "lines": 160,
    "exports": [
     "interface GestorOrderSummary",
     "interface GestorStats",
-    "function getCooperativeDashboardStats"
+    "function getCooperativeDashboardStats",
+    "function loadPurchasingOrders",
+    "function loadManagerApprovalHistory"
    ],
    "tables": [
     {
@@ -221571,6 +221775,14 @@
     {
      "table": "sicoob_approval_requests",
      "op": "select"
+    },
+    {
+     "table": "sicoob_orders",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_order_history",
+     "op": "select"
     }
    ],
    "table_cols": {
@@ -221583,6 +221795,7 @@
     ],
     "sicoob_orders": [
      "cooperative_id",
+     "created_at",
      "id",
      "status",
      "total_amount"
@@ -221594,6 +221807,11 @@
     "sicoob_approval_requests": [
      "id",
      "status"
+    ],
+    "sicoob_order_history": [
+     "created_at",
+     "new_status",
+     "order_id"
     ]
    },
    "status_values": [
@@ -221601,10 +221819,17 @@
      "field": "status",
      "value": "pending",
      "kind": "filtra"
+    },
+    {
+     "field": "status",
+     "value": "waiting_approval",
+     "kind": "filtra"
     }
    ],
    "doc": "Indicadores da Singular (gestor): PAs vinculados, aprovações pendentes, verba da competência corrente e os últimos pedidos. Nasceu inline em `src/pages/sicoob/GestorDashboardPage.tsx`, onde só o painel de indicadores conseguia usá-lo. A tela de compras precisa dos mesmos números e não tinha como lê- …",
    "pagination": [
+    "0",
+    "10",
     "5"
    ]
   },
@@ -244325,6 +244550,29 @@
     "não solicita a coluna legada dimensions"
    ]
   },
+  "tests/lib/purchasing-sla.test.ts": {
+   "path": "tests/lib/purchasing-sla.test.ts",
+   "lines": 189,
+   "is_test": true,
+   "doc": "Regras do SLA de 24h e dos totais do mês da gestão de compras. Recupera os cenários da PR #119. O que eles travam não é a aritmética: é a recusa em apresentar número parcial ou estimado como se fosse medido — e, depois da revisão, a recusa em chamar de \"aprovado em 24h\" o pedido que ninguém aprovou.",
+   "tests": [
+    "métricas canônicas da gestão de compras",
+    "calcula pendências, SLA e totais a partir dos pedidos visíveis",
+    "fila recém-criada e nenhuma aprovação não viram 100%",
+    "não apresenta agregado parcial quando a consulta trunca",
+    "aprovado sem carimbo de envio zera o SLA em vez de estimar",
+    "cancelado sai do total do mês e não conta como aprovado",
+    "mapApprovalDecisions",
+    "usa a entrada na fila imediatamente anterior à aprovação",
+    "confirmação na mesma transação (%s) vira decisão em zero hora",
+    "pedido ainda na fila não entra como decidido",
+    "aprovação sem entrada na fila registrada é descartada, não estimada",
+    "descarta evento com data inválida",
+    "metricLabel",
+    "mostra travessão quando não há universo completo",
+    "formata o número quando ele é confiável"
+   ]
+  },
   "tests/lib/query-config-extended.test.ts": {
    "path": "tests/lib/query-config-extended.test.ts",
    "lines": 84,
@@ -245340,7 +245588,7 @@
   },
   "tests/pages/GestorCompras.metrics.test.tsx": {
    "path": "tests/pages/GestorCompras.metrics.test.tsx",
-   "lines": 83,
+   "lines": 152,
    "is_test": true,
    "errors": [
     ")).toBeTruthy();\n    expect(screen.getByText("
@@ -245351,7 +245599,10 @@
     "mostra os números que vêm do serviço, e nenhum valor fictício",
     "falha na consulta avisa e não inventa estimativa",
     "cooperativa sem verba cadastrada diz isso, em vez de mostrar zero",
-    "perfil sem cooperativa não dispara consulta nenhuma"
+    "perfil sem cooperativa não dispara consulta nenhuma",
+    "mostra travessão no SLA e no total do mês quando a consulta trunca",
+    "mostra o SLA medido quando o universo está completo",
+    "consulta só a cooperativa do perfil"
    ]
   },
   "tests/pages/GestorCompras.test.tsx": {
@@ -248349,10 +248600,24 @@
   }
  },
  "git": {
-  "sha": "57346a642264ff9562f62938c2b3dca283804703",
+  "sha": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "06aa890",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)",
+    "files": [
+     "src/components/sicoob/GestorComprasMetrics.tsx",
+     "src/hooks/sicoob/usePurchasingMetrics.ts",
+     "src/lib/orders/purchasing-sla.ts",
+     "src/services/sicoob/managerStatsService.ts",
+     "tests/lib/purchasing-sla.test.ts",
+     "tests/pages/GestorCompras.metrics.test.tsx"
+    ]
+   },
    {
     "sha": "57346a6",
     "date": "2026-11-18",
@@ -248855,27 +249120,24 @@
     "files": [
      "scripts/db/apply-sicoob-migrations.mjs"
     ]
-   },
-   {
-    "sha": "03d9092",
-    "date": "2026-11-13",
-    "author": "adm01-debug",
-    "subject": "ci(workflows): pular jobs em PRs do Copilot (#276)",
-    "files": [
-     ".github/workflows/bundle-check.yml",
-     ".github/workflows/ci.yml",
-     ".github/workflows/codeql.yml",
-     ".github/workflows/e2e.yml",
-     ".github/workflows/lighthouse.yml",
-     ".github/workflows/security.yml",
-     ".github/workflows/sicoob-ci.yml"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
+   ],
+   [
+    "src/components/sicoob/GestorComprasMetrics.tsx",
+    2
+   ],
+   [
+    "src/services/sicoob/managerStatsService.ts",
+    2
+   ],
+   [
+    "tests/pages/GestorCompras.metrics.test.tsx",
+    2
    ],
    [
     "src/hooks/useKitAutoSave.ts",
@@ -248914,8 +249176,16 @@
     2
    ],
    [
-    ".github/workflows/security.yml",
-    2
+    "src/hooks/sicoob/usePurchasingMetrics.ts",
+    1
+   ],
+   [
+    "src/lib/orders/purchasing-sla.ts",
+    1
+   ],
+   [
+    "tests/lib/purchasing-sla.test.ts",
+    1
    ],
    [
     "src/pages/KitBuilderPage.tsx",
@@ -248930,27 +249200,7 @@
     1
    ],
    [
-    "src/components/sicoob/GestorComprasMetrics.tsx",
-    1
-   ],
-   [
     "src/hooks/sicoob/useManagerDashboardStats.ts",
-    1
-   ],
-   [
-    "src/pages/GestorCompras.tsx",
-    1
-   ],
-   [
-    "src/pages/sicoob/GestorDashboardPage.tsx",
-    1
-   ],
-   [
-    "src/services/sicoob/managerStatsService.ts",
-    1
-   ],
-   [
-    "tests/pages/GestorCompras.metrics.test.tsx",
     1
    ]
   ]

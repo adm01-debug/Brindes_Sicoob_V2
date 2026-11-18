@@ -7263,7 +7263,9 @@
    "src/components/ui/button.tsx",
    "src/components/ui/skeleton.tsx",
    "src/hooks/sicoob/useManagerDashboardStats.ts",
-   "src/lib/format.ts"
+   "src/hooks/sicoob/usePurchasingMetrics.ts",
+   "src/lib/format.ts",
+   "src/lib/orders/purchasing-sla.ts"
   ],
   "src/components/sicoob/HierarchyPath.tsx": [
    "src/integrations/supabase/client.ts",
@@ -8251,6 +8253,10 @@
   "src/hooks/sicoob/usePaDashboardStats.ts": [
    "src/contexts/AuthContext.tsx",
    "src/services/sicoob/statsService.ts"
+  ],
+  "src/hooks/sicoob/usePurchasingMetrics.ts": [
+   "src/lib/orders/purchasing-sla.ts",
+   "src/services/sicoob/managerStatsService.ts"
   ],
   "src/hooks/sicoob/useSellerDashboardStats.ts": [
    "src/contexts/AuthContext.tsx",
@@ -9524,6 +9530,9 @@
   "src/lib/navigation/filter-restricted-items.ts": [
    "src/lib/access/role-policy.ts",
    "src/lib/navigation/restricted-routes.ts"
+  ],
+  "src/lib/orders/purchasing-sla.ts": [
+   "src/types/sicoob/orders.ts"
   ],
   "src/lib/pdf/whitelabel-comparison.ts": [
    "src/lib/crm-db.ts",
@@ -12124,7 +12133,8 @@
    "src/types/sicoob/orders.ts"
   ],
   "src/services/sicoob/managerStatsService.ts": [
-   "src/integrations/supabase/client.ts"
+   "src/integrations/supabase/client.ts",
+   "src/lib/orders/purchasing-sla.ts"
   ],
   "src/services/sicoob/orderService.ts": [
    "src/integrations/supabase/client.ts",

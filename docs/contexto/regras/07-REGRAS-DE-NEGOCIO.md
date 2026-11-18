@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `57346a6422` · branch `main` · 2026-11-18 21:57 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `06aa890829` · branch `main` · 2026-11-18 22:16 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1257,7 +1257,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `aprovado_gestor` | escreve | `src/pages/GestorApprovalsPage.tsx` |
 | `status` | `blocked` | compara, escreve | `src/pages/admin/qa/QARunDetailPage.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-delivery.ts` |
 | `status` | `cancelado` | compara, escreve, filtra | `src/components/orders/OrderCard.tsx`<br>`src/hooks/bi/useClientBI.ts`<br>`src/hooks/useClientOrdersHistory.ts`<br>`src/hooks/useClientsPortfolioKpis.ts`<br>`src/pages/GestorApprovalsPage.tsx` |
-| `status` | `cancelled` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/components/common/StatusTimeline.tsx`<br>`src/components/orders/OrderStatusTimeline.tsx`<br>… +5 |
+| `status` | `cancelled` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/components/common/StatusTimeline.tsx`<br>`src/components/orders/OrderStatusTimeline.tsx`<br>… +6 |
 | `status` | `clean` | compara | `supabase/functions/sicoob-document-ingest/registration-state.ts` |
 | `status` | `client-only` | escreve | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `complete` | compara | `src/components/mockup/GeneratingOverlay.tsx` |
@@ -1356,7 +1356,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `unknown` | compara, escreve | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/components/simulator/StockAlert.tsx`<br>`src/utils/price-freshness.ts`<br>`supabase/functions/system-healthcheck/index.ts` |
 | `status` | `unverified` | compara | `src/components/security/MfaEnrollmentDialog.tsx` |
-| … +94 linhas — lista completa em `context.json` | | | |
+| … +95 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -3591,6 +3591,14 @@ _nenhum item encontrado_
   ```
   if (isDevOnlyPath(pathname)) return opts.isDev; if (isAdminOnlyPath(pathname)) return opts.isAdmin || opts.isDev; return true;
   ```
+- **calculateApprovalSla(monthlyResult: OrderListResult, count: number | null, decisions: ReadonlyMap<string, ApprovalDecision> | undefined,)** — `src/lib/orders/purchasing-sla.ts`
+  ```
+  if (!hasCompleteResult(monthlyResult, count) || !decisions) return null; const aprovados = monthlyResult.data.filter((order) => APPROVED_STATUSES.has(order.status)); if (aprovados.length === 0) return null; const pares = aprovados.map((order) => decisions.get(order.id)); // Faltou carimbo de algum aprovado: a amostra não é o universo, não estimamos. if (pares.some((par) => !par)) return null; const dentroDoSla = pares.filter( (par) => par && par.decidedAtMs - par.submittedAtMs <= DIA_EM_MS, ).le …
+  ```
+- **calculatePurchasingMetrics(pendingResult: OrderListResult, monthlyResult: OrderListResult, decisions?: ReadonlyMap<string, ApprovalDecision>,)** — `src/lib/orders/purchasing-sla.ts`
+  ```
+  const pendingCount = resultCount(pendingResult); const monthlyCount = resultCount(monthlyResult); return { pendingCount, slaPercent: calculateApprovalSla(monthlyResult, monthlyCount, decisions), monthlyTotal: sumCompleteOrders( monthlyResult, monthlyCount, (order) => order.status !== 'cancelled', ), approvedTotal: sumCompleteOrders(monthlyResult, monthlyCount, (order) => APPROVED_STATUSES.has(order.status), ), };
+  ```
 - **calculatePrice(table: PriceTableInput, params: PriceCalculationParams)** — `src/lib/personalization/calculators.ts`
   ```
   const { quantity, colors, widthCm, heightCm } = params; // 1. Encontrar a faixa de preço correta const tier = findPriceTier(table.tiers, quantity); if (!tier) { throw new Error(`Nenhuma faixa de preço encontrada para quantidade ${quantity}`); } // 2. Calcular preço unitário base let unitPrice = tier.unitPrice; // 3. Ajustar por número de cores (se aplicável) if (table.priceByColor && colors && table.maxColors) { unitPrice = adjustPriceByColors(unitPrice, colors, table.maxColors); } // 4. Ajustar …
@@ -4511,6 +4519,8 @@ _nenhum item encontrado_
 | `// Fator de folga para empacotamento (itens não ocupam 100% do volume)` | `src/lib/kit-builder/volume-calculator.ts` |
 | `const PACKING_EFFICIENCY = 0.75; // 75% de eficiência` | `src/lib/kit-builder/volume-calculator.ts` |
 | `const VOLUME_WARNING_THRESHOLD = 0.85; // 85%` | `src/lib/kit-builder/volume-calculator.ts` |
+| `* `sicoob_order_history`). Contar pedido ainda pendente daria 100% num mês` | `src/lib/orders/purchasing-sla.ts` |
+| `* mostrar 100% num mês em que ninguém aprovou nada — bastava a fila ser nova.` | `src/lib/orders/purchasing-sla.ts` |
 | `cost *= 1 + (positions - 1) * 0.25; // +25% por posição adicional` | `src/lib/personalization/validators.ts` |
 | `radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04), transparent),` | `src/pages/KitBuilderPage.tsx` |
 | `radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.08), transparent),` | `src/pages/KitBuilderPage.tsx` |
@@ -4851,7 +4861,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
 | `AUTO_RESET_INTERVAL_MS` | `15` | `src/lib/notifications-metrics.ts` |
-| … +156 linhas — lista completa em `context.json` | | |
+| … +157 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5110,6 +5120,7 @@ _nenhum item encontrado_
 | `const TTL_MS = 5 * 60 * 1000; // 5 minutes — refs change rarely` | `src/lib/external-db/immutableCache.ts` |
 | `if (attempt < maxRetries) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));` | `src/lib/external-db/products-detail.ts` |
 | `await new Promise(resolve => setTimeout(resolve, 1000 * consecutiveErrors));` | `src/lib/external-db/products.ts` |
+| `const DIA_EM_MS = 24 * 60 * 60 * 1000;` | `src/lib/orders/purchasing-sla.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/pages/ProductDetail.tsx` |
 | `state.setValidUntil(typeof data.validUntil === "string" ? data.validUntil : format(addDays(new Date(), 30), "yyyy-MM-dd"));` | `src/pages/QuoteBuilderPage.tsx` |
 | `setTimeout(() => { navigate('/'); }, 3000);` | `src/pages/ResetPassword.tsx` |
@@ -5156,8 +5167,7 @@ _nenhum item encontrado_
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| `WHERE created_at >= now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +81 linhas — lista completa em `context.json` | |
+| … +82 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5243,6 +5253,8 @@ _nenhum item encontrado_
 | 500 | `src/pages/admin/telemetry/useTelemetryData.ts` |
 | 100 | `src/pages/sicoob/GestorAuditPage.tsx` |
 | 100 | `src/pages/sicoob/SicoobInvitationsPage.tsx` |
+| 0 | `src/services/sicoob/managerStatsService.ts` |
+| 10 | `src/services/sicoob/managerStatsService.ts` |
 | 5 | `src/services/sicoob/managerStatsService.ts` |
 | 1 | `src/services/sicoob/statsService.ts` |
 | 5 | `src/services/sicoob/statsService.ts` |
@@ -5687,7 +5699,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6607 testes em 636 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6625 testes em 637 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5806,6 +5818,7 @@ _nenhum item encontrado_
 | `tests/lib/colorSystem-utils.test.ts` | 15 | findGroupBySlug · finds group by slug · returns undefined for unknown slug · findVariationBySlug … |
 | `tests/lib/connection-error-copy.test.ts` | 15 | getErrorCopy · timeout sem timeout_ms — hint genérica · timeout com timeout_ms — hint contém o valor · network … |
 | `tests/lib/format-extended.test.ts` | 15 | formatCurrency · formats zero · formats integer · formats cents … |
+| `tests/lib/purchasing-sla.test.ts` | 15 | métricas canônicas da gestão de compras · calcula pendências, SLA e totais a partir dos pedidos visíveis · fila recém-criada e nenhuma aprovação não viram 100% · não apresenta agregado parcial quando a consulta trunca … |
 | `tests/utils/colorSorting-extended.test.ts` | 15 | sortByColorGroup · should return empty array for empty input · should sort Preto before Branco before Azul · should sort dark variants before light within same group … |
 | `tests/utils/price-freshness.default-threshold.test.ts` | 15 | getPriceFreshness — default 60d quando threshold não existe · garante que a constante default vale 60 dias (contrato público) · usa default 60d quando threshold é null (cenário real do BD externo) · usa default 60d quando threshold é undefined (campo ausente do payload) … |
 | `tests/components/BulkSelectionBar.test.tsx` | 14 | BulkSelectionBar · renders when isActive is true · does not render when isActive is false · shows selected count badge … |
@@ -5940,6 +5953,7 @@ _nenhum item encontrado_
 | `tests/lib/textUtils.test.ts` | 8 | toTitleCase · should capitalize first letter of each word · should keep prepositions lowercase (except first word) · should capitalize first word even if preposition … |
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
 | `tests/pages/AdminLoginAttemptsPage.test.tsx` | 8 | AdminLoginAttemptsPage · renders the page title · renders stats cards · renders stat values … |
+| `tests/pages/GestorCompras.metrics.test.tsx` | 8 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
 | `tests/public-approval/usePublicQuoteApproval.test.ts` | 8 | formatCurrency · formats BRL currency correctly · formats zero · formats negative values … |
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
 | `tests/scripts/check-seller-scope.test.ts` | 8 | analyzeSource — consulta SEM escopo precisa ser acusada · em Promise.all cada query é avaliada sozinha (a escopada não  · analyzeSource — consulta COM escopo ou justificada passa · informa a linha e a tabela da violação … |
@@ -5989,9 +6003,7 @@ _nenhum item encontrado_
 | `e2e/flows/p0/06-auth-lifecycle.spec.ts` | 6 | P0 — Auth lifecycle (login/logout/refresh) · positivo: login válido → app autenticado e logout volta para /login · negativo: credenciais inválidas mantém usuário em /login com botão habilitado · negativo: refresh de token retorna 401 → sessão é descartada e rota protegida cai em /login … |
 | `supabase/functions/_shared/retry-backoff.test.ts` | 6 | isTransientError detects statement timeout · nextDelayMs stays within [base, cap] and grows with prev · retryWithBackoff succeeds after transient failures · retryWithBackoff stops on non-transient error immediately … |
 | `tests/e2e-nav-helper.test.ts` | 6 | gotoAndSettle · repete uma navegação interrompida por reload concorrente · propaga erros determinísticos sem repetir a navegação · waitForRouteIdle … |
-| `tests/admin/react-warning-guard-sanity.test.ts` | 6 | react-warning-guard — sanity · captura o warning canônico de ref em function component · não falha quando não há warnings · não falha por  … |
-| `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
-| … +336 linhas — lista completa em `context.json` | | |
+| … +337 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

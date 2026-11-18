@@ -5212,6 +5212,7 @@
     "postos_atendimento",
     "profiles",
     "sicoob_approval_requests",
+    "sicoob_order_history",
     "sicoob_orders",
     "user_roles",
     "v_sicoob_hierarchy"
@@ -5231,7 +5232,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 36
+   "arquivos_puxados": 38
   },
   {
    "protegida": true,
@@ -5412,6 +5413,7 @@
     "useOrganization",
     "usePendingQuotesCount",
     "useProductPrintAreasV2",
+    "usePurchasingMetrics",
     "useQuery",
     "useQueryClient",
     "useQuotes",
@@ -5464,6 +5466,7 @@
     "useOrganization",
     "usePendingQuotesCount",
     "useProductPrintAreasV2",
+    "usePurchasingMetrics",
     "useQuotes",
     "useRBAC",
     "useRealtimeSync",
@@ -5510,6 +5513,7 @@
     "scheduled_exports",
     "sicoob_approval_requests",
     "sicoob_order_artwork_versions",
+    "sicoob_order_history",
     "sicoob_order_invoices",
     "sicoob_order_item_logs",
     "sicoob_order_items",
@@ -5568,7 +5572,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 154
+   "arquivos_puxados": 156
   },
   {
    "protegida": true,

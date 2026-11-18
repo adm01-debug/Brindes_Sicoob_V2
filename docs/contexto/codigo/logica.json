@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 250,
+ "total": 251,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 165,
+  "lib": 166,
   "python": 12,
   "services": 23,
   "stores": 6,
@@ -3286,6 +3286,38 @@
    "orfao": false
   },
   {
+   "arquivo": "src/lib/orders/purchasing-sla.ts",
+   "camada": "lib",
+   "exports": [
+    "ApprovalDecision",
+    "OrderListResult",
+    "PurchasingMetrics",
+    "PurchasingOrder",
+    "SicoobOrderHistoryStatusEvent",
+    "calculatePurchasingMetrics",
+    "mapApprovalDecisions",
+    "metricLabel"
+   ],
+   "export_default": null,
+   "linhas": 196,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 3,
+   "usado_por_modulos": [
+    "components/sicoob",
+    "hooks/sicoob",
+    "services/sicoob"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/lib/overlay.ts",
    "camada": "lib",
    "exports": [
@@ -6240,14 +6272,17 @@
    "exports": [
     "GestorOrderSummary",
     "GestorStats",
-    "getCooperativeDashboardStats"
+    "getCooperativeDashboardStats",
+    "loadManagerApprovalHistory",
+    "loadPurchasingOrders"
    ],
    "export_default": null,
-   "linhas": 102,
+   "linhas": 160,
    "tabelas": [
     "pa_budgets",
     "postos_atendimento",
     "sicoob_approval_requests",
+    "sicoob_order_history",
     "sicoob_orders"
    ],
    "rpcs": [],
@@ -6257,7 +6292,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 2,
+   "usado_por": 3,
    "usado_por_modulos": [
     "hooks/sicoob",
     "pages/sicoob"

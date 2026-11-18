@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "57346a642264ff9562f62938c2b3dca283804703",
+  "commit": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
   "branch": "main",
-  "data_commit": "2026-11-18T21:56:08Z",
+  "data_commit": "2026-11-18T22:14:05Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "06aa890",
+    "data": "2026-11-18",
+    "assunto": "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)"
+   },
    {
     "sha": "57346a6",
     "data": "2026-11-18",
@@ -126,11 +131,6 @@
     "sha": "4f2531e",
     "data": "2026-11-17",
     "assunto": "fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)"
-   },
-   {
-    "sha": "35f9ee2",
-    "data": "2026-11-17",
-    "assunto": "feat: rota /gestor/delegacoes para o gestor gerenciar delegacoes de aprovacao (#295)"
    }
   ],
   "arquivos_mudados_7d": 348,
@@ -172,12 +172,12 @@
     "mudancas": 11
    },
    {
-    "pasta": "src/pages/sicoob",
+    "pasta": "src/components/sicoob",
     "mudancas": 10
    },
    {
-    "pasta": "src/components/sicoob",
-    "mudancas": 9
+    "pasta": "src/pages/sicoob",
+    "mudancas": 10
    },
    {
     "pasta": "scripts/automation.config.json",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 87
+    "mudancas": 86
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 86
+    "mudancas": 85
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 137
+    "commits": 138
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4339,
-  "arquivos_codigo": 3048,
-  "linhas_codigo": 480467,
+  "arquivos_total": 4342,
+  "arquivos_codigo": 3051,
+  "linhas_codigo": 481071,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
-  "modulos": 145,
+  "modulos": 146,
   "componentes": 1173,
-  "hooks": 391,
+  "hooks": 392,
   "edge_functions": 106,
   "tabelas": 291,
   "migrations": 620,
   "cron_jobs": 27,
-  "testes": 811,
+  "testes": 812,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 165580
+   "linhas": 165625
   },
   "src/constants": {
    "arquivos": 3,
@@ -791,16 +791,16 @@
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 312,
-   "linhas": 46014
+   "arquivos": 313,
+   "linhas": 46061
   },
   "src/integrations": {
    "arquivos": 3,
    "linhas": 13462
   },
   "src/lib": {
-   "arquivos": 165,
-   "linhas": 22354
+   "arquivos": 166,
+   "linhas": 22550
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,7 +816,7 @@
   },
   "src/services": {
    "arquivos": 23,
-   "linhas": 3243
+   "linhas": 3301
   },
   "src/stores": {
    "arquivos": 6,
@@ -923,8 +923,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 67,
-   "linhas": 8480
+   "arquivos": 68,
+   "linhas": 8669
   },
   "tests/load": {
    "arquivos": 1,
@@ -940,7 +940,7 @@
   },
   "tests/pages": {
    "arquivos": 24,
-   "linhas": 2890
+   "linhas": 2959
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

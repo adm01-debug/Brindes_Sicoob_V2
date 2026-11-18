@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 391,
+ "total": 392,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -3480,6 +3480,24 @@
    "usado_por": 1,
    "usado_por_arquivos": [
     "src/pages/sicoob/PADashboardPage.tsx"
+   ],
+   "coberto_por_testes": 0
+  },
+  {
+   "arquivo": "src/hooks/sicoob/usePurchasingMetrics.ts",
+   "hooks_exportados": [
+    "usePurchasingMetrics"
+   ],
+   "linhas": 47,
+   "dominio": "hooks/sicoob",
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [],
+   "canais_realtime": [],
+   "usado_por": 1,
+   "usado_por_arquivos": [
+    "src/components/sicoob/GestorComprasMetrics.tsx"
    ],
    "coberto_por_testes": 0
   },

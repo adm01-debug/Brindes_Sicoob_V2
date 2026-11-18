@@ -11,17 +11,17 @@
    "src/contexts (9)"
   ],
   "hooks": [
-   "src/hooks (285)",
+   "src/hooks (286)",
    "src/components (66)",
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (165)",
+   "src/lib (166)",
    "src/utils (37)",
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (564)",
+   "tests/ (565)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)",
    "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)",
    "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
    "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
-   "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)",
-   "chore(deps): remove chave autoprefixer duplicada no package.json (#320)"
+   "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

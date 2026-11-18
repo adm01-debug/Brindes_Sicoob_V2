@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `57346a642264ff9562f62938c2b3dca283804703` (2026-11-18T21:56:08Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `06aa890829c4be2a8a036c3de10f2f35075f4b30` (2026-11-18T22:14:05Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2848), SQL (673), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
+- linguagens: TypeScript (2851), SQL (673), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,21 +34,21 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4339 |
-| arquivos_codigo | 3048 |
-| linhas_codigo | 480467 |
+| arquivos_total | 4342 |
+| arquivos_codigo | 3051 |
+| linhas_codigo | 481071 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 84 |
-| modulos | 145 |
+| modulos | 146 |
 | componentes | 1173 |
-| hooks | 391 |
+| hooks | 392 |
 | edge_functions | 106 |
 | tabelas | 291 |
 | migrations | 620 |
 | cron_jobs | 27 |
-| testes | 811 |
+| testes | 812 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 246 |
@@ -56,9 +56,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Onde ficam as coisas
 - telas: src/pages (115)
 - componentes: src/components (999), src/pages (162), src/contexts (9)
-- hooks: src/hooks (285), src/components (66), src/pages (22)
-- servicos_logica: src/lib (165), src/utils (37), src/services (23)
-- testes: tests/ (564), e2e/ (149), outro (51)
+- hooks: src/hooks (286), src/components (66), src/pages (22)
+- servicos_logica: src/lib (166), src/utils (37), src/services (23)
+- testes: tests/ (565), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -103,7 +103,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/search | 0 | 0 | 26 | 55 | 7 | 4 |
 | components/security | 0 | 0 | 11 | 13 | 4 | 10 |
 | components/settings | 0 | 0 | 6 | 2 | 0 | 4 |
-| components/sicoob | 0 | 0 | 20 | 24 | 6 | 21 |
+| components/sicoob | 0 | 0 | 20 | 25 | 6 | 22 |
 | components/simulator | 0 | 0 | 23 | 23 | 4 | 4 |
 | components/ui | 0 | 0 | 59 | 6 | 0 | 0 |
 | contexts | 0 | 0 | 10 | 23 | 4 | 10 |
@@ -114,7 +114,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks/orders | 0 | 0 | 12 | 17 | 5 | 15 |
 | hooks/quote | 0 | 0 | 5 | 21 | 5 | 8 |
 | hooks/quotes | 0 | 0 | 6 | 14 | 5 | 8 |
-| hooks/sicoob | 0 | 0 | 8 | 9 | 4 | 9 |
+| hooks/sicoob | 0 | 0 | 9 | 10 | 4 | 9 |
 | hooks/simulator | 0 | 0 | 8 | 9 | 2 | 1 |
 | hooks/tecnicas | 0 | 0 | 6 | 20 | 2 | 0 |
 | hooks/voice | 0 | 0 | 9 | 1 | 1 | 1 |
@@ -128,11 +128,11 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/system | 0 | 0 | 5 | 4 | 3 | 2 |
 | lib/telemetry | 0 | 0 | 8 | 0 | 0 | 0 |
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
-| pages | 33 | 77 | 69 | 382 | 33 | 96 |
+| pages | 33 | 77 | 69 | 383 | 33 | 97 |
 | pages/admin | 25 | 38 | 69 | 155 | 28 | 86 |
 | pages/sicoob | 12 | 19 | 19 | 31 | 7 | 30 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
-| routes/config | 0 | 0 | 8 | 440 | 52 | 143 |
+| routes/config | 0 | 0 | 8 | 441 | 52 | 143 |
 | services | 0 | 0 | 7 | 5 | 4 | 15 |
 | services/sicoob | 0 | 0 | 12 | 0 | 2 | 12 |
 | stores | 0 | 0 | 6 | 0 | 0 | 0 |
@@ -468,14 +468,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28373 nós · 52499 arestas · 2032 comunidades · grafo do commit `57346a64`
-- comunidades maiores: ref_hooks (520), ref_components (473), ref_lib (281), ref_integrations (238), sonner (210), ref_contexts (202), ref_node_fs (197), framer-motion (196), expert-chat/index.ts (167), date-fns (164), react (157), external-db-bridge/index.ts (153)
+- 28402 nós · 52541 arestas · 2017 comunidades · grafo do commit `06aa8908`
+- comunidades maiores: ref_components (488), ref_integrations (379), lucide-react (224), ref_hooks (206), ref_lib (201), ref_contexts (180), sonner (179), expert-chat/index.ts (167), date-fns (163), react-router-dom (162), framer-motion (156), external-db-bridge/index.ts (153)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (87)
-- docs/correcoes-validacao-2026-09-14.md (86)
+- docs/plano-melhorias-50-etapas.md (86)
+- docs/correcoes-validacao-2026-09-14.md (85)
 - package.json (21)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `06aa890` feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)
 - 2026-11-18 `57346a6` fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)
 - 2026-11-18 `2b192fb` fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)
 - 2026-11-18 `7372a96` feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `90a9cb3` feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)
 - 2026-11-18 `ca0c320` feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)
 - 2026-11-18 `bdeb172` fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)
-- 2026-11-18 `eba624f` fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
