@@ -124,6 +124,7 @@
 | `/gestor/agregados` | `@/pages/sicoob/GestorConsolidatedOrdersPage` |
 | `/gestor/convites` | `@/pages/sicoob/SicoobInvitationsPage` |
 | `/gestor/aprovacoes` | `@/pages/sicoob/GestorApprovalsPage` |
+| `/gestor/delegacoes` | `@/pages/sicoob/GestorDelegationsPage` |
 | `/gestor/auditoria` | `@/pages/sicoob/GestorAuditPage` |
 | `/vendedor/dashboard` | `@/pages/sicoob/vendedor/SellerDashboardPage` |
 | `/relatorios/sicoob` | `@/pages/sicoob/reports/SicoobReportsPage` |
@@ -143,6 +144,7 @@
 | Rota | Componente |
 |------|------------|
 | `/ajuda` | `@/pages/HelpCenterPage` |
+| `/instalar` | `@/pages/PWAInstallPage` |
 | `/mockup-generator` | `@/pages/MockupGenerator` |
 | `/magic-up` | `@/pages/MagicUp` |
 | `/match` | `@/pages/ProductMatchPage` |
