@@ -22,8 +22,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope, type SalesScope } from '@/lib/auth/visibility-scope';
 import { applySellerScope } from '@/lib/auth/apply-seller-scope';
+import { logger } from '@/lib/logger';
 
 const TICKET_WINDOW_DAYS = 90;
+/** Página do PostgREST. A resposta tem teto de linhas; sem paginar, janela
+ *  grande volta cortada e a média sai de uma amostra, sem erro nenhum. */
+const PAGE_SIZE = 1000;
+/** Teto de segurança: 50 páginas = 50 mil pedidos na janela. */
+const MAX_PAGES = 50;
 
 export interface ClientsPortfolioKpis {
   /** Clientes distintos com pedido no mês corrente. */
@@ -44,28 +50,55 @@ function inicioDaJanela(agora: Date): string {
   return new Date(agora.getTime() - TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 }
 
+/**
+ * Lê todos os pedidos da janela, uma página por vez.
+ *
+ * `cancelado` fica de fora, como em `useClientOrdersHistory`: pedido cancelado
+ * não é compra, não conta cliente comprador e não entra no ticket. A ordem por
+ * `id` torna a paginação determinística.
+ */
+async function lerPedidos(
+  colunas: string,
+  desde: string,
+  scope: SalesScope,
+  userId: string | undefined,
+): Promise<Array<{ client_id?: string | null; total?: number | null }>> {
+  const linhas: Array<{ client_id?: string | null; total?: number | null }> = [];
+  for (let pagina = 0; pagina < MAX_PAGES; pagina += 1) {
+    const inicio = pagina * PAGE_SIZE;
+    const consulta = applySellerScope(
+      supabase
+        .from('orders')
+        .select(colunas)
+        .neq('status', 'cancelado')
+        .gte('created_at', desde)
+        .order('id', { ascending: true })
+        .range(inicio, inicio + PAGE_SIZE - 1),
+      { scope, userId },
+    );
+    const { data, error } = await consulta;
+    if (error) throw error;
+    const lote = (data ?? []) as Array<{ client_id?: string | null; total?: number | null }>;
+    linhas.push(...lote);
+    if (lote.length < PAGE_SIZE) return linhas;
+  }
+  logger.warn(
+    `[clientes-kpi] janela com mais de ${MAX_PAGES * PAGE_SIZE} pedidos; indicadores calculados sobre o teto`,
+  );
+  return linhas;
+}
+
 export async function fetchClientsPortfolioKpis(
   scope: SalesScope,
   userId: string | undefined,
   agora = new Date(),
 ): Promise<ClientsPortfolioKpis> {
-  const [doMes, daJanela] = await Promise.all([
-    applySellerScope(
-      supabase.from('orders').select('client_id').gte('created_at', inicioDoMes(agora)),
-      { scope, userId },
-    ),
-    applySellerScope(
-      supabase.from('orders').select('total').gte('created_at', inicioDaJanela(agora)),
-      { scope, userId },
-    ),
+  const [doMes, pedidos] = await Promise.all([
+    lerPedidos('client_id', inicioDoMes(agora), scope, userId),
+    lerPedidos('total', inicioDaJanela(agora), scope, userId),
   ]);
-  if (doMes.error) throw doMes.error;
-  if (daJanela.error) throw daJanela.error;
 
-  const clientesNoMes = new Set(
-    (doMes.data ?? []).map((pedido) => pedido.client_id).filter(Boolean),
-  );
-  const pedidos = daJanela.data ?? [];
+  const clientesNoMes = new Set(doMes.map((pedido) => pedido.client_id).filter(Boolean));
   const receita = pedidos.reduce((soma, pedido) => soma + (pedido.total ?? 0), 0);
 
   return {
