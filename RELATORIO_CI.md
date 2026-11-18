@@ -808,3 +808,75 @@ O rerun de “Segurança, contratos e build” no [run 40918030807](https://gith
 A execução E2E do PR #165 ([run 40919240512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240512)) terminou em falha no passo “Validar autorização remota e RLS técnico”; os shards Playwright foram ignorados pelo fail-fast. A atualização de Supabase de homologação/segredos segue aguardando confirmação do owner.
 
 Portanto, nenhum dos PRs está liberado para merge: PR #164 ainda tem E2E e Qualidade vermelhos e altera dependências/runtime; PR #165 é CI-only, mas herda `npm audit` vermelho do baseline `main`. O revisor Vercel continua indisponível por billing. Nenhuma ação foi executada no banco ou em deploy.
+
+## Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026
+
+Esta seção traz três fatos que estavam **só** em PRs fechadas sem merge. Não são
+medições novas: são registros datados, recuperados porque este relatório
+descrevia as mesmas falhas sem a causa, ou com causa diferente.
+
+### 1. O deploy de edge functions já morreu por política de Actions, não por Docker Hub
+
+O run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102)
+aparece neste relatório (linhas 30 e 97) com duas causas: o falso negativo de
+versão e o `toomanyrequests` do Docker Hub. A **primeira tentativa**, porém, nem
+começou: a política de Actions do repositório barrou a dependência
+**transitiva** `oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6`,
+puxada pela versão fixada de `supabase/setup-cli`. A solução aplicada na época
+foi liberar na allowlist **somente aquele SHA imutável**, mantendo o resto
+restrito.
+
+Por que isto importa hoje: a `main` hoje usa **outro pin** —
+`supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13`
+(`deploy-sicoob-functions.yml:29`), diferente do que estava em uso então. Quem
+bumpar essa action de novo pode ver o deploy morrer no runner sem causa
+aparente. O caminho certo é liberar o SHA transitivo específico, **nunca
+afrouxar a allowlist inteira**.
+
+Fonte: PR #149, fechada sem merge. `git grep -c "setup-bun" origin/main` → 0
+antes deste registro.
+
+### 2. O `Processing Request` do Copilot já foi diagnosticado: firewall da action
+
+`PENDENCIAS.md` registra que o Copilot
+[41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763)
+falhou em `Processing Request (Linux)` e que "o resumo do provedor não informa
+causa acionável". A causa **foi** levantada, num run anterior do mesmo step:
+[40950735858](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950735858)
+(29/10/2026, SHA `23fc59a`), cujo log mostra o **firewall da action bloqueando a
+conexão do Copilot CLI com `api.github.com`**.
+
+É falha distinta da quota HTTP 402 (`SessionModelError`), que este relatório já
+documenta em vários pontos. Ação correspondente: revisar allowlist/firewall do
+serviço Copilot — e não mascarar a falha tratando-a como quota.
+
+Fonte: PR #158, fechada sem merge. `git grep -n -i "firewall" origin/main -- '*.md'`
+não devolvia nenhuma ocorrência em documento de CI antes deste registro.
+
+### 3. Medição de 28/10/2026: 16 funções publicadas divergiam do repositório
+
+Comparação byte a byte do código **remoto** das 100 edge functions publicadas
+contra a `main` daquela data: 83/100 pastas idênticas e 84/100 idênticas no
+código executável (`external-db-bridge` diferia só por 7 arquivos `.test.ts`,
+fora do bundle). As 16 que divergiam:
+
+`admin-audit-hook`, `bi-share-dossier`, `connections-auto-test`,
+`crm-db-bridge`, `e2e-cleanup`, `generate-ad-image`, `get-app-logs`,
+`github-fix-config`, `mcp-keys-issue`, `quote-sync`, `rls-audit`,
+`secrets-manager`, `sicoob-seed`, `sicoob-seed-qa`, `sync-quote-bitrix` e
+`trends-insights`.
+
+Todas **fora da allowlist de publicação**, portanto o deploy oficial nunca as
+corrige. `crm-db-bridge` está nessa lista e é exatamente o alvo da PR #311, em
+aberto.
+
+**Ressalva honesta:** é medição de **28/10/2026** e não foi refeita. A medição
+anterior que a `main` guarda é de 28/09/2026
+(`docs/execucao/evidencias/paridade-online-20260928.json`, `"arquivos_divergentes": []`)
+e diz o **contrário** — zero divergência. As duas não se contradizem
+necessariamente: são datas diferentes, com um mês de publicações no meio. O que
+não existe é medição posterior a 28/10. Antes de decidir allowlist com base
+nestes nomes, **refaça a comparação**.
+
+Fonte: PR #149, fechada sem merge.
+
