@@ -204,6 +204,10 @@ const TARGETS = [
     file: "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql",
     sha256: "596d96db114514037ca2c85724a19224da92341c3508c841151c9f0be3d725fd",
   },
+  {
+    file: "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
+    sha256: "5dd6f2a121b197070166d84a602083ca67492f16f1e1270449534a9155604f89",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
