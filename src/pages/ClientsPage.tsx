@@ -1,7 +1,7 @@
 import { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { Users, Search, Plus, Filter, TrendingUp, DollarSign } from "lucide-react";
+import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Sparkles, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +28,12 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 
+/** Retenção: dos clientes da janela anterior, quantos voltaram. Sem janela
+ *  anterior não há taxa — "—" em vez de 0% ou 100%. */
+function formatarRetencao(valor: number | null): string {
+  return valor === null ? "—" : `${valor}%`;
+}
+
 function formatarTicket(valor: number | null): string {
   if (valor === null) return "—";
   return new Intl.NumberFormat("pt-BR", {
@@ -39,7 +45,20 @@ function formatarTicket(valor: number | null): string {
 
 type KpisQuery = ReturnType<typeof useClientsPortfolioKpis>;
 
+/** Valores dos cartões, já formatados; "—" quando a medição não chegou. */
+function valoresDosKpis(kpisQuery: KpisQuery) {
+  const dados = kpisQuery.data;
+  return {
+    compraramNoMes: dados ? String(dados.clientesComPedidoNoMes) : "—",
+    primeiraCompra: dados ? String(dados.primeiraCompraNoMes) : "—",
+    ticket: formatarTicket(dados?.ticketMedio ?? null),
+    retencao: formatarRetencao(dados?.retencaoPercentual ?? null),
+    janelaDias: dados?.janelaDias ?? 90,
+  };
+}
+
 function montarKpis(totalClientes: number, carregandoLista: boolean, kpisQuery: KpisQuery) {
+  const valores = valoresDosKpis(kpisQuery);
   // Indicadores medidos, no escopo de visibilidade do usuário. "Novos no mês" e
   // "taxa de retenção" saíram da tela: o primeiro exige a data de cadastro da
   // empresa, que o contrato do CRM não projeta, e o segundo exige uma definição
@@ -56,18 +75,34 @@ function montarKpis(totalClientes: number, carregandoLista: boolean, kpisQuery: 
     },
     {
       label: "Compraram no mês",
-      value: kpisQuery.data ? String(kpisQuery.data.clientesComPedidoNoMes) : "—",
+      value: valores.compraramNoMes,
       icon: TrendingUp,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
       carregando: kpisQuery.isLoading,
     },
     {
-      label: `Ticket médio (${kpisQuery.data?.janelaDias ?? 90} dias)`,
-      value: formatarTicket(kpisQuery.data?.ticketMedio ?? null),
+      label: "1ª compra no mês",
+      value: valores.primeiraCompra,
+      icon: Sparkles,
+      color: "text-sky-500",
+      bg: "bg-sky-500/10",
+      carregando: kpisQuery.isLoading,
+    },
+    {
+      label: `Ticket médio (${valores.janelaDias} dias)`,
+      value: valores.ticket,
       icon: DollarSign,
       color: "text-amber-500",
       bg: "bg-amber-500/10",
+      carregando: kpisQuery.isLoading,
+    },
+    {
+      label: `Retenção (${valores.janelaDias} dias)`,
+      value: valores.retencao,
+      icon: Target,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
       carregando: kpisQuery.isLoading,
     },
   ];
@@ -137,7 +172,7 @@ export default function ClientsPage() {
         </div>
 
         {/* KPIs Section */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {kpis.map((kpi, idx) => (
             <Card key={idx} className="border-none shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden group hover:shadow-md transition-all duration-300">
               <CardContent className="p-5 flex items-center gap-4">
