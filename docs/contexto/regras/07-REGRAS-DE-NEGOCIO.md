@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `2b192fb8b7` · branch `main` · 2026-11-18 21:31 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `57346a6422` · branch `main` · 2026-11-18 21:57 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6603 testes em 636 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6607 testes em 636 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5854,6 +5854,7 @@ _nenhum item encontrado_
 | `tests/hooks/useCrmCompanies.test.ts` | 11 | useCrmCompanies · usa o contrato fechado quando o filtro é apenas is_customer · mantém o select genérico quando há filtro que o contrato não aceita · mantém o select genérico quando o filtro booleano é explicitamente false … |
 | `tests/hooks/useFocusContext.test.ts` | 11 | useFocusContext · estado inicial vazio quando localStorage está limpo · setZone atualiza lastZone e savedAt e persiste em localStorage · setIncident atualiza lastIncidentId sem afetar lastZone … |
 | `tests/hooks/useGravacaoPriceV2.test.ts` | 11 | mapPriceResponseToFlat (nested format) · maps nested response correctly · extracts tabela_codigo_curto from hyphenated code · handles redirect info … |
+| `tests/hooks/useKitAutoSave.test.tsx` | 11 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/hooks/useUndoRedo.test.ts` | 11 | useUndoableReducer · starts with initial state · dispatches tracked actions and enables undo · undo restores previous state … |
 | `tests/lib/bridge.test.ts` | 11 | invokeBridge · retorna o data da resposta em sucesso · permite operação batch sem table · invokeExternalDb … |
 | `tests/lib/image-converter-extended.test.ts` | 11 | needsConversion — extended · false for PNG · false for JPEG · false for JPG type … |
@@ -5966,7 +5967,6 @@ _nenhum item encontrado_
 | `tests/hooks/useClientsPortfolioKpis.test.ts` | 7 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · exclui pedido cancelado nas duas consultas · pagina até esgotar a janela, em vez de usar só a primeira resposta … |
 | `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
 | `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
-| `tests/hooks/useKitAutoSave.test.tsx` | 7 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
@@ -6476,4 +6476,4 @@ _nenhum item encontrado_
 | * Funções puras para validação de parâmetros de personalização. | `src/lib/personalization/validators.ts` |
 | TABLE VALIDATION | `src/lib/personalization/validators.ts` |
 | QUANTITY VALIDATION | `src/lib/personalization/validators.ts` |
-| … +243 linhas — lista completa em `context.json` | |
+| … +245 linhas — lista completa em `context.json` | |

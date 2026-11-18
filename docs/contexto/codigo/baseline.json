@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "2b192fb8b7f1ef143aeed3ed39788fc2392e3870",
+  "commit": "57346a642264ff9562f62938c2b3dca283804703",
   "branch": "main",
-  "data_commit": "2026-11-18T21:30:28Z",
+  "data_commit": "2026-11-18T21:56:08Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "57346a6",
+    "data": "2026-11-18",
+    "assunto": "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)"
+   },
    {
     "sha": "2b192fb",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "35f9ee2",
     "data": "2026-11-17",
     "assunto": "feat: rota /gestor/delegacoes para o gestor gerenciar delegacoes de aprovacao (#295)"
-   },
-   {
-    "sha": "cc036fd",
-    "data": "2026-11-17",
-    "assunto": "fix: tendencias e selos de produto passam a usar dados reais por padrao (recupera PR #178) (#293)"
    }
   ],
-  "arquivos_mudados_7d": 353,
+  "arquivos_mudados_7d": 348,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 88
+    "mudancas": 87
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 87
+    "mudancas": 86
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 136
+    "commits": 137
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4339,
   "arquivos_codigo": 3048,
-  "linhas_codigo": 480347,
+  "linhas_codigo": 480467,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 312,
-   "linhas": 45982
+   "linhas": 46014
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50815
+   "linhas": 50823
   },
   "src/routes": {
    "arquivos": 9,
@@ -916,7 +916,7 @@
   },
   "tests/hooks": {
    "arquivos": 126,
-   "linhas": 13397
+   "linhas": 13477
   },
   "tests/integration": {
    "arquivos": 4,

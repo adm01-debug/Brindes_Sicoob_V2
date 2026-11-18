@@ -5985,7 +5985,7 @@
    "hooks_exportados": [
     "useKitAutoSave"
    ],
-   "linhas": 226,
+   "linhas": 258,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"

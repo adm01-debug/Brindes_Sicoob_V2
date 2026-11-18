@@ -4206,11 +4206,11 @@
   {
    "arquivo": "tests/hooks/useKitAutoSave.test.tsx",
    "tipo": "unit",
-   "linhas": 202,
+   "linhas": 282,
    "testa": [
     "src/hooks/useKitAutoSave.ts"
    ],
-   "casos": 6
+   "casos": 10
   },
   {
    "arquivo": "tests/hooks/useKitBuilder-extended.test.ts",
