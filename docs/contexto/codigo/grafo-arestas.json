@@ -3395,7 +3395,8 @@
    "src/components/ui/card.tsx",
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
-   "src/lib/kit-builder/index.ts"
+   "src/lib/kit-builder/index.ts",
+   "src/lib/kit-builder/status.ts"
   ],
   "src/components/dashboard/UpcomingDatesWidget.tsx": [
    "src/components/ui/badge.tsx",
@@ -8564,6 +8565,7 @@
   "src/hooks/useCustomKitPersistence.ts": [
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
+   "src/lib/kit-builder/custom-kit-payload.ts",
    "src/lib/kit-builder/index.ts"
   ],
   "src/hooks/useCustomKitsRealtime.ts": [
@@ -8690,6 +8692,7 @@
   "src/hooks/useKitAutoSave.ts": [
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
+   "src/lib/kit-builder/custom-kit-payload.ts",
    "src/lib/kit-builder/index.ts",
    "src/lib/logger.ts"
   ],
@@ -9473,6 +9476,10 @@
    "src/lib/utils.ts",
    "src/lib/validations/index.ts",
    "src/lib/variant-matching.ts"
+  ],
+  "src/lib/kit-builder/custom-kit-payload.ts": [
+   "src/lib/kit-builder/status.ts",
+   "src/lib/kit-builder/types.ts"
   ],
   "src/lib/kit-builder/index.ts": [
    "src/lib/kit-builder/mock-data.ts",

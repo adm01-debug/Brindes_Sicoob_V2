@@ -5111,7 +5111,7 @@
    "hooks_exportados": [
     "useCustomKitPersistence"
    ],
-   "linhas": 224,
+   "linhas": 189,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"
@@ -5967,7 +5967,7 @@
    "hooks_exportados": [
     "useKitAutoSave"
    ],
-   "linhas": 241,
+   "linhas": 226,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"

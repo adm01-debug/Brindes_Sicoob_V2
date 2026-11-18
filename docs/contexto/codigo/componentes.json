@@ -6233,7 +6233,7 @@
     "RecentKitsWidget"
    ],
    "export_default": null,
-   "linhas": 91,
+   "linhas": 85,
    "dominio": "components/dashboard",
    "hooks_locais": [
     "useAuth"

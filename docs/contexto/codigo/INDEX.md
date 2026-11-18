@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `d8d7dcd171c1e339017e300469bbb0efca17ab6c` (2026-11-18T18:50:14Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `f2db0f8d0bfd49c1785bb8b80d4617798abc8a11` (2026-11-18T19:37:29Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2841), SQL (673), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
+- linguagens: TypeScript (2844), SQL (673), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4332 |
-| arquivos_codigo | 3041 |
-| linhas_codigo | 479948 |
+| arquivos_total | 4335 |
+| arquivos_codigo | 3044 |
+| linhas_codigo | 480069 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 291 |
 | migrations | 620 |
 | cron_jobs | 27 |
-| testes | 809 |
+| testes | 810 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 246 |
@@ -57,8 +57,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - telas: src/pages (115)
 - componentes: src/components (998), src/pages (162), src/contexts (9)
 - hooks: src/hooks (284), src/components (66), src/pages (22)
-- servicos_logica: src/lib (163), src/utils (37), src/services (22)
-- testes: tests/ (562), e2e/ (149), outro (51)
+- servicos_logica: src/lib (165), src/utils (37), src/services (22)
+- testes: tests/ (563), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -122,7 +122,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/auth | 0 | 0 | 10 | 6 | 3 | 2 |
 | lib/bi | 0 | 0 | 7 | 9 | 0 | 1 |
 | lib/external-db | 0 | 0 | 18 | 3 | 2 | 0 |
-| lib/kit-builder | 0 | 0 | 5 | 0 | 0 | 0 |
+| lib/kit-builder | 0 | 0 | 7 | 0 | 0 | 0 |
 | lib/personalization | 0 | 0 | 20 | 3 | 2 | 0 |
 | lib/sicoob | 0 | 0 | 7 | 0 | 0 | 0 |
 | lib/system | 0 | 0 | 5 | 4 | 3 | 2 |
@@ -468,14 +468,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28354 nós · 52469 arestas · 2009 comunidades · grafo do commit `d8d7dcd1`
-- comunidades maiores: ref_integrations (375), ref_lib (318), ref_components (265), ref_hooks (246), lucide-react (228), react-router-dom (213), sonner (201), ref_node_fs (193), react (187), framer-motion (177), ref_contexts (174), date-fns (168)
+- 28361 nós · 52475 arestas · 2014 comunidades · grafo do commit `f2db0f8d`
+- comunidades maiores: ref_hooks (475), ref_components (429), ref_integrations (366), ref_lib (263), ref_node_fs (186), react-router-dom (176), ref_contexts (175), sonner (170), ai-usage.ts (156), ref_stores (152), react (151), date-fns (150)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (93)
-- docs/correcoes-validacao-2026-09-14.md (92)
+- docs/plano-melhorias-50-etapas.md (92)
+- docs/correcoes-validacao-2026-09-14.md (91)
 - package.json (20)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `f2db0f8` fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)
 - 2026-11-18 `d8d7dcd` fix(bi): caminho de dado real para de devolver categoria fictícia (#316)
 - 2026-11-18 `781ee20` feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)
 - 2026-11-18 `ca76bcd` fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `5ecb93f` fix: isola rascunho de orcamento por cooperativa e PA (#304)
 - 2026-11-17 `c2b0099` fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)
 - 2026-11-17 `1b142b4` feat: tendencias com snapshot unico e estados de erro reais (recupera PR #119) (#301)
-- 2026-11-17 `2a8d38b` chore: gate de npm audit libera advisory especifico em vez de pacote (#303)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

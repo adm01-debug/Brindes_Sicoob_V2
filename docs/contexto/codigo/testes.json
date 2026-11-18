@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 809,
+ "total": 810,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 40,
-  "unit": 585
+  "unit": 586
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 562
+   "arquivos": 563
   },
   {
    "padrao": "e2e/",
@@ -4206,11 +4206,11 @@
   {
    "arquivo": "tests/hooks/useKitAutoSave.test.tsx",
    "tipo": "unit",
-   "linhas": 152,
+   "linhas": 202,
    "testa": [
     "src/hooks/useKitAutoSave.ts"
    ],
-   "casos": 4
+   "casos": 6
   },
   {
    "arquivo": "tests/hooks/useKitBuilder-extended.test.ts",
@@ -4980,6 +4980,16 @@
     "src/lib/crm-db.ts"
    ],
    "casos": 14
+  },
+  {
+   "arquivo": "tests/lib/custom-kit-status.test.ts",
+   "tipo": "unit",
+   "linhas": 38,
+   "testa": [
+    "src/lib/kit-builder/custom-kit-payload.ts",
+    "src/lib/kit-builder/status.ts"
+   ],
+   "casos": 4
   },
   {
    "arquivo": "tests/lib/date-utils-extended.test.ts",
@@ -7322,8 +7332,10 @@
   "src/lib/external-rpc.ts": 5,
   "src/lib/format.ts": 3,
   "src/lib/image-converter.ts": 2,
+  "src/lib/kit-builder/custom-kit-payload.ts": 1,
   "src/lib/kit-builder/index.ts": 4,
   "src/lib/kit-builder/price-calculator.ts": 2,
+  "src/lib/kit-builder/status.ts": 1,
   "src/lib/kit-builder/types.ts": 3,
   "src/lib/kit-builder/volume-calculator.ts": 1,
   "src/lib/logger.ts": 1,

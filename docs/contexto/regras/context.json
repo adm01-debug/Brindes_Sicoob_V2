@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "d8d7dcd171c1e339017e300469bbb0efca17ab6c",
+  "sha": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 18:52 UTC",
-  "files_total": 4334,
-  "code_files": 3696,
-  "code_lines": 540834
+  "generated_at": "2026-11-18 19:38 UTC",
+  "files_total": 4337,
+  "code_files": 3699,
+  "code_lines": 540955
  },
  "version": "1.3.2",
- "facts_hash": "c77b6716e96d30d1",
+ "facts_hash": "750e571e9dcea2b4",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1433,
+   ".ts": 1436,
    ".tsx": 1406,
    ".sql": 673,
    ".mjs": 134,
@@ -54716,7 +54716,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 111
+    "deps_count": 112
    },
    {
     "path": "",
@@ -55051,7 +55051,7 @@
      "get_sicoob_access_state",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 170
+    "deps_count": 172
    },
    {
     "path": "",
@@ -55072,7 +55072,7 @@
      "increment_kit_template_usage",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 50
+    "deps_count": 52
    },
    {
     "path": "",
@@ -63420,7 +63420,7 @@
   {
    "module": "src/components",
    "files": 1129,
-   "lines": 165460,
+   "lines": 165454,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -63753,7 +63753,7 @@
   {
    "module": "src/hooks",
    "files": 311,
-   "lines": 46015,
+   "lines": 45965,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64030,8 +64030,8 @@
   },
   {
    "module": "src/lib",
-   "files": 163,
-   "lines": 22265,
+   "files": 165,
+   "lines": 22354,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -65190,8 +65190,8 @@
   },
   {
    "module": "tests",
-   "files": 580,
-   "lines": 80383,
+   "files": 581,
+   "lines": 80471,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -98586,12 +98586,6 @@
     "kind": "escreve"
    },
    {
-    "file": "src/hooks/useKitAutoSave.ts",
-    "field": "status",
-    "value": "draft",
-    "kind": "escreve"
-   },
-   {
     "file": "src/hooks/useKitBuilder.ts",
     "field": "step",
     "value": "box",
@@ -100192,6 +100186,12 @@
     "field": "type",
     "value": "main",
     "kind": "compara"
+   },
+   {
+    "file": "src/lib/kit-builder/custom-kit-payload.ts",
+    "field": "status",
+    "value": "draft",
+    "kind": "escreve"
    },
    {
     "file": "src/lib/rbac/route-matrix.ts",
@@ -125265,6 +125265,14 @@
    },
    {
     "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "nao rebaixa para rascunho o kit que o montador considera valido"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "grava a identidade escolhida no primeiro autosave de um kit novo"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
     "name": "não confirma salvamento quando o Supabase retorna erro e permite nova tentativa"
    },
    {
@@ -128010,6 +128018,26 @@
    {
     "file": "tests/lib/crm-db-fixed.test.ts",
     "name": "throws on batch failure"
+   },
+   {
+    "file": "tests/lib/custom-kit-status.test.ts",
+    "name": "status de custom_kits"
+   },
+   {
+    "file": "tests/lib/custom-kit-status.test.ts",
+    "name": "a lista do front é exatamente a que o gatilho aceita"
+   },
+   {
+    "file": "tests/lib/custom-kit-status.test.ts",
+    "name": "kit válido é gravado como "
+   },
+   {
+    "file": "tests/lib/custom-kit-status.test.ts",
+    "name": "kit inválido continua rascunho"
+   },
+   {
+    "file": "tests/lib/custom-kit-status.test.ts",
+    "name": "todo status gravável tem rótulo em PT-BR para o selo do painel"
    },
    {
     "file": "tests/lib/date-utils-extended.test.ts",
@@ -157271,10 +157299,10 @@
       "escreve:src/components/ui/StatusBadge.tsx",
       "escreve:src/components/workflows/WorkflowCanvas.tsx",
       "escreve:src/hooks/quotes/quoteTypes.ts",
-      "escreve:src/hooks/useKitAutoSave.ts",
       "escreve:src/hooks/useKitTemplates.ts",
       "escreve:src/hooks/useMagicUpGeneration.ts",
       "escreve:src/hooks/useMagicUpState.ts",
+      "escreve:src/lib/kit-builder/custom-kit-payload.ts",
       "escreve:src/pages/KitLibraryPage.tsx",
       "escreve:src/pages/QuoteViewPage.tsx",
       "escreve:src/pages/admin/AdminCampanhasPage.tsx",
@@ -188055,7 +188083,7 @@
   },
   "src/components/dashboard/RecentKitsWidget.tsx": {
    "path": "src/components/dashboard/RecentKitsWidget.tsx",
-   "lines": 91,
+   "lines": 85,
    "exports": [
     "function RecentKitsWidget"
    ],
@@ -200867,7 +200895,7 @@
   },
   "src/hooks/useCustomKitPersistence.ts": {
    "path": "src/hooks/useCustomKitPersistence.ts",
-   "lines": 224,
+   "lines": 189,
    "exports": [
     "interface CustomKitRow",
     "function useCustomKitPersistence"
@@ -202018,7 +202046,7 @@
   },
   "src/hooks/useKitAutoSave.ts": {
    "path": "src/hooks/useKitAutoSave.ts",
-   "lines": 241,
+   "lines": 226,
    "exports": [
     "function useKitAutoSave"
    ],
@@ -202045,13 +202073,6 @@
     {
      "name": "AUTO_SAVE_DELAY_MS",
      "value": "5000"
-    }
-   ],
-   "status_values": [
-    {
-     "field": "status",
-     "value": "draft",
-     "kind": "escreve"
     }
    ],
    "doc": "Kit Auto-Save Hook Saves kit state automatically with debounce (5 seconds). Only triggers after the user has made meaningful changes.",
@@ -212133,6 +212154,22 @@
    ],
    "doc": "Tipos/interfaces para o banco de dados externo de produtos. Extraído de useExternalDatabase.ts para modularização."
   },
+  "src/lib/kit-builder/custom-kit-payload.ts": {
+   "path": "src/lib/kit-builder/custom-kit-payload.ts",
+   "lines": 65,
+   "exports": [
+    "function customKitStatus",
+    "function buildCustomKitPayload"
+   ],
+   "status_values": [
+    {
+     "field": "status",
+     "value": "draft",
+     "kind": "escreve"
+    }
+   ],
+   "doc": "Linha gravada em `custom_kits` a partir do estado do montador. O salvamento manual e o automático escrevem na MESMA linha, e por isso têm de montar o MESMO payload. Enquanto cada um tinha o seu, os dois divergiram: o automático fixava `status: 'draft'` e não enviava identidade nenhuma, então cada au …"
+  },
   "src/lib/kit-builder/index.ts": {
    "path": "src/lib/kit-builder/index.ts",
    "lines": 42,
@@ -212199,6 +212236,16 @@
      "body": "const breakdown: PriceBreakdownItem[] = []; // Caixa if (box) { breakdown.push({ label: `Caixa: ${box.name}`, quantity: kitQuantity, unitPrice: box.price, totalPrice: box.price * kitQuantity, }); // Personalização da caixa if (personalization.box.enabled && personalization.box.estimatedPrice) { breakdown.push({ label: `↳ Gravação: ${personalization.box.techniqueName || 'Personalização'}`, quantity: kitQuantity, unitPrice: personalization.box.estimatedPrice, totalPrice: personalization.box.estima …"
     }
    ]
+  },
+  "src/lib/kit-builder/status.ts": {
+   "path": "src/lib/kit-builder/status.ts",
+   "lines": 24,
+   "exports": [
+    "const CUSTOM_KIT_STATUS",
+    "const CUSTOM_KIT_STATUS_LABELS",
+    "type CustomKitStatus"
+   ],
+   "doc": "Estados aceitos por `public.custom_kits`. Esta é a lista canônica: o gatilho `trg_validate_kit_status` (BEFORE INSERT OR UPDATE) chama `validate_status_fields`, que levanta `Invalid kit status: %` para qualquer valor fora destes quatro. Recuperado da PR #119, fechada sem merge."
   },
   "src/lib/kit-builder/types.ts": {
    "path": "src/lib/kit-builder/types.ts",
@@ -241739,10 +241786,12 @@
   },
   "tests/hooks/useKitAutoSave.test.tsx": {
    "path": "tests/hooks/useKitAutoSave.test.tsx",
-   "lines": 152,
+   "lines": 202,
    "is_test": true,
    "tests": [
     "useKitAutoSave",
+    "nao rebaixa para rascunho o kit que o montador considera valido",
+    "grava a identidade escolhida no primeiro autosave de um kit novo",
     "não confirma salvamento quando o Supabase retorna erro e permite nova tentativa",
     "trata zero linhas atualizadas como falha de permissão ou concorrência",
     "serializa gravações concorrentes e persiste por último o estado mais recente",
@@ -243337,6 +243386,19 @@
     "invokeCrmBatch",
     "returns batch results",
     "throws on batch failure"
+   ]
+  },
+  "tests/lib/custom-kit-status.test.ts": {
+   "path": "tests/lib/custom-kit-status.test.ts",
+   "lines": 38,
+   "is_test": true,
+   "doc": "Contrato de status de `public.custom_kits`. O gatilho `trg_validate_kit_status` (BEFORE INSERT OR UPDATE) chama `validate_status_fields`, que levanta `Invalid kit status: %` para qualquer valor fora de ('draft','ready','shared','archived'). O front gravava 'complete', que o banco rejeita: salvar um …",
+   "tests": [
+    "status de custom_kits",
+    "a lista do front é exatamente a que o gatilho aceita",
+    "kit válido é gravado como ",
+    "kit inválido continua rascunho",
+    "todo status gravável tem rótulo em PT-BR para o selo do painel"
    ]
   },
   "tests/lib/date-utils-extended.test.ts": {
@@ -248131,10 +248193,25 @@
   }
  },
  "git": {
-  "sha": "d8d7dcd171c1e339017e300469bbb0efca17ab6c",
+  "sha": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "f2db0f8",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
+    "files": [
+     "src/components/dashboard/RecentKitsWidget.tsx",
+     "src/hooks/useCustomKitPersistence.ts",
+     "src/hooks/useKitAutoSave.ts",
+     "src/lib/kit-builder/custom-kit-payload.ts",
+     "src/lib/kit-builder/status.ts",
+     "tests/hooks/useKitAutoSave.test.tsx",
+     "tests/lib/custom-kit-status.test.ts"
+    ]
+   },
    {
     "sha": "d8d7dcd",
     "date": "2026-11-18",
@@ -248638,48 +248715,16 @@
      "src/routes/clientRoutes.ts",
      "tests/components/search/client-search-route.test.ts"
     ]
-   },
-   {
-    "sha": "45564a2",
-    "date": "2026-11-12",
-    "author": "adm01-debug",
-    "subject": "fix(db): restaura fontes das migrations já aplicadas (#151)",
-    "files": [
-     ".github/workflows/ci.yml",
-     "docs/execucao/evidencias/autoridade-verbas-sicoob.json",
-     "docs/execucao/evidencias/favoritos-reacoes-rls.json",
-     "docs/security/RLS_MATRIX.md",
-     "e2e/routes/public/lista-publica.spec.ts",
-     "scripts/automation.config.json",
-     "scripts/db/.check-runtime-refs-allowlist.json",
-     "scripts/qa/simular-autoridade-verbas-sicoob.py",
-     "scripts/qa/simular-reacoes-favoritos-rls.py",
-     "src/hooks/useFavoriteReactions.ts",
-     "src/integrations/supabase/types.ts",
-     "src/pages/PublicFavoriteListPage.tsx",
-     "src/services/favorites/publicFavoriteListService.ts",
-     "supabase/migrations/20261015230500_reconcile_search_analytics_telemetry.sql",
-     "supabase/migrations/20261015233500_restrict_search_analytics_grants.sql",
-     "supabase/migrations/20261015235000_consolidate_search_analytics_select_policy.sql",
-     "supabase/migrations/20261015235500_search_analytics_legacy_insert_compatibility.sql",
-     "supabase/migrations/20261016000000_assert_search_analytics_contract.sql",
-     "supabase/migrations/20261016160000_validate_search_analytics_payload.sql",
-     "supabase/migrations/20261016163000_harden_ai_usage_quotas.sql",
-     "supabase/migrations/20261016170000_restore_public_favorite_shares.sql",
-     "supabase/migrations/20261016171500_secure_public_favorite_share_rpc.sql",
-     "supabase/migrations/20261016172000_minimize_public_favorite_share_payload.sql",
-     "supabase/migrations/20261016173000_remove_redundant_pa_budget_select_policy.sql",
-     "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql",
-     "supabase/migrations/20261031042808_secure_public_favorite_reactions_access.sql",
-     "tests/scenarios/sql/favorite-reactions-rls-fixture.sql",
-     "tests/services/publicFavoriteListService.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     5
+   ],
+   [
+    "src/hooks/useCustomKitPersistence.ts",
+    2
    ],
    [
     "src/components/search/useGlobalSearch.ts",
@@ -248706,24 +248751,32 @@
     2
    ],
    [
-    "scripts/db/.check-runtime-refs-allowlist.json",
-    2
-   ],
-   [
-    "src/integrations/supabase/types.ts",
-    2
-   ],
-   [
     ".github/workflows/security.yml",
     2
    ],
    [
-    "scripts/automation.config.json",
-    2
+    "src/components/dashboard/RecentKitsWidget.tsx",
+    1
    ],
    [
-    ".github/workflows/ci.yml",
-    2
+    "src/hooks/useKitAutoSave.ts",
+    1
+   ],
+   [
+    "src/lib/kit-builder/custom-kit-payload.ts",
+    1
+   ],
+   [
+    "src/lib/kit-builder/status.ts",
+    1
+   ],
+   [
+    "tests/hooks/useKitAutoSave.test.tsx",
+    1
+   ],
+   [
+    "tests/lib/custom-kit-status.test.ts",
+    1
    ],
    [
     "src/hooks/bi/useClientBI.ts",
@@ -248743,18 +248796,6 @@
    ],
    [
     "src/components/common/RouteScrollReset.tsx",
-    1
-   ],
-   [
-    "src/components/mockup/KeyboardShortcuts.tsx",
-    1
-   ],
-   [
-    "src/components/products/VirtualizedProductGrid.tsx",
-    1
-   ],
-   [
-    "src/hooks/useScrollRestoration.ts",
     1
    ]
   ]

@@ -16,12 +16,12 @@
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (163)",
+   "src/lib (165)",
    "src/utils (37)",
    "src/services (22)"
   ],
   "testes": [
-   "tests/ (562)",
+   "tests/ (563)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
    "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)",
    "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)",
    "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)",
-   "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
-   "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)"
+   "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

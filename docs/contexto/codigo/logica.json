@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 247,
+ "total": 249,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 163,
+  "lib": 165,
   "python": 12,
   "services": 22,
   "stores": 6,
@@ -2670,6 +2670,31 @@
    "orfao": false
   },
   {
+   "arquivo": "src/lib/kit-builder/custom-kit-payload.ts",
+   "camada": "lib",
+   "exports": [
+    "CUSTOM_KIT_STATUS",
+    "buildCustomKitPayload",
+    "customKitStatus"
+   ],
+   "export_default": null,
+   "linhas": 65,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "hooks"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/lib/kit-builder/index.ts",
    "camada": "lib",
    "exports": [
@@ -2779,6 +2804,32 @@
    "orfao": false
   },
   {
+   "arquivo": "src/lib/kit-builder/status.ts",
+   "camada": "lib",
+   "exports": [
+    "CUSTOM_KIT_STATUS",
+    "CUSTOM_KIT_STATUS_LABELS",
+    "CustomKitStatus"
+   ],
+   "export_default": null,
+   "linhas": 24,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "components/dashboard",
+    "lib/kit-builder"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/lib/kit-builder/types.ts",
    "camada": "lib",
    "exports": [
@@ -2807,7 +2858,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 8,
+   "usado_por": 9,
    "usado_por_modulos": [
     "components/kit-builder",
     "hooks",

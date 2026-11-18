@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "d8d7dcd171c1e339017e300469bbb0efca17ab6c",
+  "commit": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
   "branch": "main",
-  "data_commit": "2026-11-18T18:50:14Z",
+  "data_commit": "2026-11-18T19:37:29Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "f2db0f8",
+    "data": "2026-11-18",
+    "assunto": "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)"
+   },
    {
     "sha": "d8d7dcd",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "03d9092",
     "data": "2026-11-13",
     "assunto": "ci(workflows): pular jobs em PRs do Copilot (#276)"
-   },
-   {
-    "sha": "1d65b3c",
-    "data": "2026-11-13",
-    "assunto": "fix(inventário): atualiza generated_at do cache para desbloquear CI (#278)"
    }
   ],
-  "arquivos_mudados_7d": 350,
+  "arquivos_mudados_7d": 353,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 93
+    "mudancas": 92
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 92
+    "mudancas": 91
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 131
+    "commits": 132
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4332,
-  "arquivos_codigo": 3041,
-  "linhas_codigo": 479948,
+  "arquivos_total": 4335,
+  "arquivos_codigo": 3044,
+  "linhas_codigo": 480069,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 291,
   "migrations": 620,
   "cron_jobs": 27,
-  "testes": 809,
+  "testes": 810,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1129,
-   "linhas": 165460
+   "linhas": 165454
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,15 +792,15 @@
   },
   "src/hooks": {
    "arquivos": 311,
-   "linhas": 46015
+   "linhas": 45965
   },
   "src/integrations": {
    "arquivos": 3,
    "linhas": 13462
   },
   "src/lib": {
-   "arquivos": 163,
-   "linhas": 22265
+   "arquivos": 165,
+   "linhas": 22354
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -916,15 +916,15 @@
   },
   "tests/hooks": {
    "arquivos": 126,
-   "linhas": 13349
+   "linhas": 13399
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 66,
-   "linhas": 8442
+   "arquivos": 67,
+   "linhas": 8480
   },
   "tests/load": {
    "arquivos": 1,

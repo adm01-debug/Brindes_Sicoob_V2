@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d8d7dcd171` · branch `main` · 2026-11-18 18:52 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f2db0f8d0b` · branch `main` · 2026-11-18 19:38 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6589 testes em 634 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6596 testes em 635 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5965,6 +5965,7 @@ _nenhum item encontrado_
 | `tests/hooks/useClientsPortfolioKpis.test.ts` | 7 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · exclui pedido cancelado nas duas consultas · pagina até esgotar a janela, em vez de usar só a primeira resposta … |
 | `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
 | `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
+| `tests/hooks/useKitAutoSave.test.tsx` | 7 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
@@ -5990,8 +5991,7 @@ _nenhum item encontrado_
 | `tests/admin/react-warning-guard-sanity.test.ts` | 6 | react-warning-guard — sanity · captura o warning canônico de ref em function component · não falha quando não há warnings · não falha por  … |
 | `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
 | `tests/components/ErrorBoundary.test.tsx` | 6 | ErrorBoundary · renders children when no error occurs · renders fallback UI when a render error occurs · handles ChunkLoadError specifically … |
-| `tests/components/GlobalConfirmDialog.test.tsx` | 6 | GlobalConfirmDialog · exibe título/descrição e confirma com o rótulo customizado · Escape cancela e devolve o foco para quem abriu a confirmação · devolve o foco para o botão de dentro de outro diálogo … |
-| … +334 linhas — lista completa em `context.json` | | |
+| … +335 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
