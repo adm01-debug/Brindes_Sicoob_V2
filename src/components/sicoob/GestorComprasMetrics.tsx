@@ -65,8 +65,8 @@ function ConsumoDaVerba({ consumida, total }: { consumida: number; total: number
  * SLA e totais do mês. Mostram "—" quando o universo consultado não está
  * completo: um agregado parcial apresentado como total vira decisão errada.
  */
-function MetricasDaFila() {
-  const { data: metrics, isLoading, isError } = usePurchasingMetrics();
+function MetricasDaFila({ cooperativeId }: { cooperativeId: string }) {
+  const { data: metrics, isLoading, isError } = usePurchasingMetrics(cooperativeId);
 
   if (isLoading) {
     return (
@@ -153,7 +153,7 @@ export function GestorComprasMetrics({ cooperativeId }: { cooperativeId: string 
         </p>
       )}
       <div className="sm:col-span-2">
-        <MetricasDaFila />
+        <MetricasDaFila cooperativeId={cooperativeId} />
       </div>
     </div>
   );

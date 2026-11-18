@@ -35,6 +35,12 @@ const statsCompletas = {
   recentOrders: [],
 };
 
+/** Pedidos do mês já aprovados, que é o universo que o SLA mede. */
+function aprovados(count: number, linhas: number) {
+  const base = pedidos(count, linhas);
+  return { ...base, data: base.data.map((o) => ({ ...o, status: 'confirmed' as const })) };
+}
+
 function pedidos(count: number, linhas: number) {
   return {
     count,
@@ -112,17 +118,34 @@ describe('Indicadores na tela de Gestão de Compras', () => {
   });
 
   it('mostra o SLA medido quando o universo está completo', async () => {
+    // Dois pedidos do mês já aprovados: um decidido em 2h, outro em 48h.
     getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
-    loadPurchasingOrders.mockResolvedValue(pedidos(2, 2));
+    loadPurchasingOrders.mockResolvedValue(aprovados(2, 2));
+    const base = Date.parse('2026-10-13T08:00:00.000Z');
     loadManagerApprovalHistory.mockResolvedValue(
       new Map([
-        ['order-0', new Date().toISOString()],
-        ['order-1', '2020-01-01T00:00:00.000Z'],
+        ['order-0', { submittedAtMs: base, decidedAtMs: base + 2 * 3_600_000 }],
+        ['order-1', { submittedAtMs: base, decidedAtMs: base + 48 * 3_600_000 }],
       ]),
     );
 
     renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
 
     expect(await screen.findByText('50%')).toBeTruthy();
+  });
+
+  it('consulta só a cooperativa do perfil', async () => {
+    // Sem o recorte, dev e supervisor veriam pedido de outra Singular somado
+    // ao indicador desta.
+    getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
+    loadPurchasingOrders.mockResolvedValue(aprovados(1, 1));
+    loadManagerApprovalHistory.mockResolvedValue(new Map());
+
+    renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
+
+    await waitFor(() => expect(loadPurchasingOrders).toHaveBeenCalled());
+    for (const chamada of loadPurchasingOrders.mock.calls) {
+      expect(chamada[2]).toBe('coop-1');
+    }
   });
 });

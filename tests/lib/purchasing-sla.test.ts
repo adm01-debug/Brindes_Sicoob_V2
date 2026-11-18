@@ -2,13 +2,15 @@
  * Regras do SLA de 24h e dos totais do mês da gestão de compras.
  *
  * Recupera os cenários da PR #119. O que eles travam não é a aritmética: é a
- * recusa em apresentar número parcial ou estimado como se fosse medido.
+ * recusa em apresentar número parcial ou estimado como se fosse medido — e,
+ * depois da revisão, a recusa em chamar de "aprovado em 24h" o pedido que
+ * ninguém aprovou.
  */
 import { describe, expect, it } from 'vitest';
 
 import {
   calculatePurchasingMetrics,
-  mapLatestManagerSubmissionTimes,
+  mapApprovalDecisions,
   metricLabel,
   type PurchasingOrder,
 } from '@/lib/orders/purchasing-sla';
@@ -18,7 +20,11 @@ function order(id: string, status: OrderStatus, total: number, createdAt: string
   return { id, status, total_amount: total, created_at: createdAt };
 }
 
-const agora = new Date('2026-10-13T12:00:00.000Z');
+/** Par (entrou na fila, foi aprovado) com o intervalo em horas. */
+function decisao(id: string, enviadoEm: string, horasAteAprovar: number) {
+  const submittedAtMs = Date.parse(enviadoEm);
+  return [id, { submittedAtMs, decidedAtMs: submittedAtMs + horasAteAprovar * 3_600_000 }] as const;
+}
 
 describe('métricas canônicas da gestão de compras', () => {
   it('calcula pendências, SLA e totais a partir dos pedidos visíveis', () => {
@@ -38,12 +44,13 @@ describe('métricas canônicas da gestão de compras', () => {
         order('order-6', 'cancelled', 7_000, '2026-10-05T08:00:00.000Z'),
       ],
     };
-    const enviadoEm = new Map([
-      ['order-1', '2026-10-13T08:00:00.000Z'],
-      ['order-2', '2026-10-11T08:00:00.000Z'],
+    // Dos dois aprovados, um foi decidido em 2h e o outro em 48h: 50%.
+    const decisoes = new Map([
+      decisao('order-4', '2026-10-03T08:00:00.000Z', 2),
+      decisao('order-5', '2026-10-04T08:00:00.000Z', 48),
     ]);
 
-    expect(calculatePurchasingMetrics(pendentes, doMes, agora, enviadoEm)).toEqual({
+    expect(calculatePurchasingMetrics(pendentes, doMes, decisoes)).toEqual({
       pendingCount: 2,
       slaPercent: 50,
       monthlyTotal: 3_500,
@@ -51,15 +58,31 @@ describe('métricas canônicas da gestão de compras', () => {
     });
   });
 
+  it('fila recém-criada e nenhuma aprovação não viram 100%', () => {
+    // O cálculo antigo media a idade dos pendentes: um mês em que ninguém
+    // aprovou nada exibia "Aprovados em 24h: 100%".
+    const pendentes = {
+      count: 2,
+      data: [
+        order('order-1', 'waiting_approval', 1_000, '2026-10-13T11:00:00.000Z'),
+        order('order-2', 'waiting_approval', 2_000, '2026-10-13T11:30:00.000Z'),
+      ],
+    };
+
+    expect(calculatePurchasingMetrics(pendentes, pendentes, new Map()).slaPercent).toBeNull();
+  });
+
   it('não apresenta agregado parcial quando a consulta trunca', () => {
     // 1.001 pedidos no banco, 1 linha devolvida: qualquer soma aqui seria uma
     // fração apresentada como total.
     const truncado = {
       count: 1_001,
-      data: [order('order-1', 'waiting_approval', 1_000, '2026-10-13T08:00:00.000Z')],
+      data: [order('order-1', 'confirmed', 1_000, '2026-10-13T08:00:00.000Z')],
     };
 
-    expect(calculatePurchasingMetrics(truncado, truncado, agora, new Map())).toEqual({
+    expect(
+      calculatePurchasingMetrics(truncado, truncado, new Map([decisao('order-1', '2026-10-13T08:00:00.000Z', 1)])),
+    ).toEqual({
       pendingCount: 1_001,
       slaPercent: null,
       monthlyTotal: null,
@@ -67,13 +90,17 @@ describe('métricas canônicas da gestão de compras', () => {
     });
   });
 
-  it('não usa a data de criação do pedido no lugar do histórico de aprovação', () => {
-    const pendentes = {
-      count: 1,
-      data: [order('order-1', 'waiting_approval', 1_000, '2026-10-13T11:30:00.000Z')],
+  it('aprovado sem carimbo de envio zera o SLA em vez de estimar', () => {
+    const doMes = {
+      count: 2,
+      data: [
+        order('order-1', 'confirmed', 1_000, '2026-10-03T08:00:00.000Z'),
+        order('order-2', 'delivered', 1_000, '2026-10-04T08:00:00.000Z'),
+      ],
     };
 
-    expect(calculatePurchasingMetrics(pendentes, pendentes, agora, new Map()).slaPercent).toBeNull();
+    const decisoes = new Map([decisao('order-1', '2026-10-03T08:00:00.000Z', 1)]);
+    expect(calculatePurchasingMetrics(undefined, doMes, decisoes).slaPercent).toBeNull();
   });
 
   it('cancelado sai do total do mês e não conta como aprovado', () => {
@@ -85,32 +112,52 @@ describe('métricas canônicas da gestão de compras', () => {
       ],
     };
 
-    const metrics = calculatePurchasingMetrics(undefined, doMes, agora, new Map());
+    const metrics = calculatePurchasingMetrics(undefined, doMes, new Map());
     expect(metrics.monthlyTotal).toBe(1_000);
     expect(metrics.approvedTotal).toBe(1_000);
   });
 });
 
-describe('mapLatestManagerSubmissionTimes', () => {
-  it('usa a entrada mais recente e ignora outros status e eventos sem pedido', () => {
-    const enviadoEm = mapLatestManagerSubmissionTimes([
+describe('mapApprovalDecisions', () => {
+  it('usa a entrada na fila imediatamente anterior à aprovação', () => {
+    // Reenvio é comum: vale a última ida à fila antes do "sim", não a primeira.
+    const decisoes = mapApprovalDecisions([
+      { order_id: 'order-1', new_status: 'waiting_approval', created_at: '2026-10-10T10:00:00.000Z' },
+      { order_id: 'order-1', new_status: 'draft', created_at: '2026-10-11T10:00:00.000Z' },
       { order_id: 'order-1', new_status: 'waiting_approval', created_at: '2026-10-13T10:00:00.000Z' },
-      { order_id: 'order-1', new_status: 'pending', created_at: '2026-10-13T10:30:00.000Z' },
-      { order_id: 'order-1', new_status: 'waiting_approval', created_at: '2026-10-13T11:30:00.000Z' },
-      { order_id: null, new_status: 'waiting_approval', created_at: '2026-10-13T11:45:00.000Z' },
+      { order_id: 'order-1', new_status: 'confirmed', created_at: '2026-10-13T16:00:00.000Z' },
+      { order_id: null, new_status: 'confirmed', created_at: '2026-10-13T11:45:00.000Z' },
     ]);
 
-    expect(enviadoEm.get('order-1')).toBe('2026-10-13T11:30:00.000Z');
-    expect(enviadoEm.size).toBe(1);
+    const par = decisoes.get('order-1');
+    expect(par?.submittedAtMs).toBe(Date.parse('2026-10-13T10:00:00.000Z'));
+    expect(par?.decidedAtMs).toBe(Date.parse('2026-10-13T16:00:00.000Z'));
+    expect(decisoes.size).toBe(1);
   });
 
-  it('descarta evento com data inválida em vez de contá-lo como recente', () => {
-    const enviadoEm = mapLatestManagerSubmissionTimes([
+  it('pedido ainda na fila não entra como decidido', () => {
+    const decisoes = mapApprovalDecisions([
       { order_id: 'order-1', new_status: 'waiting_approval', created_at: '2026-10-13T10:00:00.000Z' },
-      { order_id: 'order-1', new_status: 'waiting_approval', created_at: 'data-quebrada' },
     ]);
 
-    expect(enviadoEm.get('order-1')).toBe('2026-10-13T10:00:00.000Z');
+    expect(decisoes.size).toBe(0);
+  });
+
+  it('aprovação sem entrada na fila registrada é descartada, não estimada', () => {
+    const decisoes = mapApprovalDecisions([
+      { order_id: 'order-1', new_status: 'confirmed', created_at: '2026-10-13T16:00:00.000Z' },
+    ]);
+
+    expect(decisoes.size).toBe(0);
+  });
+
+  it('descarta evento com data inválida', () => {
+    const decisoes = mapApprovalDecisions([
+      { order_id: 'order-1', new_status: 'waiting_approval', created_at: 'data-quebrada' },
+      { order_id: 'order-1', new_status: 'confirmed', created_at: '2026-10-13T16:00:00.000Z' },
+    ]);
+
+    expect(decisoes.size).toBe(0);
   });
 });
 

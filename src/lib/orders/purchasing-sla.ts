@@ -3,14 +3,19 @@
  *
  * Duas regras valem mais do que o cálculo em si:
  *
- * 1. **Só agrega universo completo.** As consultas são limitadas (1.000 linhas)
- *    e passam por RLS. Se o `count` do Postgres não bate com as linhas
- *    devolvidas, a consulta truncou ou a RLS cortou: devolvemos `null` e a tela
- *    mostra "—". Um agregado parcial apresentado como total vira decisão errada.
- * 2. **SLA sai do histórico canônico, não do `created_at` do pedido.** O que
- *    importa é quando o pedido entrou na fila do gestor (`waiting_approval` em
- *    `sicoob_order_history`), não quando foi criado. Sem esse dado para algum
- *    pedido da amostra, o SLA é `null` — não estimamos.
+ * 1. **Só agrega universo completo — o universo visível.** As consultas são
+ *    limitadas (1.000 linhas). Se o `count` do Postgres não bate com as linhas
+ *    devolvidas, a consulta truncou: devolvemos `null` e a tela mostra "—". Um
+ *    agregado parcial apresentado como total vira decisão errada. A ressalva
+ *    honesta: o `count` também passa pela RLS, então a igualdade prova que
+ *    **nada foi truncado dentro do que este usuário enxerga** — não prova que
+ *    não existam pedidos ocultos para ele.
+ * 2. **SLA é tempo de decisão, não idade da fila.** Mede, entre os pedidos do
+ *    mês que o gestor já aprovou, quantos foram decididos em até 24h depois de
+ *    entrarem na fila (`waiting_approval` → primeiro status aprovado, ambos em
+ *    `sicoob_order_history`). Contar pedido ainda pendente daria 100% num mês
+ *    em que ninguém aprovou nada. Sem o par de carimbos para algum pedido
+ *    aprovado da amostra, o SLA é `null` — não estimamos.
  *
  * Recuperado da PR #119, fechada sem merge.
  */
@@ -50,22 +55,64 @@ const APPROVED_STATUSES = new Set<OrderStatus>([
 
 const DIA_EM_MS = 24 * 60 * 60 * 1000;
 
-/** Última entrada canônica de cada pedido na fila de aprovação do gestor. */
-export function mapLatestManagerSubmissionTimes(
-  events: readonly SicoobOrderHistoryStatusEvent[],
-): ReadonlyMap<string, string> {
-  const latestByOrder = new Map<string, string>();
-  for (const event of events) {
-    if (event.new_status !== 'waiting_approval' || !event.order_id) continue;
+export interface ApprovalDecision {
+  /** Entrada na fila do gestor imediatamente anterior à decisão. */
+  submittedAtMs: number;
+  /** Primeiro status aprovado registrado depois dessa entrada. */
+  decidedAtMs: number;
+}
 
-    const occurredAtMs = Date.parse(event.created_at);
-    if (!Number.isFinite(occurredAtMs)) continue;
-    const existing = latestByOrder.get(event.order_id);
-    if (!existing || occurredAtMs > Date.parse(existing)) {
-      latestByOrder.set(event.order_id, event.created_at);
+/**
+ * Para cada pedido, o par (entrou na fila, foi aprovado) da última decisão.
+ *
+ * Reenvio é comum: o que vale é a entrada na fila logo antes da aprovação, não
+ * a primeira de todas. Pedido ainda sem aprovação registrada não entra no mapa.
+ */
+interface EventoDeFila { ms: number; aprovado: boolean }
+
+/** Só os dois status que o SLA enxerga, com data válida e pedido conhecido. */
+function eventoDeFila(event: SicoobOrderHistoryStatusEvent): EventoDeFila | null {
+  if (!event.order_id) return null;
+  const ms = Date.parse(event.created_at);
+  if (!Number.isFinite(ms)) return null;
+  const aprovado = APPROVED_STATUSES.has(event.new_status as OrderStatus);
+  if (!aprovado && event.new_status !== 'waiting_approval') return null;
+  return { ms, aprovado };
+}
+
+/** Último par (última ida à fila, aprovação seguinte) de uma linha do tempo. */
+function ultimaDecisao(linha: EventoDeFila[]): ApprovalDecision | null {
+  linha.sort((a, b) => a.ms - b.ms);
+  let entrada: number | null = null;
+  let decisao: ApprovalDecision | null = null;
+  for (const evento of linha) {
+    if (!evento.aprovado) entrada = evento.ms;
+    else if (entrada !== null) {
+      decisao = { submittedAtMs: entrada, decidedAtMs: evento.ms };
+      entrada = null;
     }
   }
-  return latestByOrder;
+  return decisao;
+}
+
+export function mapApprovalDecisions(
+  events: readonly SicoobOrderHistoryStatusEvent[],
+): ReadonlyMap<string, ApprovalDecision> {
+  const porPedido = new Map<string, EventoDeFila[]>();
+  for (const event of events) {
+    const util = eventoDeFila(event);
+    if (!util) continue;
+    const linha = porPedido.get(event.order_id as string) ?? [];
+    linha.push(util);
+    porPedido.set(event.order_id as string, linha);
+  }
+
+  const decisoes = new Map<string, ApprovalDecision>();
+  for (const [orderId, linha] of porPedido) {
+    const decisao = ultimaDecisao(linha);
+    if (decisao) decisoes.set(orderId, decisao);
+  }
+  return decisoes;
 }
 
 function resultCount(result: OrderListResult): number | null {
@@ -80,21 +127,27 @@ function hasCompleteResult(
   return Boolean(result && count !== null && count === result.data.length);
 }
 
-function calculatePendingSla(
-  result: OrderListResult,
+/**
+ * Percentual dos pedidos **já aprovados** do mês decididos em até 24h.
+ *
+ * Pedido pendente fica de fora de propósito: incluí-lo faria o indicador
+ * mostrar 100% num mês em que ninguém aprovou nada — bastava a fila ser nova.
+ */
+function calculateApprovalSla(
+  monthlyResult: OrderListResult,
   count: number | null,
-  sentAtByOrderId: ReadonlyMap<string, string> | undefined,
-  now: Date,
+  decisions: ReadonlyMap<string, ApprovalDecision> | undefined,
 ): number | null {
-  if (!hasCompleteResult(result, count) || result.data.length === 0) return null;
-  if (!sentAtByOrderId) return null;
-  const ontem = now.getTime() - DIA_EM_MS;
-  const enviados = result.data.map((order) => sentAtByOrderId.get(order.id));
-  if (enviados.some((carimbo) => !carimbo || !Number.isFinite(Date.parse(carimbo)))) return null;
-  const dentroDoSla = enviados
-    .filter((carimbo): carimbo is string => Boolean(carimbo))
-    .filter((carimbo) => Date.parse(carimbo) >= ontem).length;
-  return (dentroDoSla / result.data.length) * 100;
+  if (!hasCompleteResult(monthlyResult, count) || !decisions) return null;
+  const aprovados = monthlyResult.data.filter((order) => APPROVED_STATUSES.has(order.status));
+  if (aprovados.length === 0) return null;
+  const pares = aprovados.map((order) => decisions.get(order.id));
+  // Faltou carimbo de algum aprovado: a amostra não é o universo, não estimamos.
+  if (pares.some((par) => !par)) return null;
+  const dentroDoSla = pares.filter(
+    (par) => par && par.decidedAtMs - par.submittedAtMs <= DIA_EM_MS,
+  ).length;
+  return (dentroDoSla / aprovados.length) * 100;
 }
 
 function sumCompleteOrders(
@@ -111,15 +164,14 @@ function sumCompleteOrders(
 export function calculatePurchasingMetrics(
   pendingResult: OrderListResult,
   monthlyResult: OrderListResult,
-  now = new Date(),
-  sentAtByOrderId?: ReadonlyMap<string, string>,
+  decisions?: ReadonlyMap<string, ApprovalDecision>,
 ): PurchasingMetrics {
   const pendingCount = resultCount(pendingResult);
   const monthlyCount = resultCount(monthlyResult);
 
   return {
     pendingCount,
-    slaPercent: calculatePendingSla(pendingResult, pendingCount, sentAtByOrderId, now),
+    slaPercent: calculateApprovalSla(monthlyResult, monthlyCount, decisions),
     monthlyTotal: sumCompleteOrders(
       monthlyResult,
       monthlyCount,
