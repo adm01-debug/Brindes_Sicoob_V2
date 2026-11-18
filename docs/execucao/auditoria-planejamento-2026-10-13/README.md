@@ -48,7 +48,14 @@ As simulações estão nos arquivos `simulacao-*.json` e `simular-*.py.json`. Fo
 
 ## Integridade e publicação
 
-Os 82 arquivos originais deste pacote foram preservados byte a byte. [manifesto-entrega.json](manifesto-entrega.json) contém os hashes dos entregáveis principais; [manifesto-publicacao.json](manifesto-publicacao.json) registra cada arquivo da coleta e seu destino.
+Os dois manifestos são **documentos históricos da coleta de 13/10/2026** e foram mantidos como estavam: [manifesto-entrega.json](manifesto-entrega.json) traz os hashes dos entregáveis originais e [manifesto-publicacao.json](manifesto-publicacao.json) registra cada arquivo da coleta e o destino previsto **naquela data**. Eles não descrevem este pacote publicado, e conferi-los contra os arquivos daqui acusa duas diferenças — ambas desta publicação, não da coleta:
+
+| arquivo | no manifesto histórico | nesta publicação |
+|---|---|---|
+| `RELATORIO.md` | 85470 bytes, `13e50a6f…` | 85554 bytes, `e1ce863c7bbc78c1701003fb318ca09a6efdb9f6f0f465b52e03e1c6fdb63303` — os links para os três arquivos omitidos foram removidos, senão apontariam para o nada |
+| `consulta.html` | listado como versionado | **ausente** (968 KB), junto de `marcadores-documentacao.json` (10,5 MB) e `inventario-repositorio.json` (1,8 MB) |
+
+Os outros 79 arquivos conferem byte a byte com o manifesto de entrega. A proveniência original fica preservada justamente por não reescrever os manifestos: o que mudou está nesta tabela.
 
 O `.gitattributes` deste diretório impede normalização dos CSVs e preserva o espaçamento de duas capturas históricas. Isso mantém seus hashes; não altera regras do código da aplicação nem a varredura de segredos.
 
