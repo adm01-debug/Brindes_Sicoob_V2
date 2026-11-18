@@ -1,5 +1,5 @@
 /**
- * useColorEnrichment — Batch-enriches lightweight products with color-specific
+ * useColorEnrichment ââ‚¬â€ Batch-enriches lightweight products with color-specific
  * images and stock when a color filter is active.
  * 
  * Without this, lightweight products have colors: [] and the card cannot
@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useMemo, useEffect } from 'react';
 import { invokeBatchBridge } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 interface ColorEnrichmentData {
   image: string | null;
@@ -122,7 +123,10 @@ async function fetchProductImages(productIds: string[]): Promise<ImageRow[]> {
     }]);
     rows.push(...bridgeRecords<ImageRow>(results[0]));
   }
-  return rows;
+  return Promise.all(rows.map(async (row) => ({
+    ...row,
+    url_cdn: await resolvePrivateStorageUrlSafe(row.url_cdn, 'personalization-images'),
+  })));
 }
 
 function storePrimaryImage(row: ImageRow, target: Map<string, Set<string>>): void {
@@ -223,7 +227,7 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
   const accumulatedMapRef = useRef<Map<string, ColorEnrichmentData>>(new Map());
   const lastFilterKeyRef = useRef<string>(filterKey);
 
-  // Reset cache when filter changes — use useEffect to avoid mutating refs during render
+  // Reset cache when filter changes ââ‚¬â€ use useEffect to avoid mutating refs during render
   useEffect(() => {
     if (lastFilterKeyRef.current !== filterKey) {
       enrichedIdsRef.current = new Set();

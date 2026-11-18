@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { createPrivateStorageUrl } from '@/lib/private-storage';
 
 /**
  * Storage Resilience Helper
@@ -36,9 +37,6 @@ async function fallbackUpload(filePath: string, file: File) {
   return data;
 }
 
-export function getResilientUrl(path: string) {
-  // Try to determine if it's in secondary based on some metadata or just return a helper
-  // For simplicity, we just return the public URL of the primary, 
-  // but a more robust system would check existence.
-  return supabase.storage.from(PRIMARY_BUCKET).getPublicUrl(path).data.publicUrl;
+export async function getResilientUrl(path: string) {
+  return createPrivateStorageUrl(PRIMARY_BUCKET, path);
 }

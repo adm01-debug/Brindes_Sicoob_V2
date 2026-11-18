@@ -223,7 +223,7 @@
     {
       "id": "legacy-a9bf068d0df91124",
       "kind": "legacy",
-      "files": ["scripts/check-npm-audit.mjs"],
+      "files": ["scripts/check-npm-audit.mjs", "scripts/lib/npm-audit-policy.mjs"],
       "manual": ["node", "scripts/check-npm-audit.mjs"],
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; referências literais: package.json:scripts. O dispatcher não executa esta operação."
