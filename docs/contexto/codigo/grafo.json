@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2229,
- "arestas": 9093,
+ "nos": 2232,
+ "arestas": 9100,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -30,7 +30,7 @@
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
-   "importado_por": 179
+   "importado_por": 180
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
@@ -50,7 +50,7 @@
   },
   {
    "arquivo": "src/components/ui/dialog.tsx",
-   "importado_por": 138
+   "importado_por": 139
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
@@ -101,12 +101,12 @@
    "importado_por": 53
   },
   {
-   "arquivo": "src/lib/format.ts",
+   "arquivo": "src/components/ui/popover.tsx",
    "importado_por": 46
   },
   {
-   "arquivo": "src/components/ui/popover.tsx",
-   "importado_por": 45
+   "arquivo": "src/lib/format.ts",
+   "importado_por": 46
   },
   {
    "arquivo": "src/components/ui/separator.tsx",

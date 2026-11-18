@@ -9266,7 +9266,7 @@
     "KeyboardShortcutsHint"
    ],
    "export_default": null,
-   "linhas": 105,
+   "linhas": 108,
    "dominio": "components/mockup",
    "hooks_locais": [
     "useKeyboardShortcuts"
@@ -12125,7 +12125,7 @@
     "VirtualizedProductGrid"
    ],
    "export_default": null,
-   "linhas": 210,
+   "linhas": 211,
    "dominio": "components/products",
    "hooks_locais": [],
    "tabelas": [],

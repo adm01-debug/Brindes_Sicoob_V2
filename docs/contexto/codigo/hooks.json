@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 389,
+ "total": 390,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -1231,7 +1231,7 @@
    "hooks_exportados": [
     "useKeyboardShortcuts"
    ],
-   "linhas": 105,
+   "linhas": 108,
    "dominio": "components/mockup",
    "tabelas": [],
    "rpcs": [],
@@ -1245,7 +1245,7 @@
    "usado_por_arquivos": [
     "src/pages/MockupGenerator.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/components/mockup/logo-editor/useElementSize.ts",
@@ -8173,6 +8173,29 @@
    "coberto_por_testes": 0
   },
   {
+   "arquivo": "src/hooks/useScrollRestoration.ts",
+   "hooks_exportados": [
+    "useScrollRestoration"
+   ],
+   "linhas": 77,
+   "dominio": "hooks",
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [
+    "useEffect",
+    "useLocation",
+    "useNavigationType",
+    "useRef"
+   ],
+   "canais_realtime": [],
+   "usado_por": 1,
+   "usado_por_arquivos": [
+    "src/components/common/RouteScrollReset.tsx"
+   ],
+   "coberto_por_testes": 1
+  },
+  {
    "arquivo": "src/hooks/useSearch.ts",
    "hooks_exportados": [
     "useSearch"
@@ -8496,7 +8519,7 @@
    "hooks_exportados": [
     "useSmartNavigation"
    ],
-   "linhas": 72,
+   "linhas": 145,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -8506,7 +8529,9 @@
     "useEffect",
     "useLocation",
     "useNavigate",
-    "useNavigationStore"
+    "useNavigationStore",
+    "useSmartBackRegistration",
+    "useTrackNavigation"
    ],
    "canais_realtime": [],
    "usado_por": 3,
@@ -8515,7 +8540,7 @@
     "src/components/navigation/Breadcrumbs.tsx",
     "src/hooks/useSwipeBack.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useSparklineSales.tsx",
@@ -9817,7 +9842,7 @@
    "edges": [],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 19,
+   "usado_por": 20,
    "usado_por_arquivos": [
     "src/components/admin/CouponManager.tsx",
     "src/components/admin/OwnershipRepairDialog.tsx",
@@ -9826,6 +9851,7 @@
     "src/components/admin/suppliers-manager/useSuppliersManager.ts",
     "src/components/cart/MiniCart.tsx",
     "src/components/common/GlobalConfirmDialog.tsx",
+    "src/hooks/useSmartNavigation.ts",
     "src/pages/admin/AdminCMSPage.tsx",
     "src/pages/admin/AdminCampanhasPage.tsx",
     "src/pages/admin/AdminCentraisPage.tsx",
@@ -9839,7 +9865,7 @@
     "src/pages/sicoob/GestorApprovalsPage.tsx",
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 3
   },
   {
    "arquivo": "src/stores/useFavoritesStore.ts",
@@ -9891,7 +9917,7 @@
     "src/hooks/useSmartNavigation.ts",
     "src/lib/auth/sensitive-browser-data.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/stores/useRecentlyViewedStore.ts",

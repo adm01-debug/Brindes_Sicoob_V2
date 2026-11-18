@@ -1610,9 +1610,11 @@
     "useNavigate",
     "useNavigationStore",
     "useSidebar",
+    "useSmartBackRegistration",
     "useSmartNavigation",
     "useState",
-    "useToast"
+    "useToast",
+    "useTrackNavigation"
    ],
    "hooks_locais": [
     "useIsMobile",
@@ -1629,9 +1631,13 @@
    "canais_realtime": [],
    "flags": [],
    "papeis": [
-    "dialog"
+    "alertdialog",
+    "dialog",
+    "listbox",
+    "menu",
+    "tooltip"
    ],
-   "arquivos_puxados": 25
+   "arquivos_puxados": 31
   },
   {
    "protegida": true,
@@ -1865,9 +1871,11 @@
     "useNavigate",
     "useNavigationStore",
     "useSidebar",
+    "useSmartBackRegistration",
     "useSmartNavigation",
     "useState",
-    "useToast"
+    "useToast",
+    "useTrackNavigation"
    ],
    "hooks_locais": [
     "useIsMobile",
@@ -1884,8 +1892,14 @@
    "edges": [],
    "canais_realtime": [],
    "flags": [],
-   "papeis": [],
-   "arquivos_puxados": 23
+   "papeis": [
+    "alertdialog",
+    "dialog",
+    "listbox",
+    "menu",
+    "tooltip"
+   ],
+   "arquivos_puxados": 29
   },
   {
    "protegida": true,
@@ -1908,8 +1922,10 @@
     "useNavigate",
     "useNavigationStore",
     "useSidebar",
+    "useSmartBackRegistration",
     "useSmartNavigation",
-    "useState"
+    "useState",
+    "useTrackNavigation"
    ],
    "hooks_locais": [
     "useIsMobile",
@@ -1922,8 +1938,14 @@
    "edges": [],
    "canais_realtime": [],
    "flags": [],
-   "papeis": [],
-   "arquivos_puxados": 19
+   "papeis": [
+    "alertdialog",
+    "dialog",
+    "listbox",
+    "menu",
+    "tooltip"
+   ],
+   "arquivos_puxados": 25
   },
   {
    "protegida": true,
@@ -5400,8 +5422,10 @@
     "useSensors",
     "useSicoobOrdersOptimistic",
     "useSmartAlerts",
+    "useSmartBackRegistration",
     "useSmartNavigation",
     "useState",
+    "useTrackNavigation",
     "useUpdateOrder",
     "useUserProfile",
     "useUserRoles"
@@ -5527,15 +5551,19 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alertdialog",
     "dev",
     "dialog",
     "gestor_pa",
     "gestor_singular",
+    "listbox",
     "manager",
+    "menu",
     "owner",
-    "supervisor"
+    "supervisor",
+    "tooltip"
    ],
-   "arquivos_puxados": 146
+   "arquivos_puxados": 149
   },
   {
    "protegida": true,
@@ -6682,15 +6710,19 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "assistant",
     "button",
     "dialog",
+    "listbox",
     "log",
     "manager",
+    "menu",
     "separator",
+    "tooltip",
     "user"
    ],
-   "arquivos_puxados": 162
+   "arquivos_puxados": 163
   },
   {
    "protegida": true,
@@ -6797,10 +6829,12 @@
     "useSensor",
     "useSensors",
     "useSimilarKits",
+    "useSmartBackRegistration",
     "useSmartNavigation",
     "useSortable",
     "useState",
     "useTemplateSnapshot",
+    "useTrackNavigation",
     "useUserProfile",
     "useUserRoles"
    ],
@@ -6869,14 +6903,18 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alertdialog",
     "dev",
     "dialog",
     "img",
+    "listbox",
     "manager",
+    "menu",
     "presentation",
-    "supervisor"
+    "supervisor",
+    "tooltip"
    ],
-   "arquivos_puxados": 155
+   "arquivos_puxados": 158
   },
   {
    "protegida": true,
@@ -8368,8 +8406,10 @@
     "useRef",
     "useSalesScope",
     "useSmartAlerts",
+    "useSmartBackRegistration",
     "useSmartNavigation",
     "useState",
+    "useTrackNavigation",
     "useUpdateOrder",
     "useUserProfile",
     "useUserRoles"
@@ -8471,13 +8511,17 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alertdialog",
     "dev",
     "dialog",
+    "listbox",
     "manager",
+    "menu",
     "owner",
-    "supervisor"
+    "supervisor",
+    "tooltip"
    ],
-   "arquivos_puxados": 123
+   "arquivos_puxados": 126
   },
   {
    "protegida": true,

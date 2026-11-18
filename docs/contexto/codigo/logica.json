@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 245,
+ "total": 247,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 161,
+  "lib": 163,
   "python": 12,
   "services": 22,
   "stores": 6,
@@ -1745,7 +1745,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 11,
+   "usado_por": 12,
    "usado_por_modulos": [
     "components/admin",
     "components/debug",
@@ -3232,6 +3232,39 @@
     "lib"
    ],
    "coberto_por_testes": 0,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/lib/overlay.ts",
+   "camada": "lib",
+   "exports": [
+    "OPEN_OVERLAY_SELECTOR",
+    "dismissTopmostOverlay",
+    "hasOpenOverlay",
+    "isOverlayDismissEvent"
+   ],
+   "export_default": null,
+   "linhas": 58,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [
+    "alertdialog",
+    "dialog",
+    "listbox",
+    "menu",
+    "tooltip"
+   ],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "components/mockup",
+    "hooks"
+   ],
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {
@@ -5377,6 +5410,31 @@
    "orfao": false
   },
   {
+   "arquivo": "src/lib/uxMetrics.ts",
+   "camada": "lib",
+   "exports": [
+    "UxMetric",
+    "getUxMetrics",
+    "trackUx"
+   ],
+   "export_default": null,
+   "linhas": 32,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "hooks"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/lib/validations/authSchema.ts",
    "camada": "lib",
    "exports": [
@@ -6333,15 +6391,16 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 19,
+   "usado_por": 20,
    "usado_por_modulos": [
     "components/admin",
     "components/cart",
     "components/common",
+    "hooks",
     "pages/admin",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 2,
+   "coberto_por_testes": 3,
    "orfao": false
   },
   {
@@ -6403,7 +6462,7 @@
     "hooks",
     "lib/auth"
    ],
-   "coberto_por_testes": 1,
+   "coberto_por_testes": 2,
    "orfao": false
   },
   {

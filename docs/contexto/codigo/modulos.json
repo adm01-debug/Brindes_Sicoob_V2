@@ -1584,7 +1584,7 @@
    "modulo": "components/common",
    "arquivos": 28,
    "testes": 0,
-   "linhas": 4085,
+   "linhas": 4092,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -1608,6 +1608,7 @@
     "useScroll",
     "useScrollDirection",
     "useScrollProgress",
+    "useScrollRestoration",
     "useSmartNavigation",
     "useStockDailySummary",
     "useStockVelocity",
@@ -1646,11 +1647,16 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
+    "dialog",
     "img",
+    "listbox",
     "manager",
+    "menu",
     "progressbar",
     "status",
-    "supervisor"
+    "supervisor",
+    "tooltip"
    ],
    "diretos": {
     "edges": [],
@@ -2925,12 +2931,16 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alertdialog",
     "dev",
     "dialog",
     "img",
+    "listbox",
     "manager",
+    "menu",
     "presentation",
-    "supervisor"
+    "supervisor",
+    "tooltip"
    ],
    "diretos": {
     "edges": [
@@ -3574,6 +3584,7 @@
     "log",
     "main",
     "manager",
+    "menu",
     "navigation",
     "option",
     "owner",
@@ -3588,6 +3599,7 @@
     "supervisor",
     "tab",
     "tablist",
+    "tooltip",
     "user",
     "vendedor"
    ],
@@ -4293,6 +4305,7 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "article",
     "assistant",
     "button",
@@ -4310,6 +4323,7 @@
     "listitem",
     "log",
     "manager",
+    "menu",
     "navigation",
     "option",
     "owner",
@@ -4322,6 +4336,7 @@
     "supervisor",
     "tab",
     "tablist",
+    "tooltip",
     "user"
    ],
    "diretos": {
@@ -4350,7 +4365,7 @@
    "modulo": "components/mockup",
    "arquivos": 41,
    "testes": 0,
-   "linhas": 6226,
+   "linhas": 6229,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -4410,10 +4425,14 @@
    "flags": [],
    "papeis": [
     "alert",
+    "alertdialog",
     "button",
     "combobox",
     "dialog",
-    "img"
+    "img",
+    "listbox",
+    "menu",
+    "tooltip"
    ],
    "diretos": {
     "edges": [],
@@ -4497,6 +4516,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -4504,9 +4524,13 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alertdialog",
     "dialog",
+    "listbox",
     "manager",
-    "owner"
+    "menu",
+    "owner",
+    "tooltip"
    ],
    "diretos": {
     "edges": [],
@@ -5285,7 +5309,7 @@
    "modulo": "components/products",
    "arquivos": 90,
    "testes": 2,
-   "linhas": 11094,
+   "linhas": 11095,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -7145,9 +7169,9 @@
   },
   {
    "modulo": "hooks",
-   "arquivos": 208,
+   "arquivos": 209,
    "testes": 0,
-   "linhas": 34108,
+   "linhas": 34258,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -7462,6 +7486,7 @@
     "useScrollDirection",
     "useScrollLockFix",
     "useScrollProgress",
+    "useScrollRestoration",
     "useSearch",
     "useSearchAsYouType",
     "useSecretsManager",
@@ -7823,6 +7848,7 @@
     "useScrollDirection",
     "useScrollProgress",
     "useScrollLockFix",
+    "useScrollRestoration",
     "useSearch",
     "useSecretsManager",
     "useSellerCarts",
@@ -8065,13 +8091,16 @@
     "gestor_pa",
     "gestor_singular",
     "list",
+    "listbox",
     "manager",
+    "menu",
     "owner",
     "radio",
     "radiogroup",
     "status",
     "supervisor",
     "tablist",
+    "tooltip",
     "user"
    ],
    "diretos": {
@@ -10130,9 +10159,9 @@
   },
   {
    "modulo": "lib",
-   "arquivos": 58,
+   "arquivos": 60,
    "testes": 0,
-   "linhas": 8256,
+   "linhas": 8346,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10611,6 +10640,7 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "article",
     "assistant",
     "button",
@@ -10628,6 +10658,7 @@
     "listitem",
     "log",
     "manager",
+    "menu",
     "option",
     "owner",
     "presentation",
@@ -10639,6 +10670,7 @@
     "supervisor",
     "tab",
     "tablist",
+    "tooltip",
     "user"
    ],
    "diretos": {
@@ -12308,6 +12340,7 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "all",
     "article",
     "assistant",
@@ -12328,6 +12361,7 @@
     "log",
     "main",
     "manager",
+    "menu",
     "option",
     "owner",
     "presentation",
@@ -12341,6 +12375,7 @@
     "tab",
     "tablist",
     "toolbar",
+    "tooltip",
     "user"
    ],
    "diretos": {
@@ -15406,6 +15441,7 @@
     "admin",
     "agente",
     "alert",
+    "alertdialog",
     "all",
     "article",
     "assistant",
@@ -15426,6 +15462,7 @@
     "log",
     "main",
     "manager",
+    "menu",
     "option",
     "owner",
     "presentation",
@@ -15441,6 +15478,7 @@
     "tab",
     "tablist",
     "toolbar",
+    "tooltip",
     "user",
     "vendedor"
    ],

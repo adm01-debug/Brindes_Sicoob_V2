@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2834)",
+   "TypeScript (2840)",
    "SQL (673)",
    "Markdown (246)",
    "JSON (233)",
@@ -1913,11 +1913,11 @@
     "ocorrencias": 11
    },
    {
-    "papel": "combobox",
-    "ocorrencias": 7
+    "papel": "dialog",
+    "ocorrencias": 9
    },
    {
-    "papel": "dialog",
+    "papel": "combobox",
     "ocorrencias": 7
    },
    {
@@ -1965,8 +1965,16 @@
     "ocorrencias": 5
    },
    {
+    "papel": "listbox",
+    "ocorrencias": 4
+   },
+   {
     "papel": "public",
     "ocorrencias": 4
+   },
+   {
+    "papel": "alertdialog",
+    "ocorrencias": 3
    },
    {
     "papel": "authenticated",
@@ -1985,10 +1993,6 @@
     "ocorrencias": 3
    },
    {
-    "papel": "listbox",
-    "ocorrencias": 3
-   },
-   {
     "papel": "main",
     "ocorrencias": 3
    },
@@ -2002,10 +2006,6 @@
    },
    {
     "papel": "agent",
-    "ocorrencias": 2
-   },
-   {
-    "papel": "alertdialog",
     "ocorrencias": 2
    },
    {
@@ -2038,6 +2038,10 @@
    },
    {
     "papel": "toolbar",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "tooltip",
     "ocorrencias": 2
    },
    {
@@ -2085,6 +2089,10 @@
     "ocorrencias": 1
    },
    {
+    "papel": "menu",
+    "ocorrencias": 1
+   },
+   {
     "papel": "none",
     "ocorrencias": 1
    },
@@ -2118,10 +2126,6 @@
    },
    {
     "papel": "sup",
-    "ocorrencias": 1
-   },
-   {
-    "papel": "tooltip",
     "ocorrencias": 1
    }
   ],

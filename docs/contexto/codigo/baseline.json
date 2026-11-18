@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ca76bcdbb29867c7649976e2ebc71b5fa18bac38",
+  "commit": "781ee209ee68ccb6a5442679686093bbcefc0430",
   "branch": "main",
-  "data_commit": "2026-11-18T14:47:46-03:00",
+  "data_commit": "2026-11-18T18:32:09Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "781ee20",
+    "data": "2026-11-18",
+    "assunto": "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)"
+   },
    {
     "sha": "ca76bcd",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "67f0860",
     "data": "2026-11-13",
     "assunto": "infra: adiciona migrações de segurança Órfãs à allowlist de apply (#275)"
-   },
-   {
-    "sha": "788c091",
-    "data": "2026-11-13",
-    "assunto": "infra: adiciona harden_rpc_acl_and_fk_indexes a allowlist de migrations (#274)"
    }
   ],
-  "arquivos_mudados_7d": 341,
+  "arquivos_mudados_7d": 352,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 95
+    "mudancas": 94
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 94
+    "mudancas": 93
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 129
+    "commits": 130
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4325,
-  "arquivos_codigo": 3034,
-  "linhas_codigo": 479158,
+  "arquivos_total": 4331,
+  "arquivos_codigo": 3040,
+  "linhas_codigo": 479852,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
   "componentes": 1172,
-  "hooks": 389,
+  "hooks": 390,
   "edge_functions": 106,
   "tabelas": 291,
   "migrations": 620,
   "cron_jobs": 27,
-  "testes": 805,
+  "testes": 808,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1129,
-   "linhas": 165449
+   "linhas": 165460
   },
   "src/constants": {
    "arquivos": 3,
@@ -791,16 +791,16 @@
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 310,
-   "linhas": 45838
+   "arquivos": 311,
+   "linhas": 45988
   },
   "src/integrations": {
    "arquivos": 3,
    "linhas": 13462
   },
   "src/lib": {
-   "arquivos": 161,
-   "linhas": 22175
+   "arquivos": 163,
+   "linhas": 22265
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -915,16 +915,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 123,
-   "linhas": 12959
+   "arquivos": 125,
+   "linhas": 13280
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 65,
-   "linhas": 8320
+   "arquivos": 66,
+   "linhas": 8442
   },
   "tests/load": {
    "arquivos": 1,

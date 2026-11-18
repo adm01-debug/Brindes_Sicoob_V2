@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ca76bcdbb2` · branch `main` · 2026-11-18 17:51 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `781ee209ee` · branch `main` · 2026-11-18 18:40 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4793,6 +4793,7 @@ _nenhum item encontrado_
 | `MIN_REPLENISHMENT_DELTA_MS` | `86` | `src/hooks/useReplenishments.ts` |
 | `DEFAULT_MS` | `3000` | `src/hooks/useRetestCooldownSetting.ts` |
 | `DATA_STATE_ATTRIBUTE` | `'data-state'` | `src/hooks/useScrollLockFix.ts` |
+| `MAX_ENTRIES` | `50` | `src/hooks/useScrollRestoration.ts` |
 | `MAX_HISTORY` | `10` | `src/hooks/useSearch.ts` |
 | `SIMULATOR_CLIENTS_PAGE` | `100` | `src/hooks/useSimulation.ts` |
 | `SIMULATOR_CLIENTS_MAX` | `500` | `src/hooks/useSimulation.ts` |
@@ -4850,8 +4851,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
 | `AUTO_RESET_INTERVAL_MS` | `15` | `src/lib/notifications-metrics.ts` |
-| `MAX_SIGNATURE_RETRIES_ON_IDENTITY_CHANGE` | `2` | `src/lib/private-storage.ts` |
-| … +153 linhas — lista completa em `context.json` | | |
+| … +156 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6563 testes em 630 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6586 testes em 633 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5898,6 +5898,7 @@ _nenhum item encontrado_
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
 | `tests/edge-functions/parseAiResponse.test.ts` | 9 | parseAiResponse · parses tool call arguments correctly · falls back to content parsing when no tool calls · returns fallback for invalid JSON in tool call args … |
 | `tests/hooks/useFavorites.test.ts` | 9 | useFavorites · initializes with empty favorites · adds a favorite · does not duplicate favorites … |
+| `tests/hooks/useSmartNavigation.test.tsx` | 9 | useSmartNavigation.goBack · fecha overlay role=%s aberto em vez de navegar · fecha conteúdo popper (select/popover) aberto em vez de navegar · tooltip aberto NÃO bloqueia a navegação … |
 | `tests/hooks/useUrlState.test.tsx` | 9 | useUrlState · retorna defaultValue quando param ausente · lê valor do param da URL · setValue atualiza para valor não-default … |
 | `tests/hooks/useVoiceAgent.test.ts` | 9 | useVoiceAgent · starts in idle state · waits for session_started before moving to listening · updates partial transcript while listening … |
 | `tests/hooks/quote/quote-url-prefill.test.ts` | 9 | pré-carga de orçamento por URL · busca IDs de produto, comparação e tendência sem confiar em preço ou quantidade da URL · expande comparação em lista, remove IDs repetidos e associa cliente sem aceitar nome fornecido pela URL · ignora IDs vazios ou excessivamente longos e limita a carga de produtos … |
@@ -5933,6 +5934,7 @@ _nenhum item encontrado_
 | `tests/hooks/useWorkspaceNotifications-cache-invalidation.test.tsx` | 8 | useWorkspaceNotifications — cache invalidation after mutations · markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch · clearAll removes the sessionStorage cache entry and triggers a silent re-fetch · re-fetch after markAllAsRead bypasses the 5s prefetch TTL window … |
 | `tests/hooks/useWorkspaceNotifications-prefetch.test.tsx` | 8 | useWorkspaceNotifications — prefetch TTL idempotency · does not refetch when prefetch is called within 5s of last fetch · refetches when prefetch is called after the 5s TTL window · never toggles isLoading=true during a silent prefetch … |
 | `tests/lib/format-utils.test.ts` | 8 | formatCurrency · formats zero · formats positive values · formats negative values … |
+| `tests/lib/overlay.test.tsx` | 8 | overlay — detecção com componentes Radix reais · tooltip aberto NÃO conta como overlay · popover aberto conta como overlay · dialog Radix real fecha com dismissTopmostOverlay … |
 | `tests/lib/product-record-images.test.ts` | 8 | resolveProductRecordImages · assina as referencias privadas guardadas no proprio registro do produto · mantem o valor original quando o storage nao consegue assinar · resolveProductImageRecords … |
 | `tests/lib/textUtils.test.ts` | 8 | toTitleCase · should capitalize first letter of each word · should keep prepositions lowercase (except first word) · should capitalize first word even if preposition … |
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
@@ -5989,9 +5991,7 @@ _nenhum item encontrado_
 | `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
 | `tests/components/ErrorBoundary.test.tsx` | 6 | ErrorBoundary · renders children when no error occurs · renders fallback UI when a render error occurs · handles ChunkLoadError specifically … |
 | `tests/components/GlobalConfirmDialog.test.tsx` | 6 | GlobalConfirmDialog · exibe título/descrição e confirma com o rótulo customizado · Escape cancela e devolve o foco para quem abriu a confirmação · devolve o foco para o botão de dentro de outro diálogo … |
-| `tests/components/NotificationDrawer-trigger-to-fetch-timing.test.tsx` | 6 | NotificationDrawer — trigger→prefetch end-to-end timing · records a timing sample after a single hover→prefetch cycle (well within TTL) · attributes coalesced count from a hover burst to ONE sample · debounceMs is roughly equal to the configured delay (proves it measures FROM first event) … |
-| `tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx` | 6 | PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts · thresholdDays=${threshold} · ${surface} (${variant}) · fresh em ${days.fresh}d aplica verde + CheckCircle2 · ${surface} (${variant}) · aging em ${days.aging}d aplica âmbar + Clock … |
-| … +330 linhas — lista completa em `context.json` | | |
+| … +333 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6272,6 +6272,7 @@ _nenhum item encontrado_
 | Context providers must be imported synchronously (consumers render inside them) | `src/components/layout/MainLayout.tsx` |
 | * Hierarquia: 'dev' (somente dev), 'supervisor' (dev OU supervisor), 'agente' (qualquer autenticado). */ | `src/components/layout/ProtectedRoute.tsx` |
 | para a qual não tem permissão. | `src/components/layout/sidebar/RestrictedRouteNotice.tsx` |
+| Escape que veio de fechar um overlay (Voltar) não pode limpar o formulário | `src/components/mockup/KeyboardShortcuts.tsx` |
 | * Máximo de cores suportadas na área */ | `src/components/mockup/MultiAreaManager.tsx` |
 | Laser detection — must come before UV check since "Laser UV" exists | `src/components/mockup/techniqueColorUtils.ts` |
 | "uv" MUST be last — it's a substring of many technique names | `src/components/mockup/logo-editor/logoTechniqueFilters.ts` |
@@ -6375,6 +6376,7 @@ _nenhum item encontrado_
 | Fetch quote items for this product (handle 1000-row limit) | `src/hooks/useSalesHistory.ts` |
 | Fetch order items for this product (handle 1000-row limit) | `src/hooks/useSalesHistory.ts` |
 | * useScrollDirection - Hook simplificado apenas para direção | `src/hooks/useScroll.ts` |
+| que o browser limite o scroll e perca a posição original. | `src/hooks/useScrollRestoration.ts` |
 | useSearch nunca tinha sido migrado. Ver docs/correcoes-validacao-2026-09-14.md. | `src/hooks/useSearch.ts` |
 | Apenas erros de auth/permissão limpam (estado real desconhecido). | `src/hooks/useSecretsManager.ts` |
 | * useSellerDiscountLimits — Gerencia limites de desconto por vendedor | `src/hooks/useSellerDiscountLimits.ts` |
@@ -6383,6 +6385,7 @@ _nenhum item encontrado_
 | Delete limit | `src/hooks/useSellerDiscountLimits.ts` |
 | 2. Validar permissão por role | `src/hooks/useSicoobApprovals.ts` |
 | * Teto por página do contrato fechado do CRM (limit > 100 volta 403). */ | `src/hooks/useSimulation.ts` |
+| recente apenas uma vez, senão cada listener navegaria um passo atrás. | `src/hooks/useSmartNavigation.ts` |
 | Se não há variação, criar opções de 1 até o máximo | `src/hooks/useTechniquePricing.ts` |
 | Substitui useState quando o estado deve persistir no histórico/URL. | `src/hooks/useUrlState.ts` |
 | === useScribe MUST be called unconditionally === | `src/hooks/useVoiceAgent.ts` |
@@ -6419,6 +6422,8 @@ _nenhum item encontrado_
 | Se já estourou o limite de reloads na janela, propaga o erro para | `src/lib/lazyWithRetry.ts` |
 | - >4 chars → mantém apenas os últimos 4 (ex: "abcdef" → "cdef") | `src/lib/masked-suffix.ts` |
 | e fornece uma mensagem orientando o que o usuário deve fazer. | `src/lib/masked-suffix.ts` |
+| Conteúdo em animação de fechamento já não deve segurar a navegação. | `src/lib/overlay.ts` |
+| O evento vai marcado: quem tem atalho destrutivo em Escape deve | `src/lib/overlay.ts` |
 | permitir renovação sem ampliar indefinidamente o prazo do bearer token. | `src/lib/private-storage.ts` |
 | conta anterior e nao pode ser cacheada nem devolvida. | `src/lib/private-storage.ts` |
 | Variante tolerante: um objeto removido ou sem permissão de leitura devolve | `src/lib/private-storage.ts` |
@@ -6471,9 +6476,4 @@ _nenhum item encontrado_
 | TABLE VALIDATION | `src/lib/personalization/validators.ts` |
 | QUANTITY VALIDATION | `src/lib/personalization/validators.ts` |
 | BUSINESS RULES | `src/lib/personalization/validators.ts` |
-| Cobra setup apenas se não tiver matriz existente | `src/lib/personalization/validators.ts` |
-| Validação observacional — não bloqueia o parse | `src/lib/personalization/adapters/customization-options.adapter.ts` |
-| Validação observacional do payload bruto (apenas formatos não-nested) | `src/lib/personalization/adapters/price-response.adapter.ts` |
-| * Versão simplificada — devolve apenas o flat canônico. | `src/lib/personalization/adapters/price-response.adapter.ts` |
-| Prazo / quantidade | `src/lib/personalization/adapters/raw-row.types.ts` |
-| … +237 linhas — lista completa em `context.json` | |
+| … +242 linhas — lista completa em `context.json` | |

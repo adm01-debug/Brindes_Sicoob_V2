@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "ca76bcdbb29867c7649976e2ebc71b5fa18bac38",
+  "sha": "781ee209ee68ccb6a5442679686093bbcefc0430",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 17:51 UTC",
-  "files_total": 4327,
-  "code_files": 3689,
-  "code_lines": 540044
+  "generated_at": "2026-11-18 18:40 UTC",
+  "files_total": 4333,
+  "code_files": 3695,
+  "code_lines": 540738
  },
  "version": "1.3.2",
- "facts_hash": "070b567194c3853c",
+ "facts_hash": "107b2523dd5ff9d9",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1429,
-   ".tsx": 1403,
+   ".ts": 1432,
+   ".tsx": 1406,
    ".sql": 673,
    ".mjs": 134,
    ".py": 59,
@@ -54440,7 +54440,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 75
+    "deps_count": 77
    },
    {
     "path": "",
@@ -54469,7 +54469,7 @@
      "get_industry_top_products",
      "get_sicoob_access_state"
     ],
-    "deps_count": 115
+    "deps_count": 117
    },
    {
     "path": "",
@@ -54493,7 +54493,7 @@
      "get_industry_top_products",
      "get_sicoob_access_state"
     ],
-    "deps_count": 63
+    "deps_count": 65
    },
    {
     "path": "",
@@ -54555,7 +54555,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 91
+    "deps_count": 93
    },
    {
     "path": "",
@@ -54577,7 +54577,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 71
+    "deps_count": 73
    },
    {
     "path": "",
@@ -54630,7 +54630,7 @@
      "get_sicoob_access_state",
      "get_top_collected_products"
     ],
-    "deps_count": 155
+    "deps_count": 157
    },
    {
     "path": "",
@@ -54656,7 +54656,7 @@
      "create_organization_with_owner",
      "get_sicoob_access_state"
     ],
-    "deps_count": 107
+    "deps_count": 109
    },
    {
     "path": "",
@@ -54681,7 +54681,7 @@
      "get_top_compared_products",
      "get_user_recent_comparisons"
     ],
-    "deps_count": 104
+    "deps_count": 106
    },
    {
     "path": "",
@@ -54716,7 +54716,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 109
+    "deps_count": 111
    },
    {
     "path": "",
@@ -54764,7 +54764,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 54
+    "deps_count": 56
    },
    {
     "path": "",
@@ -54795,7 +54795,7 @@
      "get_sicoob_access_state",
      "get_top_favorited_products"
     ],
-    "deps_count": 178
+    "deps_count": 180
    },
    {
     "path": "",
@@ -54829,7 +54829,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 252
+    "deps_count": 254
    },
    {
     "path": "",
@@ -54857,7 +54857,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 62
+    "deps_count": 64
    },
    {
     "path": "",
@@ -54929,7 +54929,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 132
+    "deps_count": 134
    },
    {
     "path": "",
@@ -54967,7 +54967,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 132
+    "deps_count": 134
    },
    {
     "path": "",
@@ -55051,7 +55051,7 @@
      "get_sicoob_access_state",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 168
+    "deps_count": 170
    },
    {
     "path": "",
@@ -55097,7 +55097,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 125
+    "deps_count": 127
    },
    {
     "path": "",
@@ -55144,7 +55144,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 113
+    "deps_count": 115
    },
    {
     "path": "",
@@ -55170,7 +55170,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 144
+    "deps_count": 146
    },
    {
     "path": "",
@@ -55219,7 +55219,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 72
+    "deps_count": 74
    },
    {
     "path": "",
@@ -55238,7 +55238,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 123
+    "deps_count": 125
    },
    {
     "path": "",
@@ -55282,7 +55282,7 @@
      "record_sicoob_order_payment",
      "refund_sicoob_order_payment"
     ],
-    "deps_count": 77
+    "deps_count": 79
    },
    {
     "path": "",
@@ -55351,7 +55351,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 121
+    "deps_count": 123
    },
    {
     "path": "",
@@ -55414,7 +55414,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 110
+    "deps_count": 112
    },
    {
     "path": "",
@@ -55431,7 +55431,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 41
+    "deps_count": 43
    },
    {
     "path": "",
@@ -55440,7 +55440,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 25
+    "deps_count": 29
    },
    {
     "path": "",
@@ -55469,7 +55469,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 113
+    "deps_count": 115
    },
    {
     "path": "",
@@ -55499,7 +55499,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 171
+    "deps_count": 173
    },
    {
     "path": "",
@@ -55519,7 +55519,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 77
+    "deps_count": 79
    },
    {
     "path": "",
@@ -55690,7 +55690,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 160
+    "deps_count": 162
    },
    {
     "path": "",
@@ -55765,7 +55765,7 @@
      "bulk_update_quote_status_atomic",
      "get_sicoob_access_state"
     ],
-    "deps_count": 99
+    "deps_count": 101
    },
    {
     "path": "",
@@ -55830,7 +55830,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 160
+    "deps_count": 162
    },
    {
     "path": "",
@@ -55862,7 +55862,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 88
+    "deps_count": 90
    },
    {
     "path": "",
@@ -55896,7 +55896,7 @@
      "save_quote_atomic",
      "save_quote_atomic_idempotent"
     ],
-    "deps_count": 102
+    "deps_count": 104
    },
    {
     "path": "",
@@ -55947,7 +55947,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 44
+    "deps_count": 46
    },
    {
     "path": "",
@@ -55966,7 +55966,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 102
+    "deps_count": 104
    },
    {
     "path": "",
@@ -55975,7 +55975,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 23
+    "deps_count": 27
    },
    {
     "path": "",
@@ -55984,7 +55984,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 19
+    "deps_count": 23
    },
    {
     "path": "",
@@ -56005,7 +56005,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 101
+    "deps_count": 103
    },
    {
     "path": "",
@@ -56024,7 +56024,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 90
+    "deps_count": 92
    },
    {
     "path": "",
@@ -56043,7 +56043,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 83
+    "deps_count": 85
    },
    {
     "path": "",
@@ -56071,7 +56071,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 41
+    "deps_count": 43
    },
    {
     "path": "",
@@ -56097,7 +56097,7 @@
      "get_sicoob_access_state",
      "has_role"
     ],
-    "deps_count": 89
+    "deps_count": 91
    },
    {
     "path": "",
@@ -59969,6 +59969,13 @@
     "file": "src/routes/config/sicoob.ts"
    },
    {
+    "path": "/inicio",
+    "component": "HomePage",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useScrollRestoration.test.tsx"
+   },
+   {
     "path": "/inteligencia-comercial",
     "component": "lazyWithRetry",
     "guard": "",
@@ -59988,6 +59995,13 @@
     "guard": "",
     "roles": [],
     "file": "src/routes/config/sicoob-rbac.ts"
+   },
+   {
+    "path": "/lista",
+    "component": "ListPage",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useScrollRestoration.test.tsx"
    },
    {
     "path": "/lista-publica/:token",
@@ -62475,6 +62489,10 @@
     "file": "src/hooks/useScrollLockFix.ts"
    },
    {
+    "name": "useScrollRestoration",
+    "file": "src/hooks/useScrollRestoration.ts"
+   },
+   {
     "name": "useSearch",
     "file": "src/hooks/useSearch.ts"
    },
@@ -63402,7 +63420,7 @@
   {
    "module": "src/components",
    "files": 1129,
-   "lines": 165449,
+   "lines": 165460,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -63734,8 +63752,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 310,
-   "lines": 45838,
+   "files": 311,
+   "lines": 45988,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64012,8 +64030,8 @@
   },
   {
    "module": "src/lib",
-   "files": 161,
-   "lines": 22175,
+   "files": 163,
+   "lines": 22265,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64051,6 +64069,7 @@
     "mockup-storage.ts: uploadLogoToStorage, downloadImageFromUrl, downloadImageAsPdfFromUrl",
     "notifications-metrics.ts: TriggerSource, FetchSource, BadgeRenderSource, BadgeRenderStat, TriggerToFetchTiming, BadgeRenderBudget",
     "order-status-config.ts: OrderStatus, OrderStatusConfig, ORDER_STATUS_CONFIG, getOrderStatusLabel",
+    "overlay.ts: OPEN_OVERLAY_SELECTOR, hasOpenOverlay, isOverlayDismissEvent, dismissTopmostOverlay",
     "preview-auto-reload.ts: setupPreviewAutoReload",
     "print-area-grouping.ts: groupPrintAreasByComponent, getUniqueTechniques, filterGroupsByTechnique, filterGroupsByComponent, FlattenedTechnique, flattenTechniques",
     "private-storage.ts: PrivateStorageBucket, PRIVATE_STORAGE_URL_TTL_SECONDS, clearPrivateStorageUrlCache, createPrivateStorageReference, parsePrivateStorageReference, isPrivateStorageUrl",
@@ -64059,8 +64078,7 @@
     "query-config.ts: CACHE_TIMES, GC_TIMES, QUERY_KEY_PREFIXES, createQueryClient, getStaleTimeForKey, getGcTimeForKey",
     "quote-status-config.ts: QuoteStatusConfig, QUOTE_STATUS_CONFIG, isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset, canBulkMarkQuotesPending, getQuoteStatusLabel",
     "request-id-injection.ts: injectRequestId",
-    "roles.ts: AppRole, ROLE_ALIASES, RoleVisual, ROLE_VISUAL, getRoleLabel, getRoleVisual",
-    "routePrefetch.ts: prefetchRoute, getPrefetchHandlers"
+    "roles.ts: AppRole, ROLE_ALIASES, RoleVisual, ROLE_VISUAL, getRoleLabel, getRoleVisual"
    ],
    "docs": [
     "assistant-message-window.ts: Contrato de tamanho aceito pela Edge Function expert-chat.",
@@ -64127,6 +64145,7 @@
     "src/lib/mockup-storage.ts",
     "src/lib/notifications-metrics.ts",
     "src/lib/order-status-config.ts",
+    "src/lib/overlay.ts",
     "src/lib/preview-auto-reload.ts",
     "src/lib/print-area-grouping.ts",
     "src/lib/private-storage.ts",
@@ -64151,6 +64170,7 @@
     "src/lib/trending-score.ts",
     "src/lib/trends-export.ts",
     "src/lib/utils.ts",
+    "src/lib/uxMetrics.ts",
     "src/lib/variant-matching.ts",
     "src/lib/webhook-events-catalog.ts",
     "src/lib/webhook-events-payload-samples.ts",
@@ -64173,9 +64193,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/executive-summary.ts",
     "src/lib/bi/industryRecommendations.ts",
-    "src/lib/bi/mockData.ts",
-    "src/lib/bi/pptxGenerator.ts",
-    "src/lib/external-db/batch-import.ts"
+    "src/lib/bi/mockData.ts"
    ]
   },
   {
@@ -65172,8 +65190,8 @@
   },
   {
    "module": "tests",
-   "files": 576,
-   "lines": 79871,
+   "files": 579,
+   "lines": 80314,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -78950,6 +78968,10 @@
     "text": "para a qual não tem permissão."
    },
    {
+    "file": "src/components/mockup/KeyboardShortcuts.tsx",
+    "text": "Escape que veio de fechar um overlay (Voltar) não pode limpar o formulário"
+   },
+   {
     "file": "src/components/mockup/MultiAreaManager.tsx",
     "text": "* Máximo de cores suportadas na área */"
    },
@@ -79362,6 +79384,10 @@
     "text": "* useScrollDirection - Hook simplificado apenas para direção"
    },
    {
+    "file": "src/hooks/useScrollRestoration.ts",
+    "text": "que o browser limite o scroll e perca a posição original."
+   },
+   {
     "file": "src/hooks/useSearch.ts",
     "text": "useSearch nunca tinha sido migrado. Ver docs/correcoes-validacao-2026-09-14.md."
    },
@@ -79392,6 +79418,10 @@
    {
     "file": "src/hooks/useSimulation.ts",
     "text": "* Teto por página do contrato fechado do CRM (limit > 100 volta 403). */"
+   },
+   {
+    "file": "src/hooks/useSmartNavigation.ts",
+    "text": "recente apenas uma vez, senão cada listener navegaria um passo atrás."
    },
    {
     "file": "src/hooks/useTechniquePricing.ts",
@@ -79536,6 +79566,14 @@
    {
     "file": "src/lib/masked-suffix.ts",
     "text": "e fornece uma mensagem orientando o que o usuário deve fazer."
+   },
+   {
+    "file": "src/lib/overlay.ts",
+    "text": "Conteúdo em animação de fechamento já não deve segurar a navegação."
+   },
+   {
+    "file": "src/lib/overlay.ts",
+    "text": "O evento vai marcado: quem tem atalho destrutivo em Escape deve"
    },
    {
     "file": "src/lib/private-storage.ts",
@@ -92748,6 +92786,11 @@
     "value": "'data-state'"
    },
    {
+    "file": "src/hooks/useScrollRestoration.ts",
+    "name": "MAX_ENTRIES",
+    "value": "50"
+   },
+   {
     "file": "src/hooks/useSearch.ts",
     "name": "MAX_HISTORY",
     "value": "10"
@@ -93031,6 +93074,16 @@
     "file": "src/lib/notifications-metrics.ts",
     "name": "AUTO_RESET_INTERVAL_MS",
     "value": "15"
+   },
+   {
+    "file": "src/lib/overlay.ts",
+    "name": "POPPER_WRAPPER_SELECTOR",
+    "value": "'[data-radix-popper-content-wrapper]'"
+   },
+   {
+    "file": "src/lib/overlay.ts",
+    "name": "OVERLAY_DISMISS_FLAG",
+    "value": "'__overlayDismiss'"
    },
    {
     "file": "src/lib/private-storage.ts",
@@ -126419,6 +126472,30 @@
     "name": "starts at 0"
    },
    {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "useScrollRestoration"
+   },
+   {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "restaura o scroll da window ao voltar (POP)"
+   },
+   {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "restaura scrollTop de contêiner marcado com data-scroll-restore"
+   },
+   {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "useScrollRestoration — listagens reais marcadas"
+   },
+   {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "%s marca o contêiner rolável como "
+   },
+   {
+    "file": "tests/hooks/useScrollRestoration.test.tsx",
+    "name": "cada identificador de restauração é único"
+   },
+   {
     "file": "tests/hooks/useSearch.test.ts",
     "name": "useSearch"
    },
@@ -126641,6 +126718,42 @@
    {
     "file": "tests/hooks/useSimulatorWizard.test.ts",
     "name": "can advance when prior steps are complete"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "useSmartNavigation.goBack"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "fecha overlay role=%s aberto em vez de navegar"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "fecha conteúdo popper (select/popover) aberto em vez de navegar"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "tooltip aberto NÃO bloqueia a navegação"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "navega para o pai hierárquico quando não há histórico"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "rota crítica pede confirmação no diálogo global, não no window.confirm"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "cancelar a saída não conta como retorno em nav.back"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "force=true ignora overlay e confirmação"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.test.tsx",
+    "name": "smart-back com três instâncias no MESMO histórico volta exatamente um passo"
    },
    {
     "file": "tests/hooks/useSpeechRecognition.test.ts",
@@ -129561,6 +129674,38 @@
    {
     "file": "tests/lib/notifications-metrics-budget.test.ts",
     "name": "uses "
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "overlay — detecção com componentes Radix reais"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "tooltip aberto NÃO conta como overlay"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "popover aberto conta como overlay"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "dialog Radix real fecha com dismissTopmostOverlay"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "overlay — o Escape de descarte não aciona atalho destrutivo"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "fechar overlay pelo Voltar não limpa o formulário do gerador de mockup"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "Escape digitado pelo usuário continua limpando o formulário"
+   },
+   {
+    "file": "tests/lib/overlay.test.tsx",
+    "name": "isOverlayDismissEvent distingue o evento sintético do digitado"
    },
    {
     "file": "tests/lib/print-area-grouping.test.ts",
@@ -187010,7 +187155,7 @@
   },
   "src/components/common/RouteScrollReset.tsx": {
    "path": "src/components/common/RouteScrollReset.tsx",
-   "lines": 56,
+   "lines": 63,
    "exports": [
     "function RouteScrollReset"
    ]
@@ -191032,13 +191177,16 @@
   },
   "src/components/mockup/KeyboardShortcuts.tsx": {
    "path": "src/components/mockup/KeyboardShortcuts.tsx",
-   "lines": 105,
+   "lines": 108,
    "exports": [
     "function useKeyboardShortcuts",
     "function KeyboardShortcutsHint"
    ],
    "errors": [
     "Complete todos os campos antes de gerar"
+   ],
+   "rule_comments": [
+    "Escape que veio de fechar um overlay (Voltar) não pode limpar o formulário"
    ],
    "hooks": [
     "useKeyboardShortcuts"
@@ -193870,7 +194018,7 @@
   },
   "src/components/products/VirtualizedProductGrid.tsx": {
    "path": "src/components/products/VirtualizedProductGrid.tsx",
-   "lines": 210,
+   "lines": 211,
    "exports": [
     "function VirtualizedProductGrid"
    ]
@@ -205111,6 +205259,25 @@
     "useScrollLockFix"
    ]
   },
+  "src/hooks/useScrollRestoration.ts": {
+   "path": "src/hooks/useScrollRestoration.ts",
+   "lines": 77,
+   "exports": [
+    "function useScrollRestoration"
+   ],
+   "params": [
+    {
+     "name": "MAX_ENTRIES",
+     "value": "50"
+    }
+   ],
+   "rule_comments": [
+    "que o browser limite o scroll e perca a posição original."
+   ],
+   "hooks": [
+    "useScrollRestoration"
+   ]
+  },
   "src/hooks/useSearch.ts": {
    "path": "src/hooks/useSearch.ts",
    "lines": 224,
@@ -205612,12 +205779,16 @@
   },
   "src/hooks/useSmartNavigation.ts": {
    "path": "src/hooks/useSmartNavigation.ts",
-   "lines": 72,
+   "lines": 145,
    "exports": [
+    "function isCriticalPathname",
     "function useSmartNavigation"
    ],
    "navigates": [
     "/"
+   ],
+   "rule_comments": [
+    "recente apenas uma vez, senão cada listener navegaria um passo atrás."
    ],
    "hooks": [
     "useSmartNavigation"
@@ -210022,6 +210193,31 @@
     }
    ]
   },
+  "src/lib/overlay.ts": {
+   "path": "src/lib/overlay.ts",
+   "lines": 58,
+   "exports": [
+    "const OPEN_OVERLAY_SELECTOR",
+    "function hasOpenOverlay",
+    "function isOverlayDismissEvent",
+    "function dismissTopmostOverlay"
+   ],
+   "params": [
+    {
+     "name": "POPPER_WRAPPER_SELECTOR",
+     "value": "'[data-radix-popper-content-wrapper]'"
+    },
+    {
+     "name": "OVERLAY_DISMISS_FLAG",
+     "value": "'__overlayDismiss'"
+    }
+   ],
+   "rule_comments": [
+    "Conteúdo em animação de fechamento já não deve segurar a navegação.",
+    "O evento vai marcado: quem tem atalho destrutivo em Escape deve"
+   ],
+   "doc": "Detecção de overlays flutuantes descartáveis (Radix DismissableLayer): dialogs, alert-dialogs, dropdowns/menus, selects, popovers e hover-cards. Tooltips são excluídos: são informativos e não devem bloquear nem atrasar a navegação (ex.: tooltip do próprio botão Voltar)."
+  },
   "src/lib/preview-auto-reload.ts": {
    "path": "src/lib/preview-auto-reload.ts",
    "lines": 43,
@@ -210655,6 +210851,15 @@
      "params": "value: number",
      "body": "return value.toLocaleString(\"pt-BR\", { style: \"currency\", currency: \"BRL\", });"
     }
+   ]
+  },
+  "src/lib/uxMetrics.ts": {
+   "path": "src/lib/uxMetrics.ts",
+   "lines": 32,
+   "exports": [
+    "type UxMetric",
+    "function trackUx",
+    "function getUxMetrics"
    ]
   },
   "src/lib/variant-matching.ts": {
@@ -242184,6 +242389,40 @@
     "starts at 0"
    ]
   },
+  "tests/hooks/useScrollRestoration.test.tsx": {
+   "path": "tests/hooks/useScrollRestoration.test.tsx",
+   "lines": 133,
+   "is_test": true,
+   "routes": [
+    {
+     "path": "/inicio",
+     "component": "HomePage",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/lista",
+     "component": "ListPage",
+     "guard": "",
+     "roles": []
+    }
+   ],
+   "navigates": [
+    "/lista"
+   ],
+   "rule_comments": [
+    "navegação nova (PUSH) não pode restaurar scroll antigo",
+    "o primeiro mount é PUSH — apenas registra, sem restaurar para si mesmo"
+   ],
+   "tests": [
+    "useScrollRestoration",
+    "restaura o scroll da window ao voltar (POP)",
+    "restaura scrollTop de contêiner marcado com data-scroll-restore",
+    "useScrollRestoration — listagens reais marcadas",
+    "%s marca o contêiner rolável como ",
+    "cada identificador de restauração é único"
+   ]
+  },
   "tests/hooks/useSearch.test.ts": {
    "path": "tests/hooks/useSearch.test.ts",
    "lines": 229,
@@ -242279,6 +242518,23 @@
     "can go to comparison if personalizations exist",
     "cannot skip ahead without completing prior steps",
     "can advance when prior steps are complete"
+   ]
+  },
+  "tests/hooks/useSmartNavigation.test.tsx": {
+   "path": "tests/hooks/useSmartNavigation.test.tsx",
+   "lines": 188,
+   "is_test": true,
+   "doc": "\"Voltar\" do portal: fecha o overlay aberto antes de sair da página, pede confirmação por diálogo do design system nas rotas críticas, e atende o atalho `smart-back` UMA vez, mesmo com várias instâncias do hook montadas. Recuperado da PR #100 (fechada sem merge), com a confirmação ligada ao store glo …",
+   "tests": [
+    "useSmartNavigation.goBack",
+    "fecha overlay role=%s aberto em vez de navegar",
+    "fecha conteúdo popper (select/popover) aberto em vez de navegar",
+    "tooltip aberto NÃO bloqueia a navegação",
+    "navega para o pai hierárquico quando não há histórico",
+    "rota crítica pede confirmação no diálogo global, não no window.confirm",
+    "cancelar a saída não conta como retorno em nav.back",
+    "force=true ignora overlay e confirmação",
+    "smart-back com três instâncias no MESMO histórico volta exatamente um passo"
    ]
   },
   "tests/hooks/useSpeechRecognition.test.ts": {
@@ -243704,6 +243960,21 @@
     "does NOT log when debug is ON but no renders were recorded",
     "emits ONE consolidated summary line when debug is ON and renders exist",
     "uses "
+   ]
+  },
+  "tests/lib/overlay.test.tsx": {
+   "path": "tests/lib/overlay.test.tsx",
+   "lines": 122,
+   "is_test": true,
+   "tests": [
+    "overlay — detecção com componentes Radix reais",
+    "tooltip aberto NÃO conta como overlay",
+    "popover aberto conta como overlay",
+    "dialog Radix real fecha com dismissTopmostOverlay",
+    "overlay — o Escape de descarte não aciona atalho destrutivo",
+    "fechar overlay pelo Voltar não limpa o formulário do gerador de mockup",
+    "Escape digitado pelo usuário continua limpando o formulário",
+    "isOverlayDismissEvent distingue o evento sintético do digitado"
    ]
   },
   "tests/lib/print-area-grouping.test.ts": {
@@ -247834,10 +248105,29 @@
   }
  },
  "git": {
-  "sha": "ca76bcdbb29867c7649976e2ebc71b5fa18bac38",
+  "sha": "781ee209ee68ccb6a5442679686093bbcefc0430",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "781ee20",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)",
+    "files": [
+     "src/components/catalog/CatalogContent.tsx",
+     "src/components/common/RouteScrollReset.tsx",
+     "src/components/mockup/KeyboardShortcuts.tsx",
+     "src/components/products/VirtualizedProductGrid.tsx",
+     "src/hooks/useScrollRestoration.ts",
+     "src/hooks/useSmartNavigation.ts",
+     "src/lib/overlay.ts",
+     "src/lib/uxMetrics.ts",
+     "tests/hooks/useScrollRestoration.test.tsx",
+     "tests/hooks/useSmartNavigation.test.tsx",
+     "tests/lib/overlay.test.tsx"
+    ]
+   },
    {
     "sha": "ca76bcd",
     "date": "2026-11-18",
@@ -248358,28 +248648,12 @@
      "RELATORIO_CI.md",
      "docs/plano-implementacao/README.md"
     ]
-   },
-   {
-    "sha": "e0eb541",
-    "date": "2026-11-12",
-    "author": "adm01-debug",
-    "subject": "Restringe notificações da aprovação Singular a usuários elegíveis (#169)",
-    "files": [
-     "scripts/automation.config.json",
-     "scripts/qa/simular-destinatarios-aprovacao-singular.py",
-     "supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql",
-     "tests/scenarios/sql/singular-quote-notification-fixture.sql"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     5
-   ],
-   [
-    "scripts/automation.config.json",
-    3
    ],
    [
     "src/components/search/useGlobalSearch.ts",
@@ -248418,39 +248692,43 @@
     2
    ],
    [
+    "scripts/automation.config.json",
+    2
+   ],
+   [
     ".github/workflows/ci.yml",
     2
    ],
    [
-    "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
+    "src/components/catalog/CatalogContent.tsx",
     1
    ],
    [
-    "src/hooks/useClientsPortfolioKpis.ts",
+    "src/components/common/RouteScrollReset.tsx",
     1
    ],
    [
-    "src/pages/ClientsPage.tsx",
+    "src/components/mockup/KeyboardShortcuts.tsx",
     1
    ],
    [
-    "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "src/components/products/VirtualizedProductGrid.tsx",
     1
    ],
    [
-    "src/contexts/AuthContext.tsx",
+    "src/hooks/useScrollRestoration.ts",
     1
    ],
    [
-    "src/lib/auth/sensitive-browser-data.ts",
+    "src/hooks/useSmartNavigation.ts",
     1
    ],
    [
-    "tests/lib/auth/sensitive-browser-data.test.ts",
+    "src/lib/overlay.ts",
     1
    ],
    [
-    "src/components/admin/telemetry/BreakerStatusCard.tsx",
+    "src/lib/uxMetrics.ts",
     1
    ]
   ]

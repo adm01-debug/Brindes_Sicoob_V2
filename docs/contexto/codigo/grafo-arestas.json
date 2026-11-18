@@ -3164,6 +3164,9 @@
   "src/components/common/PrivateStorageImage.tsx": [
    "src/lib/private-storage.ts"
   ],
+  "src/components/common/RouteScrollReset.tsx": [
+   "src/hooks/useScrollRestoration.ts"
+  ],
   "src/components/common/ScopeBadge.tsx": [
    "src/components/ui/badge.tsx",
    "src/lib/auth/visibility-scope.ts"
@@ -4859,6 +4862,9 @@
   "src/components/mockup/GeneratingOverlay.tsx": [
    "src/components/ui/progress.tsx",
    "src/lib/utils.ts"
+  ],
+  "src/components/mockup/KeyboardShortcuts.tsx": [
+   "src/lib/overlay.ts"
   ],
   "src/components/mockup/LogoColorAnalyzer.tsx": [
    "src/components/ui/badge.tsx",
@@ -9071,6 +9077,9 @@
    "src/integrations/supabase/client.ts",
    "src/integrations/supabase/types.ts"
   ],
+  "src/hooks/useScrollRestoration.ts": [
+   "src/lib/uxMetrics.ts"
+  ],
   "src/hooks/useSearch.ts": [
    "src/contexts/ProductsContext.tsx",
    "src/hooks/useExternalCategoriesQuery.ts",
@@ -9135,6 +9144,9 @@
    "src/types/simulation.ts"
   ],
   "src/hooks/useSmartNavigation.ts": [
+   "src/lib/overlay.ts",
+   "src/lib/uxMetrics.ts",
+   "src/stores/useConfirmDialogStore.ts",
    "src/stores/useNavigationStore.ts",
    "src/utils/haptics.ts"
   ],
@@ -9684,6 +9696,9 @@
   "src/lib/telemetry/webVitals.ts": [
    "src/lib/sentry.ts",
    "src/lib/telemetry/structuredLogger.ts"
+  ],
+  "src/lib/uxMetrics.ts": [
+   "src/lib/diagnostics.ts"
   ],
   "src/lib/validations/index.ts": [
    "src/lib/validations/authSchema.ts",
