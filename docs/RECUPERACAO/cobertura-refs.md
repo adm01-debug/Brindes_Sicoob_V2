@@ -164,7 +164,11 @@ e a remoção do gráfico de forecast do mapa de calor. É por isso que a recupe
 
 | 4 | [#350](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/350) | `BIAiCopilot.context/sources` + `BIBriefingMode.history/sources`. O copiloto enviava à IA o contexto que tivesse: histórico falhado virava `ltv: 0` e `ordersCount: 0` (a IA respondia "nunca comprou" sobre quem compra), benchmark falhado virava score 0 (diagnóstico de risco) e tendência do setor em cache ia como atual. Agora o contexto declara disponibilidade, preserva zero medido e bloqueia o envio com fonte caída |
 
-Restam **5**, listados abaixo.
+| 5 | [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `ExecutiveSummaryButton.availability`, `ClientLookalikes.availability`, `IndustryTrendingProducts.affinity-availability`. O resumo executivo gerava texto e habilitava copiar/PPTX sobre fonte caída — o vendedor **mandava para o cliente**; os similares mantinham cache sem avisar; os produtos do setor exibiam afinidade de fonte morta |
+| 6 | [#352](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/352) | `OnboardingTour.escape` + `app-router-parity`. O tour não era diálogo (sem `role`, sem `aria-modal`, sem foco, sem `Escape`): teclado e leitor de tela ficavam presos no passo. O teste de rotas importava o roteador monolítico que a `main` substituiu — a garantia foi **portada** para os módulos, e a conferência prévia mostrou que **nenhuma rota do roteador antigo está ausente** |
+
+**Os 13 estão recuperados.** O que sobra da ref são os 6 relatórios de execução
+abaixo — docs, sem dependência de código.
 
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
@@ -192,8 +196,8 @@ aplicaram em dois pontos: nenhum número inventado, nenhum selo de "dado real" s
 dado ausente. São, portanto, a continuação natural desse trabalho, não refugo.
 
 Ficam recuperáveis porque a origem está escrita: `git show
-origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. **A ref não se apaga enquanto
-esses 13 não tiverem entrado ou sido declarados obsoletos com justificativa.**
+origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. **Os 13 entraram** (fatias 1 a 6, PRs #346 a #352). A ref pode ser apagada
+assim que essas PRs estiverem na `main` e os 6 relatórios abaixo tiverem entrado.
 
 ### 6 relatórios de execução, só nessa ref
 
