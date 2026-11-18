@@ -65,6 +65,12 @@ PostgreSQL 17 descartável, sem rede e com dados sintéticos. Cobriu:
   diferente para a mesma chave;
 - criação de versão com cópia de item e personalização;
 - timestamp `price_confirmed_at` vindo do navegador normalizado pelo servidor.
+- gate de atestado: `register_quote_price_attestation` negado a `anon`
+  (`permission denied`, sem EXECUTE) e emitido apenas por `service_role`;
+- consumo do atestado no fluxo `save_quote_atomic_attested` com hash idêntico
+  (payload + itens + histórico), reuso do mesmo UUID após consumo, hash
+  divergente e expiração de 5 minutos;
+- `save_quote_atomic` sem atestado bloqueado pelo guard trigger.
 
 O script escreve a evidência reproduzível em
 `docs/execucao/evidencias/salvamento-orcamento-atomico.json` e marca

@@ -6,6 +6,7 @@ export interface QuoteCatalogProduct {
   cost_price?: number | string | null;
   primary_image_url?: string | null;
   images?: unknown[] | null;
+  catalog_image_urls?: string[];
   is_active: boolean | null;
 }
 
@@ -17,6 +18,7 @@ export interface QuoteCatalogVariant {
   sale_price: number | string | null;
   color_name?: string | null;
   color_hex?: string | null;
+  color_code?: string | null;
   size_code?: string | null;
   selected_thumbnail?: string | null;
   images?: unknown[] | null;
@@ -120,6 +122,49 @@ function imageUrls(values: unknown[]): string[] {
   });
 }
 
+const PRIVATE_STORAGE_BUCKETS = ['personalization-images', 'mockup-art-files', 'supplier-logos', 'product-videos'] as const;
+
+function parsePrivateStorageReference(value: string): { bucket: string; path: string } | null {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'supabase-storage:') return null;
+    if (!PRIVATE_STORAGE_BUCKETS.includes(parsed.hostname as (typeof PRIVATE_STORAGE_BUCKETS)[number])) return null;
+    const path = parsed.pathname.slice(1).split('/').filter(Boolean).map(decodeURIComponent).join('/');
+    return path ? { bucket: parsed.hostname, path } : null;
+  } catch {
+    return null;
+  }
+}
+
+function locationFromStorageUrl(value: string): { bucket: string; path: string } | null {
+  try {
+    const parsed = new URL(value);
+    const pathname = parsed.pathname;
+    if (!/^\/storage\/v1\/object\/(?:sign|public|authenticated)\//.test(pathname)) return null;
+    for (const bucket of PRIVATE_STORAGE_BUCKETS) {
+      const marker = new RegExp(`^/storage/v1/object/(?:sign|public|authenticated)/${bucket}/`);
+      const match = pathname.match(marker);
+      if (!match) continue;
+      const encodedPath = pathname.slice(match[0].length).split('/').filter(Boolean).map(decodeURIComponent).join('/');
+      if (encodedPath) return { bucket, path: encodedPath };
+    }
+  } catch {
+    // Valores externos e caminhos inválidos permanecem sob responsabilidade do chamador.
+  }
+  return null;
+}
+
+function privateStorageLocation(value: string): { bucket: string; path: string } | null {
+  return parsePrivateStorageReference(value) ?? locationFromStorageUrl(value);
+}
+
+function sameImageIdentity(left: string, right: string): boolean {
+  if (left === right) return true;
+  const a = privateStorageLocation(left);
+  const b = privateStorageLocation(right);
+  return Boolean(a && b && a.bucket === b.bucket && a.path === b.path);
+}
+
 export function isQuoteCatalogSnapshotUnchanged(
   item: AttestableQuoteItem,
   previous: VerifiedSnapshot | undefined,
@@ -218,15 +263,17 @@ export function verifyQuoteCatalogItem(
   }
   const requestedImage = textOrNull(item.product_image_url);
   if (requestedImage) {
-    const allowedImages = new Set([
+    const allowedImages = [
       ...imageUrls(product.images ?? []),
       ...imageUrls(variant?.images ?? []),
       ...(variant?.catalog_image_urls ?? []),
+      ...(product.catalog_image_urls ?? []),
       ...[product.primary_image_url, variant?.selected_thumbnail]
         .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
         .map((value) => value.trim()),
-    ]);
-    if (!allowedImages.has(requestedImage)) {
+    ];
+    const imageAllowed = allowedImages.some((allowed) => sameImageIdentity(requestedImage, allowed));
+    if (!imageAllowed) {
       throw new Error('A imagem do produto diverge do catálogo vigente. Atualize o item antes de salvar.');
     }
   }

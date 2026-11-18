@@ -5,6 +5,7 @@ import {
   prepareAuthenticatedCatalogRequest,
 } from '../_shared/catalog-client.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { getBreaker } from '../_shared/circuit-breaker.ts';
 import {
   EXTERNAL_PRODUCT_CORE_SELECT,
 } from '../_shared/external-product-contract.ts';
@@ -78,34 +79,66 @@ function samePersonalizationSnapshot(requested: unknown, saved: unknown): boolea
 }
 
 async function selectProducts(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, ids: string[]) {
-  const query = await external.from('products').select(`${EXTERNAL_PRODUCT_CORE_SELECT},cost_price,images`)
-    .in('id', ids).limit(ids.length);
-  if (query.error) throw new CatalogUnavailableError('Falha na consulta de produtos do catálogo.');
-  return (query.data ?? []) as unknown as QuoteCatalogProduct[];
+  const [query, imageQuery] = await Promise.all([
+    external.from('products').select(`${EXTERNAL_PRODUCT_CORE_SELECT},cost_price,images`)
+      .in('id', ids).limit(ids.length),
+    external.from('product_images')
+      .select('product_id,url_cdn,image_type')
+      .in('product_id', ids).limit(ids.length * 40),
+  ]);
+  if (query.error || imageQuery.error) throw new CatalogUnavailableError('Falha na consulta de produtos do catálogo.');
+  const imagesByProduct = new Map<string, string[]>();
+  for (const image of imageQuery.data ?? []) {
+    if (!image.product_id || !image.url_cdn || image.image_type === 'box') continue;
+    const images = imagesByProduct.get(image.product_id) ?? [];
+    images.push(image.url_cdn);
+    imagesByProduct.set(image.product_id, images);
+  }
+  return (query.data ?? []).map((row) => {
+    const product = row as unknown as QuoteCatalogProduct;
+    return { ...product, catalog_image_urls: imagesByProduct.get(product.id) ?? [] };
+  });
 }
 
 async function selectVariants(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, ids: string[]) {
   if (!ids.length) return [] as QuoteCatalogVariant[];
-  const [query, imageQuery] = await Promise.all([
-    external.from('product_variants')
-      .select('id,product_id,sku,supplier_sku,sale_price,color_name,color_hex,size_code,selected_thumbnail,images,is_active')
-      .in('id', ids).limit(ids.length),
+  const query = await external.from('product_variants')
+    .select('id,product_id,sku,supplier_sku,sale_price,color_name,color_hex,color_code,size_code,selected_thumbnail,images,is_active')
+    .in('id', ids).limit(ids.length);
+  if (query.error) throw new CatalogUnavailableError('Falha na consulta de variantes do catálogo.');
+  const variants = (query.data ?? []) as QuoteCatalogVariant[];
+  const colorCodes = [...new Set(variants.map((v) => v.color_code || undefined).filter((c): c is string => Boolean(c)))];
+  const [imageQuery, colorImageQuery] = await Promise.all([
     external.from('product_images')
       .select('variant_id,url_cdn,image_type')
       .in('variant_id', ids).limit(ids.length * 20),
+    colorCodes.length
+      ? external.from('product_images')
+          .select('supplier_code,url_cdn,image_type')
+          .in('supplier_code', colorCodes).limit(colorCodes.length * 30)
+      : Promise.resolve({ data: [], error: null }),
   ]);
-  if (query.error || imageQuery.error) throw new CatalogUnavailableError('Falha na consulta de variantes do catálogo.');
+  if (imageQuery.error || colorImageQuery.error) throw new CatalogUnavailableError('Falha na consulta de variantes do catálogo.');
   const imagesByVariant = new Map<string, string[]>();
+  const imagesByCode = new Map<string, string[]>();
   for (const image of imageQuery.data ?? []) {
     if (!image.variant_id || !image.url_cdn || image.image_type === 'box') continue;
     const images = imagesByVariant.get(image.variant_id) ?? [];
     images.push(image.url_cdn);
     imagesByVariant.set(image.variant_id, images);
   }
-  return (query.data ?? []).map((variant) => ({
-    ...variant,
-    catalog_image_urls: imagesByVariant.get(variant.id) ?? [],
-  })) as unknown as QuoteCatalogVariant[];
+  for (const image of colorImageQuery.data ?? []) {
+    if (!image.supplier_code || !image.url_cdn || image.image_type === 'box') continue;
+    const code = image.supplier_code.toUpperCase();
+    const images = imagesByCode.get(code) ?? [];
+    images.push(image.url_cdn);
+    imagesByCode.set(code, images);
+  }
+  return variants.map((variant) => {
+    const byVariant = imagesByVariant.get(variant.id) ?? [];
+    const byCode = variant.color_code ? imagesByCode.get(variant.color_code.toUpperCase()) ?? [] : [];
+    return { ...variant, catalog_image_urls: byVariant.length ? byVariant : byCode };
+  }) as unknown as QuoteCatalogVariant[];
 }
 
 async function validatePersonalizations(
@@ -126,6 +159,10 @@ async function validatePersonalizations(
         || !Number.isInteger(colors) || colors <= 0 || !Number.isInteger(positions) || positions <= 0) {
       throw new Error('A técnica, quantidade ou configuração de personalização é inválida.');
     }
+    const breaker = getBreaker('promobrind-rpc');
+    if (!breaker.canRequest()) {
+      throw new CatalogUnavailableError('O catálogo de personalização está temporariamente indisponível.');
+    }
     const [optionsResult, priceResult] = await Promise.all([
       external.rpc('fn_get_product_customization_options', { p_product_id: productId }, { get: true }),
       external.rpc('fn_get_customization_price', {
@@ -137,8 +174,10 @@ async function validatePersonalizations(
       }, { get: true }),
     ]);
     if (optionsResult.error || priceResult.error) {
+      breaker.recordFailure();
       throw new CatalogUnavailableError('O catálogo não conseguiu consultar as regras de personalização.');
     }
+    breaker.recordSuccess();
 
     const line: VerifiedKitLine = {
       line_id: typeof item.id === 'string' ? item.id : productId,
@@ -191,7 +230,7 @@ Deno.serve(withStructuredLogging('quote-price-attestation', async (req) => {
     } catch {
       return json(req, { error: 'O corpo da solicitação não contém JSON válido.' }, 400);
     }
-    if (!isRecord(body) || !isRecord(body.quote) || !Array.isArray(body.items) || body.items.length === 0
+    if (!isRecord(body) || !isRecord(body.quote) || !Array.isArray(body.items)
         || body.items.length > 200 || !Array.isArray(body.history)) {
       return json(req, { error: 'O conteúdo do orçamento não pode ser atestado.' }, 400);
     }
@@ -282,7 +321,7 @@ Deno.serve(withStructuredLogging('quote-price-attestation', async (req) => {
 
     const productIds = [...new Set(items.map((item) => String(item.product_id ?? '')).filter(Boolean))];
     const variantIds = [...new Set(items.map((item) => String(item.source_variant_id ?? '')).filter(Boolean))];
-    if (!productIds.length || productIds.length > 200 || variantIds.length > 200) {
+    if (productIds.length > 200 || variantIds.length > 200) {
       return json(req, { error: 'A quantidade de produtos ou variantes é inválida.' }, 400);
     }
     const catalogItems = items.filter((item) => {
