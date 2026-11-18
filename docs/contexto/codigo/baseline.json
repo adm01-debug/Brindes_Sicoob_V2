@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755",
+  "commit": "ca76bcdbb29867c7649976e2ebc71b5fa18bac38",
   "branch": "main",
-  "data_commit": "2026-11-18T17:30:55Z",
+  "data_commit": "2026-11-18T14:47:46-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ca76bcd",
+    "data": "2026-11-18",
+    "assunto": "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)"
+   },
    {
     "sha": "eeb3c4e",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "788c091",
     "data": "2026-11-13",
     "assunto": "infra: adiciona harden_rpc_acl_and_fk_indexes a allowlist de migrations (#274)"
-   },
-   {
-    "sha": "d9bca60",
-    "data": "2026-11-12",
-    "assunto": "fix(edge): commita trabalho pendente — contratos Edge Functions + etapa 17 secretNormalizers (#174)"
    }
   ],
-  "arquivos_mudados_7d": 340,
+  "arquivos_mudados_7d": 341,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -165,7 +165,7 @@
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 12
+    "mudancas": 13
    },
    {
     "pasta": "package-lock.json",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 96
+    "mudancas": 95
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 95
+    "mudancas": 94
    },
    {
     "arquivo": "package.json",
@@ -222,11 +222,11 @@
     "mudancas": 19
    },
    {
-    "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 18
+    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 19
    },
    {
-    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "arquivo": ".github/workflows/ci.yml",
     "mudancas": 18
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 128
+    "commits": 129
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4324,
+  "arquivos_total": 4325,
   "arquivos_codigo": 3034,
-  "linhas_codigo": 479154,
+  "linhas_codigo": 479158,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -322,7 +322,7 @@
   "hooks": 389,
   "edge_functions": 106,
   "tabelas": 291,
-  "migrations": 619,
+  "migrations": 620,
   "cron_jobs": 27,
   "testes": 805,
   "workflows": 16,
@@ -588,7 +588,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3206
+   "linhas": 3210
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -1058,7 +1058,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1518
+   "linhas": 1522
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `eeb3c4ee2a` · branch `main` · 2026-11-18 17:31 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ca76bcdbb2` · branch `main` · 2026-11-18 17:51 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -310,7 +310,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 281 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 282 arquivo(s)
 
 - `docs/execucao/evidencias/sicoob_reconciliacao_restante_20260916.sql`
 - `e2e/helpers/cleanup-client.ts`
@@ -462,7 +462,7 @@
 - `supabase/migrations/20260419024944_6d1ce273-bd73-47a8-a582-7534cc3ceb32.sql`
 - `supabase/migrations/20260419025022_7d122b20-2611-49b6-874d-b1d72d133ad3.sql`
 - `supabase/migrations/20260419132122_f0173d5d-9d5c-4974-bf22-bfb2f22f7000.sql`
-- … +131 (lista completa em `context.json`)
+- … +132 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 
@@ -834,7 +834,7 @@ Middleware matcher (Next.js): nenhum
 | grant | authenticated | select, insert | `quote_save_idempotency`, `search_analytics`, `search_analytics` |
 | grant | authenticated | select, insert, update, delete | `notification_preferences`, `quote_save_idempotency`, `catalog_marketing_terms`, `catalog_product_marketing` |
 | grant | authenticated, anon | execute | `search_products_semantic`, `can_view_audit_logs`, `can_view_telemetry`, `can_view_connections`, `can_manage_connections` |
-| grant | authenticated, service_role | execute | `get_web_vitals_regression`, `audit_ownership_orphans`, `audit_rls_coverage`, `audit_rls_matrix`, `audit_security_definer_acl`, `assert_database_auditor`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `audit_actor_email`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial` … +30 |
+| grant | authenticated, service_role | execute | `get_web_vitals_regression`, `audit_ownership_orphans`, `audit_rls_coverage`, `audit_rls_matrix`, `audit_security_definer_acl`, `assert_database_auditor`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `audit_actor_email`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial` … +32 |
 | grant | authenticated, service_role | select | `v_full_scope_grants`, `catalog_marketing_term_usage` |
 | grant | authenticated, service_role | select, insert, update, delete | `personalization_simulations` |
 | grant | postgres, service_role | execute | `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `auto_revoke_orphan_full_keys`, `cleanup_webhook_logs`, `retry_failed_webhook_deliveries` |
@@ -848,7 +848,7 @@ Middleware matcher (Next.js): nenhum
 | grant | supabase_auth_admin, service_role | execute | `create_default_notification_preferences` |
 | revoke | PUBLIC | all | `cleanup_old_notifications`, `get_web_vitals_summary`, `get_web_vitals_regression`, `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `set_connections_auto_test_interval`, `set_connection_failure_window_minutes`, `get_auto_test_job_status`, `check_telemetry_regression`, `log_full_scope_grant`, `log_access_denied`, `record_dev_route_telemetry`, `auto_revoke_orphan_full_keys`, `log_rls_denial`, `audit_ownership_orphans` … +83 |
 | revoke | PUBLIC | execute | `check_sicoob_access_matrix`, `public`, `can_manage`, `can_view_all_sales`, `get_user_org_ids`, `has_role`, `is_admin`, `is_dev`, `is_kit_collaborator`, `is_kit_owner`, `is_supervisor_or_above`, `can_manage`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +11 |
-| revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +54 |
+| revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +56 |
 | revoke | PUBLIC, anon | execute | `is_order_owner_or_admin`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial`, `audit_security_definer_acl`, `audit_security_definer_acl`, `can_manage`, `get_user_pa_id`, `get_user_cooperative_id`, `get_user_singular_id`, `is_kit_owner`, `is_kit_collaborator`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +8 |
 | revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +86 |
 | revoke | PUBLIC, anon, authenticated | execute | `validate_order_status`, `log_order_status_change`, `record_public_token_failure`, `search_products_semantic`, `check_rate_limit`, `increment_webhook_endpoint_metrics` |

@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)",
    "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
    "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)",
    "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)",
-   "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)",
-   "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)"
+   "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

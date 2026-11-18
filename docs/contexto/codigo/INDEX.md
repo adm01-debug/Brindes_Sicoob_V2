@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `eeb3c4ee2ad12d5a3113cfa1532fbaf8d2660755` (2026-11-18T17:30:55Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ca76bcdbb29867c7649976e2ebc71b5fa18bac38` (2026-11-18T14:47:46-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2834), SQL (672), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
+- linguagens: TypeScript (2834), SQL (673), Markdown (246), JSON (233), JavaScript (144), Python (59), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4324 |
+| arquivos_total | 4325 |
 | arquivos_codigo | 3034 |
-| linhas_codigo | 479154 |
+| linhas_codigo | 479158 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -46,7 +46,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks | 389 |
 | edge_functions | 106 |
 | tabelas | 291 |
-| migrations | 619 |
+| migrations | 620 |
 | cron_jobs | 27 |
 | testes | 805 |
 | workflows | 16 |
@@ -468,20 +468,20 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28308 nós · 52390 arestas · 2024 comunidades · grafo do commit `eeb3c4ee`
-- comunidades maiores: ref_hooks (500), react (325), ref_lib (243), ref_integrations (239), sonner (225), lucide-react (215), date-fns (177), react-router-dom (170), expert-chat/index.ts (167), framer-motion (164), ref_components (157), external-db-bridge/index.ts (153)
+- 28312 nós · 52393 arestas · 2047 comunidades · grafo do commit `ca76bcdb`
+- comunidades maiores: ref_hooks (475), ref_integrations (422), ref_components (387), react (207), react-router-dom (199), expert-chat/index.ts (184), getCorsHeaders (175), framer-motion (159), ref_contexts (158), ref_lib (152), date-fns (150), ref_stores (147)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (96)
-- docs/correcoes-validacao-2026-09-14.md (95)
+- docs/plano-melhorias-50-etapas.md (95)
+- docs/correcoes-validacao-2026-09-14.md (94)
 - package.json (20)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
 - RELATORIO_CI.md (19)
+- scripts/db/apply-sicoob-migrations.mjs (19)
 - .github/workflows/ci.yml (18)
-- scripts/db/apply-sicoob-migrations.mjs (18)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
 - .github/workflows/lighthouse.yml (15)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `ca76bcd` fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)
 - 2026-11-18 `eeb3c4e` fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)
 - 2026-11-18 `71d515b` fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)
 - 2026-11-18 `90a9cb3` feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-17 `2a8d38b` chore: gate de npm audit libera advisory especifico em vez de pacote (#303)
 - 2026-11-17 `19e692d` fix: historico de itens do pedido Sicoob sem embed irresolvivel (#302)
 - 2026-11-17 `004e313` fix: sonda de REST aceita raiz protegida e para de repetir healthcheck negado (#300)
-- 2026-11-17 `4f2531e` fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

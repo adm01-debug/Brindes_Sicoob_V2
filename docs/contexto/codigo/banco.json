@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 619,
+ "migrations": 620,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -181,6 +181,7 @@
   "cleanup_webhook_logs",
   "complete_optimization",
   "confirm_sicoob_order",
+  "connections_auto_test_interval_from_schedule",
   "consolidate_sicoob_quotes",
   "consume_step_up_token",
   "convert_quote_to_sicoob_order",
