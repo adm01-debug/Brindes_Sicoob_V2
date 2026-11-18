@@ -112,8 +112,12 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    ([`testes-pr119.md`](testes-pr119.md)): **8 arquivos passam contra a `main` como estão** e
    devem entrar em PR própria, sem tocar em `src/`; 52 falham porque medem comportamento que
    a `main` não tem (viram evidência de lacuna, ligada a `capacidades.md`); 21 cenários
-   `.mjs`, fixtures `.sql` e simuladores `.py` seguem sem triagem, por rodarem fora do
-   Vitest. **A `pr/119` não se apaga enquanto os 8 não estiverem na `main`.**
+   `.mjs` também foram executados: 1 passa como está, 2 passam só corrigindo o caminho de uma
+   migration e 1 deles achou um defeito novo na `main` — o canal de realtime do Kanban não é
+   exclusivo por montagem (`commonService.ts:18`), e duas telas assinam o mesmo, então a
+   atualização ao vivo morre em silêncio quando as duas estão abertas. Os 7 simuladores `.py`
+   exigem Docker e não rodam neste ambiente. **A `pr/119` não se apaga enquanto esses
+   arquivos não estiverem na `main`.**
 3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
 4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
 5. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,

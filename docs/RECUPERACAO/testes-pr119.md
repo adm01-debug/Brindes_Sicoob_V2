@@ -23,7 +23,9 @@ execução separa os dois casos.
 | falham por API diferente na `main` | 16 | idem — a função exportada pela PR #119 não existe ou mudou de nome |
 | falham por UI diferente na `main` | 9 | idem — o elemento que o teste procura não está na tela de hoje |
 | falham por import de módulo ausente | 5 | dependem de código da PR #119 listado em `capacidades.md` |
-| cenários `.mjs`, fixtures `.sql` e simuladores `.py` | 21 | fora do runner do Vitest; triagem própria, ainda pendente |
+| cenários `.mjs` | 9 | triagem executada; ver seção abaixo |
+| fixtures `.sql` dos cenários | 5 | acompanham os cenários correspondentes |
+| simuladores `.py` | 7 | exigem Docker (Postgres descartável); não executáveis neste ambiente |
 
 ### Os 8 que entram sem mexer em `src/`
 
@@ -46,6 +48,32 @@ Cada linha abaixo é uma afirmação sobre o sistema que a `main` **não** cumpr
 testes quebrados: são a lista de lacunas que a PR #119 media e ninguém mais mede. Recuperar
 cada um exige recuperar junto a implementação correspondente, que está catalogada em
 [`capacidades.md`](capacidades.md).
+
+## Os 9 cenários `.mjs`, executados um a um
+
+`node --test`, contra `origin/main`, em 18/11/2026.
+
+| cenário | resultado | o que isso significa |
+|---|---|---|
+| `manager-approval-delegation-route.scenario.mjs` | **passa** (1/1) | entra como está |
+| `access-log-marketing-acl.scenario.mjs` | **passa (3/3) depois de corrigir um caminho** | apontava para `20261018131850_harden_access_blocked_log_and_marketing_view_acl.sql`; a migration existe na `main` com outro carimbo (`20261118130300_…`, recuperada na PR #305). Só o nome do arquivo muda |
+| `view-notification-hardening.scenario.mjs` | **passa (2/2) depois de corrigir um caminho** | idem, para `20261118130200_restore_view_invoker_and_notification_scope.sql` |
+| `business-realtime-contract.scenario.mjs` | 3 de 4 depois de corrigir o caminho | ver o achado abaixo |
+| `edge-runtime-contract.test.mjs` | não roda | importa `scripts/lib/edge-runtime-contract.mjs`, que não existe na `main`. O contrato foi reimplementado por outro caminho na PR #335; este arquivo fica obsoleto |
+| `critical-test-skips.scenario.mjs` | falha | o orçamento de skip da `main` é outro; a mesma regra já é fiscalizada por `scripts/check-critical-test-skip-budget.mjs` e pela PR #329 |
+| `freight-truthfulness-contract.scenario.mjs` | falha (asserção) | mede comportamento de frete que a `main` não tem |
+| `public-health-contract.mjs` | falha (2 asserções) | idem, contrato de health público |
+| `real-indicators-contract.scenario.mjs` | falha (3 asserções) | idem, indicadores reais |
+
+### Achado novo, do cenário de realtime: canal do Kanban não é exclusivo
+
+`business-realtime-contract.scenario.mjs` exige
+`sicoob-orders-realtime:${crypto.randomUUID()}`; a `main` usa nome fixo em
+`src/services/sicoob/commonService.ts:18` e **duas telas assinam esse mesmo canal**
+(`OrdersKanbanPage.tsx:269` e `OrdersPage.tsx:138`). Com as duas montadas, o segundo
+`subscribe()` cai no mesmo tópico e o `removeChannel` de uma derruba o da outra: a atualização
+ao vivo do Kanban para de chegar, em silêncio. Correção é de uma linha, e este cenário é o
+teste dela. **Pendente — entra junto da PR dos 8 arquivos.**
 
 ## Tabela completa
 
