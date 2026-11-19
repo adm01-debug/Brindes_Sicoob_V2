@@ -238,3 +238,16 @@ desconhecido — **está inteira na `main`**, e foi conferida linha a linha em
 A mesma evidência foi publicada como comentário na própria PR #292, para
 sobreviver independentemente deste arquivo. Os commits continuam acessíveis
 pela PR mesmo depois de a branch ser apagada.
+
+### `claude/feat-modulos-edge-recuperados-261117-0930` (PR #291, fechada) — **LIBERADA em 19/11/2026**
+
+Método, nesta ordem:
+
+1. **Arquivo ausente:** `git diff --name-only --diff-filter=A origin/main <branch>` → **0**. Nenhum arquivo existe só na branch.
+2. **Símbolo ausente:** varri os **93 arquivos** de `src/` e `supabase/functions/` que diferem, extraí de cada versão da branch os símbolos exportados (`export function|const|class|interface|type`) e procurei cada um no arquivo correspondente da `main` → **0 ausências**.
+3. **Fora de `src/` e `supabase/functions/`:** conferi um a um os arquivos de workflow e de script que diferem. As duas únicas linhas que pareciam exclusivas da branch não são:
+   - `.github/workflows/deploy-sicoob-functions.yml` — `auth-integrity-check` **está** na allowlist da `main` (linha 55); a diferença era só a continuação de linha (`\`).
+   - `scripts/db/apply-sicoob-migrations.mjs` — as contagens de RLS consolidada **estão** na `main` (linha 984), e numa forma **melhor**: `>= 222` em vez do `=== 222` da branch, que reprovaria no instante em que uma policy nova fosse criada.
+4. **Amostragem de conteúdo:** onde a branch tem mais linhas, é a `main` que está à frente. Exemplo conferido: `src/components/cart/cart-company-options.ts` — a branch usa `selectCrm` genérico, que a política do portal passou a negar para `vendedor` e `agente`; a `main` usa `fetchQuoteDirectoryCompanies`, o contrato fechado. Aplicar a versão da branch deixaria o seletor de empresa do carrinho **vazio** justamente para esses papéis.
+
+**Conclusão:** zero trabalho a recuperar. Evidência também publicada como comentário na própria PR #291.
