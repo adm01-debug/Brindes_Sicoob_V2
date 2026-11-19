@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useSimulatorWizard } from '@/hooks/simulator/useSimulatorWizard';
 import { useWizardDrafts } from '@/hooks/simulator/useWizardDrafts';
+import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
 import {
   WizardStepIndicator,
   StepProduct,
@@ -357,6 +358,17 @@ export default function SimuladorWizard() {
 
   const isInPersonalizationFlow =
     wizard.selectedProduct !== null && wizard.currentStep !== 'product';
+
+  /**
+   * Antes, o voltar perguntava "Você tem alterações não salvas" em `/simulador`
+   * a cada clique, inclusive com a tela recém-aberta, porque a condição era o
+   * pathname. Aqui o trabalho começa quando o produto é escolhido: antes disso
+   * não há nada a perder, e depois há — produto, quantidade e personalizações
+   * só viram orçamento ao final do fluxo.
+   */
+  useScreenDirtyState(
+    wizard.selectedProduct !== null || wizard.personalizations.length > 0,
+  );
   const showSidebar = isInPersonalizationFlow && wizard.personalizations.length > 0;
 
   const handleAddNewPersonalization = () => {
