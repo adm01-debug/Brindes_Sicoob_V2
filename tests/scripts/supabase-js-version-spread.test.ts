@@ -57,7 +57,13 @@ function arquivosDe(dir: string): string[] {
 const OCORRENCIAS: ReadonlyArray<{ versao: string; arquivo: string }> = arquivosDe(RAIZ).flatMap(
   (arquivo) => {
     const texto = readFileSync(arquivo, "utf8");
-    return [...texto.matchAll(IMPORTE)].map((m) => ({ versao: m[1], arquivo }));
+    // `m[1]` é tipado como `string | undefined` porque o grupo de captura pode,
+    // em tese, não casar. Aqui ele sempre casa — o grupo é obrigatório no padrão
+    // —, mas filtrar é mais honesto que afirmar com `!`.
+    return [...texto.matchAll(IMPORTE)]
+      .map((m) => m[1])
+      .filter((versao): versao is string => typeof versao === "string")
+      .map((versao) => ({ versao, arquivo }));
   },
 );
 
