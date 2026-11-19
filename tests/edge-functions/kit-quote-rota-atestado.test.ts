@@ -44,22 +44,31 @@ describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
   });
 
   it('o desvio acontece antes de qualquer trabalho de kit', () => {
-    const posDesvio = kitQuote.indexOf('desviarParaAtestadoDePreco(req)');
+    const posDesvio = kitQuote.indexOf('ehAtestadoDePreco(corpo)');
     const posTrabalhoDeKit = kitQuote.indexOf("Deno.env.get('SUPABASE_URL')");
     expect(posDesvio).toBeGreaterThan(0);
     expect(posTrabalhoDeKit).toBeGreaterThan(posDesvio);
   });
 
-  it('o corpo é lido de um clone, para o handler do atesto poder lê-lo de novo', () => {
-    expect(kitQuote).toContain('req.clone()');
-    expect(kitQuote).toContain('return await handleQuotePriceAttestation(req)');
+  it('o corpo é lido UMA vez, do original, e o pedido é remontado para o handler', () => {
+    // Regressão: `req.clone()` divide o corpo em dois ramos do mesmo stream, e
+    // cancelar um ramo passa a depender do outro — corpo acima do limite sem
+    // `Content-Length` podia ficar sem resposta. Sem clone não há ramo.
+    expect(kitQuote).not.toContain('req.clone()');
+    expect(kitQuote).toContain('readBoundedBody(req, LIMITE_CORPO_ATESTADO)');
+    expect(kitQuote).toContain('handleQuotePriceAttestation(remontarComCorpo(req, bruto))');
   });
 
-  it('a inspeção do corpo é limitada, não só conferida pelo Content-Length', () => {
+  it('a leitura é limitada e o excesso responde 413, em vez de ser bufferizado', () => {
     // Conferir só o cabeçalho deixaria passar requisição SEM `Content-Length`,
     // que seria bufferizada inteira antes de qualquer autenticação.
-    expect(kitQuote).toContain('readBoundedBody(req.clone(), LIMITE_CORPO_ATESTADO)');
-    expect(kitQuote).not.toContain('req.clone().json()');
+    expect(kitQuote).toContain('if (bruto === null) return json(req, { error:');
+    expect(kitQuote).toContain('413');
+  });
+
+  it('o fluxo de kit usa o corpo já lido, sem reabrir o stream', () => {
+    expect(kitQuote).not.toContain('await req.json()');
+    expect(kitQuote).toContain('const body = (corpo ?? {}) as KitQuoteBody');
   });
 
   it('hospedeira e hóspede têm a MESMA autorização — hospedar não pode afrouxar o acesso', () => {
@@ -85,9 +94,11 @@ describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
 
   it('sem o marcador op, o fluxo de kit segue intocado', () => {
     const trecho = kitQuote.slice(
-      kitQuote.indexOf('async function desviarParaAtestadoDePreco'),
-      kitQuote.indexOf('Deno.serve(withStructuredLogging("sicoob-kit-quote"'),
+      kitQuote.indexOf('function ehAtestadoDePreco'),
+      kitQuote.indexOf('function remontarComCorpo'),
     );
-    expect(trecho).toContain("!== 'price-attestation') return null");
+    expect(trecho).toContain("=== 'price-attestation'");
+    // Qualquer outro corpo — inclusive sem `op` ou não-objeto — não desvia.
+    expect(trecho).toContain('return false');
   });
 });

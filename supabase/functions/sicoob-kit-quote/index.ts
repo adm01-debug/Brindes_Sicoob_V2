@@ -88,25 +88,35 @@ const LIMITE_CORPO_ATESTADO = 524_288;
  * atesto a camada de catálogo (`./catalog.ts`), o CORS e o logger, e vive na
  * mesma fronteira de confiança: é o lugar de menor dano para hospedar a rota.
  *
- * O desvio acontece antes de qualquer trabalho de kit, e só quando o corpo traz
- * `op: "price-attestation"`. O corpo é lido de um clone, para o handler do
- * atesto poder lê-lo de novo com o próprio limite, e a leitura é LIMITADA por
- * `readBoundedBody`: conferir só o `Content-Length` deixaria passar requisição
- * sem esse cabeçalho, que seria bufferizada inteira antes de qualquer
- * autenticação.
+ * O corpo é lido UMA vez, do pedido original, com limite — sem `clone()`. Um
+ * clone divide o corpo em dois ramos de um mesmo stream, e cancelar um ramo
+ * passa a depender do outro: a inspeção e o fluxo de kit ficariam esperando um
+ * ao outro num corpo acima do limite sem `Content-Length`. Lendo uma vez não
+ * existe ramo para coordenar. Quem for atender recebe o pedido **remontado**
+ * com o texto já lido, e pode lê-lo de novo com o próprio limite.
  */
-async function desviarParaAtestadoDePreco(req: Request): Promise<Response | null> {
-  const bruto = await readBoundedBody(req.clone(), LIMITE_CORPO_ATESTADO);
-  if (bruto === null || bruto === '') return null;
-  let corpo: unknown;
+function analisarCorpo(bruto: string): unknown {
   try {
-    corpo = JSON.parse(bruto);
+    return JSON.parse(bruto);
   } catch {
     return null;
   }
-  if (!corpo || typeof corpo !== 'object') return null;
-  if ((corpo as { op?: unknown }).op !== 'price-attestation') return null;
-  return await handleQuotePriceAttestation(req);
+}
+
+function ehAtestadoDePreco(corpo: unknown): boolean {
+  if (!corpo || typeof corpo !== 'object') return false;
+  return (corpo as { op?: unknown }).op === 'price-attestation';
+}
+
+/**
+ * Pedido equivalente ao original, com o corpo já lido como texto. O
+ * `content-length` é descartado: o do original descreve o stream consumido, e
+ * quem constrói a requisição recalcula pelo corpo novo.
+ */
+function remontarComCorpo(req: Request, bruto: string): Request {
+  const headers = new Headers(req.headers);
+  headers.delete('content-length');
+  return new Request(req.url, { method: req.method, headers, body: bruto });
 }
 
 Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
@@ -114,8 +124,10 @@ Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
   if (preflight) return preflight;
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
 
-  const atestado = await desviarParaAtestadoDePreco(req);
-  if (atestado) return atestado;
+  const bruto = await readBoundedBody(req, LIMITE_CORPO_ATESTADO);
+  if (bruto === null) return json(req, { error: 'Corpo da requisição acima do limite de 512 KB.' }, 413);
+  const corpo = analisarCorpo(bruto);
+  if (ehAtestadoDePreco(corpo)) return await handleQuotePriceAttestation(remontarComCorpo(req, bruto));
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -143,7 +155,9 @@ Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
       return data;
     };
 
-    const body = await req.json() as KitQuoteBody;
+    // Corpo já lido e analisado antes do desvio: `req` não tem mais stream.
+    // JSON inválido cai na validação de campos abaixo (400), não em 500.
+    const body = (corpo ?? {}) as KitQuoteBody;
     const kitName = typeof body.kitName === 'string' ? body.kitName.trim() : '';
     const kitType = typeof body.kitType === 'string' ? body.kitType : '';
     const identityTag = typeof body.identityTag === 'string' ? body.identityTag.trim() : '';
