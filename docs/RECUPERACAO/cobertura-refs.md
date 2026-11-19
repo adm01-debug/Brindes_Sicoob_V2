@@ -717,9 +717,26 @@ remotas** (fora a `main`). Esta seção mede todas e dá base de certeza para ca
 
 | grupo | quantas | base da certeza |
 |---|---|---|
-| PR **mergeada** | 15 | o conteúdo está na `main` por definição do merge |
+| PR **mergeada** | 15 | **não vale como prova** — ver correção abaixo; caem na mesma adjudicação das outras |
 | PR **fechada sem merge** | 44 | **as 44 já tinham veredito escrito** neste ledger — conferido mecanicamente, por número de PR (`#N`, `pull/N`) e por nome de branch, sobre `docs/RECUPERACAO/`. Zero sem cobertura |
 | **sem PR nenhuma** | 3 | nenhum veredito por número de PR as alcançaria; resolvidas abaixo |
+
+> **Correção de 19/11/2026, após revisão — a mais séria desta seção.** Eu havia escrito que
+> para 15 refs o conteúdo estava na `main` "por definição do merge". **É falso.** Medido:
+> `git merge-base origin/main <ref>` devolve **vazio para as 15**. Todas são pré-re-raiz —
+> suas PRs entraram na `main` **antiga**, que a re-raiz descartou. Merge numa árvore que não
+> é mais a atual não prova nada sobre a atual, e é precisamente o que o
+> [`README.md`](./README.md) desta pasta avisa ao exigir comparação por conteúdo.
+>
+> A evidência interna já apontava para isso e eu não liguei os pontos: nesta mesma sessão
+> recuperei trabalho da `fix/sicoob-trust-data-20260924`, uma das 15. Se o merge dela
+> valesse para a `main` de hoje, não haveria o que recuperar.
+>
+> As 15 **não ganham um atalho**: seus arquivos exclusivos fazem parte da união de 243
+> caminhos adjudicada abaixo, como os de qualquer outra ref. A base de certeza delas é essa,
+> não o merge.
+
+
 
 ### As 3 sem PR — o buraco que a classificação por PR não cobria
 
@@ -866,7 +883,7 @@ a árvore anterior inteira. Serve para localizar, não para concluir.
 
 | ref | PR(s) | estado | excl. | base da certeza |
 |---|---|---|---|---|
-| `audit/revisao-plano-20260924` | #31 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+| `audit/revisao-plano-20260924` | #31 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 | `audit/revisao-plano-20261001` | #85 | PR fechada sem merge | 21 | veredito escrito neste ledger |
 | `claude/chore-typecheck-baseline-260929-1157` | #81 | PR fechada sem merge | 20 | veredito escrito neste ledger |
 | `claude/ci-allowlist-crm-db-bridge-261118-1515` | #311 | PR aberta | 6 | em curso nesta sessão |
@@ -880,25 +897,25 @@ a árvore anterior inteira. Serve para localizar, não para concluir.
 | `claude/fix-seller-scope-baseline-260929-1300` | #82 | PR fechada sem merge | 20 | veredito escrito neste ledger |
 | `claude/fix-seller-scope-deno-260929-1445` | #84 | PR fechada sem merge | 20 | veredito escrito neste ledger |
 | `claude/fix-storage-delete-proposals-261106-2007` | #209 | PR fechada sem merge | 8 | veredito escrito neste ledger |
-| `claude/hopeful-mccarthy-8rqrqw` | #141, #139, #137, #136, #135, #134, #133, #132, #131, #130, #129, #126 | PR mergeada | 8 | conteúdo na `main` pelo merge |
-| `claude/project-workflows-analysis-5n6hva` | #53 | PR mergeada | 20 | conteúdo na `main` pelo merge |
+| `claude/hopeful-mccarthy-8rqrqw` | #141, #139, #137, #136, #135, #134, #133, #132, #131, #130, #129, #126 | PR mergeada | 8 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `claude/project-workflows-analysis-5n6hva` | #53 | PR mergeada | 20 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 | `computador_local` | — | sem PR | 0 | veredito individual acima |
 | `contexto` | — | sem PR | 815 | artefato gerado — **não se apaga** |
 | `dependabot/github_actions/peter-evans/create-pull-request-8.1.3` | #283 | PR aberta | 6 | em curso nesta sessão |
 | `dependabot/npm_and_yarn/development-all-ccf808f959` | #322 | PR aberta | 0 | em curso nesta sessão |
 | `dependabot/npm_and_yarn/production-minor-patch-585bd01e94` | #281 | PR aberta | 6 | em curso nesta sessão |
 | `devin/1791190000-ux-onda1` | #100 | PR fechada sem merge | 15 | veredito escrito neste ledger |
-| `devin/1791201000-ux-onda2` | #101 | PR mergeada | 15 | conteúdo na `main` pelo merge |
+| `devin/1791201000-ux-onda2` | #101 | PR mergeada | 15 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 | `docs/ci-status-309799` | #172 | PR fechada sem merge | 8 | veredito escrito neste ledger |
 | `docs/hermes-1791891351-auditoria-planejamento` | #105 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
 | `docs/hermes-h459513-branch-protection` | #188 | PR fechada sem merge | 8 | veredito escrito neste ledger |
-| `docs/plano150-20260927` | #44 | PR mergeada | 21 | conteúdo na `main` pelo merge |
-| `execucao/sicoob-20260911130857` | #7, #6, #5 | PR mergeada | 73 | conteúdo na `main` pelo merge |
-| `feat/pdf-playwright-scripts-art-261108-0516` | #226 | PR mergeada | 8 | conteúdo na `main` pelo merge |
+| `docs/plano150-20260927` | #44 | PR mergeada | 21 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `execucao/sicoob-20260911130857` | #7, #6, #5 | PR mergeada | 73 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `feat/pdf-playwright-scripts-art-261108-0516` | #226 | PR mergeada | 8 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 | `fix/ci-only-20261029` | #165 | PR fechada sem merge | 8 | veredito escrito neste ledger |
 | `fix/ci-workflows-h290325` | #164 | PR fechada sem merge | 10 | veredito escrito neste ledger |
 | `fix/ci-workflows-h369570` | #176 | PR fechada sem merge | 18 | veredito escrito neste ledger |
-| `fix/execucao-plano-20260928` | #74 | PR mergeada | 20 | conteúdo na `main` pelo merge |
+| `fix/execucao-plano-20260928` | #74 | PR mergeada | 20 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 | `fix/execucao-plano-final-20260928` | #75 | PR fechada sem merge | 20 | veredito escrito neste ledger |
 | `fix/hermes-20261029-undici-cve` | #161 | PR fechada sem merge | 8 | veredito escrito neste ledger |
 | `fix/hermes-272703-ci-audit` | #158 | PR fechada sem merge | 8 | veredito escrito neste ledger |
@@ -921,13 +938,13 @@ a árvore anterior inteira. Serve para localizar, não para concluir.
 | `fix/hermes-revisao-scripts-261108-0604` | #228 | PR fechada sem merge | 8 | veredito escrito neste ledger |
 | `fix/hermes-sicoob-deploy-verification-20261028` | #149 | PR fechada sem merge | 8 | veredito escrito neste ledger |
 | `fix/quote-price-authority-311333` | #175 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
-| `fix/sicoob-aprovacao-legada-20260923` | #26 | PR mergeada | 17 | conteúdo na `main` pelo merge |
-| `fix/sicoob-conclusao-20260922` | #18 | PR mergeada | 22 | conteúdo na `main` pelo merge |
-| `fix/sicoob-csp-202635` | #27 | PR mergeada | 23 | conteúdo na `main` pelo merge |
-| `fix/sicoob-intelligence-truth-20260924` | #36 | PR mergeada | 23 | conteúdo na `main` pelo merge |
-| `fix/sicoob-p0-operacional-20260923` | #24 | PR mergeada | 16 | conteúdo na `main` pelo merge |
-| `fix/sicoob-p0-seguranca-20260923` | #22 | PR mergeada | 24 | conteúdo na `main` pelo merge |
-| `fix/sicoob-trust-data-20260924` | #34 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+| `fix/sicoob-aprovacao-legada-20260923` | #26 | PR mergeada | 17 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-conclusao-20260922` | #18 | PR mergeada | 22 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-csp-202635` | #27 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-intelligence-truth-20260924` | #36 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-p0-operacional-20260923` | #24 | PR mergeada | 16 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-p0-seguranca-20260923` | #22 | PR mergeada | 24 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-trust-data-20260924` | #34 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
 
 **62 de 62 com veredito escrito.** As 4 refs apagadas em 19/11 (seção "Sétima varredura")
 não aparecem aqui porque já não existem; o veredito delas está lá.
