@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { escapeIlikeSearchTerm } from "../_shared/ilike-pattern.ts";
 // MCP server for Claude Desktop / other Lovable projects.
 // Authenticates via X-MCP-Key header (validated in DB against mcp_api_keys.key_hash).
 // Each tool declares { scope, mode } and is gated centrally before running.
@@ -324,7 +325,9 @@ defineTool<{ search?: string; limit?: number }>(
     const lim = Math.min(Math.max(Number(limit ?? 20), 1), 50);
     let q = supabase.from("quotes").select("client_name, client_email, client_company")
       .not("client_name", "is", null).limit(lim);
-    if (search) q = q.ilike("client_name", `%${search}%`);
+    // Sem escapar, um `%` ou `_` no termo transforma a busca por cliente em
+    // varredura: devolve nomes que ninguém pediu.
+    if (search) q = q.ilike("client_name", `%${escapeIlikeSearchTerm(search)}%`);
     const { data, error } = await q;
     if (error) throw new Error(error.message);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
