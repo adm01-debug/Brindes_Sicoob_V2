@@ -23,6 +23,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // O runner da CI roda em UTC; o produto roda no fuso de Brasília. A
+    // diferença não é cosmética: `new Date('2026-11-19')` resolve para o dia 19
+    // em UTC e para o dia 18 às 21h aqui, então um filtro de período lido assim
+    // esconde o pedido do próprio dia — e, em UTC, o teste que vigia isso passa
+    // verde com a implementação errada (ver
+    // `tests/pages/orders-filtros-na-url.test.ts`). Fixar o fuso faz a suíte
+    // medir o mesmo que o vendedor vê.
+    env: {
+      TZ: 'America/Sao_Paulo',
+    },
     // Alguns ambientes locais mantêm dependências em um armazenamento virtual.
     // Transformar o React Query pelo Vite garante que ele reutilize a mesma
     // instância de React dos componentes e evita falhas espúrias de hooks.

@@ -15,6 +15,7 @@ import { RouteLoadingBar } from '@/components/common/RouteLoadingBar';
 import { GlobalConfirmDialog } from '@/components/common/GlobalConfirmDialog';
 
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { NavigationHistoryMenu } from '@/components/common/NavigationHistoryMenu';
 
 // Lazy load heavy layout components to reduce MainLayout chunk size
 const Header = lazyWithRetry(() => import('./Header').then((m) => ({ default: m.Header })));
@@ -262,6 +263,7 @@ function BreadcrumbBar({ state }: { state: MainLayoutState }) {
             variant="ghost"
           />
           <PersistentBreadcrumbs showBackButton className="flex-1 py-0.5" />
+          <NavigationHistoryMenu className="shrink-0" />
         </Suspense>
       </div>
     </div>
