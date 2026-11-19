@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b` (2026-11-19T00:22:35Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `d342a596a8c9f7dfd610d97f7656e81fa0b052fb` (2026-11-19T01:01:29Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -469,19 +469,19 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28473 nós · 52688 arestas · 2065 comunidades · grafo do commit `3df58f1c`
-- comunidades maiores: ref_hooks (482), ref_components (419), ref_integrations (241), sonner (218), ref_contexts (184), expert-chat/index.ts (173), react-router-dom (172), getCorsHeaders (164), date-fns (159), react (157), ref_lib (146), ref_stores (141)
+- 28479 nós · 52695 arestas · 2031 comunidades · grafo do commit `d342a596`
+- comunidades maiores: ref_lib (562), ref_components (445), ref_integrations (209), react (195), sonner (185), ref_contexts (184), ref_services (180), react-router-dom (178), expert-chat/index.ts (173), date-fns (169), ref_stores (167), getCorsHeaders (164)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (81)
-- docs/correcoes-validacao-2026-09-14.md (80)
+- docs/plano-melhorias-50-etapas.md (80)
+- docs/correcoes-validacao-2026-09-14.md (79)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
+- PENDENCIAS.md (20)
+- RELATORIO_CI.md (20)
 - .github/workflows/sicoob-ci.yml (19)
-- PENDENCIAS.md (19)
-- RELATORIO_CI.md (19)
 - .github/workflows/ci.yml (18)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
@@ -619,7 +619,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `PENDENCIAS.md` — Pendências de CI — adm01-debug/Brindes_Sicoob_V2 (728 linhas)
 - `README.md` — 🎁 Brindes Sicoob V2 — Portal corporativo de brindes (367 linhas)
 - `RELATORIO_AUDITORIA_EXAUSTIVA.md` — Relatório de Auditoria Exaustiva — Brindes Sicoob V2 (382 linhas)
-- `RELATORIO_CI.md` — Relatório CI — adm01-debug/Brindes_Sicoob_V2 (811 linhas)
+- `RELATORIO_CI.md` — Relatório CI — adm01-debug/Brindes_Sicoob_V2 (962 linhas)
 - `SECURITY.md` — Política de Segurança (50 linhas)
 - `SICOOB_TESTING.md` — Módulo Sicoob - Documentação de Usuários de Teste (37 linhas)
 - `docs/01_CRIAR_PRIMEIRA_ORGANIZATION.md` — 🏢 Como Criar sua Primeira Organization (440 linhas)
@@ -692,6 +692,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `d342a59` docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)
 - 2026-11-19 `3df58f1` fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)
 - 2026-11-18 `f30a262` fix(db): aplicador de migrations tolera BOM na leitura (#345)
 - 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
@@ -706,7 +707,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `f2db0f8` fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)
 - 2026-11-18 `d8d7dcd` fix(bi): caminho de dado real para de devolver categoria fictícia (#316)
 - 2026-11-18 `781ee20` feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)
-- 2026-11-18 `ca76bcd` fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

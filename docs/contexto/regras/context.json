@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b",
+  "sha": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 00:39 UTC",
+  "generated_at": "2026-11-19 01:19 UTC",
   "files_total": 4350,
   "code_files": 3711,
   "code_lines": 544454
@@ -249820,10 +249820,20 @@
   }
  },
  "git": {
-  "sha": "3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b",
+  "sha": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "d342a59",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)",
+    "files": [
+     "PENDENCIAS.md",
+     "RELATORIO_CI.md"
+    ]
+   },
    {
     "sha": "3df58f1",
     "date": "2026-11-18",
@@ -250348,22 +250358,6 @@
      "src/lib/cloud-status.ts",
      "tests/lib/cloud-status.test.ts"
     ]
-   },
-   {
-    "sha": "4f2531e",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)",
-    "files": [
-     "src/components/quotes/QuoteConsolidationPanel.tsx",
-     "src/components/quotes/QuoteHistoryTimeline.tsx",
-     "src/pages/GestorOrcamentos.tsx",
-     "src/services/QuoteService.ts",
-     "tests/components/QuoteConsolidationPanel.history.test.tsx",
-     "tests/components/QuoteHistoryTimeline.test.tsx",
-     "tests/helpers/supabase-mock.ts",
-     "tests/services/quoteConsolidationList.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -250393,10 +250387,6 @@
    ],
    [
     "src/integrations/supabase/types.ts",
-    2
-   ],
-   [
-    "src/services/QuoteService.ts",
     2
    ],
    [
@@ -250446,6 +250436,10 @@
    [
     "src/pages/sicoob/orders/OrderDetailPage.tsx",
     2
+   ],
+   [
+    "PENDENCIAS.md",
+    1
    ]
   ]
  }

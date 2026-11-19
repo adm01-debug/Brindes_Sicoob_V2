@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b",
+  "commit": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
   "branch": "main",
-  "data_commit": "2026-11-19T00:22:35Z",
+  "data_commit": "2026-11-19T01:01:29Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "d342a59",
+    "data": "2026-11-19",
+    "assunto": "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)"
+   },
    {
     "sha": "3df58f1",
     "data": "2026-11-19",
@@ -126,11 +131,6 @@
     "sha": "5ecb93f",
     "data": "2026-11-18",
     "assunto": "fix: isola rascunho de orcamento por cooperativa e PA (#304)"
-   },
-   {
-    "sha": "c2b0099",
-    "data": "2026-11-17",
-    "assunto": "fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)"
    }
   ],
   "arquivos_mudados_7d": 368,
@@ -149,11 +149,11 @@
    },
    {
     "pasta": "PENDENCIAS.md",
-    "mudancas": 19
+    "mudancas": 20
    },
    {
     "pasta": "RELATORIO_CI.md",
-    "mudancas": 19
+    "mudancas": 20
    },
    {
     "pasta": "package.json",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 81
+    "mudancas": 80
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 80
+    "mudancas": 79
    },
    {
     "arquivo": "package.json",
@@ -214,15 +214,15 @@
     "mudancas": 21
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 19
-   },
-   {
     "arquivo": "PENDENCIAS.md",
-    "mudancas": 19
+    "mudancas": 20
    },
    {
     "arquivo": "RELATORIO_CI.md",
+    "mudancas": 20
+   },
+   {
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 19
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 141
+    "commits": 142
    },
    {
     "autor": "dependabot[bot]",
