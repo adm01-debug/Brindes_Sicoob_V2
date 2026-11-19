@@ -43,11 +43,13 @@ interface LookalikeQueryParams {
   ramoAtividade: string | null;
   avgTicket: number;
   affinityLoading: boolean;
-  ownProductIds: Set<string>;
-  ownProductNames: Set<string>;
 }
 
-function useLookalikeProducts({ clientId, ramoAtividade, avgTicket, affinityLoading, ownProductIds, ownProductNames }: LookalikeQueryParams) {
+// A exclusão do que o cliente já compra NÃO entra na consulta: os conjuntos de
+// afinidade não fazem parte da chave de cache, então uma afinidade que falhou na
+// abertura congelaria por 10 min uma lista sem exclusão nenhuma — e produto já
+// comprado voltaria à tela como "ainda não leva" depois do "Tentar novamente".
+function useLookalikeProducts({ clientId, ramoAtividade, avgTicket, affinityLoading }: LookalikeQueryParams) {
   return useQuery({
     queryKey: ["bi-lookalikes", clientId, ramoAtividade, avgTicket],
     enabled: !!ramoAtividade && !affinityLoading,
@@ -62,13 +64,22 @@ function useLookalikeProducts({ clientId, ramoAtividade, avgTicket, affinityLoad
       const { data, error } = await supabase.rpc("get_industry_top_products", { _company_ids: ids, _days: 90, _limit: 30 });
       if (error) throw error;
       const rows = (data ?? []) as IndustryProductRow[];
-      const products = rows.filter((row) => {
-        if (row.product_id && ownProductIds.has(row.product_id)) return false;
-        return !ownProductNames.has(row.product_name.toLowerCase());
-      }).slice(0, 6);
-      return { products, lookalikeCount: ids.length };
+      return { products: rows, lookalikeCount: ids.length };
     },
   });
+}
+
+export function excluirJaComprados(
+  rows: IndustryProductRow[],
+  ownProductIds: Set<string>,
+  ownProductNames: Set<string>,
+): IndustryProductRow[] {
+  return rows
+    .filter((row) => {
+      if (row.product_id && ownProductIds.has(row.product_id)) return false;
+      return !ownProductNames.has(row.product_name.toLowerCase());
+    })
+    .slice(0, 6);
 }
 
 function SharedCategories({ categories }: { categories: string[] }) {
@@ -151,7 +162,12 @@ export function ClientLookalikes({ clientId, ramoAtividade }: Props) {
         .filter((category) => sectorSlugs.has(category.slug))
         .slice(0, 4)
         .map((category) => category.label);
-  const { data, isLoading, isError, refetch } = useLookalikeProducts({ clientId, ramoAtividade, avgTicket: bi.avgTicket, affinityLoading: affinity.isLoading, ownProductIds, ownProductNames });
+  const bruto = useLookalikeProducts({ clientId, ramoAtividade, avgTicket: bi.avgTicket, affinityLoading: affinity.isLoading });
+  const { isLoading, isError, refetch } = bruto;
+  const data = bruto.data && {
+    ...bruto.data,
+    products: excluirJaComprados(bruto.data.products, ownProductIds, ownProductNames),
+  };
   const retry = () => Promise.allSettled([refetch(), affinity.refetch()]);
 
   return <LookalikesResult ramoAtividade={ramoAtividade} data={data} loading={isLoading || affinity.isLoading} unavailable={isError || affinity.isError} sharedCategories={sharedCategories} onRetry={() => { void retry(); }} />;
