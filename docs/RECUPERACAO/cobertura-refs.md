@@ -809,6 +809,27 @@ removeu de propósito.
 > | contraparte de mesmo nome, **conteúdo diferente** | 17 | 9 são migrations renumeradas, já conferidas byte a byte aqui: a da `main` é superconjunto. O resto são falsos pares do casamento por nome (`graphify-out/README.md` × `docs/README.md`) |
 > | contraparte de mesmo nome, **conteúdo idêntico** | **0** | nenhuma ref tem arquivo igual ao da `main` — a `main` evoluiu em todos |
 > | **sem contraparte** na `main` | 172 | não há o que comparar; a base é o veredito escrito, não conteúdo |
+> | **sem origem atribuída** pelo meu script | 54 | reconciliados logo abaixo |
+> | **total** | **243** | |
+>
+> **Os 54, reconciliados.** A primeira versão desta tabela somava 189 e a seção anunciava
+> 243: 54 caminhos sumiram **em silêncio**, porque o script que atribui cada caminho à ref de
+> origem falhou neles e eu publiquei assim mesmo. Omissão silenciosa é pior que número
+> errado. Classificados:
+>
+> - **13 PDFs** (`public/AUDIT_ENTERPRISE_FINAL.pdf`, `public/reports/AUDIT_REPORT_*.pdf`) e
+>   **1 script de revisão**: artefato gerado, não código de produto.
+> - **40 migrations.** Com a extração de slug correta, **22 têm par na `main`**. As **18
+>   restantes** são um lote único `20250103_*` — `complete_schema`, `seed_data`,
+>   `test_queries`, `rls_*`, as variantes `_no_gamification` e um `_FIXED` duplicado — que
+>   vive numa **só** ref, `execucao/sicoob-20260911130857`. É o andaime inicial, anterior à
+>   re-raiz; a `main` tem linhagem própria (`001_notification_system.sql` em diante, 621
+>   arquivos) e quem arbitra o estado do banco é o ledger ao vivo, não esses arquivos.
+>
+> **Correção de método, não só de número:** meu primeiro cálculo de slug
+> (`sed 's|^[0-9]*_||'`) cortava apenas o primeiro bloco de dígitos, então
+> `20250103_01_remove_gamification.sql` virava `01_remove_gamification.sql` e ficava "sem
+> par" por construção. O número honesto é **22** com par, não 21.
 >
 > Dos 172 sem contraparte, **100 são arquivos de teste**. Destes, **95 têm veredito citado
 > neste ledger**, escrito pelas ondas de recuperação anteriores, e **5 não tinham** — são
