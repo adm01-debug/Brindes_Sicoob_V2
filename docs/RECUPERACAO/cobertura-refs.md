@@ -251,3 +251,38 @@ Método, nesta ordem:
 4. **Amostragem de conteúdo:** onde a branch tem mais linhas, é a `main` que está à frente. Exemplo conferido: `src/components/cart/cart-company-options.ts` — a branch usa `selectCrm` genérico, que a política do portal passou a negar para `vendedor` e `agente`; a `main` usa `fetchQuoteDirectoryCompanies`, o contrato fechado. Aplicar a versão da branch deixaria o seletor de empresa do carrinho **vazio** justamente para esses papéis.
 
 **Conclusão:** zero trabalho a recuperar. Evidência também publicada como comentário na própria PR #291.
+
+## Varredura mecânica das 93 refs — e o que ela encontrou
+
+Rodei, em 19/11/2026, a mesma verificação das duas refs liberadas acima sobre
+**todas as 93 refs remotas**, em dois passos por ref:
+
+1. `git diff --name-only --diff-filter=A origin/main <ref>` — arquivos que existem só na ref;
+2. para cada arquivo que difere em `src/`, `supabase/functions/` e `scripts/`, extração dos símbolos exportados da versão da ref e busca de cada um no arquivo correspondente da `main`.
+
+Resultado do passo 2 em **todas** as refs: **zero símbolos exportados ausentes
+da `main`**. Nenhuma função, constante, classe, interface ou tipo exportado por
+qualquer branch deixou de existir na `main`.
+
+Sobrou o passo 1: **960 pares ref/arquivo**, que se concentram em pouquíssimos
+arquivos distintos. Classifiquei cada um:
+
+| arquivo ausente da `main` | em quantas refs | veredito |
+|---|---|---|
+| `src/components/intelligence/TopCategoriesCard.tsx` | 55 | **superado** por `TopProductFamiliesCard.tsx` — mesma fonte (`product_views`), mesma heurística, e com estados de erro e `onRetry` que o antigo não tinha |
+| `graphify-out/*` (8 arquivos) | 18 | **não é trabalho**: grafo gerado, que o `AGENTS.md` declara fora do Git ("cada clone gera o seu") |
+| `supabase/.temp/cli-latest` | 21 | **não é trabalho**: arquivo temporário do CLI |
+| `src/types/jspdf-autotable.d.ts` | 21 | **obsoleto**: declarava `doc.lastAutoTable`, padrão que a `main` não usa — ela chama `autoTable(doc, …)` e o pacote v5 traz os próprios tipos. `npm run typecheck` passa sem ele |
+| `.env.production` | 8 | **não recuperar**: `.env*` não se commita (`AGENTS.md`). Conferi o conteúdo: só variáveis `VITE_*`, que o próprio `AGENTS.md` define como públicas (URL, publishable key, anon key, project id). Não há segredo exposto — mas o arquivo sai junto com as refs |
+| `src/components/orders/InvoicePaymentPanel.tsx` | 10 | **nunca foi ligado**: `git grep` na própria branch de origem mostra que nada importa esse componente, nem lá. A capacidade existe na `main` por outro caminho (`OrderInvoicesManager`, `OrderInvoicesTab`, `OrderLogisticsTab`, `FinancialPanel`) |
+| `src/hooks/useSupplierTrust.ts` | 7 | **não recuperar**, decisão já registrada em `branches.md`: o hook cai em `getMockSupplierTrust` em todo caminho de erro e inventa `avgRating`. O que valia dele — o prazo de entrega real — entra pela PR #323 |
+| `tests/components/bi/*`, `tests/lib/sicoob/*`, `tests/hooks/usePaBudget`, `tests/edge-functions/*`, `tests/security/portal-access-policy` | 4 a 6 cada | **em recuperação**: são os testes das PRs #343 e #346–#352 |
+| `tests/stores/useNavigationGuardStore.test.ts` | 4 | pertence à UX Onda 1; o store equivalente da `main` é outro (`@/lib/overlay` + `GlobalConfirmDialog`), e a garantia foi recuperada em #306 e #357 |
+
+**O que isso significa.** A pergunta "esta ref tem trabalho que a `main` não
+tem?" está respondida mecanicamente para as 93: nenhuma tem símbolo exportado
+exclusivo, e os arquivos exclusivos caem todos nas nove linhas acima. O que a
+varredura **não** cobre, e por isso cada ref ainda precisa do olho humano antes
+de sumir, é mudança *dentro* de uma função existente — foi exatamente assim que
+o campo `sha256` da PR #292 apareceu, e ele era o detalhe que invertia o
+veredito.
