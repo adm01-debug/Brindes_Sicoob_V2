@@ -193,6 +193,35 @@ As seis foram consolidadas na [#361](https://github.com/adm01-debug/Brindes_Sico
 aberta a partir da `main`, após conferência byte a byte (`git ls-tree`) de que a branch
 `claude/fix-bi-copiloto-briefing-261119-0030` era superconjunto exato das seis.
 
+**Varredura de `baseRefName` (19/11/2026):** conferidas todas as PRs mergeadas do repo
+atrás do mesmo colapso. São **três pilhas**, não uma — seis PRs mergeadas que nunca
+tocaram a `main`:
+
+| PR mergeada | base real (não era `main`) | onde o conteúdo está hoje | estado |
+|---|---|---|---|
+| [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `claude/fix-bi-overview-historico-indisponivel-261118-2300` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
+| [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `claude/fix-bi-comparador-fontes-261118-2345` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
+| [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `claude/fix-bi-copiloto-briefing-261119-0030` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
+| [#341](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/341) | `claude/fix-kit-trava-concorrencia-261118-2105` | branch da [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | aberta |
+| [#356](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/356) | `claude/fix-kit-trava-concorrencia-261118-2105` | branch da [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | aberta |
+| [#359](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/359) | `claude/fix-voltar-pergunta-sem-motivo-261119-0310` | branch da [#357](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/357) | aberta |
+
+Prova de preservação das duas pilhas novas (#341 e #359), feita commit a commit:
+
+- o commit de merge de cada uma é **ancestral** do topo da branch que a recebeu
+  (`git merge-base --is-ancestor` → verdadeiro) e **não** é ancestral de `origin/main`;
+- toda linha que elas adicionaram continua presente no topo da branch: #341 em
+  `src/pages/KitBuilderPage.tsx` (6/6), `tests/hooks/useKitAutoSave.test.tsx` (57/57) e
+  `src/hooks/useKitAutoSave.ts` (24/24 — a única linha que o comparador textual marcou,
+  `retry, syncPersistedVersion, flushPending,`, existe no topo acrescida de
+  `capturarSnapshotAtual`, ou seja superconjunto); #359 em `src/hooks/useSmartNavigation.ts`
+  (10/10), com `src/pages/MockupGenerator.tsx` e `src/pages/SimuladorWizard.tsx`
+  **byte a byte idênticos** (mesmo hash de blob).
+
+Consequência operacional: enquanto **#334**, **#357** e **#361** não entrarem, seis
+correções mergeadas continuam fora de produção. Nenhuma das branches dessas três pilhas
+pode ser apagada antes disso.
+
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
 1 passa**. Não entram na `main` como estão (CI vermelha); são **mapa de lacuna**, igual
