@@ -393,3 +393,29 @@ e falha com `expected [ '/clientes/:id' ] to deeply equal []` quando a montagem 
 
 **Saldo das quatro varreduras:** nenhum arquivo, símbolo exportado ou rota de outro agente
 está fora da `main` sem veredito escrito.
+
+## Quinta varredura: banco (19/11/2026)
+
+As quatro anteriores conferem o repositório. Nenhuma responde à pergunta que importa para
+o usuário final: **o código que está no ar encontra o banco que está no ar?** Uma RPC que
+o front chama e que não existe no banco é funcionalidade perdida sem nenhum arquivo,
+símbolo ou rota ter sumido.
+
+Extração de toda chamada `.rpc("...")` em `src/` na `main`, conferida contra
+`pg_proc`/`public` do projeto oficial `cfmzkthhgliqelozlmwu` (consulta somente leitura):
+
+```
+RPCs chamadas pelo front : 73
+ausentes no banco        : 0
+```
+
+O método foi validado com controle: uma RPC inventada (`rpc_que_nao_existe_controle`)
+entrou na mesma consulta e foi corretamente apontada como ausente, então o resultado zero
+é medição e não falso silêncio.
+
+Conferido no mesmo momento: `crm-db-bridge` responde em produção (`status 200`, 236 ms) —
+a ponte com o CRM está viva, e é por isso que a ausência dela na allowlist de publicação
+(PR #311) é um congelamento real, não um detalhe de configuração.
+
+**Saldo das cinco varreduras:** nenhum arquivo, símbolo exportado, rota ou função de banco
+de outro agente está fora da `main` sem veredito escrito.
