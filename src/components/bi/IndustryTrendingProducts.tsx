@@ -5,11 +5,12 @@
  */
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  TrendingUp, Sparkles, ArrowUp, ArrowDown, Minus, CheckCircle2, Package,
-  Target, Check, X,
+  TrendingUp, ArrowUp, ArrowDown, Minus, CheckCircle2, Package, Info,
+  Target, Check, X, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useIndustryTrends, type IndustryTrendItem, type IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -42,6 +43,13 @@ function normalize(s: string): string {
     .trim();
 }
 
+function industryAvailabilityMessage(sourceLabels: string[], affinityUnavailable: boolean): string {
+  const detail = affinityUnavailable
+    ? "Oportunidades não serão classificadas sem afinidade confirmada."
+    : "Atualize a consulta para visualizar os produtos do setor.";
+  return `Não foi possível carregar ${sourceLabels.join(" e ")}. ${detail}`;
+}
+
 type EnrichedTrend = IndustryTrendItem & { alreadyBuys: boolean; resolvedCategory: string; resolvedSlug: string };
 type CategoryChip = { label: string; count: number };
 
@@ -54,6 +62,12 @@ interface IndustryHeaderProps {
   readonly onOnlyOpportunitiesChange: (value: boolean) => void;
 }
 
+function industrySampleDescription(props: IndustryHeaderProps): string {
+  if (!props.ramoAtividade) return "Ramo de atividade não informado no cadastro do cliente";
+  if (props.totalCount === 0) return "Sem amostra setorial suficiente nos últimos 90 dias";
+  return `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`;
+}
+
 function IndustryHeader(props: IndustryHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -62,14 +76,18 @@ function IndustryHeader(props: IndustryHeaderProps) {
         <div>
           <h2 className="font-display font-semibold">Tendência do setor{props.ramoAtividade && <span className="text-muted-foreground font-normal"> · {props.ramoAtividade}</span>}</h2>
           <p className="text-xs text-muted-foreground">
-            {props.data?.isMock ? "Top produtos dos últimos 90 dias · setor" : `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`}
+            {industrySampleDescription(props)}
             {props.totalCount > 0 && <> · <span className="text-success font-medium">{props.opportunityCount} oportunidade{props.opportunityCount !== 1 && "s"}</span></>}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         {props.totalCount > 0 && <label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={props.onlyOpportunities} onCheckedChange={props.onOnlyOpportunitiesChange} aria-label="Mostrar apenas oportunidades" /><span className="font-medium text-foreground">Só oportunidades</span></label>}
-        {props.data && (props.data.isMock ? <Badge variant="secondary" className="gap-1 text-[10px]"><Sparkles className="h-3 w-3" /> Simulado</Badge> : <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>)}
+        {props.data && (props.data.isMock
+          ? <Badge variant="secondary" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Dados simulados</Badge>
+          : props.totalCount > 0
+          ? <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>
+          : <Badge variant="secondary" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Sem amostra</Badge>)}
       </div>
     </div>
   );
@@ -125,12 +143,22 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
 }
 
 export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
-  const { data, isLoading } = useIndustryTrends(ramoAtividade);
-  const { data: affinity } = useClientAffinity(clientId);
+  const { data, isLoading, isFetching: trendsFetching, isError, refetch } = useIndustryTrends(ramoAtividade, clientId);
+  const affinityQuery = useClientAffinity(clientId);
+  const { data: affinity } = affinityQuery;
   const { focusedSlug, focusedLabel } = useBICategoryFocus();
   const [onlyOpportunities, setOnlyOpportunities] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const effectiveCategory = focusedLabel ?? activeCategory;
+  const affinityLoading = affinityQuery.isFetching || affinityQuery.isLoading;
+  const contextLoading = trendsFetching || isLoading || affinityLoading;
+  const failedSources = [
+    ...(isError ? [{ label: "tendências do setor", refetch }] : []),
+    ...(affinityQuery.isError ? [{ label: "afinidade de produtos do cliente", refetch: affinityQuery.refetch }] : []),
+  ];
+  const retryFailedSources = async () => {
+    await Promise.all(failedSources.map((source) => source.refetch()));
+  };
 
   // Set de assinaturas dos produtos que o cliente já compra (por id e por nome normalizado)
   const clientBuys = useMemo(() => {
@@ -177,7 +205,9 @@ export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
   const opportunityCount = opportunities.length;
   const totalCount = enriched.items.length;
 
-  if (isLoading) return <ProductGridSkeleton rows={5} />;
+  if (contextLoading) return <ProductGridSkeleton rows={5} />;
+
+  if (failedSources.length > 0) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-8 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">{industryAvailabilityMessage(failedSources.map((source) => source.label), Boolean(affinityQuery.isError))}</p><Button variant="outline" size="sm" onClick={() => void retryFailedSources()}><RefreshCw className="h-3.5 w-3.5 mr-1.5" />Tentar novamente</Button></CardContent></Card>;
 
   return (
     <Card className="border-[1.5px]">

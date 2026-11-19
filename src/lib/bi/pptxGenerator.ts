@@ -98,6 +98,7 @@ function tierColor(tier: string): string {
   return C.muted;
 }
 function tierLabel(tier: string): string {
+  if (tier === "unknown") return "SEM DADOS";
   if (tier === "healthy") return "SAUDÁVEL";
   if (tier === "attention") return "ATENÇÃO";
   if (tier === "risk") return "RISCO";
@@ -143,7 +144,7 @@ export async function generateBIPptx({
     fill: { color: tierColor(health.tier) },
     line: { color: "FFFFFF", width: 4 },
   });
-  s1.addText(`${health.score}`, {
+  s1.addText(health.tier === "unknown" ? "—" : `${health.score}`, {
     x: 0.8, y: 3.3, w: 3.2, h: 1.4,
     fontSize: 90, fontFace: "Calibri", color: "FFFFFF", bold: true, align: "center",
   });
@@ -364,7 +365,7 @@ export async function generateBIPptx({
     const dataRows = categorySection.rows.slice(0, 6).map((r) => [
       { text: r.label, options: { fontSize: 11, color: C.text } },
       { text: `${r.clientSharePct.toFixed(0)}%`, options: { fontSize: 11, color: C.text, align: "center" as const, bold: true } },
-      { text: `${r.industrySharePct.toFixed(0)}%`, options: { fontSize: 11, color: C.muted, align: "center" as const } },
+      { text: r.industrySharePct === null ? "—" : `${r.industrySharePct.toFixed(0)}%`, options: { fontSize: 11, color: C.muted, align: "center" as const } },
       {
         text: `${trendSymbol(r.trend)} ${r.deltaPct !== null && r.deltaPct !== undefined ? `${r.deltaPct > 0 ? "+" : ""}${Math.round(r.deltaPct)}%` : "—"}`,
         options: { fontSize: 11, color: trendColor(r.trend), align: "center" as const, bold: true },
@@ -386,7 +387,13 @@ export async function generateBIPptx({
       x: 8.8, y: 1.85, w: 3.6, h: 0.35,
       fontSize: 11, color: C.primary, bold: true, charSpacing: 2,
     });
-    if (categorySection.gaps.length === 0) {
+    if (categorySection.industryUnavailable) {
+      // Sem categorias do setor não há como afirmar alinhamento nem ausência de GAP.
+      s6.addText("Sem comparativo de categorias do setor — não é possível apontar GAPs.", {
+        x: 8.8, y: 2.3, w: 3.6, h: 1.5,
+        fontSize: 12, color: C.muted, italic: true, valign: "top",
+      });
+    } else if (categorySection.gaps.length === 0) {
       s6.addText("Sem GAPs relevantes — cliente alinhado ao mix do setor.", {
         x: 8.8, y: 2.3, w: 3.6, h: 1.5,
         fontSize: 12, color: C.muted, italic: true, valign: "top",
