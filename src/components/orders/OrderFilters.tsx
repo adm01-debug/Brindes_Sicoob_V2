@@ -2,18 +2,14 @@ import React, { useState } from 'react';
 import { Search, Filter, Calendar, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -32,18 +28,26 @@ export interface OrderFilterValues {
 
 interface OrderFiltersProps {
   onFiltersChange: (filters: OrderFilterValues) => void;
+  /** Estado inicial dos campos. A página passa o que leu da URL. */
+  initialValues?: Partial<OrderFilterValues>;
 }
 
-export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
-  const [filters, setFilters] = useState<OrderFilterValues>({
-    search: '',
-    status: 'all',
-    clientCompany: '',
-    dateRange: {
-      from: undefined,
-      to: undefined
-    }
-  });
+function buildInitialFilters(initialValues?: Partial<OrderFilterValues>): OrderFilterValues {
+  return {
+    search: initialValues?.search ?? '',
+    status: initialValues?.status ?? 'all',
+    clientCompany: initialValues?.clientCompany ?? '',
+    dateRange: initialValues?.dateRange ?? { from: undefined, to: undefined },
+  };
+}
+
+// eslint-disable-next-line max-lines-per-function -- componente preexistente de 174 linhas; esta PR so acrescenta initialValues
+export function OrderFilters({ onFiltersChange, initialValues }: OrderFiltersProps) {
+  // Só o valor inicial: depois disso os campos são do componente. Resincronizar
+  // a cada render devolveria o texto antigo enquanto o usuário digita.
+  const [filters, setFilters] = useState<OrderFilterValues>(() =>
+    buildInitialFilters(initialValues),
+  );
 
   const updateFilters = (updates: Partial<OrderFilterValues>) => {
     const newFilters = { ...filters, ...updates };
@@ -56,7 +60,7 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
       search: '',
       status: 'all',
       clientCompany: '',
-      dateRange: { from: undefined, to: undefined }
+      dateRange: { from: undefined, to: undefined },
     };
     setFilters(reset);
     onFiltersChange(reset);
@@ -65,39 +69,39 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
   const activeFiltersCount = [
     filters.status !== 'all',
     filters.clientCompany !== '',
-    !!filters.dateRange?.from
+    !!filters.dateRange?.from,
   ].filter(Boolean).length;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row md:items-end gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         {/* Busca */}
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="search" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+          <Label
+            htmlFor="search"
+            className="ml-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Pesquisar
           </Label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
               id="search"
-              placeholder="Buscar por número ou cliente..." 
-              className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all"
+              placeholder="Buscar por número ou cliente..."
+              className="h-11 border-muted-foreground/20 bg-background/50 pl-9 transition-all focus:border-primary/50"
               value={filters.search}
               onChange={(e) => updateFilters({ search: e.target.value })}
             />
           </div>
         </div>
-        
+
         {/* Status */}
-        <div className="w-full md:w-56 space-y-1.5">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+        <div className="w-full space-y-1.5 md:w-56">
+          <Label className="ml-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Status
           </Label>
-          <Select 
-            value={filters.status} 
-            onValueChange={(val) => updateFilters({ status: val })}
-          >
-            <SelectTrigger className="h-11 bg-background/50 border-muted-foreground/20">
+          <Select value={filters.status} onValueChange={(val) => updateFilters({ status: val })}>
+            <SelectTrigger className="h-11 border-muted-foreground/20 bg-background/50">
               <SelectValue placeholder="Todos os Status" />
             </SelectTrigger>
             <SelectContent>
@@ -112,22 +116,33 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
         </div>
 
         {/* Data Inicial */}
-        <div className="w-full md:w-44 space-y-1.5">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+        <div className="w-full space-y-1.5 md:w-44">
+          <Label className="ml-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Data Inicial
           </Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start h-11 bg-background/50 border-muted-foreground/20 text-left font-normal px-3">
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-start border-muted-foreground/20 bg-background/50 px-3 text-left font-normal"
+              >
                 <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                {filters.dateRange?.from ? format(filters.dateRange.from, "dd/MM/yyyy") : <span className="text-muted-foreground">__/__/____</span>}
+                {filters.dateRange?.from ? (
+                  format(filters.dateRange.from, 'dd/MM/yyyy')
+                ) : (
+                  <span className="text-muted-foreground">__/__/____</span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
                 selected={filters.dateRange?.from}
-                onSelect={(date) => updateFilters({ dateRange: { ...filters.dateRange, from: date, to: filters.dateRange?.to } })}
+                onSelect={(date) =>
+                  updateFilters({
+                    dateRange: { ...filters.dateRange, from: date, to: filters.dateRange?.to },
+                  })
+                }
                 locale={ptBR}
                 initialFocus
               />
@@ -136,22 +151,33 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
         </div>
 
         {/* Data Final */}
-        <div className="w-full md:w-44 space-y-1.5">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+        <div className="w-full space-y-1.5 md:w-44">
+          <Label className="ml-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Data Final
           </Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start h-11 bg-background/50 border-muted-foreground/20 text-left font-normal px-3">
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-start border-muted-foreground/20 bg-background/50 px-3 text-left font-normal"
+              >
                 <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                {filters.dateRange?.to ? format(filters.dateRange.to, "dd/MM/yyyy") : <span className="text-muted-foreground">__/__/____</span>}
+                {filters.dateRange?.to ? (
+                  format(filters.dateRange.to, 'dd/MM/yyyy')
+                ) : (
+                  <span className="text-muted-foreground">__/__/____</span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
                 selected={filters.dateRange?.to}
-                onSelect={(date) => updateFilters({ dateRange: { ...filters.dateRange, from: filters.dateRange?.from, to: date } })}
+                onSelect={(date) =>
+                  updateFilters({
+                    dateRange: { ...filters.dateRange, from: filters.dateRange?.from, to: date },
+                  })
+                }
                 locale={ptBR}
                 initialFocus
               />
@@ -162,11 +188,14 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
         {/* Botão de Filtros */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="h-11 px-4 gap-2 border-primary/20 hover:bg-primary/5 text-primary">
+            <Button
+              variant="outline"
+              className="h-11 gap-2 border-primary/20 px-4 text-primary hover:bg-primary/5"
+            >
               <Filter className="h-4 w-4" />
               Filtros
               {activeFiltersCount > 0 && (
-                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground">
+                <Badge className="ml-1 flex h-5 w-5 items-center justify-center bg-primary p-0 text-primary-foreground">
                   {activeFiltersCount}
                 </Badge>
               )}
@@ -176,19 +205,15 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
             <div className="space-y-4 p-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Empresa do Cliente</label>
-                <Input 
-                  placeholder="Nome da empresa..." 
+                <Input
+                  placeholder="Nome da empresa..."
                   value={filters.clientCompany}
                   onChange={(e) => updateFilters({ clientCompany: e.target.value })}
                 />
               </div>
-              
+
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  className="flex-1" 
-                  onClick={clearFilters}
-                >
+                <Button variant="outline" className="flex-1" onClick={clearFilters}>
                   Limpar
                 </Button>
                 <Button className="flex-1">Aplicar</Button>
@@ -200,13 +225,13 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
 
       {activeFiltersCount > 0 && (
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs text-muted-foreground hover:text-destructive h-7 px-2"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
             onClick={clearFilters}
           >
-            <X className="h-3 w-3 mr-1" />
+            <X className="mr-1 h-3 w-3" />
             Remover todos os filtros
           </Button>
         </div>
