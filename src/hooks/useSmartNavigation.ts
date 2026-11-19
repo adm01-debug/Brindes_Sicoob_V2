@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { dismissTopmostOverlay } from '@/lib/overlay';
+import { rotaEstaSuja, rotaTemEstadoDeclarado } from '@/lib/navigation/dirty-registry';
 import { trackUx } from '@/lib/uxMetrics';
 import { Haptics } from '@/utils/haptics';
 
@@ -17,9 +18,21 @@ interface BackNavigationDeps {
   setDirection: (direction: 'forward' | 'backward') => void;
 }
 
+/**
+ * Pergunta só quando há motivo.
+ *
+ * Se a tela montada declarou o próprio estado, ela manda: é a única que sabe
+ * se o usuário digitou algo. Enquanto uma rota não declarar nada, continua
+ * valendo a lista de rotas críticas — trocar isso por silêncio seria piorar.
+ */
+function precisaConfirmarSaida(pathname: string, isCriticalPath: boolean): boolean {
+  if (rotaTemEstadoDeclarado(pathname)) return rotaEstaSuja(pathname);
+  return isCriticalPath;
+}
+
 async function performBackNavigation(deps: BackNavigationDeps) {
   const { navigate, pathname, fallbackPath, isCriticalPath, force, getPrevious, pop, setDirection } = deps;
-  if (!force && isCriticalPath) {
+  if (!force && precisaConfirmarSaida(pathname, isCriticalPath)) {
     trackUx('guard.shown');
     const confirmed = await askConfirm({
       title: 'Sair sem salvar?',
