@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 858,
+ "total": 859,
  "por_tipo": {
   "contrato": 11,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 630
+  "unit": 631
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 611
+   "arquivos": 612
   },
   {
    "padrao": "e2e/",
@@ -4691,6 +4691,15 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/hooks/usePWAInstall.test.tsx",
+   "tipo": "unit",
+   "linhas": 49,
+   "testa": [
+    "src/hooks/usePWAInstall.ts"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/hooks/useQuoteApproval.test.ts",
    "tipo": "unit",
    "linhas": 67,
@@ -7004,11 +7013,14 @@
   {
    "arquivo": "tests/sicoob/rbac-routes-integrity.test.ts",
    "tipo": "unit",
-   "linhas": 13,
+   "linhas": 39,
    "testa": [
-    "src/routes/config/sicoob.ts"
+    "src/lib/rbac/route-matrix.ts",
+    "src/routes/config/products.ts",
+    "src/routes/config/sicoob.ts",
+    "src/routes/config/tools.ts"
    ],
-   "casos": 1
+   "casos": 3
   },
   {
    "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
@@ -7710,6 +7722,7 @@
   "src/hooks/useMagicUpState.ts": 2,
   "src/hooks/useMockupGenerator.ts": 1,
   "src/hooks/useOnboarding.ts": 1,
+  "src/hooks/usePWAInstall.ts": 1,
   "src/hooks/usePaBudget.ts": 1,
   "src/hooks/usePasswordBreachCheck.tsx": 1,
   "src/hooks/usePrintAreas.ts": 1,
@@ -7816,7 +7829,7 @@
   "src/lib/query-config.ts": 2,
   "src/lib/quote-status-config.ts": 1,
   "src/lib/quotes/quote-draft-scope.ts": 1,
-  "src/lib/rbac/route-matrix.ts": 2,
+  "src/lib/rbac/route-matrix.ts": 3,
   "src/lib/sentry.ts": 1,
   "src/lib/sicoob-status-config.ts": 1,
   "src/lib/sicoob/consolidation-intent.ts": 1,
@@ -7873,11 +7886,11 @@
   "src/routes/clientRoutes.ts": 1,
   "src/routes/config/admin.ts": 2,
   "src/routes/config/dev.ts": 2,
-  "src/routes/config/products.ts": 1,
+  "src/routes/config/products.ts": 2,
   "src/routes/config/public.ts": 1,
   "src/routes/config/quotes.ts": 2,
   "src/routes/config/sicoob.ts": 3,
-  "src/routes/config/tools.ts": 1,
+  "src/routes/config/tools.ts": 2,
   "src/services/OrderService.ts": 1,
   "src/services/QuoteService.ts": 4,
   "src/services/favorites/publicFavoriteListService.ts": 1,
@@ -7993,6 +8006,7 @@
    "src/pages/OrderAuditPage.tsx",
    "src/pages/OrderDetailPage.tsx",
    "src/pages/OrdersPage.tsx",
+   "src/pages/PWAInstallPage.tsx",
    "src/pages/PermissionsPage.tsx",
    "src/pages/PriceSimulatorPage.tsx",
    "src/pages/ProductDetail.tsx",
@@ -8269,7 +8283,6 @@
    "src/hooks/usePromoSalesRanking.ts",
    "src/hooks/usePullToRefresh.ts",
    "src/hooks/usePushNotifications.tsx",
-   "src/hooks/usePWAInstall.ts",
    "src/hooks/useQuoteComments.ts",
    "src/hooks/useRamoAtividade.ts",
    "src/hooks/useRamoAtividadeFilho.ts",

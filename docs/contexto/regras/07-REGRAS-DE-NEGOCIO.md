@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `965419baad` · branch `main` · 2026-11-19 05:06 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `6aff499fb6` · branch `main` · 2026-11-19 05:18 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6835 testes em 677 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6840 testes em 678 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6011,7 +6011,7 @@ _nenhum item encontrado_
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| … +377 linhas — lista completa em `context.json` | | |
+| … +378 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6393,6 +6393,8 @@ _nenhum item encontrado_
 | 1024 * 1024) { toast.error("A imagem deve ter no máximo 5MB"); return; } | `src/hooks/useMockupGenerator.ts` |
 | * Máximo de cores suportadas pela técnica nessa área */ | `src/hooks/useMockupTechniques.ts` |
 | * Converte NoveltyWithDetails para Product (mínimo necessário para o BulkVariantWizard) | `src/hooks/useNoveltiesSelectionMode.ts` |
+| abrisse /instalar depois montava outra instância, sem o evento, e via apenas | `src/hooks/usePWAInstall.ts` |
+| na importação; as instâncias do hook apenas se inscrevem no que já foi | `src/hooks/usePWAInstall.ts` |
 | Keep within max limit | `src/hooks/usePositionHistory.ts` |
 | - Escrita: somente admin (RLS). | `src/hooks/useProductFreshnessOverride.ts` |
 | - Fuse index é recriado apenas quando os produtos mudam (referência estável) | `src/hooks/useProductFuzzySearch.ts` |
@@ -6494,6 +6496,4 @@ _nenhum item encontrado_
 | Esta lista DEVE espelhar exatamente o que o bridge aceita. | `src/lib/external-db/tables.ts` |
 | Views e Materialized Views (somente leitura) — do bridge | `src/lib/external-db/tables.ts` |
 | Peso máximo suportado em gramas (para validação) | `src/lib/kit-builder/types.ts` |
-| Utilitários para cálculo e validação de volume | `src/lib/kit-builder/volume-calculator.ts` |
-| Limite de alerta de volume | `src/lib/kit-builder/volume-calculator.ts` |
-| … +266 linhas — lista completa em `context.json` | |
+| … +268 linhas — lista completa em `context.json` | |

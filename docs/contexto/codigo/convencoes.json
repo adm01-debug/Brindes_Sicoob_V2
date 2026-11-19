@@ -3,7 +3,7 @@
  "format_version": 2,
  "onde_ficam": {
   "telas": [
-   "src/pages (115)"
+   "src/pages (116)"
   ],
   "componentes": [
    "src/components (999)",
@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (611)",
+   "tests/ (612)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)",
    "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
    "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)",
    "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)",
-   "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)",
-   "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)"
+   "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

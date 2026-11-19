@@ -12051,6 +12051,7 @@
    "src/pages/KitBuilderPage.tsx",
    "src/pages/MagicUp.tsx",
    "src/pages/MockupGenerator.tsx",
+   "src/pages/PWAInstallPage.tsx",
    "src/pages/PriceSimulatorPage.tsx",
    "src/pages/ProductMatchPage.tsx",
    "src/pages/SimuladorWizard.tsx"

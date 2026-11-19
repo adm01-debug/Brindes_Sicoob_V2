@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "resumo": {
-  "urls": 138,
+  "urls": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
@@ -5804,6 +5804,33 @@
     "supervisor"
    ],
    "arquivos_puxados": 131
+  },
+  {
+   "protegida": false,
+   "wrappers": [],
+   "pai": null,
+   "indice": false,
+   "lazy": true,
+   "tipo": "tela",
+   "caminho": "/instalar",
+   "componente": null,
+   "arquivo": "src/pages/PWAInstallPage.tsx",
+   "definida_em": "src/routes/config/tools.ts",
+   "hooks": [
+    "useEffect",
+    "usePWAInstall",
+    "useState"
+   ],
+   "hooks_locais": [
+    "usePWAInstall"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "canais_realtime": [],
+   "flags": [],
+   "papeis": [],
+   "arquivos_puxados": 6
   },
   {
    "protegida": true,

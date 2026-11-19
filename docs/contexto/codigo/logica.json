@@ -4287,7 +4287,7 @@
     "summarizeRoutes"
    ],
    "export_default": null,
-   "linhas": 157,
+   "linhas": 158,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4305,7 +4305,7 @@
    "usado_por_modulos": [
     "pages/admin"
    ],
-   "coberto_por_testes": 2,
+   "coberto_por_testes": 3,
    "orfao": false
   },
   {

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "965419baad4d869c5aaa25802bb7ff37a1d626ce",
+  "sha": "6aff499fb6d337dfefb5ce2951ae0cf539326a9a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 05:06 UTC",
-  "files_total": 4499,
-  "code_files": 3770,
-  "code_lines": 551186
+  "generated_at": "2026-11-19 05:18 UTC",
+  "files_total": 4500,
+  "code_files": 3771,
+  "code_lines": 551291
  },
  "version": "1.3.2",
- "facts_hash": "a083067d772b4800",
+ "facts_hash": "a94600e8b6cc62a9",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -349,7 +349,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1464,
-   ".tsx": 1426,
+   ".tsx": 1427,
    ".sql": 682,
    ".mjs": 139,
    ".py": 66,
@@ -60358,6 +60358,13 @@
     "file": "tests/hooks/useScrollRestoration.test.tsx"
    },
    {
+    "path": "/instalar",
+    "component": "lazyWithRetry",
+    "guard": "",
+    "roles": [],
+    "file": "src/routes/config/tools.ts"
+   },
+   {
     "path": "/inteligencia-comercial",
     "component": "lazyWithRetry",
     "guard": "",
@@ -64164,7 +64171,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47343,
+   "lines": 47365,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64442,7 +64449,7 @@
   {
    "module": "src/lib",
    "files": 167,
-   "lines": 22636,
+   "lines": 22637,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64844,7 +64851,7 @@
   {
    "module": "src/routes",
    "files": 9,
-   "lines": 513,
+   "lines": 520,
    "tables": [],
    "exports": [
     "clientRoutes.ts: CLIENT_DETAIL_ROUTE, clientDetailPath",
@@ -65604,8 +65611,8 @@
   },
   {
    "module": "tests",
-   "files": 632,
-   "lines": 85223,
+   "files": 633,
+   "lines": 85298,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -79978,6 +79985,14 @@
    {
     "file": "src/hooks/useNoveltiesSelectionMode.ts",
     "text": "* Converte NoveltyWithDetails para Product (mínimo necessário para o BulkVariantWizard)"
+   },
+   {
+    "file": "src/hooks/usePWAInstall.ts",
+    "text": "abrisse /instalar depois montava outra instância, sem o evento, e via apenas"
+   },
+   {
+    "file": "src/hooks/usePWAInstall.ts",
+    "text": "na importação; as instâncias do hook apenas se inscrevem no que já foi"
    },
    {
     "file": "src/hooks/usePositionHistory.ts",
@@ -101056,6 +101071,12 @@
     "file": "src/lib/rbac/route-matrix.ts",
     "field": "role",
     "value": "public",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
+    "value": "authenticated",
     "kind": "escreve"
    },
    {
@@ -126985,6 +127006,18 @@
     "name": "avança o dia depois da meia-noite em Brasília"
    },
    {
+    "file": "tests/hooks/usePWAInstall.test.tsx",
+    "name": "usePWAInstall"
+   },
+   {
+    "file": "tests/hooks/usePWAInstall.test.tsx",
+    "name": "quem monta depois do convite continua podendo instalar"
+   },
+   {
+    "file": "tests/hooks/usePWAInstall.test.tsx",
+    "name": "sem convite do navegador, nao se oferece a instalar"
+   },
+   {
     "file": "tests/hooks/usePaBudget.test.tsx",
     "name": "usePaBudget"
    },
@@ -136911,6 +136944,14 @@
    {
     "file": "tests/sicoob/rbac-routes-integrity.test.ts",
     "name": "should contain all matrix-mandated routes"
+   },
+   {
+    "file": "tests/sicoob/rbac-routes-integrity.test.ts",
+    "name": "registra a instalação do PWA como rota autenticada"
+   },
+   {
+    "file": "tests/sicoob/rbac-routes-integrity.test.ts",
+    "name": "todo destino do menu mobile tem rota registrada"
    },
    {
     "file": "tests/sicoob/route-access-scenarios.test.tsx",
@@ -205417,9 +205458,13 @@
   },
   "src/hooks/usePWAInstall.ts": {
    "path": "src/hooks/usePWAInstall.ts",
-   "lines": 51,
+   "lines": 73,
    "exports": [
     "function usePWAInstall"
+   ],
+   "rule_comments": [
+    "abrisse /instalar depois montava outra instância, sem o evento, e via apenas",
+    "na importação; as instâncias do hook apenas se inscrevem no que já foi"
    ],
    "hooks": [
     "usePWAInstall"
@@ -215487,7 +215532,7 @@
   },
   "src/lib/rbac/route-matrix.ts": {
    "path": "src/lib/rbac/route-matrix.ts",
-   "lines": 157,
+   "lines": 158,
    "exports": [
     "type RouteRole",
     "type RouteGuard",
@@ -215555,6 +215600,11 @@
     {
      "field": "role",
      "value": "public",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "authenticated",
      "kind": "escreve"
     },
     {
@@ -222988,13 +223038,19 @@
   },
   "src/routes/config/tools.ts": {
    "path": "src/routes/config/tools.ts",
-   "lines": 42,
+   "lines": 49,
    "exports": [
     "const toolRoutes"
    ],
    "routes": [
     {
      "path": "/ajuda",
+     "component": "lazyWithRetry",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/instalar",
      "component": "lazyWithRetry",
      "guard": "",
      "roles": []
@@ -244958,6 +245014,20 @@
     "avança o dia depois da meia-noite em Brasília"
    ]
   },
+  "tests/hooks/usePWAInstall.test.tsx": {
+   "path": "tests/hooks/usePWAInstall.test.tsx",
+   "lines": 49,
+   "is_test": true,
+   "rule_comments": [
+    "página /instalar, aberta pelo menu — não o recebia e oferecia apenas"
+   ],
+   "doc": "O convite de instalação (`beforeinstallprompt`) dispara uma vez só. Enquanto ele vivia no estado de cada instância do hook, quem montasse depois — a página /instalar, aberta pelo menu — não o recebia e oferecia apenas instruções manuais, com um botão \"Instalar App\" que não instalava.",
+   "tests": [
+    "usePWAInstall",
+    "quem monta depois do convite continua podendo instalar",
+    "sem convite do navegador, nao se oferece a instalar"
+   ]
+  },
   "tests/hooks/usePaBudget.test.tsx": {
    "path": "tests/hooks/usePaBudget.test.tsx",
    "lines": 79,
@@ -250645,11 +250715,13 @@
   },
   "tests/sicoob/rbac-routes-integrity.test.ts": {
    "path": "tests/sicoob/rbac-routes-integrity.test.ts",
-   "lines": 13,
+   "lines": 39,
    "is_test": true,
    "tests": [
     "SICOOB RBAC Routes Integrity",
-    "should contain all matrix-mandated routes"
+    "should contain all matrix-mandated routes",
+    "registra a instalação do PWA como rota autenticada",
+    "todo destino do menu mobile tem rota registrada"
    ]
   },
   "tests/sicoob/route-access-scenarios.test.tsx": {
@@ -251532,10 +251604,25 @@
   }
  },
  "git": {
-  "sha": "965419baad4d869c5aaa25802bb7ff37a1d626ce",
+  "sha": "6aff499fb6d337dfefb5ce2951ae0cf539326a9a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "6aff499",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)",
+    "files": [
+     "docs/ROUTES.md",
+     "src/hooks/usePWAInstall.ts",
+     "src/lib/rbac/route-matrix.ts",
+     "src/pages/PWAInstallPage.tsx",
+     "src/routes/config/tools.ts",
+     "tests/hooks/usePWAInstall.test.tsx",
+     "tests/sicoob/rbac-routes-integrity.test.ts"
+    ]
+   },
    {
     "sha": "965419b",
     "date": "2026-11-19",
@@ -252046,18 +252133,6 @@
      "tests/pages/GestorCompras.metrics.test.tsx",
      "tests/pages/GestorCompras.test.tsx"
     ]
-   },
-   {
-    "sha": "8b0910c",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)",
-    "files": [
-     "src/components/common/IntelligenceBadges.tsx",
-     "src/hooks/useProductIntelligenceBadges.ts",
-     "src/pages/ProductDetail.tsx",
-     "tests/hooks/intelligence-badges.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -252118,27 +252193,27 @@
     2
    ],
    [
-    "scripts/check-edge-authorization.mjs",
+    "docs/ROUTES.md",
     1
    ],
    [
-    "tests/scenarios/edge-runtime-contract.scenario.mjs",
+    "src/hooks/usePWAInstall.ts",
     1
    ],
    [
-    "tests/scripts/edge-runtime-contract.test.ts",
+    "src/lib/rbac/route-matrix.ts",
     1
    ],
    [
-    "docs/execucao/auditoria-planejamento-2026-10-13/.gitattributes",
+    "src/pages/PWAInstallPage.tsx",
     1
    ],
    [
-    "docs/execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md",
+    "src/routes/config/tools.ts",
     1
    ],
    [
-    "docs/execucao/auditoria-planejamento-2026-10-13/README.md",
+    "tests/hooks/usePWAInstall.test.tsx",
     1
    ]
   ]

@@ -7479,7 +7479,7 @@
    "hooks_exportados": [
     "usePWAInstall"
    ],
-   "linhas": 51,
+   "linhas": 73,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -7494,7 +7494,7 @@
     "src/components/layout/Header.tsx",
     "src/pages/PWAInstallPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useQuoteApproval.ts",

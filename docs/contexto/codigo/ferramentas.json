@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2892)",
+   "TypeScript (2893)",
    "SQL (682)",
    "JSON (292)",
    "Markdown (269)",
@@ -1098,7 +1098,7 @@
   {
    "arquivo": "docs/ROUTES.md",
    "titulo": "🗺️ Mapa Automático de Rotas",
-   "linhas": 153
+   "linhas": 155
   },
   {
    "arquivo": "docs/RUNBOOK.md",
@@ -1986,6 +1986,10 @@
     "ocorrencias": 5
    },
    {
+    "papel": "authenticated",
+    "ocorrencias": 4
+   },
+   {
     "papel": "listbox",
     "ocorrencias": 4
    },
@@ -1995,10 +1999,6 @@
    },
    {
     "papel": "alertdialog",
-    "ocorrencias": 3
-   },
-   {
-    "papel": "authenticated",
     "ocorrencias": 3
    },
    {
@@ -2224,6 +2224,7 @@
    "/demonstracao",
    "/dossie/:token",
    "/gestor/delegacoes",
+   "/instalar",
    "/kit/:token",
    "/lista-publica/:token",
    "/login",
