@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 880,
+ "total": 881,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 651
+  "unit": 652
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 633
+   "arquivos": 634
   },
   {
    "padrao": "e2e/",
@@ -6909,6 +6909,13 @@
     "scripts/rules/rules/plano-melhorias.mjs"
    ],
    "casos": 6
+  },
+  {
+   "arquivo": "tests/scripts/supabase-js-version-spread.test.ts",
+   "tipo": "unit",
+   "linhas": 113,
+   "testa": [],
+   "casos": 5
   },
   {
    "arquivo": "tests/scripts/tscheck-files.test.ts",

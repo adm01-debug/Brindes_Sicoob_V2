@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
+  "sha": "9515c401f87fc55c68e504971e2e28d622b35e15",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 22:59 UTC",
-  "files_total": 4547,
-  "code_files": 3799,
-  "code_lines": 555075
+  "generated_at": "2026-11-19 23:12 UTC",
+  "files_total": 4548,
+  "code_files": 3800,
+  "code_lines": 555188
  },
  "version": "1.3.2",
- "facts_hash": "960cbdddc53eb9d7",
+ "facts_hash": "a0387bbf52c41b4a",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1477,
+   ".ts": 1478,
    ".tsx": 1440,
    ".sql": 684,
    ".mjs": 139,
@@ -65674,8 +65674,8 @@
   },
   {
    "module": "tests",
-   "files": 654,
-   "lines": 87866,
+   "files": 655,
+   "lines": 87979,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -136868,6 +136868,26 @@
    {
     "file": "tests/scripts/rules-strip-sql-comments.test.ts",
     "name": "caso do revisor: literal "
+   },
+   {
+    "file": "tests/scripts/supabase-js-version-spread.test.ts",
+    "name": "espalhamento de versões do supabase-js nas edge functions"
+   },
+   {
+    "file": "tests/scripts/supabase-js-version-spread.test.ts",
+    "name": "encontra os imports — se esta suíte parar de ver, a catraca vira decoração"
+   },
+   {
+    "file": "tests/scripts/supabase-js-version-spread.test.ts",
+    "name": "nenhuma versão nova entra: o conjunto só pode encolher"
+   },
+   {
+    "file": "tests/scripts/supabase-js-version-spread.test.ts",
+    "name": "as versões antigas não ganham adeptos: função nova nasce moderna"
+   },
+   {
+    "file": "tests/scripts/supabase-js-version-spread.test.ts",
+    "name": "o módulo compartilhado fala uma versão só"
    },
    {
     "file": "tests/scripts/tscheck-files.test.ts",
@@ -251633,6 +251653,28 @@
     "caso do revisor: literal "
    ]
   },
+  "tests/scripts/supabase-js-version-spread.test.ts": {
+   "path": "tests/scripts/supabase-js-version-spread.test.ts",
+   "lines": 113,
+   "is_test": true,
+   "params": [
+    {
+     "name": "RAIZ",
+     "value": "\"supabase/functions\""
+    }
+   ],
+   "rule_comments": [
+    "* A regra travada aqui:",
+    "* Versões modernas: podem crescer; é para cá que função nova deve ir. */"
+   ],
+   "tests": [
+    "espalhamento de versões do supabase-js nas edge functions",
+    "encontra os imports — se esta suíte parar de ver, a catraca vira decoração",
+    "nenhuma versão nova entra: o conjunto só pode encolher",
+    "as versões antigas não ganham adeptos: função nova nasce moderna",
+    "o módulo compartilhado fala uma versão só"
+   ]
+  },
   "tests/scripts/tscheck-files.test.ts": {
    "path": "tests/scripts/tscheck-files.test.ts",
    "lines": 85,
@@ -253058,10 +253100,19 @@
   }
  },
  "git": {
-  "sha": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
+  "sha": "9515c401f87fc55c68e504971e2e28d622b35e15",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "9515c40",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(edge): catraca para o espalhamento de versões do supabase-js (#377)",
+    "files": [
+     "tests/scripts/supabase-js-version-spread.test.ts"
+    ]
+   },
    {
     "sha": "e1ef799",
     "date": "2026-11-19",
@@ -253480,16 +253531,6 @@
      "tests/scenarios/view-notification-hardening.scenario.mjs",
      "tests/unit/process-scheduled-reports-scope.test.ts"
     ]
-   },
-   {
-    "sha": "e520ace",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)",
-    "files": [
-     "docs/execucao/email-transacional-modelos-pr4/README.md",
-     "docs/execucao/email-transacional-modelos-pr4/buildEmailContent.ts.txt"
-    ]
    }
   ],
   "hot_files": [
@@ -253516,6 +253557,10 @@
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
+   ],
+   [
+    "tests/scripts/supabase-js-version-spread.test.ts",
+    1
    ],
    [
     "src/components/common/NavigationHistoryMenu.tsx",
@@ -253567,10 +253612,6 @@
    ],
    [
     "tests/scripts/verify-supabase-functions-published.test.ts",
-    1
-   ],
-   [
-    ".github/workflows/inventario-estado-semanal.yml",
     1
    ]
   ]

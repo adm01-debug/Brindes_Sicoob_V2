@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
+  "commit": "9515c401f87fc55c68e504971e2e28d622b35e15",
   "branch": "main",
-  "data_commit": "2026-11-19T19:59:03-03:00",
+  "data_commit": "2026-11-19T23:09:05Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "9515c40",
+    "data": "2026-11-19",
+    "assunto": "test(edge): catraca para o espalhamento de versões do supabase-js (#377)"
+   },
    {
     "sha": "e1ef799",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "5bf2e58",
     "data": "2026-11-19",
     "assunto": "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)"
-   },
-   {
-    "sha": "6aff499",
-    "data": "2026-11-19",
-    "assunto": "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)"
    }
   ],
-  "arquivos_mudados_7d": 563,
+  "arquivos_mudados_7d": 564,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 36
+    "mudancas": 35
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 35
+    "mudancas": 34
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 183
+    "commits": 184
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4544,
-  "arquivos_codigo": 3133,
-  "linhas_codigo": 492474,
+  "arquivos_total": 4545,
+  "arquivos_codigo": 3134,
+  "linhas_codigo": 492587,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 880,
+  "testes": 881,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 285
@@ -959,8 +959,8 @@
    "linhas": 2047
   },
   "tests/scripts": {
-   "arquivos": 34,
-   "linhas": 3223
+   "arquivos": 35,
+   "linhas": 3336
   },
   "tests/search": {
    "arquivos": 1,
