@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `3da86112a9` · branch `main` · 2026-11-19 03:09 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `9830191c7b` · branch `main` · 2026-11-19 03:27 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5725,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6812 testes em 670 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6824 testes em 674 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6029,7 +6029,7 @@ _nenhum item encontrado_
 | `tests/scripts/check-migration-immutability.test.ts` | 7 | check-migration-immutability · migration nova passa · editar migration existente reprova · remover migration existente reprova … |
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
-| … +370 linhas — lista completa em `context.json` | | |
+| … +374 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6320,6 +6320,8 @@ _nenhum item encontrado_
 | nem o título do drawer. Re-renderiza apenas quando `isRefetching` muda. | `src/components/notifications/NotificationDrawer.tsx` |
 | * DrawerHeaderTitle — título + contador "X novas". Depende apenas de | `src/components/notifications/NotificationDrawer.tsx` |
 | * How many consecutive seconds the ratio must stay ≥ threshold to fire the warning. */ | `src/components/notifications/badge-stats/useNotificationsMetricsPanel.ts` |
+| implementações da mesma regra. | `src/components/onboarding/OnboardingTour.tsx` |
+| Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho. | `src/components/onboarding/OnboardingTour.tsx` |
 | c62828" }}>Desconto Global:</span></td> | `src/components/pdf/proposal/ProposalTotals.tsx` |
 | Frete row — após desconto, entra no total */} | `src/components/pdf/proposal/ProposalTotals.tsx` |
 | - Faturamento mínimo (setup como piso) | `src/components/pricing/simulator/MultiEngravingResult.tsx` |
@@ -6512,6 +6514,4 @@ _nenhum item encontrado_
 | Limite de alerta de volume | `src/lib/kit-builder/volume-calculator.ts` |
 | * Verifica se a caixa está no limite de alerta | `src/lib/kit-builder/volume-calculator.ts` |
 | * A tela saiu: volta a valer a regra antiga para essa rota. */ | `src/lib/navigation/dirty-registry.ts` |
-| 1. `devOnly: true`           → visível somente para `isDev`. | `src/lib/navigation/filter-dev-only-items.ts` |
-| 2. `adminOnly: true`         → visível somente para `isAdmin` (ou `isDev`). | `src/lib/navigation/filter-dev-only-items.ts` |
-| … +261 linhas — lista completa em `context.json` | |
+| … +263 linhas — lista completa em `context.json` | |

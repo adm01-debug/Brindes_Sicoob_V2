@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "3da86112a9fcd37b872f1663b9883c14e1042f95",
+  "sha": "9830191c7bd981220127053f34fb4cc73c4a5e52",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 03:09 UTC",
-  "files_total": 4395,
-  "code_files": 3746,
-  "code_lines": 548951
+  "generated_at": "2026-11-19 03:27 UTC",
+  "files_total": 4406,
+  "code_files": 3750,
+  "code_lines": 549533
  },
  "version": "1.3.2",
- "facts_hash": "8905b8626e3f6eff",
+ "facts_hash": "8da06f50d922f95e",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -349,7 +349,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1461,
-   ".tsx": 1426,
+   ".tsx": 1430,
    ".sql": 674,
    ".mjs": 134,
    ".py": 60,
@@ -61075,7 +61075,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1270,
+  "components_count": 1273,
   "hooks": [
    {
     "name": "useContacts",
@@ -63338,7 +63338,7 @@
   {
    "module": "(raiz)",
    "files": 9,
-   "lines": 1235,
+   "lines": 1243,
    "tables": [],
    "exports": [
     "playwright.config.ts: defineConfig",
@@ -63825,7 +63825,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 166544,
+   "lines": 166650,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65598,8 +65598,8 @@
   },
   {
    "module": "tests",
-   "files": 617,
-   "lines": 84089,
+   "files": 621,
+   "lines": 84557,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -79607,6 +79607,14 @@
    {
     "file": "src/components/notifications/badge-stats/useNotificationsMetricsPanel.ts",
     "text": "* How many consecutive seconds the ratio must stay ≥ threshold to fire the warning. */"
+   },
+   {
+    "file": "src/components/onboarding/OnboardingTour.tsx",
+    "text": "implementações da mesma regra."
+   },
+   {
+    "file": "src/components/onboarding/OnboardingTour.tsx",
+    "text": "Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho."
    },
    {
     "file": "src/components/pdf/proposal/ProposalTotals.tsx",
@@ -119776,6 +119784,42 @@
     "name": "does not show "
    },
    {
+    "file": "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
+    "name": "tour x camada aberta acima dele"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
+    "name": "não rouba o Tab de um campo focado fora do diálogo"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
+    "name": "ainda traz o foco de volta quando ninguém o tem"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+    "name": "atalho Escape do onboarding"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+    "name": "pula o tour quando ele é a camada ativa"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+    "name": "preserva o tour quando existe overlay interativo aberto"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+    "name": "expõe semântica modal, descrição e foco inicial"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.foco.test.tsx",
+    "name": "foco do tour ao trocar de passo"
+   },
+   {
+    "file": "tests/components/onboarding/OnboardingTour.foco.test.tsx",
+    "name": "o diálogo mantém o foco depois de avançar"
+   },
+   {
     "file": "tests/components/orders/OrderAuditTimeline.test.tsx",
     "name": "OrderAuditTimeline"
    },
@@ -134866,6 +134910,18 @@
    {
     "file": "tests/rls/telemetry-logs-connections-access.test.ts",
     "name": "${role} → ${expected ? "
+   },
+   {
+    "file": "tests/routes/app-router-parity.test.tsx",
+    "name": "inventário de rotas do portal"
+   },
+   {
+    "file": "tests/routes/app-router-parity.test.tsx",
+    "name": "mantém as rotas %s que o roteador anterior publicava"
+   },
+   {
+    "file": "tests/routes/app-router-parity.test.tsx",
+    "name": "não deixa rota de módulo sem caminho declarado"
    },
    {
     "file": "tests/scenarios/braces-depth-guard.test.mjs",
@@ -174527,7 +174583,7 @@
   },
   "vitest.config.ts": {
    "path": "vitest.config.ts",
-   "lines": 61,
+   "lines": 69,
    "exports": [
     "default defineConfig"
    ]
@@ -192701,7 +192757,7 @@
   },
   "src/components/layout/MainLayout.tsx": {
    "path": "src/components/layout/MainLayout.tsx",
-   "lines": 316,
+   "lines": 321,
    "exports": [
     "function MainLayout"
    ],
@@ -193935,7 +193991,7 @@
   },
   "src/components/onboarding/OnboardingTour.tsx": {
    "path": "src/components/onboarding/OnboardingTour.tsx",
-   "lines": 122,
+   "lines": 223,
    "exports": [
     "const OnboardingTour"
    ],
@@ -193952,6 +194008,10 @@
      "name": "TOOLTIP_PADDING",
      "value": "16"
     }
+   ],
+   "rule_comments": [
+    "implementações da mesma regra.",
+    "Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho."
    ]
   },
   "src/components/onboarding/RestartTourButton.tsx": {
@@ -241458,6 +241518,38 @@
     "does not show "
    ]
   },
+  "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx": {
+   "path": "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
+   "lines": 86,
+   "is_test": true,
+   "doc": "Regressão: o focus trap do tour tratava qualquer elemento fora do diálogo como fuga do modal e trazia o foco de volta. Com isso, abrir o Spotlight (`Ctrl+Shift+P`, que renderiza em `z-101`, acima do tour) e apertar Tab devolvia o foco ao tour — a busca ficava inalcançável pelo teclado.",
+   "tests": [
+    "tour x camada aberta acima dele",
+    "não rouba o Tab de um campo focado fora do diálogo",
+    "ainda traz o foco de volta quando ninguém o tem"
+   ]
+  },
+  "tests/components/onboarding/OnboardingTour.escape.test.tsx": {
+   "path": "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+   "lines": 60,
+   "is_test": true,
+   "tests": [
+    "atalho Escape do onboarding",
+    "pula o tour quando ele é a camada ativa",
+    "preserva o tour quando existe overlay interativo aberto",
+    "expõe semântica modal, descrição e foco inicial"
+   ]
+  },
+  "tests/components/onboarding/OnboardingTour.foco.test.tsx": {
+   "path": "tests/components/onboarding/OnboardingTour.foco.test.tsx",
+   "lines": 55,
+   "is_test": true,
+   "doc": "Regressão: `key={currentStep}` remonta o diálogo a cada passo, levando junto o botão focado. O efeito de foco dependia só de `showTour` e não rodava de novo — o teclado saía do modal e alcançava a página atrás dele.",
+   "tests": [
+    "foco do tour ao trocar de passo",
+    "o diálogo mantém o foco depois de avançar"
+   ]
+  },
   "tests/components/orders/OrderAuditTimeline.test.tsx": {
    "path": "tests/components/orders/OrderAuditTimeline.test.tsx",
    "lines": 37,
@@ -248815,6 +248907,22 @@
     "${role} → ${expected ? "
    ]
   },
+  "tests/routes/app-router-parity.test.tsx": {
+   "path": "tests/routes/app-router-parity.test.tsx",
+   "lines": 267,
+   "is_test": true,
+   "params": [
+    {
+     "name": "ARQUIVO_DE_ROTAS_DO_APP",
+     "value": "'src/App.tsx'"
+    }
+   ],
+   "tests": [
+    "inventário de rotas do portal",
+    "mantém as rotas %s que o roteador anterior publicava",
+    "não deixa rota de módulo sem caminho declarado"
+   ]
+  },
   "tests/scenarios/api-inventory.mjs": {
    "path": "tests/scenarios/api-inventory.mjs",
    "lines": 114
@@ -251225,10 +251333,40 @@
   }
  },
  "git": {
-  "sha": "3da86112a9fcd37b872f1663b9883c14e1042f95",
+  "sha": "9830191c7bd981220127053f34fb4cc73c4a5e52",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "9830191",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
+    "files": [
+     "src/components/layout/MainLayout.tsx",
+     "src/components/onboarding/OnboardingTour.tsx",
+     "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
+     "tests/components/onboarding/OnboardingTour.escape.test.tsx",
+     "tests/components/onboarding/OnboardingTour.foco.test.tsx",
+     "tests/routes/app-router-parity.test.tsx",
+     "vitest.config.ts"
+    ]
+   },
+   {
+    "sha": "23e18ed",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)",
+    "files": [
+     "docs/execucao/auditoria-planejamento-2026-10-16/ESTRATEGIA_IMPLEMENTACAO.md",
+     "docs/execucao/auditoria-planejamento-2026-10-16/achados-consolidados.json",
+     "docs/execucao/auditoria-planejamento-2026-10-16/matriz-100-etapas.json",
+     "docs/execucao/execucao-integrada-plano-2026-10-16.md",
+     "docs/execucao/validacao-ci-observabilidade-2026-10-16.md",
+     "docs/execucao/validacao-integrada-2026-10-18.md",
+     "docs/execucao/validacao-lote-seguranca-concorrencia-2026-10-18.md"
+    ]
+   },
    {
     "sha": "3da8611",
     "date": "2026-11-19",
@@ -251736,40 +251874,9 @@
      "src/integrations/supabase/types.ts",
      "tests/scenarios/custom-kit-pinning-contract.scenario.mjs"
     ]
-   },
-   {
-    "sha": "eba624f",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "supabase/functions/sicoob-document-ingest/index.ts",
-     "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
-     "supabase/migrations/20261118130100_enable_scoped_business_realtime.sql",
-     "supabase/migrations/20261118130200_restore_view_invoker_and_notification_scope.sql",
-     "supabase/migrations/20261118130300_harden_access_blocked_log_and_marketing_view_acl.sql",
-     "supabase/migrations/20261118130400_pin_custom_kit_atomically.sql",
-     "supabase/migrations/20261118130500_block_permissive_allow_all_policies.sql",
-     "supabase/migrations/20261118130600_redact_public_quote_approval_costs.sql",
-     "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql"
-    ]
-   },
-   {
-    "sha": "4b45855",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "infra: contar na cota de IA os streams interrompidos com consumo real (#299)",
-    "files": [
-     "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql"
-    ]
    }
   ],
   "hot_files": [
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    4
-   ],
    [
     "src/hooks/useKitAutoSave.ts",
     3
@@ -251777,6 +251884,14 @@
    [
     "tests/hooks/useKitAutoSave.test.tsx",
     3
+   ],
+   [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    3
+   ],
+   [
+    "src/components/layout/MainLayout.tsx",
+    2
    ],
    [
     "PENDENCIAS.md",
@@ -251840,10 +251955,6 @@
    ],
    [
     "supabase/functions/crm-db-bridge/search-pattern.test.ts",
-    2
-   ],
-   [
-    ".github/workflows/automation-local.yml",
     2
    ]
   ]

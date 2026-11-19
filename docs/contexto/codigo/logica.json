@@ -3371,9 +3371,10 @@
     "menu",
     "tooltip"
    ],
-   "usado_por": 2,
+   "usado_por": 3,
    "usado_por_modulos": [
     "components/mockup",
+    "components/onboarding",
     "hooks"
    ],
    "coberto_por_testes": 1,

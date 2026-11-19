@@ -5210,7 +5210,8 @@
   ],
   "src/components/onboarding/OnboardingTour.tsx": [
    "src/components/ui/button.tsx",
-   "src/contexts/OnboardingContext.tsx"
+   "src/contexts/OnboardingContext.tsx",
+   "src/lib/overlay.ts"
   ],
   "src/components/onboarding/RestartTourButton.tsx": [
    "src/components/ui/button.tsx",

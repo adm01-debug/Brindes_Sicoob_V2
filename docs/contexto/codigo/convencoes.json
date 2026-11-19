@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (599)",
+   "tests/ (603)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
+   "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)",
    "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)",
    "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)",
-   "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)",
-   "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)",
-   "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)"
+   "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

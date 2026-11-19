@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `3da86112a9fcd37b872f1663b9883c14e1042f95` (2026-11-19T03:08:29Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `9830191c7bd981220127053f34fb4cc73c4a5e52` (2026-11-19T03:26:45Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2889), SQL (674), Markdown (257), JSON (233), JavaScript (144), Python (60), YAML (23), CSS (7)
+- linguagens: TypeScript (2893), SQL (674), Markdown (262), JSON (235), JavaScript (144), Python (60), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4393 |
-| arquivos_codigo | 3090 |
-| linhas_codigo | 487602 |
+| arquivos_total | 4404 |
+| arquivos_codigo | 3094 |
+| linhas_codigo | 488184 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,17 +48,17 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 846 |
+| testes | 850 |
 | workflows | 16 |
 | scripts | 121 |
-| docs_md | 257 |
+| docs_md | 262 |
 
 ## Onde ficam as coisas
 - telas: src/pages (115)
 - componentes: src/components (999), src/pages (162), src/contexts (9)
 - hooks: src/hooks (287), src/components (66), src/pages (22)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (599), e2e/ (149), outro (51)
+- testes: tests/ (603), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -447,7 +447,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - env de integração (só nomes): BITRIX24_WEBHOOK_URL, BI_SHARE_SECRET, CNPJA_API_KEY, DROPBOX_ACCESS_TOKEN, E2E_CLEANUP_TOKEN, ELEVENLABS_API_KEY, LOVABLE_API_KEY, N8N_QUOTE_WEBHOOK_URL, QUOTE_SYNC_API_KEY, RESEND_API_KEY, SALESPRO_WEBHOOK_URL, SICOOB_APPROVAL_WORKER_SECRET, SICOOB_MALWARE_SCANNER_TOKEN, VIRUSTOTAL_API_KEY, VITE_SENTRY_DSN
 
 ## Permissões / papéis
-- papéis no código: alert (59), status (53), dev (43), supervisor (29), user (26), vendedor (24), admin (22), agente (16), button (14), system (13), group (11), list (11), listitem (11), dialog (9), combobox (7), img (7), progressbar (6), tab (6), tablist (6), assistant (5), manager (5), navigation (5), radio (5), radiogroup (5), region (5), switch (5), listbox (4), public (4), alertdialog (3), authenticated (3), gerente_pa (3), gestor_pa (3), gestor_singular (3), main (3), presentation (3), separator (3), agent (2), all (2), anon (2), gestor_compras (2), log (2), option (2), owner (2), string (2), toolbar (2), tooltip (2), article (1), banner (1), complementary (1), comprador_singular (1), contentinfo (1), document (1), editor (1), grid (1), gridcell (1), heading (1), link (1), menu (1), none (1), publico (1), seller (1), service_role (1), sicoob_central (1), sicoob_gestor (1), sicoob_pa (1), sicoob_singular (1), sup (1)
+- papéis no código: alert (59), status (53), dev (43), supervisor (29), user (26), vendedor (24), admin (22), agente (16), button (14), system (13), dialog (12), group (11), list (11), listitem (11), combobox (7), img (7), progressbar (6), tab (6), tablist (6), assistant (5), manager (5), navigation (5), radio (5), radiogroup (5), region (5), switch (5), listbox (4), public (4), alertdialog (3), authenticated (3), gerente_pa (3), gestor_pa (3), gestor_singular (3), main (3), presentation (3), separator (3), agent (2), all (2), anon (2), gestor_compras (2), log (2), option (2), owner (2), string (2), toolbar (2), tooltip (2), article (1), banner (1), complementary (1), comprador_singular (1), contentinfo (1), document (1), editor (1), grid (1), gridcell (1), heading (1), link (1), menu (1), none (1), publico (1), seller (1), service_role (1), sicoob_central (1), sicoob_gestor (1), sicoob_pa (1), sicoob_singular (1), sup (1)
 - enums de papel: app_role: admin|manager|vendedor|supervisor|dev|gestor_compras|gerente_pa|comprador_pac|comprador_singular|comprador_pac|comprador_singular; org_role: owner|admin|member; role_migration_status: pending|running|completed|failed|partial|dry_run; role_migration_item_status: pending|success|failed|skipped|dry_run
 - guards: src/components/admin/telemetry/RegressionGuardrailBanner.tsx, src/components/layout/ProtectedRoute.tsx · rotas protegidas: 108 · públicas: /*, /*, /403, /approve/:token, /colecao-publica/:token, /comparar-publica/:token, /convite/:token, /demonstracao, /dossie/:token, /gestor/delegacoes, /kit/:token, /lista-publica/:token, /login, /login, /loja-demo, /proposta/:token, /public/colecao/:token, /public/comparativo/:token, /public/dossie/:token, /public/favoritos/:token, /public/kit/:token, /public/orcamento/:token/aprovacao, /reset-password, /reset-password, /sso/callback, /sso/callback, /verificacao, /verificacao
 - feature flags: ENABLE_DEMO_PAGES, ENABLE_RLS, FEATURE_GROUPS, FEATURE_X, nova-tela, novo-inbox
@@ -470,14 +470,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29078 nós · 53745 arestas · 2070 comunidades · grafo do commit `3da86112`
-- comunidades maiores: ref_hooks (499), ref_components (396), ref_lib (281), ref_integrations (244), sonner (214), framer-motion (201), ref_contexts (194), react-router-dom (192), getCorsHeaders (182), date-fns (178), react (148), ref_stores (136)
+- 29104 nós · 53789 arestas · 2053 comunidades · grafo do commit `9830191c`
+- comunidades maiores: ref_components (543), ref_integrations (407), react (310), getCorsHeaders (237), ref_hooks (220), lucide-react (218), ref_lib (199), sonner (185), framer-motion (172), date-fns (172), ref_stores (167), react-router-dom (166)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (73)
-- docs/correcoes-validacao-2026-09-14.md (72)
+- docs/plano-melhorias-50-etapas.md (71)
+- docs/correcoes-validacao-2026-09-14.md (70)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -689,10 +689,12 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/execucao (80), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/plano-implementacao (8), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/execucao (85), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/plano-implementacao (8), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `9830191` fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)
+- 2026-11-19 `23e18ed` docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)
 - 2026-11-19 `3da8611` test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)
 - 2026-11-19 `f9b0686` docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)
 - 2026-11-19 `489c13d` fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)
@@ -706,8 +708,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
 - 2026-11-18 `1b11bf7` chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)
 - 2026-11-18 `64b8dc8` feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)
-- 2026-11-18 `06aa890` feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)
-- 2026-11-18 `57346a6` fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

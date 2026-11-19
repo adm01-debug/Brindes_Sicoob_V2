@@ -3,10 +3,10 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2889)",
+   "TypeScript (2893)",
    "SQL (674)",
-   "Markdown (257)",
-   "JSON (233)",
+   "Markdown (262)",
+   "JSON (235)",
    "JavaScript (144)",
    "Python (60)",
    "YAML (23)",
@@ -1199,7 +1199,7 @@
  "docs_em_subpastas": [
   {
    "pasta": "docs/execucao",
-   "arquivos_md": 80
+   "arquivos_md": 85
   },
   {
    "pasta": "docs/pesquisa",
@@ -1922,6 +1922,10 @@
     "ocorrencias": 13
    },
    {
+    "papel": "dialog",
+    "ocorrencias": 12
+   },
+   {
     "papel": "group",
     "ocorrencias": 11
    },
@@ -1932,10 +1936,6 @@
    {
     "papel": "listitem",
     "ocorrencias": 11
-   },
-   {
-    "papel": "dialog",
-    "ocorrencias": 9
    },
    {
     "papel": "combobox",

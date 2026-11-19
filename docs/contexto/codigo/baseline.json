@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "3da86112a9fcd37b872f1663b9883c14e1042f95",
+  "commit": "9830191c7bd981220127053f34fb4cc73c4a5e52",
   "branch": "main",
-  "data_commit": "2026-11-19T03:08:29Z",
+  "data_commit": "2026-11-19T03:26:45Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "9830191",
+    "data": "2026-11-19",
+    "assunto": "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)"
+   },
+   {
+    "sha": "23e18ed",
+    "data": "2026-11-19",
+    "assunto": "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)"
+   },
    {
     "sha": "3da8611",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "ca76bcd",
     "data": "2026-11-18",
     "assunto": "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)"
-   },
-   {
-    "sha": "eeb3c4e",
-    "data": "2026-11-18",
-    "assunto": "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)"
-   },
-   {
-    "sha": "71d515b",
-    "data": "2026-11-18",
-    "assunto": "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)"
    }
   ],
-  "arquivos_mudados_7d": 440,
+  "arquivos_mudados_7d": 453,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 73
+    "mudancas": 71
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 72
+    "mudancas": 70
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 149
+    "commits": 151
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4393,
-  "arquivos_codigo": 3090,
-  "linhas_codigo": 487602,
+  "arquivos_total": 4404,
+  "arquivos_codigo": 3094,
+  "linhas_codigo": 488184,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,10 +324,10 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 846,
+  "testes": 850,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 257
+  "docs_md": 262
  },
  "por_pasta": {
   "docs/execucao": {
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 166544
+   "linhas": 166650
   },
   "src/constants": {
    "arquivos": 3,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 139,
-   "linhas": 26847
+   "arquivos": 142,
+   "linhas": 27048
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -953,6 +953,10 @@
   "tests/rls": {
    "arquivos": 6,
    "linhas": 1044
+  },
+  "tests/routes": {
+   "arquivos": 1,
+   "linhas": 267
   },
   "tests/scenarios": {
    "arquivos": 26,
@@ -1036,7 +1040,7 @@
   },
   "vitest.config.ts": {
    "arquivos": 1,
-   "linhas": 61
+   "linhas": 69
   }
  },
  "maiores_arquivos": [

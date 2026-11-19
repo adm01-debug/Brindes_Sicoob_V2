@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2244,
- "arestas": 9155,
+ "arestas": 9156,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -428,7 +428,7 @@
   {
    "modulo": "lib",
    "depende_de": 11,
-   "importado_por": 90
+   "importado_por": 91
   },
   {
    "modulo": "pages",

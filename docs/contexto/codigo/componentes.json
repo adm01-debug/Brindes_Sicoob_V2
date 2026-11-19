@@ -8613,7 +8613,7 @@
     "MainLayout"
    ],
    "export_default": null,
-   "linhas": 316,
+   "linhas": 321,
    "dominio": "components/layout",
    "hooks_locais": [
     "useGlobalShortcuts",
@@ -9875,7 +9875,7 @@
     "OnboardingTour"
    ],
    "export_default": null,
-   "linhas": 122,
+   "linhas": 223,
    "dominio": "components/onboarding",
    "hooks_locais": [
     "useOnboardingContext"
