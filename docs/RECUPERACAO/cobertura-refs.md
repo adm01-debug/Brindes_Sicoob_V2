@@ -969,3 +969,162 @@ a árvore anterior inteira. Serve para localizar, não para concluir.
 
 **62 de 62 com veredito escrito.** As 4 refs apagadas em 19/11 (seção "Sétima varredura")
 não aparecem aqui porque já não existem; o veredito delas está lá.
+
+## Encerramento: as 8 últimas refs, arquivadas em tag antes de apagar
+
+**19/11/2026.** Fechadas as 8 refs que restavam. Todas já tinham veredito de conteúdo
+escrito neste ledger; o que faltava não era saber o que havia nelas, e sim poder
+desfazer a deleção.
+
+### Por que elas eram diferentes das 46 já apagadas
+
+Nas 46, a deleção era reversível de graça: o head da branch era idêntico a um
+`refs/pull/N/head`, que o GitHub preserva para sempre. Conferi isso ref a ref antes de
+apagar cada uma, e provei empiricamente buscando `refs/pull/112/head` **depois** de
+apagar a branch (578 arquivos de teste ainda legíveis).
+
+Nestas 8, não: o head não bate com nenhuma PR. Na `claude/hopeful-mccarthy-8rqrqw`
+testei as 12 PRs dela, uma a uma — nenhuma preserva o head. Apagar ali seria apagar
+de verdade.
+
+### O que foi feito
+
+Uma tag por ref, apontando para o head exato, criada **antes** da deleção e conferida
+no remoto depois:
+
+| Tag | Head preservado |
+| --- | --- |
+| `arquivo/claude-feat-kpis-primeira-compra-retencao-261118-1800` | `bcac136a8` |
+| `arquivo/claude-fix-storage-delete-proposals-261106-2007` | `f2e2865c8` |
+| `arquivo/claude-hopeful-mccarthy-8rqrqw` | `63d23c4e0` |
+| `arquivo/feat-pdf-playwright-scripts-art-261108-0516` | `3d1e7355a` |
+| `arquivo/fix-execucao-plano-20260928` | `bfca3b285` |
+| `arquivo/fix-sicoob-p0-operacional-20260923` | `b93ba46c8` |
+| `arquivo/fix-sicoob-p0-seguranca-20260923` | `133dc45da` |
+| `arquivo/fix-sicoob-trust-data-20260924` | `38b52cb24` |
+
+Uma tag mantém toda a história alcançável, então o conteúdo não é coletado pelo GC.
+Conferido depois de apagar as branches: `git ls-tree -r --name-only
+arquivo/claude-hopeful-mccarthy-8rqrqw` ainda lista **4122 arquivos**.
+
+Para recuperar qualquer uma: `git fetch origin refs/tags/arquivo/<nome>` e trabalhe a
+partir da tag. Nada de "a branch sumiu".
+
+### Nota operacional
+
+`git push origin refs/tags/...` é recusado com **403** nesta sessão — o token só
+escreve em `refs/heads`. As tags foram criadas pela API (`github_create_ref`). Quem
+for arquivar outra ref no futuro precisa do mesmo caminho.
+
+### Estado final das refs
+
+**64 → 8.** As 8 que sobraram estão todas vivas, nenhuma é resíduo: `main`, `contexto`
+(gerada a cada 10 min), `computador_local`, duas do Dependabot, a de #311 (decisão do
+dono) e as duas PRs de teste abertas em 19/11.
+
+## As 25 PRs fechadas que não tinham veredito — medidas, não presumidas
+
+**19/11/2026.** Conferência final: cruzei as **85 PRs fechadas sem merge** do repositório
+contra todo o `docs/RECUPERACAO/`. **25 não tinham veredito escrito.** Todas do
+Dependabot — mas "é do Dependabot" não é prova de que nada se perdeu, então medi.
+
+### Como medi
+
+Busquei `refs/pull/<N>/head` das 14 que mexem em `package.json` e comparei **pacote a
+pacote** a versão que a PR propunha com a que está na `main` hoje:
+
+```
+git fetch origin refs/pull/<N>/head:refs/prhead/<N>
+# depois, para cada dependência da PR: norm(main) >= norm(PR)?
+```
+
+Resultado: **12 de 14 com a `main` à frente ou igual em todos os pacotes.** As outras
+duas (#92, #93) apontavam um único pacote ausente, tratado abaixo.
+
+### Os casos nomeados
+
+| PR | Propunha | `main` hoje | Veredito |
+| --- | --- | --- | --- |
+| #146 | `undici` 8.12.3 | **8.12.3** | já incorporado |
+| #147 | `zod` 4.6.6 | **4.6.7** | superada |
+| #99 | `postcss` 8.5.29 | **8.5.33** | superada |
+| #108, #109, #110, #122, #123, #124, #142, #144, #242, #243, #245 | `codeql-action` 4.38.3 → 4.39.3 | **4.39.3** | superadas |
+
+O pin do CodeQL é por SHA, então conferi a origem dele em vez de confiar no comentário:
+`git log -S'33d7b85da1a04171e211befe2c739303b9a4c066'` aponta para
+`90039c42f chore(ci): bump codeql-action para 4.39.3 nas tres steps (#273)`. É a mais
+alta de todas as propostas.
+
+### #92 e #93: `md-to-pdf`
+
+Único pacote que a `main` não tem. Não é bump perdido — é **remoção deliberada**:
+`scripts/md-to-pdf-stub.mjs:5` diz "Substitui o pacote md-to-pdf removido por CVEs
+críticos em braces", e o gerador de PDF hoje é Playwright
+(`scripts/automation.config.json:633`). Subir a versão de um pacote arrancado por CVE
+seria regressão, não recuperação.
+
+### As de grupo
+
+`production-minor-patch` e `development-all` são grupos: o Dependabot recria o grupo
+inteiro com o que ainda estiver desatualizado, então fechar uma não descarta bump
+nenhum — ele reaparece na próxima. As vivas hoje são #281 e a do grupo de
+desenvolvimento. A medição acima vale para elas também: nenhuma das fechadas deixou
+pacote atrás.
+
+**Conclusão: 85 de 85 PRs fechadas com veredito. Nada perdido.**
+
+
+## As 12 PRs mergeadas em branch intermediária
+
+**19/11/2026.** Última superfície que faltava auditar, e a mais traiçoeira: PR mergeada
+cujo `base` **não era a `main`**. Ela aparece como "merged" em toda listagem, mas o
+conteúdo só chega à `main` se a branch-base também entrar.
+
+Achei-as testando ancestralidade de todas as **283 PRs mergeadas**:
+`git merge-base --is-ancestor <merge_commit> origin/main`. Doze têm base diferente de
+`main`.
+
+### Antes: a re-raiz não é perda
+
+A raiz da `main` é órfã, de 11/11/2026 (#266), e a história tem só **107 commits** — 160
+PRs mergeadas não têm merge commit aqui. Mas a árvore-raiz carrega o projeto inteiro
+(4249 arquivos, 590 migrations, 106 edge functions): foi truncamento de histórico, não
+reset. Provado, não presumido: das 10 PRs mergeadas na `main` horas antes da re-raiz,
+**61 de 64 arquivos são byte-idênticos** na árvore-raiz, e os 3 que diferem (dois
+editados de novo por PRs seguintes da mesma janela) tiveram **16 de 16 linhas
+adicionadas** preservadas.
+
+### As 6 empilhadas de 19/11
+
+#341, #347, #349, #351, #356 e #359 mergearam em branches `claude/...`. Três delas
+(#347, #349, #351) tinham como base PRs **fechadas sem merge** (#346, #348, #350) — o
+caso de perda clássico. Onze agentes mediram os 11 arquivos que diferem da `main`, com
+refutação adversarial armada para qualquer perda alegada: **11 PRESENTE, 0 AUSENTE.** As
+recuperações anteriores (#360 e a sequência do BI) cobriram tudo.
+
+### #36, e um erro meu que vale registrar
+
+A PR #36 mergeou em `fix/sicoob-trust-data-20260924`. O arquivo
+`tests/hooks/useProductIntelligenceBadges.test.ts` dela **não existe na `main`** — isso é
+fato. Concluí daí que a regra estava descoberta e abri a PR #374 para recuperá-la.
+**Estava errado**, e a revisão da #374 pegou.
+
+O erro foi de método: procurei com
+`git ls-tree -r --name-only origin/main | grep -i ProductIntelligenceBadges`, que casa
+**nome de arquivo**. A cobertura existe em `tests/hooks/intelligence-badges.test.ts`, cujo
+caminho não tem o nome do hook — são **10 casos** em `buildBadgeResult`, mais 2 em
+`tests/hooks/product-intelligence-real-data.test.tsx:254`. Inclusive o segundo caso da
+#36: `intelligence-badges.test.ts:155` é `buildBadgeResult(intelligence, [], undefined,
+false)`. A busca certa era pelo símbolo importado: `git grep -l buildBadgeResult --
+tests/`.
+
+#374 foi fechada como duplicata. **Lição para a próxima varredura: arquivo ausente não é
+regra descoberta.** Teste é renomeado e reagrupado; o que prova cobertura é o símbolo sob
+teste, não o caminho.
+
+### As outras 6
+
+#26, #45, #46, #101 e #251 são pré-re-raiz e mergearam em branches cujas PRs entraram na
+`main`; #101 tinha base na #100 (UX Onda 1, fechada sem merge), já recuperada nesta
+sessão. Nenhum arquivo delas falta na `main`. Os que diferem estão sob a mesma medição
+arquivo a arquivo das 6 empilhadas.
