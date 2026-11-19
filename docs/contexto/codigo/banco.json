@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 621,
+ "migrations": 622,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -2086,7 +2086,14 @@
     }
    },
    "rls": true,
-   "policies": [],
+   "policies": [
+    {
+     "nome": "deny_non_service_role",
+     "comando": "all",
+     "para": "PUBLIC",
+     "tipo": "restrictive"
+    }
+   ],
    "indices": [],
    "fks": [],
    "criada_em": "20261118130400_pin_custom_kit_atomically.sql",
@@ -40126,7 +40133,14 @@
     }
    },
    "rls": true,
-   "policies": [],
+   "policies": [
+    {
+     "nome": "deny_non_service_role",
+     "comando": "all",
+     "para": "PUBLIC",
+     "tipo": "restrictive"
+    }
+   ],
    "indices": [
     {
      "nome": "webhook_retry_claims_attempt_unique_idx",

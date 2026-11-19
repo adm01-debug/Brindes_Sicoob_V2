@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e7671e8540a059250ec97981df8b23b880101ef2",
+  "commit": "05af443ea9c50410f08cb4966e4a8fc2837ef25f",
   "branch": "main",
-  "data_commit": "2026-11-19T13:03:05-03:00",
+  "data_commit": "2026-11-19T14:23:57-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "05af443",
+    "data": "2026-11-19",
+    "assunto": "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)"
+   },
    {
     "sha": "e7671e8",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "87b4f99",
     "data": "2026-11-19",
     "assunto": "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)"
-   },
-   {
-    "sha": "e520ace",
-    "data": "2026-11-19",
-    "assunto": "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)"
    }
   ],
-  "arquivos_mudados_7d": 612,
+  "arquivos_mudados_7d": 606,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -142,10 +142,6 @@
    {
     "pasta": "supabase/functions/_shared",
     "mudancas": 39
-   },
-   {
-    "pasta": "docs/externo/analises-20261007",
-    "mudancas": 25
    },
    {
     "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
@@ -168,12 +164,12 @@
     "mudancas": 16
    },
    {
-    "pasta": "src/hooks/bi",
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 16
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 15
+    "pasta": "src/hooks/bi",
+    "mudancas": 16
    },
    {
     "pasta": "tests/components/bi",
@@ -194,27 +190,31 @@
    {
     "pasta": "src/components/sicoob",
     "mudancas": 10
+   },
+   {
+    "pasta": "src/pages/sicoob",
+    "mudancas": 10
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 41
+    "mudancas": 40
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 40
+    "mudancas": 39
    },
    {
     "arquivo": "package.json",
     "mudancas": 22
    },
    {
-    "arquivo": "PENDENCIAS.md",
-    "mudancas": 21
+    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 22
    },
    {
-    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "arquivo": "PENDENCIAS.md",
     "mudancas": 21
    },
    {
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4540,
+  "arquivos_total": 4541,
   "arquivos_codigo": 3131,
-  "linhas_codigo": 492335,
+  "linhas_codigo": 492339,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -322,7 +322,7 @@
   "hooks": 393,
   "edge_functions": 107,
   "tabelas": 292,
-  "migrations": 621,
+  "migrations": 622,
   "cron_jobs": 27,
   "testes": 879,
   "workflows": 16,
@@ -588,7 +588,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3214
+   "linhas": 3218
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -1058,7 +1058,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1526
+   "linhas": 1530
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e7671e8540` · branch `main` · 2026-11-19 16:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `05af443ea9` · branch `main` · 2026-11-19 17:24 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -16,7 +16,7 @@
 
 | Tabela | RLS | SELECT | INSERT | UPDATE | DELETE |
 |---|---|---|---|---|---|
-| `_backup_custom_kits_pinned_20261118` | enabled | — | — | — | — |
+| `_backup_custom_kits_pinned_20261118` | enabled | PUBLIC: false | PUBLIC: false | PUBLIC: false | PUBLIC: false |
 | `_sicoob_rls_target_tables` | não encontrado | sem RLS | sem RLS | sem RLS | sem RLS |
 | `access_blocked_log` | enabled | public: public.can_manage(auth.uid())<br>authenticated: public.can_manage((SELECT auth.uid())) | service_role: true | — | — |
 | `access_security_settings` | enabled | public: public.can_manage(auth.uid())<br>authenticated: EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role::text IN ('admin','dev')) | public: public.can_manage(auth.uid())<br>authenticated: EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role::text IN ('admin','dev')) | public: public.can_manage(auth.uid())<br>authenticated: EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role::text IN ('admin','dev')) | public: public.can_manage(auth.uid())<br>authenticated: EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role::text IN ('admin','dev')) |
@@ -305,13 +305,13 @@
 | `webhook_deliveries` | enabled | public: public.has_role(auth.uid(), 'admin') | — | — | public: public.has_role(auth.uid(), 'admin') |
 | `webhook_delivery_metrics` | enabled | anon: false<br>authenticated: public.has_role(auth.uid(), 'dev'::app_role) OR public.has_role(auth.uid(), 'supervisor'::app_role) | anon: false<br>authenticated: false | anon: false<br>authenticated: false | anon: false<br>authenticated: false |
 | `webhook_logs` | enabled | authenticated: EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role::text IN ('admin','dev')) | — | — | — |
-| `webhook_retry_claims` | enabled | — | — | — | — |
+| `webhook_retry_claims` | enabled | PUBLIC: false | PUBLIC: false | PUBLIC: false | PUBLIC: false |
 | `websocket_sessions` | enabled | public: true | — | — | — |
 | `workspace_notifications` | enabled | authenticated: user_id = auth.uid()<br>public: auth.uid() = user_id | authenticated: user_id = auth.uid() | authenticated: user_id = auth.uid()<br>public: auth.uid() = user_id | authenticated: user_id = auth.uid()<br>public: auth.uid() = user_id |
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 294 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 295 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -463,7 +463,7 @@
 - `supabase/migrations/20260407014300_2724b8ff-1566-4bf2-b056-833e45cf0b85.sql`
 - `supabase/migrations/20260416183342_786cf75e-5ec6-4c53-a314-9b622e8b7027.sql`
 - `supabase/migrations/20260416183415_d7c7a7a0-725a-471b-8c3d-424230285729.sql`
-- … +144 (lista completa em `context.json`)
+- … +145 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 

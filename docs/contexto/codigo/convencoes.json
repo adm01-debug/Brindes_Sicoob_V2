@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)",
    "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)",
    "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)",
    "chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)",
-   "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)",
-   "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)"
+   "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

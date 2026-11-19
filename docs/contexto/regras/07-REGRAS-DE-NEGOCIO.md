@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e7671e8540` · branch `main` · 2026-11-19 16:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `05af443ea9` · branch `main` · 2026-11-19 17:24 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -311,7 +311,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `permissions` | Authenticated users can read permissions | SELECT | authenticated | permissive | `true` |  |
 | `role_permissions` | Admins can manage role_permissions | ALL | authenticated | permissive | `has_role(auth.uid(), 'admin')` | `has_role(auth.uid(), 'admin')` |
 | `role_permissions` | Authenticated users can read role_permissions | SELECT | authenticated | permissive | `true` |  |
-| … +581 linhas — lista completa em `context.json` | | | | | | |
+| … +583 linhas — lista completa em `context.json` | | | | | | |
 
 ## C. Restrições de dados (obrigatório / único / default / CHECK / FK / calculada)
 
