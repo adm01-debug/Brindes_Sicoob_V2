@@ -808,3 +808,154 @@ O rerun de “Segurança, contratos e build” no [run 40918030807](https://gith
 A execução E2E do PR #165 ([run 40919240512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240512)) terminou em falha no passo “Validar autorização remota e RLS técnico”; os shards Playwright foram ignorados pelo fail-fast. A atualização de Supabase de homologação/segredos segue aguardando confirmação do owner.
 
 Portanto, nenhum dos PRs está liberado para merge: PR #164 ainda tem E2E e Qualidade vermelhos e altera dependências/runtime; PR #165 é CI-only, mas herda `npm audit` vermelho do baseline `main`. O revisor Vercel continua indisponível por billing. Nenhuma ação foi executada no banco ou em deploy.
+
+## Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026
+
+Esta seção traz três fatos que estavam **só** em PRs fechadas sem merge. Não são
+medições novas: são registros datados, recuperados porque este relatório
+descrevia as mesmas falhas sem a causa, ou com causa diferente.
+
+### 1. O deploy de edge functions já morreu por política de Actions, não por Docker Hub
+
+O run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102)
+aparece neste relatório (linhas 30 e 97) com duas causas: o falso negativo de
+versão e o `toomanyrequests` do Docker Hub. A **primeira tentativa**, porém, nem
+começou: a política de Actions do repositório barrou a dependência
+**transitiva** `oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6`,
+puxada pela versão fixada de `supabase/setup-cli`. A solução aplicada na época
+foi liberar na allowlist **somente aquele SHA imutável**, mantendo o resto
+restrito.
+
+Por que isto importa hoje: a `main` hoje usa **outro pin** —
+`supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13`
+(`deploy-sicoob-functions.yml:29`), diferente do que estava em uso então. Quem
+bumpar essa action de novo pode ver o deploy morrer no runner sem causa
+aparente. O caminho certo é liberar o SHA transitivo específico, **nunca
+afrouxar a allowlist inteira**.
+
+Fonte: PR #149, fechada sem merge. `git grep -c "setup-bun" origin/main` → 0
+antes deste registro.
+
+### 2. O `Processing Request` do Copilot já foi diagnosticado: firewall da action
+
+`PENDENCIAS.md` registra que o Copilot
+[41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763)
+falhou em `Processing Request (Linux)` e que "o resumo do provedor não informa
+causa acionável". A causa **foi** levantada, num run anterior do mesmo step:
+[40950735858](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950735858)
+(29/10/2026, SHA `23fc59a`), cujo log mostra o **firewall da action bloqueando a
+conexão do Copilot CLI com `api.github.com`**.
+
+É falha distinta da quota HTTP 402 (`SessionModelError`), que este relatório já
+documenta em vários pontos. Ação correspondente: revisar allowlist/firewall do
+serviço Copilot — e não mascarar a falha tratando-a como quota.
+
+Fonte: PR #158, fechada sem merge. `git grep -n -i "firewall" origin/main -- '*.md'`
+não devolvia nenhuma ocorrência em documento de CI antes deste registro.
+
+### 3. Medição de 28/10/2026: 16 funções publicadas divergiam do repositório
+
+Comparação byte a byte do código **remoto** das 100 edge functions publicadas
+contra a `main` daquela data: 83/100 pastas idênticas e 84/100 idênticas no
+código executável (`external-db-bridge` diferia só por 7 arquivos `.test.ts`,
+fora do bundle). As 16 que divergiam:
+
+`admin-audit-hook`, `bi-share-dossier`, `connections-auto-test`,
+`crm-db-bridge`, `e2e-cleanup`, `generate-ad-image`, `get-app-logs`,
+`github-fix-config`, `mcp-keys-issue`, `quote-sync`, `rls-audit`,
+`secrets-manager`, `sicoob-seed`, `sicoob-seed-qa`, `sync-quote-bitrix` e
+`trends-insights`.
+
+Quinze delas **fora da allowlist de publicação** daquela data, portanto o
+deploy oficial nunca as corrigia. A exceção é `get-app-logs`, que **hoje consta
+da allowlist** (`.github/workflows/deploy-sicoob-functions.yml:52`) — a lista
+mudou depois da medição, e a leitura de 18/11 abaixo já não acusa divergência
+nela. `crm-db-bridge` continua fora e é exatamente o alvo da PR #311, em
+aberto.
+
+**Ressalva honesta:** é medição de **28/10/2026** e não foi refeita. A medição
+anterior que a `main` guarda é de 28/09/2026
+(`docs/execucao/evidencias/paridade-online-20260928.json`, `"arquivos_divergentes": []`)
+e diz o **contrário** — zero divergência. As duas não se contradizem
+necessariamente: são datas diferentes, com um mês de publicações no meio. O que
+não existe é medição posterior a 28/10. Antes de decidir allowlist com base
+nestes nomes, **refaça a comparação**.
+
+Fonte: PR #149, fechada sem merge.
+
+### 4. Medição nova, de 18/11/2026: 11 das 28 funções medidas divergem
+
+A ressalva do item 3 pedia refazer a comparação. **Refeita**, somente leitura,
+pela Management API, nas 28 funções que importam: as **13 da allowlist de
+publicação** mais as **16 apontadas em 28/10** (com sobreposição).
+
+**Método, e o que ele prova.** O endpoint `/functions/<slug>/body` devolve o
+*bundle* ESZIP, com o código já transpilado pelo Deno — comparar byte a byte
+com o `index.ts` local **nunca** casa, nem para uma função publicada hoje. Foi
+assim que a primeira tentativa desta medição deu "28 de 28 divergentes", o que
+é artefato do método, não resultado. O que vale: extrair as **strings de
+execução** do fonte local (mensagens, códigos de erro, nomes de tabela; 12 a 80
+caracteres) e conferir se aparecem no bundle. Especificadores de import
+(`./`, `../`, `npm:`, `jsr:`, `node:`, `http(s)://`) ficam de fora porque o
+empacotador os reescreve.
+
+Isso **prova divergência, não identidade**: string de execução ausente
+significa que o código publicado não é este fonte; todas presentes significa
+apenas "sem evidência de divergência".
+
+| função | versão | na allowlist? | strings ausentes | exemplos |
+|---|---|---|---|---|
+| `expert-chat` | v14 | **sim** | 38/126 | `A conversa excede o limite total de 30 mil caracteres`; `Auditoria de acesso indisponível`; `Não foi possível concluir a solicitação` |
+| `bi-share-dossier` | v7 | não | 5/18 | `BI_SHARE_SECRET is not configured`; `Cache-Control`; `Internal server error` |
+| `sync-quote-bitrix` | v7 | não | 4/57 | `Erro interno ao sincronizar o orçamento.`; `Falha ao registrar a sincronização com Bitrix.`; `Não foi possível sincronizar este orçamento.` |
+| `sicoob-document-ingest` | v7 | **sim** | 3/26 | `O registro do documento não foi confirmado.`; `O registro persistido diverge do documento enviado.`; `not_attempted` |
+| `sicoob-seed` | v7 | não | 3/52 | `operation_failed`; `sicoob_centrais`; `user_id,role` |
+| `connections-auto-test` | v7 | não | 2/14 | `falha_ao_persistir_resultado`; `falha_interna_auto_teste` |
+| `crm-db-bridge` | v13 | não | 2/84 | `industry_peers`; `quote_directory_ramo_invalido` |
+| `quote-sync` | v7 | não | 2/37 | `N8N webhook test failed:`; `SalesPro webhook test failed:` |
+| `admin-audit-hook` | v7 | não | 1/13 | `[admin-audit-hook] request_failed` |
+| `github-fix-config` | v7 | não | 1/28 | `internal_error` |
+| `rls-audit` | v7 | não | 1/25 | `query_failed` |
+
+**Sem evidência de divergência** (17): `auth-integrity-check`, `bi-copilot`, `comparison-ai-advisor`, `e2e-cleanup`, `external-db-bridge`, `generate-ad-image`, `get-app-logs`, `get-visitor-info`, `mcp-keys-issue`, `secrets-manager`, `secure-upload`, `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-kit-quote`, `sicoob-reorder`, `sicoob-seed-qa`, `trends-insights`.
+
+**O que isso muda:**
+
+- **`expert-chat` está na allowlist de publicação e é a pior**: 38 de 126
+  strings de execução ausentes. O que roda em produção é versão materialmente
+  mais antiga que a `main` — inclui mensagens de limite de conversa e de
+  auditoria de acesso que o fonte atual tem e o publicado não;
+- **`sicoob-document-ingest` também está na allowlist** e perdeu três, entre
+  elas `"O registro persistido diverge do documento enviado."` — justamente uma
+  verificação de integridade;
+- **`crm-db-bridge` diverge** (`industry_peers`, `quote_directory_ramo_invalido`),
+  informação direta para a PR #311;
+- as outras sete divergentes estão fora da allowlist, então o deploy oficial
+  nunca as corrige — mesmo padrão que a medição de 28/10 descreveu.
+
+As 100 funções estão `ACTIVE`. Nenhuma escrita foi feita: só `GET` de lista e
+de corpo.
+
+#### 4.1. Causa encontrada e publicação executada em 18/11/2026
+
+`git log -S` sobre as strings ausentes aponta o mesmo commit para
+`expert-chat`, `sicoob-document-ingest`, `connections-auto-test` e
+`crm-db-bridge`: `90a9cb37b` (PR #309, mergeada em 18/11). Ou seja — para as
+duas que estão na allowlist, não era allowlist errada, era **código mergeado e
+nunca publicado**. Pela regra do `AGENTS.md` ("'Pronto' = PR mergeada + deploy
+confirmado"), aquele merge não estava pronto.
+
+Publicação disparada pelo fluxo oficial (`deploy-sicoob-functions.yml`,
+`workflow_dispatch` com `PUBLICAR`, run 44402706738, `success` às 21:34 UTC de
+18/11/2026). Medição refeita logo depois, mesmo método:
+
+| função | antes | depois |
+|---|---|---|
+| `expert-chat` | 38 strings ausentes | **0 de 84** |
+| `sicoob-document-ingest` | 3 ausentes | **0 de 25** |
+| `connections-auto-test` | 2 ausentes | 2 de 20 (fora da allowlist) |
+| `crm-db-bridge` | 2 ausentes | 2 de 76 (fora da allowlist) |
+
+As duas que continuam divergindo não estão na allowlist: `crm-db-bridge`
+depende da decisão da PR #311 e `connections-auto-test` não tem PR.
+
