@@ -16,7 +16,6 @@ export const requiredFunctions = [
   'secure-upload',
   'auth-integrity-check',
   'crm-db-bridge',
-  'quote-price-attestation',
 ];
 
 function getFunctions(payload, label) {

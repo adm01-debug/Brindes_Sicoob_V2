@@ -78,8 +78,20 @@ describe('verifyPublishedFunctions', () => {
     }
   });
 
-  it('cobre as 7 canônicas e as 8 endurecidas (total 15)', () => {
-    expect(requiredFunctions).toHaveLength(15);
+  it('não lista função que o teto do plano impede de criar', () => {
+    // `quote-price-attestation` saiu da allowlist em 19/11/2026: o projeto está
+    // no teto de edge functions e `supabase functions deploy` responde
+    // 402 entitlement_required / function.max_count ao tentar CRIÁ-la. Como ela
+    // era o último item e o passo roda com `set -euo pipefail`, toda publicação
+    // morria ali e o passo "Confirmar funções publicadas" nunca executava.
+    // O atesto de preço é servido por `sicoob-kit-quote` desde a #364.
+    expect(requiredFunctions).not.toContain('quote-price-attestation');
+  });
+
+  it('cobre as 7 canônicas, as 6 endurecidas e crm-db-bridge (total 14)', () => {
+    // Eram 8 endurecidas; `quote-price-attestation` saiu (teto do plano, caso
+    // acima) e `crm-db-bridge` entrou nesta PR — 15 - 1 = 14.
+    expect(requiredFunctions).toHaveLength(14);
     for (const slug of [
       'bi-copilot',
       'comparison-ai-advisor',
@@ -87,7 +99,7 @@ describe('verifyPublishedFunctions', () => {
       'get-visitor-info',
       'secure-upload',
       'auth-integrity-check',
-      'quote-price-attestation',
+      'crm-db-bridge',
     ]) {
       expect(requiredFunctions).toContain(slug);
     }
