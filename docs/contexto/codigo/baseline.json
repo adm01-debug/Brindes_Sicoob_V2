@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
+  "commit": "25214df4d57f7dda57506a6160d8d89a5a55cf74",
   "branch": "main",
-  "data_commit": "2026-11-19T01:49:06Z",
+  "data_commit": "2026-11-19T02:12:48Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "25214df",
+    "data": "2026-11-19",
+    "assunto": "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)"
+   },
    {
     "sha": "d53f9e8",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "eba624f",
     "data": "2026-11-18",
     "assunto": "fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)"
-   },
-   {
-    "sha": "4b45855",
-    "data": "2026-11-18",
-    "assunto": "infra: contar na cota de IA os streams interrompidos com consumo real (#299)"
    }
   ],
-  "arquivos_mudados_7d": 410,
+  "arquivos_mudados_7d": 412,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 78
+    "mudancas": 77
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 77
+    "mudancas": 76
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 144
+    "commits": 145
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4369,
-  "arquivos_codigo": 3076,
-  "linhas_codigo": 485816,
+  "arquivos_total": 4370,
+  "arquivos_codigo": 3077,
+  "linhas_codigo": 486456,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 835,
+  "testes": 836,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 247
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 166538
+   "linhas": 166544
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 313,
-   "linhas": 46962
+   "linhas": 47168
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50823
+   "linhas": 50880
   },
   "src/routes": {
    "arquivos": 9,
@@ -916,7 +916,7 @@
   },
   "tests/hooks": {
    "arquivos": 130,
-   "linhas": 13785
+   "linhas": 14113
   },
   "tests/integration": {
    "arquivos": 4,
@@ -939,8 +939,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 24,
-   "linhas": 2959
+   "arquivos": 25,
+   "linhas": 3002
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

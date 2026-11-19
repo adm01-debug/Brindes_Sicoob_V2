@@ -6007,7 +6007,7 @@
    "hooks_exportados": [
     "useKitAutoSave"
    ],
-   "linhas": 258,
+   "linhas": 464,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"
@@ -9000,11 +9000,12 @@
     "useState"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
+    "src/pages/KitBuilderPage.tsx",
     "src/pages/QuoteBuilderPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useUrlState.ts",

@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (588)",
+   "tests/ (589)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)",
    "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)",
    "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)",
    "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)",
-   "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)",
-   "fix(db): aplicador de migrations tolera BOM na leitura (#345)"
+   "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

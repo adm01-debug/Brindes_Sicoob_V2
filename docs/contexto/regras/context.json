@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
+  "sha": "25214df4d57f7dda57506a6160d8d89a5a55cf74",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 01:50 UTC",
-  "files_total": 4371,
-  "code_files": 3732,
-  "code_lines": 547165
+  "generated_at": "2026-11-19 02:13 UTC",
+  "files_total": 4372,
+  "code_files": 3733,
+  "code_lines": 547805
  },
  "version": "1.3.2",
- "facts_hash": "d26c734e4f63509a",
+ "facts_hash": "9844e641a3bf51f5",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -349,7 +349,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1450,
-   ".tsx": 1423,
+   ".tsx": 1424,
    ".sql": 674,
    ".mjs": 134,
    ".py": 60,
@@ -55377,7 +55377,7 @@
      "get_sicoob_access_state",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 172
+    "deps_count": 173
    },
    {
     "path": "",
@@ -56712,6 +56712,15 @@
     "invokes_transitive": [],
     "rpc_transitive": [],
     "deps_count": 4
+   },
+   {
+    "path": "",
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "component": "kit-builder-guarda-saida.test",
+    "tables_transitive": [],
+    "invokes_transitive": [],
+    "rpc_transitive": [],
+    "deps_count": 1
    },
    {
     "path": "/entrar, /login",
@@ -63830,7 +63839,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 166538,
+   "lines": 166544,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64163,7 +64172,7 @@
   {
    "module": "src/hooks",
    "files": 313,
-   "lines": 46962,
+   "lines": 47168,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64609,7 +64618,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 50823,
+   "lines": 50880,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65603,8 +65612,8 @@
   },
   {
    "module": "tests",
-   "files": 606,
-   "lines": 82798,
+   "files": 607,
+   "lines": 83169,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -76245,6 +76254,14 @@
    },
    {
     "file": "src/hooks/useKitAutoSave.ts",
+    "msg": "Este kit foi alterado em outro lugar."
+   },
+   {
+    "file": "src/hooks/useKitAutoSave.ts",
+    "msg": "O kit não foi encontrado ou você não tem permissão para atualizá-lo."
+   },
+   {
+    "file": "src/hooks/useKitAutoSave.ts",
     "msg": "O salvamento automático falhou. Seus dados continuam nesta página."
    },
    {
@@ -79914,6 +79931,10 @@
    {
     "file": "src/hooks/useIPValidation.ts",
     "text": "Em caso de erro na validação, permitir acesso (fail-open)"
+   },
+   {
+    "file": "src/hooks/useKitAutoSave.ts",
+    "text": "Sair da tela não pode descartar a gravação agendada."
    },
    {
     "file": "src/hooks/useKitStockForecast.ts",
@@ -93350,6 +93371,11 @@
     "file": "src/hooks/useKitAutoSave.ts",
     "name": "AUTO_SAVE_DELAY_MS",
     "value": "5000"
+   },
+   {
+    "file": "src/hooks/useKitAutoSave.ts",
+    "name": "FALHA_GENERICA",
+    "value": "'Não foi possível salvar o kit automaticamente.'"
    },
    {
     "file": "src/hooks/useKitStockForecast.ts",
@@ -126417,7 +126443,59 @@
    },
    {
     "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "sair da tela durante o debounce grava o que estava pendente"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "sair com tudo já gravado não dispara gravação nenhuma"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "sair depois do autosave concluido nao regrava o kit"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
     "name": "kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "edicao feita DEPOIS do clique em Salvar nao se perde"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "autosave ja enfileirado nao grava por cima do salvamento manual"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "salvar manualmente e falhar nao apaga a edicao pendente do autosave"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "nao sobrescreve em silencio o kit que outra aba alterou"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "linha ausente continua sendo falta de permissao, nao conflito"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "grava com a trava na versao que conhece e adota a versao devolvida"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "a trava usa a versao do conteudo que esta na tela, nao a do banco na hora de gravar"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "salvar manualmente sincroniza a versao e o autosave seguinte nao vira conflito"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "flushPending espera o INSERT em voo e devolve o id criado"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "flushPending cancela a gravacao agendada que o salvamento manual vai cobrir"
    },
    {
     "file": "tests/hooks/useKitBuilder-extended.test.ts",
@@ -133962,6 +134040,22 @@
    {
     "file": "tests/pages/filters-page-helpers.test.ts",
     "name": "normaliza gênero sem depender de caixa"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "guarda de saída do montador de kit"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "segura a saída quando o autosave falhou"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "nao atrapalha quando tudo esta salvo"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "para de segurar assim que o estado deixa de ter pendencia"
    },
    {
     "file": "tests/pages/trends-demo-mode.test.ts",
@@ -191766,7 +191860,7 @@
   },
   "src/components/kit-builder/KitBuilderHeader.tsx": {
    "path": "src/components/kit-builder/KitBuilderHeader.tsx",
-   "lines": 141,
+   "lines": 147,
    "exports": [
     "function KitBuilderHeader"
    ],
@@ -203727,14 +203821,19 @@
   },
   "src/hooks/useKitAutoSave.ts": {
    "path": "src/hooks/useKitAutoSave.ts",
-   "lines": 258,
+   "lines": 464,
    "exports": [
+    "class KitConflitoDeEdicao",
     "function useKitAutoSave"
    ],
    "tables": [
     {
      "table": "custom_kits",
-     "op": "select,update"
+     "op": "select"
+    },
+    {
+     "table": "custom_kits",
+     "op": "update"
     },
     {
      "table": "custom_kits",
@@ -203744,17 +203843,27 @@
    "table_cols": {
     "custom_kits": [
      "id",
+     "updated_at",
      "user_id"
     ]
    },
    "errors": [
+    "Este kit foi alterado em outro lugar.",
+    "O kit não foi encontrado ou você não tem permissão para atualizá-lo.",
     "O salvamento automático falhou. Seus dados continuam nesta página."
    ],
    "params": [
     {
      "name": "AUTO_SAVE_DELAY_MS",
      "value": "5000"
+    },
+    {
+     "name": "FALHA_GENERICA",
+     "value": "'Não foi possível salvar o kit automaticamente.'"
     }
+   ],
+   "rule_comments": [
+    "Sair da tela não pode descartar a gravação agendada."
    ],
    "doc": "Kit Auto-Save Hook Saves kit state automatically with debounce (5 seconds). Only triggers after the user has made meaningful changes.",
    "hooks": [
@@ -216354,7 +216463,7 @@
   },
   "src/pages/KitBuilderPage.tsx": {
    "path": "src/pages/KitBuilderPage.tsx",
-   "lines": 564,
+   "lines": 621,
    "exports": [
     "function KitBuilderPage"
    ],
@@ -244033,8 +244142,14 @@
   },
   "tests/hooks/useKitAutoSave.test.tsx": {
    "path": "tests/hooks/useKitAutoSave.test.tsx",
-   "lines": 282,
+   "lines": 610,
    "is_test": true,
+   "rule_comments": [
+    "sair sem editar de novo nao pode gerar um segundo UPDATE",
+    "B nao pode se perder: o reagendamento tem de grava-lo.",
+    "a primeira gravacao da fila responde agora; a segunda nao pode gravar",
+    "linha existe numa versao diferente: e conflito, nao falta de permissao."
+   ],
    "tests": [
     "useKitAutoSave",
     "nao rebaixa para rascunho o kit que o montador considera valido",
@@ -244046,7 +244161,20 @@
     "abrir um kit salvo nao regrava no banco o que acabou de ler",
     "conteudo lido e fim da hidratacao no mesmo render tambem nao regravam",
     "depois de carregado, a primeira edicao de verdade grava",
-    "kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao"
+    "sair da tela durante o debounce grava o que estava pendente",
+    "sair com tudo já gravado não dispara gravação nenhuma",
+    "sair depois do autosave concluido nao regrava o kit",
+    "kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao",
+    "edicao feita DEPOIS do clique em Salvar nao se perde",
+    "autosave ja enfileirado nao grava por cima do salvamento manual",
+    "salvar manualmente e falhar nao apaga a edicao pendente do autosave",
+    "nao sobrescreve em silencio o kit que outra aba alterou",
+    "linha ausente continua sendo falta de permissao, nao conflito",
+    "grava com a trava na versao que conhece e adota a versao devolvida",
+    "a trava usa a versao do conteudo que esta na tela, nao a do banco na hora de gravar",
+    "salvar manualmente sincroniza a versao e o autosave seguinte nao vira conflito",
+    "flushPending espera o INSERT em voo e devolve o id criado",
+    "flushPending cancela a gravacao agendada que o salvamento manual vai cobrir"
    ]
   },
   "tests/hooks/useKitBuilder-extended.test.ts": {
@@ -247780,6 +247908,18 @@
     "normaliza gênero sem depender de caixa"
    ]
   },
+  "tests/pages/kit-builder-guarda-saida.test.tsx": {
+   "path": "tests/pages/kit-builder-guarda-saida.test.tsx",
+   "lines": 43,
+   "is_test": true,
+   "doc": "Sair do montador com trabalho que não chegou ao banco. O autosave cobre o caso normal, mas não a janela do debounce nem — o que importa de verdade — o autosave que falhou ou bateu em conflito: nesse estado o kit existe só na tela. Antes desta guarda, só `QuoteBuilderPage` avisava; fechar a aba em `/ …",
+   "tests": [
+    "guarda de saída do montador de kit",
+    "segura a saída quando o autosave falhou",
+    "nao atrapalha quando tudo esta salvo",
+    "para de segurar assim que o estado deixa de ter pendencia"
+   ]
+  },
   "tests/pages/trends-demo-mode.test.ts": {
    "path": "tests/pages/trends-demo-mode.test.ts",
    "lines": 27,
@@ -250565,10 +250705,23 @@
   }
  },
  "git": {
-  "sha": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
+  "sha": "25214df4d57f7dda57506a6160d8d89a5a55cf74",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "25214df",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)",
+    "files": [
+     "src/components/kit-builder/KitBuilderHeader.tsx",
+     "src/hooks/useKitAutoSave.ts",
+     "src/pages/KitBuilderPage.tsx",
+     "tests/hooks/useKitAutoSave.test.tsx",
+     "tests/pages/kit-builder-guarda-saida.test.tsx"
+    ]
+   },
    {
     "sha": "d53f9e8",
     "date": "2026-11-18",
@@ -251136,25 +251289,24 @@
      "tests/pages/trends-queries.test.ts",
      "tests/pages/use-refetch-on-revision.test.ts"
     ]
-   },
-   {
-    "sha": "2a8d38b",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "chore: gate de npm audit libera advisory especifico em vez de pacote (#303)",
-    "files": [
-     ".github/workflows/security.yml",
-     "scripts/automation.config.json",
-     "scripts/check-npm-audit.mjs",
-     "scripts/lib/npm-audit-policy.mjs",
-     "tests/scripts/npm-audit-policy.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     4
+   ],
+   [
+    "src/hooks/useKitAutoSave.ts",
+    3
+   ],
+   [
+    "tests/hooks/useKitAutoSave.test.tsx",
+    3
+   ],
+   [
+    "src/pages/KitBuilderPage.tsx",
+    2
    ],
    [
     "src/components/bi/ClientLookalikes.tsx",
@@ -251218,18 +251370,6 @@
    ],
    [
     "supabase/functions/_shared/edge-authz-manifest.ts",
-    2
-   ],
-   [
-    "src/components/sicoob/GestorComprasMetrics.tsx",
-    2
-   ],
-   [
-    "src/services/sicoob/managerStatsService.ts",
-    2
-   ],
-   [
-    "tests/pages/GestorCompras.metrics.test.tsx",
     2
    ]
   ]

@@ -10157,6 +10157,7 @@
    "src/hooks/useKitUndoRedo.ts",
    "src/hooks/useKitWizardShortcuts.ts",
    "src/hooks/useTemplateSnapshot.ts",
+   "src/hooks/useUnsavedChangesGuard.ts",
    "src/integrations/supabase/client.ts",
    "src/lib/external-db/index.ts",
    "src/lib/kit-builder/index.ts",

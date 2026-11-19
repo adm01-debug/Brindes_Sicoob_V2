@@ -6857,6 +6857,7 @@
     "useState",
     "useTemplateSnapshot",
     "useTrackNavigation",
+    "useUnsavedChangesGuard",
     "useUserProfile",
     "useUserRoles"
    ],
@@ -6891,6 +6892,7 @@
     "useSimilarKits",
     "useSmartNavigation",
     "useTemplateSnapshot",
+    "useUnsavedChangesGuard",
     "useUserProfile",
     "useUserRoles"
    ],
@@ -6936,7 +6938,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 160
+   "arquivos_puxados": 161
   },
   {
    "protegida": true,

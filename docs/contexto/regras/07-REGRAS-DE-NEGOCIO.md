@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d53f9e8bcb` · branch `main` · 2026-11-19 01:50 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `25214df4d5` · branch `main` · 2026-11-19 02:13 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4808,6 +4808,7 @@ _nenhum item encontrado_
 | `NOT_AUTHENTICATED_ERROR` | `"not-authenticated"` | `src/hooks/useFavoriteLists.ts` |
 | `UNKNOWN_ERROR_MESSAGE` | `'Erro desconhecido'` | `src/hooks/useGeoBlocking.ts` |
 | `AUTO_SAVE_DELAY_MS` | `5000` | `src/hooks/useKitAutoSave.ts` |
+| `FALHA_GENERICA` | `'Não foi possível salvar o kit automaticamente.'` | `src/hooks/useKitAutoSave.ts` |
 | `BUFFER_DAYS` | `3` | `src/hooks/useKitStockForecast.ts` |
 | `MAX_HISTORY` | `30` | `src/hooks/useKitUndoRedo.ts` |
 | `MAX_ATTEMPTS` | `5` | `src/hooks/useLoginRateLimit.ts` |
@@ -4886,8 +4887,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
-| `AUTO_RESET_INTERVAL_MS` | `15` | `src/lib/notifications-metrics.ts` |
-| … +157 linhas — lista completa em `context.json` | | |
+| … +158 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5621,7 +5621,7 @@ _nenhum item encontrado_
 | Erro ao remover grupo | `src/components/admin/product-groups/useProductGroups.ts` |
 | Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
 | ${result.failed} produto(s) falharam | `src/components/admin/products/BulkImportDialog.tsx` |
-| … +981 linhas — lista completa em `context.json` | |
+| … +983 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5725,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6729 testes em 659 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6746 testes em 660 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5781,6 +5781,7 @@ _nenhum item encontrado_
 | `tests/hooks/useReplenishments.test.ts` | 26 | Replenishment utility functions · isReplenishment · returns true when updated_at is 1+ day after created_at · returns false when updated_at equals created_at (new product) … |
 | `tests/e2e/seller-carts.test.ts` | 25 | E2E Carts — Cart Total Calculation · calculates correctly · empty cart is 0 · single item … |
 | `tests/hooks/voice/retry.test.ts` | 25 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry on non-retryable error … |
+| `tests/hooks/useKitAutoSave.test.tsx` | 24 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/lib/query-config-extended.test.ts` | 24 | CACHE_TIMES constants · VERY_STABLE is 1 hour · STABLE is 30 min · TECNICAS is 15 min … |
 | `supabase/functions/external-db-bridge/callerSelectIsHeavy.test.ts` | 23 | extractBaseColumn: nome simples · extractBaseColumn: alias PostgREST  · extractBaseColumn: operadores JSON  · extractBaseColumn: alias + JSON op combinados … |
 | `tests/components/PriceFreshnessBadge.catalog-visibility.test.tsx` | 23 | PriceFreshnessBadge — visibilidade nos componentes do catálogo · ProductCard / EnhancedProductCard / ProductTableView (variant= · NÃO renderiza quando fresh (preço atualizado dentro de 50% do threshold) · NÃO renderiza quando o status é unknown (data ausente) … |
@@ -5894,7 +5895,6 @@ _nenhum item encontrado_
 | `tests/hooks/useCrmCompanies.test.ts` | 11 | useCrmCompanies · usa o contrato fechado quando o filtro é apenas is_customer · mantém o select genérico quando há filtro que o contrato não aceita · mantém o select genérico quando o filtro booleano é explicitamente false … |
 | `tests/hooks/useFocusContext.test.ts` | 11 | useFocusContext · estado inicial vazio quando localStorage está limpo · setZone atualiza lastZone e savedAt e persiste em localStorage · setIncident atualiza lastIncidentId sem afetar lastZone … |
 | `tests/hooks/useGravacaoPriceV2.test.ts` | 11 | mapPriceResponseToFlat (nested format) · maps nested response correctly · extracts tabela_codigo_curto from hyphenated code · handles redirect info … |
-| `tests/hooks/useKitAutoSave.test.tsx` | 11 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/hooks/useUndoRedo.test.ts` | 11 | useUndoableReducer · starts with initial state · dispatches tracked actions and enables undo · undo restores previous state … |
 | `tests/lib/bridge.test.ts` | 11 | invokeBridge · retorna o data da resposta em sucesso · permite operação batch sem table · invokeExternalDb … |
 | `tests/lib/image-converter-extended.test.ts` | 11 | needsConversion — extended · false for PNG · false for JPEG · false for JPG type … |
@@ -6029,7 +6029,7 @@ _nenhum item encontrado_
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
 | `tests/utils/viacep.test.ts` | 7 | fetchAddressByCep · should return null for invalid CEP length · should strip non-digits · should return address data on success … |
 | `e2e/quote-create.spec.ts` | 6 | Quote Creation Flow · should redirect to login when accessing /orcamentos unauthenticated · should redirect to login when accessing /orcamentos/novo unauthenticated · should redirect to login when accessing quote view unauthenticated … |
-| … +359 linhas — lista completa em `context.json` | | |
+| … +360 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6397,6 +6397,7 @@ _nenhum item encontrado_
 | Este arquivo mantém apenas os hooks React. | `src/hooks/useGravacaoV2.ts` |
 | Validação completa acontece após login via edge function | `src/hooks/useIPValidation.ts` |
 | Em caso de erro na validação, permitir acesso (fail-open) | `src/hooks/useIPValidation.ts` |
+| Sair da tela não pode descartar a gravação agendada. | `src/hooks/useKitAutoSave.ts` |
 | * Exportada para que a regra de disponibilidade seja testada sem rede. */ | `src/hooks/useKitStockForecast.ts` |
 | * Hook para validação de estoque dos itens do Kit Builder | `src/hooks/useKitStockValidation.ts` |
 | Edge devolve já é title \|\| nome_fantasia \|\| razao_social, a mesma regra | `src/hooks/useMagicUpState.ts` |
@@ -6513,5 +6514,4 @@ _nenhum item encontrado_
 | * Decide se um link/segmento de breadcrumb deve ser **navegável** para o | `src/lib/navigation/restricted-routes.ts` |
 | Se o cliente precisa de mais cores que o máximo da tabela, aplica proporcional | `src/lib/personalization/calculators.ts` |
 | Se a área excede o máximo, aplica proporcional | `src/lib/personalization/calculators.ts` |
-| * Regras de negócio puras, sem dependências de React ou side effects. | `src/lib/personalization/index.ts` |
-| … +251 linhas — lista completa em `context.json` | |
+| … +252 linhas — lista completa em `context.json` | |

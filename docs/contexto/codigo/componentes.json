@@ -7992,7 +7992,7 @@
     "KitBuilderHeader"
    ],
    "export_default": null,
-   "linhas": 141,
+   "linhas": 147,
    "dominio": "components/kit-builder",
    "hooks_locais": [
     "useRBAC",
@@ -17327,7 +17327,7 @@
     "KitBuilderPage"
    ],
    "export_default": "KitBuilderPage",
-   "linhas": 564,
+   "linhas": 621,
    "dominio": "pages",
    "hooks_locais": [
     "useCustomKitPersistence",
@@ -17338,7 +17338,8 @@
     "useKitBuilderQuote",
     "useKitUndoRedo",
     "useKitWizardShortcuts",
-    "useTemplateSnapshot"
+    "useTemplateSnapshot",
+    "useUnsavedChangesGuard"
    ],
    "tabelas": [
     "custom_kits",
