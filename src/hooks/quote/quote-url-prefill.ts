@@ -5,6 +5,7 @@ export interface QuotePrefillProduct {
   name: string;
   sku?: string | null;
   price: number;
+  costPrice?: number | null;
   minQuantity?: number | null;
   images?: string[] | null;
   image_url?: string | null;
@@ -138,6 +139,7 @@ function toQuoteItem(
     product_image_url: getCatalogImage(product),
     quantity: Math.max(minimumQuantity, hint.quantity ?? minimumQuantity),
     unit_price: getCanonicalPrice(product),
+    unit_cost: product.costPrice ?? undefined,
     color_name: hint.colorName,
     color_hex: hint.colorHex,
     size_code: hint.sizeCode,
