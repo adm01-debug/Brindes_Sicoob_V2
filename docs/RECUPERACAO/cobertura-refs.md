@@ -144,8 +144,10 @@ existem na `main`**. Cruzando os 138 com o ledger inteiro, 119 já estavam citad
 
 ### 13 arquivos de teste — executados contra a `main`, 18/11/2026
 
-**Andamento (19/11/2026):** os 13 foram recuperados **com a regra que eles cobram**,
-não só copiados. As seis fatias abaixo são o registro de como cada um entrou:
+**Andamento (19/11/2026):** 7 dos 13 voltaram pelas seis fatias abaixo, **com a regra
+que eles cobram**, não só copiados. Os outros 6 foram conferidos de novo em 19/11 e
+**não estavam na `main` nem em PR alguma** — o registro anterior, que os dava por
+recuperados, estava errado. Destino deles no fim desta seção.
 
 | fatia | PR | o que entrou |
 |---|---|---|
@@ -164,8 +166,25 @@ trazidas**, porque a `main` está mais correta: a troca de `fetchIndustryPeerIds
 e a remoção do gráfico de forecast do mapa de calor. É por isso que a recuperação
 é feita por fatia, com teste, e não por cópia da árvore.
 
-**Os 13 estão recuperados.** O que sobra da ref são os 6 relatórios de execução
-abaixo — docs, sem dependência de código.
+### Os 6 restantes (conferidos em 19/11/2026)
+
+Nenhum deles estava na `main` nem em PR aberta; só em `claude/fix-prod-cors-audit-261118-1034`,
+a ponta da árvore de produção anterior à re-raiz.
+
+| arquivo | situação | destino |
+|---|---|---|
+| `tests/security/portal-access-policy.test.ts` | passa contra a `main` | [#363](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/363) |
+| `tests/lib/sicoob/sla-cycle.test.ts` | passa contra a `main` | #363 |
+| `tests/lib/sicoob/orderBudgetProjection.test.ts` | passa contra a `main` | #363 |
+| `tests/hooks/usePaBudget.test.tsx` | passa contra a `main` | #363 |
+| `tests/edge-functions/trends-insights-pagination.test.ts` | passa contra a `main` | #363 |
+| `tests/stores/useNavigationGuardStore.test.ts` | depende de store que a `main` não tem | [#357](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/357), mesmo assunto |
+
+Os cinco primeiros passavam contra a `main` como estavam: a regra já existia no código e
+estava **sem catraca**. São trava de regressão, não mapa de lacuna — e é por isso que a
+conferência foi refeita arquivo a arquivo em vez de confiar no registro.
+
+O que sobra da ref são os 6 relatórios de execução abaixo — docs, sem dependência de código.
 
 **Correção de rota (19/11/2026):** as PRs #346–#351 foram abertas em pilha, cada uma
 baseada na branch da anterior. Ao mergear, cada uma entrou na branch-base em vez da
