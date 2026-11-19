@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "fed706761bb2d779acd5b63d91cfb5f898781668",
+  "commit": "f82acc301479288d7a1c3d6cea21c921b4a6b6d6",
   "branch": "main",
-  "data_commit": "2026-11-19T03:45:29Z",
+  "data_commit": "2026-11-19T03:53:06Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "f82acc3",
+    "data": "2026-11-19",
+    "assunto": "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)"
+   },
    {
     "sha": "fed7067",
     "data": "2026-11-19",
@@ -126,11 +131,6 @@
     "sha": "f2db0f8",
     "data": "2026-11-18",
     "assunto": "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)"
-   },
-   {
-    "sha": "d8d7dcd",
-    "data": "2026-11-18",
-    "assunto": "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)"
    }
   ],
   "arquivos_mudados_7d": 461,
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 69
+    "mudancas": 68
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 68
+    "mudancas": 67
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 153
+    "commits": 154
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4398,
   "arquivos_codigo": 3088,
-  "linhas_codigo": 487230,
+  "linhas_codigo": 487473,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47211
+   "linhas": 47330
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50074
+   "linhas": 50109
   },
   "src/routes": {
    "arquivos": 9,
@@ -916,7 +916,7 @@
   },
   "tests/hooks": {
    "arquivos": 132,
-   "linhas": 14368
+   "linhas": 14457
   },
   "tests/integration": {
    "arquivos": 4,

@@ -4478,7 +4478,7 @@
    "hooks_exportados": [
     "useClientsPortfolioKpis"
    ],
-   "linhas": 123,
+   "linhas": 242,
    "dominio": "hooks",
    "tabelas": [
     "orders"

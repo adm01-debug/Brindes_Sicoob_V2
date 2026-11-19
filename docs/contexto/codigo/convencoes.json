@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)",
    "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)",
    "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)",
    "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
-   "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)",
-   "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)"
+   "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

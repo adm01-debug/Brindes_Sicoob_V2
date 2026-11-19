@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `fed706761b` · branch `main` · 2026-11-19 03:46 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f82acc3014` · branch `main` · 2026-11-19 03:53 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -3842,6 +3842,10 @@ _nenhum item encontrado_
   ```
   const { filters, updateFilter } = state; return ( <FilterSection title="Faixa de Preço Unitário" icon={TrendingDown}> <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8"> <div className="flex gap-2"> <PriceInput label="Mínimo" value={filters.priceRange[0]} onChange={(value) => updateFilter('priceRange', [value || 0, filters.priceRange[1]])} /> <PriceInput label="Máximo" value={filters.priceRange[1]} onChang …
   ```
+- **valoresDosKpis(kpisQuery: KpisQuery)** — `src/pages/ClientsPage.tsx`
+  ```
+  const dados = kpisQuery.data; return { compraramNoMes: dados ? String(dados.clientesComPedidoNoMes) : "—", primeiraCompra: dados ? String(dados.primeiraCompraNoMes) : "—", ticket: formatarTicket(dados?.ticketMedio ?? null), retencao: formatarRetencao(dados?.retencaoPercentual ?? null), janelaDias: dados?.janelaDias ?? 90, };
+  ```
 - **formatCurrency(value: number)** — `src/pages/ComparePage.tsx`
   ```
   
@@ -4486,6 +4490,7 @@ _nenhum item encontrado_
 | `const reserved = Math.floor(baseStock * 0.1);` | `src/components/simulator/StockAlert.tsx` |
 | `transition={{ delay: idx * 0.04 }}` | `src/components/simulator/wizard/StepLocation.tsx` |
 | `* "Ticket Médio" = R$ 4,2k e "Taxa Retenção" = 94% — sob o comentário` | `src/hooks/useClientsPortfolioKpis.ts` |
+| `* indicador mostra "—" em vez de 0% ou 100%.` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `const pull = Math.min(distance * 0.4, options.threshold + 20);` | `src/hooks/usePullToRefresh.ts` |
 | `score += popularityScore * 0.3; // 30% do peso para popularidade` | `src/hooks/useTechniqueRecommendations.ts` |
 | `const aScore = a.count * 0.7 + aRecency * 10 * 0.3;` | `src/hooks/useVoiceCommandHistory.ts` |
@@ -4524,6 +4529,7 @@ _nenhum item encontrado_
 | `* `sicoob_order_history`). Contar pedido ainda pendente daria 100% num mês` | `src/lib/orders/purchasing-sla.ts` |
 | `* mostrar 100% num mês em que ninguém aprovou nada — bastava a fila ser nova.` | `src/lib/orders/purchasing-sla.ts` |
 | `cost *= 1 + (positions - 1) * 0.25; // +25% por posição adicional` | `src/lib/personalization/validators.ts` |
+| `* anterior não há taxa — "—" em vez de 0% ou 100%. */` | `src/pages/ClientsPage.tsx` |
 | `radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04), transparent),` | `src/pages/KitBuilderPage.tsx` |
 | `radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.08), transparent),` | `src/pages/KitBuilderPage.tsx` |
 | `Target: 60%` | `src/pages/TestDashboard.tsx` |
@@ -5001,6 +5007,7 @@ _nenhum item encontrado_
 | `staleTime: 30 * 60 * 1000, // 30 min (dados estáveis)` | `src/hooks/useCategoryIcons.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useClientOrdersHistory.ts` |
 | `staleTime: 10 * 60 * 1000,` | `src/hooks/useClientTopProducts.ts` |
+| `return new Date(agora.getTime() - 2 * TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `return new Date(agora.getTime() - TICKET_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useClientsPortfolioKpis.ts` |
 | `gcTime: 15 * 60 * 1000,` | `src/hooks/useColorEnrichment.ts` |
@@ -5168,8 +5175,7 @@ _nenhum item encontrado_
 | `const CATALOG_QUERY_VALIDITY_MS = 5 * 60 * 1000;` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +84 linhas — lista completa em `context.json` | |
+| … +85 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5701,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6806 testes em 672 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6810 testes em 672 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5869,6 +5875,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.test.tsx` | 11 | PriceFreshnessBadge · renders inline variant with full label for fresh status · does NOT render compact variant when status is fresh · renders compact variant when status is aging … |
 | `tests/edge-functions/kit-quote-rota-atestado.test.ts` | 11 | rota do atesto de preço dentro de sicoob-kit-quote · o front chama a função que realmente hospeda o atesto · o handler do atesto é exportado, para poder ser servido dos dois lugares · o módulo importado pela hospedeira NÃO sobe servidor … |
 | `tests/hooks/intelligence-badges.test.ts` | 11 | buildBadgeResult · does not invent market badges or metrics when intelligence is absent · preserves catalog-controlled badges while omitting unavailable market intelligence · derives market badges and metrics from real intelligence and velocity … |
+| `tests/hooks/useClientsPortfolioKpis.test.ts` | 11 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · separa cliente de primeira compra de quem já comprava antes · pagina o historico anterior: cliente antigo so na segunda pagina nao vira primeira compra … |
 | `tests/hooks/useCrmCompanies.test.ts` | 11 | useCrmCompanies · usa o contrato fechado quando o filtro é apenas is_customer · mantém o select genérico quando há filtro que o contrato não aceita · mantém o select genérico quando o filtro booleano é explicitamente false … |
 | `tests/hooks/useFocusContext.test.ts` | 11 | useFocusContext · estado inicial vazio quando localStorage está limpo · setZone atualiza lastZone e savedAt e persiste em localStorage · setIncident atualiza lastIncidentId sem afetar lastZone … |
 | `tests/hooks/useGravacaoPriceV2.test.ts` | 11 | mapPriceResponseToFlat (nested format) · maps nested response correctly · extracts tabela_codigo_curto from hyphenated code · handles redirect info … |
@@ -5984,7 +5991,6 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
 | `tests/hooks/useAdvancedFilters.test.ts` | 7 | useAdvancedFilters - Reset Logic · defaultAdvancedFilters has all string arrays empty · defaultAdvancedFilters has all booleans as false · defaultAdvancedFilters has correct range defaults … |
-| `tests/hooks/useClientsPortfolioKpis.test.ts` | 7 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · exclui pedido cancelado nas duas consultas · pagina até esgotar a janela, em vez de usar só a primeira resposta … |
 | `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
 | `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
@@ -6350,7 +6356,9 @@ _nenhum item encontrado_
 | ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob | `src/hooks/useCatalogFiltering.ts` |
 | * Prefetch do catálogo SOMENTE após autenticação (#6). | `src/hooks/useCatalogPrefetch.ts` |
 | O label é apenas apresentação e pode ser "Grande" enquanto value é "G". | `src/hooks/useCatalogRelationFilters.ts` |
-| - "taxa de retenção" exige uma definição de negócio que não existe no | `src/hooks/useClientsPortfolioKpis.ts` |
+| * As duas definições de negócio que faltavam, agora escritas e verificáveis: | `src/hooks/useClientsPortfolioKpis.ts` |
+| * Limite superior exclusivo, para ler uma janela fechada. */ | `src/hooks/useClientsPortfolioKpis.ts` |
+| pedido anterior ao mês apenas para os clientes que apareceram agora. Em lotes, | `src/hooks/useClientsPortfolioKpis.ts` |
 | * Hook para buscar apenas os grupos de cor (para filtros rápidos) | `src/hooks/useColorSystem.ts` |
 | * Hook para buscar apenas as nuances/acabamentos | `src/hooks/useColorSystem.ts` |
 | @param limit - Limite de resultados (padrão: 100) | `src/hooks/useCommemorativeDates.ts` |
@@ -6487,6 +6495,4 @@ _nenhum item encontrado_
 | Peso máximo suportado em gramas (para validação) | `src/lib/kit-builder/types.ts` |
 | Utilitários para cálculo e validação de volume | `src/lib/kit-builder/volume-calculator.ts` |
 | Limite de alerta de volume | `src/lib/kit-builder/volume-calculator.ts` |
-| * Verifica se a caixa está no limite de alerta | `src/lib/kit-builder/volume-calculator.ts` |
-| * A tela saiu: volta a valer a regra antiga para essa rota. */ | `src/lib/navigation/dirty-registry.ts` |
-| … +263 linhas — lista completa em `context.json` | |
+| … +265 linhas — lista completa em `context.json` | |

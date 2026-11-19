@@ -4188,11 +4188,11 @@
   {
    "arquivo": "tests/hooks/useClientsPortfolioKpis.test.ts",
    "tipo": "unit",
-   "linhas": 150,
+   "linhas": 239,
    "testa": [
     "src/hooks/useClientsPortfolioKpis.ts"
    ],
-   "casos": 6
+   "casos": 10
   },
   {
    "arquivo": "tests/hooks/useCollections.react.test.tsx",

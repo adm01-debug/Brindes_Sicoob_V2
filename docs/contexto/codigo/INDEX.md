@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fed706761bb2d779acd5b63d91cfb5f898781668` (2026-11-19T03:45:29Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `f82acc301479288d7a1c3d6cea21c921b4a6b6d6` (2026-11-19T03:53:06Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4398 |
 | arquivos_codigo | 3088 |
-| linhas_codigo | 487230 |
+| linhas_codigo | 487473 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -470,14 +470,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29054 nós · 53677 arestas · 2062 comunidades · grafo do commit `fed70676`
-- comunidades maiores: ref_components (472), ref_integrations (378), react (318), ref_hooks (235), getCorsHeaders (203), ref_node_fs (198), sonner (172), ref_contexts (167), ref_lib (155), external-db-bridge/index.ts (153), react-router-dom (150), ai-usage.ts (148)
+- 29065 nós · 53698 arestas · 2013 comunidades · grafo do commit `f82acc30`
+- comunidades maiores: ref_lib (619), ref_components (561), ref_integrations (409), react (293), sonner (264), ref_utils (238), react-router-dom (234), handleCorsPreflightIfNeeded (161), ref_stores (155), structured-logger.ts (142), external-db-bridge/index.ts (132), getCorsHeaders (127)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (69)
-- docs/correcoes-validacao-2026-09-14.md (68)
+- docs/plano-melhorias-50-etapas.md (68)
+- docs/correcoes-validacao-2026-09-14.md (67)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -693,6 +693,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `f82acc3` feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)
 - 2026-11-19 `fed7067` chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)
 - 2026-11-19 `c17e905` fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)
 - 2026-11-19 `9830191` fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)
@@ -707,7 +708,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `d342a59` docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)
 - 2026-11-19 `3df58f1` fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)
 - 2026-11-18 `f30a262` fix(db): aplicador de migrations tolera BOM na leitura (#345)
-- 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
