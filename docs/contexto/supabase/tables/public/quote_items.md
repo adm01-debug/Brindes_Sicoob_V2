@@ -125,6 +125,7 @@
 |---|---|---|---|---|---|
 | aaa_guard_quote_item_content_write | BEFORE | INSERT OR DELETE OR UPDATE | ROW | enabled | public.guard_quote_item_content_write |
 | update_quote_items_updated_at | BEFORE | UPDATE | ROW | enabled | public.update_updated_at_column |
+| zzz_guard_quote_item_price_attestation | BEFORE | INSERT OR DELETE OR UPDATE | ROW | enabled | public.guard_quote_price_attestation |
 
 
 ## Grants

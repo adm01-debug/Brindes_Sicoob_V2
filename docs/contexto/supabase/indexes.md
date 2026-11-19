@@ -4,6 +4,8 @@ Uso e tamanho em `stats.md`.
 
 | tabela | índice | método | colunas | único | válido | predicado |
 |---|---|---|---|---|---|---|
+| private.quote_price_attestations | quote_price_attestations_expiration_idx | btree | expires_at | não | sim |  |
+| private.quote_price_attestations | quote_price_attestations_pkey | btree | id | sim | sim |  |
 | public._backup_custom_kits_pinned_20261118 | _backup_custom_kits_pinned_20261118_pkey | btree | id | sim | sim |  |
 | public.access_blocked_log | access_blocked_log_pkey | btree | id | sim | sim |  |
 | public.access_blocked_log | idx_access_blocked_log_created_at | btree | created_at | não | sim |  |

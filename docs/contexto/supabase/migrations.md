@@ -151,6 +151,7 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261106200300 | [restrict_proposals_delete_scope](migrations/20261106200300_restrict_proposals_delete_scope.sql) | 1 |
 | 20261107190600 | [harden_rpc_acl_and_fk_indexes](migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql) | 1 |
 | 20261113170000 | [use_semantic_admin_helper_in_favorite_policies](migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql) | 1 |
+| 20261117092000 | [quote_price_attestation_gate](migrations/20261117092000_quote_price_attestation_gate.sql) | 1 |
 | 20261117183000 | [ai_quota_count_billed_interrupts](migrations/20261117183000_ai_quota_count_billed_interrupts.sql) | 1 |
 | 20261118130000 | [harden_storage_and_public_favorites_acl](migrations/20261118130000_harden_storage_and_public_favorites_acl.sql) | 1 |
 | 20261118130100 | [enable_scoped_business_realtime](migrations/20261118130100_enable_scoped_business_realtime.sql) | 1 |

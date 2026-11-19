@@ -4,4 +4,5 @@ Schemas internos do Supabase ficam fora da introspecção geral (`_analytics, _r
 
 | schema | owner | USAGE para roles da API | comentário |
 |---|---|---|---|
+| private | postgres |  |  |
 | public | pg_database_owner | anon, authenticated, service_role | standard public schema |

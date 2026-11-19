@@ -99,6 +99,7 @@
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
 | aaa_guard_quote_personalization_content_write | BEFORE | INSERT OR DELETE OR UPDATE | ROW | enabled | public.guard_quote_personalization_content_write |
+| zzz_guard_quote_personalization_price_attestation | BEFORE | INSERT OR DELETE OR UPDATE | ROW | enabled | public.guard_quote_price_attestation |
 
 
 ## Grants

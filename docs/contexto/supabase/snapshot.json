@@ -7,6 +7,123 @@
     "columns": [
       {
         "comment": null,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "id",
+        "nullable": false,
+        "position": 1,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "actor_id",
+        "nullable": false,
+        "position": 2,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "quote_id",
+        "nullable": true,
+        "position": 3,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "expected_row_version",
+        "nullable": true,
+        "position": 4,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "integer"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "payload_hash",
+        "nullable": false,
+        "position": 5,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "expires_at",
+        "nullable": false,
+        "position": 6,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "consumed_at",
+        "nullable": true,
+        "position": 7,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "consumed_transaction_id",
+        "nullable": true,
+        "position": 8,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "xid8"
+      },
+      {
+        "comment": null,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "created_at",
+        "nullable": false,
+        "position": 9,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
         "default": null,
         "generated": null,
         "identity": null,
@@ -36097,6 +36214,76 @@
     "constraints": [
       {
         "columns": [
+          "consumed_at",
+          "consumed_transaction_id"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (consumed_at IS NULL AND consumed_transaction_id IS NULL OR consumed_at IS NOT NULL AND consumed_transaction_id IS NOT NULL)",
+        "name": "quote_price_attestations_consumption_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "payload_hash"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (length(payload_hash) = 64)",
+        "name": "quote_price_attestations_payload_hash_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "deferrable": false,
+        "definition": "PRIMARY KEY (id)",
+        "name": "quote_price_attestations_pkey",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "PRIMARY KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "quote_id",
+          "expected_row_version"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (quote_id IS NULL AND expected_row_version IS NULL OR quote_id IS NOT NULL AND expected_row_version > 0)",
+        "name": "quote_price_attestations_version_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "private",
+        "table": "quote_price_attestations",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
           "id"
         ],
         "deferrable": false,
@@ -49243,6 +49430,44 @@
     "foreign_servers": [],
     "functions": [
       {
+        "args": "p_quote jsonb, p_items jsonb, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.consume_quote_price_attestation",
+            "public.register_quote_price_attestation"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, extensions"
+        ],
+        "definition": null,
+        "definition_sha": "b313b6ad979cdf16",
+        "execute_api_roles": null,
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "quote_price_payload_hash",
+        "owner": "postgres",
+        "returns": "text",
+        "schema": "private",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "immutable"
+      },
+      {
         "args": "",
         "callers": {
           "code": [
@@ -52374,6 +52599,44 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_attestation_id uuid, p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.save_quote_atomic_attested",
+            "public.save_quote_atomic_idempotent_attested"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public, private"
+        ],
+        "definition": null,
+        "definition_sha": "fe0e3b2fdf03a656",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "consume_quote_price_attestation",
+        "owner": "postgres",
+        "returns": "void",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "_token text, _expected_action step_up_action, _expected_target text",
         "callers": {
           "code": [
@@ -54966,6 +55229,49 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_idempotency_key uuid, p_quote jsonb, p_items jsonb, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-salvamento-orcamento-atomico.py",
+              "hits": 3
+            },
+            {
+              "file": "src/services/QuoteService.ts",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": "Recupera uma criação já persistida após perda de resposta, validando ator, chave e hash sem escrita.",
+        "config": [
+          "search_path=pg_catalog, public, private"
+        ],
+        "definition": null,
+        "definition_sha": "b30f79bc9e32619e",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "get_quote_save_idempotent_replay",
+        "owner": "postgres",
+        "returns": "jsonb",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "_token text",
         "callers": {
           "code": [
@@ -56179,6 +56485,45 @@
         "language": "plpgsql",
         "leakproof": false,
         "name": "guard_quote_personalization_content_write",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 3
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.quote_item_personalizations.zzz_guard_quote_personalization_price_attestation",
+            "public.quote_items.zzz_guard_quote_item_price_attestation",
+            "public.quotes.zzz_guard_quote_price_attestation"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public, private"
+        ],
+        "definition": null,
+        "definition_sha": "e1624151d2bee24b",
+        "execute_api_roles": null,
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "guard_quote_price_attestation",
         "owner": "postgres",
         "returns": "trigger",
         "schema": "public",
@@ -60221,6 +60566,49 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-salvamento-orcamento-atomico.py",
+              "hits": 2
+            },
+            {
+              "file": "supabase/functions/quote-price-attestation/index.ts",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public, private"
+        ],
+        "definition": null,
+        "definition_sha": "843eed3c3994403c",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "register_quote_price_attestation",
+        "owner": "postgres",
+        "returns": "uuid",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "p_document_id uuid, p_actor_id uuid, p_order_id uuid, p_purpose text, p_quarantine_path text, p_final_path text, p_sha256 text, p_detected_mime text, p_byte_size bigint, p_scanner_name text, p_scanner_version text, p_scan_evidence jsonb",
         "callers": {
           "code": [
@@ -61220,6 +61608,8 @@
           "code_total_files": 8,
           "cron": [],
           "db": [
+            "public.consume_quote_price_attestation",
+            "public.save_quote_atomic_attested",
             "public.save_quote_atomic_idempotent"
           ],
           "triggers": [],
@@ -61246,6 +61636,49 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_quote jsonb, p_items jsonb, p_quote_id uuid, p_expected_row_version integer, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-salvamento-orcamento-atomico.py",
+              "hits": 1
+            },
+            {
+              "file": "src/services/QuoteService.ts",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "definition": null,
+        "definition_sha": "5d8b022d8a5571ca",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "save_quote_atomic_attested",
+        "owner": "postgres",
+        "returns": "jsonb",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "p_quote jsonb, p_items jsonb, p_idempotency_key uuid, p_history jsonb",
         "callers": {
           "code": [
@@ -61264,7 +61697,9 @@
           ],
           "code_total_files": 3,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.save_quote_atomic_idempotent_attested"
+          ],
           "triggers": [],
           "views": []
         },
@@ -61281,6 +61716,49 @@
         "language": "plpgsql",
         "leakproof": false,
         "name": "save_quote_atomic_idempotent",
+        "owner": "postgres",
+        "returns": "jsonb",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_quote jsonb, p_items jsonb, p_idempotency_key uuid, p_history jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-salvamento-orcamento-atomico.py",
+              "hits": 1
+            },
+            {
+              "file": "src/services/QuoteService.ts",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "definition": null,
+        "definition_sha": "ecfdc89c4d1af98b",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "save_quote_atomic_idempotent_attested",
         "owner": "postgres",
         "returns": "jsonb",
         "schema": "public",
@@ -64164,6 +64642,34 @@
     ],
     "grants": null,
     "indexes": [
+      {
+        "columns": [
+          "expires_at"
+        ],
+        "definition": "CREATE INDEX quote_price_attestations_expiration_idx ON private.quote_price_attestations USING btree (expires_at)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "quote_price_attestations_expiration_idx",
+        "predicate": null,
+        "schema": "private",
+        "table": "quote_price_attestations"
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "definition": "CREATE UNIQUE INDEX quote_price_attestations_pkey ON private.quote_price_attestations USING btree (id)",
+        "is_primary": true,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "quote_price_attestations_pkey",
+        "predicate": null,
+        "schema": "private",
+        "table": "quote_price_attestations"
+      },
       {
         "columns": [
           "id"
@@ -78189,6 +78695,12 @@
         "version": "20261113170000"
       },
       {
+        "name": "quote_price_attestation_gate",
+        "statements": 1,
+        "statements_sha": "36462abfcc403bbb",
+        "version": "20261117092000"
+      },
+      {
         "name": "ai_quota_count_billed_interrupts",
         "statements": 1,
         "statements_sha": "8875e7367acf7924",
@@ -86812,6 +87324,12 @@
     ],
     "schemas": [
       {
+        "comment": null,
+        "name": "private",
+        "owner": "postgres",
+        "usage_api_roles": null
+      },
+      {
         "comment": "standard public schema",
         "name": "public",
         "owner": "pg_database_owner",
@@ -86955,6 +87473,21 @@
       }
     ],
     "tables": [
+      {
+        "comment": "Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo.",
+        "from_extension": false,
+        "is_partition": false,
+        "kind": "table",
+        "name": "quote_price_attestations",
+        "owner": "postgres",
+        "parent": null,
+        "partition_bound": null,
+        "partition_key": null,
+        "replica_identity": "default",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "private"
+      },
       {
         "comment": "Estado de is_pinned/last_used_at/updated_at dos kits fixados imediatamente antes de 20261118130400_pin_custom_kit_atomically. RLS habilitada sem policy: somente superusuario e o owner da tabela leem.",
         "from_extension": false,
@@ -91900,6 +92433,17 @@
         "timing": "BEFORE"
       },
       {
+        "definition": "CREATE TRIGGER zzz_guard_quote_personalization_price_attestation BEFORE INSERT OR DELETE OR UPDATE ON quote_item_personalizations FOR EACH ROW EXECUTE FUNCTION guard_quote_price_attestation()",
+        "events": "INSERT OR DELETE OR UPDATE",
+        "function": "public.guard_quote_price_attestation",
+        "level": "ROW",
+        "name": "zzz_guard_quote_personalization_price_attestation",
+        "schema": "public",
+        "status": "enabled",
+        "table": "quote_item_personalizations",
+        "timing": "BEFORE"
+      },
+      {
         "definition": "CREATE TRIGGER aaa_guard_quote_item_content_write BEFORE INSERT OR DELETE OR UPDATE ON quote_items FOR EACH ROW EXECUTE FUNCTION guard_quote_item_content_write()",
         "events": "INSERT OR DELETE OR UPDATE",
         "function": "public.guard_quote_item_content_write",
@@ -91916,6 +92460,17 @@
         "function": "public.update_updated_at_column",
         "level": "ROW",
         "name": "update_quote_items_updated_at",
+        "schema": "public",
+        "status": "enabled",
+        "table": "quote_items",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER zzz_guard_quote_item_price_attestation BEFORE INSERT OR DELETE OR UPDATE ON quote_items FOR EACH ROW EXECUTE FUNCTION guard_quote_price_attestation()",
+        "events": "INSERT OR DELETE OR UPDATE",
+        "function": "public.guard_quote_price_attestation",
+        "level": "ROW",
+        "name": "zzz_guard_quote_item_price_attestation",
         "schema": "public",
         "status": "enabled",
         "table": "quote_items",
@@ -92114,6 +92669,17 @@
         "function": "public.update_updated_at_column",
         "level": "ROW",
         "name": "update_quotes_updated_at",
+        "schema": "public",
+        "status": "enabled",
+        "table": "quotes",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER zzz_guard_quote_price_attestation BEFORE INSERT OR DELETE OR UPDATE ON quotes FOR EACH ROW EXECUTE FUNCTION guard_quote_price_attestation()",
+        "events": "INSERT OR DELETE OR UPDATE",
+        "function": "public.guard_quote_price_attestation",
+        "level": "ROW",
+        "name": "zzz_guard_quote_price_attestation",
         "schema": "public",
         "status": "enabled",
         "table": "quotes",

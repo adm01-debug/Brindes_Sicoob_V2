@@ -200,6 +200,7 @@
 | trig_prevent_quote_deletion | BEFORE | DELETE | ROW | enabled | public.prevent_critical_deletion |
 | trigger_generate_quote_number | BEFORE | INSERT | ROW | enabled | public.generate_quote_number |
 | update_quotes_updated_at | BEFORE | UPDATE | ROW | enabled | public.update_updated_at_column |
+| zzz_guard_quote_price_attestation | BEFORE | INSERT OR DELETE OR UPDATE | ROW | enabled | public.guard_quote_price_attestation |
 
 
 ## Grants
