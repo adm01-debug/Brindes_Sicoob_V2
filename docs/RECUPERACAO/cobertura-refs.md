@@ -426,20 +426,19 @@ idêntica. Não significa "nada foi incorporado" — significa que identidade by
 serve sozinha como portão. O que serve é o veredito por item, e é o que a tabela abaixo
 registra.
 
-**Estado em 19/11/2026, 02:40 UTC:** dois grupos já têm a condição de conteúdo cumprida
-(a pilha de BI, pela #361, e a branch da #290, por veredito escrito) e esperam apenas a
-entrada deste ledger; as duas do kit foram apagadas pelo próprio GitHub no merge da #334,
-com a conferência registrada antes; o restante segue pendente de merge da PR
-correspondente. O portão, grupo por grupo:
+**Estado em 19/11/2026, 05:25 UTC** (a tabela abaixo substitui a versão de 02:40 do mesmo
+dia: a #315, a #361, a #363 e a #357 entraram na `main` entre uma medição e outra, e dizer
+"pendente" sobre PR mergeada seria registro falso). O portão, grupo por grupo:
 
-| grupo | condição | estado em 19/11/2026 02:40 UTC |
+| grupo | condição | estado em 19/11/2026 05:25 UTC |
 |---|---|---|
-| as 4 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` | **cumprida** (`d53f9e8`) — conteúdo conferido linha a linha na seção abaixo; falta só a #315 entrar |
-| `claude/feat-atestado-preco-orcamento-261117-0905` (#290) | veredito escrito de cada item | **cumprida** — ver "nada a recuperar" abaixo; falta só a #315 entrar |
+| as 4 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` | **cumprida e executada** — #361 e #315 na `main`; as 4 refs apagadas, reversíveis por `refs/pull/<n>/head` |
+| `claude/feat-atestado-preco-orcamento-261117-0905` (#290) | veredito escrito de cada item | **cumprida e executada** — ver "nada a recuperar" abaixo; ref apagada |
 | as 2 do kit (`fix-kit-trava-concorrencia`, `fix-kit-fila-manual-autosave`) | **#334** entrar na `main` | **já apagadas pelo GitHub** no merge da #334 (`delete_branch_on_merge`). O conteúdo está na `main` — #341 87/87 e #356 52/52 linhas, conferido **antes** da exclusão |
-| `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem | pendente — as duas PRs estão abertas |
-| as demais `claude/*` com PR aberta | a PR correspondente entrar | pendente |
-| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) **e** cada item da ref ter veredito escrito aqui — incorporado ou obsoleto justificado | pendente |
+| `fix-prod-cors-audit-261118-1034` | **#363** e **#357** entrarem | **cumprida** — as duas na `main`; medição de hoje na "Sétima varredura" abaixo |
+| `fix-rls-allow-all`, `fix-hardening-banco-recuperado`, `infra-rpc-hub-operational-evidence` | conteúdo na `main` | **cumprida** — "Sétima varredura" abaixo |
+| as demais `claude/*` com PR aberta | a PR correspondente entrar | pendente — #311, #323, #324, #325, #328 |
+| refs pré-re-raiz sem PR | cada item da ref ter veredito escrito aqui — incorporado ou obsoleto justificado | pendente para as que ainda não foram medidas |
 
 A última linha não é atalho: a regra central está em
 [`docs/RECUPERACAO/README.md`](./README.md) e exige, para **toda** ref, que cada item
@@ -634,3 +633,77 @@ obrigatório — e o ping é a única prova de que subiu.
 Isto também mostra por que a varredura de branch, sozinha, não basta: este trabalho não
 estava perdido em branch nenhuma. Estava na `main`, mergeado, com teste, e mesmo assim fora
 do ar.
+
+## Sétima varredura: as 4 últimas branches contabilizadas (19/11/2026)
+
+Fecha o portão de exclusão sobre as 4 refs que ainda tinham conteúdo fora da `main`
+e nenhuma PR aberta. Todas as 4 têm PR **fechada** com `refs/pull/<n>/head` preservado
+pelo GitHub — apagar a branch é reversível, a medida abaixo é que decide.
+
+| ref | PR | o que ela tem | onde está na `main` | veredito |
+|---|---|---|---|---|
+| `claude/fix-rls-allow-all-261117-0844` | [#286](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/286) | `20260929134200_drop_allow_all_permissive_policies.sql` (23 linhas) | `20261118130500_block_permissive_allow_all_policies.sql` | **superconjunto na `main`** — apagar |
+| `claude/infra-rpc-hub-operational-evidence-261117-1640` | [#298](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/298) | `20261117164000_add_connections_hub_operational_evidence.sql` (62 linhas) | absorvida em `20261118130000_harden_storage_and_public_favorites_acl.sql:178-244` | **superconjunto na `main`** — apagar |
+| `claude/fix-hardening-banco-recuperado-261117-0847` | [#288](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/288) | 4 migrations de endurecimento (1.010 linhas) | as 4 renumeradas para `2026111813xx_*`, mesma ordem | **superconjunto na `main`** — apagar |
+| `claude/fix-prod-cors-audit-261118-1034` | [#308](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/308), [#318](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/318) | ponta da árvore de produção pré-re-raiz; **115 arquivos** ainda fora da `main` | os 115 citados no ledger com veredito (medição abaixo) | **contabilizada** — apagar |
+
+### Por que "superconjunto" e não "idêntico"
+
+As quatro migrations de #288 e a de #286 **não** batem byte a byte com as da `main`, e isso
+é deliberado — a versão da `main` é a corrigida:
+
+- `harden_storage_and_public_favorites_acl`: a da branch repetia o DELETE antigo
+  (`owner = auth.uid() OR <escopo>`). Em 06/11/2026 a `main` estreitou esse DELETE
+  (`20261106200300_restrict_proposals_delete_scope.sql`). Trazer o arquivo da branch
+  **devolveria** a quem subiu o PDF o poder de apagá-lo depois de perder o escopo do
+  orçamento. A da `main` usa só o escopo e a asserção final cobra a ausência de `owner`.
+- `harden_access_blocked_log_and_marketing_view_acl`: a da branch **abortava** — o preflight
+  exigia uma policy administrativa de SELECT que o banco oficial não tem. A da `main` cria
+  essa policy com helper semântico.
+- `drop_allow_all_permissive_policies`: a da branch abortava com `42P01` —
+  `public.categories`, `suppliers` e `products` não existem mais, e `DROP POLICY IF EXISTS`
+  tolera policy ausente, não relação ausente. A da `main` guarda cada DROP com `to_regclass`
+  e **acrescenta uma catraca** que falha se qualquer policy `FOR ALL USING (true)` para
+  PUBLIC/anon/authenticated voltar a aparecer em `public`.
+- `get_connections_hub_operational_evidence`: a da `main` é `STABLE`, exige também
+  `cron.job_run_details`, e filtra pelos 2 cron jobs e 4 triggers que o **único** consumidor
+  lê (`supabase/functions/connections-hub-audit/index.ts:55-65`). Devolver tudo, como a da
+  branch, não entregava nada a mais a quem consome.
+
+### Os 115 arquivos da branch de produção, medidos hoje
+
+`comm -23` entre a árvore da ref e a da `main` devolve **115 caminhos**. Passando cada um
+por `grep -rF` em `docs/RECUPERACAO/`, `docs/agentes/` e `PENDENCIAS.md`, **111 já tinham
+veredito escrito** e 4 apareciam como não citados:
+`20261016180000_harden_storage_and_public_favorites_acl.sql`,
+`20261016190000_enable_scoped_business_realtime.sql`,
+`20261016193000_pin_custom_kit_atomically.sql` e
+`20261016201500_restore_view_invoker_and_notification_scope.sql`. São os **nomes antigos**
+das migrations da PR #119: as quatro estão na `main` renumeradas para `2026111813xx_*`
+(mesmo slug), e o ledger as cita pelo nome novo. Não citado ≠ não recuperado — a conferência
+foi por slug, não por nome de arquivo. Com isso, **115/115 contabilizados**.
+
+Um único arquivo da ref **não foi trazido**:
+`tests/stores/useNavigationGuardStore.test.ts`, que exercita `useNavigationGuardStore` — um
+store que a `main` não tem. Não por esquecimento: as três garantias existem na `main`, cada
+uma em outro lugar, **todas com teste**.
+
+1. registrar/remover escopo sujo com mensagem → `src/lib/navigation/dirty-registry.ts`
+   (`declararEstadoDaRota`/`esquecerRota`/`mensagemDaRota`), coberta por
+   `tests/lib/navigation/dirty-registry.test.ts`;
+2. resposta antiga não pode resolver o pedido atual → `src/stores/useConfirmDialogStore.ts`,
+   onde `ask()` numera cada pedido (`id: nextRequestId`) e `resolve(requestId, confirmed)`
+   sai cedo se `pending.id !== requestId`; `ask()` ainda cancela o pedido anterior para não
+   deixar Promise pendurada. Coberta por `tests/stores/useConfirmDialogStore.test.ts:34`
+   ("uma resposta antiga não resolve um pedido concorrente") e `:25`;
+3. `clearAll` no logout → `limparRegistroDeRotas()`, chamada de
+   `src/contexts/AuthContext.tsx:289` e `:387`, coberta por
+   `tests/hooks/useSmartNavigation.registro-sujo.test.tsx`.
+
+> Correção de uma afirmação minha na primeira versão desta seção. Eu havia escrito que a
+> garantia 2 "não se aplica", porque `performBackNavigation` usa `await askConfirm(...)`,
+> uma chamada local. Errado: `askConfirm` delega ao store global, que tem pedido numerado e
+> a guarda contra resposta obsoleta. A conclusão não muda — ela fica mais forte: o arquivo
+> da ref não cobre nada que a `main` já não cubra. Apontado pela revisão da #365.
+
+Os outros 18 estão na `main`, conferidos um a um com `git cat-file -e origin/main:<arquivo>`.
