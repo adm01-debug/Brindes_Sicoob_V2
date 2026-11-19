@@ -1,9 +1,10 @@
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
+import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { useQuoteUrlPrefill } from "./useQuoteUrlPrefill";
 
 interface InitParams {
@@ -182,7 +183,7 @@ function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemP
   };
 }
 
-function mapTemplateItem(item: TemplateImportItem): QuoteItem {
+function mapTemplateItem(item: TemplateImportItem, getProductCost?: (id: string) => number | undefined): QuoteItem {
   return {
     product_id: fallback(item.product_id, fallback(item.productId, "")),
     product_name: fallback(item.product_name, fallback(item.productName, "")),
@@ -190,6 +191,7 @@ function mapTemplateItem(item: TemplateImportItem): QuoteItem {
     product_image_url: fallback(item.product_image_url, item.productImageUrl),
     quantity: fallback(item.quantity, 1),
     unit_price: fallback(item.unit_price, fallback(item.unitPrice, 0)),
+    unit_cost: getProductCost?.(fallback(item.product_id, fallback(item.productId, ""))),
     color_name: fallback(item.color_name, item.colorName),
     color_hex: fallback(item.color_hex, item.colorHex),
     personalizations: fallback(item.personalizations, []),
@@ -197,6 +199,13 @@ function mapTemplateItem(item: TemplateImportItem): QuoteItem {
 }
 
 export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locationState, searchParams, setters }: InitParams) {
+  const productsContext = useProductsContextSafe();
+  const getProductById = productsContext?.getProductById;
+  const getProductCost = useCallback(
+    (productId: string): number | undefined => getProductById?.(productId)?.costPrice,
+    [getProductById]
+  );
+
   // 1. Load existing quote
   useEffect(() => {
     if (!isEditMode || !quoteId) return;
@@ -205,7 +214,7 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
       if (quote) applyExistingQuote(quote, setters);
       setters.setLoadingQuote(false);
     });
-  }, [fetchQuote, isEditMode, quoteId, setters]);
+  }, [fetchQuote, isEditMode, quoteId, setters, getProductCost]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {
@@ -217,13 +226,13 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     const newItem: QuoteItem = {
       product_id: product.id, product_name: product.name, product_sku: product.sku || '',
       product_image_url: product.imageUrl || undefined, quantity: quantity || 1,
-      unit_price: product.price || 0, personalizations: quotePersonalizations,
+      unit_price: product.price || 0, unit_cost: getProductCost(product.id), personalizations: quotePersonalizations,
     };
     setters.setItems([newItem]); setters.setActiveItemIndex(0);
     if (quotePersonalizations.length > 0) setters.setExpandedItems(new Set([0]));
     toast.success(`Produto "${product.name}" importado do simulador`);
     window.history.replaceState({}, document.title);
-  }, [locationState, setters]);
+  }, [locationState, setters, getProductCost]);
 
   // 3. Pre-fill from cart
   useEffect(() => {
@@ -233,13 +242,13 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     const cartItems: QuoteItem[] = state.items.map((i) => ({
       product_id: i.product_id, product_name: i.product_name, product_sku: i.product_sku || '',
       product_image_url: i.product_image_url || undefined, quantity: i.quantity,
-      unit_price: i.unit_price, color_name: i.color_name || undefined,
+      unit_price: i.unit_price, unit_cost: getProductCost(i.product_id), color_name: i.color_name || undefined,
       color_hex: i.color_hex || undefined, personalizations: [],
     }));
     setters.setItems(cartItems);
     toast.success(`${cartItems.length} item(ns) importado(s) do carrinho`);
     window.history.replaceState({}, document.title);
-  }, [locationState, setters]);
+  }, [locationState, setters, getProductCost]);
 
   // 4. Pre-fill from URL params
   useQuoteUrlPrefill({
@@ -255,10 +264,10 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     const state = locationState as { templateItems?: TemplateImportItem[] } | null;
     if (!state?.templateItems?.length) return;
     
-    const templateItems = state.templateItems.map(mapTemplateItem);
+    const templateItems = state.templateItems.map((item) => mapTemplateItem(item, getProductCost));
     
     setters.setItems(templateItems);
     toast.success(`${templateItems.length} item(ns) importado(s) do template`);
     window.history.replaceState({}, document.title);
-  }, [locationState, setters]);
+  }, [locationState, setters, getProductCost]);
 }

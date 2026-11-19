@@ -66,9 +66,9 @@ try:
         "-e", "POSTGRES_HOST_AUTH_METHOD=trust", "postgres:17-alpine",
     ])
     wait_for_postgres(command, CONTAINER)
-    sql("CREATE SCHEMA extensions; CREATE EXTENSION pgcrypto WITH SCHEMA extensions;")
+    sql("CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;")
     sql(FIXTURE.read_text())
-    sql(f"CREATE TABLE auth.users(id uuid PRIMARY KEY); INSERT INTO auth.users VALUES ('{SELLER}'),('{OTHER}');")
+    sql(f"INSERT INTO auth.users(id) VALUES ('{OTHER}') ON CONFLICT (id) DO NOTHING;")
     sql(ATOMIC.read_text())
     sql(INITIAL.read_text())
     sql(HARDENING.read_text())
