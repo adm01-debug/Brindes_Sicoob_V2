@@ -102,13 +102,17 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
 
 ## O que falta, em ordem
 
-1. **KPIs de primeira compra e retenção da carteira** — `origin/claude/feat-kpis-primeira-compra-retencao-261118-1800`,
-   commit `bcac136a8`: dois indicadores medidos que a `main` **não tem**
-   (`useClientsPortfolioKpis.ts` +139 linhas, `ClientsPage.tsx` +45, teste +150). Não é
-   duplicata da PR #314, que entrou antes e cobre outros três KPIs.
-   **Veredito: NÃO APAGAR — trabalho real não incorporado, a recuperar em PR própria.**
-   Fora da fila agora só pela regra de "no máximo 5 PRs abertas" (`AGENTS.md`); esvaziar a
-   fila tem prioridade sobre aumentá-la.
+1. ~~**KPIs de primeira compra e retenção da carteira**~~ — **RESOLVIDO em 19/11/2026.**
+   Este item estava desatualizado e mandava preservar uma ref cujo trabalho já havia
+   entrado. Medido antes de corrigir: `origin/main:src/hooks/useClientsPortfolioKpis.ts`
+   exporta `primeiraCompraNoMes` (`:41`) e `retencaoPercentual` (`:49`), calcula os dois
+   (`:222` e `:226`), `src/pages/ClientsPage.tsx:53` e `:55` levam ambos à tela, e
+   `tests/hooks/useClientsPortfolioKpis.test.ts` os cobre. A `main` está **à frente** da
+   ref: tem uma guarda de paginação (`:156-185`) que a ref não tinha, contra contar como
+   primeira compra o cliente cujos pedidos ficaram de fora da página.
+   A ref foi arquivada em `arquivo/claude-feat-kpis-primeira-compra-retencao-261118-1800`
+   e a branch, apagada — recuperável com
+   `git fetch origin refs/tags/arquivo/claude-feat-kpis-primeira-compra-retencao-261118-1800`.
 2. **Suíte de testes da PR #119** — triagem **executada** em 18/11/2026
    ([`testes-pr119.md`](testes-pr119.md)). A condição de exclusão da ref é **a lista fechada
    abaixo**, não "todos os arquivos da PR":
