@@ -43,6 +43,27 @@ describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
     expect(kitQuote).toContain('LIMITE_CORPO_ATESTADO');
   });
 
+  it('hospedeira e hóspede têm a MESMA autorização — hospedar não pode afrouxar o acesso', () => {
+    const manifesto = readFileSync(
+      resolve(ROOT, 'supabase/functions/_shared/edge-authz-manifest.ts'),
+      'utf8',
+    );
+    const entrada = (nome: string) => {
+      const inicio = manifesto.indexOf(`"${nome}": {`);
+      expect(inicio).toBeGreaterThan(0);
+      const bloco = manifesto.slice(inicio, manifesto.indexOf('},', inicio));
+      const campo = (chave: string) => bloco.match(new RegExp(`${chave}:\\s*([^,\n]+)`))?.[1]?.trim();
+      return { category: campo('category'), enforcedBy: campo('enforcedBy'), jwt: campo('gatewayVerifyJwt') };
+    };
+
+    const hospedeira = entrada('sicoob-kit-quote');
+    const hospede = entrada('quote-price-attestation');
+
+    expect(hospedeira).toEqual(hospede);
+    expect(hospedeira.category).toBe('"authenticated"');
+    expect(hospedeira.jwt).toBe('true');
+  });
+
   it('sem o marcador op, o fluxo de kit segue intocado', () => {
     const trecho = kitQuote.slice(
       kitQuote.indexOf('async function desviarParaAtestadoDePreco'),
