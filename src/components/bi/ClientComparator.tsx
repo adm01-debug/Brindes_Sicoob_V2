@@ -4,11 +4,13 @@
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, AlertTriangle, X, Trophy, Minus } from "lucide-react";
+import { CheckCircle2, AlertTriangle, X, Trophy, Minus, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSingleClientComparisonRow, type ClientComparisonRow } from "@/hooks/bi/useClientsComparison";
+import type { ReactNode } from "react";
 
 interface Props {
   clientIds: string[]; // 1-3
@@ -50,9 +52,26 @@ function CategoryMetric({ label, share, variant }: { label: string | null; share
   );
 }
 
+function MetricValue({ unavailable, children }: { unavailable: boolean; children: ReactNode }) {
+  return unavailable ? <>—</> : <>{children}</>;
+}
+
+function comparisonScore(row: ClientComparisonRow): string | number {
+  return row.unavailable.health || row.tier === "unknown" ? "—" : row.score;
+}
+
+function comparisonTier(row: ClientComparisonRow): ClientComparisonRow["tier"] {
+  return row.unavailable.health ? "unknown" : row.tier;
+}
+
+function metricTitle(value: string | null, unavailable: boolean): string {
+  return unavailable ? "—" : value ?? "—";
+}
+
 function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () => void }) {
   const row = useSingleClientComparisonRow(clientId);
-  const tier = tierBadge(row.tier);
+  const displayTier = comparisonTier(row);
+  const tier = tierBadge(displayTier);
   const TierIcon = tier.icon;
 
   if (row.isLoading) {
@@ -85,7 +104,7 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
       <div className={cn("rounded-xl p-3 flex items-center gap-3", tier.color.split(" ").slice(-1)[0])}>
         <div className="h-14 w-14 rounded-xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center">
           <span className={cn("font-display font-bold text-2xl leading-none", tier.color.split(" ")[0], tier.color.split(" ")[1])}>
-            {row.score}
+            {comparisonScore(row)}
           </span>
           <span className="text-[8px] text-muted-foreground uppercase tracking-wider mt-0.5">Score</span>
         </div>
@@ -94,50 +113,61 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
           {tier.label}
         </Badge>
       </div>
+      {row.isUnavailable && (
+        <div role="status" className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
+          <p className="text-destructive">
+            Falha em {row.failedSources.join(", ")}. As demais métricas confiáveis continuam disponíveis.
+          </p>
+          <Button variant="outline" size="sm" className="h-7 gap-1.5" onClick={() => { void row.refetch(); }}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Tentar novamente
+          </Button>
+        </div>
+      )}
       <dl className="space-y-2 text-xs">
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">LTV</dt>
-          <dd className="font-medium tabular-nums">{fmtBRL(row.ltv)}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={row.unavailable.history}>{fmtBRL(row.ltv)}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Ticket médio</dt>
-          <dd className="font-medium tabular-nums">{fmtBRL(row.avgTicket)}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={row.unavailable.history}>{fmtBRL(row.avgTicket)}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Pedidos</dt>
-          <dd className="font-medium tabular-nums">{row.ordersCount}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={row.unavailable.history}>{row.ordersCount}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Última compra</dt>
           <dd className="font-medium tabular-nums">
-            {formatDaysSinceOrder(row.daysSinceLastOrder)}
+            <MetricValue unavailable={row.unavailable.history}>{formatDaysSinceOrder(row.daysSinceLastOrder)}</MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Top categoria</dt>
-          <dd className="font-medium truncate max-w-[120px]" title={row.topCategory ?? "—"}>
-            {row.topCategory ?? "—"}
+          <dd className="font-medium truncate max-w-[120px]" title={metricTitle(row.topCategory, row.unavailable.topCategory)}>
+            <MetricValue unavailable={row.unavailable.topCategory}>{row.topCategory ?? "—"}</MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria favorita</dt>
-          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.favoriteCategoryLabel ?? "—"}>
-            <CategoryMetric label={row.favoriteCategoryLabel} share={row.favoriteCategorySharePct} variant="favorite" />
+          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={metricTitle(row.favoriteCategoryLabel, row.unavailable.favoriteCategory)}>
+            <MetricValue unavailable={row.unavailable.favoriteCategory}><CategoryMetric label={row.favoriteCategoryLabel} share={row.favoriteCategorySharePct} variant="favorite" /></MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria oportunidade</dt>
-          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.opportunityCategoryLabel ?? "—"}>
-            <CategoryMetric label={row.opportunityCategoryLabel} share={row.opportunityCategorySharePct} variant="opportunity" />
+          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={metricTitle(row.opportunityCategoryLabel, row.unavailable.opportunityCategory)}>
+            <MetricValue unavailable={row.unavailable.opportunityCategory}><CategoryMetric label={row.opportunityCategoryLabel} share={row.opportunityCategorySharePct} variant="opportunity" /></MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Próximo pico</dt>
-          <dd className="font-medium">{row.nextPeakLabel}</dd>
+          <dd className="font-medium"><MetricValue unavailable={row.unavailable.seasonality}>{row.nextPeakLabel}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Share-of-wallet</dt>
-          <dd className="font-medium tabular-nums">{row.shareOfWalletPct}%</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={row.unavailable.health || row.tier === "unknown"}>{row.shareOfWalletPct}%</MetricValue></dd>
         </div>
       </dl>
     </div>

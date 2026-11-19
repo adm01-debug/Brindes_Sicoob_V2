@@ -2,14 +2,16 @@
  * useIndustryCategoryTrends — agrega top produtos do setor por CATEGORIA.
  *
  * Reaproveita o RPC `get_industry_top_products` (já usado em useIndustryTrends)
- * e dobra o resultado por categoria. Quando vazio, cai para mock derivado
- * de getMockIndustryTrends.
+ * e dobra o resultado por categoria. Quando vazio, preserva a ausência de
+ * amostra em vez de produzir categoria fictícia do setor: o conjunto simulado
+ * é só do cliente de demonstração.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends } from "@/lib/bi/mockData";
 
 export interface IndustryCategoryAggregate {
@@ -46,7 +48,8 @@ interface IndustryRow {
   avg_unit_price: number;
 }
 
-function buildMockResult(ramo?: string | null): IndustryCategoryTrendsResult {
+/** Conjunto simulado, exclusivo do cliente de demonstração. */
+function buildDemoResult(ramo?: string | null): IndustryCategoryTrendsResult {
   const trends = getMockIndustryTrends(ramo);
   const byCat = new Map<string, IndustryCategoryAggregate>();
   for (const t of trends) {
@@ -143,14 +146,22 @@ function aggregateIndustryRows(rows: IndustryRow[]) {
     .sort((a, b) => b.totalRevenue - a.totalRevenue);
 }
 
-async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefined) {
-  if (!ramoAtividade) return buildMockResult(null);
+function vazio(companiesInRamo = 0): IndustryCategoryTrendsResult {
+  return { isMock: false, companiesInRamo, categories: [] };
+}
+
+async function fetchIndustryCategoryTrends(
+  ramoAtividade: string | null | undefined,
+  demo: boolean,
+): Promise<IndustryCategoryTrendsResult> {
+  if (demo) return buildDemoResult(ramoAtividade);
+  if (!ramoAtividade) return vazio();
   const companyIds = await fetchCompanyIds(ramoAtividade);
-  if (companyIds.length === 0) return buildMockResult(ramoAtividade);
+  if (companyIds.length === 0) return vazio();
   const rows = await fetchIndustryRows(companyIds);
-  if (rows.length === 0) {
-    return { ...buildMockResult(ramoAtividade), companiesInRamo: companyIds.length };
-  }
+  // Setor sem linha medida fica vazio e identificado: antes caía no mock e a
+  // tela comparava o cliente contra categorias inventadas do "setor dele".
+  if (rows.length === 0) return vazio(companyIds.length);
   return {
     isMock: false,
     companiesInRamo: companyIds.length,
@@ -158,23 +169,21 @@ async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefi
   };
 }
 
-export function useIndustryCategoryTrends(ramoAtividade?: string | null) {
+export function useIndustryCategoryTrends(ramoAtividade?: string | null, clientId?: string | null) {
+  const demo = isDemoClient(clientId);
   const query = useQuery<IndustryCategoryTrendsResult>({
-    queryKey: ["bi-industry-category-trends", ramoAtividade],
-    enabled: !!ramoAtividade,
+    queryKey: ["bi-industry-category-trends", ramoAtividade, demo],
+    enabled: !!ramoAtividade || demo,
     staleTime: 10 * 60 * 1000,
-    queryFn: () => fetchIndustryCategoryTrends(ramoAtividade),
+    queryFn: () => fetchIndustryCategoryTrends(ramoAtividade, demo),
   });
 
-  return useMemo(
-    () =>
-      query.data ?? {
-        isMock: true,
-        companiesInRamo: 0,
-        categories: [] as IndustryCategoryAggregate[],
-      },
-    [query.data],
-  ).categories.length === 0
-    ? { ...(query.data ?? buildMockResult(ramoAtividade)), isLoading: query.isLoading }
-    : { ...(query.data as IndustryCategoryTrendsResult), isLoading: query.isLoading };
+  const resultado = useMemo(() => query.data ?? vazio(), [query.data]);
+  return {
+    ...resultado,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }
