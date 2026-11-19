@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (617)",
+   "tests/ (618)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)",
    "test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)",
    "docs(recuperação): veredito medido para as 62 refs restantes (#367)",
    "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)",
-   "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)",
-   "fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)"
+   "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

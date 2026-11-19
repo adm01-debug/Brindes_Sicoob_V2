@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ce9014bbfac9664ecc050690fd3128a0067da245",
+  "commit": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
   "branch": "main",
-  "data_commit": "2026-11-19T07:55:29Z",
+  "data_commit": "2026-11-19T08:56:42Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "f08eb8f",
+    "data": "2026-11-19",
+    "assunto": "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)"
+   },
    {
     "sha": "ce9014b",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "23e18ed",
     "data": "2026-11-19",
     "assunto": "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)"
-   },
-   {
-    "sha": "3da8611",
-    "data": "2026-11-19",
-    "assunto": "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)"
    }
   ],
-  "arquivos_mudados_7d": 611,
+  "arquivos_mudados_7d": 612,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 49
+    "mudancas": 48
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 48
+    "mudancas": 47
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 172
+    "commits": 173
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4525,
-  "arquivos_codigo": 3116,
-  "linhas_codigo": 490291,
+  "arquivos_total": 4526,
+  "arquivos_codigo": 3117,
+  "linhas_codigo": 490384,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 864,
+  "testes": 865,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 285
@@ -899,8 +899,8 @@
    "linhas": 60
   },
   "tests/edge-functions": {
-   "arquivos": 19,
-   "linhas": 1483
+   "arquivos": 20,
+   "linhas": 1576
   },
   "tests/fixtures": {
    "arquivos": 1,

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "ce9014bbfac9664ecc050690fd3128a0067da245",
+  "sha": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 08:19 UTC",
-  "files_total": 4528,
-  "code_files": 3781,
-  "code_lines": 552870
+  "generated_at": "2026-11-19 09:17 UTC",
+  "files_total": 4529,
+  "code_files": 3782,
+  "code_lines": 552963
  },
  "version": "1.3.2",
- "facts_hash": "f8af679e571512b6",
+ "facts_hash": "d820be842330277d",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1469,
+   ".ts": 1470,
    ".tsx": 1431,
    ".sql": 683,
    ".mjs": 139,
@@ -65632,8 +65632,8 @@
   },
   {
    "module": "tests",
-   "files": 638,
-   "lines": 85760,
+   "files": 639,
+   "lines": 85853,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -70517,10 +70517,12 @@
     "supabase/functions/_shared/supabase-client-adapter.ts"
    ],
    "fn_get_customization_price": [
-    "supabase/functions/quote-price-attestation/handler.ts"
+    "supabase/functions/quote-price-attestation/handler.ts",
+    "tests/edge-functions/catalogo-rpc-get.test.ts"
    ],
    "fn_get_product_customization_options": [
-    "supabase/functions/quote-price-attestation/handler.ts"
+    "supabase/functions/quote-price-attestation/handler.ts",
+    "tests/edge-functions/catalogo-rpc-get.test.ts"
    ],
    "get_active_commemorative_dates": [
     "supabase/functions/commemorative-dates/index.ts"
@@ -124682,6 +124684,22 @@
     "name": "aceita a estrutura JWT bem formada sem afirmar que a assinatura é válida"
    },
    {
+    "file": "tests/edge-functions/catalogo-rpc-get.test.ts",
+    "name": "RPC do catálogo passa pelo supabase-js sem virar POST"
+   },
+   {
+    "file": "tests/edge-functions/catalogo-rpc-get.test.ts",
+    "name": "o pin do catálogo é o conhecido; mudou, reavalie a cobertura"
+   },
+   {
+    "file": "tests/edge-functions/catalogo-rpc-get.test.ts",
+    "name": "com { get: true } o cliente emite GET e põe o parâmetro na query string"
+   },
+   {
+    "file": "tests/edge-functions/catalogo-rpc-get.test.ts",
+    "name": "sem { get: true } o cliente emite POST e o transporte barra — é a regressão que isto trava"
+   },
+   {
     "file": "tests/edge-functions/cors.test.ts",
     "name": "allowlist CORS das Edge Functions"
    },
@@ -174359,14 +174377,16 @@
     "kind": "rpc",
     "msg": "RPC `fn_get_customization_price` chamada mas não definida nas migrations/types",
     "where": [
-     "supabase/functions/quote-price-attestation/handler.ts"
+     "supabase/functions/quote-price-attestation/handler.ts",
+     "tests/edge-functions/catalogo-rpc-get.test.ts"
     ]
    },
    {
     "kind": "rpc",
     "msg": "RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types",
     "where": [
-     "supabase/functions/quote-price-attestation/handler.ts"
+     "supabase/functions/quote-price-attestation/handler.ts",
+     "tests/edge-functions/catalogo-rpc-get.test.ts"
     ]
    },
    {
@@ -244243,6 +244263,33 @@
     "aceita a estrutura JWT bem formada sem afirmar que a assinatura é válida"
    ]
   },
+  "tests/edge-functions/catalogo-rpc-get.test.ts": {
+   "path": "tests/edge-functions/catalogo-rpc-get.test.ts",
+   "lines": 93,
+   "is_test": true,
+   "rpc": [
+    "fn_get_customization_price",
+    "fn_get_product_customization_options"
+   ],
+   "params": [
+    {
+     "name": "CATALOGO",
+     "value": "'https://doufsxqlfjyuvxuezpln.supabase.co'"
+    }
+   ],
+   "rule_comments": [
+    "* O catálogo externo é somente leitura **imposta por código**",
+    "* `tests/scenarios/catalogo-somente-leitura.mjs` cobre o TRANSPORTE:",
+    "* Limite declarado desta suíte, apontado na revisão da #370.",
+    "* Este caso é a catraca desse limite: se o pin do catálogo mudar, ele cai e"
+   ],
+   "tests": [
+    "RPC do catálogo passa pelo supabase-js sem virar POST",
+    "o pin do catálogo é o conhecido; mudou, reavalie a cobertura",
+    "com { get: true } o cliente emite GET e põe o parâmetro na query string",
+    "sem { get: true } o cliente emite POST e o transporte barra — é a regressão que isto trava"
+   ]
+  },
   "tests/edge-functions/cors.test.ts": {
    "path": "tests/edge-functions/cors.test.ts",
    "lines": 27,
@@ -252286,10 +252333,19 @@
   }
  },
  "git": {
-  "sha": "ce9014bbfac9664ecc050690fd3128a0067da245",
+  "sha": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "f08eb8f",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)",
+    "files": [
+     "tests/edge-functions/catalogo-rpc-get.test.ts"
+    ]
+   },
    {
     "sha": "ce9014b",
     "date": "2026-11-19",
@@ -252748,59 +252804,6 @@
      "tests/hooks/useKitAutoSave.test.tsx",
      "tests/pages/kit-builder-guarda-saida.test.tsx"
     ]
-   },
-   {
-    "sha": "d53f9e8",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)",
-    "files": [
-     "src/components/bi/BIAiCopilot.tsx",
-     "src/components/bi/BIBriefingMode.tsx",
-     "src/components/bi/ClientCategoryRadar.tsx",
-     "src/components/bi/ClientComparator.tsx",
-     "src/components/bi/ClientHealthHero.tsx",
-     "src/components/bi/ClientLookalikes.tsx",
-     "src/components/bi/ClientOverview360.tsx",
-     "src/components/bi/ClientSeasonalityHeatmap.tsx",
-     "src/components/bi/ClientVsIndustryComparison.tsx",
-     "src/components/bi/ExecutiveSummaryButton.tsx",
-     "src/components/bi/ExportDossierButton.tsx",
-     "src/components/bi/IndustryTrendingProducts.tsx",
-     "src/hooks/bi/useBIDossierExport.ts",
-     "src/hooks/bi/useClientAffinity.ts",
-     "src/hooks/bi/useClientBI.ts",
-     "src/hooks/bi/useClientCategoryAffinity.ts",
-     "src/hooks/bi/useClientHealthScore.ts",
-     "src/hooks/bi/useClientSeasonality.ts",
-     "src/hooks/bi/useClientVsIndustry.ts",
-     "src/hooks/bi/useClientsComparison.ts",
-     "src/hooks/bi/useIndustryCategoryTrends.ts",
-     "src/hooks/bi/useIndustryTrends.ts",
-     "src/lib/bi/dossierPdfGenerator.ts",
-     "src/lib/bi/executive-summary.ts",
-     "src/lib/bi/pptxGenerator.ts",
-     "tests/components/bi/BIAiCopilot.context-availability.test.ts",
-     "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
-     "tests/components/bi/BIBriefingMode.history-availability.test.ts",
-     "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
-     "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
-     "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
-     "tests/components/bi/ClientHealthHero.availability.test.tsx",
-     "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
-     "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
-     "tests/components/bi/ClientLookalikes.availability.test.tsx",
-     "tests/components/bi/ClientOverview360.availability.test.tsx",
-     "tests/components/bi/ComparisonAvailability.test.tsx",
-     "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
-     "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
-     "tests/components/bi/client-vs-industry-origem.test.tsx",
-     "tests/hooks/bi/useClientBI.test.ts",
-     "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
-     "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
-     "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
-     "tests/lib/bi/categoria-sem-comparativo.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -252815,6 +252818,10 @@
    [
     "scripts/revisao/gerar-revisao-2026-09-12.py",
     2
+   ],
+   [
+    "tests/edge-functions/catalogo-rpc-get.test.ts",
+    1
    ],
    [
     "tests/scripts/e2e-target.test.ts",
@@ -252878,10 +252885,6 @@
    ],
    [
     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/biblioteca-objecoes.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/metodo-coopera.md",
     1
    ]
   ]

@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ce9014bbfac9664ecc050690fd3128a0067da245` (2026-11-19T07:55:29Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `f08eb8fad839a7d050dafaf203aab0d4dbee5d2d` (2026-11-19T08:56:42Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2902), SQL (683), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (23), CSS (7)
+- linguagens: TypeScript (2903), SQL (683), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4525 |
-| arquivos_codigo | 3116 |
-| linhas_codigo | 490291 |
+| arquivos_total | 4526 |
+| arquivos_codigo | 3117 |
+| linhas_codigo | 490384 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 864 |
+| testes | 865 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 285 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (999), src/pages (159), src/contexts (9)
 - hooks: src/hooks (287), src/components (66), src/pages (21)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (617), e2e/ (149), outro (51)
+- testes: tests/ (618), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -443,7 +443,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 
 ## Integrações externas
 - SDKs: ElevenLabs, Sentry, Supabase, react-query, zod
-- hosts mais citados: wa.me, cfmzkthhgliqelozlmwu.supabase.co, ai.gateway.lovable.dev, api.resend.com, simulacao.invalid, qa-sicoob-123.supabase.co, test.supabase.co, api.supabase.com, doufsxqlfjyuvxuezpln.supabase.co, hooks.slack.com, imagedelivery.net, portal.invalid, youtube.com, api.elevenlabs.io, api.ipify.org
+- hosts mais citados: wa.me, cfmzkthhgliqelozlmwu.supabase.co, ai.gateway.lovable.dev, api.resend.com, simulacao.invalid, doufsxqlfjyuvxuezpln.supabase.co, qa-sicoob-123.supabase.co, test.supabase.co, api.supabase.com, hooks.slack.com, imagedelivery.net, portal.invalid, youtube.com, api.elevenlabs.io, api.ipify.org
 - webhooks recebidos: cleanup-notifications, collections-watcher, comparison-price-watcher, connections-health-check, expert-chat, external-db-bridge, favorites-watcher, health-check, migrate-helper, monthly-health-report, ownership-audit, process-batch-export, process-queue, process-scheduled-reports, quote-approval, quote-followup-reminders, send-digest, send-notification, send-scheduled-reports, sicoob-approval-notifications, webhook-dispatcher
 - env de integração (só nomes): BITRIX24_WEBHOOK_URL, BI_SHARE_SECRET, CNPJA_API_KEY, DROPBOX_ACCESS_TOKEN, E2E_CLEANUP_TOKEN, ELEVENLABS_API_KEY, LOVABLE_API_KEY, N8N_QUOTE_WEBHOOK_URL, QUOTE_SYNC_API_KEY, RESEND_API_KEY, SALESPRO_WEBHOOK_URL, SICOOB_APPROVAL_WORKER_SECRET, SICOOB_MALWARE_SCANNER_TOKEN, VIRUSTOTAL_API_KEY, VITE_SENTRY_DSN
 
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29580 nós · 54302 arestas · 2103 comunidades · grafo do commit `ce9014bb`
-- comunidades maiores: ref_hooks (514), ref_lib (268), ref_integrations (241), sonner (222), lucide-react (213), react (206), ref_contexts (196), ref_components (195), getCorsHeaders (195), react-router-dom (191), framer-motion (187), date-fns (181)
+- 29584 nós · 54312 arestas · 2098 comunidades · grafo do commit `f08eb8fa`
+- comunidades maiores: sonner (372), ref_lib (319), ref_components (304), lucide-react (244), ref_hooks (236), ref_integrations (215), ref_contexts (197), date-fns (170), react-router-dom (167), react (165), ai-usage.ts (158), external-db-bridge/index.ts (158)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (49)
-- docs/correcoes-validacao-2026-09-14.md (48)
+- docs/plano-melhorias-50-etapas.md (48)
+- docs/correcoes-validacao-2026-09-14.md (47)
 - package.json (22)
 - PENDENCIAS.md (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -694,6 +694,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `f08eb8f` test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)
 - 2026-11-19 `ce9014b` test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)
 - 2026-11-19 `a202373` docs(recuperação): veredito medido para as 62 refs restantes (#367)
 - 2026-11-19 `f21dbfd` fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)
@@ -708,7 +709,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `6aff499` fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)
 - 2026-11-19 `965419b` fix(orçamento): salvar deixa de manter o aviso de "alterações não salvas" (#331)
 - 2026-11-19 `b364a12` ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)
-- 2026-11-19 `95aa5bd` docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

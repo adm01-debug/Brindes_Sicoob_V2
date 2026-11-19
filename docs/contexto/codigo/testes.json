@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 864,
+ "total": 865,
  "por_tipo": {
   "contrato": 11,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 636
+  "unit": 637
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 617
+   "arquivos": 618
   },
   {
    "padrao": "e2e/",
@@ -3686,6 +3686,15 @@
     "supabase/functions/_shared/jwt-structure.ts"
    ],
    "casos": 4
+  },
+  {
+   "arquivo": "tests/edge-functions/catalogo-rpc-get.test.ts",
+   "tipo": "unit",
+   "linhas": 93,
+   "testa": [
+    "supabase/functions/_shared/external-read-only.ts"
+   ],
+   "casos": 3
   },
   {
    "arquivo": "tests/edge-functions/cors.test.ts",
@@ -7996,7 +8005,7 @@
   "supabase/functions/_shared/external-db-telemetry.ts": 1,
   "supabase/functions/_shared/external-fetch.ts": 1,
   "supabase/functions/_shared/external-product-contract.ts": 2,
-  "supabase/functions/_shared/external-read-only.ts": 1,
+  "supabase/functions/_shared/external-read-only.ts": 2,
   "supabase/functions/_shared/ilike-pattern.ts": 1,
   "supabase/functions/_shared/internal-service-auth.ts": 1,
   "supabase/functions/_shared/jwt-structure.ts": 1,
