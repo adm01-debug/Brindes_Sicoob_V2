@@ -255,6 +255,9 @@ function createClientMetadata(metadata?: Record<string, unknown>): Record<string
 }
 
 const QUOTE_LIST_LIMIT = 500;
+
+/** Função que hospeda o atesto de preço hoje. Ver o comentário em `requestQuotePriceAttestation`. */
+export const ROTA_ATESTADO_DE_PRECO = 'sicoob-kit-quote';
 async function requestQuotePriceAttestation(params: {
   quote: Record<string, unknown>;
   items: Json;
@@ -262,8 +265,13 @@ async function requestQuotePriceAttestation(params: {
   quoteId?: string;
   expectedRowVersion?: number;
 }): Promise<string> {
-  const { data, error } = await supabase.functions.invoke('quote-price-attestation', {
+  // O atesto é servido por `sicoob-kit-quote`: o projeto Supabase está no teto
+  // de edge functions do plano e `quote-price-attestation` não pôde ser criada
+  // (402 `function.max_count`). Mesmo handler, mesma validação, mesma fronteira
+  // de confiança — ver o cabeçalho de `desviarParaAtestadoDePreco` lá.
+  const { data, error } = await supabase.functions.invoke(ROTA_ATESTADO_DE_PRECO, {
     body: {
+      op: 'price-attestation',
       quote: params.quote,
       items: params.items,
       history: params.history,
