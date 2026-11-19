@@ -7579,7 +7579,7 @@
     "ProductRiskDetail"
    ],
    "export_default": null,
-   "linhas": 203,
+   "linhas": 210,
    "dominio": "components/inventory",
    "hooks_locais": [
     "useProductIntelligenceData",

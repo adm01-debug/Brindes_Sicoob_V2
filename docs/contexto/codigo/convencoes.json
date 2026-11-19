@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)",
    "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
    "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)",
    "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)",
-   "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)",
-   "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)"
+   "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

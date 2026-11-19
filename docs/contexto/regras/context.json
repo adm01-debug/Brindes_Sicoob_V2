@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "9830191c7bd981220127053f34fb4cc73c4a5e52",
+  "sha": "c17e905bcf74063611a9fbb5ff439578cc59715a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 03:27 UTC",
+  "generated_at": "2026-11-19 03:34 UTC",
   "files_total": 4406,
   "code_files": 3750,
-  "code_lines": 549533
+  "code_lines": 549540
  },
  "version": "1.3.2",
- "facts_hash": "8da06f50d922f95e",
+ "facts_hash": "f47738f613367def",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -63825,7 +63825,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 166650,
+   "lines": 166657,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -192037,7 +192037,7 @@
   },
   "src/components/inventory/risk/ProductRiskDetail.tsx": {
    "path": "src/components/inventory/risk/ProductRiskDetail.tsx",
-   "lines": 203,
+   "lines": 210,
    "exports": [
     "function ProductRiskDetail"
    ],
@@ -251333,10 +251333,19 @@
   }
  },
  "git": {
-  "sha": "9830191c7bd981220127053f34fb4cc73c4a5e52",
+  "sha": "c17e905bcf74063611a9fbb5ff439578cc59715a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "c17e905",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)",
+    "files": [
+     "src/components/inventory/risk/ProductRiskDetail.tsx"
+    ]
+   },
    {
     "sha": "9830191",
     "date": "2026-11-19",
@@ -251861,18 +251870,6 @@
      "src/stores/useConfirmDialogStore.ts",
      "tests/components/GlobalConfirmDialog.test.tsx",
      "tests/stores/useConfirmDialogStore.test.ts"
-    ]
-   },
-   {
-    "sha": "bdeb172",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)",
-    "files": [
-     "scripts/db/.check-runtime-refs-allowlist.json",
-     "src/hooks/useCustomKitPersistence.ts",
-     "src/integrations/supabase/types.ts",
-     "tests/scenarios/custom-kit-pinning-contract.scenario.mjs"
     ]
    }
   ],

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "9830191c7bd981220127053f34fb4cc73c4a5e52",
+  "commit": "c17e905bcf74063611a9fbb5ff439578cc59715a",
   "branch": "main",
-  "data_commit": "2026-11-19T03:26:45Z",
+  "data_commit": "2026-11-19T03:34:15Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "c17e905",
+    "data": "2026-11-19",
+    "assunto": "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)"
+   },
    {
     "sha": "9830191",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "781ee20",
     "data": "2026-11-18",
     "assunto": "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)"
-   },
-   {
-    "sha": "ca76bcd",
-    "data": "2026-11-18",
-    "assunto": "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)"
    }
   ],
-  "arquivos_mudados_7d": 453,
+  "arquivos_mudados_7d": 454,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 71
+    "mudancas": 70
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 70
+    "mudancas": 69
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 151
+    "commits": 152
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4404,
   "arquivos_codigo": 3094,
-  "linhas_codigo": 488184,
+  "linhas_codigo": 488191,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 166650
+   "linhas": 166657
   },
   "src/constants": {
    "arquivos": 3,
