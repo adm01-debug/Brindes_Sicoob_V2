@@ -50,6 +50,29 @@ describe('documento transacional do orçamento', () => {
     expect(item).toHaveProperty('unit_cost', 35);
   });
 
+  it('arredonda o custo estimado a centavos como a atestação do catálogo', () => {
+    const [item] = buildAtomicQuoteItems([{
+      product_name: 'Produto sem custo cadastrado',
+      quantity: 1,
+      unit_price: 9.99,
+      personalizations: [],
+    }]);
+    expect(item).toHaveProperty('unit_cost', 6.99);
+  });
+
+  it.each([[1.45, 1.02], [0.05, 0.04]])(
+    'usa a mesma regra de arredondamento da atestação para preço %s',
+    (unitPrice, expectedCost) => {
+      const [item] = buildAtomicQuoteItems([{
+        product_name: 'Produto sem custo cadastrado',
+        quantity: 1,
+        unit_price: unitPrice,
+        personalizations: [],
+      }]);
+      expect(item.unit_cost).toBe(expectedCost);
+    },
+  );
+
   it('envia o id quando é um uuid de linha já persistida', () => {
     const [persistido] = buildAtomicQuoteItems([{
       id: '8f5d008d-6918-4e40-b90d-c0780ee9de71',

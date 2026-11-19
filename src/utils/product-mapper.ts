@@ -183,7 +183,7 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     description: firstTruthyOr<string | null | undefined>(undefined, p.description, p.short_description, p.meta_description),
     category_id: categoryId,
     category_name: firstTruthyOr<string | null>(null, p.category_name),
-    price: getProductPrice(p),
+    price: getProductPrice(p), costPrice: p.cost_price ?? undefined,
     image_url: images[0],
     og_image_url: firstTruthyOr<string | undefined>(undefined, p.og_image_url),
     images,
