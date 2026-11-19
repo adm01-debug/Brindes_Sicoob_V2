@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
+  "sha": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 06:45 UTC",
-  "files_total": 4527,
-  "code_files": 3780,
-  "code_lines": 552735
+  "generated_at": "2026-11-19 07:30 UTC",
+  "files_total": 4528,
+  "code_files": 3781,
+  "code_lines": 552851
  },
  "version": "1.3.2",
- "facts_hash": "15697c47024db2fc",
+ "facts_hash": "1bd7b4842f09be4a",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -349,7 +349,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1469,
-   ".tsx": 1430,
+   ".tsx": 1431,
    ".sql": 683,
    ".mjs": 139,
    ".py": 66,
@@ -61071,7 +61071,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1275,
+  "components_count": 1276,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63859,7 +63859,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 166657,
+   "lines": 166692,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65278,7 +65278,7 @@
   {
    "module": "supabase/functions",
    "files": 216,
-   "lines": 34909,
+   "lines": 34915,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65632,8 +65632,8 @@
   },
   {
    "module": "tests",
-   "files": 637,
-   "lines": 85666,
+   "files": 638,
+   "lines": 85741,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -79823,6 +79823,38 @@
     "text": "(30/60/90 dias) de UM produto. Visível apenas para admins."
    },
    {
+    "file": "src/components/products/ProductCard.tsx",
+    "text": "* Prazo do fornecedor, com o MESMO texto da ficha"
+   },
+   {
+    "file": "src/components/products/ProductCard.tsx",
+    "text": "(`src/pages/product-detail/ProductDetailHeroSections.tsx:267`): prazo zero ou"
+   },
+   {
+    "file": "src/components/products/ProductCard.tsx",
+    "text": "ausente é prazo não informado, não entrega no mesmo dia."
+   },
+   {
+    "file": "src/components/products/ProductCard.tsx",
+    "text": "barrel —, então mexer lá não leva o prazo a tela nenhuma."
+   },
+   {
+    "file": "src/components/products/ProductHoverPreview.tsx",
+    "text": "* Mesmo texto da ficha do produto (`ProductDetailHeroSections.tsx:267`): prazo"
+   },
+   {
+    "file": "src/components/products/ProductHoverPreview.tsx",
+    "text": "zero ou ausente é prazo NÃO INFORMADO, não entrega no mesmo dia. Enquanto a"
+   },
+   {
+    "file": "src/components/products/ProductHoverPreview.tsx",
+    "text": "coluna não vinha no select da listagem, este lugar escrevia \"Consultar prazo\""
+   },
+   {
+    "file": "src/components/products/ProductHoverPreview.tsx",
+    "text": "cravado — dizia o mesmo para todos os 7.938 produtos ativos, que têm prazo."
+   },
+   {
     "file": "src/components/products/ProductSparkline.tsx",
     "text": "Exibe somente dados reais do SparklineSalesProvider."
    },
@@ -81121,6 +81153,18 @@
    {
     "file": "supabase/functions/_shared/external-fetch.ts",
     "text": "funcionando e encerra a requisição antes do prazo local quando necessário."
+   },
+   {
+    "file": "supabase/functions/_shared/external-product-contract.ts",
+    "text": "O prazo do fornecedor é um inteiro por linha — cabe no select leve e é a"
+   },
+   {
+    "file": "supabase/functions/_shared/external-product-contract.ts",
+    "text": "única fonte do prazo no cartão de listagem, que até aqui escrevia"
+   },
+   {
+    "file": "supabase/functions/_shared/external-product-contract.ts",
+    "text": "\"Consultar prazo\" cravado no código para 100% dos produtos. Em listagem o"
    },
    {
     "file": "supabase/functions/_shared/external-read-only.ts",
@@ -111760,6 +111804,10 @@
     "line": "const productCost = (item.unit_cost || item.unit_price * 0.7) * item.quantity; // Fallback 70% se não houver custo"
    },
    {
+    "file": "supabase/functions/_shared/external-product-contract.ts",
+    "line": "// \"Consultar prazo\" cravado no código para 100% dos produtos. Em listagem o"
+   },
+   {
     "file": "supabase/functions/_shared/supabase-client-adapter.ts",
     "line": "* Aceita qualquer Database / SchemaName, com default \"public\" — cobre 100%"
    },
@@ -120322,6 +120370,14 @@
     "name": "handles category object with undefined name gracefully"
    },
    {
+    "file": "tests/components/products/ProductCard.test.tsx",
+    "name": "mostra o prazo do catálogo quando o produto tem lead time"
+   },
+   {
+    "file": "tests/components/products/ProductCard.test.tsx",
+    "name": "prazo ausente ou zero continua sendo "
+   },
+   {
     "file": "tests/components/products/ProductCardImage.private-storage.test.tsx",
     "name": "imagem privada do catálogo"
    },
@@ -120724,6 +120780,22 @@
    {
     "file": "tests/components/products/StatsPopover.test.tsx",
     "name": "does NOT double count: colors > 0 means variations ignored"
+   },
+   {
+    "file": "tests/components/products/prazo-no-cartao.test.tsx",
+    "name": "prazo de entrega no cartão de listagem"
+   },
+   {
+    "file": "tests/components/products/prazo-no-cartao.test.tsx",
+    "name": "o select leve da edge pede lead_time_days — sem isso o cartão não tem o dado"
+   },
+   {
+    "file": "tests/components/products/prazo-no-cartao.test.tsx",
+    "name": "o cartão lê o dado em vez de escrever texto fixo"
+   },
+   {
+    "file": "tests/components/products/prazo-no-cartao.test.tsx",
+    "name": "prazo zero ou ausente é "
    },
    {
     "file": "tests/components/quotes/AIRecommendationsPanel.test.tsx",
@@ -196258,7 +196330,7 @@
   },
   "src/components/products/ProductCard.tsx": {
    "path": "src/components/products/ProductCard.tsx",
-   "lines": 330,
+   "lines": 354,
    "exports": [
     "interface ProductCardProps",
     "const ProductCard"
@@ -196279,6 +196351,12 @@
    ],
    "role_checks": [
     "false"
+   ],
+   "rule_comments": [
+    "* Prazo do fornecedor, com o MESMO texto da ficha",
+    "(`src/pages/product-detail/ProductDetailHeroSections.tsx:267`): prazo zero ou",
+    "ausente é prazo não informado, não entrega no mesmo dia.",
+    "barrel —, então mexer lá não leva o prazo a tela nenhuma."
    ],
    "doc": "ProductCard — Main catalog card component. Refactored: image section in ProductCardImage, FAB actions in ProductCardActions.",
    "calc_fns": [
@@ -196388,9 +196466,15 @@
   },
   "src/components/products/ProductHoverPreview.tsx": {
    "path": "src/components/products/ProductHoverPreview.tsx",
-   "lines": 103,
+   "lines": 114,
    "exports": [
     "function ProductHoverPreview"
+   ],
+   "rule_comments": [
+    "* Mesmo texto da ficha do produto (`ProductDetailHeroSections.tsx:267`): prazo",
+    "zero ou ausente é prazo NÃO INFORMADO, não entrega no mesmo dia. Enquanto a",
+    "coluna não vinha no select da listagem, este lugar escrevia \"Consultar prazo\"",
+    "cravado — dizia o mesmo para todos os 7.938 produtos ativos, que têm prazo."
    ],
    "calc_fns": [
     {
@@ -227433,7 +227517,7 @@
   },
   "supabase/functions/_shared/external-product-contract.ts": {
    "path": "supabase/functions/_shared/external-product-contract.ts",
-   "lines": 61,
+   "lines": 67,
    "exports": [
     "const EXTERNAL_PRODUCT_CORE_COLUMNS",
     "const EXTERNAL_PRODUCT_CORE_SELECT",
@@ -227447,7 +227531,15 @@
      "values": "'id', 'name', 'sku', 'sale_price', 'primary_image_url', 'is_active', 'stock_quantity', 'min_quantity',"
     }
    ],
-   "doc": "Contrato de leitura da tabela `products` no catálogo Promobrind. A fonte externa usa `is_active`, `sale_price` e `primary_image_url`. Os aliases legados `active`, `base_price` e `image_url` não existem nessa tabela e fazem o PostgREST rejeitar a consulta inteira com 42703."
+   "rule_comments": [
+    "O prazo do fornecedor é um inteiro por linha — cabe no select leve e é a",
+    "única fonte do prazo no cartão de listagem, que até aqui escrevia",
+    "\"Consultar prazo\" cravado no código para 100% dos produtos. Em listagem o"
+   ],
+   "doc": "Contrato de leitura da tabela `products` no catálogo Promobrind. A fonte externa usa `is_active`, `sale_price` e `primary_image_url`. Os aliases legados `active`, `base_price` e `image_url` não existem nessa tabela e fazem o PostgREST rejeitar a consulta inteira com 42703.",
+   "percents": [
+    "// \"Consultar prazo\" cravado no código para 100% dos produtos. Em listagem o"
+   ]
   },
   "supabase/functions/_shared/external-read-only.ts": {
    "path": "supabase/functions/_shared/external-read-only.ts",
@@ -242377,10 +242469,12 @@
   },
   "tests/components/products/ProductCard.test.tsx": {
    "path": "tests/components/products/ProductCard.test.tsx",
-   "lines": 299,
+   "lines": 319,
    "is_test": true,
    "rule_comments": [
-    "Regression: category name must not appear when category object exists but name is undefined"
+    "Regression: category name must not appear when category object exists but name is undefined",
+    "Prazo de entrega no cartão. Renderiza o ProductCard de verdade e confere o",
+    "no `ProductHoverPreview` não levava o prazo a tela nenhuma, porque ele não"
    ],
    "doc": "Render tests for ProductCard (584 lines)",
    "tests": [
@@ -242400,7 +242494,9 @@
     "does not render category line when product.category is absent",
     "does not render category line when category.name is falsy",
     "renders the sparkline section label as ",
-    "handles category object with undefined name gracefully"
+    "handles category object with undefined name gracefully",
+    "mostra o prazo do catálogo quando o produto tem lead time",
+    "prazo ausente ou zero continua sendo "
    ]
   },
   "tests/components/products/ProductCardImage.private-storage.test.tsx": {
@@ -242546,6 +242642,21 @@
     "returns 0 when neither colors nor variations exist",
     "sums colors + variations across mixed products",
     "does NOT double count: colors > 0 means variations ignored"
+   ]
+  },
+  "tests/components/products/prazo-no-cartao.test.tsx": {
+   "path": "tests/components/products/prazo-no-cartao.test.tsx",
+   "lines": 55,
+   "is_test": true,
+   "rule_comments": [
+    "* O prazo no cartão de listagem depende de DUAS pontas, e por isso o teste"
+   ],
+   "doc": "O prazo no cartão de listagem depende de DUAS pontas, e por isso o teste cobre as duas: o contrato de leitura da edge precisa pedir a coluna (em listagem o bridge troca o select do chamador pelo `LIGHTWEIGHT_SELECT`), e o componente precisa ler o dado em vez de escrever texto fixo. Cobrir só o compo …",
+   "tests": [
+    "prazo de entrega no cartão de listagem",
+    "o select leve da edge pede lead_time_days — sem isso o cartão não tem o dado",
+    "o cartão lê o dado em vez de escrever texto fixo",
+    "prazo zero ou ausente é "
    ]
   },
   "tests/components/quotes/AIRecommendationsPanel.test.tsx": {
@@ -252170,10 +252281,23 @@
   }
  },
  "git": {
-  "sha": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
+  "sha": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "f21dbfd",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)",
+    "files": [
+     "src/components/products/ProductCard.tsx",
+     "src/components/products/ProductHoverPreview.tsx",
+     "supabase/functions/_shared/external-product-contract.ts",
+     "tests/components/products/ProductCard.test.tsx",
+     "tests/components/products/prazo-no-cartao.test.tsx"
+    ]
+   },
    {
     "sha": "138474b",
     "date": "2026-11-19",
@@ -252677,17 +252801,6 @@
      "PENDENCIAS.md",
      "RELATORIO_CI.md"
     ]
-   },
-   {
-    "sha": "3df58f1",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)",
-    "files": [
-     "supabase/functions/crm-db-bridge/search-pattern.test.ts",
-     "supabase/functions/get-app-logs/index.ts",
-     "supabase/functions/mcp-server/index.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -252700,16 +252813,32 @@
     2
    ],
    [
-    "supabase/functions/mcp-server/index.ts",
-    2
-   ],
-   [
     "scripts/revisao/gerar-revisao-2026-09-12.py",
     2
    ],
    [
     "PENDENCIAS.md",
     2
+   ],
+   [
+    "src/components/products/ProductCard.tsx",
+    1
+   ],
+   [
+    "src/components/products/ProductHoverPreview.tsx",
+    1
+   ],
+   [
+    "supabase/functions/_shared/external-product-contract.ts",
+    1
+   ],
+   [
+    "tests/components/products/ProductCard.test.tsx",
+    1
+   ],
+   [
+    "tests/components/products/prazo-no-cartao.test.tsx",
+    1
    ],
    [
     "package-lock.json",
@@ -252753,22 +252882,6 @@
    ],
    [
     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/metodo-coopera.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e021-politicas-whatsapp.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e022-lgpd-ripd.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e023-consentimento.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e024-retencao.md",
     1
    ]
   ]

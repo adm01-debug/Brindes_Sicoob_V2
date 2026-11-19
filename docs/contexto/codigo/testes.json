@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 863,
+ "total": 864,
  "por_tipo": {
   "contrato": 11,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 635
+  "unit": 636
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 616
+   "arquivos": 617
   },
   {
    "padrao": "e2e/",
@@ -3036,15 +3036,22 @@
    "casos": 15
   },
   {
+   "arquivo": "tests/components/products/prazo-no-cartao.test.tsx",
+   "tipo": "unit",
+   "linhas": 55,
+   "testa": [],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/components/products/ProductCard.test.tsx",
    "tipo": "unit",
-   "linhas": 299,
+   "linhas": 319,
    "testa": [
     "src/components/products/ProductCard.tsx",
     "src/utils/color-image-resolver.ts",
     "src/utils/image-utils.ts"
    ],
-   "casos": 15
+   "casos": 17
   },
   {
    "arquivo": "tests/components/products/ProductCardImage.private-storage.test.tsx",

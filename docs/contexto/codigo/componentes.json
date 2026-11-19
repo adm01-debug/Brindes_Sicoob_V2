@@ -11368,7 +11368,7 @@
     "ProductCardProps"
    ],
    "export_default": null,
-   "linhas": 330,
+   "linhas": 354,
    "dominio": "components/products",
    "hooks_locais": [
     "useComparisonStore",
@@ -11537,7 +11537,7 @@
     "ProductHoverPreview"
    ],
    "export_default": null,
-   "linhas": 103,
+   "linhas": 114,
    "dominio": "components/products",
    "hooks_locais": [],
    "tabelas": [],

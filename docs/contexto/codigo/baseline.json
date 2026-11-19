@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
+  "commit": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
   "branch": "main",
-  "data_commit": "2026-11-19T06:45:14Z",
+  "data_commit": "2026-11-19T07:29:56Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "f21dbfd",
+    "data": "2026-11-19",
+    "assunto": "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)"
+   },
    {
     "sha": "138474b",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "489c13d",
     "data": "2026-11-19",
     "assunto": "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)"
-   },
-   {
-    "sha": "e0e36d4",
-    "data": "2026-11-19",
-    "assunto": "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)"
    }
   ],
-  "arquivos_mudados_7d": 605,
+  "arquivos_mudados_7d": 610,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 37
+    "mudancas": 38
    },
    {
     "pasta": "docs/externo/analises-20261007",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 52
+    "mudancas": 51
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 51
+    "mudancas": 50
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 169
+    "commits": 170
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4524,
-  "arquivos_codigo": 3115,
-  "linhas_codigo": 490156,
+  "arquivos_total": 4525,
+  "arquivos_codigo": 3116,
+  "linhas_codigo": 490272,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 863,
+  "testes": 864,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 285
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 166657
+   "linhas": 166692
   },
   "src/constants": {
    "arquivos": 3,
@@ -840,7 +840,7 @@
   },
   "supabase/functions": {
    "arquivos": 216,
-   "linhas": 34909
+   "linhas": 34915
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 144,
-   "linhas": 27191
+   "arquivos": 145,
+   "linhas": 27266
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -1142,7 +1142,7 @@
   }
  ],
  "qualidade": {
-  "any": 495,
+  "any": 497,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

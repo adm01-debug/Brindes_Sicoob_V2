@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `138474b593` · branch `main` · 2026-11-19 06:45 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f21dbfd5f2` · branch `main` · 2026-11-19 07:30 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4557,6 +4557,7 @@ _nenhum item encontrado_
 | `\| 'critical' // Crítico (< 25% do mínimo)` | `src/types/stock.ts` |
 | `* CDN: Cloudflare Images (100% funcional, HTTP 200 confirmado)` | `src/utils/image-utils.ts` |
 | `const productCost = (item.unit_cost \|\| item.unit_price * 0.7) * item.quantity; // Fallback 70% se não houver custo` | `src/utils/quote-calculations.ts` |
+| `// "Consultar prazo" cravado no código para 100% dos produtos. Em listagem o` | `supabase/functions/_shared/external-product-contract.ts` |
 | `* Aceita qualquer Database / SchemaName, com default "public" — cobre 100%` | `supabase/functions/_shared/supabase-client-adapter.ts` |
 | `score: Math.max(0.5, 0.8 - index * 0.05),` | `supabase/functions/ai-recommendations/index.ts` |
 | `* Cruza user_comparisons ativas com price_history; se houve queda > 5% nos` | `supabase/functions/comparison-price-watcher/index.ts` |
@@ -5707,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6868 testes em 682 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6874 testes em 683 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5796,6 +5797,7 @@ _nenhum item encontrado_
 | `tests/scripts/db-scripts-hardening.test.ts` | 20 | drift do ledger — nomes de arquivo · .sql fora do padrão vira pendência em vez de sumir · arquivo no padrão e alinhado ao ledger continua sem pendência · classificador do backlog de migrations — operações destrutivas … |
 | `tests/types/quote-types.test.ts` | 20 | QuoteHistoryEntry shape · has all required fields · allows nullable fields · metadata defaults to empty object … |
 | `tests/components/ReplenishmentToolbar.test.tsx` | 19 | ReplenishmentToolbar · renders title and count badge · shows loading state when isLoading with zero total · shows filtered/total when hasActiveFilters … |
+| `tests/components/products/ProductCard.test.tsx` | 19 | ProductCard · renders product name and price · renders with favorite state · calls onClick when clicked … |
 | `tests/edge-functions/voice-agent.test.ts` | 19 | Voice Agent Response Contract · action types · should have valid action enum values · response structure … |
 | `tests/lib/query-config.test.ts` | 19 | CACHE_TIMES · should have increasing cache durations · getStaleTimeForKey · should return TECNICAS time for tecnicas keys … |
 | `tests/lib/personalization/adapters/raw-row.adapter.test.ts` | 19 | adaptTecnicaRow · espelha PT → EN quando só PT está presente · espelha EN → PT quando só EN está presente · preserva ambos quando payload é híbrido … |
@@ -5811,7 +5813,6 @@ _nenhum item encontrado_
 | `tests/admin/skeleton-fallbacks-ref-warning.test.tsx` | 17 | SkeletonLoaders — nenhum ref warning · render direto: %s · como fallback de <Suspense>: %s · getFallback( … |
 | `tests/components/PriceFreshnessBadge.invalid-dates.test.tsx` | 17 | PriceFreshnessBadge — datas ausentes/inválidas · variant inline (PDP, sempre renderiza) · mostra  · mostra  … |
 | `tests/components/products/ColumnSelector.test.tsx` | 17 | ColumnSelector · shows all 5 options on a 1600px screen · hides options whose minWidth exceeds screen width · shows only 3-col option on a 400px screen (mobile) … |
-| `tests/components/products/ProductCard.test.tsx` | 17 | ProductCard · renders product name and price · renders with favorite state · calls onClick when clicked … |
 | `tests/hooks/voice-modules.test.ts` | 17 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry non-retryable errors … |
 | `tests/lib/external-db-immutable-cache.test.ts` | 17 | immutableCache.getCachedByIds — básico · cache miss puro: 1 chamada bridge com filtro id=in.(...) · cache hit puro: 0 chamadas bridge · hit parcial: bridge é chamada só com os ids faltantes … |
 | `tests/lib/filter-dev-only-items.test.ts` | 17 | filterDevOnlyItems — visibilidade por papel · vendedor (não-dev, não-admin) NÃO vê nenhum item devOnly · admin (não-dev) NÃO vê itens devOnly, mas vê adminOnly · dev vê TODOS os itens, inclusive devOnly … |
@@ -6011,7 +6012,7 @@ _nenhum item encontrado_
 | `tests/scripts/check-migration-immutability.test.ts` | 7 | check-migration-immutability · migration nova passa · editar migration existente reprova · remover migration existente reprova … |
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
-| … +382 linhas — lista completa em `context.json` | | |
+| … +383 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6325,6 +6326,14 @@ _nenhum item encontrado_
 | alerta. Mantém o tooltip (mostra data SSOT + regra) para auditoria. | `src/components/products/PriceFreshnessBadge.tsx` |
 | Sem ação individual configurada → comportamento clássico (somente leitura). | `src/components/products/PriceFreshnessBadge.tsx` |
 | (30/60/90 dias) de UM produto. Visível apenas para admins. | `src/components/products/PriceFreshnessThresholdEditor.tsx` |
+| * Prazo do fornecedor, com o MESMO texto da ficha | `src/components/products/ProductCard.tsx` |
+| (`src/pages/product-detail/ProductDetailHeroSections.tsx:267`): prazo zero ou | `src/components/products/ProductCard.tsx` |
+| ausente é prazo não informado, não entrega no mesmo dia. | `src/components/products/ProductCard.tsx` |
+| barrel —, então mexer lá não leva o prazo a tela nenhuma. | `src/components/products/ProductCard.tsx` |
+| * Mesmo texto da ficha do produto (`ProductDetailHeroSections.tsx:267`): prazo | `src/components/products/ProductHoverPreview.tsx` |
+| zero ou ausente é prazo NÃO INFORMADO, não entrega no mesmo dia. Enquanto a | `src/components/products/ProductHoverPreview.tsx` |
+| coluna não vinha no select da listagem, este lugar escrevia "Consultar prazo" | `src/components/products/ProductHoverPreview.tsx` |
+| cravado — dizia o mesmo para todos os 7.938 produtos ativos, que têm prazo. | `src/components/products/ProductHoverPreview.tsx` |
 | Exibe somente dados reais do SparklineSalesProvider. | `src/components/products/ProductSparkline.tsx` |
 | - Limite configurável (`maxResults`) | `src/components/products/SmartRecommendations.tsx` |
 | * Business logic hook for StockHistoryChart. | `src/components/products/useStockChartData.ts` |
@@ -6488,12 +6497,4 @@ _nenhum item encontrado_
 | * Atalho conveniente — devolve apenas o label (compat com `deriveCategory` antigo) */ | `src/lib/bi/categoryResolver.ts` |
 | Usado pelo ExecutiveSummaryButton no módulo Business Analytic. | `src/lib/bi/pptxGenerator.ts` |
 | Fire-and-forget — falha de telemetria não pode quebrar o app. | `src/lib/external-db/bridge-telemetry-client.ts` |
-| Fail-fast em erros determinísticos (schema/validação/auth) — retry não muda o resultado. | `src/lib/external-db/invoke.ts` |
-| ', limit: 500, | `src/lib/external-db/price-tables.ts` |
-| * Alias legado aceito apenas na normalização de payloads antigos. */ | `src/lib/external-db/product-types.ts` |
-| * Alias legado aceito apenas na normalização de payloads antigos. */ | `src/lib/external-db/product-types.ts` |
-| pô-la em `_WITH_SALE` não faria o prazo chegar ao cartão — isso exige mexer | `src/lib/external-db/product-types.ts` |
-| `_LEGACY` segue sendo o mínimo seguro do fallback e não ganha colunas. | `src/lib/external-db/product-types.ts` |
-| Cache de referência é apenas uma otimização. | `src/lib/external-db/products.ts` |
-| Esta lista DEVE espelhar exatamente o que o bridge aceita. | `src/lib/external-db/tables.ts` |
-| … +275 linhas — lista completa em `context.json` | |
+| … +286 linhas — lista completa em `context.json` | |
