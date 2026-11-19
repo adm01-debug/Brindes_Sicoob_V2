@@ -1,4 +1,5 @@
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { escapeIlikeSearchTerm } from "../_shared/ilike-pattern.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { authorize } from "../_shared/authorize.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
@@ -41,7 +42,10 @@ Deno.serve(async (req) => {
       query = query.eq("severity", severity);
     }
     if (table_name) {
-      query = query.ilike("table_name", `%${table_name}%`);
+      // `%` e `_` vindos do filtro viram curinga e ampliam o resultado para
+      // muito além do que foi pedido: `_` casa qualquer caractere e `%`
+      // qualquer trecho. Escapar mantém o filtro sendo filtro.
+      query = query.ilike("table_name", `%${escapeIlikeSearchTerm(table_name)}%`);
     }
 
     const { data, error, count } = await query;
