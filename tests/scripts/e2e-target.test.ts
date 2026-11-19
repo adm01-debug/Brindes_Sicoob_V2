@@ -29,13 +29,19 @@ describe("guarda de destino E2E", () => {
     ["caminho alternativo", { ...validConfig, url: "https://qa-sicoob-123.supabase.co/proxy" }],
     ["porta customizada", { ...validConfig, url: "https://qa-sicoob-123.supabase.co:8443" }],
     ["chaves repetidas", { ...validConfig, serviceRoleKey: validConfig.publishableKey }],
-    // Recuperados de `tests/scripts/validate-e2e-supabase-target.test.ts`, que
-    // ficou em `fix/hermes-bi-share-hardening-20261028` e nunca entrou na
-    // `main`. O script já recusa os dois (`scripts/e2e-target.mjs:34` e `:22`);
-    // o que faltava era a catraca.
-    ["endpoint sem HTTPS", { ...validConfig, url: "http://qa-sicoob-123.supabase.co" }],
   ])("rejeita %s", (_reason, config) => {
     expect(() => validateE2ETarget(config)).toThrow();
+  });
+
+  // Os dois casos abaixo vêm de `tests/scripts/validate-e2e-supabase-target.test.ts`,
+  // que ficou em `fix/hermes-bi-share-hardening-20261028` e nunca entrou na `main`.
+  // O script já recusa ambos (`scripts/e2e-target.mjs:34` e `:22`); faltava a catraca.
+  // Em caso próprio, e não na lista acima, para não alargar o tipo inferido do
+  // `url` daquelas entradas (template literal `https://${string}.supabase.co`).
+  it("rejeita endpoint sem HTTPS", () => {
+    expect(() =>
+      validateE2ETarget({ ...validConfig, url: "http://qa-sicoob-123.supabase.co" }),
+    ).toThrow();
   });
 
   it.each([
