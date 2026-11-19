@@ -779,8 +779,32 @@ Hash de blob mede quanto a `main` evoluiu, não trabalho perdido.
 
 O que mede é a **união dos caminhos** que não existem na `main`, sobre as 61 refs (fora
 `contexto`, que é artefato gerado): **249 caminhos**, **243** descontando os 6 que a #354
-removeu de propósito. Destes, **235 com cobertura** (citados neste ledger, ou presentes na
-`main` com o mesmo nome de arquivo ou o mesmo slug de migration). Os **8 restantes**, um a um:
+removeu de propósito.
+
+> **Correção de 19/11/2026, após revisão.** A primeira versão desta seção dizia "235 com
+> cobertura (citados neste ledger, **ou** presentes na `main` com o mesmo nome ou slug)".
+> Isso somava duas bases muito diferentes e dava a entender equivalência de conteúdo, que
+> não foi o que se mediu. Comparando de fato — blob da ref contra a contraparte de mesmo
+> nome na `main` — o resultado é:
+>
+> | resultado | quantos | o que significa |
+> |---|---|---|
+> | contraparte de mesmo nome, **conteúdo diferente** | 17 | 9 são migrations renumeradas, já conferidas byte a byte aqui: a da `main` é superconjunto. O resto são falsos pares do casamento por nome (`graphify-out/README.md` × `docs/README.md`) |
+> | contraparte de mesmo nome, **conteúdo idêntico** | **0** | nenhuma ref tem arquivo igual ao da `main` — a `main` evoluiu em todos |
+> | **sem contraparte** na `main` | 172 | não há o que comparar; a base é o veredito escrito, não conteúdo |
+>
+> Dos 172 sem contraparte, **100 são arquivos de teste**. Destes, **95 têm veredito citado
+> neste ledger**, escrito pelas ondas de recuperação anteriores, e **5 não tinham** — são
+> exatamente os 5 da tabela abaixo. Dois deles viraram correção
+> ([#369](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/369) e
+> [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370)), o que diz algo sobre a
+> taxa: amostrando 8 arquivos sem veredito, 2 eram buraco real.
+>
+> O que fica provado por conteúdo, portanto, são as 9 migrations. O resto se apoia em
+> veredito escrito — que é o critério do `README.md` desta pasta, mas **não** é a mesma
+> coisa que comparação byte a byte, e este ledger não deve sugerir que seja.
+
+Os **8 caminhos sem veredito algum**, um a um:
 
 | arquivo | onde estava | veredito |
 |---|---|---|
@@ -790,7 +814,7 @@ removeu de propósito. Destes, **235 com cobertura** (citados neste ledger, ou p
 | `tests/hooks/useClientBI.no-fallback.test.ts` | `fix/hermes-h015416-dados-reais` | equivalente na `main`: `tests/hooks/bi/useClientBI.test.ts` |
 | `tests/hooks/useClientSeasonality.no-fallback.test.ts` | idem | coberto pelas suítes de disponibilidade de BI (`BIAiCopilot.sources-availability`, `ExecutiveSummaryButton.availability`, `useClientHealthScore.diagnostico`) |
 | `tests/hooks/useProductIntelligenceBadges.no-fallback.test.ts` | idem | equivalente na `main`: `tests/hooks/intelligence-badges.test.ts` |
-| `tests/edge-functions/catalog-readonly-rpc.test.ts` | `fix/quote-price-authority-311333` | **coberto com folga** (abaixo) |
+| `tests/edge-functions/catalog-readonly-rpc.test.ts` | `fix/quote-price-authority-311333` | **era buraco real — recuperado** na [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370) |
 | `tests/scripts/validate-e2e-supabase-target.test.ts` | `fix/hermes-bi-share-hardening-20261028` | **tinha 2 casos sem equivalente — recuperados** na [#369](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/369) |
 
 **A migration do ator inativo.** A regra ("conta desativada não transiciona orçamento") está
@@ -800,17 +824,35 @@ branch ficava **dentro** do núcleo `..._core_20261013`; a da `main` fica no **i
 antes de chamá-lo, porque o núcleo pode retornar cedo quando o status pedido já está
 confirmado. A posição da `main` também cobre quem chama o invólucro direto.
 
-**O teste do catálogo somente leitura.** `tests/scenarios/catalogo-somente-leitura.mjs` na
-`main` é superconjunto do arquivo perdido: recusa `POST`, `PUT`, `PATCH` e `DELETE` (o órfão
-só testava `POST`), nas duas formas de chamada (string e `Request`), exige `GET` tanto em
-`products?select=` quanto em `rpc/…`, e ainda recusa redirecionamento. Roda no CI por
-`npm run test:scenarios`. Executado em 19/11/2026: **32/32 passando**.
+**O teste do catálogo somente leitura — eu havia fechado cedo demais.** Escrevi que
+`tests/scenarios/catalogo-somente-leitura.mjs` era superconjunto, porque recusa `POST`,
+`PUT`, `PATCH` e `DELETE` nas duas formas de chamada e ainda recusa redirecionamento
+(32/32 passando). A revisão da #367 mostrou que isso é a camada de **transporte**, e o
+arquivo perdido exercitava a de cima: `catalog.rpc(..., { get: true })`, a integração com
+o `supabase-js`. Conferido: `grep -E "createClient|\.rpc\(|get: true"` naquele cenário
+volta **vazio**.
 
-**O que a varredura devolveu ao sistema:** um único buraco real em 243 caminhos — a regra do
-`AGENTS.md` "E2E/QA nunca aponta para o oficial nem para o catálogo" não tinha catraca para
-**endpoint sem HTTPS** nem para **falha fechada por configuração ausente**, embora
-`scripts/e2e-target.mjs:34` e `:22` recusem os dois. Recuperado na #369, com prova de que
-trava: removendo cada guarda, caem 1 e 5 casos.
+Importa porque RPC no PostgREST é **POST por padrão** — só com `{ get: true }` o cliente
+emite `GET`. Sem catraca nessa camada, um `get: true` esquecido faz o transporte barrar com
+`CATALOG_READ_ONLY` e o catálogo parar, com o teste de transporte seguindo verde. E a falha
+chega como **dado**, não como exceção: o `supabase-js` captura o erro do fetch e devolve em
+`error`. Recuperado na [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370).
+
+**O que a varredura devolveu ao sistema: dois buracos reais**, ambos em catraca de regra
+escrita no `AGENTS.md`, ambos recuperados com prova de que travam.
+
+1. **Destino de E2E** ("E2E/QA nunca aponta para o oficial nem para o catálogo"). A `main`
+   não cobria **falha fechada por configuração ausente**, embora `scripts/e2e-target.mjs:22`
+   recuse. Recuperado na #369 — removendo a checagem, caem os 5 casos.
+   *Correção:* a primeira versão desta seção dizia "dois casos, incluindo endpoint sem
+   HTTPS". O caso de HTTPS **já existia** na `main`, como `"endpoint sem TLS"`; eu procurei
+   por "HTTPS" e não por "TLS" e acrescentei duplicata, removida depois da revisão.
+2. **Catálogo somente leitura** ("NÃO escrever no catálogo externo"). A `main` cobria o
+   transporte, não a integração com o `supabase-js`. Recuperado na #370 — liberando `POST`
+   na guarda de `external-read-only.ts`, o caso cai.
+
+Os dois saíram de uma amostra de 8 arquivos sem veredito. Taxa de 2 em 8 é o argumento
+contra encerrar varredura por contagem.
 
 ### Veredito por ref — as 62, uma linha cada
 
