@@ -446,10 +446,27 @@ allowlist de publicação (linha 56 do `deploy-sicoob-functions.yml`). O último
 sozinha; o deploy de edge function é manual. O front passou a exigir uma função que ninguém
 mandou subir.
 
-**Ação:** dispatch de `deploy-sicoob-functions.yml` em 19/11 01:20,
-[run 44436096498](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/44436096498).
+**Ação e o que ela revelou:** dispatch de `deploy-sicoob-functions.yml` em 19/11 01:20
+([run 44436096498](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/44436096498)).
+13 das 14 funções publicaram; a 14ª, que é **nova** (criação, não atualização), parou em:
 
-**Regra que fica:** merge de PR que adiciona edge function **não publica nada**. A allowlist
+```
+unexpected create function status 402: {"message":"Max number of functions reached for project",
+  "error":{"code":"entitlement_required","feature":"function.max_count"}}
+```
+
+Ou seja, **não era esquecimento de dispatch**: o projeto Supabase bateu o teto de edge
+functions do plano. O dispatch de 21:33 também teria falhado. O bloqueio é de plano, e
+continua de pé.
+
+As três saídas — subir o plano (custo), apagar uma função morta para liberar vaga (deleção
+em produção, e exige token `sbp_` para listar e evidenciar qual está sem uso), ou voltar o
+front ao caminho sem atestado (regressão de segurança: o preço volta a poder ser forjado no
+cliente) — são todas decisão do dono. Registradas na
+[#317](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/317#issuecomment-6996753511).
+
+**Regra que fica:** merge de PR que adiciona edge function **não publica nada**, e a
+allowlist não garante vaga no plano. A allowlist
 diz o que *pode* subir, não o que subiu. Depois de cada merge desse tipo, o dispatch é
 obrigatório — e o ping é a única prova de que subiu.
 
