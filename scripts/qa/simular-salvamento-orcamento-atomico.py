@@ -14,6 +14,9 @@ FIXTURE = ROOT / "tests/scenarios/sql/quote-atomic-save-fixture.sql"
 BASE_MIGRATION = ROOT / "supabase/migrations/20261002160000_quote_items_id_format_validation.sql"
 GOVERNANCE_MIGRATION = ROOT / "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql"
 MIGRATION = ROOT / "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
+GATE_MIGRATION = ROOT / "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+IDEMPOTENCY_MIGRATION = ROOT / "supabase/migrations/20260928162048_quote_save_idempotency.sql"
+HARDEN_IDEMPOTENCY_MIGRATION = ROOT / "supabase/migrations/20260928173500_harden_quote_save_idempotency.sql"
 SELLER = "11111111-1111-4111-8111-111111111111"
 ORG = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 OTHER_ORG = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
@@ -40,7 +43,16 @@ def sql(statement, *, check=True):
 
 def actor_sql(statement, *, check=True):
     return sql(
-        f"SET ROLE authenticated; SET request.jwt.claim.sub = '{SELLER}';\n{statement}\nRESET ROLE;",
+        f"SET ROLE authenticated; SET request.jwt.claim.sub = '{SELLER}'; "
+        f"SET request.jwt.claim.role = 'authenticated';\n{statement}\nRESET ROLE;",
+        check=check,
+    )
+
+
+def service_role_sql(statement, *, check=True):
+    return sql(
+        f"SET ROLE service_role; SET request.jwt.claim.sub = '{SELLER}'; "
+        f"SET request.jwt.claim.role = 'service_role';\n{statement}\nRESET ROLE;",
         check=check,
     )
 
@@ -104,16 +116,61 @@ def quote_payload(*, org=ORG, quantity=2, failing=False):
     return header, items
 
 
-def rpc(header, items, *, quote_id=None, version=None, history=None, check=True):
+def register_attestation(header, items, *, quote_id=None, version=None, history=None, check=True):
+    """Emite um atestado de preço como service_role (única via permitida)."""
     quote_sql = json.dumps(header, ensure_ascii=False, separators=(",", ":"))
     items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
     history_sql = json.dumps(history or ["Registro transacional de teste"], ensure_ascii=False)
     quote_id_sql = "NULL" if quote_id is None else f"'{quote_id}'::uuid"
     version_sql = "NULL" if version is None else str(version)
+    return service_role_sql(
+        "SELECT public.register_quote_price_attestation("
+        f"'{SELLER}'::uuid, {quote_id_sql}, {version_sql}, "
+        f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
+        f"$history${history_sql}$history$::jsonb);",
+        check=check,
+    )
+
+
+def rpc(header, items, *, quote_id=None, version=None, history=None, check=True):
+    """Registra o atestado (service_role) e salva pela RPC atestada (authenticated)."""
+    attestation_id = scalar(register_attestation(
+        header, items, quote_id=quote_id, version=version, history=history
+    ))
+    return save_attested(
+        header, items, attestation_id, quote_id=quote_id, version=version,
+        history=history, check=check,
+    )
+
+
+def save_attested(header, items, attestation_id, *, quote_id=None, version=None, history=None, check=True):
+    """Usa um atestado já emitido para salvar pela RPC atestada."""
+    quote_with_attestation = dict(header)
+    quote_with_attestation["price_attestation_id"] = attestation_id
+    quote_sql = json.dumps(quote_with_attestation, ensure_ascii=False, separators=(",", ":"))
+    items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
+    history_sql = json.dumps(history or ["Registro transacional de teste"], ensure_ascii=False)
+    quote_id_sql = "NULL" if quote_id is None else f"'{quote_id}'::uuid"
+    version_sql = "NULL" if version is None else str(version)
     return actor_sql(
-        "SELECT public.save_quote_atomic("
+        "SELECT public.save_quote_atomic_attested("
         f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
         f"{quote_id_sql}, {version_sql}, $history${history_sql}$history$::jsonb);",
+        check=check,
+    )
+
+
+def save_idempotent_attested(header, items, attestation_id, idem_key, *, history=None, check=True):
+    """Usa um atestado já emitido para salvar pela RPC idempotente atestada."""
+    quote_with_attestation = dict(header)
+    quote_with_attestation["price_attestation_id"] = attestation_id
+    quote_sql = json.dumps(quote_with_attestation, ensure_ascii=False, separators=(",", ":"))
+    items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
+    history_sql = json.dumps(history or ["Registro transacional de teste"], ensure_ascii=False)
+    return actor_sql(
+        "SELECT public.save_quote_atomic_idempotent_attested("
+        f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
+        f"'{idem_key}'::uuid, $history${history_sql}$history$::jsonb);",
         check=check,
     )
 
@@ -121,6 +178,7 @@ def rpc(header, items, *, quote_id=None, version=None, history=None, check=True)
 result = {
     "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
     "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracao_gate": str(GATE_MIGRATION.relative_to(ROOT)),
     "producao_verificada": False,
 }
 
@@ -141,6 +199,9 @@ try:
     )
     sql(governance_sql[guard_start:guard_end])
     sql(MIGRATION.read_text())
+    sql(IDEMPOTENCY_MIGRATION.read_text())
+    sql(HARDEN_IDEMPOTENCY_MIGRATION.read_text())
+    sql(GATE_MIGRATION.read_text())
 
     assert scalar(sql("""
       SELECT has_function_privilege(
@@ -217,6 +278,115 @@ try:
     submitted = rpc(updated_header, updated_items, quote_id=quote_id, version=3, check=False)
     assert submitted.returncode != 0 and "nova versão" in submitted.stderr
 
+    # -- Atestado de preço (gate) --------------------------------------------
+
+    gate_header, gate_items = quote_payload()
+
+    # 1. Somente service_role pode registrar o atestado.
+    anon_register = sql(
+        "SET ROLE anon; "
+        "SELECT public.register_quote_price_attestation("
+        f"'{SELLER}'::uuid, NULL, NULL, "
+        "'{}'::jsonb, '[]'::jsonb, '[]'::jsonb); RESET ROLE;",
+        check=False,
+    )
+    assert anon_register.returncode != 0 and "permission denied" in anon_register.stderr
+
+    gate_history = ["Orçamento criado pelo fluxo atestado"]
+    att_good = scalar(register_attestation(gate_header, gate_items, history=gate_history))
+    assert att_good and len(att_good) == 36
+
+    # 2. O fluxo atestado grava consumindo o atestado emitido.
+    gate_created = json.loads(scalar(save_attested(
+        gate_header, gate_items, att_good, history=gate_history,
+    )))
+    gate_quote_id = gate_created["id"]
+    assert gate_created["seller_id"] == SELLER
+    assert scalar(sql(f"SELECT count(*) FROM public.quote_items WHERE quote_id='{gate_quote_id}';")) == "1"
+
+    # 3. O mesmo atestado não pode ser reutilizado (consumo já registrado).
+    replay = save_attested(
+        gate_header, gate_items, att_good,
+        history=["Orçamento criado pelo fluxo atestado"],
+        check=False,
+    )
+    assert replay.returncode != 0 and "já foi utilizado" in replay.stderr
+    assert scalar(sql(f"SELECT count(*) FROM public.quotes WHERE id='{gate_quote_id}';")) == "1"
+
+    # 4. Hash divergente (payload editado) é recusado mesmo com atestado válido.
+    tampered_header, tampered_items = quote_payload(quantity=7)
+    att_tamper = scalar(register_attestation(gate_header, gate_items))
+    tampered = save_attested(
+        tampered_header, tampered_items, att_tamper,
+        history=["Payload adulterado pós-atestado"],
+        check=False,
+    )
+    assert tampered.returncode != 0 and "não foi validado" in tampered.stderr
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "2"
+
+    # 5. Atestado expirado é recusado.
+    expired_id = scalar(sql(
+        "SELECT id FROM private.quote_price_attestations"
+        f" WHERE actor_id='{SELLER}' ORDER BY expires_at DESC LIMIT 1;"
+    ))
+    sql(f"UPDATE private.quote_price_attestations SET expires_at=now()-interval '1 minute' WHERE id='{expired_id}';")
+    expired = save_attested(
+        gate_header, gate_items, expired_id,
+        history=["Atestado expirado"],
+        check=False,
+    )
+    assert expired.returncode != 0 and "não foi validado" in expired.stderr
+
+    # 6. DML direto e save_quote_atomic sem atestado são bloqueados pelo gate.
+    unguarded = actor_sql(
+        "SELECT public.save_quote_atomic("
+        "'{}'::jsonb, '[]'::jsonb, NULL, NULL, '[]'::jsonb);",
+        check=False,
+    )
+    assert unguarded.returncode != 0 and "atestado de preço" in unguarded.stderr
+
+    # 7. O fluxo idempotente atestado grava uma vez; replay não revalida nem reescreve.
+    idem_key = str(uuid.uuid4())
+    att_idem = scalar(register_attestation(gate_header, gate_items, history=gate_history))
+    idem_created = json.loads(scalar(save_idempotent_attested(
+        gate_header, gate_items, att_idem, idem_key, history=gate_history,
+    )))
+    idem_quote_id = idem_created["id"]
+    assert idem_quote_id != gate_quote_id
+    assert scalar(sql(f"SELECT count(*) FROM public.quotes WHERE id='{idem_quote_id}';")) == "1"
+    quote_sql = json.dumps(gate_header, ensure_ascii=False, separators=(",", ":"))
+    items_sql = json.dumps(gate_items, ensure_ascii=False, separators=(",", ":"))
+    history_sql = json.dumps(gate_history, ensure_ascii=False)
+    replay_out = json.loads(scalar(actor_sql(
+        "SELECT public.get_quote_save_idempotent_replay("
+        f"'{idem_key}'::uuid, $quote${quote_sql}$quote$::jsonb, "
+        f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
+    )))
+    assert replay_out["id"] == idem_quote_id
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "3"
+    hash_len = scalar(sql(
+        "SELECT length(payload_hash) FROM public.quote_save_idempotency "
+        f"WHERE idempotency_key='{idem_key}'::uuid;"))
+    assert hash_len == "64", f"SHA-256 esperado (64), obtido {hash_len}"
+    sha_replay = json.loads(scalar(actor_sql(
+        "SELECT public.get_quote_save_idempotent_replay("
+        f"'{idem_key}'::uuid, $quote${quote_sql}$quote$::jsonb, "
+        f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
+    )))
+    assert sha_replay["id"] == idem_quote_id
+    altered_quote_sql = json.dumps(
+        dict(header, **{"price_attestation_id": att_idem, "notes": "conteúdo alterado pós-gravação"}),
+        ensure_ascii=False, separators=(",", ":"),
+    )
+    sha_change = actor_sql(
+        "SELECT public.get_quote_save_idempotent_replay("
+        f"'{idem_key}'::uuid, $quote${altered_quote_sql}$quote$::jsonb, "
+        f"$items${items_sql}$items$::jsonb, $history${history_sql}$history$::jsonb);",
+        check=False,
+    )
+    assert sha_change.returncode != 0 and "conteúdo diferente" in sha_change.stderr
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "3"
+
     result.update({
         "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
         "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
@@ -224,6 +394,7 @@ try:
         "totais": "subtotal, desconto, frete e custo recalculados no servidor",
         "governanca": "escopo organizacional e edição de orçamento enviado recusados",
         "integracao_gate": "save_quote_atomic preserva SECURITY INVOKER/RLS; toque direto ou GUC forjado não altera updated_at",
+        "atestado_preco": "register somente service_role; fluxo atestado grava e consome; reuso/hash/expiração e save sem atestado recusados; idempotente atestado grava uma vez e replay devolve o mesmo orçamento",
         "resultado": "aprovado",
     })
     evidence = ROOT / "docs/execucao/evidencias/salvamento-orcamento-atomico.json"
