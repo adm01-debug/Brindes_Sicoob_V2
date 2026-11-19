@@ -15,6 +15,7 @@ export const requiredFunctions = [
   'get-visitor-info',
   'secure-upload',
   'auth-integrity-check',
+  'quote-price-attestation',
 ];
 
 function getFunctions(payload, label) {

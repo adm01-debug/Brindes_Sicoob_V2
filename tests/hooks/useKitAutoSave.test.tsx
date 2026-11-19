@@ -5,7 +5,7 @@ import { useState } from 'react';
 const maybeSingle = vi.fn();
 const select = vi.fn(() => ({ maybeSingle }));
 const secondEq = vi.fn(() => ({ select }));
-const update = vi.fn(() => ({
+const update = vi.fn((_payload: Record<string, unknown>) => ({
   eq: vi.fn(() => ({ eq: secondEq })),
 }));
 const single = vi.fn();
@@ -197,5 +197,85 @@ describe('useKitAutoSave', () => {
     expect(update).toHaveBeenCalledTimes(1);
     expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Edição feita durante a criação' });
     expect(result.current.autoSave.lastSaveError).toBeNull();
+  });
+  it('abrir um kit salvo nao regrava no banco o que acabou de ler', async () => {
+    // /montar-kit?kit=ID monta o hook com o ID ja definido e o kit ainda
+    // vazio. Quando a leitura chega, o estado muda — mas isso e dado lido, nao
+    // edicao. Antes do gate de hidratacao, o autosave gravava 5s depois:
+    // updated_at mudava, "Meus kits" reordenava sozinho e abria janela para
+    // sobrescrever o que outra aba tivesse gravado.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+
+    const { rerender } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+
+    // chega o conteudo lido do banco
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    rerender({ kit: kitCarregado, pronto: false });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    // a leitura terminou; ainda sem edicao do usuario
+    rerender({ kit: kitCarregado, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('conteudo lido e fim da hidratacao no mesmo render tambem nao regravam', async () => {
+    // O React 18 agrupa o setState do conteudo lido e o da hidratacao: o hook
+    // ve um unico render com `pronto: true` e o conteudo ja na tela. Com o
+    // gate olhando so `!isReady`, esse render caia no caminho de edicao e
+    // reagendava a gravacao do que acabara de ser lido.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+
+    rerender({ kit: kitCarregado, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    rerender({ kit: { ...kitCarregado, name: 'Agora sim o usuario editou' }, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it('depois de carregado, a primeira edicao de verdade grava', async () => {
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+    rerender({ kit: kitCarregado, pronto: false });
+    rerender({ kit: kitCarregado, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    rerender({ kit: { ...kitCarregado, name: 'Renomeado pelo usuario' }, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Renomeado pelo usuario' });
+  });
+
+  it('kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao', async () => {
+    single.mockResolvedValue({ data: { id: 'kit-novo' }, error: null });
+
+    const { rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Montado agora' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(insert).toHaveBeenCalledTimes(1);
   });
 });

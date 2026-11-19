@@ -151,6 +151,14 @@ export default function KitBuilderPage() {
   const hasLoadedProductRef = useRef(false);
   const hasLoadedTemplateRef = useRef(false);
   const hasBumpedRef = useRef(false);
+  // Abrir por ?kit= enche a tela depois do primeiro render, com o conteúdo
+  // lido de custom_kits. Até essa leitura chegar, mudança de estado é dado
+  // lido, não edição do usuário, e não pode disparar salvamento automático —
+  // senão o autosave regrava no banco o que acabou de ler.
+  // ?product= e ?template= não entram aqui: não existe linha de custom_kits a
+  // ser sobrescrita, e nos dois casos o que chega à tela é material novo que
+  // o autosave deve mesmo persistir.
+  const [isHydrated, setIsHydrated] = useState(!kitIdParam);
 
   const {
     kitState, setKitType, wizardState, kitQuantity, availableBoxes, availableItems,
@@ -167,7 +175,7 @@ export default function KitBuilderPage() {
   useCustomKitsRealtime();
 
   const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
+    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated,
   );
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
@@ -218,7 +226,7 @@ export default function KitBuilderPage() {
   useEffect(() => {
     if (!kitIdParam || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef });
+    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef }).finally(() => setIsHydrated(true));
   }, [kitIdParam, loadKit, bumpLastUsed]);
 
   // Template mode: load a kit_templates row for admin editing
