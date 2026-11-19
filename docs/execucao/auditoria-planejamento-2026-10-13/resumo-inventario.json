@@ -1,0 +1,15 @@
+{
+  "sha": "fff0b4cb60b23715661d5782cdf747df4ef0027d",
+  "arquivos_versionados": 4038,
+  "docs": 463,
+  "documentos_ampliados": 511,
+  "metodos_docs": {
+    "texto-integral": 486,
+    "pdf-texto": 14,
+    "binario-inventariado": 10,
+    "xlsx-xml-todas-planilhas": 1
+  },
+  "marcadores_documentacao": 29234,
+  "marcadores_codigo": 218,
+  "erros": 0
+}

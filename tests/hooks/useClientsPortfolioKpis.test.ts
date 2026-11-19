@@ -6,23 +6,35 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { range, chamadas, eqSpies } = vi.hoisted(() => ({
+const { range, historico, chamadas, eqSpies } = vi.hoisted(() => ({
   range: vi.fn(),
+  historico: vi.fn(),
   chamadas: [] as Array<Record<string, unknown>>,
   eqSpies: [] as Array<ReturnType<typeof vi.fn>>,
 }));
 
 vi.mock('@/integrations/supabase/client', () => {
   function construtor(registro: Record<string, unknown>) {
+    // `applySellerScope` agora entra logo depois do `.from(...)`, no meio da
+    // cadeia: o `.eq` precisa devolver o builder, não o resultado.
+    const eq = vi.fn((coluna: string, valor: string) => {
+      registro.eq = [coluna, valor];
+      if (!eqSpies.includes(eq)) eqSpies.push(eq);
+      return builder;
+    });
     const builder: Record<string, unknown> = {
+      eq,
       select: vi.fn((colunas: string) => { registro.colunas = colunas; return builder; }),
       neq: vi.fn((coluna: string, valor: string) => { registro.neq = [coluna, valor]; return builder; }),
       gte: vi.fn((coluna: string, valor: string) => { registro.gte = [coluna, valor]; return builder; }),
+      lt: vi.fn((coluna: string, valor: string) => { registro.lt = [coluna, valor]; return builder; }),
       order: vi.fn((coluna: string) => { registro.order = coluna; return builder; }),
       range: vi.fn((de: number, ate: number) => {
         registro.range = [de, ate];
-        return range(registro);
+        // A consulta de histórico anterior também pagina: é o `.in` que a distingue.
+        return registro.in ? historico(registro) : range(registro);
       }),
+      in: vi.fn((coluna: string, valores: string[]) => { registro.in = [coluna, valores]; return builder; }),
     };
     return builder;
   }
@@ -43,16 +55,49 @@ import { fetchClientsPortfolioKpis } from '@/hooks/useClientsPortfolioKpis';
 
 const AGORA = new Date('2026-11-18T12:00:00.000Z');
 
+type Linha = { client_id?: string | null; total?: number | null };
+
 /** Resultado aguardável que também aceita `.eq()` do applySellerScope. */
-function resposta(resultado: { data: unknown; error: unknown }) {
+function resposta(data: Linha[] | null, error: unknown = null) {
   const encadeado: Record<string, unknown> = {
     then: (ok: (v: unknown) => unknown, falha?: (e: unknown) => unknown) =>
-      Promise.resolve(resultado).then(ok, falha),
+      Promise.resolve({ data, error }).then(ok, falha),
   };
-  const eq = vi.fn(() => encadeado);
-  encadeado.eq = eq;
-  eqSpies.push(eq);
+  encadeado.eq = vi.fn(() => encadeado);
   return encadeado;
+}
+
+/** Qual das três consultas paginadas é esta. */
+function qual(registro: Record<string, unknown>): 'mes' | 'anterior' | 'janela' {
+  if (registro.lt) return 'anterior';
+  return registro.colunas === 'client_id' ? 'mes' : 'janela';
+}
+
+/**
+ * Programa as consultas por identidade, não por ordem de chamada: as três
+ * paginadas saem num Promise.all e a ordem real intercala páginas.
+ */
+function programar(filas: {
+  mes?: Linha[][];
+  janela?: Linha[][];
+  anterior?: Linha[][];
+  historico?: Linha[] | Linha[][];
+  erroEm?: 'mes' | 'janela' | 'anterior';
+}) {
+  const pendentes: Record<string, Linha[][]> = {
+    mes: [...(filas.mes ?? [])],
+    janela: [...(filas.janela ?? [])],
+    anterior: [...(filas.anterior ?? [])],
+  };
+  range.mockImplementation((registro: Record<string, unknown>) => {
+    const chave = qual(registro);
+    if (filas.erroEm === chave) return resposta(null, new Error('RLS negou'));
+    return resposta(pendentes[chave]?.shift() ?? []);
+  });
+  const paginasDeHistorico: Linha[][] = Array.isArray(filas.historico?.[0])
+    ? ([...(filas.historico as Linha[][])])
+    : [((filas.historico ?? []) as Linha[])];
+  historico.mockImplementation(() => resposta(paginasDeHistorico.shift() ?? []));
 }
 
 describe('fetchClientsPortfolioKpis', () => {
@@ -60,18 +105,18 @@ describe('fetchClientsPortfolioKpis', () => {
     vi.clearAllMocks();
     chamadas.length = 0;
     eqSpies.length = 0;
+    programar({});
   });
 
   it('conta clientes distintos do mês e calcula o ticket médio da janela', async () => {
-    range
-      .mockReturnValueOnce(resposta({
-        data: [{ client_id: 'c-1' }, { client_id: 'c-1' }, { client_id: 'c-2' }, { client_id: null }],
-        error: null,
-      }))
-      .mockReturnValueOnce(resposta({
-        data: [{ total: 1000 }, { total: 3000 }, { total: 2000 }],
-        error: null,
-      }));
+    programar({
+      mes: [[{ client_id: 'c-1' }, { client_id: 'c-1' }, { client_id: 'c-2' }, { client_id: null }]],
+      janela: [[
+        { client_id: 'c-1', total: 1000 },
+        { client_id: 'c-2', total: 3000 },
+        { client_id: 'c-1', total: 2000 },
+      ]],
+    });
 
     const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
 
@@ -82,24 +127,74 @@ describe('fetchClientsPortfolioKpis', () => {
     expect(kpis.janelaDias).toBe(90);
   });
 
-  it('exclui pedido cancelado nas duas consultas', async () => {
-    range
-      .mockReturnValueOnce(resposta({ data: [], error: null }))
-      .mockReturnValueOnce(resposta({ data: [], error: null }));
+  it('separa cliente de primeira compra de quem já comprava antes', async () => {
+    programar({
+      mes: [[{ client_id: 'novo-1' }, { client_id: 'antigo-1' }]],
+      // Só `antigo-1` tem pedido anterior ao mês.
+      historico: [{ client_id: 'antigo-1' }],
+    });
+
+    const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
+
+    expect(kpis.clientesComPedidoNoMes).toBe(2);
+    expect(kpis.primeiraCompraNoMes).toBe(1);
+  });
+
+  it('pagina o historico anterior: cliente antigo so na segunda pagina nao vira primeira compra', async () => {
+    // A resposta traz uma linha por PEDIDO anterior, não por cliente. Sem
+    // paginar, o cliente cujos pedidos caíram fora do teto era contado como
+    // primeira compra do mês.
+    const primeiraPagina: Linha[] = Array.from({ length: 1000 }, () => ({ client_id: 'antigo-1' }));
+    programar({
+      mes: [[{ client_id: 'antigo-1' }, { client_id: 'antigo-2' }]],
+      historico: [primeiraPagina, [{ client_id: 'antigo-2' }]],
+    });
+
+    const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
+
+    expect(kpis.clientesComPedidoNoMes).toBe(2);
+    // Nenhum dos dois é novo: `antigo-2` só aparece na segunda página.
+    expect(kpis.primeiraCompraNoMes).toBe(0);
+  });
+
+  it('retenção é quem voltou a comprar, sobre quem comprava na janela anterior', async () => {
+    programar({
+      janela: [[{ client_id: 'c-1', total: 100 }, { client_id: 'c-3', total: 300 }]],
+      anterior: [[
+        { client_id: 'c-1' }, { client_id: 'c-2' }, { client_id: 'c-4' }, { client_id: 'c-5' },
+      ]],
+    });
+
+    const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
+
+    // Dos quatro da janela anterior só c-1 voltou.
+    expect(kpis.clientesJanelaAnterior).toBe(4);
+    expect(kpis.retencaoPercentual).toBe(25);
+  });
+
+  it('sem cliente na janela anterior a retenção é nula, não 0% nem 100%', async () => {
+    programar({ janela: [[{ client_id: 'c-9', total: 500 }]] });
+
+    const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
+
+    expect(kpis.clientesJanelaAnterior).toBe(0);
+    expect(kpis.retencaoPercentual).toBeNull();
+  });
+
+  it('exclui pedido cancelado em todas as consultas', async () => {
+    programar({ mes: [[{ client_id: 'c-1' }]] });
 
     await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
 
-    // Pedido cancelado não é compra: não conta cliente comprador nem ticket.
-    expect(chamadas).toHaveLength(2);
+    // Pedido cancelado não é compra: não conta comprador, ticket, retenção
+    // nem histórico anterior.
+    expect(chamadas.length).toBeGreaterThanOrEqual(4);
     chamadas.forEach((registro) => expect(registro.neq).toEqual(['status', 'cancelado']));
   });
 
   it('pagina até esgotar a janela, em vez de usar só a primeira resposta', async () => {
-    const paginaCheia = Array.from({ length: 1000 }, (_, i) => ({ total: i < 999 ? 100 : 100 }));
-    range
-      .mockReturnValueOnce(resposta({ data: [{ client_id: 'c-1' }], error: null }))
-      .mockReturnValueOnce(resposta({ data: paginaCheia, error: null }))
-      .mockReturnValueOnce(resposta({ data: [{ total: 100_200 }], error: null }));
+    const paginaCheia: Linha[] = Array.from({ length: 1000 }, () => ({ total: 100 }));
+    programar({ janela: [paginaCheia, [{ total: 100_200 }]] });
 
     const kpis = await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
 
@@ -109,41 +204,35 @@ describe('fetchClientsPortfolioKpis', () => {
   });
 
   it('devolve ticket nulo quando não houve pedido na janela, em vez de zero', async () => {
-    range
-      .mockReturnValueOnce(resposta({ data: [], error: null }))
-      .mockReturnValueOnce(resposta({ data: [], error: null }));
+    programar({});
 
     const kpis = await fetchClientsPortfolioKpis('self', 'usuario-1', AGORA);
 
     expect(kpis.clientesComPedidoNoMes).toBe(0);
     // Nulo e não 0: a tela mostra "—", que é diferente de "ticket de R$ 0".
     expect(kpis.ticketMedio).toBeNull();
-    // Escopo `self` tem de filtrar por vendedor nas duas consultas.
-    expect(eqSpies).toHaveLength(2);
+    // Escopo `self` filtra por vendedor em toda consulta que sai.
+    expect(eqSpies.length).toBeGreaterThanOrEqual(3);
     eqSpies.forEach((eq) => expect(eq).toHaveBeenCalledWith('seller_id', 'usuario-1'));
   });
 
   it('propaga erro da consulta em vez de devolver número inventado', async () => {
-    range
-      .mockReturnValueOnce(resposta({ data: null, error: new Error('RLS negou') }))
-      .mockReturnValueOnce(resposta({ data: [], error: null }));
+    programar({ erroEm: 'mes' });
 
     await expect(fetchClientsPortfolioKpis('team', 'usuario-1', AGORA)).rejects.toThrow('RLS negou');
   });
 
-  it('recorta a janela do mês e a de 90 dias a partir da data informada', async () => {
-    range
-      .mockReturnValueOnce(resposta({ data: [], error: null }))
-      .mockReturnValueOnce(resposta({ data: [], error: null }));
+  it('recorta as três janelas a partir da data informada', async () => {
+    programar({});
 
     await fetchClientsPortfolioKpis('all', 'usuario-1', AGORA);
 
-    const [mes, janela] = chamadas as Array<{ gte: [string, string]; colunas: string }>;
-    expect(mes.colunas).toBe('client_id');
-    expect(mes.gte[0]).toBe('created_at');
-    expect(mes.gte[1]).toContain('2026-11-01');
-    expect(janela.colunas).toBe('total');
+    const porTipo = new Map(chamadas.filter((c) => c.range).map((c) => [qual(c), c]));
+    expect(String((porTipo.get('mes')?.gte as string[])[1])).toContain('2026-11-01');
     // 18/11 menos 90 dias cai em 20/08.
-    expect(janela.gte[1]).toContain('2026-08-20');
+    expect(String((porTipo.get('janela')?.gte as string[])[1])).toContain('2026-08-20');
+    // Janela anterior: de 22/05 até 20/08.
+    expect(String((porTipo.get('anterior')?.gte as string[])[1])).toContain('2026-05-22');
+    expect(String((porTipo.get('anterior')?.lt as string[])[1])).toContain('2026-08-20');
   });
 });

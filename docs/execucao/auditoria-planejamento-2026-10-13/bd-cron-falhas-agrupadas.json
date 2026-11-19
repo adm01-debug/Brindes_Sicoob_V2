@@ -1,0 +1,7 @@
+[
+  {
+    "jobid": 17,
+    "classe": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(N) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.",
+    "total": 620
+  }
+]
