@@ -2570,8 +2570,8 @@
   {
    "nome": "quote-price-attestation",
    "entrada": "supabase/functions/quote-price-attestation/index.ts",
-   "arquivos": 2,
-   "linhas": 698,
+   "arquivos": 3,
+   "linhas": 713,
    "verify_jwt": true,
    "metodos": [
     "OPTIONS",
@@ -2605,12 +2605,10 @@
     "external-product-contract.ts",
     "structured-logger.ts"
    ],
-   "chamada_pelo_front": [
-    "src/services/QuoteService.ts"
-   ],
+   "chamada_pelo_front": [],
    "chamada_por_edges": [],
    "chamada_por_sql_ou_cron": false,
-   "orfa": false,
+   "orfa": true,
    "testes": 1
   },
   {
@@ -3183,7 +3181,7 @@
    "nome": "sicoob-kit-quote",
    "entrada": "supabase/functions/sicoob-kit-quote/index.ts",
    "arquivos": 3,
-   "linhas": 583,
+   "linhas": 636,
    "verify_jwt": true,
    "metodos": [
     "POST"

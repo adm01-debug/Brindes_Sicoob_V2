@@ -4071,7 +4071,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -5555,7 +5554,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -5790,7 +5788,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -6585,7 +6582,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7250,7 +7246,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7416,7 +7411,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7582,7 +7576,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7751,7 +7744,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7853,7 +7845,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7950,7 +7941,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8058,7 +8048,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8220,7 +8209,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8319,7 +8307,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8554,7 +8541,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-document-ingest",
     "sicoob-reorder",
     "system-healthcheck"
@@ -8745,7 +8731,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",

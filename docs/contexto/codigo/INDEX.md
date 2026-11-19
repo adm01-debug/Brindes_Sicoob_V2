@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `25214df4d57f7dda57506a6160d8d89a5a55cf74` (2026-11-19T02:12:48Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e0e36d44c700670eba068fb947efe83ddb65eb0b` (2026-11-19T02:29:10Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2876), SQL (674), Markdown (247), JSON (233), JavaScript (144), Python (60), YAML (23), CSS (7)
+- linguagens: TypeScript (2879), SQL (674), Markdown (247), JSON (233), JavaScript (144), Python (60), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4370 |
-| arquivos_codigo | 3077 |
-| linhas_codigo | 486456 |
+| arquivos_total | 4373 |
+| arquivos_codigo | 3080 |
+| linhas_codigo | 486732 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 836 |
+| testes | 838 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 247 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (999), src/pages (162), src/contexts (9)
 - hooks: src/hooks (286), src/components (66), src/pages (22)
 - servicos_logica: src/lib (166), src/utils (37), src/services (23)
-- testes: tests/ (589), e2e/ (149), outro (51)
+- testes: tests/ (591), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -78,7 +78,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/collections | 0 | 0 | 15 | 19 | 4 | 5 |
 | components/common | 0 | 0 | 28 | 24 | 5 | 3 |
 | components/compare | 0 | 0 | 25 | 14 | 3 | 3 |
-| components/dashboard | 0 | 0 | 11 | 19 | 6 | 11 |
+| components/dashboard | 0 | 0 | 11 | 19 | 5 | 11 |
 | components/dev | 0 | 0 | 7 | 6 | 3 | 2 |
 | components/effects | 0 | 0 | 5 | 2 | 0 | 0 |
 | components/expert | 0 | 0 | 13 | 11 | 5 | 5 |
@@ -88,17 +88,17 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/inventory | 0 | 0 | 18 | 19 | 2 | 1 |
 | components/kit-builder | 0 | 0 | 42 | 24 | 6 | 9 |
 | components/kit-library | 0 | 0 | 6 | 5 | 3 | 4 |
-| components/layout | 0 | 0 | 18 | 344 | 22 | 79 |
+| components/layout | 0 | 0 | 18 | 344 | 21 | 79 |
 | components/magic-up | 0 | 0 | 18 | 15 | 5 | 5 |
 | components/mockup | 0 | 0 | 41 | 24 | 4 | 2 |
 | components/notifications | 0 | 0 | 6 | 9 | 3 | 3 |
 | components/novelties | 0 | 0 | 5 | 37 | 5 | 8 |
-| components/orders | 0 | 0 | 32 | 43 | 8 | 40 |
+| components/orders | 0 | 0 | 32 | 43 | 7 | 40 |
 | components/pdf | 0 | 0 | 13 | 0 | 0 | 0 |
 | components/pricing | 0 | 0 | 22 | 32 | 2 | 0 |
 | components/product-registration | 0 | 0 | 8 | 34 | 4 | 3 |
 | components/products | 0 | 0 | 90 | 56 | 5 | 16 |
-| components/quotes | 0 | 0 | 73 | 33 | 7 | 29 |
+| components/quotes | 0 | 0 | 73 | 33 | 6 | 29 |
 | components/replenishments | 0 | 0 | 7 | 33 | 5 | 8 |
 | components/search | 0 | 0 | 26 | 55 | 7 | 4 |
 | components/security | 0 | 0 | 11 | 13 | 4 | 10 |
@@ -107,18 +107,18 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/simulator | 0 | 0 | 23 | 23 | 4 | 4 |
 | components/ui | 0 | 0 | 59 | 6 | 0 | 0 |
 | contexts | 0 | 0 | 10 | 23 | 4 | 10 |
-| hooks | 0 | 0 | 209 | 377 | 22 | 97 |
+| hooks | 0 | 0 | 209 | 377 | 21 | 97 |
 | hooks/bi | 0 | 0 | 13 | 24 | 3 | 4 |
 | hooks/catalog | 0 | 0 | 6 | 89 | 2 | 4 |
 | hooks/gravacao | 0 | 0 | 6 | 12 | 2 | 0 |
 | hooks/orders | 0 | 0 | 12 | 17 | 5 | 15 |
-| hooks/quote | 0 | 0 | 5 | 23 | 6 | 8 |
-| hooks/quotes | 0 | 0 | 6 | 14 | 6 | 8 |
+| hooks/quote | 0 | 0 | 5 | 23 | 5 | 8 |
+| hooks/quotes | 0 | 0 | 6 | 14 | 5 | 8 |
 | hooks/sicoob | 0 | 0 | 9 | 10 | 4 | 9 |
 | hooks/simulator | 0 | 0 | 8 | 9 | 2 | 1 |
 | hooks/tecnicas | 0 | 0 | 6 | 20 | 2 | 0 |
 | hooks/voice | 0 | 0 | 9 | 1 | 1 | 1 |
-| lib | 0 | 0 | 60 | 315 | 22 | 76 |
+| lib | 0 | 0 | 60 | 315 | 21 | 76 |
 | lib/auth | 0 | 0 | 10 | 6 | 3 | 2 |
 | lib/bi | 0 | 0 | 7 | 9 | 0 | 1 |
 | lib/external-db | 0 | 0 | 18 | 3 | 2 | 0 |
@@ -128,16 +128,16 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/system | 0 | 0 | 5 | 4 | 3 | 2 |
 | lib/telemetry | 0 | 0 | 8 | 0 | 0 | 0 |
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
-| pages | 33 | 77 | 69 | 383 | 34 | 97 |
-| pages/admin | 25 | 38 | 69 | 155 | 29 | 86 |
+| pages | 33 | 77 | 69 | 383 | 33 | 97 |
+| pages/admin | 25 | 38 | 69 | 155 | 28 | 86 |
 | pages/sicoob | 12 | 19 | 19 | 31 | 7 | 30 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
-| routes/config | 0 | 0 | 8 | 441 | 53 | 143 |
-| services | 0 | 0 | 7 | 5 | 5 | 15 |
+| routes/config | 0 | 0 | 8 | 441 | 52 | 143 |
+| services | 0 | 0 | 7 | 5 | 4 | 15 |
 | services/sicoob | 0 | 0 | 12 | 0 | 2 | 12 |
 | stores | 0 | 0 | 6 | 0 | 0 | 0 |
-| types | 0 | 0 | 19 | 12 | 6 | 8 |
-| utils | 0 | 0 | 35 | 17 | 9 | 11 |
+| types | 0 | 0 | 19 | 12 | 5 | 8 |
+| utils | 0 | 0 | 35 | 17 | 8 | 11 |
 
 ## Rotas (url → arquivo)
 - `/` [tela] → src/pages/Index.tsx (protegida)
@@ -376,7 +376,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `qa-block-monitor` — tabelas: query_telemetry; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `quote-approval` (verify_jwt=false) — tabelas: -; chamada por 2 arquivo(s) do front
 - `quote-followup-reminders` (verify_jwt=false) — tabelas: follow_up_reminders, quote_approval_tokens, quotes; chamada por 0 arquivo(s) do front
-- `quote-price-attestation` — tabelas: product_images, product_variants, products, quote_item_personalizations, quote_items, quotes; chamada por 1 arquivo(s) do front
+- `quote-price-attestation` — tabelas: product_images, product_variants, products, quote_item_personalizations, quote_items, quotes; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `quote-public-view` — tabelas: -; chamada por 1 arquivo(s) do front
 - `quote-sync` — tabelas: profiles, quote_items, quotes; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `rate-limit-check` — tabelas: -; chamada por 0 arquivo(s) do front — **ÓRFÃ**
@@ -455,7 +455,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - rotas_sem_arquivo: 1 — ex.: /*
 - componentes_ambiguos: 0
 - menu_sem_destino: 14 — ex.: Ação -> #fab, Bem-vindo ao Brindes Sicoob! -> welcome, Busca Inteligente -> search
-- edges_orfas: 31 — ex.: ai-recommendations, bitrix-sync, cleanup-novelties
+- edges_orfas: 32 — ex.: ai-recommendations, bitrix-sync, cleanup-novelties
 - edges_chamadas_sem_pasta: 0
 - tabelas_sem_rls: 18 — ex.: admin_audit_log_default, admin_audit_log_y2024, admin_audit_log_y2025
 - tabelas_usadas_sem_definicao: 16 — ex.: avatars, categories_tree_visual, contacts
@@ -469,14 +469,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28626 nós · 52979 arestas · 2024 comunidades · grafo do commit `25214df4`
-- comunidades maiores: ref_hooks (510), ref_components (417), ref_lib (258), ref_integrations (226), sonner (196), ref_contexts (184), react (179), react-router-dom (179), expert-chat/index.ts (173), getCorsHeaders (164), date-fns (160), framer-motion (156)
+- 28643 nós · 53021 arestas · 2079 comunidades · grafo do commit `e0e36d44`
+- comunidades maiores: ref_hooks (474), ref_components (427), sonner (214), ref_node_fs (212), ref_integrations (191), expert-chat/index.ts (180), react (178), ref_contexts (173), react-router-dom (160), getCorsHeaders (159), date-fns (157), ref_stores (144)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (77)
-- docs/correcoes-validacao-2026-09-14.md (76)
+- docs/plano-melhorias-50-etapas.md (76)
+- docs/correcoes-validacao-2026-09-14.md (75)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
 - PENDENCIAS.md (20)
@@ -488,8 +488,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - package-lock.json (16)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (15)
+- src/services/QuoteService.ts (13)
 - .github/workflows/bundle-check.yml (12)
-- .github/workflows/deploy-sicoob-functions.yml (12)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -692,6 +692,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `e0e36d4` fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)
 - 2026-11-19 `25214df` fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)
 - 2026-11-19 `d53f9e8` fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)
 - 2026-11-19 `1ad25e3` fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)
@@ -706,7 +707,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `2b192fb` fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)
 - 2026-11-18 `7372a96` feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)
 - 2026-11-18 `8b0910c` chore(catálogo): remove o selo "dados ilustrativos" que nunca podia aparecer (#321)
-- 2026-11-18 `fcb4b9a` chore(deps): remove chave autoprefixer duplicada no package.json (#320)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

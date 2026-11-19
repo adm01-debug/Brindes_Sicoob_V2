@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `25214df4d5` · branch `main` · 2026-11-19 02:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0e36d44c7` · branch `main` · 2026-11-19 02:29 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -420,9 +420,9 @@ _nenhum item encontrado_
 | tabela | tabela `mv_material_group_stats` usada no código não existe nas migrations/types do repo | `supabase/functions/materials-api/index.ts` |
 | tabela | tabela `payments` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |
 | tabela | tabela `product_category_assignments` usada no código não existe nas migrations/types do repo | `supabase/functions/categories-api/index.ts`<br>`supabase/functions/expert-chat/index.ts` |
-| tabela | tabela `product_images` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/index.ts` |
+| tabela | tabela `product_images` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/handler.ts` |
 | tabela | tabela `product_materials` usada no código não existe nas migrations/types do repo | `supabase/functions/materials-api/index.ts` |
-| tabela | tabela `product_variants` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/index.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts` |
+| tabela | tabela `product_variants` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/handler.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts` |
 | tabela | tabela `runtime_table` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |
 | tabela | tabela `so_teste` usada no código não existe nas migrations/types do repo | `scripts/ai-context/cenarios.mjs` |
 | tabela | tabela `t` usada no código não existe nas migrations/types do repo | `scripts/ai-context/cenarios.mjs` |
@@ -456,8 +456,8 @@ _nenhum item encontrado_
 | rpc | RPC `demo` chamada mas não definida nas migrations/types | `scripts/supabase_snapshot/test_snapshot.py` |
 | rpc | RPC `fixture_rpc` chamada mas não definida nas migrations/types | `scripts/ai-context/gerar.unit.mjs` |
 | rpc | RPC `fn` chamada mas não definida nas migrations/types | `scripts/supabase_snapshot/snapshot.py`<br>`supabase/functions/_shared/supabase-client-adapter.ts` |
-| rpc | RPC `fn_get_customization_price` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/index.ts` |
-| rpc | RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/index.ts` |
+| rpc | RPC `fn_get_customization_price` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/handler.ts` |
+| rpc | RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/handler.ts` |
 | rpc | RPC `get_active_commemorative_dates` chamada mas não definida nas migrations/types | `supabase/functions/commemorative-dates/index.ts` |
 | rpc | RPC `get_all_material_groups_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |
 | rpc | RPC `get_all_material_types_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |

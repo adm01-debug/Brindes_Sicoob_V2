@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `25214df4d5` · branch `main` · 2026-11-19 02:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0e36d44c7` · branch `main` · 2026-11-19 02:29 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4394,11 +4394,11 @@ _nenhum item encontrado_
   ```
   const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">${key.replace(/_/g, " ")}</td><td style="padding:8px;border-bottom:1px solid #eee">${val}</td></tr>`) .join(""); return ` <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px"> <h2 style="color:#7c3aed">📊 ${reportName}</h2> <p style="color:#666">Período: ${data.period} | Tipo: ${data.type}</p> <table style="width:100% …
   ```
-- **validatePersonalizations(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,)** — `supabase/functions/quote-price-attestation/index.ts`
+- **validatePersonalizations(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,)** — `supabase/functions/quote-price-attestation/handler.ts`
   ```
   const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …
   ```
-- **validateOne(raw: unknown)** — `supabase/functions/quote-price-attestation/index.ts`
+- **validateOne(raw: unknown)** — `supabase/functions/quote-price-attestation/handler.ts`
   ```
   if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const colors = numberOrNull(raw.colors_count) ?? 1; const positions = numberOrNull(raw.positions_count) ?? 1; const width = numberOrNull(raw.width_ …
   ```
@@ -4887,7 +4887,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
-| … +158 linhas — lista completa em `context.json` | | |
+| … +160 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5725,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6746 testes em 660 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6762 testes em 662 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5891,6 +5891,7 @@ _nenhum item encontrado_
 | `tests/admin/route-ref-checker.test.ts` | 11 | route-ref checker — estado atual do projeto · passa no projeto real (zero violações) · route-ref checker — detecta padrões problemáticos · regra 1: detecta forwardRef em route guard … |
 | `tests/components/PriceFreshnessBadge.nullDate.test.tsx` | 11 | PriceFreshnessBadge — priceUpdatedAt null/undefined · hosts compactos sem alwaysShow → SEMPRE ocultos · ${host.name} (${host.variant}) · priceUpdatedAt=null não renderiza · ${host.name} (${host.variant}) · priceUpdatedAt=undefined não renderiza … |
 | `tests/components/PriceFreshnessBadge.test.tsx` | 11 | PriceFreshnessBadge · renders inline variant with full label for fresh status · does NOT render compact variant when status is fresh · renders compact variant when status is aging … |
+| `tests/edge-functions/kit-quote-rota-atestado.test.ts` | 11 | rota do atesto de preço dentro de sicoob-kit-quote · o front chama a função que realmente hospeda o atesto · o handler do atesto é exportado, para poder ser servido dos dois lugares · o módulo importado pela hospedeira NÃO sobe servidor … |
 | `tests/hooks/intelligence-badges.test.ts` | 11 | buildBadgeResult · does not invent market badges or metrics when intelligence is absent · preserves catalog-controlled badges while omitting unavailable market intelligence · derives market badges and metrics from real intelligence and velocity … |
 | `tests/hooks/useCrmCompanies.test.ts` | 11 | useCrmCompanies · usa o contrato fechado quando o filtro é apenas is_customer · mantém o select genérico quando há filtro que o contrato não aceita · mantém o select genérico quando o filtro booleano é explicitamente false … |
 | `tests/hooks/useFocusContext.test.ts` | 11 | useFocusContext · estado inicial vazio quando localStorage está limpo · setZone atualiza lastZone e savedAt e persiste em localStorage · setIncident atualiza lastIncidentId sem afetar lastZone … |
@@ -6028,8 +6029,7 @@ _nenhum item encontrado_
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
 | `tests/utils/viacep.test.ts` | 7 | fetchAddressByCep · should return null for invalid CEP length · should strip non-digits · should return address data on success … |
-| `e2e/quote-create.spec.ts` | 6 | Quote Creation Flow · should redirect to login when accessing /orcamentos unauthenticated · should redirect to login when accessing /orcamentos/novo unauthenticated · should redirect to login when accessing quote view unauthenticated … |
-| … +360 linhas — lista completa em `context.json` | | |
+| … +362 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6514,4 +6514,4 @@ _nenhum item encontrado_
 | * Decide se um link/segmento de breadcrumb deve ser **navegável** para o | `src/lib/navigation/restricted-routes.ts` |
 | Se o cliente precisa de mais cores que o máximo da tabela, aplica proporcional | `src/lib/personalization/calculators.ts` |
 | Se a área excede o máximo, aplica proporcional | `src/lib/personalization/calculators.ts` |
-| … +252 linhas — lista completa em `context.json` | |
+| … +257 linhas — lista completa em `context.json` | |

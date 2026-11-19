@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `25214df4d5` · branch `main` · 2026-11-19 02:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0e36d44c7` · branch `main` · 2026-11-19 02:29 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -425,7 +425,7 @@
 - `supabase/functions/qa-block-monitor/index.ts`
 - `supabase/functions/quote-approval/index.ts`
 - `supabase/functions/quote-followup-reminders/index.ts`
-- `supabase/functions/quote-price-attestation/index.ts`
+- `supabase/functions/quote-price-attestation/handler.ts`
 - `supabase/functions/quote-sync/index.ts`
 - `supabase/functions/rls-audit/index.ts`
 - `supabase/functions/rls-integration-tests/index.ts`

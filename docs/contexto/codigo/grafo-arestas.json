@@ -12691,7 +12691,7 @@
   "supabase/functions/quote-followup-reminders/index.ts": [
    "supabase/functions/_shared/internal-service-auth.ts"
   ],
-  "supabase/functions/quote-price-attestation/index.ts": [
+  "supabase/functions/quote-price-attestation/handler.ts": [
    "supabase/functions/_shared/catalog-client.ts",
    "supabase/functions/_shared/circuit-breaker.ts",
    "supabase/functions/_shared/cors.ts",
@@ -12699,6 +12699,10 @@
    "supabase/functions/_shared/structured-logger.ts",
    "supabase/functions/quote-price-attestation/contract.ts",
    "supabase/functions/sicoob-kit-quote/catalog.ts"
+  ],
+  "supabase/functions/quote-price-attestation/index.ts": [
+   "supabase/functions/_shared/structured-logger.ts",
+   "supabase/functions/quote-price-attestation/handler.ts"
   ],
   "supabase/functions/quote-public-view/index.ts": [
    "supabase/functions/_shared/cors.ts",
@@ -12797,6 +12801,8 @@
    "supabase/functions/_shared/cors.ts",
    "supabase/functions/_shared/external-product-contract.ts",
    "supabase/functions/_shared/structured-logger.ts",
+   "supabase/functions/quote-price-attestation/contract.ts",
+   "supabase/functions/quote-price-attestation/handler.ts",
    "supabase/functions/sicoob-kit-quote/catalog.ts",
    "supabase/functions/sicoob-kit-quote/idempotency.ts"
   ],

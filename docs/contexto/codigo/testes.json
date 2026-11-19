@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 836,
+ "total": 838,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 611
+  "unit": 613
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 589
+   "arquivos": 591
   },
   {
    "padrao": "e2e/",
@@ -3631,6 +3631,24 @@
     "supabase/functions/_shared/cors.ts"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+   "tipo": "unit",
+   "linhas": 95,
+   "testa": [
+    "supabase/functions/quote-price-attestation/contract.ts"
+   ],
+   "casos": 4
+  },
+  {
+   "arquivo": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+   "tipo": "unit",
+   "linhas": 105,
+   "testa": [
+    "src/services/QuoteService.ts"
+   ],
+   "casos": 10
   },
   {
    "arquivo": "tests/edge-functions/migration-health-check.test.ts",
@@ -7673,7 +7691,7 @@
   "src/routes/config/quotes.ts": 1,
   "src/routes/config/sicoob.ts": 2,
   "src/services/OrderService.ts": 1,
-  "src/services/QuoteService.ts": 3,
+  "src/services/QuoteService.ts": 4,
   "src/services/favorites/publicFavoriteListService.ts": 1,
   "src/services/quoteStatusTransition.ts": 1,
   "src/services/quotes/quoteVersionService.ts": 1,
@@ -7746,7 +7764,7 @@
   "supabase/functions/health-check/contract.ts": 1,
   "supabase/functions/migration-health-check/contract.ts": 1,
   "supabase/functions/product-webhook/index.ts": 1,
-  "supabase/functions/quote-price-attestation/contract.ts": 1,
+  "supabase/functions/quote-price-attestation/contract.ts": 2,
   "supabase/functions/send-scheduled-reports/report-delivery.ts": 1,
   "supabase/functions/sicoob-artwork-register/identity.ts": 1,
   "supabase/functions/sicoob-document-ingest/inspection.ts": 1,

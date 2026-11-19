@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "25214df4d57f7dda57506a6160d8d89a5a55cf74",
+  "sha": "e0e36d44c700670eba068fb947efe83ddb65eb0b",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 02:13 UTC",
-  "files_total": 4372,
-  "code_files": 3733,
-  "code_lines": 547805
+  "generated_at": "2026-11-19 02:29 UTC",
+  "files_total": 4375,
+  "code_files": 3736,
+  "code_lines": 548081
  },
  "version": "1.3.2",
- "facts_hash": "9844e641a3bf51f5",
+ "facts_hash": "483917dbc4d27343",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1450,
+   ".ts": 1453,
    ".tsx": 1424,
    ".sql": 674,
    ".mjs": 134,
@@ -54853,7 +54853,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -55023,7 +55022,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55229,7 +55227,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -55279,7 +55276,6 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -55456,7 +55452,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55657,7 +55652,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-artwork-register",
      "sicoob-document-ingest",
      "sicoob-reorder"
@@ -55726,7 +55720,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -56004,7 +55997,6 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56057,7 +56049,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56143,7 +56134,6 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56189,7 +56179,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56224,7 +56213,6 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56260,7 +56248,6 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56606,7 +56593,6 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -58567,9 +58553,9 @@
     "name": "quote-price-attestation",
     "file": "supabase/functions/quote-price-attestation/index.ts",
     "methods": [
-     "OPTIONS"
+     "POST?"
     ],
-    "auth": "service_role (ignora RLS) + valida JWT do usuário",
+    "auth": "service_role (ignora RLS) — NÃO valida usuário no código",
     "tables": [
      "integration_credentials",
      "product_images",
@@ -58580,24 +58566,11 @@
      "quotes",
      "user_roles"
     ],
-    "env": [
-     "SUPABASE_ANON_KEY",
-     "SUPABASE_SERVICE_ROLE_KEY",
-     "SUPABASE_URL"
-    ],
+    "env": [],
     "external": [],
     "invokes": [],
-    "doc": "",
-    "errors": [
-     "A técnica, quantidade ou configuração de personalização é inválida.",
-     "Falha na consulta de produtos do catálogo.",
-     "Falha na consulta de variantes do catálogo.",
-     "O banco não retornou o atestado de preço.",
-     "O catálogo de personalização está temporariamente indisponível.",
-     "O catálogo não conseguiu consultar as regras de personalização.",
-     "O preço da personalização diverge da tabela vigente. Atualize a personalização.",
-     "Uma personalização do orçamento possui formato inválido."
-    ],
+    "doc": "Ponto de entrada da função publicada. Toda a lógica vive em `handler.ts`, que NÃO chama `Deno.serve`: `sicoob-kit-quote` importa o handler de lá para atender `op: 'price-attestation'` no próprio processo, e um `Deno.serve` no módulo importado disputaria o listener padrão com o da hospedeira — os doi …",
+    "errors": [],
     "side_effects": [],
     "webhook_events": [],
     "idempotency": false
@@ -59021,7 +58994,16 @@
      "POST?"
     ],
     "auth": "service_role (ignora RLS) + valida JWT do usuário",
-    "tables": [],
+    "tables": [
+     "integration_credentials",
+     "product_images",
+     "product_variants",
+     "products",
+     "quote_item_personalizations",
+     "quote_items",
+     "quotes",
+     "user_roles"
+    ],
     "env": [
      "SUPABASE_ANON_KEY",
      "SUPABASE_SERVICE_ROLE_KEY",
@@ -64887,7 +64869,7 @@
   {
    "module": "src/services",
    "files": 23,
-   "lines": 3364,
+   "lines": 3372,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -64918,7 +64900,7 @@
    ],
    "exports": [
     "OrderService.ts: ConvertQuoteToOrderParams, ConvertedOrder, OrderService",
-    "QuoteService.ts: QuoteService",
+    "QuoteService.ts: ROTA_ATESTADO_DE_PRECO, QuoteService",
     "authService.ts: authService",
     "encryption.ts: encryptData, decryptData, protectPII, revealPII",
     "materialService.ts: MaterialGroup, MaterialType, MaterialComplete, materialService",
@@ -65257,8 +65239,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 215,
-   "lines": 34822,
+   "files": 216,
+   "lines": 34890,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65612,8 +65594,8 @@
   },
   {
    "module": "tests",
-   "files": 607,
-   "lines": 83169,
+   "files": 609,
+   "lines": 83369,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67163,7 +67145,7 @@
    },
    "product_images": {
     "select": [
-     "supabase/functions/quote-price-attestation/index.ts"
+     "supabase/functions/quote-price-attestation/handler.ts"
     ]
    },
    "product_materials": {
@@ -67193,7 +67175,7 @@
    },
    "product_variants": {
     "select": [
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
    },
@@ -67216,7 +67198,7 @@
      "supabase/functions/expert-chat/index.ts",
      "supabase/functions/external-db-bridge/index.ts",
      "supabase/functions/favorites-watcher/index.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/visual-search/index.ts",
      "tests/scripts/check-seller-scope.test.ts"
     ],
@@ -67393,7 +67375,7 @@
    "quote_item_personalizations": {
     "select": [
      "src/services/QuoteService.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/sicoob-reorder/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
@@ -67411,7 +67393,7 @@
      "src/hooks/useSalesHistoryMacro.ts",
      "src/services/QuoteService.ts",
      "src/utils/quotePdfUtils.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/sicoob-reorder/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
@@ -67466,7 +67448,7 @@
      "supabase/functions/process-batch-export/index.ts",
      "supabase/functions/process-scheduled-reports/index.ts",
      "supabase/functions/quote-followup-reminders/index.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/rls-audit/index.ts",
      "supabase/functions/send-scheduled-reports/index.ts",
@@ -69929,7 +69911,7 @@
     "supabase/functions/mcp-keys-revoke/index.ts",
     "supabase/functions/mcp-keys-rotate/index.ts",
     "supabase/functions/mcp-keys-update/index.ts",
-    "supabase/functions/quote-price-attestation/index.ts",
+    "supabase/functions/quote-price-attestation/handler.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
     "supabase/functions/rls-matrix-export/index.ts",
@@ -70016,7 +69998,7 @@
     "supabase/functions/qa-block-monitor/index.ts",
     "supabase/functions/quote-approval/index.ts",
     "supabase/functions/quote-followup-reminders/index.ts",
-    "supabase/functions/quote-price-attestation/index.ts",
+    "supabase/functions/quote-price-attestation/handler.ts",
     "supabase/functions/quote-sync/index.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
@@ -70097,7 +70079,7 @@
     "supabase/functions/quote-approval/index.ts",
     "supabase/functions/quote-followup-reminders/index.ts",
     "supabase/functions/quote-price-attestation/contract.ts",
-    "supabase/functions/quote-price-attestation/index.ts",
+    "supabase/functions/quote-price-attestation/handler.ts",
     "supabase/functions/quote-sync/index.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
@@ -70123,6 +70105,7 @@
     "supabase/functions/validate-access/index.ts",
     "supabase/functions/webhook-dispatcher/index.ts",
     "supabase/functions/webhook-inbound/index.ts",
+    "tests/edge-functions/kit-quote-rota-atestado.test.ts",
     "tests/scripts/gates-hardening.test.ts"
    ],
    "TEST_ADMIN_JWT": [
@@ -70431,10 +70414,10 @@
     "supabase/functions/_shared/supabase-client-adapter.ts"
    ],
    "fn_get_customization_price": [
-    "supabase/functions/quote-price-attestation/index.ts"
+    "supabase/functions/quote-price-attestation/handler.ts"
    ],
    "fn_get_product_customization_options": [
-    "supabase/functions/quote-price-attestation/index.ts"
+    "supabase/functions/quote-price-attestation/handler.ts"
    ],
    "get_active_commemorative_dates": [
     "supabase/functions/commemorative-dates/index.ts"
@@ -70667,7 +70650,7 @@
     "src/hooks/orders/extensions/useOrderPayments.ts"
    ],
    "register_quote_price_attestation": [
-    "supabase/functions/quote-price-attestation/index.ts"
+    "supabase/functions/quote-price-attestation/handler.ts"
    ],
    "register_sicoob_clean_document": [
     "supabase/functions/sicoob-document-ingest/index.ts"
@@ -70922,9 +70905,6 @@
    "quote-approval": [
     "src/hooks/useQuoteApprovalToken.ts",
     "src/pages/QuoteApprovalPage.tsx"
-   ],
-   "quote-price-attestation": [
-    "src/services/QuoteService.ts"
    ],
    "quote-public-view": [
     "src/pages/public-approval/usePublicQuoteApproval.ts"
@@ -78313,35 +78293,35 @@
     "msg": "Um produto do orçamento não existe no catálogo."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "A técnica, quantidade ou configuração de personalização é inválida."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "Falha na consulta de produtos do catálogo."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "Falha na consulta de variantes do catálogo."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "O banco não retornou o atestado de preço."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "O catálogo de personalização está temporariamente indisponível."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "O catálogo não conseguiu consultar as regras de personalização."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "O preço da personalização diverge da tabela vigente. Atualize a personalização."
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "msg": "Uma personalização do orçamento possui formato inválido."
    },
    {
@@ -80754,6 +80734,10 @@
    },
    {
     "file": "src/services/QuoteService.ts",
+    "text": "(402 `function.max_count`). Mesmo handler, mesma validação, mesma fronteira"
+   },
+   {
+    "file": "src/services/QuoteService.ts",
     "text": "do que o limite retornou, loga aviso explícito para orientar a"
    },
    {
@@ -81303,6 +81287,22 @@
    {
     "file": "supabase/functions/semantic-search/index.ts",
     "text": "Rate limit: 100 req/min por usuário (busca pode ser intensa)"
+   },
+   {
+    "file": "supabase/functions/sicoob-kit-quote/index.ts",
+    "text": "* O corpo é lido UMA vez, do pedido original, com limite — sem `clone()`. Um"
+   },
+   {
+    "file": "supabase/functions/sicoob-kit-quote/index.ts",
+    "text": "ao outro num corpo acima do limite sem `Content-Length`. Lendo uma vez não"
+   },
+   {
+    "file": "supabase/functions/sicoob-kit-quote/index.ts",
+    "text": "com o texto já lido, e pode lê-lo de novo com o próprio limite."
+   },
+   {
+    "file": "supabase/functions/sicoob-kit-quote/index.ts",
+    "text": "JSON inválido cai na validação de campos abaixo (400), não em 500."
    },
    {
     "file": "supabase/functions/sicoob-kit-quote/index.ts",
@@ -94248,6 +94248,11 @@
     "value": "500"
    },
    {
+    "file": "src/services/QuoteService.ts",
+    "name": "ROTA_ATESTADO_DE_PRECO",
+    "value": "'sicoob-kit-quote'"
+   },
+   {
     "file": "src/services/encryption.ts",
     "name": "ALGORITHM",
     "value": "'AES-GCM'"
@@ -94526,6 +94531,11 @@
     "file": "supabase/functions/sicoob-document-ingest/index.ts",
     "name": "FINAL_BUCKET",
     "value": "'sicoob-order-documents'"
+   },
+   {
+    "file": "supabase/functions/sicoob-kit-quote/index.ts",
+    "name": "LIMITE_CORPO_ATESTADO",
+    "value": "524"
    },
    {
     "file": "supabase/functions/trends-insights/index.ts",
@@ -109394,13 +109404,13 @@
     "body": "const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style=\"padding:8px;border-bottom:1px solid #eee;font-weight:600\">${key.replace(/_/g, \" \")}</td><td style=\"padding:8px;border-bottom:1px solid #eee\">${val}</td></tr>`) .join(\"\"); return ` <div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px\"> <h2 style=\"color:#7c3aed\">📊 ${reportName}</h2> <p style=\"color:#666\">Período: ${data.period} | Tipo: ${data.type}</p> <table style=\"width:100% …"
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "name": "validatePersonalizations",
     "params": "external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,",
     "body": "const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …"
    },
    {
-    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "file": "supabase/functions/quote-price-attestation/handler.ts",
     "name": "validateOne",
     "params": "raw: unknown",
     "body": "if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const colors = numberOrNull(raw.colors_count) ?? 1; const positions = numberOrNull(raw.positions_count) ?? 1; const width = numberOrNull(raw.width_ …"
@@ -124300,6 +124310,70 @@
    {
     "file": "tests/edge-functions/cors.test.ts",
     "name": "não abre a allowlist para origens externas: %s"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+    "name": "leitura do corpo na hospedeira do atesto"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+    "name": "corpo acima do limite SEM content-length responde, não trava"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+    "name": "o pedido remontado preserva a autorização e pode ser lido de novo"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+    "name": "corpo dentro do limite continua passando"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+    "name": "content-length mentindo acima do limite é recusado sem ler o corpo"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "rota do atesto de preço dentro de sicoob-kit-quote"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o front chama a função que realmente hospeda o atesto"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o handler do atesto é exportado, para poder ser servido dos dois lugares"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o módulo importado pela hospedeira NÃO sobe servidor"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "cada ponto de entrada tem exatamente um Deno.serve"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o desvio acontece antes de qualquer trabalho de kit"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o corpo é lido UMA vez, do original, e o pedido é remontado para o handler"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "a leitura é limitada e o excesso responde 413, em vez de ser bufferizado"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "o fluxo de kit usa o corpo já lido, sem reabrir o stream"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "hospedeira e hóspede têm a MESMA autorização — hospedar não pode afrouxar o acesso"
+   },
+   {
+    "file": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+    "name": "sem o marcador op, o fluxo de kit segue intocado"
    },
    {
     "file": "tests/edge-functions/migration-health-check.test.ts",
@@ -163960,7 +164034,7 @@
    "supabase/functions/qa-block-monitor/index.ts",
    "supabase/functions/quote-approval/index.ts",
    "supabase/functions/quote-followup-reminders/index.ts",
-   "supabase/functions/quote-price-attestation/index.ts",
+   "supabase/functions/quote-price-attestation/handler.ts",
    "supabase/functions/quote-sync/index.ts",
    "supabase/functions/rls-audit/index.ts",
    "supabase/functions/rls-integration-tests/index.ts",
@@ -173272,7 +173346,7 @@
     "kind": "tabela",
     "msg": "tabela `product_images` usada no código não existe nas migrations/types do repo",
     "where": [
-     "supabase/functions/quote-price-attestation/index.ts"
+     "supabase/functions/quote-price-attestation/handler.ts"
     ]
    },
    {
@@ -173286,7 +173360,7 @@
     "kind": "tabela",
     "msg": "tabela `product_variants` usada no código não existe nas migrations/types do repo",
     "where": [
-     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
    },
@@ -173529,14 +173603,14 @@
     "kind": "rpc",
     "msg": "RPC `fn_get_customization_price` chamada mas não definida nas migrations/types",
     "where": [
-     "supabase/functions/quote-price-attestation/index.ts"
+     "supabase/functions/quote-price-attestation/handler.ts"
     ]
    },
    {
     "kind": "rpc",
     "msg": "RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types",
     "where": [
-     "supabase/functions/quote-price-attestation/index.ts"
+     "supabase/functions/quote-price-attestation/handler.ts"
     ]
    },
    {
@@ -222773,8 +222847,9 @@
   },
   "src/services/QuoteService.ts": {
    "path": "src/services/QuoteService.ts",
-   "lines": 565,
+   "lines": 573,
    "exports": [
+    "const ROTA_ATESTADO_DE_PRECO",
     "class QuoteService"
    ],
    "tables": [
@@ -222825,7 +222900,6 @@
     "save_quote_atomic_idempotent_attested"
    ],
    "invokes": [
-    "quote-price-attestation",
     "sicoob-reorder"
    ],
    "errors": [
@@ -222841,6 +222915,10 @@
     {
      "name": "QUOTE_LIST_LIMIT",
      "value": "500"
+    },
+    {
+     "name": "ROTA_ATESTADO_DE_PRECO",
+     "value": "'sicoob-kit-quote'"
     }
    ],
    "status_values": [
@@ -222852,6 +222930,7 @@
    ],
    "rule_comments": [
     "sob o limite do lint — a lógica em si é reta, sem ramificação real.",
+    "(402 `function.max_count`). Mesmo handler, mesma validação, mesma fronteira",
     "do que o limite retornou, loga aviso explícito para orientar a"
    ],
    "calc_fns": [
@@ -232258,9 +232337,12 @@
     "Um produto do orçamento não existe no catálogo."
    ]
   },
-  "supabase/functions/quote-price-attestation/index.ts": {
-   "path": "supabase/functions/quote-price-attestation/index.ts",
-   "lines": 401,
+  "supabase/functions/quote-price-attestation/handler.ts": {
+   "path": "supabase/functions/quote-price-attestation/handler.ts",
+   "lines": 406,
+   "exports": [
+    "function handleQuotePriceAttestation"
+   ],
    "tables": [
     {
      "table": "products",
@@ -232394,6 +232476,11 @@
     }
    ],
    "uses_service_role": true
+  },
+  "supabase/functions/quote-price-attestation/index.ts": {
+   "path": "supabase/functions/quote-price-attestation/index.ts",
+   "lines": 10,
+   "doc": "Ponto de entrada da função publicada. Toda a lógica vive em `handler.ts`, que NÃO chama `Deno.serve`: `sicoob-kit-quote` importa o handler de lá para atender `op: 'price-attestation'` no próprio processo, e um `Deno.serve` no módulo importado disputaria o listener padrão com o da hospedeira — os doi …"
   },
   "supabase/functions/quote-public-view/index.ts": {
    "path": "supabase/functions/quote-public-view/index.ts",
@@ -233619,7 +233706,7 @@
   },
   "supabase/functions/sicoob-kit-quote/index.ts": {
    "path": "supabase/functions/sicoob-kit-quote/index.ts",
-   "lines": 243,
+   "lines": 296,
    "rpc": [
     "create_sicoob_kit_quote",
     "get_sicoob_kit_quote_idempotency"
@@ -233637,7 +233724,17 @@
     "O banco não confirmou a criação do orçamento.",
     "O catálogo não respondeu à consulta ${rpcName}."
    ],
+   "params": [
+    {
+     "name": "LIMITE_CORPO_ATESTADO",
+     "value": "524"
+    }
+   ],
    "rule_comments": [
+    "* O corpo é lido UMA vez, do pedido original, com limite — sem `clone()`. Um",
+    "ao outro num corpo acima do limite sem `Content-Length`. Lendo uma vez não",
+    "com o texto já lido, e pode lê-lo de novo com o próprio limite.",
+    "JSON inválido cai na validação de campos abaixo (400), não em 500.",
     "A identidade representa somente a intenção do cliente. Preço, nome,"
    ],
    "calc_fns": [
@@ -243009,6 +243106,57 @@
     "não abre a allowlist para origens externas: %s"
    ]
   },
+  "tests/edge-functions/kit-quote-leitura-corpo.test.ts": {
+   "path": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+   "lines": 95,
+   "is_test": true,
+   "params": [
+    {
+     "name": "LIMITE",
+     "value": "524"
+    }
+   ],
+   "rule_comments": [
+    "corpo acima do limite **sem `Content-Length`** a inspeção e o fluxo de kit",
+    "original, com limite, e remontagem do pedido para quem vai atender."
+   ],
+   "doc": "Comportamento da leitura do corpo em `sicoob-kit-quote`, que hospeda o atesto de preço. O desvio já usou `req.clone()`: um clone divide o corpo em dois ramos do mesmo stream, e cancelar um ramo passa a depender do outro — num corpo acima do limite **sem `Content-Length`** a inspeção e o fluxo de kit …",
+   "tests": [
+    "leitura do corpo na hospedeira do atesto",
+    "corpo acima do limite SEM content-length responde, não trava",
+    "o pedido remontado preserva a autorização e pode ser lido de novo",
+    "corpo dentro do limite continua passando",
+    "content-length mentindo acima do limite é recusado sem ler o corpo"
+   ],
+   "side_effects": [
+    "enqueue("
+   ]
+  },
+  "tests/edge-functions/kit-quote-rota-atestado.test.ts": {
+   "path": "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+   "lines": 105,
+   "is_test": true,
+   "env": [
+    "SUPABASE_URL"
+   ],
+   "rule_comments": [
+    "cancelar um ramo passa a depender do outro — corpo acima do limite sem"
+   ],
+   "doc": "O atesto de preço é servido por `sicoob-kit-quote` enquanto o projeto Supabase estiver no teto de edge functions do plano. Estes testes travam o contrato da rota: o desvio só acontece com `op: \"price-attestation\"`, não consome o corpo do fluxo de kit, e a hospedagem está declarada no front.",
+   "tests": [
+    "rota do atesto de preço dentro de sicoob-kit-quote",
+    "o front chama a função que realmente hospeda o atesto",
+    "o handler do atesto é exportado, para poder ser servido dos dois lugares",
+    "o módulo importado pela hospedeira NÃO sobe servidor",
+    "cada ponto de entrada tem exatamente um Deno.serve",
+    "o desvio acontece antes de qualquer trabalho de kit",
+    "o corpo é lido UMA vez, do original, e o pedido é remontado para o handler",
+    "a leitura é limitada e o excesso responde 413, em vez de ser bufferizado",
+    "o fluxo de kit usa o corpo já lido, sem reabrir o stream",
+    "hospedeira e hóspede têm a MESMA autorização — hospedar não pode afrouxar o acesso",
+    "sem o marcador op, o fluxo de kit segue intocado"
+   ]
+  },
   "tests/edge-functions/migration-health-check.test.ts": {
    "path": "tests/edge-functions/migration-health-check.test.ts",
    "lines": 15,
@@ -250705,10 +250853,25 @@
   }
  },
  "git": {
-  "sha": "25214df4d57f7dda57506a6160d8d89a5a55cf74",
+  "sha": "e0e36d44c700670eba068fb947efe83ddb65eb0b",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e0e36d4",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)",
+    "files": [
+     "src/services/QuoteService.ts",
+     "supabase/functions/quote-price-attestation/handler.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/functions/sicoob-kit-quote/index.ts",
+     "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
+     "tests/edge-functions/kit-quote-rota-atestado.test.ts",
+     "tests/services/quoteReorder.test.ts"
+    ]
+   },
    {
     "sha": "25214df",
     "date": "2026-11-18",
@@ -251257,38 +251420,6 @@
      "tests/lib/private-storage.test.ts",
      "tests/lib/product-record-images.test.ts"
     ]
-   },
-   {
-    "sha": "1b142b4",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "feat: tendencias com snapshot unico e estados de erro reais (recupera PR #119) (#301)",
-    "files": [
-     "src/components/intelligence/ConversionFunnel.tsx",
-     "src/components/intelligence/HotSearchesCard.tsx",
-     "src/components/intelligence/TopCategoriesCard.tsx",
-     "src/components/intelligence/TopProductFamiliesCard.tsx",
-     "src/components/intelligence/TrendsForecastChart.tsx",
-     "src/components/intelligence/TrendsHeatmap.tsx",
-     "src/components/intelligence/UnmetDemandCard.tsx",
-     "src/components/intelligence/unmet-demand-query.ts",
-     "src/pages/TrendsPage.tsx",
-     "src/pages/trends/TrendsCharts.tsx",
-     "src/pages/trends/TrendsKpiCards.tsx",
-     "src/pages/trends/trends-mock.ts",
-     "src/pages/trends/trends-projections.ts",
-     "src/pages/trends/trends-queries.ts",
-     "src/pages/trends/use-refetch-on-revision.ts",
-     "tests/components/intelligence/TrendsHeatmap.errors.test.tsx",
-     "tests/components/intelligence/UnmetDemandCard.window.test.tsx",
-     "tests/components/intelligence/market-signals-error-states.test.tsx",
-     "tests/components/intelligence/unmet-demand-query.test.ts",
-     "tests/pages/TrendsAccess.test.ts",
-     "tests/pages/TrendsCharts.errors.test.tsx",
-     "tests/pages/TrendsKpiCards.test.tsx",
-     "tests/pages/trends-queries.test.ts",
-     "tests/pages/use-refetch-on-revision.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251303,6 +251434,18 @@
    [
     "tests/hooks/useKitAutoSave.test.tsx",
     3
+   ],
+   [
+    "src/services/QuoteService.ts",
+    2
+   ],
+   [
+    "supabase/functions/quote-price-attestation/index.ts",
+    2
+   ],
+   [
+    "tests/services/quoteReorder.test.ts",
+    2
    ],
    [
     "src/pages/KitBuilderPage.tsx",
@@ -251358,18 +251501,6 @@
    ],
    [
     "src/hooks/useQuoteBuilderState.ts",
-    2
-   ],
-   [
-    "src/integrations/supabase/types.ts",
-    2
-   ],
-   [
-    "supabase/config.toml",
-    2
-   ],
-   [
-    "supabase/functions/_shared/edge-authz-manifest.ts",
     2
    ]
   ]

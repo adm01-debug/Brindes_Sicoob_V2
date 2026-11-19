@@ -1834,7 +1834,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -3417,7 +3416,6 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
-    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -4172,7 +4170,6 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
-    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -4878,7 +4875,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -5713,7 +5709,6 @@
     "external-db-bridge",
     "log-login-attempt",
     "quote-approval",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7944,7 +7939,6 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "quote-approval",
-    "quote-price-attestation",
     "secrets-manager",
     "send-transactional-email",
     "sicoob-document-ingest",
@@ -9343,7 +9337,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -9447,7 +9440,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -10534,7 +10526,6 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
-    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -12232,7 +12223,6 @@
     "log-login-attempt",
     "market-intelligence-insights",
     "quote-approval",
-    "quote-price-attestation",
     "quote-public-view",
     "secure-upload",
     "semantic-search",
@@ -12857,7 +12847,6 @@
     "mcp-keys-update",
     "ownership-audit",
     "ownership-repair",
-    "quote-price-attestation",
     "secrets-manager",
     "secure-upload",
     "sicoob-approval-reconciliation",
@@ -14083,7 +14072,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -14268,7 +14256,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -15250,7 +15237,6 @@
     "ownership-audit",
     "ownership-repair",
     "quote-approval",
-    "quote-price-attestation",
     "secrets-manager",
     "secure-upload",
     "semantic-search",
@@ -15586,7 +15572,7 @@
    "modulo": "services",
    "arquivos": 7,
    "testes": 0,
-   "linhas": 1765,
+   "linhas": 1773,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15603,7 +15589,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder"
    ],
    "tabelas": [
@@ -15655,7 +15640,6 @@
    ],
    "diretos": {
     "edges": [
-     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "tabelas": [
@@ -16134,7 +16118,6 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -16379,7 +16362,6 @@
     "external-db-bridge",
     "image-proxy",
     "log-login-attempt",
-    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
