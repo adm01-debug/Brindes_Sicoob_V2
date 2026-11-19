@@ -303,6 +303,35 @@ describe('useKitAutoSave', () => {
     expect(insert).toHaveBeenCalledTimes(1);
   });
 
+  it('edicao feita DEPOIS do clique em Salvar nao se perde', async () => {
+    // A fila tambem pode conter alteracao MAIS NOVA que o conteudo enviado
+    // pelo "Salvar". Invalidar a fila e dar a tela inteira como persistida
+    // apagaria essa edicao sem nunca grava-la, com o indicador mostrando
+    // sucesso.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'versao-D' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    // O usuario clica em Salvar com "Campanha A" na tela.
+    rerender({ kit: { ...initialKit, name: 'Campanha A' } });
+    const enviado = result.current.capturarSnapshotAtual();
+
+    // Enquanto a requisicao manual nao volta, ele digita "Campanha B".
+    rerender({ kit: { ...initialKit, name: 'Campanha B' } });
+
+    // O manual confirma, informando o retrato que ele realmente mandou.
+    act(() => { result.current.syncPersistedVersion('versao-B', enviado); });
+
+    // B nao pode se perder: o reagendamento tem de grava-lo.
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Campanha B' });
+  });
+
   it('autosave ja enfileirado nao grava por cima do salvamento manual', async () => {
     // O payload de cada gravacao e fotografado antes de entrar na fila e so le
     // a versao conhecida na hora de gravar. Sem invalidar a fila, a versao

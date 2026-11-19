@@ -183,6 +183,7 @@ export default function KitBuilderPage() {
   const {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
+    capturarSnapshotAtual,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
   );
@@ -290,6 +291,10 @@ export default function KitBuilderPage() {
       // Espera o salvamento automático em voo antes de decidir entre criar e
       // atualizar. Sem isto, clicar em "Salvar" durante o INSERT de um kit
       // novo dispara um segundo INSERT: dois kits iguais na lista.
+      // Retrato do que está indo para o banco. O que o usuário digitar entre
+      // este ponto e a resposta continua pendente: marcar a tela inteira como
+      // persistida apagaria essa edição sem nunca gravá-la.
+      const snapshotEnviado = capturarSnapshotAtual();
       const idDoAutosave = await flushAutoSave();
       const editingId = currentKitId || idDoAutosave || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
@@ -301,7 +306,7 @@ export default function KitBuilderPage() {
         // conflito e o kit ficaria travado até recarregar a página.
         const versao = (result as { updated_at?: string | null }).updated_at ?? null;
         setLoadedUpdatedAt(versao);
-        syncPersistedVersion(versao);
+        syncPersistedVersion(versao, snapshotEnviado);
       }
     } catch { /* handled by hook */ }
   };

@@ -29,7 +29,13 @@ interface AutoSaveResult {
    * "Salvar" depois do sucesso, ele adota a nova versão e marca como
    * persistido o que está na tela.
    */
-  syncPersistedVersion: (updatedAt: string | null) => void;
+  syncPersistedVersion: (updatedAt: string | null, snapshotEnviado?: string) => void;
+  /**
+   * Fotografa o que está na tela agora. O "Salvar" chama isto antes de enviar
+   * e devolve o retrato ao `syncPersistedVersion`: o que o usuário digitar
+   * depois do clique continua pendente, em vez de ser dado como gravado.
+   */
+  capturarSnapshotAtual: () => string;
   /**
    * Espera o salvamento automático em voo terminar e devolve o id do kit que
    * ele conhece. O salvamento manual chama isto antes de decidir entre criar e
@@ -358,7 +364,7 @@ export function useKitAutoSave(
     if (loadedUpdatedAt) knownUpdatedAtRef.current = loadedUpdatedAt;
   }, [loadedUpdatedAt]);
 
-  const syncPersistedVersion = useCallback((updatedAt: string | null) => {
+  const syncPersistedVersion = useCallback((updatedAt: string | null, snapshotEnviado?: string) => {
     // Descarta o que estiver na fila do autosave antes de adotar a versão nova.
     // Cada gravação enfileirada carrega um payload fotografado ANTES do
     // salvamento manual e só lê `knownUpdatedAtRef` na hora de gravar: adotar a
@@ -372,13 +378,27 @@ export function useKitAutoSave(
       timerRef.current = undefined;
     }
     knownUpdatedAtRef.current = updatedAt;
-    persistedSnapshotRef.current = latestSnapshotRef.current;
+    // Persistido é o que o "Salvar" realmente mandou, não o que está na tela
+    // agora. Entre o clique e a resposta o usuário continua editando, e essa
+    // edição pode ter entrado na fila: dar a tela inteira como persistida
+    // apagaria a edição mais nova junto com as velhas, sem nunca gravá-la.
+    const persistido = snapshotEnviado ?? latestSnapshotRef.current;
+    persistedSnapshotRef.current = persistido;
     // O contador não é zerado: o `finally` de cada gravação descartada ainda
     // decrementa o seu. Quem some com o "Salvando…" é esta linha.
     setIsSaving(false);
     setLastSavedAt(new Date());
     setLastSaveError(null);
     setLastSaveConflict(false);
+    // O que o usuário digitou depois do clique não foi para lugar nenhum:
+    // reagenda, em vez de se perder entre a confirmação manual e o descarte
+    // da fila.
+    if (latestSnapshotRef.current && latestSnapshotRef.current !== persistido) {
+      timerRef.current = setTimeout(
+        () => void saveToDbRef.current?.(latestSnapshotRef.current),
+        AUTO_SAVE_DELAY_MS,
+      );
+    }
   }, []);
 
   /** Drena a fila do autosave e devolve o id conhecido depois dela. */
@@ -397,14 +417,22 @@ export function useKitAutoSave(
     return kitIdRef.current ?? undefined;
   }, []);
 
+  // `syncPersistedVersion` precisa reagendar uma gravação sem depender de
+  // `saveToDb` (que muda a cada render por depender de `kitState`), senão a
+  // identidade do callback mudaria a cada tecla digitada.
+  const saveToDbRef = useRef<typeof saveToDb>();
+  saveToDbRef.current = saveToDb;
+
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     const snapshot = latestSnapshotRef.current;
     if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
   }, [saveToDb]);
 
+  const capturarSnapshotAtual = useCallback(() => latestSnapshotRef.current, []);
+
   return {
     lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
-    retry, syncPersistedVersion, flushPending,
+    retry, syncPersistedVersion, flushPending, capturarSnapshotAtual,
   };
 }
