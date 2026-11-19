@@ -4957,7 +4957,7 @@
     "exports"
    ],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "env": [
     "DEV",
@@ -12399,7 +12399,7 @@
    "canais_realtime": [
     "kit-comments-${kitId}",
     "security-notifications",
-    "sicoob-orders-realtime",
+    "sicoob-orders-realtime:${crypto.randomUUID()}",
     "trends-realtime",
     "user:${user.id}:custom-kits"
    ],
@@ -14525,7 +14525,7 @@
     "sicoob-order-documents"
    ],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "env": [
     "DEV",
@@ -15452,7 +15452,7 @@
     "admin-conexoes-credentials-changes",
     "kit-comments-${kitId}",
     "security-notifications",
-    "sicoob-orders-realtime",
+    "sicoob-orders-realtime:${crypto.randomUUID()}",
     "trends-realtime",
     "user:${user.id}:custom-kits"
    ],
@@ -15828,7 +15828,7 @@
    "modulo": "services/sicoob",
    "arquivos": 12,
    "testes": 0,
-   "linhas": 1242,
+   "linhas": 1259,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15868,7 +15868,7 @@
    ],
    "buckets": [],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "env": [
     "VITE_SUPABASE_PUBLISHABLE_KEY",

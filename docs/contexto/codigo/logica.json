@@ -6200,7 +6200,7 @@
     "sicoobCommonService"
    ],
    "export_default": null,
-   "linhas": 31,
+   "linhas": 48,
    "tabelas": [
     "cooperativas",
     "postos_atendimento"
@@ -6216,7 +6216,7 @@
    "usado_por_modulos": [
     "pages/sicoob"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

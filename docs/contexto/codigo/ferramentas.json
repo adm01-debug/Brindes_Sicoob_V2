@@ -3,11 +3,11 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2887)",
-   "SQL (674)",
+   "TypeScript (2888)",
+   "SQL (675)",
    "Markdown (262)",
    "JSON (235)",
-   "JavaScript (144)",
+   "JavaScript (145)",
    "Python (60)",
    "YAML (23)",
    "CSS (7)"
@@ -1874,7 +1874,7 @@
    "discount-approvals-badge",
    "kit-comments-${kitId}",
    "security-notifications",
-   "sicoob-orders-realtime",
+   "sicoob-orders-realtime:${crypto.randomUUID()}",
    "trends-realtime",
    "user:${user.id}:custom-kits"
   ]

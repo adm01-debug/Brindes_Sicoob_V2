@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 848,
+ "total": 850,
  "por_tipo": {
-  "contrato": 8,
+  "contrato": 9,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 623
+  "unit": 624
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 601
+   "arquivos": 603
   },
   {
    "padrao": "e2e/",
@@ -6216,6 +6216,13 @@
    "casos": 3
   },
   {
+   "arquivo": "tests/scenarios/business-realtime-contract.scenario.mjs",
+   "tipo": "contrato",
+   "linhas": 55,
+   "testa": [],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/scenarios/catalogo-somente-leitura.mjs",
    "tipo": "unit",
    "linhas": 96,
@@ -6787,6 +6794,15 @@
     "src/services/quotes/quoteVersionService.ts"
    ],
    "casos": 4
+  },
+  {
+   "arquivo": "tests/services/sicoob-common-service.test.ts",
+   "tipo": "unit",
+   "linhas": 82,
+   "testa": [
+    "src/services/sicoob/commonService.ts"
+   ],
+   "casos": 3
   },
   {
    "arquivo": "tests/services/sicoobApprovalService.test.ts",
@@ -7806,6 +7822,7 @@
   "src/services/sicoob/approvalDelegationService.ts": 1,
   "src/services/sicoob/approvalService.ts": 1,
   "src/services/sicoob/budgetService.ts": 1,
+  "src/services/sicoob/commonService.ts": 1,
   "src/services/sicoob/documentIngestService.ts": 1,
   "src/services/sicoob/fulfillmentService.ts": 1,
   "src/services/sicoob/logisticsReportService.ts": 1,
@@ -8339,7 +8356,6 @@
    "src/services/infrastructure/BaseHttpService.ts",
    "src/services/materialService.ts",
    "src/services/ramoAtividadeService.ts",
-   "src/services/sicoob/commonService.ts",
    "src/services/sicoob/managerStatsService.ts",
    "src/services/sicoob/reorderIdempotency.ts",
    "src/services/sicoob/statsService.ts"

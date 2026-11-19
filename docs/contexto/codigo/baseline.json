@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "f82acc301479288d7a1c3d6cea21c921b4a6b6d6",
+  "commit": "34095f4cc819cc41fba07930208d4ba3709a5289",
   "branch": "main",
-  "data_commit": "2026-11-19T03:53:06Z",
+  "data_commit": "2026-11-19T04:06:31Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "34095f4",
+    "data": "2026-11-19",
+    "assunto": "fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)"
+   },
    {
     "sha": "f82acc3",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "fcb4b9a",
     "data": "2026-11-18",
     "assunto": "chore(deps): remove chave autoprefixer duplicada no package.json (#320)"
-   },
-   {
-    "sha": "f2db0f8",
-    "data": "2026-11-18",
-    "assunto": "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)"
    }
   ],
-  "arquivos_mudados_7d": 461,
+  "arquivos_mudados_7d": 465,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 68
+    "mudancas": 67
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 67
+    "mudancas": 66
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 154
+    "commits": 155
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4398,
-  "arquivos_codigo": 3088,
-  "linhas_codigo": 487473,
+  "arquivos_total": 4401,
+  "arquivos_codigo": 3090,
+  "linhas_codigo": 487627,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 848,
+  "testes": 850,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 262
@@ -816,7 +816,7 @@
   },
   "src/services": {
    "arquivos": 23,
-   "linhas": 3372
+   "linhas": 3389
   },
   "src/stores": {
    "arquivos": 6,
@@ -955,8 +955,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 26,
-   "linhas": 1842
+   "arquivos": 27,
+   "linhas": 1897
   },
   "tests/scripts": {
    "arquivos": 32,
@@ -971,8 +971,8 @@
    "linhas": 825
   },
   "tests/services": {
-   "arquivos": 13,
-   "linhas": 1345
+   "arquivos": 14,
+   "linhas": 1427
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,

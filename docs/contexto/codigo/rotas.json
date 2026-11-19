@@ -5560,7 +5560,7 @@
     "system-healthcheck"
    ],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "flags": [],
    "papeis": [
@@ -10104,7 +10104,7 @@
     "sicoob-reorder"
    ],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "flags": [],
    "papeis": [
@@ -10333,7 +10333,7 @@
     "sicoob-reorder"
    ],
    "canais_realtime": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ],
    "flags": [],
    "papeis": [

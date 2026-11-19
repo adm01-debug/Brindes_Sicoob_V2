@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "f82acc301479288d7a1c3d6cea21c921b4a6b6d6",
+  "sha": "34095f4cc819cc41fba07930208d4ba3709a5289",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 03:53 UTC",
-  "files_total": 4400,
-  "code_files": 3744,
-  "code_lines": 548822
+  "generated_at": "2026-11-19 04:07 UTC",
+  "files_total": 4403,
+  "code_files": 3747,
+  "code_lines": 549068
  },
  "version": "1.3.2",
- "facts_hash": "93010f5c5baeae8c",
+ "facts_hash": "50a80feb818bcede",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,10 +348,10 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1459,
+   ".ts": 1460,
    ".tsx": 1426,
-   ".sql": 674,
-   ".mjs": 134,
+   ".sql": 675,
+   ".mjs": 135,
    ".py": 60,
    ".js": 6,
    ".cjs": 5
@@ -64858,7 +64858,7 @@
   {
    "module": "src/services",
    "files": 23,
-   "lines": 3372,
+   "lines": 3389,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -65583,8 +65583,8 @@
   },
   {
    "module": "tests",
-   "files": 619,
-   "lines": 84524,
+   "files": 622,
+   "lines": 84753,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -71021,7 +71021,7 @@
    "security-notifications": [
     "src/hooks/usePushNotifications.tsx"
    ],
-   "sicoob-orders-realtime": [
+   "sicoob-orders-realtime:${crypto.randomUUID()}": [
     "src/services/sicoob/commonService.ts"
    ],
    "trends-realtime": [
@@ -136502,6 +136502,22 @@
     "name": "recusa resposta vazia do banco"
    },
    {
+    "file": "tests/services/sicoob-common-service.test.ts",
+    "name": "sicoobCommonService.subscribeToOrders"
+   },
+   {
+    "file": "tests/services/sicoob-common-service.test.ts",
+    "name": "duas inscricoes simultaneas nao dividem o mesmo topico"
+   },
+   {
+    "file": "tests/services/sicoob-common-service.test.ts",
+    "name": "a limpeza de uma inscricao remove o canal dela, nao o da outra"
+   },
+   {
+    "file": "tests/services/sicoob-common-service.test.ts",
+    "name": "cada inscricao escuta o mesmo postgres_changes"
+   },
+   {
     "file": "tests/services/sicoobApprovalService.test.ts",
     "name": "sicoobApprovalService.rejectOrderWithoutApproval"
    },
@@ -139483,6 +139499,10 @@
    },
    {
     "file": "supabase/migrations/20261118130100_enable_scoped_business_realtime.sql",
+    "call": "notify_hardening_regression"
+   },
+   {
+    "file": "tests/scenarios/business-realtime-contract.scenario.mjs",
     "call": "notify_hardening_regression"
    },
    {
@@ -223443,7 +223463,7 @@
   },
   "src/services/sicoob/commonService.ts": {
    "path": "src/services/sicoob/commonService.ts",
-   "lines": 31,
+   "lines": 48,
    "exports": [
     "const sicoobCommonService"
    ],
@@ -223468,7 +223488,7 @@
     ]
    },
    "channels": [
-    "sicoob-orders-realtime"
+    "sicoob-orders-realtime:${crypto.randomUUID()}"
    ]
   },
   "src/services/sicoob/documentIngestService.ts": {
@@ -248773,6 +248793,13 @@
     "braces rejeita AST fornecida diretamente acima do limite"
    ]
   },
+  "tests/scenarios/business-realtime-contract.scenario.mjs": {
+   "path": "tests/scenarios/business-realtime-contract.scenario.mjs",
+   "lines": 55,
+   "side_effects": [
+    "notify_hardening_regression"
+   ]
+  },
   "tests/scenarios/catalogo-somente-leitura.mjs": {
    "path": "tests/scenarios/catalogo-somente-leitura.mjs",
    "lines": 96
@@ -249006,6 +249033,10 @@
     "dev"
    ],
    "uses_service_role": true
+  },
+  "tests/scenarios/sql/business-realtime-fixture.sql": {
+   "path": "tests/scenarios/sql/business-realtime-fixture.sql",
+   "lines": 92
   },
   "tests/scenarios/sql/favorite-reactions-rls-fixture.sql": {
    "path": "tests/scenarios/sql/favorite-reactions-rls-fixture.sql",
@@ -250107,6 +250138,18 @@
     "recusa resposta vazia do banco"
    ]
   },
+  "tests/services/sicoob-common-service.test.ts": {
+   "path": "tests/services/sicoob-common-service.test.ts",
+   "lines": 82,
+   "is_test": true,
+   "doc": "O feed de pedidos do Sicoob é assinado por mais de um consumidor (`OrdersKanbanPage` e `OrdersPage`) e, em desenvolvimento, o StrictMode monta cada um duas vezes. Com nome de canal fixo, todas essas inscrições caem no mesmo tópico do Realtime e a limpeza de uma remove o canal da outra. Este teste ex …",
+   "tests": [
+    "sicoobCommonService.subscribeToOrders",
+    "duas inscricoes simultaneas nao dividem o mesmo topico",
+    "a limpeza de uma inscricao remove o canal dela, nao o da outra",
+    "cada inscricao escuta o mesmo postgres_changes"
+   ]
+  },
   "tests/services/sicoobApprovalService.test.ts": {
    "path": "tests/services/sicoobApprovalService.test.ts",
    "lines": 39,
@@ -251158,10 +251201,22 @@
   }
  },
  "git": {
-  "sha": "f82acc301479288d7a1c3d6cea21c921b4a6b6d6",
+  "sha": "34095f4cc819cc41fba07930208d4ba3709a5289",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "34095f4",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)",
+    "files": [
+     "src/services/sicoob/commonService.ts",
+     "tests/scenarios/business-realtime-contract.scenario.mjs",
+     "tests/scenarios/sql/business-realtime-fixture.sql",
+     "tests/services/sicoob-common-service.test.ts"
+    ]
+   },
    {
     "sha": "f82acc3",
     "date": "2026-11-19",
@@ -251597,17 +251652,6 @@
      "src/pages/ClientsPage.tsx",
      "tests/hooks/useClientsPortfolioKpis.test.ts"
     ]
-   },
-   {
-    "sha": "71d515b",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)",
-    "files": [
-     "src/contexts/AuthContext.tsx",
-     "src/lib/auth/sensitive-browser-data.ts",
-     "tests/lib/auth/sensitive-browser-data.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251637,10 +251681,6 @@
    ],
    [
     "PENDENCIAS.md",
-    2
-   ],
-   [
-    "src/contexts/AuthContext.tsx",
     2
    ],
    [
@@ -251690,6 +251730,10 @@
    [
     "tests/pages/GestorCompras.metrics.test.tsx",
     2
+   ],
+   [
+    "src/services/sicoob/commonService.ts",
+    1
    ]
   ]
  }

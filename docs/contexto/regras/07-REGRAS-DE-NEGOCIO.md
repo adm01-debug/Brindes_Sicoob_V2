@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f82acc3014` · branch `main` · 2026-11-19 03:53 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `34095f4cc8` · branch `main` · 2026-11-19 04:07 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6810 testes em 672 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6814 testes em 673 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6011,7 +6011,7 @@ _nenhum item encontrado_
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
-| … +372 linhas — lista completa em `context.json` | | |
+| … +373 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6186,6 +6186,7 @@ _nenhum item encontrado_
 | `notify_hardening_regression` | `supabase/migrations/20261008010000_fix_plpgsql_lint_failures.sql` |
 | `notify_singular_quote_submission` | `supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql` |
 | `notify_hardening_regression` | `supabase/migrations/20261118130100_enable_scoped_business_realtime.sql` |
+| `notify_hardening_regression` | `tests/scenarios/business-realtime-contract.scenario.mjs` |
 | `slack.com` | `tests/scenarios/notificacoes-aprovacao.mjs` |
 | `notify_approval_request` | `tests/scenarios/sql/sicoob-approval-policy-fixture.sql` |
 | `slack.com` | `tests/scenarios/sql/sicoob-notification-outbox-fixture.sql` |
