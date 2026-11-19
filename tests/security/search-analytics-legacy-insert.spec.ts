@@ -114,6 +114,16 @@ describe("search_analytics — compatibilidade de insert legado", () => {
     for (const migration of migrationsAfter(triggerMigration.name)) {
       expect(migration.sql).not.toMatch(new RegExp(`DISABLE TRIGGER ${TRIGGER}`));
       expect(migration.sql).not.toMatch(new RegExp(`DROP FUNCTION[^;]*${NORMALIZER}`));
+      // `DROP TRIGGER` só passa quando a própria migration recria o trigger depois
+      // (padrão idempotente). Um DROP solto derrubaria a catraca sem tocar na função,
+      // escapando das duas asserções acima.
+      const ultimoDrop = Math.max(
+        migration.sql.lastIndexOf(`DROP TRIGGER IF EXISTS ${TRIGGER}`),
+        migration.sql.lastIndexOf(`DROP TRIGGER ${TRIGGER}`),
+      );
+      if (ultimoDrop >= 0) {
+        expect(migration.sql.lastIndexOf(`CREATE TRIGGER ${TRIGGER}`)).toBeGreaterThan(ultimoDrop);
+      }
     }
   });
 
@@ -133,14 +143,23 @@ describe("search_analytics — compatibilidade de insert legado", () => {
 
   it("enquanto o front enviar payload legado, a compatibilidade não pode sumir", () => {
     const hook = readFileSync("src/hooks/useProductAnalytics.ts", "utf8");
-    const enviaLegado = /insert\(\{[\s\S]*?(seller_id|filters_used)[\s\S]*?\}\)/.test(hook);
+    // Só o insert de `search_analytics`. O mesmo arquivo insere em `product_views`
+    // com `seller_id` (coluna própria daquela tabela, não payload legado de busca);
+    // uma busca pelo arquivo inteiro daria legado=true para sempre e tornaria o
+    // ramo canônico inalcançável.
+    const insertBusca = hook.match(
+      /untypedFrom\("search_analytics"\)\s*\.insert\(\{([\s\S]*?)\}\)/,
+    );
+    expect(insertBusca, "insert de search_analytics em useProductAnalytics.ts").not.toBeNull();
+    const payloadBusca = insertBusca?.[1] ?? "";
+    const enviaLegado = /\b(seller_id|filters_used)\b/.test(payloadBusca);
 
     if (enviaLegado) {
       expect(triggerMigration.sql).toContain(`CREATE TRIGGER ${TRIGGER}`);
       expect(normalizerBody).toMatch(/NEW\.seller_id\s*:=\s*v_actor;/);
     } else {
       // Front migrado para o canônico: o insert precisa carimbar search_context.
-      expect(hook).toMatch(/search_context/);
+      expect(payloadBusca).toMatch(/search_context/);
     }
   });
 });
