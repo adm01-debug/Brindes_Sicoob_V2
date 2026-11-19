@@ -129,40 +129,67 @@ function TourTooltip({ tour, position, dialogRef, titleId, descriptionId }: Tour
   </motion.div>;
 }
 
-function useTourDialogFocus(showTour: boolean) {
+function focusablesInside(dialog: HTMLDivElement): HTMLElement[] {
+  return Array.from(dialog.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  ));
+}
+
+// Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho.
+function proximoFocoDoTrap(dialog: HTMLDivElement, shiftKey: boolean): HTMLElement | null {
+  const focusable = focusablesInside(dialog);
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!first || !last) return dialog;
+  // Tab vindo de fora do diálogo volta para dentro: sem isto, o teclado
+  // alcançaria os controles da página atrás do modal.
+  if (!dialog.contains(document.activeElement)) return first;
+  if (shiftKey && document.activeElement === first) return last;
+  if (!shiftKey && document.activeElement === last) return first;
+  return null;
+}
+
+function trapTabInsideDialog(dialogRef: RefObject<HTMLDivElement>) {
+  return (event: KeyboardEvent) => {
+    if (event.key !== 'Tab' || !dialogRef.current) return;
+    const destino = proximoFocoDoTrap(dialogRef.current, event.shiftKey);
+    if (!destino) return;
+    event.preventDefault();
+    destino.focus();
+  };
+}
+
+// Dois efeitos, porque são dois ciclos de vida distintos: guardar e devolver o
+// foco anterior pertence à abertura do tour; dar foco ao diálogo pertence a cada
+// remontagem dele — `key={currentStep}` troca o nó do DOM a cada passo e levava
+// junto o botão que estava focado.
+function useTourDialogFocus(showTour: boolean, currentStep: number) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!showTour) return;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const dialog = dialogRef.current;
-    const initialFocus = dialog?.querySelector<HTMLElement>('[data-tour-initial-focus]') ?? dialog;
-    initialFocus?.focus();
-
-    const trapFocus = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab' || !dialogRef.current) return;
-      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ));
-      if (focusable.length === 0) { event.preventDefault(); dialogRef.current.focus(); return; }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
+    const trapFocus = trapTabInsideDialog(dialogRef);
     document.addEventListener('keydown', trapFocus);
     return () => {
       document.removeEventListener('keydown', trapFocus);
       if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, [showTour]);
+
+  useEffect(() => {
+    if (!showTour) return;
+    const dialog = dialogRef.current;
+    const initialFocus = dialog?.querySelector<HTMLElement>('[data-tour-initial-focus]') ?? dialog;
+    initialFocus?.focus();
+  }, [showTour, currentStep]);
+
   return dialogRef;
 }
 
 export const OnboardingTour = forwardRef<HTMLDivElement, unknown>(function OnboardingTour(_props, ref) {
   const tour = useOnboardingContext();
   const { showTour, skipTour } = tour;
-  const dialogRef = useTourDialogFocus(showTour);
+  const dialogRef = useTourDialogFocus(showTour, tour.currentStep);
   const titleId = useId();
   const descriptionId = useId();
   useTourRoute(tour);
