@@ -115,7 +115,9 @@ function addCategoryPage(doc: jsPDF, width: number, category: CategorySection | 
         const delta = row.deltaPct === null || row.deltaPct === undefined
           ? "—"
           : `${row.deltaPct > 0 ? "+" : ""}${Math.round(row.deltaPct)}%`;
-        return [row.label, `${row.clientSharePct.toFixed(1)}%`, `${row.industrySharePct.toFixed(1)}%`, `${arrow} ${delta}`];
+        // Setor sem comparativo imprime "—": zero afirmaria que o setor não compra.
+        const setor = row.industrySharePct === null ? "—" : `${row.industrySharePct.toFixed(1)}%`;
+        return [row.label, `${row.clientSharePct.toFixed(1)}%`, setor, `${arrow} ${delta}`];
       }),
       theme: "grid",
       headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 9 },
