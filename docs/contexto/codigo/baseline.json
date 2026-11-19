@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "a73abe01634ac1e55e2b5474d13933c3683e639a",
+  "commit": "726efa735ff5ab1a518bb4f6aecc81b16240493d",
   "branch": "main",
-  "data_commit": "2026-11-19T14:47:32-03:00",
+  "data_commit": "2026-11-19T15:38:16-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "726efa7",
+    "data": "2026-11-19",
+    "assunto": "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)"
+   },
    {
     "sha": "a73abe0",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "965419b",
     "data": "2026-11-19",
     "assunto": "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)"
-   },
-   {
-    "sha": "b364a12",
-    "data": "2026-11-19",
-    "assunto": "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)"
    }
   ],
-  "arquivos_mudados_7d": 607,
+  "arquivos_mudados_7d": 604,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 38
+    "mudancas": 37
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 37
+    "mudancas": 36
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 181
+    "commits": 182
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4542,
-  "arquivos_codigo": 3131,
-  "linhas_codigo": 492339,
+  "arquivos_total": 4544,
+  "arquivos_codigo": 3133,
+  "linhas_codigo": 492474,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
-  "componentes": 1170,
+  "componentes": 1171,
   "hooks": 393,
   "edge_functions": 107,
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 879,
+  "testes": 880,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 285
@@ -775,8 +775,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1130,
-   "linhas": 166692
+   "arquivos": 1131,
+   "linhas": 166758
   },
   "src/constants": {
    "arquivos": 3,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 146,
-   "linhas": 27353
+   "arquivos": 147,
+   "linhas": 27422
   },
   "tests/contexts": {
    "arquivos": 3,

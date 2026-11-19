@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2252,
- "arestas": 9140,
+ "nos": 2253,
+ "arestas": 9145,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -10,7 +10,7 @@
   },
   {
    "arquivo": "src/lib/utils.ts",
-   "importado_por": 563
+   "importado_por": 564
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
@@ -114,7 +114,7 @@
   },
   {
    "arquivo": "src/components/ui/dropdown-menu.tsx",
-   "importado_por": 38
+   "importado_por": 39
   },
   {
    "arquivo": "src/hooks/use-toast.ts",

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a73abe0163` · branch `main` · 2026-11-19 18:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `726efa735f` · branch `main` · 2026-11-19 18:39 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6966 testes em 698 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6970 testes em 699 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6012,7 +6012,7 @@ _nenhum item encontrado_
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
 | `tests/lib/theme-fonts-preload.test.ts` | 7 | index.html — preload de fontes · carrega Plus Jakarta Sans (default sans) · carrega Outfit (default display) · carrega Inter (skins Opera GX → família Cloudflare Sans) … |
-| … +398 linhas — lista completa em `context.json` | | |
+| … +399 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

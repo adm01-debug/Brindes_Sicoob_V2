@@ -6,7 +6,7 @@
    "src/pages (116)"
   ],
   "componentes": [
-   "src/components (999)",
+   "src/components (1000)",
    "src/pages (159)",
    "src/contexts (9)"
   ],
@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (632)",
+   "tests/ (633)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1170)"
+  ".tsx (1171)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)",
    "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)",
    "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)",
    "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)",
-   "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)",
-   "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)"
+   "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -9967,13 +9967,14 @@
    "edges": [],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 3,
+   "usado_por": 4,
    "usado_por_arquivos": [
+    "src/components/common/NavigationHistoryMenu.tsx",
     "src/components/effects/PageTransition.tsx",
     "src/hooks/useSmartNavigation.ts",
     "src/lib/auth/sensitive-browser-data.ts"
    ],
-   "coberto_por_testes": 3
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/stores/useRecentlyViewedStore.ts",

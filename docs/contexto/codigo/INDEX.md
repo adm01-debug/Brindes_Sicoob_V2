@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `a73abe01634ac1e55e2b5474d13933c3683e639a` (2026-11-19T14:47:32-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `726efa735ff5ab1a518bb4f6aecc81b16240493d` (2026-11-19T15:38:16-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2917), SQL (684), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (24), CSS (7)
+- linguagens: TypeScript (2919), SQL (684), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,31 +34,31 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4542 |
-| arquivos_codigo | 3131 |
-| linhas_codigo | 492339 |
+| arquivos_total | 4544 |
+| arquivos_codigo | 3133 |
+| linhas_codigo | 492474 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 84 |
 | modulos | 145 |
-| componentes | 1170 |
+| componentes | 1171 |
 | hooks | 393 |
 | edge_functions | 107 |
 | tabelas | 292 |
 | migrations | 622 |
 | cron_jobs | 27 |
-| testes | 879 |
+| testes | 880 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 285 |
 
 ## Onde ficam as coisas
 - telas: src/pages (116)
-- componentes: src/components (999), src/pages (159), src/contexts (9)
+- componentes: src/components (1000), src/pages (159), src/contexts (9)
 - hooks: src/hooks (287), src/components (66), src/pages (21)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (632), e2e/ (149), outro (51)
+- testes: tests/ (633), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -76,7 +76,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/cart | 0 | 0 | 16 | 9 | 3 | 9 |
 | components/catalog | 0 | 0 | 9 | 143 | 9 | 17 |
 | components/collections | 0 | 0 | 15 | 19 | 4 | 5 |
-| components/common | 0 | 0 | 28 | 24 | 5 | 3 |
+| components/common | 0 | 0 | 29 | 24 | 5 | 3 |
 | components/compare | 0 | 0 | 25 | 14 | 3 | 3 |
 | components/dashboard | 0 | 0 | 11 | 19 | 5 | 11 |
 | components/dev | 0 | 0 | 7 | 6 | 3 | 2 |
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29659 nós · 54436 arestas · 2138 comunidades · grafo do commit `a73abe01`
-- comunidades maiores: ref_integrations (463), ref_lib (342), ref_components (317), ref_hooks (297), lucide-react (271), react (229), ref_node_fs (205), framer-motion (202), getCorsHeaders (188), expert-chat/index.ts (179), react-router-dom (168), date-fns (167)
+- 29665 nós · 54452 arestas · 2107 comunidades · grafo do commit `726efa73`
+- comunidades maiores: ref_lib (526), ref_components (466), react (222), framer-motion (199), react-router-dom (182), ai-usage.ts (176), getCorsHeaders (173), ref_utils (143), external-db-bridge/index.ts (136), ref_node_fs (130), ref_pages (130), date-fns (127)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (38)
-- docs/correcoes-validacao-2026-09-14.md (37)
+- docs/plano-melhorias-50-etapas.md (37)
+- docs/correcoes-validacao-2026-09-14.md (36)
 - package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `726efa7` feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)
 - 2026-11-19 `a73abe0` docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)
 - 2026-11-19 `5830e19` feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)
 - 2026-11-19 `05af443` fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `ce9014b` test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)
 - 2026-11-19 `a202373` docs(recuperação): veredito medido para as 62 refs restantes (#367)
 - 2026-11-19 `f21dbfd` fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)
-- 2026-11-19 `138474b` chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

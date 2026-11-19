@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1170,
+ "total": 1171,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -5534,6 +5534,22 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/common/NavigationHistoryMenu.tsx",
+   "exports": [
+    "NavigationHistoryMenu"
+   ],
+   "export_default": null,
+   "linhas": 64,
+   "dominio": "components/common",
+   "hooks_locais": [
+    "useNavigationStore"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/common/OptimizedImage.tsx",
    "exports": [
     "OptimizedImage"
@@ -8609,7 +8625,7 @@
     "MainLayout"
    ],
    "export_default": null,
-   "linhas": 321,
+   "linhas": 323,
    "dominio": "components/layout",
    "hooks_locais": [
     "useGlobalShortcuts",
@@ -15092,7 +15108,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 37,
+   "usado_por": 38,
    "orfao": false
   },
   {

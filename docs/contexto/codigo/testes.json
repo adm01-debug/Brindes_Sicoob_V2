@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 879,
+ "total": 880,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 650
+  "unit": 651
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 632
+   "arquivos": 633
   },
   {
    "padrao": "e2e/",
@@ -2697,6 +2697,17 @@
    "linhas": 86,
    "testa": [
     "src/components/mockup/MockupHistoryPanel.tsx"
+   ],
+   "casos": 3
+  },
+  {
+   "arquivo": "tests/components/NavigationHistoryMenu.test.tsx",
+   "tipo": "unit",
+   "linhas": 69,
+   "testa": [
+    "src/components/common/NavigationHistoryMenu.tsx",
+    "src/lib/uxMetrics.ts",
+    "src/stores/useNavigationStore.ts"
    ],
    "casos": 3
   },
@@ -7734,6 +7745,7 @@
   "src/components/common/EnhancedSpotlight.tsx": 1,
   "src/components/common/ErrorBoundary.tsx": 1,
   "src/components/common/GlobalConfirmDialog.tsx": 1,
+  "src/components/common/NavigationHistoryMenu.tsx": 1,
   "src/components/common/SocialProof.tsx": 2,
   "src/components/dashboard/RecentKitsWidget.tsx": 1,
   "src/components/dev/BridgeMetricsOverlay.tsx": 3,
@@ -8048,7 +8060,7 @@
   "src/lib/textUtils.ts": 2,
   "src/lib/theme-presets.ts": 2,
   "src/lib/utils.ts": 2,
-  "src/lib/uxMetrics.ts": 1,
+  "src/lib/uxMetrics.ts": 2,
   "src/lib/validations/goalSchema.ts": 1,
   "src/pages/AdvancedPriceSearchPage.tsx": 1,
   "src/pages/Auth.tsx": 2,
@@ -8108,7 +8120,7 @@
   "src/stores/useComparisonStore.ts": 1,
   "src/stores/useConfirmDialogStore.ts": 4,
   "src/stores/useFavoritesStore.ts": 3,
-  "src/stores/useNavigationStore.ts": 3,
+  "src/stores/useNavigationStore.ts": 4,
   "src/stores/useRecentlyViewedStore.ts": 3,
   "src/types/advancedFilters.ts": 1,
   "src/types/domain/simulator-wizard.ts": 1,

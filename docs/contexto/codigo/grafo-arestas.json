@@ -3159,6 +3159,12 @@
   "src/components/common/MicroInteractions.tsx": [
    "src/lib/utils.ts"
   ],
+  "src/components/common/NavigationHistoryMenu.tsx": [
+   "src/components/ui/dropdown-menu.tsx",
+   "src/lib/utils.ts",
+   "src/lib/uxMetrics.ts",
+   "src/stores/useNavigationStore.ts"
+  ],
   "src/components/common/OptimizedImage.tsx": [
    "src/components/ui/skeleton.tsx",
    "src/lib/utils.ts",
@@ -4598,6 +4604,7 @@
    "src/components/common/EnhancedSpotlight.tsx",
    "src/components/common/FloatingBackButton.tsx",
    "src/components/common/GlobalConfirmDialog.tsx",
+   "src/components/common/NavigationHistoryMenu.tsx",
    "src/components/common/PersistentBreadcrumbs.tsx",
    "src/components/common/RouteLoadingBar.tsx",
    "src/components/common/ScrollProgress.tsx",
