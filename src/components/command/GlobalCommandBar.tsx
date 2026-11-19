@@ -60,8 +60,25 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
 
   // Keyboard shortcut
   useEffect(() => {
+    /**
+     * Ctrl/Cmd+K não pode roubar o foco de quem está digitando: em campo de
+     * texto, a combinação pertence ao campo. É a mesma guarda que
+     * useFavoritesGlobalShortcuts, useKitWizardShortcuts e os atalhos do
+     * mockup já aplicam; só esta barra global não tinha.
+     */
+    const isTyping = (target: EventTarget | null) => {
+      const element = target as HTMLElement | null;
+      if (!element) return false;
+      return (
+        element.tagName === "INPUT" ||
+        element.tagName === "TEXTAREA" ||
+        element.isContentEditable
+      );
+    };
+
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        if (isTyping(e.target)) return;
         e.preventDefault();
         setOpen((prev) => !prev);
       }
