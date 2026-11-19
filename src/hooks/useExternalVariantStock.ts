@@ -13,6 +13,8 @@ export interface ExternalVariantStock {
   color_name: string | null;
   color_hex: string | null;
   size_code: string | null;
+  sale_price: number | null;
+  cost_price?: number | null;
   stock_quantity: number | null;
   next_entry_date: string | null;
   next_entry_quantity: number | null;
@@ -60,10 +62,13 @@ function withVariantThumbnail(
   images: ReturnType<typeof indexVariantImages>,
 ): ExternalVariantStock {
   const variantImage = images.byVariantId.get(variant.id) || null;
-  const colorImage = variant.color_code ? images.byCode.get(variant.color_code.toUpperCase()) : null;
-  const selectedImage = variant.selected_thumbnail && !images.primary.has(variant.selected_thumbnail)
-    ? variant.selected_thumbnail
+  const colorImage = variant.color_code
+    ? images.byCode.get(variant.color_code.toUpperCase())
     : null;
+  const selectedImage =
+    variant.selected_thumbnail && !images.primary.has(variant.selected_thumbnail)
+      ? variant.selected_thumbnail
+      : null;
   return {
     ...variant,
     next_entry_date: null,
@@ -89,7 +94,8 @@ export function useExternalVariantStock(productId: string | undefined) {
           table: 'product_variants',
           operation: 'select',
           // Optimized select: skip heavy text arrays unless fallback is needed
-          select: 'id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, stock_quantity, selected_thumbnail, images, bitrix_product_id',
+          select:
+            'id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, sale_price, stock_quantity, selected_thumbnail, images, bitrix_product_id',
           filters: { product_id: productId, is_active: true },
           limit: 100,
         }),
