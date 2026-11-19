@@ -969,3 +969,55 @@ a árvore anterior inteira. Serve para localizar, não para concluir.
 
 **62 de 62 com veredito escrito.** As 4 refs apagadas em 19/11 (seção "Sétima varredura")
 não aparecem aqui porque já não existem; o veredito delas está lá.
+
+## Encerramento: as 8 últimas refs, arquivadas em tag antes de apagar
+
+**19/11/2026.** Fechadas as 8 refs que restavam. Todas já tinham veredito de conteúdo
+escrito neste ledger; o que faltava não era saber o que havia nelas, e sim poder
+desfazer a deleção.
+
+### Por que elas eram diferentes das 46 já apagadas
+
+Nas 46, a deleção era reversível de graça: o head da branch era idêntico a um
+`refs/pull/N/head`, que o GitHub preserva para sempre. Conferi isso ref a ref antes de
+apagar cada uma, e provei empiricamente buscando `refs/pull/112/head` **depois** de
+apagar a branch (578 arquivos de teste ainda legíveis).
+
+Nestas 8, não: o head não bate com nenhuma PR. Na `claude/hopeful-mccarthy-8rqrqw`
+testei as 12 PRs dela, uma a uma — nenhuma preserva o head. Apagar ali seria apagar
+de verdade.
+
+### O que foi feito
+
+Uma tag por ref, apontando para o head exato, criada **antes** da deleção e conferida
+no remoto depois:
+
+| Tag | Head preservado |
+| --- | --- |
+| `arquivo/claude-feat-kpis-primeira-compra-retencao-261118-1800` | `bcac136a8` |
+| `arquivo/claude-fix-storage-delete-proposals-261106-2007` | `f2e2865c8` |
+| `arquivo/claude-hopeful-mccarthy-8rqrqw` | `63d23c4e0` |
+| `arquivo/feat-pdf-playwright-scripts-art-261108-0516` | `3d1e7355a` |
+| `arquivo/fix-execucao-plano-20260928` | `bfca3b285` |
+| `arquivo/fix-sicoob-p0-operacional-20260923` | `b93ba46c8` |
+| `arquivo/fix-sicoob-p0-seguranca-20260923` | `133dc45da` |
+| `arquivo/fix-sicoob-trust-data-20260924` | `38b52cb24` |
+
+Uma tag mantém toda a história alcançável, então o conteúdo não é coletado pelo GC.
+Conferido depois de apagar as branches: `git ls-tree -r --name-only
+arquivo/claude-hopeful-mccarthy-8rqrqw` ainda lista **4122 arquivos**.
+
+Para recuperar qualquer uma: `git fetch origin refs/tags/arquivo/<nome>` e trabalhe a
+partir da tag. Nada de "a branch sumiu".
+
+### Nota operacional
+
+`git push origin refs/tags/...` é recusado com **403** nesta sessão — o token só
+escreve em `refs/heads`. As tags foram criadas pela API (`github_create_ref`). Quem
+for arquivar outra ref no futuro precisa do mesmo caminho.
+
+### Estado final das refs
+
+**64 → 8.** As 8 que sobraram estão todas vivas, nenhuma é resíduo: `main`, `contexto`
+(gerada a cada 10 min), `computador_local`, duas do Dependabot, a de #311 (decisão do
+dono) e as duas PRs de teste abertas em 19/11.
