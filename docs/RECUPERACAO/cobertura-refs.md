@@ -144,31 +144,35 @@ existem na `main`**. Cruzando os 138 com o ledger inteiro, 119 já estavam citad
 
 ### 13 arquivos de teste — executados contra a `main`, 18/11/2026
 
-**Andamento (18/11/2026, 23h):** 2 dos 13 já foram recuperados **com a regra que
-eles cobram**, não só copiados:
+**Andamento (19/11/2026):** os 13 foram recuperados **com a regra que eles cobram**,
+não só copiados. As seis fatias abaixo são o registro de como cada um entrou:
 
 | fatia | PR | o que entrou |
 |---|---|---|
 | 1 | [#346](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/346) | `ClientOverview360.availability` + `client-vs-industry-origem`. `useClientBI` parava de devolver `MOCK_CLIENT_STATS` para qualquer cliente sem pedido (LTV de outra empresa nos números grandes); `useClientVsIndustry` ganhou `hasClientData`/`isClientDataUnavailable` e `isMock` deixou de ser `true` quando a amostra do ramo não fechava. Absorveu a PR #326 |
 | 2 | [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `ClientHealthHero.availability`. `useClientSeasonality` parava de devolver `getMockSeasonality()` com menos de 3 meses de histórico (picos fictícios carimbados "Dados reais"); `useClientHealthScore` somava pesos fixos sobre fallbacks inventados (10 pedidos, R$ 2.500, potencial de R$ 30.000) e agora normaliza os pesos entre as fontes confiáveis |
 
-Em ambas, duas coisas da branch de origem foram **deliberadamente não trazidas**,
-porque a `main` está mais correta: a troca de `fetchIndustryPeerIds` por
+| 3a | [#348](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/348) | `ClientCategoryRadar.industry-error`. Três hooks caíam em mock no caminho real: `useClientAffinity` engolia o erro da RPC e sugeria produto fictício; `useClientCategoryAffinity` transformava RPC negada em "cliente sem produto" e elegia a **mesma** categoria favorita inventada para todo cliente; `useIndustryCategoryTrends` comparava o cliente contra um "setor dele" fabricado. O radar deixa de somar GAP sobre fonte caída |
+| 3b | [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `ComparisonAvailability`. O painel comparador juntava sete fontes por cliente e devolvia uma linha única: falha de qualquer uma virava LTV R$ 0 e score 0 classificado como "risco". Agora oculta só a métrica da fonte caída e refaz só a consulta que falhou. `ClientVsIndustryComparison` ganhou "Comparativo indisponível" (em vez de confundir falha com amostra insuficiente) e "Último cache · atualização falhou" |
+| 4 | [#350](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/350) | `BIAiCopilot.context/sources` + `BIBriefingMode.history/sources`. O copiloto enviava à IA o contexto que tivesse: histórico falhado virava `ltv: 0` e `ordersCount: 0` (a IA respondia "nunca comprou" sobre quem compra), benchmark falhado virava score 0 (diagnóstico de risco) e tendência do setor em cache ia como atual. Agora o contexto declara disponibilidade, preserva zero medido e bloqueia o envio com fonte caída |
+| 5 | [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `ExecutiveSummaryButton.availability`, `ClientLookalikes.availability`, `IndustryTrendingProducts.affinity-availability`. O resumo executivo gerava texto e habilitava copiar/PPTX sobre fonte caída — o vendedor **mandava para o cliente**; os similares mantinham cache sem avisar; os produtos do setor exibiam afinidade de fonte morta |
+| 6 | [#352](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/352) | `OnboardingTour.escape` + `app-router-parity`. O tour não era diálogo (sem `role`, sem `aria-modal`, sem foco, sem `Escape`): teclado e leitor de tela ficavam presos no passo. O teste de rotas importava o roteador monolítico que a `main` substituiu — a garantia foi **portada** para os módulos, e a conferência prévia mostrou que **nenhuma rota do roteador antigo está ausente** |
+
+Nas fatias 1 e 2, duas coisas da branch de origem foram **deliberadamente não
+trazidas**, porque a `main` está mais correta: a troca de `fetchIndustryPeerIds` por
 `selectCrmStrict` genérico (negado para vendedor e agente pela política do portal)
 e a remoção do gráfico de forecast do mapa de calor. É por isso que a recuperação
 é feita por fatia, com teste, e não por cópia da árvore.
 
-| 3a | [#348](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/348) | `ClientCategoryRadar.industry-error`. Três hooks caíam em mock no caminho real: `useClientAffinity` engolia o erro da RPC e sugeria produto fictício; `useClientCategoryAffinity` transformava RPC negada em "cliente sem produto" e elegia a **mesma** categoria favorita inventada para todo cliente; `useIndustryCategoryTrends` comparava o cliente contra um "setor dele" fabricado. O radar deixa de somar GAP sobre fonte caída |
-
-| 3b | [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `ComparisonAvailability`. O painel comparador juntava sete fontes por cliente e devolvia uma linha única: falha de qualquer uma virava LTV R$ 0 e score 0 classificado como "risco". Agora oculta só a métrica da fonte caída e refaz só a consulta que falhou. `ClientVsIndustryComparison` ganhou "Comparativo indisponível" (em vez de confundir falha com amostra insuficiente) e "Último cache · atualização falhou" |
-
-| 4 | [#350](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/350) | `BIAiCopilot.context/sources` + `BIBriefingMode.history/sources`. O copiloto enviava à IA o contexto que tivesse: histórico falhado virava `ltv: 0` e `ordersCount: 0` (a IA respondia "nunca comprou" sobre quem compra), benchmark falhado virava score 0 (diagnóstico de risco) e tendência do setor em cache ia como atual. Agora o contexto declara disponibilidade, preserva zero medido e bloqueia o envio com fonte caída |
-
-| 5 | [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `ExecutiveSummaryButton.availability`, `ClientLookalikes.availability`, `IndustryTrendingProducts.affinity-availability`. O resumo executivo gerava texto e habilitava copiar/PPTX sobre fonte caída — o vendedor **mandava para o cliente**; os similares mantinham cache sem avisar; os produtos do setor exibiam afinidade de fonte morta |
-| 6 | [#352](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/352) | `OnboardingTour.escape` + `app-router-parity`. O tour não era diálogo (sem `role`, sem `aria-modal`, sem foco, sem `Escape`): teclado e leitor de tela ficavam presos no passo. O teste de rotas importava o roteador monolítico que a `main` substituiu — a garantia foi **portada** para os módulos, e a conferência prévia mostrou que **nenhuma rota do roteador antigo está ausente** |
-
 **Os 13 estão recuperados.** O que sobra da ref são os 6 relatórios de execução
 abaixo — docs, sem dependência de código.
+
+**Correção de rota (19/11/2026):** as PRs #346–#351 foram abertas em pilha, cada uma
+baseada na branch da anterior. Ao mergear, cada uma entrou na branch-base em vez da
+`main`, e o GitHub fechou #348 e #350 por perda de base — nenhum byte chegou à `main`.
+As seis foram consolidadas na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361),
+aberta a partir da `main`, após conferência byte a byte (`git ls-tree`) de que a branch
+`claude/fix-bi-copiloto-briefing-261119-0030` era superconjunto exato das seis.
 
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
