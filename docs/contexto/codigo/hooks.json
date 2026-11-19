@@ -2247,7 +2247,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useClientBI.ts",
@@ -2280,7 +2280,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
@@ -2309,7 +2309,7 @@
     "src/hooks/bi/useClientsComparison.ts",
     "src/lib/bi/executive-summary.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useClientHealthScore.ts",
@@ -2337,7 +2337,7 @@
     "src/hooks/bi/useClientsComparison.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useClientsComparison.ts",
@@ -2363,7 +2363,7 @@
    "usado_por_arquivos": [
     "src/components/bi/ClientComparator.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useClientSeasonality.ts",
@@ -2394,7 +2394,7 @@
     "src/lib/bi/pptxGenerator.ts",
     "src/pages/BusinessIntelligencePage.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/hooks/bi/useClientVsIndustry.ts",
@@ -2424,7 +2424,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/hooks/bi/useIndustryCategoryTrends.ts",
@@ -2453,7 +2453,7 @@
     "src/hooks/bi/useClientsComparison.ts",
     "src/lib/bi/executive-summary.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useIndustryTrends.ts",
@@ -2480,7 +2480,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useSeasonalPeakNotifications.ts",
@@ -5702,7 +5702,7 @@
     "src/pages/Index.tsx",
     "src/pages/ProductDetail.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useFavoriteLists.ts",
@@ -7082,7 +7082,7 @@
     "src/components/common/IntelligenceBadges.tsx",
     "src/pages/ProductDetail.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useProductMatch.ts",
@@ -7514,7 +7514,7 @@
     "src/components/layout/Header.tsx",
     "src/pages/PWAInstallPage.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useQuoteApproval.ts",

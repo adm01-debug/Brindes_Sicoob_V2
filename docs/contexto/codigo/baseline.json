@@ -2,11 +2,31 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
+  "commit": "ba02d4767079d5a924136b12e61dea92922306e2",
   "branch": "main",
-  "data_commit": "2026-11-19T08:56:42Z",
+  "data_commit": "2026-11-19T10:09:01Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ba02d47",
+    "data": "2026-11-19",
+    "assunto": "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)"
+   },
+   {
+    "sha": "1fc8d0f",
+    "data": "2026-11-19",
+    "assunto": "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)"
+   },
+   {
+    "sha": "fff15ba",
+    "data": "2026-11-19",
+    "assunto": "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)"
+   },
+   {
+    "sha": "e890f24",
+    "data": "2026-11-19",
+    "assunto": "test(bi): recupera 8 catracas de \"não fabricar número para o vendedor\" (#371)"
+   },
    {
     "sha": "f08eb8f",
     "data": "2026-11-19",
@@ -111,29 +131,9 @@
     "sha": "f82acc3",
     "data": "2026-11-19",
     "assunto": "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)"
-   },
-   {
-    "sha": "fed7067",
-    "data": "2026-11-19",
-    "assunto": "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)"
-   },
-   {
-    "sha": "c17e905",
-    "data": "2026-11-19",
-    "assunto": "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)"
-   },
-   {
-    "sha": "9830191",
-    "data": "2026-11-19",
-    "assunto": "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)"
-   },
-   {
-    "sha": "23e18ed",
-    "data": "2026-11-19",
-    "assunto": "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)"
    }
   ],
-  "arquivos_mudados_7d": 612,
+  "arquivos_mudados_7d": 626,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 48
+    "mudancas": 44
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 47
+    "mudancas": 43
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 173
+    "commits": 177
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4526,
-  "arquivos_codigo": 3117,
-  "linhas_codigo": 490384,
+  "arquivos_total": 4539,
+  "arquivos_codigo": 3130,
+  "linhas_codigo": 492269,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 865,
+  "testes": 878,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 285
@@ -376,7 +376,7 @@
   },
   "e2e/flows": {
    "arquivos": 40,
-   "linhas": 5294
+   "linhas": 5286
   },
   "e2e/global-setup.ts": {
    "arquivos": 1,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 145,
-   "linhas": 27266
+   "arquivos": 146,
+   "linhas": 27353
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -891,8 +891,8 @@
    "linhas": 31
   },
   "tests/e2e": {
-   "arquivos": 24,
-   "linhas": 4990
+   "arquivos": 25,
+   "linhas": 5115
   },
   "tests/e2e-nav-helper.test.ts": {
    "arquivos": 1,
@@ -915,16 +915,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 134,
-   "linhas": 14601
+   "arquivos": 142,
+   "linhas": 15990
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 74,
-   "linhas": 9036
+   "arquivos": 75,
+   "linhas": 9094
   },
   "tests/load": {
    "arquivos": 1,
@@ -939,8 +939,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 25,
-   "linhas": 3002
+   "arquivos": 26,
+   "linhas": 3070
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
@@ -967,8 +967,8 @@
    "linhas": 54
   },
   "tests/security": {
-   "arquivos": 6,
-   "linhas": 825
+   "arquivos": 7,
+   "linhas": 991
   },
   "tests/services": {
    "arquivos": 14,

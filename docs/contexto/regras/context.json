@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
+  "sha": "ba02d4767079d5a924136b12e61dea92922306e2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 09:17 UTC",
-  "files_total": 4529,
-  "code_files": 3782,
-  "code_lines": 552963
+  "generated_at": "2026-11-19 10:16 UTC",
+  "files_total": 4542,
+  "code_files": 3795,
+  "code_lines": 554848
  },
  "version": "1.3.2",
- "facts_hash": "d820be842330277d",
+ "facts_hash": "63662ce11b68b4dd",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1470,
-   ".tsx": 1431,
+   ".ts": 1476,
+   ".tsx": 1438,
    ".sql": 683,
    ".mjs": 139,
    ".py": 66,
@@ -56643,6 +56643,19 @@
    },
    {
     "path": "",
+    "file": "tests/pages/PWAInstallPage.test.tsx",
+    "component": "PWAInstallPage.test",
+    "tables_transitive": [
+     "seller_cart_items",
+     "seller_carts",
+     "user_onboarding"
+    ],
+    "invokes_transitive": [],
+    "rpc_transitive": [],
+    "deps_count": 36
+   },
+   {
+    "path": "",
     "file": "tests/pages/ProductDetailHero.priceFreshness.test.tsx",
     "component": "ProductDetailHero.priceFreshness.test",
     "tables_transitive": [],
@@ -61071,7 +61084,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1276,
+  "components_count": 1277,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63479,7 +63492,7 @@
   {
    "module": "e2e",
    "files": 149,
-   "lines": 11498,
+   "lines": 11490,
    "tables": [],
    "exports": [
     "global-setup.ts: globalSetup, async",
@@ -65632,8 +65645,8 @@
   },
   {
    "module": "tests",
-   "files": 639,
-   "lines": 85853,
+   "files": 652,
+   "lines": 87746,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -112788,10 +112801,6 @@
     "name": "crm-db-bridge 503: seletor de empresa cai pra busca local sem travar"
    },
    {
-    "file": "e2e/flows/p0/03-quote-blocked.spec.ts",
-    "name": "aprovação pública: token inválido NÃO expõe outros orçamentos"
-   },
-   {
     "file": "e2e/flows/p0/04-checkout-blocked.spec.ts",
     "name": "P0 — Checkout bloqueado"
    },
@@ -117772,6 +117781,22 @@
     "name": "renders nothing for rpc without calculatedAt unless alwaysShowOfficial"
    },
    {
+    "file": "tests/components/SingleVariantPicker.test.tsx",
+    "name": "SingleVariantPicker — auto-encerramento sem variação"
+   },
+   {
+    "file": "tests/components/SingleVariantPicker.test.tsx",
+    "name": "conclui sozinho com onSelect(null) quando o produto não possui variantes"
+   },
+   {
+    "file": "tests/components/SingleVariantPicker.test.tsx",
+    "name": "não conclui sozinho enquanto o estoque externo carrega"
+   },
+   {
+    "file": "tests/components/SingleVariantPicker.test.tsx",
+    "name": "não conclui sozinho quando o produto possui ao menos uma variante"
+   },
+   {
     "file": "tests/components/SocialProof.test.tsx",
     "name": "DynamicTrustBadges"
    },
@@ -122048,6 +122073,34 @@
     "name": "hosts compactos (card/lista/tabela) só somam badges para aging+stale"
    },
    {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "cleanup E2E escopado pelo prefixo de nome"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "nasce com o filtro de nome ligado, sem precisar de configuração"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "honra o prefixo customizado do rodízio de testes"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "manda o prefixo em TODA requisição de purge, persona por persona"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "escopa por spec sem sair do namespace E2E"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "purga cada persona exatamente uma vez, mesmo com e-mails repetidos"
+   },
+   {
+    "file": "tests/e2e/cleanup-name-filter-guard.test.ts",
+    "name": "recusa rótulo amplo no escopo e só reconhece nome do namespace E2E"
+   },
+   {
     "file": "tests/e2e/cleanup-target-guard.test.ts",
     "name": "cleanup Playwright protegido por allowlist de QA"
    },
@@ -125380,6 +125433,18 @@
     "name": "rejeita chave de idempotência ausente ou acima do limite do provedor"
    },
    {
+    "file": "tests/hooks/bi-demo-boundary.test.tsx",
+    "name": "fronteira entre dado real e modo de demonstração do BI"
+   },
+   {
+    "file": "tests/hooks/bi-demo-boundary.test.tsx",
+    "name": "entrega as zonas simuladas sem tocar no banco para o cliente de demonstração"
+   },
+   {
+    "file": "tests/hooks/bi-demo-boundary.test.tsx",
+    "name": "não converte resposta vazia do banco em número fabricado para cliente real"
+   },
+   {
     "file": "tests/hooks/intelligence-badges.test.ts",
     "name": "buildBadgeResult"
    },
@@ -125422,6 +125487,50 @@
    {
     "file": "tests/hooks/intelligence-badges.test.ts",
     "name": "keeps real intelligence badges when velocity data is unavailable"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "inteligência de produto baseada em dados reais"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "fonte vazia vira "
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "estado vazio oferece atualizar e refaz as três fontes"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "fonte caída sem cache vira erro com retry das três fontes, não zero nem vazio"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "erro com histórico em cache mantém o número real e se declara parcial"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "enquanto o HISTÓRICO DIÁRIO carrega, nenhuma métrica é apresentada como definitiva"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "velocidade ainda pendente vira "
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "inteligência ainda pendente não inventa classe ABC nem fornecedor"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "com as fontes respondendo, mostra o número que veio delas e nenhum selo de demonstração"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "sem inteligência de mercado não inventa classe ABC nem fornecedor"
+   },
+   {
+    "file": "tests/hooks/product-intelligence-real-data.test.tsx",
+    "name": "badges: sem métricas de mercado sobram só os indicadores cadastrais"
    },
    {
     "file": "tests/hooks/quoteHelpers-atomic.test.ts",
@@ -125906,6 +126015,174 @@
    {
     "file": "tests/hooks/useCategories.test.tsx",
     "name": "generates slugs from category names"
+   },
+   {
+    "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    "name": "useClientCategoryAffinity — falha da fonte real"
+   },
+   {
+    "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    "name": "RPC negada vira estado de erro com retry, não histórico vazio"
+   },
+   {
+    "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    "name": "cliente real com fonte caída nunca recebe o conjunto simulado"
+   },
+   {
+    "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    "name": "cliente real sem histórico fica vazio e sem erro, sem favorita fabricada"
+   },
+   {
+    "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    "name": "só o cliente de demonstração recebe o conjunto simulado, e sem tocar a RPC"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "score de saúde com fonte comprovada"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "não trata o score sentinela desconhecido como um zero real"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "não fabrica score, potencial ou recomendação quando a amostra é insuficiente"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "não publica score global com amostra setorial insuficiente mesmo que a sazonalidade exista"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "calcula score quando a amostra setorial atinge o mínimo confiável"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "propaga falha e refetch das fontes sem gerar classificação de risco"
+   },
+   {
+    "file": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    "name": "não publica score global quando a consulta do benchmark falha, mesmo com recência e sazonalidade reais"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "useClientSeasonality — falhas das fontes reais"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "falha do histórico do cliente vira isError com refetch, não mapa zerado"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "preserva o histórico do cliente e marca industryError quando o RPC do setor falha"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "preserva o histórico do cliente e marca industryError quando o CRM do setor falha"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "setor legitimamente vazio não marca indisponibilidade"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "amostra curta não vira pico nem insight para cliente real"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.errors.test.ts",
+    "name": "mock existe apenas para o cliente de demonstração"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.real-data.test.ts",
+    "name": "sazonalidade sem dados artificiais"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.real-data.test.ts",
+    "name": "mantém a amostra vazia quando não há histórico"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.real-data.test.ts",
+    "name": "gera a amostra fictícia apenas no modo de demonstração explícito"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.real-data.test.ts",
+    "name": "não transforma um ou dois meses observados em previsão de pico"
+   },
+   {
+    "file": "tests/hooks/useClientSeasonality.real-data.test.ts",
+    "name": "usa o histórico real assim que a amostra é suficiente"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "useClientVsIndustry — dados confiáveis"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "cliente real sem histórico não vira simulado nem desempenho zero contra o setor"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "distingue indisponibilidade técnica do histórico de ausência legítima de pedidos"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "calcula métricas somente quando cliente e amostra do ramo têm dado medido"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "amostra insuficiente do ramo não vira métrica, insight nem selo de simulado"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "CRM do ramo fora do ar vira erro com retry, não amostra zero silenciosa"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "RPC do benchmark que falha vira erro, não setor sem referência"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "retry refaz histórico do cliente e benchmark do ramo"
+   },
+   {
+    "file": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    "name": "mock de benchmark fica restrito ao cliente de demonstração e não toca no CRM"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "useSingleClientComparisonRow — disponibilidade por fonte"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "descarta afinidade em cache após falha e usa histórico confiável como fallback"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "isola falhas de categoria e usa a afinidade confiável como fallback do topo"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "propaga CRM indisponível para métricas dependentes do ramo e permite retry"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "isola falha própria do Health Score e preserva histórico, categorias e pico"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "histórico indisponível não vira LTV zero sem aviso e derruba o Health Score"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "propaga falha de sazonalidade uma única vez e preserva fontes independentes"
+   },
+   {
+    "file": "tests/hooks/useClientsComparison.availability.test.tsx",
+    "name": "falha só do recorte setorial avisa e dá retry sem esconder o pico medido do cliente"
    },
    {
     "file": "tests/hooks/useClientsPortfolioKpis.test.ts",
@@ -133752,6 +134029,22 @@
     "name": "não estima o ciclo para status sem transição registrada"
    },
    {
+    "file": "tests/lib/validations/goalSchema.test.ts",
+    "name": "salesGoalSchema"
+   },
+   {
+    "file": "tests/lib/validations/goalSchema.test.ts",
+    "name": "preserva as mensagens de campo obrigatório com os enums ausentes"
+   },
+   {
+    "file": "tests/lib/validations/goalSchema.test.ts",
+    "name": "preserva as mesmas mensagens com os enums explicitamente indefinidos"
+   },
+   {
+    "file": "tests/lib/validations/goalSchema.test.ts",
+    "name": "continua aceitando os valores válidos da meta"
+   },
+   {
     "file": "tests/observability/structured-logger.test.ts",
     "name": "structuredLogger (client)"
    },
@@ -134442,6 +134735,22 @@
    {
     "file": "tests/pages/NotFound.test.tsx",
     "name": "logs 404 error on mount"
+   },
+   {
+    "file": "tests/pages/PWAInstallPage.test.tsx",
+    "name": "página /instalar"
+   },
+   {
+    "file": "tests/pages/PWAInstallPage.test.tsx",
+    "name": "com convite nativo, o botão dispara o prompt do navegador"
+   },
+   {
+    "file": "tests/pages/PWAInstallPage.test.tsx",
+    "name": "sem convite nativo, mostra instruções manuais e nenhum botão de instalar"
+   },
+   {
+    "file": "tests/pages/PWAInstallPage.test.tsx",
+    "name": "já instalado, não repete a oferta de instalação"
    },
    {
     "file": "tests/pages/ProductDetail.test.ts",
@@ -136786,6 +137095,38 @@
    {
     "file": "tests/security/rls-seller-policies.spec.ts",
     "name": "${c.table} ${req.cmd}: deve usar EXISTS no parent ${c.parent}"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "search_analytics — compatibilidade de insert legado"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "normalizador sobrescreve user_id e seller_id com auth.uid()"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "normalizador não preserva autoria enviada pelo cliente"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "normalizador roda como SECURITY INVOKER com search_path fixado"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "filters_used só alimenta search_context quando o canônico não veio"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "trigger BEFORE INSERT continua ativo e nenhuma migration posterior o derruba"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "search_context aceita apenas objeto JSON dentro do limite"
+   },
+   {
+    "file": "tests/security/search-analytics-legacy-insert.spec.ts",
+    "name": "enquanto o front enviar payload legado, a compatibilidade não pode sumir"
    },
    {
     "file": "tests/security/sicoob-seed-authz.test.ts",
@@ -164904,6 +165245,7 @@
    "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
+   "tests/e2e/cleanup-name-filter-guard.test.ts",
    "tests/e2e/cleanup-target-guard.test.ts",
    "tests/edge-functions/public-health-and-bi-share.test.ts",
    "tests/rls/critical-tables-rls.test.ts",
@@ -176838,7 +177180,7 @@
   },
   "e2e/flows/p0/03-quote-blocked.spec.ts": {
    "path": "e2e/flows/p0/03-quote-blocked.spec.ts",
-   "lines": 35,
+   "lines": 27,
    "is_test": true,
    "rule_comments": [
     "Política: SSOT em e2e/fixtures/selectors.ts — somente data-testid."
@@ -176846,8 +177188,7 @@
    "tests": [
     "P0 — Orçamento bloqueado",
     "bitrix-sync 502: orçamento é salvo localmente e enfileirado para retry",
-    "crm-db-bridge 503: seletor de empresa cai pra busca local sem travar",
-    "aprovação pública: token inválido NÃO expõe outros orçamentos"
+    "crm-db-bridge 503: seletor de empresa cai pra busca local sem travar"
    ]
   },
   "e2e/flows/p0/04-checkout-blocked.spec.ts": {
@@ -241142,6 +241483,21 @@
     "renders nothing for rpc without calculatedAt unless alwaysShowOfficial"
    ]
   },
+  "tests/components/SingleVariantPicker.test.tsx": {
+   "path": "tests/components/SingleVariantPicker.test.tsx",
+   "lines": 87,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra viva em `src/components/products/SingleVariantPicker.tsx` (useEffect de"
+   ],
+   "doc": "Catraca: produto SEM nenhuma variação precisa concluir sozinho, chamando `onSelect(null)` — sem isso o fluxo de adicionar ao orçamento trava numa tela vazia esperando uma cor que não existe. Regra viva em `src/components/products/SingleVariantPicker.tsx` (useEffect de auto-skip). Recuperada da PR #1 …",
+   "tests": [
+    "SingleVariantPicker — auto-encerramento sem variação",
+    "conclui sozinho com onSelect(null) quando o produto não possui variantes",
+    "não conclui sozinho enquanto o estoque externo carrega",
+    "não conclui sozinho quando o produto possui ao menos uma variante"
+   ]
+  },
   "tests/components/SocialProof.test.tsx": {
    "path": "tests/components/SocialProof.test.tsx",
    "lines": 33,
@@ -243259,6 +243615,24 @@
     "hosts compactos (card/lista/tabela) só somam badges para aging+stale"
    ]
   },
+  "tests/e2e/cleanup-name-filter-guard.test.ts": {
+   "path": "tests/e2e/cleanup-name-filter-guard.test.ts",
+   "lines": 125,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra travada (recuperada da PR #176, fechada sem merge — o teste órfão era"
+   ],
+   "tests": [
+    "cleanup E2E escopado pelo prefixo de nome",
+    "nasce com o filtro de nome ligado, sem precisar de configuração",
+    "honra o prefixo customizado do rodízio de testes",
+    "manda o prefixo em TODA requisição de purge, persona por persona",
+    "escopa por spec sem sair do namespace E2E",
+    "purga cada persona exatamente uma vez, mesmo com e-mails repetidos",
+    "recusa rótulo amplo no escopo e só reconhece nome do namespace E2E"
+   ],
+   "uses_service_role": true
+  },
   "tests/e2e/cleanup-target-guard.test.ts": {
    "path": "tests/e2e/cleanup-target-guard.test.ts",
    "lines": 84,
@@ -244704,6 +245078,19 @@
     }
    ]
   },
+  "tests/hooks/bi-demo-boundary.test.tsx": {
+   "path": "tests/hooks/bi-demo-boundary.test.tsx",
+   "lines": 96,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra travada: o BI não pode mostrar número fabricado ao vendedor. O conjunto"
+   ],
+   "tests": [
+    "fronteira entre dado real e modo de demonstração do BI",
+    "entrega as zonas simuladas sem tocar no banco para o cliente de demonstração",
+    "não converte resposta vazia do banco em número fabricado para cliente real"
+   ]
+  },
   "tests/hooks/catalog-comparison-smoke.test.ts": {
    "path": "tests/hooks/catalog-comparison-smoke.test.ts",
    "lines": 70,
@@ -244726,6 +245113,29 @@
     "combines editorial catalog flags with market badges backed by real data",
     "handles missing velocity rows without inventing an emerging trend",
     "keeps real intelligence badges when velocity data is unavailable"
+   ]
+  },
+  "tests/hooks/product-intelligence-real-data.test.tsx": {
+   "path": "tests/hooks/product-intelligence-real-data.test.tsx",
+   "lines": 268,
+   "is_test": true,
+   "rule_comments": [
+    "* Catraca: o BI de produto não pode mostrar número fabricado ao vendedor.",
+    "* Regra travada aqui (vive hoje em `src/components/inventory/risk/ProductRiskDetail.tsx`",
+    "* Limite real do componente, apontado na revisão da #371 e conferido:"
+   ],
+   "tests": [
+    "inteligência de produto baseada em dados reais",
+    "fonte vazia vira ",
+    "estado vazio oferece atualizar e refaz as três fontes",
+    "fonte caída sem cache vira erro com retry das três fontes, não zero nem vazio",
+    "erro com histórico em cache mantém o número real e se declara parcial",
+    "enquanto o HISTÓRICO DIÁRIO carrega, nenhuma métrica é apresentada como definitiva",
+    "velocidade ainda pendente vira ",
+    "inteligência ainda pendente não inventa classe ABC nem fornecedor",
+    "com as fontes respondendo, mostra o número que veio delas e nenhum selo de demonstração",
+    "sem inteligência de mercado não inventa classe ABC nem fornecedor",
+    "badges: sem métricas de mercado sobram só os indicadores cadastrais"
    ]
   },
   "tests/hooks/quoteHelpers-atomic.test.ts": {
@@ -245023,6 +245433,105 @@
     "useCategories",
     "fetches and transforms categories",
     "generates slugs from category names"
+   ]
+  },
+  "tests/hooks/useClientCategoryAffinity.error.test.tsx": {
+   "path": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+   "lines": 77,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra travada: o BI não pode mostrar número fabricado ao vendedor."
+   ],
+   "tests": [
+    "useClientCategoryAffinity — falha da fonte real",
+    "RPC negada vira estado de erro com retry, não histórico vazio",
+    "cliente real com fonte caída nunca recebe o conjunto simulado",
+    "cliente real sem histórico fica vazio e sem erro, sem favorita fabricada",
+    "só o cliente de demonstração recebe o conjunto simulado, e sem tocar a RPC"
+   ]
+  },
+  "tests/hooks/useClientHealthScore.reliable-data.test.ts": {
+   "path": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+   "lines": 168,
+   "is_test": true,
+   "tests": [
+    "score de saúde com fonte comprovada",
+    "não trata o score sentinela desconhecido como um zero real",
+    "não fabrica score, potencial ou recomendação quando a amostra é insuficiente",
+    "não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente",
+    "não publica score global com amostra setorial insuficiente mesmo que a sazonalidade exista",
+    "calcula score quando a amostra setorial atinge o mínimo confiável",
+    "propaga falha e refetch das fontes sem gerar classificação de risco",
+    "não publica score global quando a consulta do benchmark falha, mesmo com recência e sazonalidade reais"
+   ]
+  },
+  "tests/hooks/useClientSeasonality.errors.test.ts": {
+   "path": "tests/hooks/useClientSeasonality.errors.test.ts",
+   "lines": 167,
+   "is_test": true,
+   "rule_comments": [
+    "* Catraca: o mapa de sazonalidade do BI não pode mostrar número fabricado ao vendedor.",
+    "O mapa não pode afirmar sazonalidade: nada de pico/insight sobre fonte caída.",
+    "A falha do setor não pode sair como setor zerado silencioso."
+   ],
+   "tests": [
+    "useClientSeasonality — falhas das fontes reais",
+    "falha do histórico do cliente vira isError com refetch, não mapa zerado",
+    "preserva o histórico do cliente e marca industryError quando o RPC do setor falha",
+    "preserva o histórico do cliente e marca industryError quando o CRM do setor falha",
+    "setor legitimamente vazio não marca indisponibilidade",
+    "amostra curta não vira pico nem insight para cliente real",
+    "mock existe apenas para o cliente de demonstração"
+   ]
+  },
+  "tests/hooks/useClientSeasonality.real-data.test.ts": {
+   "path": "tests/hooks/useClientSeasonality.real-data.test.ts",
+   "lines": 114,
+   "is_test": true,
+   "rule_comments": [
+    "* Catraca: o BI não pode mostrar sazonalidade fabricada ao vendedor.",
+    "o mesmo payload vazio, sem a flag, não pode produzir o mesmo mapa"
+   ],
+   "tests": [
+    "sazonalidade sem dados artificiais",
+    "mantém a amostra vazia quando não há histórico",
+    "gera a amostra fictícia apenas no modo de demonstração explícito",
+    "não transforma um ou dois meses observados em previsão de pico",
+    "usa o histórico real assim que a amostra é suficiente"
+   ]
+  },
+  "tests/hooks/useClientVsIndustry.reliable-data.test.tsx": {
+   "path": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+   "lines": 196,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra travada: o BI não pode mostrar número fabricado ao vendedor."
+   ],
+   "tests": [
+    "useClientVsIndustry — dados confiáveis",
+    "cliente real sem histórico não vira simulado nem desempenho zero contra o setor",
+    "distingue indisponibilidade técnica do histórico de ausência legítima de pedidos",
+    "calcula métricas somente quando cliente e amostra do ramo têm dado medido",
+    "amostra insuficiente do ramo não vira métrica, insight nem selo de simulado",
+    "CRM do ramo fora do ar vira erro com retry, não amostra zero silenciosa",
+    "RPC do benchmark que falha vira erro, não setor sem referência",
+    "retry refaz histórico do cliente e benchmark do ramo",
+    "mock de benchmark fica restrito ao cliente de demonstração e não toca no CRM"
+   ]
+  },
+  "tests/hooks/useClientsComparison.availability.test.tsx": {
+   "path": "tests/hooks/useClientsComparison.availability.test.tsx",
+   "lines": 303,
+   "is_test": true,
+   "tests": [
+    "useSingleClientComparisonRow — disponibilidade por fonte",
+    "descarta afinidade em cache após falha e usa histórico confiável como fallback",
+    "isola falhas de categoria e usa a afinidade confiável como fallback do topo",
+    "propaga CRM indisponível para métricas dependentes do ramo e permite retry",
+    "isola falha própria do Health Score e preserva histórico, categorias e pico",
+    "histórico indisponível não vira LTV zero sem aviso e derruba o Health Score",
+    "propaga falha de sazonalidade uma única vez e preserva fontes independentes",
+    "falha só do recorte setorial avisa e dá retry sem esconder o pico medido do cliente"
    ]
   },
   "tests/hooks/useClientsPortfolioKpis.test.ts": {
@@ -248812,6 +249321,18 @@
     "não estima o ciclo para status sem transição registrada"
    ]
   },
+  "tests/lib/validations/goalSchema.test.ts": {
+   "path": "tests/lib/validations/goalSchema.test.ts",
+   "lines": 58,
+   "is_test": true,
+   "doc": "Catraca: `salesGoalSchema` precisa reportar as mensagens de campo obrigatório em PT-BR para os enums `goal_type` e `period` quando eles chegam ausentes do formulário — em Zod 4 a ausência cai em `invalid_value`, não em uma mensagem genérica de tipo, e é a opção `error` do `z.enum` que mantém o texto …",
+   "tests": [
+    "salesGoalSchema",
+    "preserva as mensagens de campo obrigatório com os enums ausentes",
+    "preserva as mesmas mensagens com os enums explicitamente indefinidos",
+    "continua aceitando os valores válidos da meta"
+   ]
+  },
   "tests/load/basic-smoke.js": {
    "path": "tests/load/basic-smoke.js",
    "lines": 41,
@@ -249238,6 +249759,21 @@
     "renders return to home link",
     "has full screen height",
     "logs 404 error on mount"
+   ]
+  },
+  "tests/pages/PWAInstallPage.test.tsx": {
+   "path": "tests/pages/PWAInstallPage.test.tsx",
+   "lines": 68,
+   "is_test": true,
+   "rule_comments": [
+    "* Regra travada (recuperada da PR #157, fechada sem merge): a tela /instalar"
+   ],
+   "doc": "Regra travada (recuperada da PR #157, fechada sem merge): a tela /instalar só oferece o botão \"Instalar Aplicativo\" quando existe convite nativo do navegador, e esse botão dispara o prompt de verdade. Sem convite, a página cai nas instruções manuais em português (iOS e Android) em vez de exibir um b …",
+   "tests": [
+    "página /instalar",
+    "com convite nativo, o botão dispara o prompt do navegador",
+    "sem convite nativo, mostra instruções manuais e nenhum botão de instalar",
+    "já instalado, não repete a oferta de instalação"
    ]
   },
   "tests/pages/ProductDetail.test.ts": {
@@ -251152,6 +251688,48 @@
     "${c.table} ${req.cmd}: deve usar EXISTS no parent ${c.parent}"
    ]
   },
+  "tests/security/search-analytics-legacy-insert.spec.ts": {
+   "path": "tests/security/search-analytics-legacy-insert.spec.ts",
+   "lines": 166,
+   "is_test": true,
+   "errors": [
+    "Corpo de ${NORMALIZER}() não encontrado em ${normalizerDefinition.name}.",
+    "Nenhuma migration satisfaz o filtro: o contrato sumiu da main."
+   ],
+   "params": [
+    {
+     "name": "MIGRATIONS_DIR",
+     "value": "\"supabase/migrations\""
+    },
+    {
+     "name": "NORMALIZER",
+     "value": "\"normalize_search_analytics_insert\""
+    },
+    {
+     "name": "TRIGGER",
+     "value": "\"trg_normalize_search_analytics_insert\""
+    },
+    {
+     "name": "CONTEXT_CHECK",
+     "value": "\"search_analytics_search_context_valid\""
+    }
+   ],
+   "rule_comments": [
+    "* Regra travada (originalmente em `tests/scenarios/sql/search-analytics-legacy-compatibility-fixture.sql`,",
+    "apenas no formato aceito (objeto JSON dentro do limite de tamanho).",
+    "(`vitest.config.ts:39`). A regra, porém, está viva nas migrations — e o"
+   ],
+   "tests": [
+    "search_analytics — compatibilidade de insert legado",
+    "normalizador sobrescreve user_id e seller_id com auth.uid()",
+    "normalizador não preserva autoria enviada pelo cliente",
+    "normalizador roda como SECURITY INVOKER com search_path fixado",
+    "filters_used só alimenta search_context quando o canônico não veio",
+    "trigger BEFORE INSERT continua ativo e nenhuma migration posterior o derruba",
+    "search_context aceita apenas objeto JSON dentro do limite",
+    "enquanto o front enviar payload legado, a compatibilidade não pode sumir"
+   ]
+  },
   "tests/security/sicoob-seed-authz.test.ts": {
    "path": "tests/security/sicoob-seed-authz.test.ts",
    "lines": 37,
@@ -252333,10 +252911,59 @@
   }
  },
  "git": {
-  "sha": "f08eb8fad839a7d050dafaf203aab0d4dbee5d2d",
+  "sha": "ba02d4767079d5a924136b12e61dea92922306e2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ba02d47",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)",
+    "files": [
+     "e2e/flows/p0/03-quote-blocked.spec.ts",
+     "scripts/check-critical-test-skip-budget.mjs"
+    ]
+   },
+   {
+    "sha": "1fc8d0f",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)",
+    "files": [
+     "docs/RECUPERACAO/README.md",
+     "docs/RECUPERACAO/cobertura-refs.md"
+    ]
+   },
+   {
+    "sha": "fff15ba",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)",
+    "files": [
+     "tests/components/SingleVariantPicker.test.tsx",
+     "tests/e2e/cleanup-name-filter-guard.test.ts",
+     "tests/lib/validations/goalSchema.test.ts",
+     "tests/pages/PWAInstallPage.test.tsx",
+     "tests/security/search-analytics-legacy-insert.spec.ts"
+    ]
+   },
+   {
+    "sha": "e890f24",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(bi): recupera 8 catracas de \"não fabricar número para o vendedor\" (#371)",
+    "files": [
+     "tests/hooks/bi-demo-boundary.test.tsx",
+     "tests/hooks/product-intelligence-real-data.test.tsx",
+     "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+     "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+     "tests/hooks/useClientSeasonality.errors.test.ts",
+     "tests/hooks/useClientSeasonality.real-data.test.ts",
+     "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+     "tests/hooks/useClientsComparison.availability.test.tsx"
+    ]
+   },
    {
     "sha": "f08eb8f",
     "date": "2026-11-19",
@@ -252737,79 +253364,16 @@
      "tests/lib/sicoob/sla-cycle.test.ts",
      "tests/security/portal-access-policy.test.ts"
     ]
-   },
-   {
-    "sha": "f9b0686",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)",
-    "files": [
-     "PENDENCIAS.md",
-     "docs/RECUPERACAO/README.md",
-     "docs/RECUPERACAO/branches.md",
-     "docs/RECUPERACAO/capacidades.md",
-     "docs/RECUPERACAO/cobertura-refs.md",
-     "docs/RECUPERACAO/evidencias.md",
-     "docs/RECUPERACAO/itens.md",
-     "docs/RECUPERACAO/kit-builder.md",
-     "docs/RECUPERACAO/prs.md",
-     "docs/RECUPERACAO/reauditoria.md",
-     "docs/RECUPERACAO/testes-pr119.md"
-    ]
-   },
-   {
-    "sha": "489c13d",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)",
-    "files": [
-     "src/contexts/AuthContext.tsx",
-     "src/hooks/useMockupGenerator.ts",
-     "src/hooks/useScreenDirtyState.ts",
-     "src/hooks/useSmartNavigation.ts",
-     "src/lib/navigation/dirty-registry.ts",
-     "src/pages/MockupGenerator.tsx",
-     "src/pages/QuoteBuilderPage.tsx",
-     "src/pages/SimuladorWizard.tsx",
-     "tests/hooks/useMockupGenerator.test.ts",
-     "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
-     "tests/lib/navigation-dirty-registry.test.ts",
-     "tests/lib/navigation/dirty-registry.test.ts"
-    ]
-   },
-   {
-    "sha": "e0e36d4",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)",
-    "files": [
-     "src/services/QuoteService.ts",
-     "supabase/functions/quote-price-attestation/handler.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
-     "supabase/functions/sicoob-kit-quote/index.ts",
-     "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
-     "tests/edge-functions/kit-quote-rota-atestado.test.ts",
-     "tests/services/quoteReorder.test.ts"
-    ]
-   },
-   {
-    "sha": "25214df",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)",
-    "files": [
-     "src/components/kit-builder/KitBuilderHeader.tsx",
-     "src/hooks/useKitAutoSave.ts",
-     "src/pages/KitBuilderPage.tsx",
-     "tests/hooks/useKitAutoSave.test.tsx",
-     "tests/pages/kit-builder-guarda-saida.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/cobertura-refs.md",
     3
+   ],
+   [
+    "scripts/check-critical-test-skip-budget.mjs",
+    2
    ],
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
@@ -252820,71 +253384,67 @@
     2
    ],
    [
+    "e2e/flows/p0/03-quote-blocked.spec.ts",
+    1
+   ],
+   [
+    "docs/RECUPERACAO/README.md",
+    1
+   ],
+   [
+    "tests/components/SingleVariantPicker.test.tsx",
+    1
+   ],
+   [
+    "tests/e2e/cleanup-name-filter-guard.test.ts",
+    1
+   ],
+   [
+    "tests/lib/validations/goalSchema.test.ts",
+    1
+   ],
+   [
+    "tests/pages/PWAInstallPage.test.tsx",
+    1
+   ],
+   [
+    "tests/security/search-analytics-legacy-insert.spec.ts",
+    1
+   ],
+   [
+    "tests/hooks/bi-demo-boundary.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/product-intelligence-real-data.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+    1
+   ],
+   [
+    "tests/hooks/useClientSeasonality.errors.test.ts",
+    1
+   ],
+   [
+    "tests/hooks/useClientSeasonality.real-data.test.ts",
+    1
+   ],
+   [
+    "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useClientsComparison.availability.test.tsx",
+    1
+   ],
+   [
     "tests/edge-functions/catalogo-rpc-get.test.ts",
-    1
-   ],
-   [
-    "tests/scripts/e2e-target.test.ts",
-    1
-   ],
-   [
-    "src/components/products/ProductCard.tsx",
-    1
-   ],
-   [
-    "src/components/products/ProductHoverPreview.tsx",
-    1
-   ],
-   [
-    "supabase/functions/_shared/external-product-contract.ts",
-    1
-   ],
-   [
-    "tests/components/products/ProductCard.test.tsx",
-    1
-   ],
-   [
-    "tests/components/products/prazo-no-cartao.test.tsx",
-    1
-   ],
-   [
-    "package-lock.json",
-    1
-   ],
-   [
-    "package.json",
-    1
-   ],
-   [
-    "src/lib/external-db/product-types.ts",
-    1
-   ],
-   [
-    "src/pages/product-detail/ProductDetailHeroSections.tsx",
-    1
-   ],
-   [
-    "tests/components/product-price-card-trust.test.tsx",
-    1
-   ],
-   [
-    "tests/components/supplier-trust-badges.test.tsx",
-    1
-   ],
-   [
-    "tests/lib/external-db/ficha-prazo-entrega.test.ts",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/README-PRESERVACAO.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/banco-perguntas.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/biblioteca-objecoes.md",
     1
    ]
   ]

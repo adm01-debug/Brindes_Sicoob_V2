@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 865,
+ "total": 878,
  "por_tipo": {
   "contrato": 11,
-  "e2e": 174,
+  "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 637
+  "unit": 649
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 618
+   "arquivos": 631
   },
   {
    "padrao": "e2e/",
@@ -375,9 +375,9 @@
   {
    "arquivo": "e2e/flows/p0/03-quote-blocked.spec.ts",
    "tipo": "e2e",
-   "linhas": 35,
+   "linhas": 27,
    "testa": [],
-   "casos": 3
+   "casos": 2
   },
   {
    "arquivo": "e2e/flows/p0/04-checkout-blocked.spec.ts",
@@ -3377,6 +3377,16 @@
    "casos": 11
   },
   {
+   "arquivo": "tests/components/SingleVariantPicker.test.tsx",
+   "tipo": "unit",
+   "linhas": 87,
+   "testa": [
+    "src/components/products/SingleVariantPicker.tsx",
+    "src/hooks/useExternalVariantStock.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/components/SocialProof.test.tsx",
    "tipo": "unit",
    "linhas": 33,
@@ -3515,6 +3525,13 @@
     "src/components/products/PriceFreshnessBadge.tsx"
    ],
    "casos": 21
+  },
+  {
+   "arquivo": "tests/e2e/cleanup-name-filter-guard.test.ts",
+   "tipo": "e2e",
+   "linhas": 125,
+   "testa": [],
+   "casos": 6
   },
   {
    "arquivo": "tests/e2e/cleanup-target-guard.test.ts",
@@ -3927,6 +3944,19 @@
    "casos": 1
   },
   {
+   "arquivo": "tests/hooks/bi-demo-boundary.test.tsx",
+   "tipo": "unit",
+   "linhas": 96,
+   "testa": [
+    "src/hooks/bi/useClientAffinity.ts",
+    "src/hooks/bi/useClientCategoryAffinity.ts",
+    "src/hooks/bi/useIndustryCategoryTrends.ts",
+    "src/hooks/bi/useIndustryTrends.ts",
+    "src/lib/bi/demoClient.ts"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/hooks/bi/useClientBI.test.ts",
    "tipo": "unit",
    "linhas": 113,
@@ -3984,6 +4014,16 @@
    "testa": [
     "src/hooks/useProductIntelligenceBadges.ts",
     "src/hooks/useStockHistory.ts"
+   ],
+   "casos": 10
+  },
+  {
+   "arquivo": "tests/hooks/product-intelligence-real-data.test.tsx",
+   "tipo": "unit",
+   "linhas": 268,
+   "testa": [
+    "src/components/inventory/risk/ProductRiskDetail.tsx",
+    "src/hooks/useProductIntelligenceBadges.ts"
    ],
    "casos": 10
   },
@@ -4241,6 +4281,57 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
+   "tipo": "unit",
+   "linhas": 77,
+   "testa": [
+    "src/hooks/bi/useClientCategoryAffinity.ts",
+    "src/lib/bi/demoClient.ts"
+   ],
+   "casos": 4
+  },
+  {
+   "arquivo": "tests/hooks/useClientHealthScore.reliable-data.test.ts",
+   "tipo": "unit",
+   "linhas": 168,
+   "testa": [
+    "src/hooks/bi/useClientBI.ts",
+    "src/hooks/bi/useClientHealthScore.ts",
+    "src/hooks/bi/useClientSeasonality.ts",
+    "src/hooks/bi/useClientVsIndustry.ts"
+   ],
+   "casos": 7
+  },
+  {
+   "arquivo": "tests/hooks/useClientsComparison.availability.test.tsx",
+   "tipo": "unit",
+   "linhas": 303,
+   "testa": [
+    "src/hooks/bi/useClientsComparison.ts"
+   ],
+   "casos": 7
+  },
+  {
+   "arquivo": "tests/hooks/useClientSeasonality.errors.test.ts",
+   "tipo": "unit",
+   "linhas": 167,
+   "testa": [
+    "src/hooks/bi/useClientSeasonality.ts",
+    "src/lib/bi/demoClient.ts"
+   ],
+   "casos": 6
+  },
+  {
+   "arquivo": "tests/hooks/useClientSeasonality.real-data.test.ts",
+   "tipo": "unit",
+   "linhas": 114,
+   "testa": [
+    "src/hooks/bi/useClientSeasonality.ts",
+    "src/lib/bi/demoClient.ts"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/hooks/useClientsPortfolioKpis.test.ts",
    "tipo": "unit",
    "linhas": 239,
@@ -4248,6 +4339,17 @@
     "src/hooks/useClientsPortfolioKpis.ts"
    ],
    "casos": 10
+  },
+  {
+   "arquivo": "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
+   "tipo": "unit",
+   "linhas": 196,
+   "testa": [
+    "src/hooks/bi/useClientBI.ts",
+    "src/hooks/bi/useClientVsIndustry.ts",
+    "src/lib/bi/demoClient.ts"
+   ],
+   "casos": 8
   },
   {
    "arquivo": "tests/hooks/useCollections.react.test.tsx",
@@ -5885,6 +5987,15 @@
    "casos": 12
   },
   {
+   "arquivo": "tests/lib/validations/goalSchema.test.ts",
+   "tipo": "unit",
+   "linhas": 58,
+   "testa": [
+    "src/lib/validations/goalSchema.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/load/basic-smoke.js",
    "tipo": "unit",
    "linhas": 41,
@@ -6102,6 +6213,16 @@
     "src/utils/product-mapper.ts"
    ],
    "casos": 5
+  },
+  {
+   "arquivo": "tests/pages/PWAInstallPage.test.tsx",
+   "tipo": "unit",
+   "linhas": 68,
+   "testa": [
+    "src/hooks/usePWAInstall.ts",
+    "src/pages/PWAInstallPage.tsx"
+   ],
+   "casos": 3
   },
   {
    "arquivo": "tests/pages/QuoteApprovalPage.test.tsx",
@@ -6844,6 +6965,13 @@
    "linhas": 379,
    "testa": [],
    "casos": 5
+  },
+  {
+   "arquivo": "tests/security/search-analytics-legacy-insert.spec.ts",
+   "tipo": "unit",
+   "linhas": 166,
+   "testa": [],
+   "casos": 8
   },
   {
    "arquivo": "tests/security/sicoob-seed-authz.test.ts",
@@ -7615,6 +7743,7 @@
   "src/components/intelligence/unmet-demand-query.ts": 1,
   "src/components/inventory/StockFilterToolbar.tsx": 1,
   "src/components/inventory/StockStatCard.tsx": 1,
+  "src/components/inventory/risk/ProductRiskDetail.tsx": 1,
   "src/components/kit-builder/DiscontinuedItemsAlert.tsx": 1,
   "src/components/kit-builder/FreightEstimator.tsx": 1,
   "src/components/kit-builder/KitComparisonDialog.tsx": 1,
@@ -7652,6 +7781,7 @@
   "src/components/products/ProductGallery.tsx": 1,
   "src/components/products/ProductGrid.tsx": 1,
   "src/components/products/ProductSparkline.tsx": 1,
+  "src/components/products/SingleVariantPicker.tsx": 1,
   "src/components/products/StatsPopover.tsx": 1,
   "src/components/products/useStockChartData.ts": 1,
   "src/components/quotes/CompanyContactSelector.tsx": 1,
@@ -7704,12 +7834,15 @@
   "src/contexts/ProductsContext.tsx": 3,
   "src/contexts/SellerCartContext.tsx": 1,
   "src/hooks/auth/useUserRoles.ts": 1,
-  "src/hooks/bi/useClientBI.ts": 2,
-  "src/hooks/bi/useClientHealthScore.ts": 1,
-  "src/hooks/bi/useClientSeasonality.ts": 1,
-  "src/hooks/bi/useClientVsIndustry.ts": 2,
-  "src/hooks/bi/useIndustryCategoryTrends.ts": 1,
-  "src/hooks/bi/useIndustryTrends.ts": 1,
+  "src/hooks/bi/useClientAffinity.ts": 1,
+  "src/hooks/bi/useClientBI.ts": 4,
+  "src/hooks/bi/useClientCategoryAffinity.ts": 2,
+  "src/hooks/bi/useClientHealthScore.ts": 2,
+  "src/hooks/bi/useClientSeasonality.ts": 4,
+  "src/hooks/bi/useClientVsIndustry.ts": 4,
+  "src/hooks/bi/useClientsComparison.ts": 1,
+  "src/hooks/bi/useIndustryCategoryTrends.ts": 2,
+  "src/hooks/bi/useIndustryTrends.ts": 2,
   "src/hooks/catalog/useCatalogFilters.ts": 1,
   "src/hooks/dev/useBridgeMetrics.ts": 5,
   "src/hooks/orders/extensions/index.ts": 1,
@@ -7761,7 +7894,7 @@
   "src/hooks/useDiscountApproval.ts": 1,
   "src/hooks/useErrorHandler.ts": 1,
   "src/hooks/useExpertConversations.tsx": 1,
-  "src/hooks/useExternalVariantStock.ts": 1,
+  "src/hooks/useExternalVariantStock.ts": 2,
   "src/hooks/useFavoriteQuickAdd.ts": 1,
   "src/hooks/useFavorites.ts": 2,
   "src/hooks/useGeoBlocking.ts": 1,
@@ -7779,13 +7912,13 @@
   "src/hooks/useMagicUpState.ts": 2,
   "src/hooks/useMockupGenerator.ts": 1,
   "src/hooks/useOnboarding.ts": 1,
-  "src/hooks/usePWAInstall.ts": 1,
+  "src/hooks/usePWAInstall.ts": 2,
   "src/hooks/usePaBudget.ts": 1,
   "src/hooks/usePasswordBreachCheck.tsx": 1,
   "src/hooks/usePrintAreas.ts": 1,
   "src/hooks/useProductAnalytics.ts": 1,
   "src/hooks/useProductCustomizationOptions.ts": 1,
-  "src/hooks/useProductIntelligenceBadges.ts": 1,
+  "src/hooks/useProductIntelligenceBadges.ts": 2,
   "src/hooks/useProductMatch.ts": 1,
   "src/hooks/useProducts.ts": 7,
   "src/hooks/useProductsByCategory.ts": 1,
@@ -7839,7 +7972,7 @@
   "src/lib/auth/safe-internal-path.ts": 1,
   "src/lib/auth/sensitive-browser-data.ts": 1,
   "src/lib/auth/sso-errors.ts": 1,
-  "src/lib/bi/demoClient.ts": 1,
+  "src/lib/bi/demoClient.ts": 6,
   "src/lib/bi/executive-summary.ts": 1,
   "src/lib/bi/mockData.ts": 1,
   "src/lib/catalog-filter-state.ts": 1,
@@ -7909,6 +8042,7 @@
   "src/lib/theme-presets.ts": 2,
   "src/lib/utils.ts": 2,
   "src/lib/uxMetrics.ts": 1,
+  "src/lib/validations/goalSchema.ts": 1,
   "src/pages/AdvancedPriceSearchPage.tsx": 1,
   "src/pages/Auth.tsx": 2,
   "src/pages/FiltersPage.tsx": 1,
@@ -7918,6 +8052,7 @@
   "src/pages/MagicUp.tsx": 1,
   "src/pages/MockupHistoryPage.tsx": 1,
   "src/pages/NotFound.tsx": 2,
+  "src/pages/PWAInstallPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
   "src/pages/TrendsPage.tsx": 1,
   "src/pages/admin/AdminLoginAttemptsPage.tsx": 1,
@@ -8065,7 +8200,6 @@
    "src/pages/OrderAuditPage.tsx",
    "src/pages/OrderDetailPage.tsx",
    "src/pages/OrdersPage.tsx",
-   "src/pages/PWAInstallPage.tsx",
    "src/pages/PermissionsPage.tsx",
    "src/pages/PriceSimulatorPage.tsx",
    "src/pages/ProductDetail.tsx",
@@ -8212,9 +8346,6 @@
    "src/hooks/auth/useUserProfile.ts",
    "src/hooks/bi/useBIDossierExport.ts",
    "src/hooks/bi/useChurnRisk.ts",
-   "src/hooks/bi/useClientAffinity.ts",
-   "src/hooks/bi/useClientCategoryAffinity.ts",
-   "src/hooks/bi/useClientsComparison.ts",
    "src/hooks/bi/useSeasonalPeakNotifications.ts",
    "src/hooks/bi/useSmartAlerts.ts",
    "src/hooks/cart/useCart.ts",

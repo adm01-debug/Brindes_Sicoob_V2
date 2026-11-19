@@ -1323,7 +1323,7 @@
     "hooks/bi",
     "pages"
    ],
-   "coberto_por_testes": 1,
+   "coberto_por_testes": 6,
    "orfao": false
   },
   {
@@ -5601,7 +5601,7 @@
    "usado_por_modulos": [
     "lib/validations"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

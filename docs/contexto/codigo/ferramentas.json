@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2903)",
+   "TypeScript (2916)",
    "SQL (683)",
    "JSON (292)",
    "Markdown (285)",
@@ -1453,11 +1453,11 @@
     "arquivos": 6
    },
    {
-    "host": "doufsxqlfjyuvxuezpln.supabase.co",
-    "arquivos": 4
+    "host": "qa-sicoob-123.supabase.co",
+    "arquivos": 5
    },
    {
-    "host": "qa-sicoob-123.supabase.co",
+    "host": "doufsxqlfjyuvxuezpln.supabase.co",
     "arquivos": 4
    },
    {
@@ -1887,7 +1887,7 @@
    },
    {
     "papel": "status",
-    "ocorrencias": 53
+    "ocorrencias": 54
    },
    {
     "papel": "dev",
