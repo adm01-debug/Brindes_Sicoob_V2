@@ -60574,7 +60574,7 @@
               "hits": 2
             },
             {
-              "file": "supabase/functions/quote-price-attestation/index.ts",
+              "file": "supabase/functions/quote-price-attestation/handler.ts",
               "hits": 1
             },
             {
