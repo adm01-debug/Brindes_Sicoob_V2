@@ -172,7 +172,7 @@ describe('inteligência de produto baseada em dados reais', () => {
     expect(within(kpiValue('Estoque atual')).getByText('10')).toBeTruthy();
   });
 
-  it('enquanto a fonte carrega, nenhuma métrica é apresentada como definitiva', () => {
+  it('enquanto o HISTÓRICO DIÁRIO carrega, nenhuma métrica é apresentada como definitiva', () => {
     mocks.daily.mockReturnValue(query({ data: [recentSummary()], isLoading: true }));
     mocks.velocity.mockReturnValue(query({ data: [REAL_VELOCITY] }));
     mocks.intelligence.mockReturnValue(query({ data: REAL_INTELLIGENCE }));
@@ -183,6 +183,44 @@ describe('inteligência de produto baseada em dados reais', () => {
     expect(screen.queryByRole('group', { name: 'Métricas de risco do produto' })).toBeNull();
     expect(screen.queryByText('10')).toBeNull();
     expect(screen.queryByText('Classe A')).toBeNull();
+  });
+
+  /**
+   * Limite real do componente, apontado na revisão da #371 e conferido:
+   * `isLoading` vem SÓ de `useStockDailySummary`
+   * (`ProductRiskDetail.tsx:191`). `useStockVelocity:192` e
+   * `useProductIntelligenceData:193` são desestruturados sem o `isLoading`
+   * delas, então o early return da linha 202 não as cobre.
+   *
+   * Não é defeito de veracidade: com essas fontes pendentes,
+   * `selectBestVelocity(undefined)` e `resolveIntelligence(undefined)` devolvem
+   * `null` e `buildRiskMetrics` escreve `—`. Degrada para "sem dado", não para
+   * dado fabricado — que é a família desta suíte.
+   *
+   * Os dois casos abaixo travam exatamente essa degradação honesta: se um dia
+   * `buildRiskMetrics` passar a preencher esses campos com valor inventado
+   * enquanto a fonte carrega, eles caem.
+   */
+  it('velocidade ainda pendente vira "—", nunca número inventado', () => {
+    mocks.daily.mockReturnValue(query({ data: [recentSummary()] }));
+    mocks.velocity.mockReturnValue(query({ data: undefined }));
+    mocks.intelligence.mockReturnValue(query({ data: REAL_INTELLIGENCE }));
+
+    renderRisk();
+
+    expect(within(kpiValue('Saída/dia (7d)')).getByText('—')).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Métricas de risco do produto' })).toBeTruthy();
+  });
+
+  it('inteligência ainda pendente não inventa classe ABC nem fornecedor', () => {
+    mocks.daily.mockReturnValue(query({ data: [recentSummary()] }));
+    mocks.velocity.mockReturnValue(query({ data: [REAL_VELOCITY] }));
+    mocks.intelligence.mockReturnValue(query({ data: undefined }));
+
+    renderRisk();
+
+    expect(screen.queryByText('Classe A')).toBeNull();
+    expect(screen.getByRole('group', { name: 'Métricas de risco do produto' })).toBeTruthy();
   });
 
   it('com as fontes respondendo, mostra o número que veio delas e nenhum selo de demonstração', () => {
