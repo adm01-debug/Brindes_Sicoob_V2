@@ -39,12 +39,30 @@ function buildTemplatePayload(input: SnapshotInput) {
   };
 }
 
+/**
+ * Atualizar um template pelo builder não mexe em metadado editorial.
+ *
+ * `buildTemplatePayload` nasceu para CRIAR template, então fixa
+ * `category: 'Geral'` e `is_active: true`. Aplicado a um UPDATE, isso
+ * reclassificava o template curado ("Natal", "Posse de Conselho") como "Geral"
+ * e reativava template que o admin tinha desativado em
+ * `KitTemplatesAdminPage` — e ele reaparecia para todo vendedor, porque
+ * `useKitTemplates` e `useSimilarKits` filtram por `is_active`.
+ *
+ * Categoria só muda quando o chamador pede explicitamente; `is_active` nunca
+ * muda por aqui, só pelo controle do admin.
+ */
+function buildTemplateUpdatePayload(input: SnapshotInput) {
+  const { category, is_active: _isActive, ...payload } = buildTemplatePayload(input);
+  return input.category ? { ...payload, category } : payload;
+}
+
 async function persistTemplate(input: SnapshotInput) {
   const payload = buildTemplatePayload(input);
   if (input.templateId) {
     const { data, error } = await supabase
       .from('kit_templates')
-      .update(payload as never)
+      .update(buildTemplateUpdatePayload(input) as never)
       .eq('id', input.templateId)
       .select()
       .single();

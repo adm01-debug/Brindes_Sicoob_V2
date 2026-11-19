@@ -1,0 +1,168 @@
+
+interface EmailRequest {
+  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created" | "sicoob_order_status_change" | "sicoob_order_approval_request";
+  recipient_email: string;
+  recipient_name?: string;
+  data: Record<string, unknown>;
+}
+
+function buildEmailContent(event: EmailRequest): { subject: string; html: string } {
+  const name = event.recipient_name || "Cliente";
+  
+  switch (event.event_type) {
+    case "quote_sent":
+      return {
+        subject: `Orçamento ${event.data.quote_number || ""} - Promo Gifts`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Promo Gifts</h1>
+            </div>
+            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}!</h2>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Seu orçamento <strong>#${event.data.quote_number || ""}</strong> foi enviado com sucesso.
+              </p>
+              ${event.data.total ? `<p style="color: #4b5563;">Valor total: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
+              ${event.data.valid_until ? `<p style="color: #6b7280; font-size: 14px;">Válido até: ${event.data.valid_until}</p>` : ""}
+              ${event.data.approval_url ? `
+                <div style="text-align: center; margin: 24px 0;">
+                  <a href="${event.data.approval_url}" style="background: #6366f1; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    Ver Orçamento
+                  </a>
+                </div>
+              ` : ""}
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                Este email foi enviado automaticamente por Promo Gifts.
+              </p>
+            </div>
+          </div>
+        `,
+      };
+
+    case "quote_approved":
+      return {
+        subject: `✅ Orçamento ${event.data.quote_number || ""} Aprovado!`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0;">✅ Orçamento Aprovado!</h1>
+            </div>
+            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <h2 style="color: #1f2937; margin-top: 0;">Parabéns, ${name}!</h2>
+              <p style="color: #4b5563; line-height: 1.6;">
+                O orçamento <strong>#${event.data.quote_number || ""}</strong> 
+                ${event.data.client_name ? `do cliente <strong>${event.data.client_name}</strong>` : ""} 
+                foi aprovado!
+              </p>
+              ${event.data.total ? `<p style="color: #4b5563;">Valor: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                Promo Gifts — Sistema de Orçamentos
+              </p>
+            </div>
+          </div>
+        `,
+      };
+
+    case "quote_rejected":
+      return {
+        subject: `Orçamento ${event.data.quote_number || ""} - Atualização`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0;">Atualização do Orçamento</h1>
+            </div>
+            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}</h2>
+              <p style="color: #4b5563; line-height: 1.6;">
+                O orçamento <strong>#${event.data.quote_number || ""}</strong> não foi aprovado neste momento.
+              </p>
+              ${event.data.notes ? `<p style="color: #6b7280;">Observações: ${event.data.notes}</p>` : ""}
+              <p style="color: #4b5563;">Entre em contato para discutir alternativas.</p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                Promo Gifts — Sistema de Orçamentos
+              </p>
+            </div>
+          </div>
+        `,
+      };
+
+    case "order_created":
+      return {
+        subject: `🎉 Pedido ${event.data.order_number || ""} Confirmado!`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0;">🎉 Pedido Confirmado!</h1>
+            </div>
+            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}!</h2>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Seu pedido <strong>#${event.data.order_number || ""}</strong> foi criado com sucesso!
+              </p>
+              ${event.data.total ? `<p style="color: #4b5563;">Valor total: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                Promo Gifts — Gestão de Pedidos
+              </p>
+            </div>
+          </div>
+        `,
+      };
+    
+    case "sicoob_order_status_change":
+      return {
+        subject: `🔄 Pedido Sicoob #${event.data.order_number || ""} - Novo Status`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
+            <h2>Atualização de Pedido</h2>
+            <p>Olá, ${name}!</p>
+            <p>O status do seu pedido <strong>#${event.data.order_number || ""}</strong> foi alterado para: <strong>${event.data.new_status}</strong>.</p>
+            ${event.data.notes ? `<p>Observações: ${event.data.notes}</p>` : ""}
+            <div style="margin-top: 20px;">
+              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ver Detalhes</a>
+            </div>
+          </div>
+        `
+      };
+
+    case "sicoob_order_approval_request":
+      return {
+        subject: `⚠️ Aprovação Pendente - Pedido Sicoob #${event.data.order_number || ""}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
+            <h2>Solicitação de Aprovação</h2>
+            <p>Olá, ${name}!</p>
+            <p>Um novo pedido do <strong>${event.data.pa_name}</strong> requer sua aprovação.</p>
+            <p>Valor total: <strong>R$ ${Number(event.data.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></p>
+            <div style="margin-top: 20px;">
+              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Acessar Portal de Compras</a>
+            </div>
+          </div>
+        `
+      };
+
+    default:
+      return {
+        subject: "Notificação - Promo Gifts",
+        html: `<p>Você recebeu uma notificação do sistema Promo Gifts.</p>`,
+      };
+  }
+}
+
+function validatePayload(event: EmailRequest) {
+  const requiredFields: Record<string, string[]> = {
+    quote_sent: ["quote_number", "total", "approval_url"],
+    quote_approved: ["quote_number", "total"],
+    quote_rejected: ["quote_number"],
+    order_created: ["order_number", "total"],
+    sicoob_order_status_change: ["order_number", "new_status", "action_url"],
+    sicoob_order_approval_request: ["order_number", "pa_name", "total", "action_url"]
+  };
+
+  const fields = requiredFields[event.event_type] || [];
+  for (const field of fields) {
+    if (!event.data || event.data[field] === undefined || event.data[field] === null || event.data[field] === "") {
+      throw new Error(`Invalid payload: missing field '${field}' for event '${event.event_type}'`);
+    }
+  }
+}

@@ -55,6 +55,12 @@ export const EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT = [
   'allows_personalization',
   'gender',
   'price_updated_at',
+  // O prazo do fornecedor é um inteiro por linha — cabe no select leve e é a
+  // única fonte do prazo no cartão de listagem, que até aqui escrevia
+  // "Consultar prazo" cravado no código para 100% dos produtos. Em listagem o
+  // bridge TROCA o select do chamador por esta lista, então pôr a coluna no
+  // select do front não bastaria.
+  'lead_time_days',
 ].join(',');
 
 export const EXTERNAL_ACTIVE_PRODUCT_FILTER = Object.freeze({ is_active: true });
