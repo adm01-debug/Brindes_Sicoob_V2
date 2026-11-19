@@ -201,18 +201,45 @@ const inventario = new Set([
  * direto em `App.tsx`. São lidos do arquivo porque estão em JSX, não numa
  * estrutura importável — ler o texto é o preço de não deixar essas rotas fora
  * da conferência.
+ *
+ * O que conta é a ROTA MONTADA, não a string existir em algum lugar. Varrer um
+ * arquivo de constantes atrás de qualquer `"/..."` deixava o teste verde depois
+ * de alguém apagar o `<Route>` correspondente de `App.tsx`: a constante
+ * continuava lá. Por isso `path={IDENT}` é resolvido contra o arquivo de
+ * constantes, e só entra no inventário se estiver num `<Route>` de verdade.
  */
-function caminhosDeclaradosEmJsx(): string[] {
-  const fontes = ['src/App.tsx', 'src/routes/clientRoutes.ts'];
-  return fontes.flatMap((arquivo) => {
+const ARQUIVO_DE_ROTAS_DO_APP = 'src/App.tsx';
+const ARQUIVOS_DE_CONSTANTES = ['src/routes/clientRoutes.ts'];
+
+function constantesDeRota(): Map<string, string> {
+  const mapa = new Map<string, string>();
+  for (const arquivo of ARQUIVOS_DE_CONSTANTES) {
     const conteudo = readFileSync(arquivo, 'utf8');
-    const emJsx = [...conteudo.matchAll(/path="([^"]+)"/g)].map((m) => m[1] ?? '');
-    const emConstante = [...conteudo.matchAll(/["'](\/[^"']*)["']/g)].map((m) => m[1] ?? '');
-    return [...emJsx, ...emConstante].filter(Boolean);
-  });
+    for (const m of conteudo.matchAll(/export const (\w+)\s*=\s*["'](\/[^"']*)["']/g)) {
+      if (m[1] && m[2]) mapa.set(m[1], m[2]);
+    }
+  }
+  return mapa;
 }
 
-const declaradasEmApp = new Set([...caminhosDeclaradosEmJsx(), '*']);
+function caminhosMontadosEmApp(): string[] {
+  const conteudo = readFileSync(ARQUIVO_DE_ROTAS_DO_APP, 'utf8');
+  const constantes = constantesDeRota();
+  const montados: string[] = [];
+  // Só `<Route ... path=...>`; qualquer outra string com barra é ignorada.
+  for (const rota of conteudo.matchAll(/<Route\b[^>]*?path=(?:"([^"]+)"|\{(\w+)\})/g)) {
+    const literal = rota[1];
+    const identificador = rota[2];
+    if (literal) montados.push(literal);
+    else if (identificador) {
+      const resolvido = constantes.get(identificador);
+      if (resolvido) montados.push(resolvido);
+    }
+  }
+  return montados;
+}
+
+const declaradasEmApp = new Set(caminhosMontadosEmApp());
 
 describe('inventário de rotas do portal', () => {
   it.each([
