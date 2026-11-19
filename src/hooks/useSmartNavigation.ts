@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { dismissTopmostOverlay } from '@/lib/overlay';
-import { rotaEstaSuja, rotaTemEstadoDeclarado } from '@/lib/navigation/dirty-registry';
+import { mensagemDaRota, rotaEstaSuja, rotaTemEstadoDeclarado } from '@/lib/navigation/dirty-registry';
 import { trackUx } from '@/lib/uxMetrics';
 import { Haptics } from '@/utils/haptics';
 
@@ -36,7 +36,7 @@ async function performBackNavigation(deps: BackNavigationDeps) {
     trackUx('guard.shown');
     const confirmed = await askConfirm({
       title: 'Sair sem salvar?',
-      description: 'Você tem alterações não salvas nesta tela.',
+      description: mensagemDaRota(pathname) ?? 'Você tem alterações não salvas nesta tela.',
       variant: 'warning',
       confirmLabel: 'Sair',
       cancelLabel: 'Continuar aqui',

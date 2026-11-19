@@ -13,11 +13,20 @@
  * continua exatamente o de hoje. Assim nenhuma tela passa a perder trabalho em
  * silêncio por esquecimento de registro — o risco que o inverso traria.
  */
-const sujoPorRota = new Map<string, boolean>();
+interface EstadoDaRota {
+  sujo: boolean;
+  mensagem?: string;
+}
 
-/** A tela assume a responsabilidade de dizer se tem trabalho pendente. */
-export function declararEstadoDaRota(rota: string, sujo: boolean): void {
-  sujoPorRota.set(rota, sujo);
+const sujoPorRota = new Map<string, EstadoDaRota>();
+
+/**
+ * A tela assume a responsabilidade de dizer se tem trabalho pendente — e,
+ * quando quiser, o que avisar. O texto genérico ("alterações não salvas") não
+ * diz ao usuário o que ele perde; a tela sabe.
+ */
+export function declararEstadoDaRota(rota: string, sujo: boolean, mensagem?: string): void {
+  sujoPorRota.set(rota, { sujo, mensagem });
 }
 
 /** A tela saiu: volta a valer a regra antiga para essa rota. */
@@ -32,10 +41,19 @@ export function rotaTemEstadoDeclarado(rota: string): boolean {
 
 /** Há trabalho não salvo declarado nesta rota? */
 export function rotaEstaSuja(rota: string): boolean {
-  return sujoPorRota.get(rota) === true;
+  return sujoPorRota.get(rota)?.sujo === true;
 }
 
-/** Só para teste: devolve o registro ao estado inicial. */
+/** O aviso que a tela pediu, se pediu algum. */
+export function mensagemDaRota(rota: string): string | null {
+  return sujoPorRota.get(rota)?.mensagem ?? null;
+}
+
+/**
+ * Zera o registro. Chamado no logout: sem isto, o estado sujo de quem saiu
+ * sobrevive à sessão e o próximo login é interrogado por trabalho que não é
+ * dele. Também usado pelos testes.
+ */
 export function limparRegistroDeRotas(): void {
   sujoPorRota.clear();
 }

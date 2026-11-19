@@ -8,10 +8,10 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { declararEstadoDaRota, esquecerRota } from '@/lib/navigation/dirty-registry';
 
-export function useScreenDirtyState(temTrabalhoNaoSalvo: boolean): void {
+export function useScreenDirtyState(temTrabalhoNaoSalvo: boolean, mensagem?: string): void {
   const { pathname } = useLocation();
   useEffect(() => {
-    declararEstadoDaRota(pathname, temTrabalhoNaoSalvo);
+    declararEstadoDaRota(pathname, temTrabalhoNaoSalvo, mensagem);
     return () => esquecerRota(pathname);
-  }, [pathname, temTrabalhoNaoSalvo]);
+  }, [pathname, temTrabalhoNaoSalvo, mensagem]);
 }
