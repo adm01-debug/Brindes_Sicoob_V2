@@ -30,10 +30,12 @@ vi.mock("@/contexts/ProductsContext", () => ({
   ProductsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+const rascunho = vi.hoisted(() => ({ atual: null as unknown }));
+
 vi.mock("@/hooks/useMockupDraft", () => ({
   useMockupDraft: () => ({
     saveDraft: vi.fn(),
-    loadDraft: vi.fn(),
+    loadDraft: vi.fn(async () => rascunho.atual),
     clearDraft: vi.fn(),
     isSaving: false,
     lastSaved: null,
@@ -95,6 +97,27 @@ describe("useMockupGenerator (smoke)", () => {
     const { useMockupGenerator } = await import("@/hooks/useMockupGenerator");
     const { result, unmount } = renderHookWithProviders(() => useMockupGenerator());
     expect(typeof result.current).toBe("object");
+    unmount();
+  });
+});
+
+describe("restauração de rascunho", () => {
+  it("restaura a empresa quando o rascunho só tem a empresa", async () => {
+    // Regressão: `draftHasContent` exigia produto, técnica ou logo, então quem
+    // escolhia só a empresa e saía da tela perdia a seleção ao voltar.
+    rascunho.atual = {
+      productId: null, productName: null, techniqueId: null, techniqueName: null,
+      clientId: "c1", clientName: "Sicoob Central",
+      personalizationAreas: [], updatedAt: "2026-11-19T00:00:00Z",
+    };
+    const { waitFor } = await import("@testing-library/react");
+    const { renderHookWithProviders } = await import("./_helpers/render-hook-providers");
+    const { useMockupGenerator } = await import("@/hooks/useMockupGenerator");
+    const { result, unmount } = renderHookWithProviders(() => useMockupGenerator());
+    await waitFor(() => {
+      expect(result.current.selectedClient).toEqual({ id: "c1", name: "Sicoob Central" });
+    });
+    rascunho.atual = null;
     unmount();
   });
 });
