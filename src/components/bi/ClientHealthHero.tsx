@@ -188,7 +188,8 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
   const [open, setOpen] = useState(false);
 
   // Categoria favorita do cliente (top 1 por receita)
-  const favoriteCategory = categoriasSemFonte(clientCats, industryCats) ? null : clientCats.favorite;
+  // A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la.
+  const favoriteCategory = clientCats.isError ? null : clientCats.favorite;
   // Categoria-oportunidade: setor compra muito, cliente quase nada.
   // Exige as duas fontes OK: se a consulta do cliente falhou, a lista vazia não
   // prova que ele não compra a categoria — toda categoria do setor viraria
