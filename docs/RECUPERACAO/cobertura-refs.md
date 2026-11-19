@@ -770,3 +770,44 @@ já registrava.
 
 **Conclusão: 62 de 62 com base de certeza escrita.** Nenhuma ref restante contém trabalho
 que não esteja na `main` ou que não tenha obsolescência justificada aqui.
+
+### Conferência byte a byte: os 243 caminhos ausentes da `main`
+
+A classificação por PR não basta sozinha, e a identidade de blob também não: `computador_local`
+tem **0 commits** fora da `main` e ainda assim 6 blobs "fora", porque a `main` andou depois.
+Hash de blob mede quanto a `main` evoluiu, não trabalho perdido.
+
+O que mede é a **união dos caminhos** que não existem na `main`, sobre as 61 refs (fora
+`contexto`, que é artefato gerado): **249 caminhos**, **243** descontando os 6 que a #354
+removeu de propósito. Destes, **235 com cobertura** (citados neste ledger, ou presentes na
+`main` com o mesmo nome de arquivo ou o mesmo slug de migration). Os **8 restantes**, um a um:
+
+| arquivo | onde estava | veredito |
+|---|---|---|
+| `graphify-out/memory/query_*.md` | várias | artefato do graphify, fora do Git por `.gitignore` — não é trabalho |
+| `docs/execucao/auditoria-planejamento-2026-10-13/inventario-repositorio.json` | idem | inventário gerado por script, regerável |
+| `supabase/migrations/20261029102059_block_inactive_quote_status_retries.sql` | `fix/hermes-h247355-ci-dependencies` | **regra na `main`, em posição melhor** (abaixo) |
+| `tests/hooks/useClientBI.no-fallback.test.ts` | `fix/hermes-h015416-dados-reais` | equivalente na `main`: `tests/hooks/bi/useClientBI.test.ts` |
+| `tests/hooks/useClientSeasonality.no-fallback.test.ts` | idem | coberto pelas suítes de disponibilidade de BI (`BIAiCopilot.sources-availability`, `ExecutiveSummaryButton.availability`, `useClientHealthScore.diagnostico`) |
+| `tests/hooks/useProductIntelligenceBadges.no-fallback.test.ts` | idem | equivalente na `main`: `tests/hooks/intelligence-badges.test.ts` |
+| `tests/edge-functions/catalog-readonly-rpc.test.ts` | `fix/quote-price-authority-311333` | **coberto com folga** (abaixo) |
+| `tests/scripts/validate-e2e-supabase-target.test.ts` | `fix/hermes-bi-share-hardening-20261028` | **tinha 2 casos sem equivalente — recuperados** na [#369](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/369) |
+
+**A migration do ator inativo.** A regra ("conta desativada não transiciona orçamento") está
+na `main` em `20261030210000_require_active_actor_for_quote_status_retry.sql`, com o mesmo
+`sicoob_actor_is_active` e o mesmo `ERRCODE 42501`. A diferença é onde a guarda entra: a da
+branch ficava **dentro** do núcleo `..._core_20261013`; a da `main` fica no **invólucro**,
+antes de chamá-lo, porque o núcleo pode retornar cedo quando o status pedido já está
+confirmado. A posição da `main` também cobre quem chama o invólucro direto.
+
+**O teste do catálogo somente leitura.** `tests/scenarios/catalogo-somente-leitura.mjs` na
+`main` é superconjunto do arquivo perdido: recusa `POST`, `PUT`, `PATCH` e `DELETE` (o órfão
+só testava `POST`), nas duas formas de chamada (string e `Request`), exige `GET` tanto em
+`products?select=` quanto em `rpc/…`, e ainda recusa redirecionamento. Roda no CI por
+`npm run test:scenarios`. Executado em 19/11/2026: **32/32 passando**.
+
+**O que a varredura devolveu ao sistema:** um único buraco real em 243 caminhos — a regra do
+`AGENTS.md` "E2E/QA nunca aponta para o oficial nem para o catálogo" não tinha catraca para
+**endpoint sem HTTPS** nem para **falha fechada por configuração ausente**, embora
+`scripts/e2e-target.mjs:34` e `:22` recusem os dois. Recuperado na #369, com prova de que
+trava: removendo cada guarda, caem 1 e 5 casos.
