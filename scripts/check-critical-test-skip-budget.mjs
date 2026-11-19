@@ -6,8 +6,8 @@
  * silenciosamente ignorados ou desligados.
  *
  * Estratégia:
- *  - Varre `tests/p0`, `tests/rls` e `tests/security` (arquivos `.test.` e
- *    `.spec.`, que o Vitest coleta) contando skip declarado em TODAS as formas:
+ *  - Varre `tests/p0`, `tests/rls`, `tests/security` e `e2e/flows/p0` (arquivos
+ *    `.test.` e `.spec.`) contando skip declarado em TODAS as formas:
  *    `.skip`, `.todo`, `.only` (desliga os demais), `.fails`, `skipIf`, `runIf`,
  *    encadeados (`it.concurrent.skip`), `{ skip: true }`, `ctx.skip()` e `xit`/`xdescribe`.
  *  - O orçamento é POR ARQUIVO (`BASELINE_BY_FILE`; arquivo ausente = 0). Um total
@@ -26,7 +26,7 @@ import { pathToFileURL } from "node:url";
 
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
-export const roots = ["tests/p0", "tests/rls", "tests/security"];
+export const roots = ["tests/p0", "tests/rls", "tests/security", "e2e/flows/p0"];
 // Os testes P0 não têm cenários ignorados. As quatro ocorrências restantes são
 // suites condicionais de RLS/segurança que só executam com credenciais de um
 // banco efêmero; elas continuam visíveis e contabilizadas pelo gate.
@@ -35,6 +35,21 @@ export const BASELINE_BY_FILE = {
   "tests/rls/no-empty-rls-policies.test.ts": 1,
   "tests/rls/personas.test.ts": 1,
   "tests/security/edge-authz-bypass.test.ts": 1,
+  // Cenários P0 de E2E (`e2e/flows/p0`). Esta raiz ficou FORA do gate até
+  // 18/11/2026: eram 23 cenários críticos que podiam ser trocados ou
+  // multiplicados sem ninguém ver. Os números abaixo CONGELAM a dívida que já
+  // existia — não a autorizam. 01 a 05 são esqueletos aguardando a UX de
+  // degradação correspondente; 06 e 07 são suites que só rodam com credenciais
+  // E2E; 08 espera o link de "esqueci a senha" aparecer na interface.
+  // A catraca só aperta: ao destravar um cenário, baixe o número aqui.
+  "e2e/flows/p0/01-auth-recovery.spec.ts": 3,
+  "e2e/flows/p0/02-catalog-degraded.spec.ts": 3,
+  "e2e/flows/p0/03-quote-blocked.spec.ts": 2,
+  "e2e/flows/p0/04-checkout-blocked.spec.ts": 3,
+  "e2e/flows/p0/05-admin-down.spec.ts": 4,
+  "e2e/flows/p0/06-auth-lifecycle.spec.ts": 4,
+  "e2e/flows/p0/07-rls-enforcement.spec.ts": 2,
+  "e2e/flows/p0/08-password-recovery.spec.ts": 1,
 };
 export const testFile = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
 export const skipPattern =

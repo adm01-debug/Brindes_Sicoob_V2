@@ -3,12 +3,14 @@
  *
  * Reaproveita o RPC `get_client_top_products` (já usado em useClientAffinity)
  * e dobra o resultado por categoria via `categoryResolver`. Quando vazio,
- * cai para mock determinístico baseado em MOCK_CLIENT_STATS.topCategories.
+ * preserva a ausência de histórico sem fabricar afinidade: o conjunto
+ * simulado é só do cliente de demonstração.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProductRow {
@@ -58,7 +60,8 @@ export interface ClientCategoryAffinityResult {
   favorite: CategoryAggregate | null;
 }
 
-function buildMockResult(): ClientCategoryAffinityResult {
+/** Conjunto simulado, exclusivo do cliente de demonstração. */
+function buildDemoResult(): ClientCategoryAffinityResult {
   const totalRev = MOCK_CLIENT_STATS.topCategories.reduce((s, c) => s + c.revenue, 0) || 1;
   // Mock: distribuir 60% receita "recente" e 40% "anterior" com leve variação determinística por slug
   const categories: CategoryAggregate[] = MOCK_CLIENT_STATS.topCategories.map((c, i) => {
@@ -180,9 +183,10 @@ function finalizeCategories(byCategory: Map<string, CategoryAggregate>) {
 }
 
 export function useClientCategoryAffinity(clientId?: string) {
+  const demo = isDemoClient(clientId);
   const query = useQuery<ClientTopProductRow[]>({
     queryKey: ["bi-client-category-affinity-raw", clientId],
-    enabled: !!clientId,
+    enabled: !!clientId && !demo,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!clientId) return [];
@@ -190,14 +194,19 @@ export function useClientCategoryAffinity(clientId?: string) {
         _client_id: clientId,
         _limit: 50,
       });
-      if (error) return [];
+      // Erro deixa de virar lista vazia: RPC negada caía no mock e a tela
+      // elegia categoria favorita fictícia.
+      if (error) throw error;
       return (Array.isArray(data) ? data : []) as ClientTopProductRow[];
     },
   });
 
   const result = useMemo<ClientCategoryAffinityResult>(() => {
+    if (demo) return buildDemoResult();
     const rows = query.data ?? [];
-    if (rows.length === 0) return buildMockResult();
+    if (rows.length === 0) {
+      return { isMock: false, realProductsCount: 0, categories: [], favorite: null };
+    }
 
     const categories = finalizeCategories(aggregateCategories(rows));
 
@@ -207,7 +216,13 @@ export function useClientCategoryAffinity(clientId?: string) {
       categories,
       favorite: categories[0] ?? null,
     };
-  }, [query.data]);
+  }, [demo, query.data]);
 
-  return { ...result, isLoading: query.isLoading };
+  return {
+    ...result,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }

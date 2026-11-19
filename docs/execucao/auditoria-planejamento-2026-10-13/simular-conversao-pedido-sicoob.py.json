@@ -1,0 +1,8 @@
+{
+  "cenario": "simular-conversao-pedido-sicoob.py",
+  "ambiente": "PostgreSQL 16 descartável sem rede",
+  "fixture": "fixture versionada + trigger coletado do canônico em 13/10",
+  "falhou_com_guard": true,
+  "erro": "ERROR:  Campos de governança do orçamento só podem ser alterados por fluxo autorizado.\nCONTEXT:  PL/pgSQL function guard_quote_governance_write() line 29 at RAISE\nSQL statement \"UPDATE public.quotes\n  SET status = 'converted', updated_at = clock_timestamp()\n  WHERE quotes.id = p_quote_id\"\nPL/pgSQL function convert_quote_to_sicoob_order(uuid) line 207 at SQL statement",
+  "efeitos_persistidos": "0"
+}

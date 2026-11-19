@@ -295,4 +295,24 @@ describe("ProductCard — category line (PR)", () => {
       renderWithProviders(<ProductCard product={productUndefinedCatName as any} />)
     ).not.toThrow();
   });
+
+  // Prazo de entrega no cartão. Renderiza o ProductCard de verdade e confere o
+  // TEXTO VISÍVEL, não string no arquivo: a revisão da #368 mostrou que mexer
+  // no `ProductHoverPreview` não levava o prazo a tela nenhuma, porque ele não
+  // tem consumidor — quem as grades renderizam é este cartão.
+  it("mostra o prazo do catálogo quando o produto tem lead time", async () => {
+    const { ProductCard } = await import("@/components/products/ProductCard");
+    renderWithProviders(
+      <ProductCard product={{ ...mockProduct, id: "p-prazo", leadTimeDays: 5 } as any} />,
+    );
+    expect(screen.getByTestId("product-card-delivery-term").textContent).toContain("5 dias úteis");
+  });
+
+  it("prazo ausente ou zero continua sendo 'Consultar prazo', não entrega no mesmo dia", async () => {
+    const { ProductCard } = await import("@/components/products/ProductCard");
+    renderWithProviders(
+      <ProductCard product={{ ...mockProduct, id: "p-sem-prazo", leadTimeDays: 0 } as any} />,
+    );
+    expect(screen.getByTestId("product-card-delivery-term").textContent).toContain("Consultar prazo");
+  });
 });

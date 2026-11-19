@@ -4,7 +4,7 @@
  */
 import { type CSSProperties, type MouseEvent, type ForwardedRef, useState, useRef, useEffect, memo, forwardRef, useCallback, useMemo } from "react";
 import { GenderBadge } from "./GenderBadge";
-import { Building2, Package } from "lucide-react";
+import { Building2, Package, Truck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getCdnUrl, getSrcSet } from "@/utils/image-utils";
 
@@ -236,12 +236,36 @@ function ProductMaterials({ materials }: { materials: Product["materials"] }) {
   </div>;
 }
 
+/**
+ * Prazo do fornecedor, com o MESMO texto da ficha
+ * (`src/pages/product-detail/ProductDetailHeroSections.tsx:267`): prazo zero ou
+ * ausente é prazo não informado, não entrega no mesmo dia.
+ *
+ * Fica aqui, no `ProductCard`, porque é ele que as duas grades renderizam
+ * (`ProductGrid.tsx:86` e `VirtualizedProductGrid.tsx`). O
+ * `ProductHoverPreview` não tem consumidor na aplicação — só a reexportação no
+ * barrel —, então mexer lá não leva o prazo a tela nenhuma.
+ */
+function ProductDeliveryTerm({ product }: { product: Pick<Product, 'leadTimeDays'> }) {
+  const dias = product.leadTimeDays;
+  return (
+    <span
+      data-testid="product-card-delivery-term"
+      className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground"
+    >
+      <Truck className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 text-primary" />
+      {dias && dias > 0 ? `${dias} dias úteis` : 'Consultar prazo'}
+    </span>
+  );
+}
+
 function ProductInfo({ product, hideCategoryBadges, activeColorFilter }: { product: Product; hideCategoryBadges: boolean; activeColorFilter?: ActiveColorFilter | null }) {
   return <div className="relative p-2.5 sm:p-4 space-y-2 sm:space-y-3 bg-card" style={{ zIndex: 10 }}>
     {!hideCategoryBadges && <ProductCategoryBadges category={product.category} groups={product.groups} categoryUuid={product.category_id} className="flex-wrap" />}
     <div className="flex items-center justify-between gap-2"><span className="text-[10px] sm:text-xs text-muted-foreground font-mono truncate">{product.sku}</span><div className="flex items-center gap-1 shrink-0"><GenderBadge gender={product.gender} size="sm" /><span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground font-medium truncate max-w-[120px] flex items-center gap-1 border border-border/20 shadow-sm"><Building2 className={cn("h-3 w-3 shrink-0", getSupplierColors(product.supplier.name).text)} />{product.supplier.name}</span></div></div>
     <h3 data-testid="product-card-name" data-product-name={product.name} className="font-display font-semibold text-foreground line-clamp-2 min-h-[2.25rem] sm:min-h-[2.75rem] text-sm sm:text-base leading-snug group-hover:text-brand transition-colors duration-300">{product.name}</h3>
     <ProductPriceStock product={product} filter={activeColorFilter} /><ProductMaterials materials={product.materials} />
+    <ProductDeliveryTerm product={product} />
     <div className="pt-1.5 sm:pt-2 border-t border-border/30"><div className="flex items-center justify-between mb-0.5"><span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Vendas 30d</span></div><ProductSparkline productId={product.id} /></div>
     <QuickAddToQuote productId={product.id} productName={product.name} productSku={product.sku || undefined} productImageUrl={product.og_image_url || product.images[0]} productPrice={product.price} minQuantity={product.minQuantity || 1} labelOverride="Adicionar ao orçamento" iconOverride="cart" triggerTestId="product-card-quote-trigger" className="min-h-11 w-full rounded-full bg-[#00464d] font-bold text-white shadow-sm hover:bg-[#00383e]" />
   </div>;

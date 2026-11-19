@@ -1,0 +1,90 @@
+[
+  {
+    "id": "avatars",
+    "public": true,
+    "file_size_limit": 2097152,
+    "allowed_mime_types": [
+      "image/png",
+      "image/jpeg",
+      "image/webp"
+    ]
+  },
+  {
+    "id": "component-media",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "exports",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "mockup-art-files",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "order-documents",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "personalization-images",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "personalization-images-secondary",
+    "public": true,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "product-videos",
+    "public": false,
+    "file_size_limit": 104857600,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "proposals",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "qa-evidences",
+    "public": true,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "quarantine",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "sicoob-document-quarantine",
+    "public": false,
+    "file_size_limit": 10485760,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "sicoob-order-documents",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null
+  },
+  {
+    "id": "supplier-logos",
+    "public": false,
+    "file_size_limit": 2097152,
+    "allowed_mime_types": null
+  }
+]
