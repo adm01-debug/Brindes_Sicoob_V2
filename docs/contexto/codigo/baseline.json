@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
+  "commit": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
   "branch": "main",
-  "data_commit": "2026-11-19T06:21:03Z",
+  "data_commit": "2026-11-19T06:45:14Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "138474b",
+    "data": "2026-11-19",
+    "assunto": "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)"
+   },
+   {
+    "sha": "1059478",
+    "data": "2026-11-19",
+    "assunto": "fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)"
+   },
    {
     "sha": "c19e38a",
     "data": "2026-11-19",
@@ -121,16 +131,6 @@
     "sha": "e0e36d4",
     "data": "2026-11-19",
     "assunto": "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)"
-   },
-   {
-    "sha": "25214df",
-    "data": "2026-11-19",
-    "assunto": "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)"
-   },
-   {
-    "sha": "d53f9e8",
-    "data": "2026-11-19",
-    "assunto": "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)"
    }
   ],
   "arquivos_mudados_7d": 605,
@@ -164,12 +164,12 @@
     "mudancas": 20
    },
    {
-    "pasta": "src/hooks/bi",
+    "pasta": "package.json",
     "mudancas": 16
    },
    {
-    "pasta": "package.json",
-    "mudancas": 15
+    "pasta": "src/hooks/bi",
+    "mudancas": 16
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
@@ -189,7 +189,7 @@
    },
    {
     "pasta": "package-lock.json",
-    "mudancas": 11
+    "mudancas": 12
    },
    {
     "pasta": "src/components/sicoob",
@@ -199,18 +199,18 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 54
+    "mudancas": 52
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 53
-   },
-   {
-    "arquivo": "PENDENCIAS.md",
-    "mudancas": 21
+    "mudancas": 51
    },
    {
     "arquivo": "package.json",
+    "mudancas": 22
+   },
+   {
+    "arquivo": "PENDENCIAS.md",
     "mudancas": 21
    },
    {
@@ -234,11 +234,11 @@
     "mudancas": 17
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 16
+    "arquivo": "package-lock.json",
+    "mudancas": 17
    },
    {
-    "arquivo": "package-lock.json",
+    "arquivo": ".github/workflows/e2e.yml",
     "mudancas": 16
    },
    {
@@ -301,18 +301,18 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 168
+    "commits": 169
    },
    {
     "autor": "dependabot[bot]",
-    "commits": 11
+    "commits": 12
    }
   ]
  },
  "contagens": {
   "arquivos_total": 4524,
   "arquivos_codigo": 3115,
-  "linhas_codigo": 490126,
+  "linhas_codigo": 490156,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 33,
-   "linhas": 3123
+   "linhas": 3153
   },
   "tests/search": {
    "arquivos": 1,

@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `c19e38ac6abb75be536ebd4913e0c89ce1433374` (2026-11-19T06:21:03Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `138474b5936a1883a91f4e471aeaa9a5e6e9293a` (2026-11-19T06:45:14Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4524 |
 | arquivos_codigo | 3115 |
-| linhas_codigo | 490126 |
+| linhas_codigo | 490156 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -471,23 +471,23 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29566 nós · 54279 arestas · 2091 comunidades · grafo do commit `c19e38ac`
+- 29566 nós · 54279 arestas · 2091 comunidades · grafo do commit `138474b5`
 - comunidades maiores: ref_lib (600), ref_components (473), ref_integrations (232), sonner (215), react-router-dom (196), ref_contexts (191), getCorsHeaders (190), react (174), framer-motion (170), date-fns (158), postgres_ready.py (142), ref_stores (134)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (54)
-- docs/correcoes-validacao-2026-09-14.md (53)
+- docs/plano-melhorias-50-etapas.md (52)
+- docs/correcoes-validacao-2026-09-14.md (51)
+- package.json (22)
 - PENDENCIAS.md (21)
-- package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
 - RELATORIO_CI.md (20)
 - .github/workflows/sicoob-ci.yml (19)
 - .github/workflows/ci.yml (18)
 - .github/workflows/codeql.yml (17)
+- package-lock.json (17)
 - .github/workflows/e2e.yml (16)
-- package-lock.json (16)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (15)
 - src/services/QuoteService.ts (13)
@@ -694,6 +694,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `138474b` chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)
+- 2026-11-19 `1059478` fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)
 - 2026-11-19 `c19e38a` docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)
 - 2026-11-19 `70956c7` fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)
 - 2026-11-19 `202a19c` docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)
@@ -707,8 +709,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `87b4f99` test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)
 - 2026-11-19 `e520ace` docs(email): preserva os modelos da PR #4 sem reintroduzir o "enviado" falso (#337)
 - 2026-11-19 `116bb44` test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)
-- 2026-11-19 `34095f4` fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)
-- 2026-11-19 `f82acc3` feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

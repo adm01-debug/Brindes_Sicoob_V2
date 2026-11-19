@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c19e38ac6a` · branch `main` · 2026-11-19 06:25 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `138474b593` · branch `main` · 2026-11-19 06:45 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6867 testes em 682 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6868 testes em 682 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5829,6 +5829,7 @@ _nenhum item encontrado_
 | `tests/lib/connection-error-copy.test.ts` | 15 | getErrorCopy · timeout sem timeout_ms — hint genérica · timeout com timeout_ms — hint contém o valor · network … |
 | `tests/lib/format-extended.test.ts` | 15 | formatCurrency · formats zero · formats integer · formats cents … |
 | `tests/lib/purchasing-sla.test.ts` | 15 | métricas canônicas da gestão de compras · calcula pendências, SLA e totais a partir dos pedidos visíveis · fila recém-criada e nenhuma aprovação não viram 100% · não apresenta agregado parcial quando a consulta trunca … |
+| `tests/scripts/check-critical-test-skip-budget.test.ts` | 15 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/utils/colorSorting-extended.test.ts` | 15 | sortByColorGroup · should return empty array for empty input · should sort Preto before Branco before Azul · should sort dark variants before light within same group … |
 | `tests/utils/price-freshness.default-threshold.test.ts` | 15 | getPriceFreshness — default 60d quando threshold não existe · garante que a constante default vale 60 dias (contrato público) · usa default 60d quando threshold é null (cenário real do BD externo) · usa default 60d quando threshold é undefined (campo ausente do payload) … |
 | `tests/components/BulkSelectionBar.test.tsx` | 14 | BulkSelectionBar · renders when isActive is true · does not render when isActive is false · shows selected count badge … |
@@ -5837,7 +5838,6 @@ _nenhum item encontrado_
 | `tests/lib/theme-radius-smoke.test.ts` | 14 | Smoke E2E — boot fresh com defaults pós-bump · boot fresh sem localStorage usa defaults novos (corporate, radius=14) · botões (rounded-md = --radius - 2px) ficam com 12px no estado padrão · cards (rounded-lg = --radius) ficam com 14px no estado padrão … |
 | `tests/pages/trends-queries.test.ts` | 14 | consultas de tendências · alinha as janelas aos dias civis, incluindo o dia atual · alinha o papel %s às capacidades comprovadas pela RLS · filtra cada evento pela coluna de autoria observada no banco … |
 | `tests/scripts/autofix-colors.test.ts` | 14 | autofix colors-map · texto: qualquer tom vira o token · fundo claro vira /10 (ou /5 quando já tinha opacidade) · fundo forte vira sólido … |
-| `tests/scripts/check-critical-test-skip-budget.test.ts` | 14 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/scripts/rules-definer-search-path.test.ts` | 14 | rules/plano-definer-sem-search-path · acusa DEFINER sem SET (atributos antes do corpo) · aceita SET search_path antes ou depois do corpo · reconhece o schema public entre aspas (CREATE, ALTER e DROP) … |
 | `tests/unit/fuzzing.test.ts` | 14 | Fuzz Testing — Input Resilience · String Fields · handles buffer overflows / extreme lengths · handles unicode and emojis … |
 | `e2e/rbac-navigation.spec.ts` | 13 | RBAC e navegação · Perfil vendedor · acessa as áreas comerciais · recebe 403 nas áreas administrativas … |

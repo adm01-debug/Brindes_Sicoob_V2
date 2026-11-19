@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
+  "sha": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 06:25 UTC",
+  "generated_at": "2026-11-19 06:45 UTC",
   "files_total": 4527,
   "code_files": 3780,
-  "code_lines": 552705
+  "code_lines": 552735
  },
  "version": "1.3.2",
- "facts_hash": "e2b8f439489a2b1b",
+ "facts_hash": "15697c47024db2fc",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -82,7 +82,7 @@
     "in": "package.json"
    },
    "@playwright/test": {
-    "version": "^1.64.1",
+    "version": "^1.65.1",
     "role": "E2E Playwright",
     "in": "package.json"
    },
@@ -97,7 +97,7 @@
     "in": "package.json"
    },
    "vite": {
-    "version": "^6.4.5",
+    "version": "^6.4.6",
     "role": "Bundler Vite",
     "in": "package.json"
    }
@@ -65633,7 +65633,7 @@
   {
    "module": "tests",
    "files": 637,
-   "lines": 85636,
+   "lines": 85666,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -135507,7 +135507,11 @@
    },
    {
     "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
-    "name": "o orçamento cobre todos os specs P0 de E2E que têm skip hoje"
+    "name": "todo spec P0 de E2E com skip tem orçamento — skip novo não entra sem declarar"
+   },
+   {
+    "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "name": "a mesma regra aceita o conserto e recusa o skip não declarado"
    },
    {
     "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
@@ -250156,13 +250160,15 @@
   },
   "tests/scripts/check-critical-test-skip-budget.test.ts": {
    "path": "tests/scripts/check-critical-test-skip-budget.test.ts",
-   "lines": 154,
+   "lines": 184,
    "is_test": true,
    "env": [
     "DB"
    ],
    "rule_comments": [
-    "Orçamento próprio: o teste mede a regra, não a lista de dívidas do dia."
+    "Orçamento próprio: o teste mede a regra, não a lista de dívidas do dia.",
+    "A regra, em UM lugar só. Os dois casos abaixo chamam esta função: o da",
+    "Conserto: arquivo orçado que ficou sem skip. Não pode reprovar."
    ],
    "tests": [
     "findSkips — formas de desligar um teste",
@@ -250177,7 +250183,8 @@
     "fora da raiz do repositório falha (exit 2) em vez de ler zero skips",
     "cobertura das raízes críticas",
     "inclui os cenários P0 de E2E, que ficaram fora do gate até 18/11/2026",
-    "o orçamento cobre todos os specs P0 de E2E que têm skip hoje",
+    "todo spec P0 de E2E com skip tem orçamento — skip novo não entra sem declarar",
+    "a mesma regra aceita o conserto e recusa o skip não declarado",
     "nenhum spec P0 de E2E está acima do orçamento"
    ]
   },
@@ -252163,10 +252170,29 @@
   }
  },
  "git": {
-  "sha": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
+  "sha": "138474b5936a1883a91f4e471aeaa9a5e6e9293a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "138474b",
+    "date": "2026-11-19",
+    "author": "dependabot[bot]",
+    "subject": "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)",
+    "files": [
+     "package-lock.json",
+     "package.json"
+    ]
+   },
+   {
+    "sha": "1059478",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)",
+    "files": [
+     "tests/scripts/check-critical-test-skip-budget.test.ts"
+    ]
+   },
    {
     "sha": "c19e38a",
     "date": "2026-11-19",
@@ -252662,27 +252688,13 @@
      "supabase/functions/get-app-logs/index.ts",
      "supabase/functions/mcp-server/index.ts"
     ]
-   },
-   {
-    "sha": "f30a262",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(db): aplicador de migrations tolera BOM na leitura (#345)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs"
-    ]
-   },
-   {
-    "sha": "25f7ab0",
-    "date": "2026-11-18",
-    "author": "dependabot[bot]",
-    "subject": "chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)",
-    "files": [
-     ".github/workflows/automation-local.yml"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "tests/scripts/check-critical-test-skip-budget.test.ts",
+    2
+   ],
    [
     "docs/RECUPERACAO/cobertura-refs.md",
     2
@@ -252698,6 +252710,14 @@
    [
     "PENDENCIAS.md",
     2
+   ],
+   [
+    "package-lock.json",
+    1
+   ],
+   [
+    "package.json",
+    1
    ],
    [
     "src/lib/external-db/product-types.ts",
@@ -252749,18 +252769,6 @@
    ],
    [
     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e024-retencao.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e025-aviso-privacidade.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e026-dpa-fornecedores.md",
-    1
-   ],
-   [
-    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e027-fluxo-optout.md",
     1
    ]
   ]
