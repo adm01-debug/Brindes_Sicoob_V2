@@ -8,6 +8,7 @@
   "collections-watcher",
   "comparison-price-watcher",
   "connections-health-check",
+  "crm-db-bridge",
   "expert-chat",
   "external-db-bridge",
   "favorites-watcher",
@@ -810,7 +811,7 @@
    "entrada": "supabase/functions/crm-db-bridge/index.ts",
    "arquivos": 2,
    "linhas": 1309,
-   "verify_jwt": true,
+   "verify_jwt": false,
    "metodos": [
     "GET",
     "HEAD",

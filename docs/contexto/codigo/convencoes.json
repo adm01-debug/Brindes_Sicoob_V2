@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)",
+   "chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)",
    "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)",
    "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)",
-   "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)",
-   "test(bi): recupera 8 catracas de \"não fabricar número para o vendedor\" (#371)",
-   "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)"
+   "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

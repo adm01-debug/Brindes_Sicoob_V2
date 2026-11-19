@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ba02d4767079d5a924136b12e61dea92922306e2` (2026-11-19T10:09:01Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `4a462254950de4e3280bc66299f861b55b695d40` (2026-11-19T11:06:27Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4539 |
 | arquivos_codigo | 3130 |
-| linhas_codigo | 492269 |
+| linhas_codigo | 492286 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -326,7 +326,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `connections-auto-test` — tabelas: external_connections; chamada por 0 arquivo(s) do front, por SQL/cron
 - `connections-health-check` (verify_jwt=false) — tabelas: connection_test_history, external_connections, outbound_webhooks, secret_rotation_log, user_roles, workspace_notifications; chamada por 0 arquivo(s) do front, por SQL/cron
 - `connections-hub-audit` — tabelas: -; chamada por 1 arquivo(s) do front
-- `crm-db-bridge` — tabelas: companies, contact_emails, contact_phones, contacts, profiles, quotes, user_roles; chamada por 1 arquivo(s) do front
+- `crm-db-bridge` (verify_jwt=false) — tabelas: companies, contact_emails, contact_phones, contacts, profiles, quotes, user_roles; chamada por 1 arquivo(s) do front
 - `detect-new-device` — tabelas: device_login_notifications, user_known_devices, workspace_notifications; chamada por 1 arquivo(s) do front
 - `dropbox-list` — tabelas: -; chamada por 1 arquivo(s) do front
 - `e2e-auth-test` — tabelas: pa_budgets, postos_atendimento, profiles; chamada por 0 arquivo(s) do front — **ÓRFÃ**
@@ -444,7 +444,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Integrações externas
 - SDKs: ElevenLabs, Sentry, Supabase, react-query, zod
 - hosts mais citados: wa.me, cfmzkthhgliqelozlmwu.supabase.co, ai.gateway.lovable.dev, api.resend.com, simulacao.invalid, qa-sicoob-123.supabase.co, doufsxqlfjyuvxuezpln.supabase.co, test.supabase.co, api.supabase.com, hooks.slack.com, imagedelivery.net, portal.invalid, youtube.com, api.elevenlabs.io, api.ipify.org
-- webhooks recebidos: cleanup-notifications, collections-watcher, comparison-price-watcher, connections-health-check, expert-chat, external-db-bridge, favorites-watcher, health-check, migrate-helper, monthly-health-report, ownership-audit, process-batch-export, process-queue, process-scheduled-reports, quote-approval, quote-followup-reminders, send-digest, send-notification, send-scheduled-reports, sicoob-approval-notifications, webhook-dispatcher
+- webhooks recebidos: cleanup-notifications, collections-watcher, comparison-price-watcher, connections-health-check, crm-db-bridge, expert-chat, external-db-bridge, favorites-watcher, health-check, migrate-helper, monthly-health-report, ownership-audit, process-batch-export, process-queue, process-scheduled-reports, quote-approval, quote-followup-reminders, send-digest, send-notification, send-scheduled-reports, sicoob-approval-notifications, webhook-dispatcher
 - env de integração (só nomes): BITRIX24_WEBHOOK_URL, BI_SHARE_SECRET, CNPJA_API_KEY, DROPBOX_ACCESS_TOKEN, E2E_CLEANUP_TOKEN, ELEVENLABS_API_KEY, LOVABLE_API_KEY, N8N_QUOTE_WEBHOOK_URL, QUOTE_SYNC_API_KEY, RESEND_API_KEY, SALESPRO_WEBHOOK_URL, SICOOB_APPROVAL_WORKER_SECRET, SICOOB_MALWARE_SCANNER_TOKEN, VIRUSTOTAL_API_KEY, VITE_SENTRY_DSN
 
 ## Permissões / papéis
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29657 nós · 54435 arestas · 2128 comunidades · grafo do commit `ba02d476`
+- 29657 nós · 54435 arestas · 2128 comunidades · grafo do commit `4a462254`
 - comunidades maiores: ref_components (325), ref_lib (322), react (319), ref_hooks (245), getCorsHeaders (215), react-router-dom (198), postgres_ready.py (149), ref_contexts (137), external-db-bridge/index.ts (137), ref_node_fs (130), Validação do plano — sessão 2026-09-14 (129), ref_services (127)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (44)
-- docs/correcoes-validacao-2026-09-14.md (43)
+- docs/plano-melhorias-50-etapas.md (42)
+- docs/correcoes-validacao-2026-09-14.md (41)
 - package.json (22)
 - PENDENCIAS.md (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -490,8 +490,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/e2e.yml (16)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (15)
+- .github/workflows/deploy-sicoob-functions.yml (13)
 - src/services/QuoteService.ts (13)
-- .github/workflows/bundle-check.yml (12)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -694,6 +694,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `4a46225` ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)
+- 2026-11-19 `fe8090b` chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)
 - 2026-11-19 `ba02d47` test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)
 - 2026-11-19 `1fc8d0f` docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)
 - 2026-11-19 `fff15ba` test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)
@@ -707,8 +709,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `c19e38a` docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)
 - 2026-11-19 `70956c7` fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)
 - 2026-11-19 `202a19c` docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)
-- 2026-11-19 `a5b6fcc` fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)
-- 2026-11-19 `7ec2508` fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

@@ -1851,6 +1851,7 @@
    "collections-watcher",
    "comparison-price-watcher",
    "connections-health-check",
+   "crm-db-bridge",
    "expert-chat",
    "external-db-bridge",
    "favorites-watcher",

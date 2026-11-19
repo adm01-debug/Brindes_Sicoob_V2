@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ba02d47670` · branch `main` · 2026-11-19 10:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4a46225495` · branch `main` · 2026-11-19 11:07 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6961 testes em 697 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6962 testes em 697 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5909,6 +5909,7 @@ _nenhum item encontrado_
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
 | `tests/p0/edge-functions-failing.test.ts` | 10 | P0 — Edge Functions críticas · full-op-diagnostics: autentica e produz exatamente os quatro checks declarados · crm-db-bridge: converte ausência do módulo opcional em leitura vazia estável · crm-db-bridge: impede escrita quando o módulo opcional não está disponível … |
 | `tests/scripts/verifier-arguments.test.ts` | 10 | check-price-freshness-coverage — tolerância · COVERAGE_TOLERANCE_PP=%j é recusado (exit 2) · valor válido passa da validação (falha depois, por falta do coverage-summary) · check-edge-functions-health — --timeout … |
+| `tests/scripts/verify-supabase-functions-published.test.ts` | 10 | verifyPublishedFunctions · aceita função inalterada quando o deploy informa que não havia mudanças · aceita função recém-publicada com versão maior · rejeita função ausente na lista atual … |
 | `tests/security/portal-access-policy.test.ts` | 10 | política de acesso privilegiado do portal · falha fechado quando o usuário não possui papel · avalia todos os papéis sem permitir que vendedor amplie o acesso · nega CRM e clientId para vendedor … |
 | `tests/utils/price-freshness-timezone.test.ts` | 10 | getPriceFreshness — robustez de timezone · instante 23h atrás escrito em qualquer fuso ainda é  · instante de %i dias atrás produz o mesmo label em todos os fusos · singular  … |
 | `tests/utils/price-freshness.test.ts` | 10 | getPriceFreshness · returns  · returns  · returns  … |
@@ -5937,7 +5938,6 @@ _nenhum item encontrado_
 | `tests/p0/external-integrations.test.ts` | 9 | P0 — integrações externas · catálogo: mantém referências já obtidas disponíveis no cache local · catálogo: sinaliza indisponibilidade confirmada sem tratar falha como lista vazia · consulta CNPJ: valida entrada, autentica e usa fetch externo com timeout/circuit breaker … |
 | `tests/rls/personas.test.ts` | 9 | cannot SELECT quotes · cannot SELECT user_roles · cannot SELECT login_attempts · logs in … |
 | `tests/scripts/rules-rotina-diff.test.ts` | 9 | rules/diff — comparação entre execuções · detecta novos e resolvidos · primeira execução não tem base: nada novo nem resolvido · regra que ERROU hoje não vira  … |
-| `tests/scripts/verify-supabase-functions-published.test.ts` | 9 | verifyPublishedFunctions · aceita função inalterada quando o deploy informa que não havia mudanças · aceita função recém-publicada com versão maior · rejeita função ausente na lista atual … |
 | `tests/stores/useComparisonStore.test.ts` | 9 | useComparisonStore — variant selection · stores variant when adding to compare · persists variant to localStorage · retrieves variant via getCompareVariant … |
 | `tests/stores/useFavoritesStore.test.ts` | 9 | useFavoritesStore — variant selection · stores variant info when adding favorite · persists variant info to localStorage · retrieves variant info via getFavoriteVariant … |
 | `tests/utils/format.test.ts` | 9 | formatCurrency · formats zero · formats a positive value · formats a negative value … |

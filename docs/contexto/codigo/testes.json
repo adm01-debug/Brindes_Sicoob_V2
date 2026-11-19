@@ -6909,11 +6909,11 @@
   {
    "arquivo": "tests/scripts/verify-supabase-functions-published.test.ts",
    "tipo": "unit",
-   "linhas": 107,
+   "linhas": 119,
    "testa": [
     "scripts/ci/verify-supabase-functions-published.mjs"
    ],
-   "casos": 8
+   "casos": 9
   },
   {
    "arquivo": "tests/search/GlobalSearchHelpers.test.tsx",

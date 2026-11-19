@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ba02d47670` · branch `main` · 2026-11-19 10:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4a46225495` · branch `main` · 2026-11-19 11:07 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -796,6 +796,7 @@
 
 - `expert-chat`
 - `external-db-bridge`
+- `crm-db-bridge`
 - `migrate-helper`
 - `sicoob-approval-notifications`
 - `quote-approval`

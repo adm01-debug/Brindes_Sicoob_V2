@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ba02d4767079d5a924136b12e61dea92922306e2",
+  "commit": "4a462254950de4e3280bc66299f861b55b695d40",
   "branch": "main",
-  "data_commit": "2026-11-19T10:09:01Z",
+  "data_commit": "2026-11-19T11:06:27Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "4a46225",
+    "data": "2026-11-19",
+    "assunto": "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)"
+   },
+   {
+    "sha": "fe8090b",
+    "data": "2026-11-19",
+    "assunto": "chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)"
+   },
    {
     "sha": "ba02d47",
     "data": "2026-11-19",
@@ -121,16 +131,6 @@
     "sha": "116bb44",
     "data": "2026-11-19",
     "assunto": "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)"
-   },
-   {
-    "sha": "34095f4",
-    "data": "2026-11-19",
-    "assunto": "fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)"
-   },
-   {
-    "sha": "f82acc3",
-    "data": "2026-11-19",
-    "assunto": "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)"
    }
   ],
   "arquivos_mudados_7d": 626,
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 38
+    "mudancas": 39
    },
    {
     "pasta": "docs/externo/analises-20261007",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 44
+    "mudancas": 42
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 43
+    "mudancas": 41
    },
    {
     "arquivo": "package.json",
@@ -250,6 +250,10 @@
     "mudancas": 15
    },
    {
+    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
+    "mudancas": 13
+   },
+   {
     "arquivo": "src/services/QuoteService.ts",
     "mudancas": 13
    },
@@ -258,15 +262,15 @@
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 12
-   },
-   {
     "arquivo": ".github/workflows/security-compliance.yml",
     "mudancas": 11
    },
    {
     "arquivo": "docs/execucao/validacao-do-plano.md",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "supabase/config.toml",
     "mudancas": 11
    },
    {
@@ -286,33 +290,29 @@
     "mudancas": 10
    },
    {
-    "arquivo": "supabase/config.toml",
+    "arquivo": "supabase/functions/_shared/edge-authz-manifest.ts",
     "mudancas": 10
    },
    {
     "arquivo": ".github/workflows/db-performance-audit.yml",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "docs/README.md",
     "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 177
+    "commits": 178
    },
    {
     "autor": "dependabot[bot]",
-    "commits": 12
+    "commits": 13
    }
   ]
  },
  "contagens": {
   "arquivos_total": 4539,
   "arquivos_codigo": 3130,
-  "linhas_codigo": 492269,
+  "linhas_codigo": 492286,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -840,7 +840,7 @@
   },
   "supabase/functions": {
    "arquivos": 216,
-   "linhas": 34915
+   "linhas": 34920
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 33,
-   "linhas": 3172
+   "linhas": 3184
   },
   "tests/search": {
    "arquivos": 1,
