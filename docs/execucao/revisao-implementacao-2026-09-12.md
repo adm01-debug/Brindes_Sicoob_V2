@@ -80,7 +80,7 @@ As seis primeiras usam PostgreSQL 16 descartável, sem rede, fixture mínima e q
 
 S07–S09 executam módulos reais com dependências simuladas. S07 não prova que a interface normal permita criar linhas duplicadas; testa a robustez do contrato recebido pelo hook. S08 simula resposta sem linha atualizada. S09 exercita a remoção de chave usada no logout, sem simular toda a sessão. Todos esses limites acompanham os resultados.
 
-[Evidência SQL](revisao-implementacao-2026-09-12/simulacoes.json), [executor SQL](../../scripts/revisao/simular-pendencias-2026-09-12.py), [evidência dos testes dirigidos](revisao-implementacao-2026-09-12/testes-dirigidos.json) e [reproduções em hooks/store](../../scripts/revisao/pendencias-2026-09-12.cenarios.tsx). O sucesso desses nove casos significa **falha reproduzida**, não produto aprovado. No mesmo lote, **37 testes de regressão das correções existentes passaram**.
+[Evidência SQL](revisao-implementacao-2026-09-12/simulacoes.json), [executor SQL](../../scripts/revisao/simular-pendencias-2026-09-12.py), [evidência dos testes dirigidos](revisao-implementacao-2026-09-12/testes-dirigidos.json) e [reproduções em hooks/store](../../scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx). O sucesso desses nove casos significa **falha reproduzida**, não produto aprovado. No mesmo lote, **37 testes de regressão das correções existentes passaram**.
 
 As reproduções históricas ficam fora da suíte normal do produto; executam apenas pela [configuração explícita de auditoria](../../scripts/revisao/vitest-pendencias-2026-09-12.config.ts). O JSON registra o comando utilizado. Isso evita incorporar expectativas de comportamento incorreto ao gate regular de aprovação.
 

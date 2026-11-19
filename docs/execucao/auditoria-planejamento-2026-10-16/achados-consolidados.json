@@ -1,0 +1,1941 @@
+[
+  {
+    "id": "G01",
+    "prioridade": "P0",
+    "titulo": "Isolamento e autoridade sobre verbas",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "migration aplicada e simulação regressiva aprovada",
+    "etapas": [
+      "T024",
+      "T056",
+      "T057",
+      "T087",
+      "T095"
+    ],
+    "origens_historicas": [
+      "SIC-021",
+      "SIC-023",
+      "PLA-X03",
+      "DB-19",
+      "SIC-140"
+    ],
+    "diagnostico": "A autoridade de verbas foi endurecida, a migration 20261013115605 consta no ledger canônico e a prova isolada registrou 34/34 asserções aprovadas.",
+    "o_que_falta": "Executar a jornada autenticada conectada com duas cooperativas e registrar aceite operacional antes de considerar pronto.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "docs/execucao/evidencias/autoridade-verbas-sicoob.json",
+      "docs/execucao/implementacao-p0-identidade-verbas-orcamentos-20261013.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G02",
+    "prioridade": "P0",
+    "titulo": "Conversão de orçamento em pedido",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "migration aplicada e 31 cenários regressivos aprovados",
+    "etapas": [
+      "T032",
+      "T038",
+      "T039",
+      "T040"
+    ],
+    "origens_historicas": [
+      "SIC-040",
+      "PLA-T038"
+    ],
+    "diagnostico": "Conversão, guardas e escritores foram compatibilizados pela migration 20261013120512, presente no ledger canônico.",
+    "o_que_falta": "Homologar conversão conectada com concorrência, repetição e falha intermediária no ambiente alvo.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-conversao-pedido-sicoob.py",
+      "docs/execucao/evidencias/governanca-orcamento-p0-20261013.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G03",
+    "prioridade": "P0",
+    "titulo": "Resposta de aprovação pública e chave de evidência",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "migration aplicada e 68 cenários regressivos aprovados",
+    "etapas": [
+      "T032",
+      "T040",
+      "T053",
+      "T095"
+    ],
+    "origens_historicas": [
+      "SIC-060",
+      "DB-12",
+      "EDG-29"
+    ],
+    "diagnostico": "Aprovação pública, evidência HMAC, locks e rollback foram endurecidos; a migration 20261013120512 está aplicada no canônico.",
+    "o_que_falta": "Homologar o fluxo público completo, rotação de chave e entrega do documento com credenciais do ambiente alvo.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-aprovacao-publica.py",
+      "docs/execucao/evidencias/governanca-orcamento-p0-20261013.json",
+      "docs/secrets.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G04",
+    "prioridade": "P0",
+    "titulo": "Congelamento de itens e preços após aprovação",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "migration aplicada, trigger de governança e regressões aprovadas",
+    "etapas": [
+      "T024",
+      "T036",
+      "T037",
+      "T052",
+      "T072"
+    ],
+    "origens_historicas": [
+      "SIC-041",
+      "SIC-053",
+      "PLA-T037",
+      "FE-081",
+      "FE-090",
+      "QA-08"
+    ],
+    "diagnostico": "Conteúdo comercial, itens e personalizações passam a ser imutáveis após envio/decisão; salvamento atômico permanece sujeito a RLS.",
+    "o_que_falta": "Homologar a edição, rejeição, revisão e nova aprovação por papéis reais no ambiente de construção.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+      "scripts/qa/simular-salvamento-orcamento-atomico.py",
+      "docs/execucao/evidencias/governanca-orcamento-p0-20261013.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G05",
+    "prioridade": "P0",
+    "titulo": "Confirmação de e-mail por UUID",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "função remota ACTIVE v8 com verify_jwt=true e handler local inerte",
+    "etapas": [
+      "T025",
+      "T030",
+      "T095"
+    ],
+    "origens_historicas": [
+      "EDG-32"
+    ],
+    "diagnostico": "O endpoint alternativo não confirma conta por UUID; o gateway exige JWT e o handler orienta o fluxo padrão do Supabase Auth.",
+    "o_que_falta": "Executar teste conectado de expiração/replay pelo fluxo padrão de confirmação e registrar aceite de Auth.",
+    "evidencias_atuais": [
+      "supabase/functions/verify-email/index.ts",
+      "supabase/config.toml",
+      "docs/execucao/implementacao-p0-identidade-verbas-orcamentos-20261013.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G06",
+    "prioridade": "P0",
+    "titulo": "Ingestão segura de documentos e arte",
+    "estado": "ABERTO_P0_CONFIGURACAO_AUSENTE",
+    "nivel_prova": "código, schema e banco canônico consultados em modo somente leitura",
+    "etapas": [
+      "T072",
+      "T074",
+      "T075",
+      "T080"
+    ],
+    "origens_historicas": [
+      "PLA-T075",
+      "PLC-40",
+      "EDG-28",
+      "EDG-34",
+      "SIC-072",
+      "SIC-100",
+      "ADM-23"
+    ],
+    "diagnostico": "A quarentena, o registro, buckets privados e a Edge Function existem, mas o banco canônico não contém os nomes SICOOB_MALWARE_SCANNER_URL/TOKEN. O fluxo falha fechado sem scanner. Uploads de arte ainda precisam ser reconciliados com o mesmo veredito vinculado ao hash.",
+    "o_que_falta": "Provisionar scanner real e credenciais no runtime; unificar arte/documentos na quarentena; testar malware, timeout, veredito inconclusivo, escopo, hash e compensação antes de liberar upload.",
+    "evidencias_atuais": [
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts",
+      "supabase/functions/sicoob-document-ingest/inspection.ts",
+      "supabase/migrations/20260922225600_sicoob_document_quarantine_gate.sql",
+      "src/services/sicoob/documentIngestService.ts",
+      "docs/secrets.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G07",
+    "prioridade": "P1",
+    "titulo": "Realtime de dados do negócio",
+    "estado": "ABERTO_SEM_PUBLICACAO_REALTIME",
+    "nivel_prova": "consulta canônica somente leitura em 16/10/2026",
+    "etapas": [
+      "T030",
+      "T047",
+      "T067",
+      "T084"
+    ],
+    "origens_historicas": [
+      "DB-25",
+      "SIC-048"
+    ],
+    "diagnostico": "A publicação supabase_realtime permanece com zero tabelas e puballtables=false, apesar de existirem consumidores de mudanças no frontend.",
+    "o_que_falta": "Publicar somente as tabelas necessárias, validar RLS e testar isolamento entre duas sessões e duas organizações.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitsRealtime.ts",
+      "src/services/sicoob/commonService.ts",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G08",
+    "prioridade": "P1",
+    "titulo": "Agendamento e reconciliação do worker de aprovação",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "migration aplicada, ledger por SHA-256 e contrato remoto validados em 16/10/2026",
+    "etapas": [
+      "T047",
+      "T048",
+      "T049",
+      "T050"
+    ],
+    "origens_historicas": [
+      "PLC-29",
+      "SIC-112",
+      "EDG-21"
+    ],
+    "diagnostico": "A migration 20261015102000 removeu a unicidade global incompatível com a reciclagem do pg_net, criou o índice parcial da fila e correlaciona a resposta ao disparo pendente mais recente.",
+    "o_que_falta": "Observar a janela operacional do cron e tratar separadamente eventuais falhas de startup do scheduler; a duplicidade de request_id está corrigida no contrato canônico.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      "scripts/db/apply-sicoob-migrations.mjs",
+      "docs/execucao/correcao-worker-aprovacoes-pgnet-2026-10-15.md",
+      "docs/OBSERVABILITY.md"
+    ],
+    "base_codigo": "0e1fc9ebad2d638a4198de354a3604d278ce6ec8",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G09",
+    "prioridade": "P1",
+    "titulo": "E-mail transacional e demais canais",
+    "estado": "ABERTO_PROVEDOR_NAO_HOMOLOGADO",
+    "nivel_prova": "código e inventário vigente; entrega real não certificada",
+    "etapas": [
+      "T046",
+      "T048",
+      "T050",
+      "T051"
+    ],
+    "origens_historicas": [
+      "FE-086",
+      "DOC-27",
+      "DOC-28",
+      "EDG-20",
+      "EDG-21",
+      "EDG-22",
+      "EDG-23",
+      "DB-22",
+      "PLC-41",
+      "PLB-50",
+      "ADM-27",
+      "ADM-28",
+      "SIC-110",
+      "SIC-111",
+      "SIC-113",
+      "SIC-114",
+      "DB-17",
+      "DB-23",
+      "DB-24"
+    ],
+    "diagnostico": "O transporte e a outbox existem, mas não há evidência vigente de entrega transacional ponta a ponta por todos os canais anunciados.",
+    "o_que_falta": "Configurar provedor autorizado, destinatários de teste, recibos, retry e alertas; homologar e-mail de negócio separadamente de Auth.",
+    "evidencias_atuais": [
+      "supabase/functions/send-transactional-email/index.ts",
+      "supabase/functions/_shared/approval-delivery.ts",
+      "docs/secrets.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G10",
+    "prioridade": "P1",
+    "titulo": "Acesso ao detalhe completo da proposta",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T038",
+      "T040",
+      "T060"
+    ],
+    "origens_historicas": [
+      "FE-001",
+      "DOC-01",
+      "FE-002",
+      "FE-003",
+      "DOC-02",
+      "PLB-31",
+      "DB-11",
+      "FE-080",
+      "FE-083",
+      "FE-085"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/routes/config/quotes.ts",
+      "src/pages/QuoteDetailPage.tsx",
+      "src/pages/QuoteViewPage.tsx",
+      "src/components/quotes/QuoteRowQuickActions.tsx",
+      "src/components/products/ProductCategoryBadges.tsx"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G11",
+    "prioridade": "P1",
+    "titulo": "Filtros que a interface anuncia mas não aplica",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T059",
+      "T060"
+    ],
+    "origens_historicas": [
+      "FE-020",
+      "FE-021",
+      "FE-022",
+      "DOC-09"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/pages/filters/filters-page-helpers.ts",
+      "src/hooks/useCatalogFiltering.ts",
+      "src/hooks/useAdvancedFilters.ts"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G12",
+    "prioridade": "P1",
+    "titulo": "Seleção comercial perdida entre módulos",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T038",
+      "T060",
+      "T061",
+      "T069"
+    ],
+    "origens_historicas": [
+      "FE-060",
+      "FE-087",
+      "ADM-38",
+      "FE-131"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/bi/ConfirmQuoteSuggestionsModal.tsx"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G13",
+    "prioridade": "P1",
+    "titulo": "Persistência de kit pronto",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T066",
+      "T067",
+      "T070"
+    ],
+    "origens_historicas": [
+      "FE-110",
+      "PLA-T067"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitPersistence.ts"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G14",
+    "prioridade": "P1",
+    "titulo": "Indicadores fictícios e modo de demonstração",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T089",
+      "T092"
+    ],
+    "origens_historicas": [
+      "FE-095",
+      "FE-100",
+      "FE-140",
+      "ADM-34",
+      "ADM-35",
+      "ADM-40",
+      "ADM-43",
+      "ADM-44",
+      "SIC-028",
+      "SIC-042",
+      "PLB-34",
+      "FE-030",
+      "FE-132",
+      "FE-142",
+      "FE-191",
+      "ADM-08",
+      "ADM-32",
+      "ADM-41",
+      "ADM-47",
+      "SIC-115"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/pages/GestorCompras.tsx",
+      "src/pages/trends/is-demo-mode.ts",
+      "src/hooks/bi/useClientBI.ts"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G15",
+    "prioridade": "P1",
+    "titulo": "Geração de mockups, IA e voz",
+    "estado": "ABERTO_DEPENDENCIA_EXTERNA",
+    "nivel_prova": "auditoria técnica de 16/10/2026",
+    "etapas": [
+      "T030",
+      "T073",
+      "T079"
+    ],
+    "origens_historicas": [
+      "EDG-01",
+      "EDG-02",
+      "EDG-51",
+      "FE-130",
+      "ADM-55",
+      "ADM-56",
+      "ADM-30",
+      "ADM-51",
+      "ADM-52",
+      "ADM-54",
+      "EDG-04",
+      "DOC-17"
+    ],
+    "diagnostico": "A chave LOVABLE_API_KEY segue ausente e o envio de dados de CRM ao provedor depende de decisão jurídica/DPO.",
+    "o_que_falta": "Provisionar o provedor aprovado, registrar DPA/base legal/opt-out e executar smoke real sem expor PII.",
+    "evidencias_atuais": [
+      "supabase/functions/expert-chat/index.ts",
+      "supabase/functions/trends-insights/index.ts",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      "docs/secrets.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G16",
+    "prioridade": "P1",
+    "titulo": "Políticas de compra, alçadas e comparação institucional",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T052",
+      "T053",
+      "T054",
+      "T055",
+      "T057"
+    ],
+    "origens_historicas": [
+      "SIC-026",
+      "SIC-054",
+      "SIC-061",
+      "SIC-062",
+      "SIC-063",
+      "SIC-064",
+      "PLB-30",
+      "PLB-36",
+      "PLB-56",
+      "PLB-35",
+      "PLB-37",
+      "FE-092",
+      "DB-16",
+      "SIC-044",
+      "SIC-141",
+      "PLA-X04",
+      "PLC-60"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G17",
+    "prioridade": "P1",
+    "titulo": "Ciclo financeiro da verba e competência",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T056",
+      "T087",
+      "T088",
+      "T090"
+    ],
+    "origens_historicas": [
+      "SIC-020",
+      "SIC-022",
+      "SIC-024",
+      "SIC-025",
+      "SIC-027",
+      "PLB-29",
+      "PLB-32",
+      "PLB-33"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G18",
+    "prioridade": "P1",
+    "titulo": "Autoridade da proposta: frete, tributos e prazo",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T037",
+      "T059",
+      "T065",
+      "T066"
+    ],
+    "origens_historicas": [
+      "PLB-01",
+      "PLB-02",
+      "PLB-04",
+      "PLB-09",
+      "PLB-10",
+      "PLB-11",
+      "PLB-58",
+      "FE-111",
+      "FE-120",
+      "DOC-08",
+      "DOC-24",
+      "PLB-12",
+      "PLC-65"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G19",
+    "prioridade": "P1",
+    "titulo": "Rascunhos, concorrência e sessão",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T033",
+      "T035",
+      "T041",
+      "T042",
+      "T043",
+      "T044",
+      "T045"
+    ],
+    "origens_historicas": [
+      "SIC-051",
+      "SIC-055",
+      "PLA-T033",
+      "PLA-T035",
+      "PLC-59",
+      "PLB-47",
+      "SIC-050",
+      "SIC-052"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G20",
+    "prioridade": "P1",
+    "titulo": "Embalagem física e previsão de kits",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T062",
+      "T063",
+      "T064",
+      "T065",
+      "T066",
+      "T070"
+    ],
+    "origens_historicas": [
+      "SIC-090",
+      "SIC-091",
+      "PLB-20",
+      "PLB-21",
+      "PLB-22",
+      "PLA-T063",
+      "PLA-T064",
+      "PLB-07",
+      "PLB-17",
+      "PLC-57",
+      "PLC-58",
+      "FE-112",
+      "ADM-16",
+      "ADM-48"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G21",
+    "prioridade": "P1",
+    "titulo": "Recompra com diferenças comerciais e arte",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T068",
+      "T069",
+      "T070",
+      "T072"
+    ],
+    "origens_historicas": [
+      "SIC-080",
+      "PLB-45",
+      "PLA-T068",
+      "PLA-T069"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G22",
+    "prioridade": "P1",
+    "titulo": "Arte, prova técnica e competência de marketing",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T071",
+      "T072",
+      "T073",
+      "T077",
+      "T080"
+    ],
+    "origens_historicas": [
+      "SIC-070",
+      "SIC-071",
+      "SIC-073",
+      "PLB-18",
+      "PLB-19",
+      "PLB-38",
+      "PLB-16",
+      "DOC-18",
+      "ADM-49",
+      "ADM-50"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G23",
+    "prioridade": "P1",
+    "titulo": "Storage, retenção e dossiê documental",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T074",
+      "T076",
+      "T077",
+      "T080",
+      "T095"
+    ],
+    "origens_historicas": [
+      "SIC-101",
+      "SIC-102",
+      "DB-18",
+      "DB-41",
+      "PLB-43",
+      "DOC-48"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G24",
+    "prioridade": "P1",
+    "titulo": "Distribuição, expedição parcial e importação de destinos",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T081",
+      "T082",
+      "T083",
+      "T090"
+    ],
+    "origens_historicas": [
+      "SIC-130",
+      "SIC-132",
+      "SIC-135",
+      "SIC-136",
+      "PLB-23",
+      "PLB-24",
+      "PLB-44",
+      "PLC-61",
+      "SIC-046",
+      "SIC-120"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G25",
+    "prioridade": "P1",
+    "titulo": "Rastreio, recebimento e ocorrências até a solução",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T084",
+      "T085",
+      "T090"
+    ],
+    "origens_historicas": [
+      "SIC-045",
+      "SIC-131",
+      "SIC-133",
+      "SIC-134",
+      "PLB-25",
+      "PLB-26",
+      "PLB-27",
+      "PLB-39",
+      "PLC-63",
+      "SIC-043",
+      "DB-13"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/order-workflow.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G26",
+    "prioridade": "P1",
+    "titulo": "Campanha institucional com cronograma regressivo",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T086",
+      "T090"
+    ],
+    "origens_historicas": [
+      "SIC-031",
+      "PLB-13",
+      "PLB-14",
+      "PLB-15",
+      "PLC-62"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/pages/admin/AdminCampanhasPage.tsx",
+      "src/routes/config/admin.ts",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G27",
+    "prioridade": "P1",
+    "titulo": "Hierarquia, identidade institucional e vínculos",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T024",
+      "T043",
+      "T051",
+      "T057",
+      "T092"
+    ],
+    "origens_historicas": [
+      "SIC-001",
+      "SIC-002",
+      "SIC-005",
+      "SIC-007",
+      "SIC-010",
+      "SIC-011",
+      "SIC-013",
+      "SIC-014",
+      "SIC-015",
+      "SIC-017",
+      "PLB-40",
+      "DOC-07",
+      "DB-29",
+      "DB-35",
+      "SIC-003",
+      "SIC-004",
+      "SIC-006"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G28",
+    "prioridade": "P1",
+    "titulo": "Convites e configuração de Auth por ambiente",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T005",
+      "T007",
+      "T043",
+      "T051",
+      "T095"
+    ],
+    "origens_historicas": [
+      "DOC-06",
+      "SIC-016",
+      "DOC-15",
+      "DOC-04",
+      "DOC-14",
+      "FE-160",
+      "ADM-21"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/adr/0004-closed-platform-policy.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G29",
+    "prioridade": "P1",
+    "titulo": "Catálogo mestre somente leitura e coerência administrativa",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T058",
+      "T059",
+      "T060"
+    ],
+    "origens_historicas": [
+      "PLA-X01",
+      "PLC-47",
+      "EDG-05",
+      "ADM-02",
+      "DOC-20",
+      "PLB-59",
+      "SIC-033",
+      "PLC-46",
+      "EDG-06"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "supabase/functions/external-db-bridge/index.ts",
+      "supabase/functions/_shared/external-read-only.ts",
+      "src/hooks/useProductRegistration.ts"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G30",
+    "prioridade": "P2",
+    "titulo": "Descoberta, comparação, curadoria e histórico de catálogo",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T059",
+      "T060",
+      "T061",
+      "T092"
+    ],
+    "origens_historicas": [
+      "FE-031",
+      "FE-040",
+      "FE-042",
+      "FE-050",
+      "FE-061",
+      "FE-070",
+      "PLB-03",
+      "PLB-05",
+      "PLB-06",
+      "PLB-08",
+      "SIC-030",
+      "DOC-19",
+      "FE-032",
+      "FE-043",
+      "FE-062",
+      "FE-194",
+      "DB-08"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G31",
+    "prioridade": "P2",
+    "titulo": "Páginas administrativas e funcionalidades inacessíveis",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T053",
+      "T061",
+      "T089",
+      "T092"
+    ],
+    "origens_historicas": [
+      "ADM-01",
+      "ADM-03",
+      "ADM-04",
+      "ADM-05",
+      "ADM-06",
+      "ADM-07",
+      "ADM-09",
+      "ADM-10",
+      "ADM-11",
+      "FE-004",
+      "FE-009",
+      "FE-016",
+      "PLC-49",
+      "PLC-50",
+      "PLC-51",
+      "FE-005",
+      "FE-006",
+      "FE-093",
+      "FE-096",
+      "FE-097",
+      "FE-193",
+      "ADM-12",
+      "ADM-14",
+      "ADM-33",
+      "ADM-57",
+      "SIC-029",
+      "SIC-047",
+      "PLA-X02",
+      "PLA-D10"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/routes/config/admin.ts",
+      "src/routes/config/dev.ts"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G32",
+    "prioridade": "P2",
+    "titulo": "Minha conta, ajuda, onboarding e navegação móvel",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T043",
+      "T060",
+      "T091",
+      "T092",
+      "T093"
+    ],
+    "origens_historicas": [
+      "FE-008",
+      "FE-010",
+      "FE-011",
+      "FE-012",
+      "FE-013",
+      "FE-015",
+      "FE-171",
+      "FE-172",
+      "FE-173",
+      "DOC-52",
+      "PLB-28",
+      "PLB-46",
+      "PLB-48",
+      "PLB-49",
+      "FE-007",
+      "FE-041",
+      "FE-091",
+      "ADM-15"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G33",
+    "prioridade": "P2",
+    "titulo": "BI, metas e dossiê do cliente",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T061",
+      "T077",
+      "T089"
+    ],
+    "origens_historicas": [
+      "DOC-11",
+      "DOC-12",
+      "DOC-21",
+      "ADM-36",
+      "ADM-37",
+      "ADM-39",
+      "ADM-42",
+      "ADM-45",
+      "FE-143",
+      "DOC-03",
+      "FE-082",
+      "FE-121",
+      "FE-141",
+      "FE-192",
+      "ADM-46",
+      "EDG-38",
+      "SIC-121",
+      "SIC-123",
+      "PLB-51"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/hooks/bi/useClientBI.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G34",
+    "prioridade": "P2",
+    "titulo": "Magic Up colaborativo e construtores de workflow",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T078",
+      "T079"
+    ],
+    "origens_historicas": [
+      "ADM-31",
+      "ADM-53",
+      "DB-36",
+      "PLC-52",
+      "PLA-D09",
+      "ADM-19",
+      "ADM-26",
+      "ADM-29",
+      "DOC-37",
+      "FE-180"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/decisoes_pendentes.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G35",
+    "prioridade": "P1",
+    "titulo": "Webhooks, eventos e reconciliação externa",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T047",
+      "T049",
+      "T079"
+    ],
+    "origens_historicas": [
+      "EDG-15",
+      "EDG-16",
+      "EDG-17",
+      "EDG-18",
+      "EDG-19",
+      "PLC-45",
+      "DB-38",
+      "ADM-25"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/OBSERVABILITY.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G36",
+    "prioridade": "P2",
+    "titulo": "Rotinas periódicas de negócio",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T048",
+      "T049",
+      "T065",
+      "T089"
+    ],
+    "origens_historicas": [
+      "EDG-24",
+      "EDG-25",
+      "EDG-41",
+      "DB-40",
+      "FE-061",
+      "FE-151",
+      "DOC-29",
+      "DOC-34",
+      "DOC-25",
+      "DB-37",
+      "EDG-26",
+      "SIC-056"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G37",
+    "prioridade": "P1",
+    "titulo": "Autorização, limites e observabilidade das Edge Functions",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T025",
+      "T030",
+      "T095"
+    ],
+    "origens_historicas": [
+      "EDG-03",
+      "EDG-11",
+      "EDG-27",
+      "EDG-39",
+      "EDG-40",
+      "PLC-36",
+      "PLC-38",
+      "EDG-08",
+      "EDG-09",
+      "EDG-14",
+      "EDG-35",
+      "EDG-37",
+      "EDG-54",
+      "PLA-D03"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G38",
+    "prioridade": "P1",
+    "titulo": "Paridade de migrations e baseline",
+    "estado": "PARCIAL_BASELINE_CONTROLADA",
+    "nivel_prova": "gate de ledger validou 37 artefatos autorizados",
+    "etapas": [
+      "T021",
+      "T022",
+      "T023",
+      "T027",
+      "T028",
+      "T029",
+      "T030"
+    ],
+    "origens_historicas": [
+      "DB-01",
+      "DB-03",
+      "PLC-24",
+      "PLA-T022",
+      "PLC-19",
+      "PLC-25",
+      "PLC-28",
+      "DOC-45",
+      "PLA-X05",
+      "PLA-T006"
+    ],
+    "diagnostico": "O gate atual valida hashes da allowlist e as migrations recentes constam no ledger, mas o passivo histórico continua exigindo reconciliação por efeito.",
+    "o_que_falta": "Reconciliar divergências históricas por efeito sem reaplicar migrations ou forjar registros de ledger.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G39",
+    "prioridade": "P1",
+    "titulo": "Qualidade dos testes e cobertura funcional",
+    "estado": "PARCIAL_REGRESSAO_VERDE_COM_SKIPS",
+    "nivel_prova": "Vitest 6.122 aprovados e Playwright focal 11/11",
+    "etapas": [
+      "T012",
+      "T014",
+      "T018",
+      "T024",
+      "T096"
+    ],
+    "origens_historicas": [
+      "QA-01",
+      "QA-02",
+      "QA-03",
+      "QA-09",
+      "QA-12",
+      "QA-13",
+      "QA-14",
+      "QA-15",
+      "QA-18",
+      "QA-51",
+      "PLC-15",
+      "PLC-16",
+      "PLC-17",
+      "QA-05",
+      "QA-06",
+      "QA-10",
+      "QA-19",
+      "QA-21",
+      "QA-23",
+      "QA-49",
+      "QA-07",
+      "DOC-57",
+      "EDG-56",
+      "SIC-012",
+      "DB-32",
+      "DB-33"
+    ],
+    "diagnostico": "A suíte, TypeScript, lint e build passaram no SHA de referência, mas 27 skips críticos históricos, incluindo cenários P0, continuam bloqueando certificação integral.",
+    "o_que_falta": "Implementar e ativar os cenários críticos ignorados e executar a jornada autenticada completa.",
+    "evidencias_atuais": [
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      "docs/E2E_SMOKE_COVERAGE.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G40",
+    "prioridade": "P1",
+    "titulo": "Proteção de main e publicação",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T012",
+      "T019",
+      "T097"
+    ],
+    "origens_historicas": [
+      "PLC-02",
+      "QA-56",
+      "QA-57",
+      "QA-59",
+      "DOC-38",
+      "PLC-03",
+      "QA-38",
+      "QA-58",
+      "PLA-D11"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      ".github/workflows/branch-protection-sentinel.yml"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G41",
+    "prioridade": "P1",
+    "titulo": "CI autenticada e isolamento de homologação",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T005",
+      "T011",
+      "T015",
+      "T018",
+      "T096"
+    ],
+    "origens_historicas": [
+      "PLC-01",
+      "QA-11",
+      "QA-16",
+      "QA-17",
+      "QA-20",
+      "QA-31",
+      "PLC-04",
+      "PLC-07",
+      "PLC-26",
+      "PLC-30",
+      "QA-04",
+      "QA-39",
+      "QA-54",
+      "QA-60",
+      "EDG-31",
+      "FE-162"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      ".github/workflows/e2e.yml"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G42",
+    "prioridade": "P2",
+    "titulo": "Pipeline, supply chain e reprodutibilidade",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T015",
+      "T016",
+      "T017",
+      "T020",
+      "T027",
+      "T030"
+    ],
+    "origens_historicas": [
+      "PLC-05",
+      "PLC-06",
+      "PLC-09",
+      "QA-35",
+      "QA-40",
+      "QA-42",
+      "QA-44",
+      "EDG-30",
+      "EDG-53",
+      "EDG-55",
+      "PLC-32",
+      "QA-26",
+      "QA-41"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G43",
+    "prioridade": "P1",
+    "titulo": "Domínio publicado, cabeçalhos e exposição de relatórios",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T016",
+      "T095",
+      "T097"
+    ],
+    "origens_historicas": [
+      "PLC-39",
+      "QA-33",
+      "QA-30",
+      "FE-170",
+      "QA-32"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "vercel.json",
+      "public/reports/AUDIT_REPORT_20a6b98b1.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G44",
+    "prioridade": "P2",
+    "titulo": "PWA, offline e push real",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T045",
+      "T048",
+      "T092",
+      "T093"
+    ],
+    "origens_historicas": [
+      "FE-150",
+      "FE-170",
+      "QA-28",
+      "QA-29",
+      "QA-30",
+      "DOC-23",
+      "DOC-51",
+      "ADM-22"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "src/components/layout/Header.tsx",
+      "public/sw.js",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G45",
+    "prioridade": "P1",
+    "titulo": "Alertas operacionais, observabilidade e suporte",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T020",
+      "T049",
+      "T089",
+      "T094",
+      "T095",
+      "T098"
+    ],
+    "origens_historicas": [
+      "DOC-30",
+      "DOC-31",
+      "DOC-32",
+      "DOC-33",
+      "EDG-43",
+      "EDG-44",
+      "EDG-46",
+      "EDG-47",
+      "QA-61",
+      "QA-63",
+      "QA-64",
+      "PLC-10",
+      "PLC-31",
+      "PLC-34",
+      "PLC-35",
+      "FE-181",
+      "EDG-42",
+      "EDG-45",
+      "EDG-48",
+      "QA-43",
+      "QA-62",
+      "DB-28",
+      "PLA-D04"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/10-testes-ci-infra.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G46",
+    "prioridade": "P1",
+    "titulo": "Backup, restauração e recuperação",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T008",
+      "T028",
+      "T098"
+    ],
+    "origens_historicas": [
+      "PLC-27",
+      "DOC-35",
+      "QA-65",
+      "QA-66"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/DR.md",
+      "docs/RUNBOOK.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G47",
+    "prioridade": "P1",
+    "titulo": "Privacidade, auditoria de acesso e credenciais",
+    "estado": "ABERTO_DECISAO_PRIVACIDADE",
+    "nivel_prova": "auditoria técnica e dependência jurídica declarada",
+    "etapas": [
+      "T007",
+      "T076",
+      "T095",
+      "T098"
+    ],
+    "origens_historicas": [
+      "PLB-63",
+      "DB-26",
+      "DB-31",
+      "DB-41",
+      "PLC-33",
+      "QA-37",
+      "DOC-39",
+      "DOC-41",
+      "DOC-42",
+      "DOC-40",
+      "FE-182",
+      "QA-34",
+      "QA-36"
+    ],
+    "diagnostico": "A minimização técnica de dados em IA foi reforçada, mas o uso de CRM por provedor externo ainda depende de DPA, base legal, subprocessadores, opt-out e transferência internacional.",
+    "o_que_falta": "Registrar decisão de DPO/jurídico e homologar o tratamento aprovado com evidência de minimização e auditoria.",
+    "evidencias_atuais": [
+      "supabase/functions/_shared/assistant-context.ts",
+      "supabase/functions/_shared/pii-redaction.test.ts",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      "docs/SECURITY.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G48",
+    "prioridade": "P2",
+    "titulo": "Qualidade visual e acessibilidade da jornada real",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T091",
+      "T092",
+      "T093",
+      "T094"
+    ],
+    "origens_historicas": [
+      "PLB-53",
+      "PLB-54",
+      "PLB-57",
+      "SIC-032",
+      "PLA-T092",
+      "PLA-T093",
+      "PLA-T094",
+      "PLB-52",
+      "PLC-08",
+      "QA-24",
+      "QA-25",
+      "QA-27",
+      "PLC-37"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/evidencias/visual",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "docs/ACCESSIBILITY.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G49",
+    "prioridade": "P2",
+    "titulo": "Pós-venda e integração financeira externa",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T079",
+      "T085",
+      "T088",
+      "T090"
+    ],
+    "origens_historicas": [
+      "PLC-43",
+      "PLC-44",
+      "PLB-41",
+      "PLB-42",
+      "PLB-61",
+      "SIC-122",
+      "FE-190",
+      "EDG-36"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/03-planos-melhorias-correcoes.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G50",
+    "prioridade": "P2",
+    "titulo": "Conflitos de escopo: Bitrix, passkeys, white-label e legado",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T004",
+      "T051",
+      "T078",
+      "T079",
+      "T100"
+    ],
+    "origens_historicas": [
+      "DOC-13",
+      "DOC-16",
+      "DOC-22",
+      "DOC-44",
+      "DOC-56",
+      "PLA-D01",
+      "PLA-D06",
+      "PLA-D07",
+      "PLA-D08",
+      "PLA-D09",
+      "DOC-05",
+      "FE-084",
+      "FE-051",
+      "FE-161",
+      "FE-195",
+      "ADM-18",
+      "ADM-20",
+      "ADM-24",
+      "EDG-10",
+      "EDG-12",
+      "EDG-13",
+      "EDG-33",
+      "EDG-50",
+      "DB-15",
+      "DB-30",
+      "PLC-42",
+      "PLC-48",
+      "PLC-53",
+      "PLC-54"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md",
+      "docs/adr/0008-unified-soft-delete-policy.md",
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G51",
+    "prioridade": "P1",
+    "titulo": "Plano, responsáveis e evidências de encerramento",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T001",
+      "T003",
+      "T004",
+      "T009",
+      "T100"
+    ],
+    "origens_historicas": [
+      "PLA-T003",
+      "PLA-T004",
+      "PLA-D14",
+      "PLB-55",
+      "PLC-55"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G52",
+    "prioridade": "P2",
+    "titulo": "Local, GitHub e PRs ainda não reconciliados",
+    "estado": "ABERTO_RECONCILIACAO_GITHUB",
+    "nivel_prova": "PR #105 diverge do SHA 495f33da e possui 38 threads não resolvidas",
+    "etapas": [
+      "T002",
+      "T010",
+      "T097"
+    ],
+    "origens_historicas": [
+      "PLA-T002",
+      "PLA-T010",
+      "PLC-12",
+      "QA-46"
+    ],
+    "diagnostico": "A publicação documental antiga não pode ser mesclada literalmente: contém snapshots obsoletos, scripts não portáveis e conflitos de revisão. Esta curadoria preserva somente os cinco artefatos atuais.",
+    "o_que_falta": "Integrar a curadoria mínima, encerrar a PR #105 como substituída e concluir a reconciliação das demais PRs com CI verde.",
+    "evidencias_atuais": [
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G53",
+    "prioridade": "P2",
+    "titulo": "Documentação, inventários e relatórios obsoletos",
+    "estado": "PARCIAL_CURADORIA_NECESSARIA",
+    "nivel_prova": "comparação entre PR #105 e SHA 495f33da",
+    "etapas": [
+      "T003",
+      "T009",
+      "T021",
+      "T023",
+      "T089",
+      "T100"
+    ],
+    "origens_historicas": [
+      "DOC-10",
+      "DOC-26",
+      "DOC-43",
+      "DOC-49",
+      "DOC-50",
+      "DOC-53",
+      "DOC-54",
+      "DOC-55",
+      "DOC-58",
+      "DOC-59",
+      "DOC-60",
+      "DOC-61",
+      "DOC-62",
+      "DOC-63",
+      "DOC-64",
+      "PLC-11",
+      "PLC-56",
+      "DOC-46",
+      "FE-014",
+      "ADM-13",
+      "EDG-52",
+      "SIC-049",
+      "QA-22",
+      "QA-45",
+      "QA-47"
+    ],
+    "diagnostico": "A documentação histórica continua extensa e contraditória; a PR #105 adiciona mais de 327 mil linhas, incluindo caches e snapshots temporais. A fonte de verdade deve permanecer pequena e datada.",
+    "o_que_falta": "Publicar os cinco artefatos curados, apontar documentos canônicos e arquivar/substituir relatórios que façam afirmações incompatíveis.",
+    "evidencias_atuais": [
+      "README.md",
+      "docs/README.md",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G54",
+    "prioridade": "P2",
+    "titulo": "Banco: recursos desconectados, schema e performance",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T021",
+      "T023",
+      "T026",
+      "T028",
+      "T089"
+    ],
+    "origens_historicas": [
+      "DB-02",
+      "DB-04",
+      "DB-05",
+      "DB-06",
+      "DB-07",
+      "DB-09",
+      "DB-10",
+      "DB-14",
+      "DB-20",
+      "DB-21",
+      "DB-27",
+      "DB-34",
+      "DB-39",
+      "DB-42",
+      "DOC-47",
+      "EDG-07",
+      "EDG-49"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G55",
+    "prioridade": "P2",
+    "titulo": "Manutenção e dívida técnica residual",
+    "estado": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "nivel_prova": "gates executados no SHA de referência",
+    "etapas": [
+      "T013",
+      "T014",
+      "T017",
+      "T020"
+    ],
+    "origens_historicas": [
+      "PLC-13",
+      "PLC-14",
+      "PLC-18",
+      "PLC-20",
+      "PLC-21",
+      "PLC-22",
+      "PLC-23",
+      "QA-48",
+      "QA-50",
+      "QA-55",
+      "FE-122",
+      "FE-123",
+      "ADM-17",
+      "QA-52",
+      "QA-53"
+    ],
+    "diagnostico": "TypeScript e ESLint terminaram sem erros, npm audit sem alertas e o build passou; não se repetem diagnósticos antigos de 153/3.247/sete alertas.",
+    "o_que_falta": "Manter os gates obrigatórios e impedir regressão; a validação técnica não substitui aceite funcional.",
+    "evidencias_atuais": [
+      "package.json",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      ".github/workflows/ci.yml"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "id": "G56",
+    "prioridade": "P2",
+    "titulo": "Piloto, marca, pesquisa e aceite operacional",
+    "estado": "ABERTO_PENDENTE_REVALIDACAO",
+    "nivel_prova": "rastreabilidade vigente; aceite conectado não localizado no SHA de referência",
+    "etapas": [
+      "T071",
+      "T091",
+      "T096",
+      "T098",
+      "T099",
+      "T100"
+    ],
+    "origens_historicas": [
+      "PLB-54",
+      "PLB-55",
+      "PLB-57",
+      "PLB-60",
+      "PLB-62",
+      "SIC-074",
+      "SIC-142",
+      "PLA-T099",
+      "PLC-64",
+      "DOC-36"
+    ],
+    "diagnostico": "A frente continua no backlog porque não há evidência atual suficiente para declarar seu aceite integral no ambiente de construção.",
+    "o_que_falta": "Revalidar os requisitos históricos desta frente no SHA de referência, definir o comportamento obrigatório vigente e anexar prova conectada antes do aceite.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  }
+]
