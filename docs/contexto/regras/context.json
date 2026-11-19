@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
+  "sha": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 05:37 UTC",
-  "files_total": 4500,
-  "code_files": 3771,
-  "code_lines": 551361
+  "generated_at": "2026-11-19 05:47 UTC",
+  "files_total": 4501,
+  "code_files": 3772,
+  "code_lines": 551474
  },
  "version": "1.3.2",
- "facts_hash": "9b5e63dd9466d57e",
+ "facts_hash": "739b94c26e5e26e1",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -349,7 +349,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1464,
-   ".tsx": 1427,
+   ".tsx": 1428,
    ".sql": 682,
    ".mjs": 139,
    ".py": 66,
@@ -64171,7 +64171,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47365,
+   "lines": 47383,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65611,8 +65611,8 @@
   },
   {
    "module": "tests",
-   "files": 633,
-   "lines": 85344,
+   "files": 634,
+   "lines": 85439,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -128392,6 +128392,30 @@
    {
     "file": "tests/hooks/useTechniquePricing.test.ts",
     "name": "returns null for empty options"
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "useTemplateSnapshot"
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "atualizar template não reativa template que o admin desativou"
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "atualizar template não reclassifica a categoria curada como "
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "atualizar template ainda grava o conteúdo do kit"
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "categoria muda quando o chamador pede explicitamente"
+   },
+   {
+    "file": "tests/hooks/useTemplateSnapshot.test.tsx",
+    "name": "criar template novo continua nascendo ativo e com categoria padrão"
    },
    {
     "file": "tests/hooks/useTransactionalEmail.test.ts",
@@ -208535,7 +208559,7 @@
   },
   "src/hooks/useTemplateSnapshot.ts": {
    "path": "src/hooks/useTemplateSnapshot.ts",
-   "lines": 81,
+   "lines": 99,
    "exports": [
     "interface SnapshotInput",
     "function useTemplateSnapshot"
@@ -245786,6 +245810,23 @@
     "returns null for empty options"
    ]
   },
+  "tests/hooks/useTemplateSnapshot.test.tsx": {
+   "path": "tests/hooks/useTemplateSnapshot.test.tsx",
+   "lines": 95,
+   "is_test": true,
+   "rule_comments": [
+    "* \"Atualizar template\" no Kit Maker não pode destruir a curadoria do admin."
+   ],
+   "doc": "\"Atualizar template\" no Kit Maker não pode destruir a curadoria do admin. buildTemplatePayload nasceu para CRIAR template, então fixava category: 'Geral' e is_active: true. Usado no UPDATE, um clique em \"Atualizar template\" reclassificava o template curado e reativava template que o admin tinha desa …",
+   "tests": [
+    "useTemplateSnapshot",
+    "atualizar template não reativa template que o admin desativou",
+    "atualizar template não reclassifica a categoria curada como ",
+    "atualizar template ainda grava o conteúdo do kit",
+    "categoria muda quando o chamador pede explicitamente",
+    "criar template novo continua nascendo ativo e com categoria padrão"
+   ]
+  },
   "tests/hooks/useTransactionalEmail.test.ts": {
    "path": "tests/hooks/useTransactionalEmail.test.ts",
    "lines": 26,
@@ -251628,10 +251669,20 @@
   }
  },
  "git": {
-  "sha": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
+  "sha": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "a5b6fcc",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)",
+    "files": [
+     "src/hooks/useTemplateSnapshot.ts",
+     "tests/hooks/useTemplateSnapshot.test.tsx"
+    ]
+   },
    {
     "sha": "7ec2508",
     "date": "2026-11-19",
@@ -252143,17 +252194,6 @@
      "tests/lib/purchasing-sla.test.ts",
      "tests/pages/GestorCompras.metrics.test.tsx"
     ]
-   },
-   {
-    "sha": "57346a6",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)",
-    "files": [
-     "src/hooks/useKitAutoSave.ts",
-     "src/pages/KitBuilderPage.tsx",
-     "tests/hooks/useKitAutoSave.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -252186,24 +252226,20 @@
     2
    ],
    [
-    "src/hooks/useKitAutoSave.ts",
-    2
-   ],
-   [
-    "src/pages/KitBuilderPage.tsx",
-    2
-   ],
-   [
-    "tests/hooks/useKitAutoSave.test.tsx",
-    2
-   ],
-   [
     "scripts/db/apply-sicoob-migrations.mjs",
     2
    ],
    [
     ".github/workflows/automation-local.yml",
     2
+   ],
+   [
+    "src/hooks/useTemplateSnapshot.ts",
+    1
+   ],
+   [
+    "tests/hooks/useTemplateSnapshot.test.tsx",
+    1
    ],
    [
     "supabase/functions/_shared/cors.ts",
@@ -252235,6 +252271,10 @@
    ],
    [
     "src/lib/rbac/route-matrix.ts",
+    1
+   ],
+   [
+    "src/pages/PWAInstallPage.tsx",
     1
    ]
   ]

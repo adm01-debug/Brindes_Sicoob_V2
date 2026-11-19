@@ -8951,7 +8951,7 @@
    "hooks_exportados": [
     "useTemplateSnapshot"
    ],
-   "linhas": 81,
+   "linhas": 99,
    "dominio": "hooks",
    "tabelas": [
     "kit_templates"
@@ -8968,7 +8968,7 @@
     "src/components/kit-builder/KitBuilderHeader.tsx",
     "src/pages/KitBuilderPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useTransactionalEmail.ts",

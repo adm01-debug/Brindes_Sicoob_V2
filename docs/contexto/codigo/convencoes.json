@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (612)",
+   "tests/ (613)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)",
    "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)",
    "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)",
    "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)",
-   "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
-   "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)"
+   "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

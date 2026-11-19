@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
+  "commit": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
   "branch": "main",
-  "data_commit": "2026-11-19T05:36:41Z",
+  "data_commit": "2026-11-19T05:46:56Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "a5b6fcc",
+    "data": "2026-11-19",
+    "assunto": "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)"
+   },
    {
     "sha": "7ec2508",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "3df58f1",
     "data": "2026-11-19",
     "assunto": "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)"
-   },
-   {
-    "sha": "f30a262",
-    "data": "2026-11-18",
-    "assunto": "fix(db): aplicador de migrations tolera BOM na leitura (#345)"
    }
   ],
-  "arquivos_mudados_7d": 575,
+  "arquivos_mudados_7d": 577,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 58
+    "mudancas": 57
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 57
+    "mudancas": 56
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 164
+    "commits": 165
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4497,
-  "arquivos_codigo": 3107,
-  "linhas_codigo": 489020,
+  "arquivos_total": 4498,
+  "arquivos_codigo": 3108,
+  "linhas_codigo": 489133,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 859,
+  "testes": 860,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 269
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47365
+   "linhas": 47383
   },
   "src/integrations": {
    "arquivos": 3,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 133,
-   "linhas": 14506
+   "arquivos": 134,
+   "linhas": 14601
   },
   "tests/integration": {
    "arquivos": 4,

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7ec2508e72` · branch `main` · 2026-11-19 05:37 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a5b6fcc570` · branch `main` · 2026-11-19 05:47 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6844 testes em 678 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6850 testes em 679 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6011,7 +6011,7 @@ _nenhum item encontrado_
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| … +378 linhas — lista completa em `context.json` | | |
+| … +379 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
