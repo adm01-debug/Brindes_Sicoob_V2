@@ -18,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
 import { useKitAutoSave } from '@/hooks/useKitAutoSave';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
@@ -353,6 +354,22 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
+
+  /**
+   * Sair do montador com trabalho que não está no banco.
+   *
+   * O autosave cobre o caso normal, mas não cobre dois: a janela de 5s do
+   * debounce e, principalmente, o autosave que falhou ou bateu em conflito —
+   * nesse estado o kit existe só na tela, e fechar a aba ou apertar voltar
+   * apaga o trabalho do vendedor sem aviso. Só `QuoteBuilderPage` registrava
+   * essa guarda; `/montar-kit` ficava de fora.
+   */
+  useUnsavedChangesGuard({
+    hasUnsavedChanges: hasContent && (Boolean(lastSaveError) || lastSaveConflict || isAutoSaving),
+    message: lastSaveConflict
+      ? 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.'
+      : 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.',
+  });
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
