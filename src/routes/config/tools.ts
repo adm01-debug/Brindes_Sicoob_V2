@@ -10,6 +10,13 @@ export const toolRoutes = [
     path: "/ajuda",
     component: lazyWithRetry(() => import("@/pages/HelpCenterPage")),
   }),
+  // Destino do item "Instalar App" do menu mobile (Header.tsx:118, quando o
+  // navegador oferece a instalação do PWA). A página existia e o item de menu
+  // também, mas a rota nunca foi registrada: o toque caía no NotFound.
+  defineRoute({
+    path: "/instalar",
+    component: lazyWithRetry(() => import("@/pages/PWAInstallPage")),
+  }),
   defineRoute({ 
     path: "/mockup-generator", 
     component: lazyWithRetry(() => import("@/pages/MockupGenerator")) 

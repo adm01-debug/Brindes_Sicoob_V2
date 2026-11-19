@@ -12,6 +12,8 @@ import {
   type VerifiedKitPersonalization,
 } from './catalog.ts';
 import { hashKitQuoteIntent } from './idempotency.ts';
+import { handleQuotePriceAttestation } from '../quote-price-attestation/handler.ts';
+import { readBoundedBody } from '../quote-price-attestation/contract.ts';
 import {
   EXTERNAL_ACTIVE_PRODUCT_FILTER,
   EXTERNAL_PRODUCT_CORE_SELECT,
@@ -73,10 +75,59 @@ function validLine(value: unknown): value is KitLineRequest {
   return typeof personalization.techniqueId === 'string';
 }
 
+
+const LIMITE_CORPO_ATESTADO = 524_288;
+
+/**
+ * Rota do atesto de preço hospedada aqui.
+ *
+ * `quote-price-attestation` não pôde ser criada no projeto: ele está no teto de
+ * edge functions do plano (`402 entitlement_required / function.max_count`), e
+ * sem ela `QuoteService` não salva nem edita orçamento — o front lança erro
+ * antes de chamar a RPC. Esta função já estava publicada e já compartilha com o
+ * atesto a camada de catálogo (`./catalog.ts`), o CORS e o logger, e vive na
+ * mesma fronteira de confiança: é o lugar de menor dano para hospedar a rota.
+ *
+ * O corpo é lido UMA vez, do pedido original, com limite — sem `clone()`. Um
+ * clone divide o corpo em dois ramos de um mesmo stream, e cancelar um ramo
+ * passa a depender do outro: a inspeção e o fluxo de kit ficariam esperando um
+ * ao outro num corpo acima do limite sem `Content-Length`. Lendo uma vez não
+ * existe ramo para coordenar. Quem for atender recebe o pedido **remontado**
+ * com o texto já lido, e pode lê-lo de novo com o próprio limite.
+ */
+function analisarCorpo(bruto: string): unknown {
+  try {
+    return JSON.parse(bruto);
+  } catch {
+    return null;
+  }
+}
+
+function ehAtestadoDePreco(corpo: unknown): boolean {
+  if (!corpo || typeof corpo !== 'object') return false;
+  return (corpo as { op?: unknown }).op === 'price-attestation';
+}
+
+/**
+ * Pedido equivalente ao original, com o corpo já lido como texto. O
+ * `content-length` é descartado: o do original descreve o stream consumido, e
+ * quem constrói a requisição recalcula pelo corpo novo.
+ */
+function remontarComCorpo(req: Request, bruto: string): Request {
+  const headers = new Headers(req.headers);
+  headers.delete('content-length');
+  return new Request(req.url, { method: req.method, headers, body: bruto });
+}
+
 Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
+
+  const bruto = await readBoundedBody(req, LIMITE_CORPO_ATESTADO);
+  if (bruto === null) return json(req, { error: 'Corpo da requisição acima do limite de 512 KB.' }, 413);
+  const corpo = analisarCorpo(bruto);
+  if (ehAtestadoDePreco(corpo)) return await handleQuotePriceAttestation(remontarComCorpo(req, bruto));
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -104,7 +155,9 @@ Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
       return data;
     };
 
-    const body = await req.json() as KitQuoteBody;
+    // Corpo já lido e analisado antes do desvio: `req` não tem mais stream.
+    // JSON inválido cai na validação de campos abaixo (400), não em 500.
+    const body = (corpo ?? {}) as KitQuoteBody;
     const kitName = typeof body.kitName === 'string' ? body.kitName.trim() : '';
     const kitType = typeof body.kitType === 'string' ? body.kitType : '';
     const identityTag = typeof body.identityTag === 'string' ? body.identityTag.trim() : '';
