@@ -215,7 +215,12 @@ async function validatePersonalizations(
   }
 }
 
-Deno.serve(withStructuredLogging('quote-price-attestation', async (req) => {
+/**
+ * O atesto de preço como função pura de `Request`, para poder ser servido de
+ * dois lugares: por esta função, quando ela existir no projeto, e por
+ * `sicoob-kit-quote`, que já está publicada. Ver o cabeçalho de rota lá.
+ */
+export async function handleQuotePriceAttestation(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(req) });
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
   const auth = await prepareAuthenticatedCatalogRequest(req);
@@ -397,4 +402,6 @@ Deno.serve(withStructuredLogging('quote-price-attestation', async (req) => {
     console.error('[quote-price-attestation] Falha interna na validação.', error);
     return json(req, { error: 'Não foi possível validar o orçamento. Tente novamente.' }, 500);
   }
-}));
+}
+
+Deno.serve(withStructuredLogging('quote-price-attestation', handleQuotePriceAttestation));

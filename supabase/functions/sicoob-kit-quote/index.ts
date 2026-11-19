@@ -12,6 +12,7 @@ import {
   type VerifiedKitPersonalization,
 } from './catalog.ts';
 import { hashKitQuoteIntent } from './idempotency.ts';
+import { handleQuotePriceAttestation } from '../quote-price-attestation/index.ts';
 import {
   EXTERNAL_ACTIVE_PRODUCT_FILTER,
   EXTERNAL_PRODUCT_CORE_SELECT,
@@ -73,10 +74,45 @@ function validLine(value: unknown): value is KitLineRequest {
   return typeof personalization.techniqueId === 'string';
 }
 
+
+const LIMITE_CORPO_ATESTADO = 524_288;
+
+/**
+ * Rota do atesto de preço hospedada aqui.
+ *
+ * `quote-price-attestation` não pôde ser criada no projeto: ele está no teto de
+ * edge functions do plano (`402 entitlement_required / function.max_count`), e
+ * sem ela `QuoteService` não salva nem edita orçamento — o front lança erro
+ * antes de chamar a RPC. Esta função já estava publicada e já compartilha com o
+ * atesto a camada de catálogo (`./catalog.ts`), o CORS e o logger, e vive na
+ * mesma fronteira de confiança: é o lugar de menor dano para hospedar a rota.
+ *
+ * O desvio acontece antes de qualquer trabalho de kit, e só quando o corpo traz
+ * `op: "price-attestation"`. O corpo é lido de um clone, para o handler do
+ * atesto poder lê-lo de novo com o próprio limite; o `Content-Length` é
+ * conferido antes, para um corpo gigante não ser bufferizado à toa.
+ */
+async function desviarParaAtestadoDePreco(req: Request): Promise<Response | null> {
+  const tamanho = Number(req.headers.get('content-length') ?? '0');
+  if (Number.isFinite(tamanho) && tamanho > LIMITE_CORPO_ATESTADO) return null;
+  let corpo: unknown;
+  try {
+    corpo = await req.clone().json();
+  } catch {
+    return null;
+  }
+  if (!corpo || typeof corpo !== 'object') return null;
+  if ((corpo as { op?: unknown }).op !== 'price-attestation') return null;
+  return await handleQuotePriceAttestation(req);
+}
+
 Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
+
+  const atestado = await desviarParaAtestadoDePreco(req);
+  if (atestado) return atestado;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
