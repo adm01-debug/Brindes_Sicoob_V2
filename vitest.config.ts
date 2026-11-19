@@ -2,6 +2,14 @@ import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
+  // `__ENABLE_DEMO_PAGES__` é constante de build definida em `vite.config.ts`.
+  // Sem o mesmo define aqui, qualquer teste que importe `src/routes/config/public`
+  // quebra com ReferenceError antes de rodar. Falso no teste: a suíte confere o
+  // portal publicado, não as páginas de demonstração.
+  define: {
+    __ENABLE_DEMO_PAGES__: JSON.stringify(false),
+  },
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

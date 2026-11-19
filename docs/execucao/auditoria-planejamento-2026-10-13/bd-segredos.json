@@ -1,0 +1,68 @@
+[
+  {
+    "name": "SUPABASE_URL"
+  },
+  {
+    "name": "SUPABASE_ANON_KEY"
+  },
+  {
+    "name": "SUPABASE_SERVICE_ROLE_KEY"
+  },
+  {
+    "name": "SUPABASE_PUBLISHABLE_KEYS"
+  },
+  {
+    "name": "SUPABASE_SECRET_KEYS"
+  },
+  {
+    "name": "SUPABASE_DB_URL"
+  },
+  {
+    "name": "SUPABASE_JWKS"
+  },
+  {
+    "name": "PUBLIC_APP_URL"
+  },
+  {
+    "name": "ALLOW_HTTP_FETCH"
+  },
+  {
+    "name": "E2E_CLEANUP_TOKEN"
+  },
+  {
+    "name": "BI_SHARE_SECRET"
+  },
+  {
+    "name": "QUOTE_SYNC_API_KEY"
+  },
+  {
+    "name": "N8N_PRODUCT_WEBHOOK_SECRET"
+  },
+  {
+    "name": "SICOOB_TEST_USER_PASSWORD"
+  },
+  {
+    "name": "TEST_USER_PASSWORD"
+  },
+  {
+    "name": "TEST_USER_EMAIL"
+  },
+  {
+    "name": "E2E_CLEANUP_ALLOWED_EMAILS"
+  },
+  {
+    "name": "E2E_CLEANUP_RATE_LIMIT_MAX"
+  },
+  {
+    "name": "E2E_CLEANUP_RATE_LIMIT_WINDOW_SECONDS"
+  },
+  {
+    "name": "INTERNAL_FUNCTION_SECRET"
+  },
+  {
+    "name": "SICOOB_APPROVAL_WORKER_SECRET"
+  },
+  {
+    "name": "SICOOB_QA_USER_PASSWORD"
+  }
+]
