@@ -309,3 +309,60 @@ varredura **não** cobre, e por isso cada ref ainda precisa do olho humano antes
 de sumir, é mudança *dentro* de uma função existente — foi exatamente assim que
 o campo `sha256` da PR #292 apareceu, e ele era o detalhe que invertia o
 veredito.
+
+## Os 2 arquivos de código que sobraram — veredito de 19/11/2026
+
+A varredura de arquivos ausentes reduziu 960 pares ref/arquivo a 9 arquivos distintos.
+Sete já tinham veredito. Estes dois ficaram, e foram lidos na íntegra antes de decidir.
+
+### `src/hooks/useSupplierTrust.ts` — **obsoleto, não recuperar**
+
+117 linhas, vivo em `audit/revisao-plano-20260924`, importado por `ProductDetail.tsx`
+naquela ref. O cabeçalho dele diz o que faz: *"Falls back to deterministic mock when no
+real data is available"* — e chama `getMockSupplierTrust()` em **três** caminhos
+(sem produto, sem variante, sem fonte de fornecedor). É exatamente o defeito que esta
+recuperação passou a sessão inteira removendo: número fabricado apresentado como medido.
+
+Prova de que não compila mais: `getMockSupplierTrust` **não existe na `main`**
+(`git grep` em `origin/main -- src/` devolve só `SupplierTrustData` e o renderizador do
+selo). O import do hook aponta para um símbolo que a `main` apagou.
+
+A parte útil dele — ler prazo de entrega do catálogo — está na
+[#323](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/323), com dado real e teste:
+`supplierTrustFromProduct()` usa `leadTimeDays` do catálogo, e deixa `isVerified` e
+`avgRating` de fora **de propósito**, porque o catálogo não tem homologação de fornecedor
+nem avaliação de comprador — eram justamente os dois campos que o hook fabricava.
+Isso encerra também a pendência do selo morto de `fix/sicoob-trust-data-20260924`.
+
+### `src/components/orders/InvoicePaymentPanel.tsx` — **obsoleto, não recuperar**
+
+48 linhas, vivo em `audit/revisao-plano-20260924` e **importado por ninguém, nem na
+própria ref**. Dois problemas de fundo, não de estilo:
+
+1. afirma `"Liberação financeira concluída para produção"` **incondicionalmente**, sem
+   olhar nenhum campo do pedido — a mesma classe de mentira na tela;
+2. lê `(order as any).invoice_number` e `(order as any).payment_status`, campos que não
+   existem no tipo de pedido.
+
+A `main` já tem o módulo de notas fiscais inteiro, com fonte real: `OrderInvoicesManager`,
+`OrderInvoicesTab`, `useOrderInvoices` e `OrderService`. O painel órfão é estritamente
+inferior.
+
+## Portão de exclusão de branch (19/11/2026)
+
+Conferência de todas as 95 refs remotas contra a `main`:
+
+```
+IDENTICAS A MAIN: 0 / 95
+```
+
+Nenhuma branch pode ser apagada hoje — e isso **não** é falta de varredura (as três já
+rodaram: arquivos ausentes, símbolos exportados e linhas exclusivas intra-função). É que
+o trabalho recuperado ainda está em PR aberta, não na `main`. O portão é por merge:
+
+| grupo | só pode ser apagado depois de |
+|---|---|
+| as 6 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` |
+| `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem |
+| as demais `claude/*` com PR aberta | a PR correspondente entrar |
+| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) |
