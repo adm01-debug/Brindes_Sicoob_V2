@@ -424,12 +424,14 @@ Nenhuma branch pode ser apagada hoje — e isso **não** é falta de varredura (
 rodaram: arquivos ausentes, símbolos exportados e linhas exclusivas intra-função). É que
 o trabalho recuperado ainda está em PR aberta, não na `main`. O portão é por merge:
 
-| grupo | só pode ser apagado depois de |
-|---|---|
-| as 6 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` |
-| `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem |
-| as demais `claude/*` com PR aberta | a PR correspondente entrar |
-| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) **e** cada item da ref ter veredito escrito aqui — incorporado ou obsoleto justificado |
+| grupo | condição | estado em 19/11/2026 02:40 UTC |
+|---|---|---|
+| as 4 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` | **cumprida** (`d53f9e8`) — conteúdo conferido linha a linha na seção abaixo; falta só a #315 entrar |
+| `claude/feat-atestado-preco-orcamento-261117-0905` (#290) | veredito escrito de cada item | **cumprida** — ver "nada a recuperar" abaixo; falta só a #315 entrar |
+| as 2 do kit (`fix-kit-trava-concorrencia`, `fix-kit-fila-manual-autosave`) | **#334** entrar na `main` | **já apagadas pelo GitHub** no merge da #334 (`delete_branch_on_merge`). O conteúdo está na `main` — #341 87/87 e #356 52/52 linhas, conferido **antes** da exclusão |
+| `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem | pendente — as duas PRs estão abertas |
+| as demais `claude/*` com PR aberta | a PR correspondente entrar | pendente |
+| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) **e** cada item da ref ter veredito escrito aqui — incorporado ou obsoleto justificado | pendente |
 
 A última linha não é atalho: a regra central está em
 [`docs/RECUPERACAO/README.md`](./README.md) e exige, para **toda** ref, que cada item
