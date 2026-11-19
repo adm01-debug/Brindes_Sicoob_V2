@@ -1077,7 +1077,7 @@
   {
    "arquivo": "e2e/validate-supabase-target.test.mjs",
    "tipo": "e2e",
-   "linhas": 37,
+   "linhas": 47,
    "testa": [],
    "casos": 4
   },

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "34095f4cc819cc41fba07930208d4ba3709a5289",
+  "commit": "116bb440f9bdea6106d03c856f6777d47d435851",
   "branch": "main",
-  "data_commit": "2026-11-19T04:06:31Z",
+  "data_commit": "2026-11-19T04:15:55Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "116bb44",
+    "data": "2026-11-19",
+    "assunto": "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)"
+   },
    {
     "sha": "34095f4",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "8b0910c",
     "data": "2026-11-18",
     "assunto": "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)"
-   },
-   {
-    "sha": "fcb4b9a",
-    "data": "2026-11-18",
-    "assunto": "chore(deps): remove chave autoprefixer duplicada no package.json (#320)"
    }
   ],
-  "arquivos_mudados_7d": 465,
+  "arquivos_mudados_7d": 466,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 67
+    "mudancas": 66
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 66
+    "mudancas": 65
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 155
+    "commits": 156
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4401,
   "arquivos_codigo": 3090,
-  "linhas_codigo": 487627,
+  "linhas_codigo": 487637,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -448,7 +448,7 @@
   },
   "e2e/validate-supabase-target.test.mjs": {
    "arquivos": 1,
-   "linhas": 37
+   "linhas": 47
   },
   "eslint.config.js": {
    "arquivos": 1,

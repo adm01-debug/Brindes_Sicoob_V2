@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "34095f4cc819cc41fba07930208d4ba3709a5289",
+  "sha": "116bb440f9bdea6106d03c856f6777d47d435851",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 04:07 UTC",
+  "generated_at": "2026-11-19 04:17 UTC",
   "files_total": 4403,
   "code_files": 3747,
-  "code_lines": 549068
+  "code_lines": 549078
  },
  "version": "1.3.2",
- "facts_hash": "50a80feb818bcede",
+ "facts_hash": "a7ec290c05a5f176",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -63430,7 +63430,7 @@
   {
    "module": "e2e",
    "files": 149,
-   "lines": 11488,
+   "lines": 11498,
    "tables": [],
    "exports": [
     "global-setup.ts: globalSetup, async",
@@ -175099,7 +175099,7 @@
   },
   "e2e/validate-supabase-target.test.mjs": {
    "path": "e2e/validate-supabase-target.test.mjs",
-   "lines": 37,
+   "lines": 47,
    "is_test": true,
    "tests": [
     "aceita URL HTTPS cujo host corresponde ao projeto isolado",
@@ -251201,10 +251201,21 @@
   }
  },
  "git": {
-  "sha": "34095f4cc819cc41fba07930208d4ba3709a5289",
+  "sha": "116bb440f9bdea6106d03c856f6777d47d435851",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "116bb44",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)",
+    "files": [
+     "docs/execucao/revisao-implementacao-2026-09-12.md",
+     "e2e/validate-supabase-target.test.mjs",
+     "scripts/revisao/gerar-revisao-2026-09-12.py"
+    ]
+   },
    {
     "sha": "34095f4",
     "date": "2026-11-19",
@@ -251641,17 +251652,6 @@
      "scripts/db/apply-sicoob-migrations.mjs",
      "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql"
     ]
-   },
-   {
-    "sha": "eeb3c4e",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
-    "files": [
-     "src/hooks/useClientsPortfolioKpis.ts",
-     "src/pages/ClientsPage.tsx",
-     "tests/hooks/useClientsPortfolioKpis.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251668,15 +251668,7 @@
     3
    ],
    [
-    "src/hooks/useClientsPortfolioKpis.ts",
-    2
-   ],
-   [
-    "src/pages/ClientsPage.tsx",
-    2
-   ],
-   [
-    "tests/hooks/useClientsPortfolioKpis.test.ts",
+    "scripts/revisao/gerar-revisao-2026-09-12.py",
     2
    ],
    [
@@ -251730,6 +251722,14 @@
    [
     "tests/pages/GestorCompras.metrics.test.tsx",
     2
+   ],
+   [
+    "docs/execucao/revisao-implementacao-2026-09-12.md",
+    1
+   ],
+   [
+    "e2e/validate-supabase-target.test.mjs",
+    1
    ],
    [
     "src/services/sicoob/commonService.ts",

@@ -1465,6 +1465,10 @@
     "arquivos": 3
    },
    {
+    "host": "doufsxqlfjyuvxuezpln.supabase.co",
+    "arquivos": 3
+   },
+   {
     "host": "hooks.slack.com",
     "arquivos": 3
    },
@@ -1494,10 +1498,6 @@
    },
    {
     "host": "catalogo.example",
-    "arquivos": 2
-   },
-   {
-    "host": "doufsxqlfjyuvxuezpln.supabase.co",
     "arquivos": 2
    },
    {

@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `34095f4cc819cc41fba07930208d4ba3709a5289` (2026-11-19T04:06:31Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `116bb440f9bdea6106d03c856f6777d47d435851` (2026-11-19T04:15:55Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4401 |
 | arquivos_codigo | 3090 |
-| linhas_codigo | 487627 |
+| linhas_codigo | 487637 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -442,7 +442,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 
 ## Integrações externas
 - SDKs: ElevenLabs, Sentry, Supabase, react-query, zod
-- hosts mais citados: wa.me, cfmzkthhgliqelozlmwu.supabase.co, ai.gateway.lovable.dev, api.resend.com, simulacao.invalid, qa-sicoob-123.supabase.co, test.supabase.co, api.supabase.com, hooks.slack.com, imagedelivery.net, portal.invalid, youtube.com, api.elevenlabs.io, api.ipify.org, brindes-sicoob-v2.vercel.app
+- hosts mais citados: wa.me, cfmzkthhgliqelozlmwu.supabase.co, ai.gateway.lovable.dev, api.resend.com, simulacao.invalid, qa-sicoob-123.supabase.co, test.supabase.co, api.supabase.com, doufsxqlfjyuvxuezpln.supabase.co, hooks.slack.com, imagedelivery.net, portal.invalid, youtube.com, api.elevenlabs.io, api.ipify.org
 - webhooks recebidos: cleanup-notifications, collections-watcher, comparison-price-watcher, connections-health-check, expert-chat, external-db-bridge, favorites-watcher, health-check, migrate-helper, monthly-health-report, ownership-audit, process-batch-export, process-queue, process-scheduled-reports, quote-approval, quote-followup-reminders, send-digest, send-notification, send-scheduled-reports, sicoob-approval-notifications, webhook-dispatcher
 - env de integração (só nomes): BITRIX24_WEBHOOK_URL, BI_SHARE_SECRET, CNPJA_API_KEY, DROPBOX_ACCESS_TOKEN, E2E_CLEANUP_TOKEN, ELEVENLABS_API_KEY, LOVABLE_API_KEY, N8N_QUOTE_WEBHOOK_URL, QUOTE_SYNC_API_KEY, RESEND_API_KEY, SALESPRO_WEBHOOK_URL, SICOOB_APPROVAL_WORKER_SECRET, SICOOB_MALWARE_SCANNER_TOKEN, VIRUSTOTAL_API_KEY, VITE_SENTRY_DSN
 
@@ -470,14 +470,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29090 nós · 53725 arestas · 2088 comunidades · grafo do commit `34095f4c`
+- 29090 nós · 53725 arestas · 2088 comunidades · grafo do commit `116bb440`
 - comunidades maiores: ref_components (353), ref_hooks (307), ref_lib (297), ref_node_fs (207), sonner (203), getCorsHeaders (189), ref_integrations (173), react-router-dom (151), react (150), postgres_ready.py (149), ref_contexts (142), external-db-bridge/index.ts (131)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (67)
-- docs/correcoes-validacao-2026-09-14.md (66)
+- docs/plano-melhorias-50-etapas.md (66)
+- docs/correcoes-validacao-2026-09-14.md (65)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -693,6 +693,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `116bb44` test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)
 - 2026-11-19 `34095f4` fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)
 - 2026-11-19 `f82acc3` feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)
 - 2026-11-19 `fed7067` chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)
@@ -707,7 +708,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `d53f9e8` fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)
 - 2026-11-19 `1ad25e3` fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)
 - 2026-11-19 `d342a59` docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)
-- 2026-11-19 `3df58f1` fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
