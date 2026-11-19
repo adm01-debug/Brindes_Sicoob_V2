@@ -13,6 +13,16 @@ verify_jwt = false
 [functions.external-db-bridge]
 verify_jwt = false
 
+# `crm-db-bridge` entra na allowlist de publicação nesta PR. Sem esta entrada,
+# `supabase functions deploy` aplicaria o padrão do CLI (gateway fechado) e
+# mataria o `?op=ping`, que o handler responde ANTES de qualquer autenticação
+# (`supabase/functions/crm-db-bridge/index.ts:1096-1098`, "PING público expõe
+# somente saúde agregada"). `src/lib/external-db-prewarm.ts:41` depende dele
+# inclusive quando o token de sessão expirou. Os demais `op` continuam exigindo
+# JWT e papel `dev` dentro do handler, logo a barreira não se perde.
+[functions.crm-db-bridge]
+verify_jwt = false
+
 # Estes handlers mantêm a dupla barreira: gateway e validação auth.getUser.
 [functions.sicoob-kit-quote]
 verify_jwt = true
