@@ -32,4 +32,23 @@ describe("guarda de destino E2E", () => {
   ])("rejeita %s", (_reason, config) => {
     expect(() => validateE2ETarget(config)).toThrow();
   });
+
+  // Recuperado de `tests/scripts/validate-e2e-supabase-target.test.ts`, que ficou
+  // em `fix/hermes-bi-share-hardening-20261028` e nunca entrou na `main`. O
+  // script já falha fechado (`scripts/e2e-target.mjs:22`); faltava a catraca.
+  // O outro caso daquele arquivo — endpoint sem TLS — a `main` já cobria, na
+  // lista acima; eu o tinha duplicado por procurar "HTTPS" em vez de "TLS".
+  it.each([
+    ["url", "url"],
+    ["projectId", "projectId"],
+    ["allowedProjectId", "allowedProjectId"],
+    ["publishableKey", "publishableKey"],
+    ["serviceRoleKey", "serviceRoleKey"],
+  ])("falha fechado quando falta %s", (_rotulo, campo) => {
+    const incompleto: Record<string, unknown> = { ...validConfig };
+    delete incompleto[campo];
+    expect(() => validateE2ETarget(incompleto as never)).toThrow(
+      /Configuração obrigatória do destino E2E ausente\./,
+    );
+  });
 });
