@@ -10,10 +10,20 @@ test("aceita URL HTTPS cujo host corresponde ao projeto isolado", () => {
 });
 
 test("rejeita os projetos canônicos conhecidos", () => {
+  // O AGENTS.md proíbe E2E/QA de apontar para o projeto oficial E para o
+  // catálogo externo. CANONICAL_PROJECT_IDS tem os dois, mas só o oficial
+  // tinha teste: dava para remover o catálogo da lista sem nenhum teste cair.
   assert.equal(
     validateSupabaseTarget(
       "https://cfmzkthhgliqelozlmwu.supabase.co",
       "cfmzkthhgliqelozlmwu",
+    ),
+    "canonical_project",
+  );
+  assert.equal(
+    validateSupabaseTarget(
+      "https://doufsxqlfjyuvxuezpln.supabase.co",
+      "doufsxqlfjyuvxuezpln",
     ),
     "canonical_project",
   );

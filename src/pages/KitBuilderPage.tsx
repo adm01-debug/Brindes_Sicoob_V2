@@ -18,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
 import { useKitAutoSave } from '@/hooks/useKitAutoSave';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
@@ -116,6 +117,8 @@ interface LoadCustomKitOptions {
   loadKit: KitBuilderState['loadKit'];
   bumpLastUsed: (id: string) => void;
   hasBumpedRef: MutableRefObject<boolean>;
+  /** Versão da linha que foi para a tela; é ela que a trava otimista defende. */
+  onVersionLoaded: (updatedAt: string | null) => void;
 }
 
 async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
@@ -123,6 +126,7 @@ async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
     const { data, error } = await supabase.from('custom_kits').select('*').eq('id', options.id).maybeSingle();
     if (error || !data) { toast.error('Kit não encontrado'); return; }
     options.loadKit(customKitPayload(data as Record<string, unknown>));
+    options.onVersionLoaded(recordString(data as Record<string, unknown>, 'updated_at') || null);
     toast.success('Kit carregado para edição');
     if (options.hasBumpedRef.current) return;
     options.hasBumpedRef.current = true;
@@ -159,6 +163,9 @@ export default function KitBuilderPage() {
   // ser sobrescrita, e nos dois casos o que chega à tela é material novo que
   // o autosave deve mesmo persistir.
   const [isHydrated, setIsHydrated] = useState(!kitIdParam);
+  // `updated_at` da linha que está na tela. A trava otimista do autosave só
+  // grava se a linha continuar nessa versão.
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | null>(null);
 
   const {
     kitState, setKitType, wizardState, kitQuantity, availableBoxes, availableItems,
@@ -174,8 +181,12 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated,
+  const {
+    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
+    retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
+    capturarSnapshotAtual,
+  } = useKitAutoSave(
+    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
   );
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
@@ -226,7 +237,9 @@ export default function KitBuilderPage() {
   useEffect(() => {
     if (!kitIdParam || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef }).finally(() => setIsHydrated(true));
+    void loadCustomKit({
+      id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef, onVersionLoaded: setLoadedUpdatedAt,
+    }).finally(() => setIsHydrated(true));
   }, [kitIdParam, loadKit, bumpLastUsed]);
 
   // Template mode: load a kit_templates row for admin editing
@@ -276,10 +289,26 @@ export default function KitBuilderPage() {
         await saveAsTemplate({ kitState, templateId: templateIdParam });
         return;
       }
-      const editingId = currentKitId || autoSavedKitId || undefined;
+      // Espera o salvamento automático em voo antes de decidir entre criar e
+      // atualizar. Sem isto, clicar em "Salvar" durante o INSERT de um kit
+      // novo dispara um segundo INSERT: dois kits iguais na lista.
+      // Retrato do que está indo para o banco. O que o usuário digitar entre
+      // este ponto e a resposta continua pendente: marcar a tela inteira como
+      // persistida apagaria essa edição sem nunca gravá-la.
+      const snapshotEnviado = capturarSnapshotAtual();
+      const idDoAutosave = await flushAutoSave();
+      const editingId = currentKitId || idDoAutosave || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
       const result = await saveKit(kitState, kitQuantity, editingId);
-      if (result && 'id' in result) setCurrentKitId((result as { id: string }).id);
+      if (result && 'id' in result) {
+        setCurrentKitId((result as { id: string }).id);
+        // O "Salvar" acabou de mudar `updated_at`. Sem avisar o autosave, a
+        // próxima gravação automática desta mesma aba seria recusada como
+        // conflito e o kit ficaria travado até recarregar a página.
+        const versao = (result as { updated_at?: string | null }).updated_at ?? null;
+        setLoadedUpdatedAt(versao);
+        syncPersistedVersion(versao, snapshotEnviado);
+      }
     } catch { /* handled by hook */ }
   };
 
@@ -330,6 +359,22 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
+
+  /**
+   * Sair do montador com trabalho que não está no banco.
+   *
+   * O autosave cobre o caso normal, mas não cobre dois: a janela de 5s do
+   * debounce e, principalmente, o autosave que falhou ou bateu em conflito —
+   * nesse estado o kit existe só na tela, e fechar a aba ou apertar voltar
+   * apaga o trabalho do vendedor sem aviso. Só `QuoteBuilderPage` registrava
+   * essa guarda; `/montar-kit` ficava de fora.
+   */
+  useUnsavedChangesGuard({
+    hasUnsavedChanges: hasContent && (Boolean(lastSaveError) || lastSaveConflict || isAutoSaving),
+    message: lastSaveConflict
+      ? 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.'
+      : 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.',
+  });
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
@@ -341,9 +386,21 @@ export default function KitBuilderPage() {
     goToStep('box');
   }
 
+  // Recarregar busca a versao de quem gravou do outro lado e descarta o que
+  // esta na tela — e o conflito so aparece porque a gravacao automatica falhou,
+  // ou seja, sempre ha alteracao nao salva aqui. Perguntar antes.
+  function recarregarAposConflito() {
+    const confirmado = window.confirm(
+      'Recarregar traz a versao salva em outro lugar e descarta as alteracoes desta tela, '
+      + 'que nao foram salvas. Deseja recarregar?',
+    );
+    if (confirmado) window.location.reload();
+  }
+
   function BuilderHeader() {
     return <><KitBuilderHeader kitName={kitState.name} onKitNameChange={setKitName} isValid={kitState.isValid}
       isSaving={isSaving} isAutoSaving={isAutoSaving} lastSavedAt={lastSavedAt} autoSaveError={lastSaveError}
+      autoSaveConflict={lastSaveConflict} onReloadAfterConflict={recarregarAposConflito}
       onRetryAutoSave={retryAutoSave} hasContent={hasContent} isExistingKit={isExistingKit} canUndo={canUndo}
       canRedo={canRedo} identity={kitState.identity} onIdentityChange={setIdentity} onSave={handleSaveKit}
       onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit} kitState={kitState}
