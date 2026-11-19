@@ -340,6 +340,31 @@ describe('useKitAutoSave', () => {
     expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Antigo' });
   });
 
+  it('salvar manualmente e falhar nao apaga a edicao pendente do autosave', async () => {
+    // flushPending cancela o timer agendado. Se ele ja marcasse o estado como
+    // persistido, um "Salvar" que falhasse deixaria "tentar novamente" sem
+    // nada para gravar: a edicao ficava so na tela.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'versao-B' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Edicao pendente' } });
+    // o usuario clica em Salvar antes dos 5s
+    await act(async () => { await result.current.flushPending(); });
+    expect(update).not.toHaveBeenCalled();
+
+    // o salvamento manual falhou: nada foi sincronizado. "Tentar novamente"
+    // ainda tem o que gravar.
+    act(() => { result.current.retry(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Edicao pendente' });
+  });
+
   it('nao sobrescreve em silencio o kit que outra aba alterou', async () => {
     // Esta aba abriu a linha na versao A; outra aba gravou e a linha esta na B.
     // O UPDATE com trava nao casa nenhuma linha, e a releitura mostra que a
@@ -440,5 +465,52 @@ describe('useKitAutoSave', () => {
     expect(travaDoUpdate(0)).toBe('versao-B');
     expect(result.current.lastSaveConflict).toBe(false);
     expect(result.current.lastSaveError).toBeNull();
+  });
+
+  it('flushPending espera o INSERT em voo e devolve o id criado', async () => {
+    // O cenario do kit duplicado: o autosave esta criando o kit e o vendedor
+    // clica em "Salvar". Sem esperar, o salvamento manual tambem faria INSERT
+    // e sairiam dois kits iguais na lista.
+    let resolverCriacao: ((value: { data: { id: string; updated_at: string }; error: null }) => void) | undefined;
+    single.mockImplementationOnce(() => new Promise(resolve => { resolverCriacao = resolve; }));
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Kit novo' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(insert).toHaveBeenCalledTimes(1);
+
+    let idDevolvido: string | undefined = 'ainda-nao';
+    await act(async () => {
+      const espera = result.current.flushPending().then((id) => { idDevolvido = id; });
+      resolverCriacao?.({ data: { id: 'kit-criado-pelo-autosave', updated_at: 'v1' }, error: null });
+      await espera;
+    });
+
+    expect(idDevolvido).toBe('kit-criado-pelo-autosave');
+    expect(insert).toHaveBeenCalledTimes(1);
+  });
+
+  it('flushPending cancela a gravacao agendada que o salvamento manual vai cobrir', async () => {
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'v1' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Alteracao recem feita' } });
+    // ainda dentro da janela de 5s: o timer existe e nao disparou
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    await act(async () => { await result.current.flushPending(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+
+    // o manual grava; o automatico nao duplica depois
+    expect(update).not.toHaveBeenCalled();
   });
 });

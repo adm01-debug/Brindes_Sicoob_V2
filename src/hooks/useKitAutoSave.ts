@@ -30,6 +30,13 @@ interface AutoSaveResult {
    * persistido o que está na tela.
    */
   syncPersistedVersion: (updatedAt: string | null) => void;
+  /**
+   * Espera o salvamento automático em voo terminar e devolve o id do kit que
+   * ele conhece. O salvamento manual chama isto antes de decidir entre criar e
+   * atualizar: sem a espera, clicar em "Salvar" durante o INSERT de um kit novo
+   * dispara um segundo INSERT e o vendedor fica com dois kits iguais na lista.
+   */
+  flushPending: () => Promise<string | undefined>;
 }
 
 function createSnapshot(kitState: KitState, kitQuantity: number): string {
@@ -374,6 +381,22 @@ export function useKitAutoSave(
     setLastSaveConflict(false);
   }, []);
 
+  /** Drena a fila do autosave e devolve o id conhecido depois dela. */
+  const flushPending = useCallback(async () => {
+    if (timerRef.current) {
+      // Havia uma gravação agendada e ainda não disparada: o salvamento manual
+      // vai gravar este mesmo estado, então o timer perde o objeto. O estado
+      // NÃO é marcado como persistido aqui: se o salvamento manual falhar,
+      // marcar antes deixaria "tentar novamente" sem nada para gravar e a
+      // edição ficaria só na tela. Quem marca é `syncPersistedVersion`, e só
+      // depois do sucesso.
+      clearTimeout(timerRef.current);
+      timerRef.current = undefined;
+    }
+    await saveQueueRef.current;
+    return kitIdRef.current ?? undefined;
+  }, []);
+
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     const snapshot = latestSnapshotRef.current;
@@ -381,6 +404,7 @@ export function useKitAutoSave(
   }, [saveToDb]);
 
   return {
-    lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, retry, syncPersistedVersion,
+    lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
+    retry, syncPersistedVersion, flushPending,
   };
 }
