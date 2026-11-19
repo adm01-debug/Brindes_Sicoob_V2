@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
+  "sha": "965419baad4d869c5aaa25802bb7ff37a1d626ce",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 04:34 UTC",
-  "files_total": 4413,
-  "code_files": 3755,
-  "code_lines": 549384
+  "generated_at": "2026-11-19 05:06 UTC",
+  "files_total": 4499,
+  "code_files": 3770,
+  "code_lines": 551186
  },
  "version": "1.3.2",
- "facts_hash": "c3a59ab84019f6f6",
+ "facts_hash": "a083067d772b4800",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,13 +348,13 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1463,
+   ".ts": 1464,
    ".tsx": 1426,
-   ".sql": 677,
-   ".mjs": 138,
-   ".py": 60,
-   ".js": 6,
-   ".cjs": 5
+   ".sql": 682,
+   ".mjs": 139,
+   ".py": 66,
+   ".cjs": 7,
+   ".js": 6
   },
   "monorepo_packages": [],
   "supabase_config": {
@@ -63371,8 +63371,8 @@
   },
   {
    "module": "docs",
-   "files": 23,
-   "lines": 4426,
+   "files": 36,
+   "lines": 6013,
    "tables": [],
    "exports": [
     "coletar.py: run, git, save, tree",
@@ -63383,6 +63383,10 @@
     "consultar-controles.py: query, save",
     "consultar-leitura-anonima.py: check",
     "validar-evidencias.py: read",
+    "sicoob_achados_20261013.py: a",
+    "sicoob_audit_20261013.py: save, api, sql, inventory",
+    "sicoob_relatorio_20261013.py: ler, gravar_csv, url, link, cell",
+    "sicoob_simular_rls_20261013.py: executar, sql",
     "reproduzir-status-fora-escopo.py: run, sql",
     "validar-plano.py: carregar, exigir, visitar, ancestrais"
    ],
@@ -63395,8 +63399,12 @@
     "comparar-tipos.cjs: Compara o contrato TypeScript do snapshot com os metadados reais da API."
    ],
    "deps": [
+    "child_process",
+    "fs",
     "node:fs",
-    "node:path"
+    "node:path",
+    "path",
+    "vm"
    ],
    "imports_modules": [
     "home"
@@ -63415,6 +63423,19 @@
     "docs/execucao/auditoria-api-20260922/consultar-controles.py",
     "docs/execucao/auditoria-api-20260922/consultar-leitura-anonima.py",
     "docs/execucao/auditoria-api-20260922/validar-evidencias.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/apply_local_quote_approval_response.sql",
+    "docs/execucao/auditoria-planejamento-2026-10-13/convert_quote_to_sicoob_order.sql",
+    "docs/execucao/auditoria-planejamento-2026-10-13/generate_quote_number.sql",
+    "docs/execucao/auditoria-planejamento-2026-10-13/guard_quote_governance_write.sql",
+    "docs/execucao/auditoria-planejamento-2026-10-13/save_quote_atomic.sql",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
+    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
     "docs/execucao/evidencias/sicoob_particoes_limpeza_20260916.sql",
     "docs/execucao/evidencias/sicoob_perfis_orfaos_20260916.sql",
     "docs/execucao/evidencias/sicoob_policies_abertas_20260916.sql",
@@ -63574,7 +63595,7 @@
   {
    "module": "scripts",
    "files": 168,
-   "lines": 38757,
+   "lines": 38785,
    "tables": [
     "a",
     "admin_audit_log",
@@ -64143,7 +64164,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47330,
+   "lines": 47343,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65583,8 +65604,8 @@
   },
   {
    "module": "tests",
-   "files": 630,
-   "lines": 85049,
+   "files": 632,
+   "lines": 85223,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -73642,6 +73663,10 @@
    }
   ],
   "error_messages": [
+   {
+    "file": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
+    "msg": "Módulo local ausente: "
+   },
    {
     "file": "e2e/fixtures/auth.setup.ts",
     "msg": "Não foi possível persistir a conclusão do onboarding E2E (HTTP ${response.status()})."
@@ -94588,6 +94613,11 @@
     "file": "supabase/functions/webhook-inbound/index.ts",
     "name": "MAX_PAYLOAD_BYTES",
     "value": "1"
+   },
+   {
+    "file": "tests/scenarios/edge-runtime-contract.scenario.mjs",
+    "name": "MANIFEST",
+    "value": "'supabase/functions/_shared/edge-authz-manifest.ts'"
    },
    {
     "file": "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -135611,6 +135641,38 @@
     "name": "aceita somente a URL HTTPS do projeto explicitamente permitido"
    },
    {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "contrato de runtime — manifesto real"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "o campo runtime só aceita os dois valores do contrato"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "nenhuma função "
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "toda função da allowlist de publicação existe no manifesto"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "as funções preservadas como fonte continuam declaradas e contadas"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "contrato de runtime — o gate reprova a contradição"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "árvore intacta passa"
+   },
+   {
+    "file": "tests/scripts/edge-runtime-contract.test.ts",
+    "name": "marcar como "
+   },
+   {
     "file": "tests/scripts/gates-hardening.test.ts",
     "name": "contrato de autorização das edges: o resultado do authorize precisa ser usado"
    },
@@ -164197,6 +164259,8 @@
    }
   ],
   "service_role_files": [
+   "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
+   "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
    "docs/execucao/evidencias/sicoob_reconciliacao_restante_20260916.sql",
    "e2e/helpers/cleanup-client.ts",
    "scripts/ai-context/cenarios.mjs",
@@ -174710,6 +174774,92 @@
    ],
    "doc": "Valida consistência do pacote, sem novas consultas ou alterações no banco."
   },
+  "docs/execucao/auditoria-planejamento-2026-10-13/apply_local_quote_approval_response.sql": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/apply_local_quote_approval_response.sql",
+   "lines": 95
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/convert_quote_to_sicoob_order.sql": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/convert_quote_to_sicoob_order.sql",
+   "lines": 219
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/generate_quote_number.sql": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/generate_quote_number.sql",
+   "lines": 32
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/guard_quote_governance_write.sql": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/guard_quote_governance_write.sql",
+   "lines": 42
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/save_quote_atomic.sql": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/save_quote_atomic.sql",
+   "lines": 393
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py",
+   "lines": 235,
+   "exports": [
+    "def a"
+   ]
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
+   "lines": 97,
+   "exports": [
+    "def save",
+    "def api",
+    "def sql",
+    "def inventory"
+   ],
+   "temporal": [
+    "with urllib.request.urlopen(req,timeout=50) as response:"
+   ]
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py",
+   "lines": 47,
+   "doc": "Relações complementares revisadas por assunto. Não representam teste dinâmico adicional."
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py",
+   "lines": 244,
+   "exports": [
+    "def ler",
+    "def gravar_csv",
+    "def url",
+    "def link",
+    "def cell"
+   ],
+   "rule_comments": [
+    "*Credenciais de CRM existem.** Foram confirmados nomes/presença no cofre da aplicação; isso ainda não prova conectividade e privilégio mínimo.",
+    "*Há cron em execução.** São 17 jobs ativos; o problema é a ausência de algumas rotinas de negócio e a falha concreta do worker existente.",
+    "*Função ACTIVE não prova paridade e negócio.** Existem 100 funções ativas e seis exclusões locais documentadas. Contagem não comprova limite do plano comercial nem justifica upgrade automático."
+   ]
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs",
+   "lines": 43
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
+   "lines": 34,
+   "uses_service_role": true
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
+   "lines": 31,
+   "errors": [
+    "Módulo local ausente: "
+   ]
+  },
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py": {
+   "path": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
+   "lines": 75,
+   "exports": [
+    "def executar",
+    "def sql"
+   ],
+   "uses_service_role": true
+  },
   "docs/execucao/evidencias/sicoob_particoes_limpeza_20260916.sql": {
    "path": "docs/execucao/evidencias/sicoob_particoes_limpeza_20260916.sql",
    "lines": 93,
@@ -177180,7 +177330,7 @@
   },
   "scripts/check-edge-authorization.mjs": {
    "path": "scripts/check-edge-authorization.mjs",
-   "lines": 220,
+   "lines": 248,
    "env": [
     "GITHUB_ACTIONS"
    ],
@@ -206419,7 +206569,7 @@
   },
   "src/hooks/useQuoteBuilderState.ts": {
    "path": "src/hooks/useQuoteBuilderState.ts",
-   "lines": 945,
+   "lines": 958,
    "exports": [
     "function validateBudgetForSubmission",
     "function useQuoteBuilderState"
@@ -249000,6 +249150,17 @@
    "path": "tests/scenarios/edge-recompra-erros.mjs",
    "lines": 12
   },
+  "tests/scenarios/edge-runtime-contract.scenario.mjs": {
+   "path": "tests/scenarios/edge-runtime-contract.scenario.mjs",
+   "lines": 68,
+   "params": [
+    {
+     "name": "MANIFEST",
+     "value": "'supabase/functions/_shared/edge-authz-manifest.ts'"
+    }
+   ],
+   "doc": "Contrato de runtime das edge functions. `runtime: \"source-only\"` no manifesto declara que a função fica preservada como fonte e NÃO é publicada. Até 18/11/2026 o campo era declaração sem fiscal: nada impedia uma função marcada como fonte de entrar na allowlist de publicação, nem avisava da contradiç …"
+  },
   "tests/scenarios/email-transacional-legado.mjs": {
    "path": "tests/scenarios/email-transacional-legado.mjs",
    "lines": 42
@@ -249704,6 +249865,36 @@
     "aceita somente a URL HTTPS do projeto explicitamente permitido"
    ],
    "uses_service_role": true
+  },
+  "tests/scripts/edge-runtime-contract.test.ts": {
+   "path": "tests/scripts/edge-runtime-contract.test.ts",
+   "lines": 106,
+   "is_test": true,
+   "params": [
+    {
+     "name": "MANIFESTO",
+     "value": "'supabase/functions/_shared/edge-authz-manifest.ts'"
+    },
+    {
+     "name": "ALLOWLIST",
+     "value": "'scripts/ci/verify-supabase-functions-published.mjs'"
+    }
+   ],
+   "rule_comments": [
+    "(CONTRIBUTING.md: \"lógica de infraestrutura crítica … deve ter cobertura de",
+    "roda no runner de cenários, que fica fora do Vitest — aqui a mesma regra é"
+   ],
+   "doc": "Cobertura unitária Vitest do contrato de runtime das edge functions (CONTRIBUTING.md: \"lógica de infraestrutura crítica … deve ter cobertura de testes unitários com Vitest\"). `runtime: \"source-only\"` no manifesto declara que a função fica preservada como fonte e NÃO é publicada. O cenário equivalent …",
+   "tests": [
+    "contrato de runtime — manifesto real",
+    "o campo runtime só aceita os dois valores do contrato",
+    "nenhuma função ",
+    "toda função da allowlist de publicação existe no manifesto",
+    "as funções preservadas como fonte continuam declaradas e contadas",
+    "contrato de runtime — o gate reprova a contradição",
+    "árvore intacta passa",
+    "marcar como "
+   ]
   },
   "tests/scripts/gates-hardening.test.ts": {
    "path": "tests/scripts/gates-hardening.test.ts",
@@ -251341,10 +251532,122 @@
   }
  },
  "git": {
-  "sha": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
+  "sha": "965419baad4d869c5aaa25802bb7ff37a1d626ce",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "965419b",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
+    "files": [
+     "src/hooks/useQuoteBuilderState.ts"
+    ]
+   },
+   {
+    "sha": "b364a12",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)",
+    "files": [
+     "scripts/check-edge-authorization.mjs",
+     "tests/scenarios/edge-runtime-contract.scenario.mjs",
+     "tests/scripts/edge-runtime-contract.test.ts"
+    ]
+   },
+   {
+    "sha": "95aa5bd",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)",
+    "files": [
+     "docs/execucao/auditoria-planejamento-2026-10-13/.gitattributes",
+     "docs/execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/README.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/RELATORIO.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/achados-consolidados.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/achados-consolidados.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/apply_local_quote_approval_response.sql",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-acl-direta.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-auth.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-buckets.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-canonico-referencias.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-colunas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-constraints.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-falhas-agrupadas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-falhas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-resumo.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-dispatch-resultados.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-edges.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-escopo-helpers.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-evidencia-keys.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-fila-agregada.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-funcoes.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-hmac-pronto.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-integracoes-configuradas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-ledger.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-objetos.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-policies.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-privilegios.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-publication-config.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-realtime.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-segredos.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-triggers.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/bd-vault-nomes.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/checklist-1000-subetapas.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/cobertura-documentos.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/cobertura-repositorio.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/convert_quote_to_sicoob_order.sql",
+     "docs/execucao/auditoria-planejamento-2026-10-13/destinos-candidatos-sem-rota.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/edge-verify-email-paridade.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/erros-extracao.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/generate_quote_number.sql",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-e2e-falha-resumo.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-e2e.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-main-runs.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-protecao.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-prs.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/github-rulesets.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/grafo-importacoes.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/graphify-detect.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/guard_quote_governance_write.sql",
+     "docs/execucao/auditoria-planejamento-2026-10-13/http-publico.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/inventario-documentos.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/ledger-comparado.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/local-AUDITORIA.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/manifesto-entrega.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/manifesto-publicacao.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/marcadores-codigo.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/matriz-100-etapas.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/matriz-100-etapas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/referencias-dos-achados.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/LEIA-ME.md",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
+     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
+     "docs/execucao/auditoria-planejamento-2026-10-13/resumo-auditoria.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/resumo-inventario.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/revisao-682-registros.csv",
+     "docs/execucao/auditoria-planejamento-2026-10-13/revisao-682-registros.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/rotas-registradas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/save_quote_atomic.sql",
+     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-filtros.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-rls-verbas.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-status-kit.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/simular-aprovacao-publica.py.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/simular-conversao-pedido-sicoob.py.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/validacao-consulta.json",
+     "docs/execucao/auditoria-planejamento-2026-10-13/validacao-publicacao.json"
+    ]
+   },
    {
     "sha": "87b4f99",
     "date": "2026-11-19",
@@ -251755,52 +252058,12 @@
      "src/pages/ProductDetail.tsx",
      "tests/hooks/intelligence-badges.test.ts"
     ]
-   },
-   {
-    "sha": "fcb4b9a",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "chore(deps): remove chave autoprefixer duplicada no package.json (#320)",
-    "files": [
-     "package-lock.json",
-     "package.json"
-    ]
-   },
-   {
-    "sha": "f2db0f8",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
-    "files": [
-     "src/components/dashboard/RecentKitsWidget.tsx",
-     "src/hooks/useCustomKitPersistence.ts",
-     "src/hooks/useKitAutoSave.ts",
-     "src/lib/kit-builder/custom-kit-payload.ts",
-     "src/lib/kit-builder/status.ts",
-     "tests/hooks/useKitAutoSave.test.tsx",
-     "tests/lib/custom-kit-status.test.ts"
-    ]
-   },
-   {
-    "sha": "d8d7dcd",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)",
-    "files": [
-     "src/hooks/bi/useClientBI.ts",
-     "src/hooks/bi/useClientsComparison.ts",
-     "tests/hooks/bi/useClientBI.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
-    "src/hooks/useKitAutoSave.ts",
-    3
-   ],
-   [
-    "tests/hooks/useKitAutoSave.test.tsx",
-    3
+    "src/hooks/useQuoteBuilderState.ts",
+    2
    ],
    [
     "scripts/revisao/gerar-revisao-2026-09-12.py",
@@ -251823,19 +252086,15 @@
     2
    ],
    [
+    "src/hooks/useKitAutoSave.ts",
+    2
+   ],
+   [
     "src/pages/KitBuilderPage.tsx",
     2
    ],
    [
-    "src/hooks/bi/useClientBI.ts",
-    2
-   ],
-   [
-    "src/hooks/bi/useClientsComparison.ts",
-    2
-   ],
-   [
-    "tests/hooks/bi/useClientBI.test.ts",
+    "tests/hooks/useKitAutoSave.test.tsx",
     2
    ],
    [
@@ -251859,19 +252118,27 @@
     2
    ],
    [
-    "supabase/functions/_shared/expert-chat-contract.ts",
+    "scripts/check-edge-authorization.mjs",
     1
    ],
    [
-    "supabase/functions/expert-chat/index.ts",
+    "tests/scenarios/edge-runtime-contract.scenario.mjs",
     1
    ],
    [
-    "tests/edge-functions/assistant-context.test.ts",
+    "tests/scripts/edge-runtime-contract.test.ts",
     1
    ],
    [
-    "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "docs/execucao/auditoria-planejamento-2026-10-13/.gitattributes",
+    1
+   ],
+   [
+    "docs/execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md",
+    1
+   ],
+   [
+    "docs/execucao/auditoria-planejamento-2026-10-13/README.md",
     1
    ]
   ]

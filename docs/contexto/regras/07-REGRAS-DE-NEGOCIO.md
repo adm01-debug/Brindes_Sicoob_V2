@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `87b4f99b3b` · branch `main` · 2026-11-19 04:34 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `965419baad` · branch `main` · 2026-11-19 05:06 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4869,7 +4869,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
-| … +161 linhas — lista completa em `context.json` | | |
+| … +162 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5303,6 +5303,7 @@ _nenhum item encontrado_
 
 | Mensagem | Arquivo |
 |---|---|
+| Módulo local ausente:  | `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs` |
 | Não foi possível persistir a conclusão do onboarding E2E (HTTP ${response.status()}). | `e2e/fixtures/auth.setup.ts` |
 | E2E_USER_EMAIL não definido — defina nas envs antes de rodar specs autenticados. | `e2e/fixtures/test-user.ts` |
 | E2E_USER_PASSWORD não definido. | `e2e/fixtures/test-user.ts` |
@@ -5602,8 +5603,7 @@ _nenhum item encontrado_
 | Erro ao criar grupo | `src/components/admin/product-groups/useProductGroups.ts` |
 | Erro ao remover grupo | `src/components/admin/product-groups/useProductGroups.ts` |
 | Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| ${result.failed} produto(s) falharam | `src/components/admin/products/BulkImportDialog.tsx` |
-| … +983 linhas — lista completa em `context.json` | |
+| … +984 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6827 testes em 676 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6835 testes em 677 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5969,6 +5969,7 @@ _nenhum item encontrado_
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
 | `tests/scripts/check-seller-scope.test.ts` | 8 | analyzeSource — consulta SEM escopo precisa ser acusada · em Promise.all cada query é avaliada sozinha (a escopada não  · analyzeSource — consulta COM escopo ou justificada passa · informa a linha e a tabela da violação … |
 | `tests/scripts/classify-migration-backlog.test.ts` | 8 | classificador do backlog de migrations · ignora operações perigosas mencionadas apenas em comentários · bloqueia DDL destrutivo e DML de remoção · prioriza revisão de policy aberta e SECURITY DEFINER sem search_path … |
+| `tests/scripts/edge-runtime-contract.test.ts` | 8 | contrato de runtime — manifesto real · o campo runtime só aceita os dois valores do contrato · nenhuma função  · toda função da allowlist de publicação existe no manifesto … |
 | `tests/scripts/tscheck-files.test.ts` | 8 | tscheck-files · caminho absoluto também casa com a saída relativa do tsc · não confunde prefixo: pedir src/bad não acusa src/bad.ts · arquivo sem erro passa (exit 0) … |
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
 | `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
@@ -6010,8 +6011,7 @@ _nenhum item encontrado_
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
-| … +376 linhas — lista completa em `context.json` | | |
+| … +377 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

@@ -19,6 +19,7 @@
    "scripts/autofix/colors-map.mjs"
   ],
   "scripts/check-edge-authorization.mjs": [
+   "scripts/ci/verify-supabase-functions-published.mjs",
    "scripts/lib/edge-authorization-contract.mjs"
   ],
   "scripts/check-edge-structured-logging.mjs": [

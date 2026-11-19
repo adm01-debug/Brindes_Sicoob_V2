@@ -163,7 +163,7 @@
   {
    "arquivo": "scripts/check-edge-authorization.mjs",
    "descricao": "* check-edge-authorization",
-   "linhas": 220,
+   "linhas": 248,
    "env": [
     "GITHUB_ACTIONS"
    ],

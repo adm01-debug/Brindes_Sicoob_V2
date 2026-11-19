@@ -2,11 +2,26 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
+  "commit": "965419baad4d869c5aaa25802bb7ff37a1d626ce",
   "branch": "main",
-  "data_commit": "2026-11-19T04:34:14Z",
+  "data_commit": "2026-11-19T05:05:47Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "965419b",
+    "data": "2026-11-19",
+    "assunto": "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)"
+   },
+   {
+    "sha": "b364a12",
+    "data": "2026-11-19",
+    "assunto": "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)"
+   },
+   {
+    "sha": "95aa5bd",
+    "data": "2026-11-19",
+    "assunto": "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)"
+   },
    {
     "sha": "87b4f99",
     "data": "2026-11-19",
@@ -116,25 +131,14 @@
     "sha": "64b8dc8",
     "data": "2026-11-18",
     "assunto": "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)"
-   },
-   {
-    "sha": "06aa890",
-    "data": "2026-11-18",
-    "assunto": "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)"
-   },
-   {
-    "sha": "57346a6",
-    "data": "2026-11-18",
-    "assunto": "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)"
-   },
-   {
-    "sha": "2b192fb",
-    "data": "2026-11-18",
-    "assunto": "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)"
    }
   ],
-  "arquivos_mudados_7d": 476,
+  "arquivos_mudados_7d": 563,
   "pastas_mais_mudadas_30d": [
+   {
+    "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
+    "mudancas": 84
+   },
    {
     "pasta": "supabase/functions/_shared",
     "mudancas": 36
@@ -190,20 +194,16 @@
    {
     "pasta": "src/pages/sicoob",
     "mudancas": 10
-   },
-   {
-    "pasta": "src/components/quotes",
-    "mudancas": 9
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 64
+    "mudancas": 61
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 63
+    "mudancas": 60
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -282,6 +282,10 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
@@ -292,16 +296,12 @@
    {
     "arquivo": "docs/README.md",
     "mudancas": 9
-   },
-   {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 158
+    "commits": 161
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4411,
-  "arquivos_codigo": 3096,
-  "linhas_codigo": 487824,
+  "arquivos_total": 4496,
+  "arquivos_codigo": 3106,
+  "linhas_codigo": 488845,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,15 +324,15 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 856,
+  "testes": 858,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 263
+  "docs_md": 269
  },
  "por_pasta": {
   "docs/execucao": {
-   "arquivos": 13,
-   "linhas": 928
+   "arquivos": 21,
+   "linhas": 1734
   },
   "docs/plano-implementacao": {
    "arquivos": 1,
@@ -508,7 +508,7 @@
   },
   "scripts/check-edge-authorization.mjs": {
    "arquivos": 1,
-   "linhas": 220
+   "linhas": 248
   },
   "scripts/check-edge-functions-health.mjs": {
    "arquivos": 1,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47330
+   "linhas": 47343
   },
   "src/integrations": {
    "arquivos": 3,
@@ -955,12 +955,12 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 30,
-   "linhas": 1979
+   "arquivos": 31,
+   "linhas": 2047
   },
   "tests/scripts": {
-   "arquivos": 32,
-   "linhas": 2971
+   "arquivos": 33,
+   "linhas": 3077
   },
   "tests/search": {
    "arquivos": 1,
@@ -1082,7 +1082,7 @@
   },
   {
    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-   "linhas": 945
+   "linhas": 958
   },
   {
    "arquivo": "scripts/ai-context/gerar.mjs",
@@ -1143,10 +1143,10 @@
  ],
  "qualidade": {
   "any": 489,
-  "console_log": 484,
+  "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,
-  "todos": 16,
+  "todos": 17,
   "arquivos_acima_500_linhas": 70
  },
  "todos": [
@@ -1227,6 +1227,12 @@
    "linha": 20,
    "tipo": "TODO",
    "texto": ".eq(\"seller_id\", id)\\n;'],"
+  },
+  {
+   "arquivo": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
+   "linha": 79,
+   "tipo": "TODO",
+   "texto": "|FIXME|em breve|stub|mock|roadmap|backlog|fora d[eo] escopo|desativad|bloquead',line,re.I):"
   },
   {
    "arquivo": "scripts/regras_negocio/generate.py",

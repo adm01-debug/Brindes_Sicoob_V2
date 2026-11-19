@@ -7550,7 +7550,7 @@
    "hooks_exportados": [
     "useQuoteBuilderState"
    ],
-   "linhas": 945,
+   "linhas": 958,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"

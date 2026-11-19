@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `87b4f99b3b948857ff05224a5c07aaf66ed37e03` (2026-11-19T04:34:14Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `965419baad4d869c5aaa25802bb7ff37a1d626ce` (2026-11-19T05:05:47Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2891), SQL (677), Markdown (263), JSON (235), JavaScript (148), Python (60), YAML (23), CSS (7)
+- linguagens: TypeScript (2892), SQL (682), JSON (292), Markdown (269), JavaScript (151), Python (66), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4411 |
-| arquivos_codigo | 3096 |
-| linhas_codigo | 487824 |
+| arquivos_total | 4496 |
+| arquivos_codigo | 3106 |
+| linhas_codigo | 488845 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,17 +48,17 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 856 |
+| testes | 858 |
 | workflows | 16 |
 | scripts | 121 |
-| docs_md | 263 |
+| docs_md | 269 |
 
 ## Onde ficam as coisas
 - telas: src/pages (115)
 - componentes: src/components (999), src/pages (159), src/contexts (9)
 - hooks: src/hooks (287), src/components (66), src/pages (21)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (609), e2e/ (149), outro (51)
+- testes: tests/ (611), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -470,14 +470,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29122 nós · 53779 arestas · 2079 comunidades · grafo do commit `87b4f99b`
-- comunidades maiores: ref_components (424), ref_integrations (367), ref_lib (260), ref_hooks (251), react-router-dom (207), getCorsHeaders (186), sonner (186), ai-usage.ts (169), react (163), ref_contexts (159), date-fns (153), external-db-bridge/index.ts (153)
+- 29131 nós · 53798 arestas · 2059 comunidades · grafo do commit `965419ba`
+- comunidades maiores: ref_hooks (511), ref_lib (298), ref_integrations (252), lucide-react (245), sonner (240), react (236), ref_node_fs (202), framer-motion (200), ref_components (191), getCorsHeaders (187), react-router-dom (186), expert-chat/index.ts (180)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (64)
-- docs/correcoes-validacao-2026-09-14.md (63)
+- docs/plano-melhorias-50-etapas.md (61)
+- docs/correcoes-validacao-2026-09-14.md (60)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -689,10 +689,13 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/execucao (86), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/plano-implementacao (8), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/execucao (92), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/plano-implementacao (8), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `965419b` fix(orçamento): salvar deixa de manter o aviso de "alterações não salvas" (#331)
+- 2026-11-19 `b364a12` ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)
+- 2026-11-19 `95aa5bd` docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)
 - 2026-11-19 `87b4f99` test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)
 - 2026-11-19 `e520ace` docs(email): preserva os modelos da PR #4 sem reintroduzir o "enviado" falso (#337)
 - 2026-11-19 `116bb44` test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)
@@ -705,9 +708,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `3da8611` test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)
 - 2026-11-19 `f9b0686` docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)
 - 2026-11-19 `489c13d` fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)
-- 2026-11-19 `e0e36d4` fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)
-- 2026-11-19 `25214df` fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)
-- 2026-11-19 `d53f9e8` fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

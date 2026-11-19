@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2240,
- "arestas": 9137,
+ "nos": 2248,
+ "arestas": 9138,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -296,6 +296,14 @@
   "docs/execucao/auditoria-api-20260922/consultar-controles.py",
   "docs/execucao/auditoria-api-20260922/consultar-leitura-anonima.py",
   "docs/execucao/auditoria-api-20260922/validar-evidencias.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
+  "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
   "docs/execucao/revisao-plano-20261001/reproduzir-status-fora-escopo.py",
   "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/validar-plano.py",
   "public/sw.js",

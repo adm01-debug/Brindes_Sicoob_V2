@@ -5,9 +5,9 @@
   "vitest",
   "playwright"
  ],
- "total": 856,
+ "total": 858,
  "por_tipo": {
-  "contrato": 9,
+  "contrato": 11,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
@@ -16,7 +16,7 @@
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 609
+   "arquivos": 611
   },
   {
    "padrao": "e2e/",
@@ -6327,6 +6327,15 @@
    "casos": 1
   },
   {
+   "arquivo": "tests/scenarios/edge-runtime-contract.scenario.mjs",
+   "tipo": "contrato",
+   "linhas": 68,
+   "testa": [
+    "scripts/ci/verify-supabase-functions-published.mjs"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/scenarios/email-transacional-legado.mjs",
    "tipo": "unit",
    "linhas": 42,
@@ -6569,6 +6578,13 @@
     "scripts/e2e-target.mjs"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "tests/scripts/edge-runtime-contract.test.ts",
+   "tipo": "contrato",
+   "linhas": 106,
+   "testa": [],
+   "casos": 6
   },
   {
    "arquivo": "tests/scripts/gates-hardening.test.ts",
@@ -7440,7 +7456,7 @@
   "scripts/check-critical-test-skip-budget.mjs": 1,
   "scripts/check-seller-scope.mjs": 1,
   "scripts/check-smoke-tags.mjs": 1,
-  "scripts/ci/verify-supabase-functions-published.mjs": 1,
+  "scripts/ci/verify-supabase-functions-published.mjs": 2,
   "scripts/db/apply-sicoob-migrations.mjs": 2,
   "scripts/db/audit-core-rls.mjs": 1,
   "scripts/db/check-live-api-inventory.mjs": 1,

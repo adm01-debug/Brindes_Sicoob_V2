@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (609)",
+   "tests/ (611)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
+   "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)",
+   "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)",
    "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)",
-   "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)",
-   "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)",
-   "fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)",
-   "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)"
+   "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
