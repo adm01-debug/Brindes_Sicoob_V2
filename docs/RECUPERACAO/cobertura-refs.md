@@ -211,12 +211,12 @@ tocaram a `main`:
 
 | PR mergeada | base real (não era `main`) | onde o conteúdo está hoje | estado |
 |---|---|---|---|
-| [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `claude/fix-bi-overview-historico-indisponivel-261118-2300` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
-| [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `claude/fix-bi-comparador-fontes-261118-2345` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
-| [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `claude/fix-bi-copiloto-briefing-261119-0030` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | aberta |
-| [#341](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/341) | `claude/fix-kit-trava-concorrencia-261118-2105` | branch da [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | aberta |
-| [#356](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/356) | `claude/fix-kit-trava-concorrencia-261118-2105` | branch da [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | aberta |
-| [#359](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/359) | `claude/fix-voltar-pergunta-sem-motivo-261119-0310` | branch da [#357](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/357) | aberta |
+| [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `claude/fix-bi-overview-historico-indisponivel-261118-2300` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | **na `main`** (`d53f9e8`) |
+| [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `claude/fix-bi-comparador-fontes-261118-2345` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | **na `main`** (`d53f9e8`) |
+| [#351](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/351) | `claude/fix-bi-copiloto-briefing-261119-0030` | consolidado na [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361) | **na `main`** (`d53f9e8`) |
+| [#341](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/341) | `claude/fix-kit-trava-concorrencia-261118-2105` | entrou com a [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | **na `main`** (`25214df`) |
+| [#356](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/356) | `claude/fix-kit-trava-concorrencia-261118-2105` | entrou com a [#334](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/334) | **na `main`** (`25214df`) |
+| [#359](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/359) | `claude/fix-voltar-pergunta-sem-motivo-261119-0310` | branch da [#357](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/357) | **aberta** — a única que falta |
 
 Prova de preservação das duas pilhas novas (#341 e #359), feita commit a commit:
 
@@ -230,9 +230,25 @@ Prova de preservação das duas pilhas novas (#341 e #359), feita commit a commi
   (10/10), com `src/pages/MockupGenerator.tsx` e `src/pages/SimuladorWizard.tsx`
   **byte a byte idênticos** (mesmo hash de blob).
 
-Consequência operacional: enquanto **#334**, **#357** e **#361** não entrarem, seis
-correções mergeadas continuam fora de produção. Nenhuma das branches dessas três pilhas
-pode ser apagada antes disso.
+**Estado em 19/11/2026, 02:35 UTC:** a **#361** entrou (`d53f9e8`) e a **#334** entrou
+(`25214df`). Das seis PRs colapsadas, **cinco estão em produção**; falta a **#359**, atrás
+da **#357**.
+
+Conferência por linha das duas que entraram pela #334, contra `origin/main`:
+
+| PR colapsada | arquivos | linhas presentes na `main` |
+|---|---|---|
+| #341 | `useKitAutoSave.ts`, `KitBuilderPage.tsx`, `useKitAutoSave.test.tsx` | **87/87** |
+| #356 | `KitBuilderPage.tsx`, `kit-builder-guarda-saida.test.tsx` | **52/52** |
+
+A única linha que o comparador textual marcou (`retry, syncPersistedVersion, flushPending,`)
+existe na `main` acrescida de `capturarSnapshotAtual`, em `useKitAutoSave.ts:461` —
+superconjunto, não falta.
+
+Consequência operacional: as branches das pilhas de BI e de kit tiveram o conteúdo
+confirmado na `main` e entram no portão de exclusão (seção abaixo). A branch
+`claude/fix-voltar-pergunta-sem-motivo-261119-0310` **não** pode ser apagada: ela ainda é a
+única cópia do que foi mergeado na #359.
 
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
