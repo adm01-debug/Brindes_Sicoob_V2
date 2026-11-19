@@ -1021,3 +1021,54 @@ for arquivar outra ref no futuro precisa do mesmo caminho.
 **64 → 8.** As 8 que sobraram estão todas vivas, nenhuma é resíduo: `main`, `contexto`
 (gerada a cada 10 min), `computador_local`, duas do Dependabot, a de #311 (decisão do
 dono) e as duas PRs de teste abertas em 19/11.
+
+## As 25 PRs fechadas que não tinham veredito — medidas, não presumidas
+
+**19/11/2026.** Conferência final: cruzei as **85 PRs fechadas sem merge** do repositório
+contra todo o `docs/RECUPERACAO/`. **25 não tinham veredito escrito.** Todas do
+Dependabot — mas "é do Dependabot" não é prova de que nada se perdeu, então medi.
+
+### Como medi
+
+Busquei `refs/pull/<N>/head` das 14 que mexem em `package.json` e comparei **pacote a
+pacote** a versão que a PR propunha com a que está na `main` hoje:
+
+```
+git fetch origin refs/pull/<N>/head:refs/prhead/<N>
+# depois, para cada dependência da PR: norm(main) >= norm(PR)?
+```
+
+Resultado: **12 de 14 com a `main` à frente ou igual em todos os pacotes.** As outras
+duas (#92, #93) apontavam um único pacote ausente, tratado abaixo.
+
+### Os casos nomeados
+
+| PR | Propunha | `main` hoje | Veredito |
+| --- | --- | --- | --- |
+| #146 | `undici` 8.12.3 | **8.12.3** | já incorporado |
+| #147 | `zod` 4.6.6 | **4.6.7** | superada |
+| #99 | `postcss` 8.5.29 | **8.5.33** | superada |
+| #108, #109, #110, #122, #123, #124, #142, #144, #242, #243, #245 | `codeql-action` 4.38.3 → 4.39.3 | **4.39.3** | superadas |
+
+O pin do CodeQL é por SHA, então conferi a origem dele em vez de confiar no comentário:
+`git log -S'33d7b85da1a04171e211befe2c739303b9a4c066'` aponta para
+`90039c42f chore(ci): bump codeql-action para 4.39.3 nas tres steps (#273)`. É a mais
+alta de todas as propostas.
+
+### #92 e #93: `md-to-pdf`
+
+Único pacote que a `main` não tem. Não é bump perdido — é **remoção deliberada**:
+`scripts/md-to-pdf-stub.mjs:5` diz "Substitui o pacote md-to-pdf removido por CVEs
+críticos em braces", e o gerador de PDF hoje é Playwright
+(`scripts/automation.config.json:633`). Subir a versão de um pacote arrancado por CVE
+seria regressão, não recuperação.
+
+### As de grupo
+
+`production-minor-patch` e `development-all` são grupos: o Dependabot recria o grupo
+inteiro com o que ainda estiver desatualizado, então fechar uma não descarta bump
+nenhum — ele reaparece na próxima. As vivas hoje são #281 e a do grupo de
+desenvolvimento. A medição acima vale para elas também: nenhuma das fechadas deixou
+pacote atrás.
+
+**Conclusão: 85 de 85 PRs fechadas com veredito. Nada perdido.**
