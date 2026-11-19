@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `726efa735ff5ab1a518bb4f6aecc81b16240493d` (2026-11-19T15:38:16-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e1ef79975de2d3c8d1335520f0b07151db7c1044` (2026-11-19T19:59:03-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -471,22 +471,22 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29665 nós · 54452 arestas · 2107 comunidades · grafo do commit `726efa73`
+- 29665 nós · 54452 arestas · 2107 comunidades · grafo do commit `e1ef7997`
 - comunidades maiores: ref_lib (526), ref_components (466), react (222), framer-motion (199), react-router-dom (182), ai-usage.ts (176), getCorsHeaders (173), ref_utils (143), external-db-bridge/index.ts (136), ref_node_fs (130), ref_pages (130), date-fns (127)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (37)
-- docs/correcoes-validacao-2026-09-14.md (36)
-- package.json (22)
+- docs/plano-melhorias-50-etapas.md (36)
+- docs/correcoes-validacao-2026-09-14.md (35)
+- package.json (23)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
 - .github/workflows/sicoob-ci.yml (19)
 - .github/workflows/ci.yml (18)
+- package-lock.json (18)
 - .github/workflows/codeql.yml (17)
-- package-lock.json (17)
 - .github/workflows/e2e.yml (16)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (15)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `e1ef799` chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)
 - 2026-11-19 `726efa7` feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)
 - 2026-11-19 `a73abe0` docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)
 - 2026-11-19 `5830e19` feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `f08eb8f` test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)
 - 2026-11-19 `ce9014b` test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)
 - 2026-11-19 `a202373` docs(recuperação): veredito medido para as 62 refs restantes (#367)
-- 2026-11-19 `f21dbfd` fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

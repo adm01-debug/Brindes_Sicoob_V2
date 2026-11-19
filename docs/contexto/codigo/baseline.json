@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "726efa735ff5ab1a518bb4f6aecc81b16240493d",
+  "commit": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
   "branch": "main",
-  "data_commit": "2026-11-19T15:38:16-03:00",
+  "data_commit": "2026-11-19T19:59:03-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e1ef799",
+    "data": "2026-11-19",
+    "assunto": "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)"
+   },
    {
     "sha": "726efa7",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "6aff499",
     "data": "2026-11-19",
     "assunto": "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)"
-   },
-   {
-    "sha": "965419b",
-    "data": "2026-11-19",
-    "assunto": "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)"
    }
   ],
-  "arquivos_mudados_7d": 604,
+  "arquivos_mudados_7d": 563,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -161,7 +161,7 @@
    },
    {
     "pasta": "package.json",
-    "mudancas": 16
+    "mudancas": 17
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
@@ -180,12 +180,12 @@
     "mudancas": 14
    },
    {
-    "pasta": "src/components/bi",
+    "pasta": "package-lock.json",
     "mudancas": 13
    },
    {
-    "pasta": "package-lock.json",
-    "mudancas": 12
+    "pasta": "src/components/bi",
+    "mudancas": 13
    },
    {
     "pasta": "src/components/sicoob",
@@ -199,15 +199,15 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 37
-   },
-   {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 36
    },
    {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 35
+   },
+   {
     "arquivo": "package.json",
-    "mudancas": 22
+    "mudancas": 23
    },
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
@@ -230,11 +230,11 @@
     "mudancas": 18
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 17
+    "arquivo": "package-lock.json",
+    "mudancas": 18
    },
    {
-    "arquivo": "package-lock.json",
+    "arquivo": ".github/workflows/codeql.yml",
     "mudancas": 17
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 182
+    "commits": 183
    },
    {
     "autor": "dependabot[bot]",

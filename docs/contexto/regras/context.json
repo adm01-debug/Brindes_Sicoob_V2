@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "726efa735ff5ab1a518bb4f6aecc81b16240493d",
+  "sha": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 18:39 UTC",
+  "generated_at": "2026-11-19 22:59 UTC",
   "files_total": 4547,
   "code_files": 3799,
   "code_lines": 555075
  },
  "version": "1.3.2",
- "facts_hash": "8700cb6ace5198f7",
+ "facts_hash": "960cbdddc53eb9d7",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -27,7 +27,7 @@
     "in": "package.json"
    },
    "@tanstack/react-query": {
-    "version": "^5.106.1",
+    "version": "^5.107.1",
     "role": "Cache/fetch de dados (TanStack Query)",
     "in": "package.json"
    },
@@ -52,7 +52,7 @@
     "in": "package.json"
    },
    "react-hook-form": {
-    "version": "^7.91.0",
+    "version": "^7.92.0",
     "role": "Forms (react-hook-form)",
     "in": "package.json"
    },
@@ -253058,10 +253058,20 @@
   }
  },
  "git": {
-  "sha": "726efa735ff5ab1a518bb4f6aecc81b16240493d",
+  "sha": "e1ef79975de2d3c8d1335520f0b07151db7c1044",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e1ef799",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)",
+    "files": [
+     "package-lock.json",
+     "package.json"
+    ]
+   },
    {
     "sha": "726efa7",
     "date": "2026-11-19",
@@ -253480,23 +253490,20 @@
      "docs/execucao/email-transacional-modelos-pr4/README.md",
      "docs/execucao/email-transacional-modelos-pr4/buildEmailContent.ts.txt"
     ]
-   },
-   {
-    "sha": "116bb44",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)",
-    "files": [
-     "docs/execucao/revisao-implementacao-2026-09-12.md",
-     "e2e/validate-supabase-target.test.mjs",
-     "scripts/revisao/gerar-revisao-2026-09-12.py"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/cobertura-refs.md",
     3
+   ],
+   [
+    "package-lock.json",
+    2
+   ],
+   [
+    "package.json",
+    2
    ],
    [
     "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
@@ -253564,14 +253571,6 @@
    ],
    [
     ".github/workflows/inventario-estado-semanal.yml",
-    1
-   ],
-   [
-    "e2e/flows/p0/03-quote-blocked.spec.ts",
-    1
-   ],
-   [
-    "docs/RECUPERACAO/README.md",
     1
    ]
   ]

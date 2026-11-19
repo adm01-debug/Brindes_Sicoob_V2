@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)",
    "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)",
    "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)",
    "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)",
-   "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)",
-   "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)"
+   "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
