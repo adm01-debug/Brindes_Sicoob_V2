@@ -89,14 +89,12 @@ function buildDemoResult(ramo?: string | null): IndustryCategoryTrendsResult {
 }
 
 async function fetchCompanyIds(ramoAtividade: string) {
-  try {
-    // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
-    // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
-    const peerIds = await fetchIndustryPeerIds(ramoAtividade);
-    return peerIds.filter(Boolean);
-  } catch {
-    return [];
-  }
+  // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+  // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+  // A falha do CRM nao e "setor sem pares": propagar e o que marca `isError` e
+  // libera o aviso de fonte indisponivel com "Tentar novamente" na tela.
+  const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+  return peerIds.filter(Boolean);
 }
 
 async function fetchIndustryRows(companyIds: string[]) {
@@ -105,7 +103,9 @@ async function fetchIndustryRows(companyIds: string[]) {
     _days: 90,
     _limit: 50,
   });
-  if (error || !Array.isArray(data)) return [];
+  // Erro da RPC tambem nao e setor sem linha medida.
+  if (error) throw error;
+  if (!Array.isArray(data)) return [];
   return data as unknown as IndustryRow[];
 }
 

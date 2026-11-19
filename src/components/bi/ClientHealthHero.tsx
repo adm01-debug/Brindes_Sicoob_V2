@@ -158,6 +158,27 @@ function renderHealthState(
   return null;
 }
 
+// Se a consulta do cliente falhou, a lista vazia nao prova que ele nao compra a
+// categoria: toda categoria do setor viraria "oportunidade" falsa na tela.
+function categoriasSemFonte(
+  clientCats: { isError?: boolean },
+  industryCats: { isError?: boolean },
+): boolean {
+  return Boolean(clientCats.isError) || Boolean(industryCats.isError);
+}
+
+function resolveOportunidadeDeCategoria<T extends { slug: string; revenueSharePct: number }>(
+  indisponivel: boolean,
+  clientCategories: Array<{ slug: string }>,
+  industryCategories: T[],
+): T | null {
+  if (indisponivel) return null;
+  const clientSlugs = new Set(clientCategories.map((c) => c.slug));
+  return industryCategories
+    .filter((ic) => ic.revenueSharePct >= 8 && !clientSlugs.has(ic.slug))
+    .sort((a, b) => b.revenueSharePct - a.revenueSharePct)[0] ?? null;
+}
+
 export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
   const affinity = useClientAffinity(clientId);
@@ -167,16 +188,16 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
   const [open, setOpen] = useState(false);
 
   // Categoria favorita do cliente (top 1 por receita)
-  const favoriteCategory = clientCats.favorite;
-  // Categoria-oportunidade: setor compra muito, cliente quase nada
-  const opportunityCategory = useMemo(() => {
-    const clientSlugs = new Set(clientCats.categories.map((c) => c.slug));
-    return (
-      industryCats.categories
-        .filter((ic) => ic.revenueSharePct >= 8 && !clientSlugs.has(ic.slug))
-        .sort((a, b) => b.revenueSharePct - a.revenueSharePct)[0] ?? null
-    );
-  }, [clientCats.categories, industryCats.categories]);
+  const favoriteCategory = categoriasSemFonte(clientCats, industryCats) ? null : clientCats.favorite;
+  // Categoria-oportunidade: setor compra muito, cliente quase nada.
+  // Exige as duas fontes OK: se a consulta do cliente falhou, a lista vazia não
+  // prova que ele não compra a categoria — toda categoria do setor viraria
+  // "oportunidade" falsa na tela do vendedor.
+  const categoriasIndisponiveis = categoriasSemFonte(clientCats, industryCats);
+  const opportunityCategory = useMemo(
+    () => resolveOportunidadeDeCategoria(categoriasIndisponiveis, clientCats.categories, industryCats.categories),
+    [categoriasIndisponiveis, clientCats.categories, industryCats.categories],
+  );
 
   const styles = TIER_STYLES[health.tier];
   const Icon = styles.icon;

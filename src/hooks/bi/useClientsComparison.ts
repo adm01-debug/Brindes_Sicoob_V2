@@ -141,7 +141,10 @@ function getSourceAvailability(sources: ComparisonSources): SourceAvailability {
     affinity: Boolean(affinity.isError),
     categoryAffinity: Boolean(catAffinity.isError),
     categoryIndustry: Boolean(catIndustry.isError),
-    seasonality: [Boolean(seas.isError), Boolean(seas.industryError), crm].some(Boolean),
+    // O proximo pico sai so das celulas do cliente: a falha do recorte setorial
+    // (industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o
+    // retry da fonte setorial continuam em `getFailedSources`.
+    seasonality: Boolean(seas.isError),
     health: [health.isError, crm, history, Boolean(seas.isError)].some(Boolean),
   };
 }

@@ -81,15 +81,13 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
-      let companyIds: string[] = [];
-      try {
-        // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
-        // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
-        const peerIds = await fetchIndustryPeerIds(ramoAtividade);
-        companyIds = peerIds.filter(Boolean);
-      } catch {
-        companyIds = [];
-      }
+      // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+      // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+      // A falha do CRM nao pode virar "setor sem tendencia": sem propagar, o
+      // resultado vazio ficaria em cache por 10 min e o copiloto responderia
+      // sobre um setor que nenhuma consulta mediu.
+      const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+      const companyIds = peerIds.filter(Boolean);
 
       // 2) Se temos IDs, tenta RPC
       if (companyIds.length > 0) {
