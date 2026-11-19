@@ -1,0 +1,257 @@
+[
+  {
+    "relname": "favorite_items",
+    "conname": "favorite_items_list_id_fkey",
+    "definition": "FOREIGN KEY (list_id) REFERENCES favorite_lists(id) ON DELETE CASCADE"
+  },
+  {
+    "relname": "favorite_items",
+    "conname": "favorite_items_list_product_variant_key",
+    "definition": "UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)"
+  },
+  {
+    "relname": "favorite_items",
+    "conname": "favorite_items_note_check",
+    "definition": "CHECK ((char_length(note) <= 280))"
+  },
+  {
+    "relname": "favorite_items",
+    "conname": "favorite_items_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_ano_range",
+    "definition": "CHECK (((ano >= 2000) AND (ano <= 2100)))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_limite_alcada_non_negative",
+    "definition": "CHECK ((limite_alcada >= (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_limite_alcada_within_budget",
+    "definition": "CHECK ((limite_alcada <= verba_total))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_mes_range",
+    "definition": "CHECK (((mes >= 1) AND (mes <= 12)))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_positive_limite_alcada",
+    "definition": "CHECK ((limite_alcada >= (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_positive_verba_consumida",
+    "definition": "CHECK ((verba_consumida >= (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_positive_verba_total",
+    "definition": "CHECK ((verba_total >= (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "check_verba_total_positive",
+    "definition": "CHECK ((verba_total > (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_ano_check",
+    "definition": "CHECK (((ano >= 2024) AND (ano <= 2100)))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_limite_alcada_check",
+    "definition": "CHECK (((limite_alcada IS NULL) OR (limite_alcada >= (0)::numeric)))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_mes_check",
+    "definition": "CHECK (((mes >= 1) AND (mes <= 12)))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_pa_id_ano_mes_key",
+    "definition": "UNIQUE (pa_id, ano, mes)"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_pa_id_fkey",
+    "definition": "FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id) ON DELETE CASCADE"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_verba_consumida_check",
+    "definition": "CHECK ((verba_consumida >= (0)::numeric))"
+  },
+  {
+    "relname": "pa_budgets",
+    "conname": "pa_budgets_verba_total_check",
+    "definition": "CHECK ((verba_total >= (0)::numeric))"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_catalog_minimum_check",
+    "definition": "CHECK (((catalog_minimum_quantity IS NULL) OR (catalog_minimum_quantity > 0)))"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_catalog_not_reservation_check",
+    "definition": "CHECK ((catalog_stock_is_reserved IS FALSE))"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_catalog_stock_check",
+    "definition": "CHECK (((catalog_available_stock IS NULL) OR (catalog_available_stock >= 0)))"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_historical_price_check",
+    "definition": "CHECK (((historical_unit_price IS NULL) OR (historical_unit_price >= (0)::numeric)))"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "relname": "quote_items",
+    "conname": "quote_items_quote_id_fkey",
+    "definition": "FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_approved_by_fkey",
+    "definition": "FOREIGN KEY (approved_by) REFERENCES auth.users(id)"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_catalog_not_reservation_check",
+    "definition": "CHECK ((catalog_stock_is_reserved IS FALSE))"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_catalog_validity_check",
+    "definition": "CHECK (((catalog_valid_until IS NULL) OR ((catalog_revalidated_at IS NOT NULL) AND (catalog_valid_until > catalog_revalidated_at))))"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_consolidation_id_fkey",
+    "definition": "FOREIGN KEY (consolidation_id) REFERENCES quote_consolidations(id)"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_negotiation_markup_range",
+    "definition": "CHECK (((negotiation_markup_percent >= (0)::numeric) AND (negotiation_markup_percent <= (50)::numeric)))"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_organization_id_fkey",
+    "definition": "FOREIGN KEY (organization_id) REFERENCES organizations(id)"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_pa_id_fkey",
+    "definition": "FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id)"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_parent_quote_id_fkey",
+    "definition": "FOREIGN KEY (parent_quote_id) REFERENCES quotes(id) ON DELETE SET NULL"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_reorder_price_changes_check",
+    "definition": "CHECK ((reorder_price_changed_items >= 0))"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_reorder_single_source_check",
+    "definition": "CHECK (((reorder_source_order_id IS NULL) OR (reorder_source_quote_id IS NULL)))"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_reorder_source_order_id_fkey",
+    "definition": "FOREIGN KEY (reorder_source_order_id) REFERENCES sicoob_orders(id) ON DELETE RESTRICT"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_reorder_source_quote_id_fkey",
+    "definition": "FOREIGN KEY (reorder_source_quote_id) REFERENCES quotes(id) ON DELETE RESTRICT"
+  },
+  {
+    "relname": "quotes",
+    "conname": "quotes_singular_id_fkey",
+    "definition": "FOREIGN KEY (singular_id) REFERENCES cooperativas(id)"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "check_positive_total",
+    "definition": "CHECK ((total_amount >= (0)::numeric))"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_approved_by_fkey",
+    "definition": "FOREIGN KEY (approved_by) REFERENCES auth.users(id)"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_brl_v1_reconciled",
+    "definition": "CHECK (((pricing_formula_version <> 'brl-v1'::text) OR ((abs((commercial_subtotal_amount - ((merchandise_amount + personalization_amount) + negotiation_markup_amount))) <= 0.01) AND (discount_amount <= commercial_subtotal_amount) AND (abs((total_amount - ((commercial_subtotal_amount - discount_amount) + shipping_amount))) <= 0.01))))"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_commercial_components_nonnegative",
+    "definition": "CHECK (((merchandise_amount >= (0)::numeric) AND (personalization_amount >= (0)::numeric) AND (negotiation_markup_amount >= (0)::numeric) AND (commercial_subtotal_amount >= (0)::numeric) AND (discount_amount >= (0)::numeric) AND (shipping_amount >= (0)::numeric)))"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_consolidation_id_fkey",
+    "definition": "FOREIGN KEY (consolidation_id) REFERENCES order_consolidations(id) ON DELETE RESTRICT"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_cooperative_id_fkey",
+    "definition": "FOREIGN KEY (cooperative_id) REFERENCES cooperativas(id) ON DELETE CASCADE"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_pa_id_fkey",
+    "definition": "FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id) ON DELETE CASCADE"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_sla_status_check",
+    "definition": "CHECK ((sla_status = ANY (ARRAY['normal'::text, 'warning'::text, 'critical'::text])))"
+  },
+  {
+    "relname": "sicoob_orders",
+    "conname": "sicoob_orders_source_quote_id_fkey",
+    "definition": "FOREIGN KEY (source_quote_id) REFERENCES quotes(id) ON DELETE RESTRICT"
+  }
+]

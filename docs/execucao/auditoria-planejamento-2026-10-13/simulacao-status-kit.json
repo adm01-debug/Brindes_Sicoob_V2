@@ -1,0 +1,8 @@
+{
+  "ambiente": "PostgreSQL 16 isolado, fixture mínima com trigger remoto vigente",
+  "status_enviado_pelo_frontend": "complete",
+  "rejeitado": true,
+  "erro": "ERROR:  Invalid kit status: complete\nCONTEXT:  PL/pgSQL function validate_status_fields() line 26 at RAISE",
+  "controle_positivo_ready": "ready\nINSERT 0 1",
+  "linhas_persistidas": "1"
+}

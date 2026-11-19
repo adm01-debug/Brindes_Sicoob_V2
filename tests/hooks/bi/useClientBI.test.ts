@@ -15,7 +15,8 @@ const { useClientOrdersHistory } = vi.hoisted(() => ({
 vi.mock('@/hooks/useClientOrdersHistory', () => ({ useClientOrdersHistory }));
 
 import { renderHook } from '@testing-library/react';
-import { useClientBI } from '@/hooks/bi/useClientBI';
+import { getAvailableClientHistory, useClientBI } from '@/hooks/bi/useClientBI';
+import { DEMO_CLIENT_ID } from '@/lib/bi/demoClient';
 import { MOCK_CLIENT_STATS } from '@/lib/bi/mockData';
 
 function pedido(total: number, diasAtras: number) {
@@ -53,16 +54,59 @@ describe('useClientBI', () => {
     expect(result.current.ordersCount).toBe(2);
   });
 
-  it('mantém o conjunto simulado quando o cliente não tem pedido, com a flag ligada', () => {
+  it('cliente real sem pedido nao recebe o conjunto simulado, nem com flag', () => {
+    // Antes, QUALQUER cliente com zero pedidos recebia MOCK_CLIENT_STATS — LTV,
+    // ticket e "última compra" de outra empresa — com um selo pequeno de "Dados
+    // simulados" ao lado dos números grandes. Rótulo não conserta número
+    // inventado: o simulado agora é exclusivo do cliente de demonstração
+    // (`isDemoClient`, que a própria `main` já usa em
+    // `BusinessIntelligencePage`). Recuperado da branch de produção
+    // `claude/fix-prod-cors-audit-261118-1034`.
     useClientOrdersHistory.mockReturnValue({
       data: { ordersCount: 0, totalLtv: 0, avgTicket: 0, lastOrderAt: null, orders: [] },
       isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     const { result } = renderHook(() => useClientBI('cliente-sem-historico'));
 
-    // Esse caminho é sinalizado na tela ("Dados simulados") e no PPTX/PDF.
+    expect(result.current.isMock).toBe(false);
+    expect(result.current.hasData).toBe(false);
+    expect(result.current.isUnavailable).toBe(false);
+    expect(result.current.ltv).toBe(0);
+    expect(result.current.topCategories).toEqual([]);
+    expect(result.current.topCategories).not.toEqual(MOCK_CLIENT_STATS.topCategories);
+  });
+
+  it('cliente de demonstracao continua recebendo o conjunto simulado', () => {
+    useClientOrdersHistory.mockReturnValue({
+      data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useClientBI(DEMO_CLIENT_ID));
+
     expect(result.current.isMock).toBe(true);
     expect(result.current.topCategories).toEqual(MOCK_CLIENT_STATS.topCategories);
+  });
+
+  it('falha de consulta e estado proprio, nao cliente sem compras', () => {
+    // `isUnavailable` existe para a UI poder mostrar "—" em vez de R$ 0: zero
+    // real e zero por falha de rede são coisas diferentes para o vendedor.
+    useClientOrdersHistory.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('RLS negou'),
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useClientBI('cliente-com-falha'));
+
+    expect(result.current.isUnavailable).toBe(true);
+    expect(result.current.hasData).toBe(false);
+    expect(result.current.isMock).toBe(false);
+    expect(getAvailableClientHistory(result.current)).toBeNull();
   });
 });

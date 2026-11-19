@@ -10,6 +10,7 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { limparRegistroDeRotas } from '@/lib/navigation/dirty-registry';
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -284,6 +285,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchUserData(session.user.id);
       } else {
         useRecentlyViewedStore.getState().reset();
+      // O estado sujo de quem saiu não pode interrogar o próximo login.
+      limparRegistroDeRotas();
         setIsLoading(false);
       }
     });
@@ -380,6 +383,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearRoles();
       clearAAL();
       useRecentlyViewedStore.getState().reset();
+      // O estado sujo de quem saiu não pode interrogar o próximo login.
+      limparRegistroDeRotas();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

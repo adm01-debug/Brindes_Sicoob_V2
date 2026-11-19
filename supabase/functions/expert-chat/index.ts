@@ -8,7 +8,10 @@ import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { resolveCredential } from '../_shared/credentials.ts';
 import { normalizeAssistantContext } from '../_shared/assistant-context.ts';
-import { EXPERT_CHAT_CLIENT_MESSAGE_ROLES } from '../_shared/expert-chat-contract.ts';
+import {
+  EXPERT_CHAT_CLIENT_MESSAGE_ROLES,
+  EXPERT_CHAT_MESSAGE_MAX_CHARS,
+} from '../_shared/expert-chat-contract.ts';
 import { sanitizeIlikeValue } from '../_shared/pgrest-filter.ts';
 import { escapePromptDataBlock } from '../_shared/prompt-safety.ts';
 import {
@@ -22,7 +25,7 @@ import {
 
 const MessageSchema = z.object({
   role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES),
-  content: z.string().min(1).max(5000),
+  content: z.string().min(1).max(EXPERT_CHAT_MESSAGE_MAX_CHARS),
 });
 
 const TextFilterSchema = z.union([
