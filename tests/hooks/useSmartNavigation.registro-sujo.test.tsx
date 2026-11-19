@@ -10,17 +10,14 @@
  * desmonte.
  */
 import type { ReactNode } from 'react';
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
+import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
 import { useConfirmDialogStore } from '@/stores/useConfirmDialogStore';
 import { useNavigationStore } from '@/stores/useNavigationStore';
-import {
-  declararEstadoDaRota,
-  esquecerRota,
-  limparRegistroDeRotas,
-} from '@/lib/navigation/dirty-registry';
+import { declararEstadoDaRota, limparRegistroDeRotas } from '@/lib/navigation/dirty-registry';
 
 const ROTA_CRITICA = '/simulador';
 
@@ -37,6 +34,20 @@ function montarVoltar(rota: string) {
     { wrapper },
   );
   return { result, localizacao, unmount };
+}
+
+/** Tela que declara o próprio estado pelo hook, como as telas reais fazem. */
+function TelaQueDeclara({ sujo, mensagem }: { sujo: boolean; mensagem?: string }) {
+  useScreenDirtyState(sujo, mensagem);
+  return null;
+}
+
+function montarTela(rota: string, props: { sujo: boolean; mensagem?: string }) {
+  return render(
+    <MemoryRouter initialEntries={[rota]}>
+      <TelaQueDeclara {...props} />
+    </MemoryRouter>,
+  );
 }
 
 async function clicarVoltar(result: { current: ReturnType<typeof useSmartNavigation> }) {
@@ -100,9 +111,26 @@ describe('voltar x registro de estado sujo', () => {
     expect(pedidoDeConfirmacao()?.description).toBe('A simulação em andamento será descartada.');
   });
 
+  it('tela montada DE VERDADE declara pelo hook, e o voltar obedece', async () => {
+    // Exercita `useScreenDirtyState`, não o registro direto: é o caminho que as
+    // telas reais usam.
+    const tela = montarTela(ROTA_CRITICA, { sujo: false });
+    const { result } = montarVoltar(ROTA_CRITICA);
+
+    await clicarVoltar(result);
+    expect(pedidoDeConfirmacao()).toBeNull();
+
+    tela.unmount();
+  });
+
   it('DEPOIS do desmonte da tela, volta a valer a regra antiga da rota crítica', async () => {
-    declararEstadoDaRota(ROTA_CRITICA, false);
-    esquecerRota(ROTA_CRITICA);
+    // O desmonte tem de ser o da TELA, não `esquecerRota` na mão: remover o
+    // cleanup de `useScreenDirtyState` precisa derrubar este caso.
+    const tela = montarTela(ROTA_CRITICA, { sujo: false });
+    await act(async () => {
+      tela.unmount();
+      await Promise.resolve();
+    });
 
     const { result, localizacao } = montarVoltar(ROTA_CRITICA);
     await clicarVoltar(result);
