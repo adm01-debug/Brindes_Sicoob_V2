@@ -41,6 +41,20 @@ const OffscreenLayoutCapture = lazyWithRetry(() => import("@/components/mockup/a
 const TechniqueColorConfigDialog = lazyWithRetry(() => import("@/components/mockup/TechniqueColorConfigDialog").then(m => ({ default: m.TechniqueColorConfigDialog })));
 const AIMockupAssistant = lazyWithRetry(() => import("@/components/ai").then(m => ({ default: m.AIMockupAssistant })));
 
+/**
+ * O voltar perguntava "Você tem alterações não salvas" em `/mockup-generator`
+ * a cada clique, inclusive com a tela recém-aberta, porque a condição era o
+ * pathname. O trabalho começa quando empresa, produto, técnica ou logo entram;
+ * o mockup gerado e ainda não salvo (`generatedMockup` sem `lastSavedRecordId`)
+ * é o que de fato se perde ao sair.
+ */
+function temTrabalhoNoGerador(mg: MockupState): boolean {
+  return Boolean(
+    mg.selectedClient || mg.selectedProduct || mg.selectedTechnique || mg.hasLogo ||
+    (mg.generatedMockup && !mg.lastSavedRecordId),
+  );
+}
+
 export default function MockupGenerator() {
   const mg = useMockupGenerator();
   const { profile } = useAuth();
@@ -63,17 +77,7 @@ export default function MockupGenerator() {
     isLoading: mg.isLoading,
   });
 
-  /**
-   * O voltar perguntava "Você tem alterações não salvas" em `/mockup-generator`
-   * a cada clique, inclusive com a tela recém-aberta, porque a condição era o
-   * pathname. Aqui o trabalho começa quando produto, técnica ou logo entram; o
-   * mockup gerado e ainda não salvo (`generatedMockup` sem
-   * `lastSavedRecordId`) é o que de fato se perde ao sair.
-   */
-  useScreenDirtyState(Boolean(
-    mg.selectedProduct || mg.selectedTechnique || mg.hasLogo ||
-    (mg.generatedMockup && !mg.lastSavedRecordId),
-  ));
+  useScreenDirtyState(temTrabalhoNoGerador(mg));
 
   const layoutCaptureRequest = createLayoutCaptureRequest(mg, user?.id, profile);
 
