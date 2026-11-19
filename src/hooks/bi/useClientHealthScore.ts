@@ -36,7 +36,7 @@ export interface ClientHealthScoreResult {
   breakdown: HealthScoreBreakdown;
   shareOfWalletPct: number; // estimativa
   potentialUntappedBRL: number;
-  growthPct: number; // % vs trimestre anterior
+  growthPct: number | null; // % vs trimestre anterior; null = amostra insuficiente
   nextActionLabel: string;
   nextActionDetail: string;
   scriptHint: string;
@@ -97,6 +97,9 @@ function growthMetrics(seasonality: ClientSeasonality) {
   const recent = periodTotal([0, 1, 2]);
   const previous = periodTotal([3, 4, 5]);
   const growthPct = previous > 0 ? ((recent - previous) / previous) * 100 : recent > 0 ? 50 : 0;
+  // Sem janela sazonal comprovada o trimestre comparado pode ser um mês solto:
+  // a tendência não é medida, e nenhuma recomendação pode se apoiar nela.
+  if (!seasonality.hasEnoughData) return { growthPct: null, score: 50 };
   return { growthPct, score: Math.max(0, Math.min(100, 50 + growthPct)) };
 }
 
@@ -149,7 +152,7 @@ function unavailableHealthResult(
     },
     shareOfWalletPct: 0,
     potentialUntappedBRL: 0,
-    growthPct: 0,
+    growthPct: null,
     nextActionLabel: "Dados insuficientes",
     nextActionDetail: "Registre histórico real e uma amostra setorial válida antes de gerar recomendações.",
     scriptHint: "",
@@ -175,10 +178,14 @@ function healthSourceError(
   return null;
 }
 
+function fitsPremiumUpsell(ticket: number, growthPct: number | null): boolean {
+  return ticket >= 75 && growthPct !== null && growthPct > 0;
+}
+
 function nextAction(
   recency: number,
   ticket: number,
-  growthPct: number,
+  growthPct: number | null,
   ...context: [
     sharePct: number,
     potentialUntapped: number,
@@ -207,7 +214,7 @@ function nextAction(
     script: "Notei que ainda não trabalhamos algumas linhas que são padrão no seu setor — posso te mostrar?",
     urgent: false,
   };
-  if (ticket >= 75 && growthPct > 0) return {
+  if (fitsPremiumUpsell(ticket, growthPct)) return {
     label: "Upsell premium",
     detail: "Ticket alto + crescendo — perfil ideal para ofertar linha premium.",
     script: "Acabou de chegar uma linha premium que combina com o perfil de compra que você costuma escolher.",
@@ -273,7 +280,7 @@ function getScoreComponents(
     { score: growth.score, weight: hasSeasonality ? 15 : 0 },
     { score: share.score, weight: ticketMetric ? 10 : 0 },
   ];
-  return { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight: components.reduce((sum, item) => sum + item.weight, 0) };
+  return { components, recency, frequency, ticket, growth, share, ticketMetric, hasClientOrders, availableWeight: components.reduce((sum, item) => sum + item.weight, 0) };
 }
 
 function normalizedWeights(components: ScoreComponent[], totalWeight: number): NormalizedWeights {
@@ -291,10 +298,21 @@ function ticketNote(metric: ComparisonMetric | undefined) {
   return `, com ticket ${Math.abs(Math.round(metric.deltaPercent))}% abaixo do setor`;
 }
 
-function growthNote(growthPct: number) {
+function growthNote(growthPct: number | null) {
+  if (growthPct === null) return ".";
   if (growthPct < -15) return ` mas frequência caiu ${Math.abs(Math.round(growthPct))}% no último trimestre — momento de reativação.`;
   if (growthPct > 15) return ` e cresce ${Math.round(growthPct)}% no trimestre — acelerar oportunidades.`;
   return ".";
+}
+
+// Sem compra registrada não existe saúde de cliente, e sem peso disponível não
+// existe score: nos dois casos o diagnóstico é indisponível, não zero.
+function roundedGrowth(growthPct: number | null): number | null {
+  return growthPct === null ? null : Math.round(growthPct);
+}
+
+function lacksDiagnosableHistory(hasClientOrders: boolean, availableWeight: number): boolean {
+  return !hasClientOrders || availableWeight === 0;
 }
 
 export function buildHealthResult(
@@ -311,8 +329,9 @@ export function buildHealthResult(
   // Sem benchmark não é possível validar o score global: recência e sazonalidade
   // podem ser reais, mas não substituem a comparação setorial que o score promete.
   if (isHealthScoreSourceUnavailable(bi, vs)) return unavailableHealthResult(false, sources);
-  const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight } = getScoreComponents(bi, vs, seasonality);
-  if (availableWeight === 0) return unavailableHealthResult(false, sources);
+  const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight, hasClientOrders } = getScoreComponents(bi, vs, seasonality);
+  // Um prospect com orçamentos e nenhuma compra sairia daqui como "Saudável 100".
+  if (lacksDiagnosableHistory(hasClientOrders, availableWeight)) return unavailableHealthResult(false, sources);
   const score = weightedScore(components, availableWeight);
   const [recencyWeight, frequencyWeight, ticketWeight, growthWeight, shareWeight] = normalizedWeights(components, availableWeight);
   const action = nextAction(recency, ticket, growth.growthPct, share.sharePct, share.potentialUntapped, bi, seasonality);
@@ -334,7 +353,7 @@ export function buildHealthResult(
     },
     shareOfWalletPct: Math.round(share.sharePct * 10) / 10,
     potentialUntappedBRL: Math.round(share.potentialUntapped),
-    growthPct: Math.round(growth.growthPct),
+    growthPct: roundedGrowth(growth.growthPct),
     nextActionLabel: action.label,
     nextActionDetail: action.detail,
     scriptHint: action.script,

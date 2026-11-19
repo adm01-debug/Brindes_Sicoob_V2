@@ -56,7 +56,7 @@ interface MergedRow {
   clientShare: number;
   industryShare: number;
   ratio: number; // clientShare / industryShare
-  status: "super" | "aligned" | "underindex" | "gap" | "client-only";
+  status: "super" | "aligned" | "underindex" | "gap" | "client-only" | "sem-comparativo";
   clientCat?: CategoryAggregate;
   industryCat?: IndustryCategoryAggregate;
 }
@@ -65,7 +65,10 @@ const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const fmtPct = (v: number) => `${v.toFixed(0)}%`;
 
-function classify(clientShare: number, industryShare: number): MergedRow["status"] {
+function classify(clientShare: number, industryShare: number, hasIndustryData: boolean): MergedRow["status"] {
+  // Sem categorias do setor não dá para afirmar exclusividade: a ausência de
+  // comparativo não é "o setor compra zero".
+  if (!hasIndustryData) return "sem-comparativo";
   if (industryShare === 0 && clientShare > 0) return "client-only";
   if (clientShare === 0 && industryShare >= 8) return "gap";
   if (industryShare === 0) return "aligned";
@@ -95,6 +98,11 @@ const STATUS_META: Record<MergedRow["status"], { label: string; chip: string; ba
     label: "GAP — Oportunidade",
     chip: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
     bar: "[&>div]:bg-violet-500",
+  },
+  "sem-comparativo": {
+    label: "Sem comparativo do setor",
+    chip: "bg-muted text-muted-foreground border-border",
+    bar: "[&>div]:bg-muted-foreground/60",
   },
   "client-only": {
     label: "Exclusivo do cliente",
@@ -136,7 +144,7 @@ function mergeCategories(
     .map((row) => ({
       ...row,
       ratio: row.industryShare > 0 ? row.clientShare / row.industryShare : 0,
-      status: classify(row.clientShare, row.industryShare),
+      status: classify(row.clientShare, row.industryShare, industryCategories.length > 0),
     }))
     .sort((left, right) => rowScore(right) - rowScore(left))
     .slice(0, 8);
@@ -253,14 +261,15 @@ function ComparisonBars({ row }: { row: MergedRow }) {
         <Progress value={(row.clientShare / maxShare) * 100} className={cn("h-2", meta.bar)} />
       </div>
       <div className="space-y-1">
-        <div className="flex items-baseline justify-between text-[10px] text-muted-foreground"><span className="uppercase tracking-wider font-medium">Setor</span><span className="font-bold tabular-nums text-foreground">{fmtPct(row.industryShare)}</span></div>
-        <Progress value={(row.industryShare / maxShare) * 100} className="h-2 [&>div]:bg-muted-foreground/60" />
+        <div className="flex items-baseline justify-between text-[10px] text-muted-foreground"><span className="uppercase tracking-wider font-medium">Setor</span><span className="font-bold tabular-nums text-foreground">{row.status === "sem-comparativo" ? "—" : fmtPct(row.industryShare)}</span></div>
+        <Progress value={row.status === "sem-comparativo" ? 0 : (row.industryShare / maxShare) * 100} className="h-2 [&>div]:bg-muted-foreground/60" />
       </div>
     </div>
   );
 }
 
 function RowInsight({ row }: { row: MergedRow }) {
+  if (row.status === "sem-comparativo") return <p className="text-xs text-muted-foreground">Sem dados de categoria do setor para comparar — o percentual mostrado é só do cliente.</p>;
   if (row.status === "gap") return <p className="text-xs text-violet-700 dark:text-violet-300 font-medium">⚡ O setor investe {fmtPct(row.industryShare)} aqui — este cliente, nada.</p>;
   if (row.status === "super") return <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">🔥 Cliente compra {row.ratio.toFixed(1)}× mais que a média do setor.</p>;
   if (row.status === "underindex") return <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">↘ Cliente compra abaixo do padrão do setor — espaço para crescer.</p>;

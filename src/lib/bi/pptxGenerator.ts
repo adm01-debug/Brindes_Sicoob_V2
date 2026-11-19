@@ -98,6 +98,7 @@ function tierColor(tier: string): string {
   return C.muted;
 }
 function tierLabel(tier: string): string {
+  if (tier === "unknown") return "SEM DADOS";
   if (tier === "healthy") return "SAUDÁVEL";
   if (tier === "attention") return "ATENÇÃO";
   if (tier === "risk") return "RISCO";
@@ -143,7 +144,7 @@ export async function generateBIPptx({
     fill: { color: tierColor(health.tier) },
     line: { color: "FFFFFF", width: 4 },
   });
-  s1.addText(`${health.score}`, {
+  s1.addText(health.tier === "unknown" ? "—" : `${health.score}`, {
     x: 0.8, y: 3.3, w: 3.2, h: 1.4,
     fontSize: 90, fontFace: "Calibri", color: "FFFFFF", bold: true, align: "center",
   });

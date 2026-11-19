@@ -150,5 +150,5 @@ export function ClientSeasonalityHeatmap({ clientId, ramoAtividade }: Props) {
   const forecastSeries = useMemo(() => buildForecast(seasonality.client, currentMonth), [seasonality.client, currentMonth]);
   if (seasonality.isLoading) return <HeatmapSkeleton />;
   const peakName = seasonality.nextPeakMonth ? SEASONALITY_MONTH_LABELS_FULL[seasonality.nextPeakMonth - 1] ?? null : null;
-  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4"><HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastChart series={forecastSeries} /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
+  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4"><HeatmapGrid data={seasonality} currentMonth={currentMonth} />{seasonality.hasEnoughData ? <ForecastChart series={forecastSeries} /> : null}<PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
 }
