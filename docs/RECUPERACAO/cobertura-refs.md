@@ -419,3 +419,40 @@ a ponte com o CRM está viva, e é por isso que a ausência dela na allowlist de
 
 **Saldo das cinco varreduras:** nenhum arquivo, símbolo exportado, rota ou função de banco
 de outro agente está fora da `main` sem veredito escrito.
+
+## Sexta varredura: o que está no ar (19/11/2026) — achou um P0
+
+A quinta conferiu RPCs. Esta conferiu **edge functions**: as 61 que o front chama na `main`,
+todas com fonte no repositório, pingadas no projeto oficial.
+
+```
+edge functions chamadas pelo front : 61
+com fonte no repositório           : 61
+não publicadas                     :  1  → quote-price-attestation (404)
+```
+
+404 aqui é "não publicada", não "rota errada": a função devolve `405` para GET quando está
+no ar (`index.ts:220`). Foi a única das 61 a devolver 404; as outras testadas devolveram 200.
+
+**Impacto:** `requestQuotePriceAttestation` (`src/services/QuoteService.ts:258`) **lança
+exceção** quando a invocação falha, e é chamada antes de salvar nos dois caminhos —
+`QuoteService.ts:381` (criar) e `:428` (editar). Sem a função no ar, **salvar e editar
+orçamento estavam quebrados em produção**, com a mensagem "Não foi possível validar os
+preços do orçamento."
+
+**Causa:** a PR #317 entrou na `main` às 22:42 de 18/11 já com `quote-price-attestation` na
+allowlist de publicação (linha 56 do `deploy-sicoob-functions.yml`). O último dispatch de
+`Publicar funções Sicoob` tinha sido às 21:33 — **antes**. A Vercel publica a `main`
+sozinha; o deploy de edge function é manual. O front passou a exigir uma função que ninguém
+mandou subir.
+
+**Ação:** dispatch de `deploy-sicoob-functions.yml` em 19/11 01:20,
+[run 44436096498](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/44436096498).
+
+**Regra que fica:** merge de PR que adiciona edge function **não publica nada**. A allowlist
+diz o que *pode* subir, não o que subiu. Depois de cada merge desse tipo, o dispatch é
+obrigatório — e o ping é a única prova de que subiu.
+
+Isto também mostra por que a varredura de branch, sozinha, não basta: este trabalho não
+estava perdido em branch nenhuma. Estava na `main`, mergeado, com teste, e mesmo assim fora
+do ar.
