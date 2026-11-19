@@ -420,6 +420,88 @@ A última linha não é atalho: a regra central está em
 associado esteja incorporado ou tenha obsolescência justificada. A entrada da #315
 publica os vereditos; ela não os substitui.
 
+## Portão de exclusão medido nas 93 branches (19/11/2026)
+
+Para **cada** branch remota: diff do merge-base com a `main`, e para cada linha que ela
+acrescenta, verificação de que a linha existe na versão da `main` daquele arquivo.
+
+Das 93, **5** passam de 95% das linhas presentes **e** não têm PR aberta. As outras 88
+ficam: ou têm PR aberta (apagar destruiria trabalho não mergeado) ou têm conteúdo de
+verdade fora da `main`. A medição é severa de propósito e tem um falso positivo conhecido:
+**linha que a `main` depois melhorou conta como ausente** — por isso cada candidata passou
+por conferência linha a linha, com um cético instruído a refutar a exclusão.
+
+| branch | linhas na `main` | veredito | base |
+|---|---|---|---|
+| `claude/fix-bi-overview-historico-indisponivel-261118-2300` (#346) | 754/766 | **incorporada** | cético não conseguiu refutar: `comm -13` entre as listas de arquivos das duas pontas volta vazio (nenhum arquivo existe só na branch); 8 dos 12 arquivos são byte-idênticos à `main` |
+| `claude/recover-bi-stack-261119-0230` (#360) | 2199/2205 | **incorporada** | cético: a branch é *estritamente mais pobre* — `git diff --name-status` dá 18 M + 11 D e **zero A**, e os 11 D são testes que a `main` tem e a branch não |
+| `claude/fix-bi-comparador-fontes-261118-2345` (#348) | 1358/1363 | **incorporada** | 4 linhas superadas em `useClientHealthScore.ts` (`growthPct: 0` → `growthPct: null`; `availableWeight === 0` → `lacksDiagnosableHistory`, que também pega prospect sem compra) + a linha contestada abaixo |
+| `claude/fix-bi-copiloto-briefing-261119-0030` (#350) | 2199/2205 | **incorporada** | idem, mais o filtro de `ClientLookalikes` que saiu do hook para `excluirJaComprados` |
+| `claude/feat-atestado-preco-orcamento-261117-0905` (#290) | 2698/2792 | **nada a recuperar** | ver abaixo |
+
+### A única linha contestada em todo o repositório
+
+As branches #348, #350 e #360 traziam, em `src/hooks/bi/useClientsComparison.ts`:
+
+```ts
+seasonality: [Boolean(seas.isError), Boolean(seas.industryError), crm].some(Boolean),
+```
+
+A `main` tem só `seasonality: Boolean(seas.isError)`. Duas agentes independentes marcaram
+isso como **perda**, seguindo a instrução de preferir "ausente" na dúvida. **Decidi contra
+as duas**, pelo código: `useClientSeasonality.ts:171` faz
+`const nextPeak = findNextPeak(topClient)`, e `topClient` é `pickTop(client, "quotesCount", 3)`
+— as células **do próprio cliente**. `topIndustry` alimenta apenas `topIndustryMonths` e o
+texto do insight, não o próximo pico.
+
+Logo apagar a célula de sazonalidade porque o recorte **setorial** ou o CRM falharam
+esconderia um número que foi medido no histórico do cliente — o pecado oposto, e igualmente
+grave, ao de exibir número inventado. A `main` mantém o valor medido e **continua** avisando
+a fonte caída com retry (`getFailedSources` usa `Boolean(seas.isError || seas.industryError)`).
+Supersessão deliberada e documentada em comentário, não perda.
+
+### `claude/feat-atestado-preco-orcamento-261117-0905` (#290): nada a recuperar
+
+94 das 2792 linhas não casavam textualmente. Conferidas uma a uma, nos 7 arquivos:
+
+| arquivo | o que eram as linhas | veredito |
+|---|---|---|
+| `scripts/db/.check-runtime-refs-allowlist.json` | 24/24 "ausentes" | artefato: a `main` tem as **mesmas 24 entradas** mais uma (`set_custom_kit_pinned`); difere só na indentação — e a **branch** está com encoding UTF-8 duplo corrompido, a `main` correto |
+| `src/hooks/useQuoteBuilderState.ts` | 47/549 | artefato: mesmos 25 símbolos importados, só aspas e quebra de linha diferentes; a `main` importa um símbolo a mais (`buildQuoteDraftScope`) |
+| `src/services/QuoteService.ts` | 3/198 | superada: a `main` busca **em lote** (`.in('quote_id', ids)`) em vez de por orçamento, mantendo a ordenação |
+| `supabase/functions/quote-price-attestation/contract.ts` | 3/217 | superada: `allowedImages` na `main` agrega 6 fontes de imagem, a branch agregava menos |
+| `supabase/functions/quote-price-attestation/index.ts` | 12/342 | artefato do desdobramento: a lógica está em `handler.ts` na `main`, em versão superconjunto |
+| `supabase/migrations/20261117092000_quote_price_attestation_gate.sql` | 1/420 | a migration existe na `main` com **o mesmo nome**, 452 linhas (vs 420), com um predicado a mais |
+| `tests/scenarios/sql/quote-atomic-save-fixture.sql` | 4/7 | superada: a `main` tem as mesmas 4 instruções em versão idempotente (`IF NOT EXISTS`, `ON CONFLICT`) |
+
+**Nenhuma funcionalidade da #290 está fora da `main`.** A ref pode ser apagada junto com as
+outras quatro, respeitando a regra do `README.md` (veredito escrito — este — mais a entrada
+da #315).
+
+## P0 do orçamento: resolvido em produção (19/11/2026, 02:30 UTC)
+
+`quote-price-attestation` não existia no projeto (teto de edge functions do plano:
+`402 entitlement_required / function.max_count`), e sem ela `QuoteService` não salvava nem
+editava orçamento. A [#364](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/364)
+passou a servir o atesto de dentro de `sicoob-kit-quote`, que já estava publicada.
+
+Deploy: corrida [44444710505](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/44444710505).
+`sicoob-kit-quote` **publicou** às 02:30:29; a corrida ficou vermelha **no último item** da
+allowlist, `quote-price-attestation`, exatamente com o `402` do teto do plano. Vermelho
+esperado, correção publicada.
+
+Prova A/B contra produção, sem autenticação — duas camadas de auth diferentes respondendo
+conforme o `op`:
+
+| chamada | resposta | caminho que atendeu |
+|---|---|---|
+| `{"op":"price-attestation"}` | `401 {"error":"Token inválido"}` | atesto (`authenticateUser`) |
+| `{"kitName":"controle","kitType":"montado"}` | `401 {"error":"Sessão inválida ou expirada."}` | kit (`userClient.auth.getUser`) |
+
+Antes do deploy a **primeira** chamada devolvia a mensagem do fluxo de kit, ou seja o `op`
+não era desviado. **NÃO VERIFICADO:** o salvamento ponta a ponta com sessão real de
+vendedor — depende de credencial de usuário, que esta sessão não tem.
+
 ## Quarta varredura: rotas (19/11/2026)
 
 As três varreduras anteriores olham arquivos, símbolos exportados e linhas. Nenhuma
