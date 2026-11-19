@@ -10,7 +10,7 @@ const ROOT = resolve(__dirname, '../..');
  */
 describe('scripts/qa — queda para o espelho quando o registry estoura a cota', () => {
   it('a suíte Python de start_supabase_postgres passa', () => {
-    const resultado = spawnSync('python3', ['scripts/qa/tests/test_start_supabase_postgres.py'], {
+    const resultado = spawnSync('python3', ['tests/scripts/qa/test_start_supabase_postgres.py'], {
       cwd: ROOT,
       encoding: 'utf8',
       timeout: 60_000,

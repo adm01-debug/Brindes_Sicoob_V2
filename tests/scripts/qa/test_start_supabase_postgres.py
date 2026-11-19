@@ -8,7 +8,10 @@ import types
 import unittest
 from unittest import mock
 
-QA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+QA = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+    "scripts", "qa",
+)
 sys.path.insert(0, QA)
 
 # `postgres_ready` exige Docker ao ser importado; aqui só a função de subida interessa.
