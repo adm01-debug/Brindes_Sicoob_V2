@@ -3,6 +3,11 @@
 
 Atualizado em: 2026-10-30
 
+> **Recuperação de trabalho fora da `main` (18/11/2026):** o ledger com o veredito de cada
+> branch e de cada PR fechada sem merge, e os 122 itens a recuperar, está em
+> [`docs/RECUPERACAO/README.md`](docs/RECUPERACAO/README.md). **Nenhuma branch ou PR é
+> apagada sem veredito escrito lá.**
+
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
 
@@ -466,7 +471,7 @@ Esta seção substitui como estado atual os apontamentos anteriores que diziam q
 
 ### CI completo da PR #184 no SHA `e466ef7f7` — 2026-10-31
 
-Todos os workflows de produto foram **success**: E2E público [41199507198](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507198), Security Scan [41199507206](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507206), Qualidade/simulações/build [41199507236](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507236), CodeQL [41199507174](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507174), Portal Sicoob [41199507176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507176), Bundle [41199507187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507187) e Lighthouse [41199507235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507235). E2E autenticado/shards ficaram skipped porque `e2e-qa` não existe. Copilot [41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763) falhou em `Processing Request (Linux)`; o resumo do provedor não informa causa acionável. Permanecem pendentes review humano e janela de deploy para mesclar #184; a ausência de QA autenticado também impede declarar certificação completa.
+Todos os workflows de produto foram **success**: E2E público [41199507198](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507198), Security Scan [41199507206](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507206), Qualidade/simulações/build [41199507236](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507236), CodeQL [41199507174](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507174), Portal Sicoob [41199507176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507176), Bundle [41199507187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507187) e Lighthouse [41199507235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507235). E2E autenticado/shards ficaram skipped porque `e2e-qa` não existe. Copilot [41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763) falhou em `Processing Request (Linux)`; o resumo do provedor não informa causa acionável — mas o mesmo step foi diagnosticado no run [40950735858](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950735858) (29/10) como **firewall da action bloqueando o Copilot CLI em `api.github.com`**, falha distinta da quota 402 (ver `RELATORIO_CI.md`, seção de causas recuperadas das PRs #149 e #158). Permanecem pendentes review humano e janela de deploy para mesclar #184; a ausência de QA autenticado também impede declarar certificação completa.
 
 ## Inventário atualizado — última execução por workflow na `main` (2026-10-31)
 

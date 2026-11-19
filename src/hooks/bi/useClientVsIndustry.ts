@@ -22,7 +22,15 @@ export interface MetricComparison {
 
 export interface ClientVsIndustryResult {
   isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
+  /** Verdadeiro só para o cliente de demonstração — nunca para cliente real sem histórico. */
   isMock: boolean;
+  /** O lado do cliente tem pedido medido. */
+  hasClientData: boolean;
+  /** A consulta do lado do cliente falhou: não é "cliente sem compras". */
+  isClientDataUnavailable: boolean;
   hasEnoughSample: boolean;
   sampleSize: number;
   daysWindow: number;
@@ -108,87 +116,108 @@ interface BenchmarkRow {
   total_revenue: number;
 }
 
+/** Benchmark do ramo. Extraído do hook para manter a complexidade dentro do gate. */
+async function fetchIndustryBenchmark(
+  clientId: string | null | undefined,
+  ramoAtividade: string | null | undefined,
+): Promise<{ rows: BenchmarkRow[]; sampleSize: number }> {
+  if (!ramoAtividade) return { rows: [], sampleSize: 0 };
+  // Demo: retorna benchmark mockado plausível
+  if (isDemoClient(clientId)) {
+    const mockRow: BenchmarkRow = {
+      total_clients_sampled: 24,
+      avg_ltv: 38500,
+      avg_ticket: 2850,
+      avg_quotes_per_client: 11,
+      avg_items_per_quote: 2.4,
+      top_product_name: "Garrafa Térmica Inox 500ml",
+      total_revenue: 924000,
+    };
+    return { rows: [mockRow], sampleSize: 24 };
+  }
+
+  // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente.
+  // `selectCrm` genérico é negado para vendedor e agente pela política do
+  // portal; `fetchIndustryPeerIds` usa o contrato fechado, que devolve só os
+  // ids do ramo. O benchmark continua medido contra o universo do ramo, não
+  // apenas contra a carteira — o contrato não aplica `is_customer` aqui.
+  const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+  const ids = peerIds.filter((id) => id && id !== clientId);
+  if (ids.length === 0) return { rows: [], sampleSize: 0 };
+
+  const { data, error } = await supabase.rpc("get_industry_benchmark_stats", {
+    _company_ids: ids,
+    _days: DAYS_WINDOW,
+  });
+  if (error) throw error;
+  return { rows: (data ?? []) as BenchmarkRow[], sampleSize: ids.length };
+}
+
+type ClientBiResult = ReturnType<typeof useClientBI>;
+type EstadoDeOrigem = Pick<
+  ClientVsIndustryResult,
+  "isError" | "error" | "refetch" | "isMock" | "hasClientData" | "isClientDataUnavailable"
+>;
+
+/**
+ * Comparativo propriamente dito, fora do hook: o gate de complexidade do
+ * projeto é 10, e juntar origem do dado, amostra e métricas numa função só
+ * passava disso.
+ */
+function montarComparativo(
+  estado: EstadoDeOrigem,
+  clientBI: ClientBiResult,
+  fonte: { benchmark: BenchmarkRow | undefined; sampleSize: number; isLoading: boolean },
+): ClientVsIndustryResult {
+  const { benchmark, sampleSize, isLoading } = fonte;
+  const amostraFechada = !!benchmark && sampleSize >= MIN_SAMPLE;
+  const base = { ...estado, isLoading, sampleSize, daysWindow: DAYS_WINDOW };
+
+  if (!benchmark || !amostraFechada || !clientBI.hasData) {
+    return { ...base, hasEnoughSample: amostraFechada, metrics: [], insight: null };
+  }
+
+  // Estimativa: itens/orçamento do cliente — sem RPC dedicada, derivamos de recentOrders
+  const metrics: MetricComparison[] = [
+    comparisonMetric("LTV", clientBI.ltv, Number(benchmark.avg_ltv), "currency"),
+    comparisonMetric("Ticket médio", clientBI.avgTicket, Number(benchmark.avg_ticket), "currency"),
+    comparisonMetric("Frequência (pedidos)", clientBI.ordersCount, Number(benchmark.avg_quotes_per_client), "number"),
+    comparisonMetric("Itens por orçamento", averageItems(clientBI.recentOrders), Number(benchmark.avg_items_per_quote), "number"),
+  ];
+  return { ...base, hasEnoughSample: true, metrics, insight: buildInsight(metrics) };
+}
+
 export function useClientVsIndustry(
   clientId: string | null | undefined,
   ramoAtividade: string | null | undefined,
 ): ClientVsIndustryResult {
+  const demo = isDemoClient(clientId);
   const clientBI = useClientBI(clientId ?? undefined);
 
   const benchmarkQuery = useQuery({
     queryKey: ["bi", "industry-benchmark", ramoAtividade, clientId],
     enabled: !!ramoAtividade && !!clientId,
     staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-      if (!ramoAtividade) return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      // Demo: retorna benchmark mockado plausível
-      if (isDemoClient(clientId)) {
-        const mockRow: BenchmarkRow = {
-          total_clients_sampled: 24,
-          avg_ltv: 38500,
-          avg_ticket: 2850,
-          avg_quotes_per_client: 11,
-          avg_items_per_quote: 2.4,
-          top_product_name: "Garrafa Térmica Inox 500ml",
-          total_revenue: 924000,
-        };
-        return { rows: [mockRow], sampleSize: 24 };
-      }
-
-      // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente.
-      // `selectCrm` genérico é negado para vendedor e agente pela política do
-      // portal; `fetchIndustryPeerIds` usa o contrato fechado, que devolve só os
-      // ids do ramo. O benchmark continua medido contra o universo do ramo, não
-      // apenas contra a carteira — o contrato não aplica `is_customer` aqui.
-      const peerIds = await fetchIndustryPeerIds(ramoAtividade);
-      const ids = peerIds.filter((id) => id && id !== clientId);
-
-      if (ids.length === 0) {
-        return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      }
-
-      const { data, error } = await supabase.rpc("get_industry_benchmark_stats", {
-        _company_ids: ids,
-        _days: DAYS_WINDOW,
-      });
-      if (error) throw error;
-      return { rows: (data ?? []) as BenchmarkRow[], sampleSize: ids.length };
-    },
+    queryFn: () => fetchIndustryBenchmark(clientId, ramoAtividade),
   });
 
-  const isLoading = clientBI.isLoading || benchmarkQuery.isLoading;
   const benchmark = benchmarkQuery.data?.rows?.[0];
-  const sampleSize = Number(benchmark?.total_clients_sampled ?? 0);
-  const hasEnoughSample = sampleSize >= MIN_SAMPLE;
-
-  if (!benchmark || !hasEnoughSample) {
-    return {
-      isLoading,
-      isMock: true,
-      hasEnoughSample: false,
-      sampleSize,
-      daysWindow: DAYS_WINDOW,
-      metrics: [],
-      insight: null,
-    };
-  }
-
-  // Estimativa: itens/orçamento do cliente — sem RPC dedicada, derivamos de recentOrders
-  const clientAvgItems = averageItems(clientBI.recentOrders);
-
-  const metrics: MetricComparison[] = [
-    comparisonMetric("LTV", clientBI.ltv, Number(benchmark.avg_ltv), "currency"),
-    comparisonMetric("Ticket médio", clientBI.avgTicket, Number(benchmark.avg_ticket), "currency"),
-    comparisonMetric("Frequência (pedidos)", clientBI.ordersCount, Number(benchmark.avg_quotes_per_client), "number"),
-    comparisonMetric("Itens por orçamento", clientAvgItems, Number(benchmark.avg_items_per_quote), "number"),
-  ];
-
-  return {
-    isLoading,
-    isMock: clientBI.isMock,
-    hasEnoughSample: true,
-    sampleSize,
-    daysWindow: DAYS_WINDOW,
-    metrics,
-    insight: buildInsight(metrics),
+  // A falha vem dos dois lados: histórico do cliente e benchmark do setor.
+  // `isMock` era `true` sempre que a amostra não fechava, o que fazia a tela
+  // chamar de simulado um benchmark que simplesmente não existia. Simulado é
+  // só o cliente de demonstração.
+  const estado: EstadoDeOrigem = {
+    isError: clientBI.isUnavailable || benchmarkQuery.isError,
+    error: benchmarkQuery.error ?? clientBI.error,
+    refetch: async () => Promise.all([clientBI.refetch(), benchmarkQuery.refetch()]),
+    isMock: demo,
+    hasClientData: clientBI.hasData,
+    isClientDataUnavailable: clientBI.isUnavailable,
   };
+
+  return montarComparativo(estado, clientBI, {
+    benchmark,
+    sampleSize: Number(benchmark?.total_clients_sampled ?? 0),
+    isLoading: clientBI.isLoading || benchmarkQuery.isLoading,
+  });
 }
