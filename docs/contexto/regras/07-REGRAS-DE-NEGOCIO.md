@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c17e905bcf` · branch `main` · 2026-11-19 03:34 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `fed706761b` · branch `main` · 2026-11-19 03:46 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -3890,10 +3890,6 @@ _nenhum item encontrado_
   ```
   return ( <> <PageSEO title="Simulador de Preços" description="Simule preços de brindes com personalização, quantidades e custos." path="/simulador-precos" /> <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in"> {/* Hero Header — #1 */} <div className="flex flex-col gap-1"> <h1 data-testid="page-title-simulador-precos" className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground"> Si …
   ```
-- **calculateTotals(quote: ApprovalQuote)** — `src/pages/PublicQuoteApprovalPage.tsx`
-  ```
-  const items = quote.items || []; const subtotal = items.reduce( (sum, item) => sum + item.quantity * item.unit_price + calcPersonalizationTotal(item), 0, ); const discountAmount = quote.discount_percent ? subtotal * (quote.discount_percent / 100) : quote.discount_amount || 0; const hasShippingCost = quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre'; const shippingCost = hasShippingCost ? quote.shipping_cost || 0 : 0; return { discountAmount, shippingCost, subtotal, total: subtot …
-  ```
 - **ConvertedQuoteNotice({ visible }: { visible: boolean })** — `src/pages/QuoteDetailPage.tsx`
   ```
   if (!visible) return null; return ( <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3"> <Lock className="mt-0.5 h-5 w-5 shrink-0 text-success" /> <div className="min-w-0"> <p className="text-sm font-semibold text-success">Orçamento convertido em pedido</p> <p className="mt-0.5 text-xs text-muted-foreground"> Este orçamento está em modo somente leitura. Para alterações, edite o pedido vinculado. </p> </div> </div> );
@@ -4005,26 +4001,6 @@ _nenhum item encontrado_
 - **formatPrice(value: number)** — `src/pages/product-match/ProductSearchPanel.tsx`
   ```
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-  ```
-- **formatCurrency(value: number)** — `src/pages/public-approval/PublicQuoteItems.tsx`
-  ```
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  ```
-- **calcPersTotal(item: QuoteItem)** — `src/pages/public-approval/PublicQuoteItems.tsx`
-  ```
-  return (item.personalizations || []).reduce( (sum, p) => sum + (p.total_cost || 0), 0 );
-  ```
-- **validateSignature(response: string, signerName: string, signerDocument: string)** — `src/pages/public-approval/usePublicQuoteApproval.ts`
-  ```
-  if (response !== 'approved') return null; if (signerName.trim().length < 3) { return 'Informe seu nome completo para assinar a aprovação.'; } const length = signerDocument.replace(/\D/g, '').length; if (length !== 11 && length !== 14) { return 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.'; } return null;
-  ```
-- **formatCurrency(value: number)** — `src/pages/public-approval/usePublicQuoteApproval.ts`
-  ```
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', }).format(value);
-  ```
-- **calcPersonalizationTotal(item: QuoteItem)** — `src/pages/public-approval/usePublicQuoteApproval.ts`
-  ```
-  return (item.personalizations || []).reduce( (sum, personalization) => sum + (personalization.total_cost || 0), 0, );
   ```
 - **calcPersTotal(totalCost: number, qty: number)** — `src/pages/quote-view/QuoteActionHandlers.ts`
   ```
@@ -5725,7 +5701,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6824 testes em 674 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6806 testes em 672 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5921,7 +5897,6 @@ _nenhum item encontrado_
 | `tests/lib/auth/apply-seller-scope.test.ts` | 10 | applySellerScope · aplica .eq( · permite trocar a coluna do filtro (ex.: user_id) · NÃO aplica filtro quando escopo é all (admin/dev) … |
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
 | `tests/p0/edge-functions-failing.test.ts` | 10 | P0 — Edge Functions críticas · full-op-diagnostics: autentica e produz exatamente os quatro checks declarados · crm-db-bridge: converte ausência do módulo opcional em leitura vazia estável · crm-db-bridge: impede escrita quando o módulo opcional não está disponível … |
-| `tests/public-approval/PublicQuoteStatusScreens.test.tsx` | 10 | PublicQuoteStatusScreens · LoadingScreen shows loading text · ExpiredScreen shows expired message · AlreadyRespondedScreen shows approved state … |
 | `tests/scripts/check-critical-test-skip-budget.test.ts` | 10 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/scripts/verifier-arguments.test.ts` | 10 | check-price-freshness-coverage — tolerância · COVERAGE_TOLERANCE_PP=%j é recusado (exit 2) · valor válido passa da validação (falha depois, por falta do coverage-summary) · check-edge-functions-health — --timeout … |
 | `tests/security/portal-access-policy.test.ts` | 10 | política de acesso privilegiado do portal · falha fechado quando o usuário não possui papel · avalia todos os papéis sem permitir que vendedor amplie o acesso · nega CRM e clientId para vendedor … |
@@ -5984,7 +5959,6 @@ _nenhum item encontrado_
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
 | `tests/pages/AdminLoginAttemptsPage.test.tsx` | 8 | AdminLoginAttemptsPage · renders the page title · renders stats cards · renders stat values … |
 | `tests/pages/GestorCompras.metrics.test.tsx` | 8 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
-| `tests/public-approval/usePublicQuoteApproval.test.ts` | 8 | formatCurrency · formats BRL currency correctly · formats zero · formats negative values … |
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
 | `tests/scripts/check-seller-scope.test.ts` | 8 | analyzeSource — consulta SEM escopo precisa ser acusada · em Promise.all cada query é avaliada sozinha (a escopada não  · analyzeSource — consulta COM escopo ou justificada passa · informa a linha e a tabela da violação … |
 | `tests/scripts/classify-migration-backlog.test.ts` | 8 | classificador do backlog de migrations · ignora operações perigosas mencionadas apenas em comentários · bloqueia DDL destrutivo e DML de remoção · prioriza revisão de policy aberta e SECURITY DEFINER sem search_path … |
@@ -6029,7 +6003,9 @@ _nenhum item encontrado_
 | `tests/scripts/check-migration-immutability.test.ts` | 7 | check-migration-immutability · migration nova passa · editar migration existente reprova · remover migration existente reprova … |
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
-| … +374 linhas — lista completa em `context.json` | | |
+| `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
+| `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
+| … +372 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6168,7 +6144,6 @@ _nenhum item encontrado_
 | `enqueue(` | `src/pages/admin/telemetry/useOptimizationQueue.ts` |
 | `invoke(` | `src/pages/kit-builder/useKitBuilderQuote.ts` |
 | `notifyQuoteCreated` | `src/pages/kit-builder/useKitBuilderQuote.ts` |
-| `invoke(` | `src/pages/public-approval/usePublicQuoteApproval.ts` |
 | `invoke(` | `src/pages/quote-view/QuoteBitrixSync.ts` |
 | `notifyStatusChange` | `src/services/OrderService.ts` |
 | `invoke(` | `src/services/QuoteService.ts` |

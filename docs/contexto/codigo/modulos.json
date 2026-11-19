@@ -6338,7 +6338,6 @@
    "importado_por_outros_modulos": [
     "pages",
     "pages/admin",
-    "pages/public-approval",
     "pages/quotes",
     "pages/sicoob"
    ],
@@ -6854,7 +6853,6 @@
     "pages/mockup-generator",
     "pages/product-detail",
     "pages/product-match",
-    "pages/public-approval",
     "pages/quotes",
     "pages/seller-carts",
     "pages/sicoob",
@@ -9510,7 +9508,6 @@
     "hooks/quote",
     "pages",
     "pages/admin",
-    "pages/public-approval",
     "pages/quote-view",
     "pages/quotes-dashboard",
     "services",
@@ -10176,7 +10173,6 @@
     "pages",
     "pages/admin",
     "pages/kit-builder",
-    "pages/public-approval",
     "pages/quote-view",
     "pages/quotes-dashboard",
     "pages/sicoob",
@@ -11712,9 +11708,9 @@
   },
   {
    "modulo": "pages",
-   "arquivos": 69,
+   "arquivos": 68,
    "testes": 0,
-   "linhas": 18762,
+   "linhas": 18432,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",
@@ -11830,7 +11826,7 @@
     "/verificacao"
    ],
    "rotas_http": [],
-   "componentes": 69,
+   "componentes": 68,
    "hooks_locais": [
     "useA11y",
     "useAIRecommendations",
@@ -12106,7 +12102,6 @@
     "useProductsContextSafe",
     "useProductsLightweight",
     "usePromoSalesRanking",
-    "usePublicQuoteApproval",
     "usePurchasingMetrics",
     "usePushNotifications",
     "useQuoteApproval",
@@ -12240,7 +12235,6 @@
     "log-login-attempt",
     "market-intelligence-insights",
     "quote-approval",
-    "quote-public-view",
     "secure-upload",
     "semantic-search",
     "sicoob-artwork-register",
@@ -12565,7 +12559,6 @@
     "pages/mockup-generator",
     "pages/product-detail",
     "pages/product-match",
-    "pages/public-approval",
     "pages/quote-view",
     "pages/quotes-dashboard",
     "pages/seller-carts",
@@ -14006,55 +13999,6 @@
     "fuse.js",
     "lucide-react",
     "react-router-dom"
-   ]
-  },
-  {
-   "modulo": "pages/public-approval",
-   "arquivos": 3,
-   "testes": 0,
-   "linhas": 509,
-   "itens_menu": [],
-   "telas": [],
-   "rotas_http": [],
-   "componentes": 2,
-   "hooks_locais": [
-    "usePublicQuoteApproval"
-   ],
-   "hooks_definidos": [
-    "usePublicQuoteApproval"
-   ],
-   "edges": [
-    "quote-public-view"
-   ],
-   "tabelas": [],
-   "rpcs": [],
-   "buckets": [],
-   "canais_realtime": [],
-   "env": [
-    "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
-   ],
-   "flags": [],
-   "papeis": [],
-   "diretos": {
-    "edges": [
-     "quote-public-view"
-    ],
-    "tabelas": [],
-    "rpcs": []
-   },
-   "importado_por_outros_modulos": [
-    "pages"
-   ],
-   "depende_de_modulos": [
-    "components/seo",
-    "components/ui",
-    "hooks/quotes",
-    "integrations/supabase"
-   ],
-   "pacotes_externos": [
-    "date-fns",
-    "lucide-react"
    ]
   },
   {

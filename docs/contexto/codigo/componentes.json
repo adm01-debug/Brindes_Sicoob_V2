@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1173,
+ "total": 1170,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -59,10 +59,6 @@
   "LoadingOverlay": [
    "src/components/loading/LoadingOverlay.tsx",
    "src/components/ui/LoadingOverlay.tsx"
-  ],
-  "LoadingScreen": [
-   "src/components/ui/LoadingScreen.tsx",
-   "src/pages/public-approval/PublicQuoteStatusScreens.tsx"
   ],
   "MiniStatCard": [
    "src/components/ui/DataCard.tsx",
@@ -14007,7 +14003,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 115,
+   "usado_por": 114,
    "orfao": false
   },
   {
@@ -14848,7 +14844,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 9,
+   "usado_por": 8,
    "orfao": false
   },
   {
@@ -14863,7 +14859,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 511,
+   "usado_por": 509,
    "orfao": false
   },
   {
@@ -14898,7 +14894,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 631,
+   "usado_por": 630,
    "orfao": false
   },
   {
@@ -14932,7 +14928,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 397,
+   "usado_por": 394,
    "orfao": false
   },
   {
@@ -15213,7 +15209,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 268,
+   "usado_por": 267,
    "orfao": false
   },
   {
@@ -15241,7 +15237,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 152,
+   "usado_por": 151,
    "orfao": false
   },
   {
@@ -15436,7 +15432,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 44,
+   "usado_por": 43,
    "orfao": false
   },
   {
@@ -15653,7 +15649,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 64,
+   "usado_por": 63,
    "orfao": false
   },
   {
@@ -17792,39 +17788,6 @@
    "orfao": false
   },
   {
-   "arquivo": "src/pages/public-approval/PublicQuoteItems.tsx",
-   "exports": [
-    "PublicQuoteItemsList",
-    "PublicQuoteTotals"
-   ],
-   "export_default": null,
-   "linhas": 132,
-   "dominio": "pages/public-approval",
-   "hooks_locais": [],
-   "tabelas": [],
-   "edges": [],
-   "usado_por": 1,
-   "orfao": false
-  },
-  {
-   "arquivo": "src/pages/public-approval/PublicQuoteStatusScreens.tsx",
-   "exports": [
-    "AlreadyRespondedScreen",
-    "ErrorScreen",
-    "ExpiredScreen",
-    "LoadingScreen",
-    "SubmittedScreen"
-   ],
-   "export_default": null,
-   "linhas": 145,
-   "dominio": "pages/public-approval",
-   "hooks_locais": [],
-   "tabelas": [],
-   "edges": [],
-   "usado_por": 1,
-   "orfao": false
-  },
-  {
    "arquivo": "src/pages/PublicCollectionPage.tsx",
    "exports": [
     "PublicCollectionPage"
@@ -17911,22 +17874,6 @@
     "kit-public-view"
    ],
    "usado_por": 1,
-   "orfao": false
-  },
-  {
-   "arquivo": "src/pages/PublicQuoteApprovalPage.tsx",
-   "exports": [
-    "PublicQuoteApprovalPage"
-   ],
-   "export_default": "PublicQuoteApprovalPage",
-   "linhas": 330,
-   "dominio": "pages",
-   "hooks_locais": [
-    "usePublicQuoteApproval"
-   ],
-   "tabelas": [],
-   "edges": [],
-   "usado_por": 0,
    "orfao": false
   },
   {

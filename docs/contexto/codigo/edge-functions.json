@@ -2628,12 +2628,10 @@
     "cors.ts",
     "structured-logger.ts"
    ],
-   "chamada_pelo_front": [
-    "src/pages/public-approval/usePublicQuoteApproval.ts"
-   ],
+   "chamada_pelo_front": [],
    "chamada_por_edges": [],
    "chamada_por_sql_ou_cron": false,
-   "orfa": false,
+   "orfa": true,
    "testes": 0
   },
   {

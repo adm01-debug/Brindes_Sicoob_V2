@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 393,
+ "total": 392,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -9692,34 +9692,6 @@
     "src/pages/MockupGenerator.tsx"
    ],
    "coberto_por_testes": 0
-  },
-  {
-   "arquivo": "src/pages/public-approval/usePublicQuoteApproval.ts",
-   "hooks_exportados": [
-    "usePublicQuoteApproval"
-   ],
-   "linhas": 232,
-   "dominio": "pages/public-approval",
-   "tabelas": [],
-   "rpcs": [],
-   "edges": [
-    "quote-public-view"
-   ],
-   "hooks_internos": [
-    "useCallback",
-    "useEffect",
-    "usePublicQuoteData",
-    "useQuoteResponse",
-    "useSignatureForm",
-    "useState"
-   ],
-   "canais_realtime": [],
-   "usado_por": 2,
-   "usado_por_arquivos": [
-    "src/pages/PublicQuoteApprovalPage.tsx",
-    "src/pages/public-approval/PublicQuoteStatusScreens.tsx"
-   ],
-   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/pages/quote-view/useQuoteViewData.ts",

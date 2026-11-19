@@ -7,13 +7,13 @@
   ],
   "componentes": [
    "src/components (999)",
-   "src/pages (162)",
+   "src/pages (159)",
    "src/contexts (9)"
   ],
   "hooks": [
    "src/hooks (287)",
    "src/components (66)",
-   "src/pages (22)"
+   "src/pages (21)"
   ],
   "servicos_logica": [
    "src/lib (167)",
@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (603)",
+   "tests/ (601)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1173)"
+  ".tsx (1170)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)",
    "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)",
    "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
    "docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)",
-   "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)",
-   "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)"
+   "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

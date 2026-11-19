@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `c17e905bcf74063611a9fbb5ff439578cc59715a` (2026-11-19T03:34:15Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fed706761bb2d779acd5b63d91cfb5f898781668` (2026-11-19T03:45:29Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2893), SQL (674), Markdown (262), JSON (235), JavaScript (144), Python (60), YAML (23), CSS (7)
+- linguagens: TypeScript (2887), SQL (674), Markdown (262), JSON (235), JavaScript (144), Python (60), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,31 +34,31 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4404 |
-| arquivos_codigo | 3094 |
-| linhas_codigo | 488191 |
+| arquivos_total | 4398 |
+| arquivos_codigo | 3088 |
+| linhas_codigo | 487230 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 84 |
-| modulos | 146 |
-| componentes | 1173 |
-| hooks | 393 |
+| modulos | 145 |
+| componentes | 1170 |
+| hooks | 392 |
 | edge_functions | 107 |
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 850 |
+| testes | 848 |
 | workflows | 16 |
 | scripts | 121 |
 | docs_md | 262 |
 
 ## Onde ficam as coisas
 - telas: src/pages (115)
-- componentes: src/components (999), src/pages (162), src/contexts (9)
-- hooks: src/hooks (287), src/components (66), src/pages (22)
+- componentes: src/components (999), src/pages (159), src/contexts (9)
+- hooks: src/hooks (287), src/components (66), src/pages (21)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (603), e2e/ (149), outro (51)
+- testes: tests/ (601), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -129,7 +129,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/system | 0 | 0 | 5 | 4 | 3 | 2 |
 | lib/telemetry | 0 | 0 | 8 | 0 | 0 | 0 |
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
-| pages | 33 | 77 | 69 | 384 | 33 | 97 |
+| pages | 33 | 77 | 68 | 383 | 32 | 97 |
 | pages/admin | 25 | 38 | 69 | 155 | 28 | 86 |
 | pages/sicoob | 12 | 19 | 19 | 31 | 7 | 30 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
@@ -378,7 +378,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `quote-approval` (verify_jwt=false) — tabelas: -; chamada por 2 arquivo(s) do front
 - `quote-followup-reminders` (verify_jwt=false) — tabelas: follow_up_reminders, quote_approval_tokens, quotes; chamada por 0 arquivo(s) do front
 - `quote-price-attestation` — tabelas: product_images, product_variants, products, quote_item_personalizations, quote_items, quotes; chamada por 0 arquivo(s) do front — **ÓRFÃ**
-- `quote-public-view` — tabelas: -; chamada por 1 arquivo(s) do front
+- `quote-public-view` — tabelas: -; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `quote-sync` — tabelas: profiles, quote_items, quotes; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `rate-limit-check` — tabelas: -; chamada por 0 arquivo(s) do front — **ÓRFÃ**
 - `rls-audit` — tabelas: profiles, quotes; chamada por 0 arquivo(s) do front — **ÓRFÃ**
@@ -456,28 +456,28 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - rotas_sem_arquivo: 1 — ex.: /*
 - componentes_ambiguos: 0
 - menu_sem_destino: 14 — ex.: Ação -> #fab, Bem-vindo ao Brindes Sicoob! -> welcome, Busca Inteligente -> search
-- edges_orfas: 32 — ex.: ai-recommendations, bitrix-sync, cleanup-novelties
+- edges_orfas: 33 — ex.: ai-recommendations, bitrix-sync, cleanup-novelties
 - edges_chamadas_sem_pasta: 0
 - tabelas_sem_rls: 18 — ex.: admin_audit_log_default, admin_audit_log_y2024, admin_audit_log_y2025
 - tabelas_usadas_sem_definicao: 16 — ex.: avatars, categories_tree_visual, contacts
 - tabelas_com_drift_migration_vs_types: 37 — ex.: admin_settings, art_file_attachments, audit_log
 - rpcs_sem_definicao: 10 — ex.: fn_get_customization_price, fn_get_product_customization_options, get_active_commemorative_dates
 - componentes_orfaos: 72 — ex.: src/components/admin/CatalogQualityDashboard.tsx, src/components/admin/connections/ConnectionErrorDetailsDialog.tsx, src/components/admin/DiscountApprovalQueue.tsx
-- componentes_com_nome_duplicado: 41 — ex.: BreadcrumbItem, BulkAction, CardSkeleton
+- componentes_com_nome_duplicado: 40 — ex.: BreadcrumbItem, BulkAction, CardSkeleton
 - scripts_orfaos: 0
 - env_usadas_nao_declaradas: 16 — ex.: DEV, MODE, PROD
 - ciclos_de_import: 15
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29105 nós · 53791 arestas · 2103 comunidades · grafo do commit `c17e905b`
-- comunidades maiores: ref_hooks (508), ref_components (396), ref_lib (295), ref_integrations (239), react-router-dom (219), sonner (218), ref_contexts (202), getCorsHeaders (198), date-fns (180), react (161), ref_stores (158), external-db-bridge/index.ts (149)
+- 29054 nós · 53677 arestas · 2062 comunidades · grafo do commit `fed70676`
+- comunidades maiores: ref_components (472), ref_integrations (378), react (318), ref_hooks (235), getCorsHeaders (203), ref_node_fs (198), sonner (172), ref_contexts (167), ref_lib (155), external-db-bridge/index.ts (153), react-router-dom (150), ai-usage.ts (148)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (70)
-- docs/correcoes-validacao-2026-09-14.md (69)
+- docs/plano-melhorias-50-etapas.md (69)
+- docs/correcoes-validacao-2026-09-14.md (68)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -693,6 +693,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `fed7067` chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)
 - 2026-11-19 `c17e905` fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)
 - 2026-11-19 `9830191` fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)
 - 2026-11-19 `23e18ed` docs(execução): recupera seis relatórios que só existiam na branch de produção (#353)
@@ -707,7 +708,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `3df58f1` fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)
 - 2026-11-18 `f30a262` fix(db): aplicador de migrations tolera BOM na leitura (#345)
 - 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
-- 2026-11-18 `1b11bf7` chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

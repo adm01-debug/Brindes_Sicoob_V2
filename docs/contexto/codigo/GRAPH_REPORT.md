@@ -1,223 +1,227 @@
 # Graph Report - Brindes_Sicoob_V2  (2026-11-19)
 
 ## Corpus Check
-- 3944 files · ~2,921,806 words
+- 3938 files · ~2,918,837 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 41 file(s) not represented in the graph (top: (none) 13, .csv 8, .toml 6)
 
 ## Summary
-- 29105 nodes · 53791 edges · 2103 communities (1407 shown, 696 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 1308 edges (avg confidence: 0.92)
+- 29054 nodes · 53677 edges · 2062 communities (1373 shown, 689 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 1307 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c17e905b`
+- Built from commit: `fed70676`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- ref_hooks
 - ref_components
-- ref_lib
 - ref_integrations
-- react-router-dom
+- react
+- ref_hooks
+- getCorsHeaders
+- ref_node_fs
 - sonner
 - ref_contexts
-- getCorsHeaders
-- date-fns
-- react
-- ref_stores
+- ref_lib
 - external-db-bridge/index.ts
+- react-router-dom
+- ai-usage.ts
+- date-fns
+- ref_stores
 - postgres_ready.py
 - Validação do plano — sessão 2026-09-14
-- mcp-server/index.ts
+- ref_pages
 - Itens a recuperar — tabela completa
-- ref_node_fs
+- mcp-server/index.ts
 - dependencies
-- ref_npm_supabase
-- ref_node_child_process
 - scripts
 - _factories.ts
-- SupabaseConnectionsTab.tsx
+- ref_node_assert
 - ProposalSections.tsx
-- apply-sicoob-migrations.mjs
-- structured-logger.ts
-- useSuppliersManager.ts
 - sicoob-reorder/index.ts
-- gerar.mjs
+- apply-sicoob-migrations.mjs
+- useSuppliersManager.ts
+- Justificativa de cada PR
+- simular-lacunas.mjs
 - package.json
-- generate.py
+- gerar.mjs
 - ui/index.ts
-- credentials.ts
-- InboundEventsPanel.tsx
-- ref_node_path
+- SupabaseConnectionsTab.tsx
+- generate.py
+- PublicCollectionPage.tsx
 - useCatalogState.ts
+- ref_types
 - ProductKitComponentsSection.tsx
+- App.tsx
+- ConnectionsPulseBar.tsx
 - test_snapshot.py
-- cli.mjs
 - SharePreviewDialog.tsx
-- ref_https
-- CatalogContent.tsx
+- SecretField.tsx
+- credentials.ts
 - NoveltyProductGrid.tsx
+- OrderService
 - nav.ts
 - autofix/run.mjs
-- ref_node_url
-- SecretField.tsx
+- ref_https
+- LocationCard.tsx
+- useQuoteViewData.ts
 - crm-db-bridge/index.ts
 - test-base.ts
 - 08-favorites.spec.ts
-- ref_types
+- ref_node_url
+- AdminTelemetriaPage.tsx
 - gerar-revisao-2026-09-12.py
 - handler.ts
 - expert-chat/index.ts
-- maintenance/lib.mjs
-- AdminTelemetriaPage.tsx
+- AnomalyCards.tsx
 - McpKeyDetailsDrawer.tsx
+- OrderDetailSheet.tsx
 - ProductFormStepContent.tsx
 - helpers/auth.ts
 - useNewSupplierForm.ts
-- products/index.ts
-- AuthContext.tsx
+- MockupHistoryPanel.tsx
 - tecnicas/index.ts
 - ProductDetail.tsx
-- simular-lacunas.mjs
+- connections-auto-test/index.ts
+- maintenance/lib.mjs
+- audit-scripts.test.ts
 - ConnectionsOverviewTable.tsx
+- KitSummary.tsx
 - PromptGenerator.tsx
+- useSimulation.ts
+- wizard/index.ts
 - e2e-feature-summary.mjs
-- Plano de correções da auditoria tripla em 50 etapas
 - sicoob-document-ingest/index.ts
 - Cada descarte derrubado, por extenso
+- docs/README.md
 - lib/kit-builder/index.ts
 - external-db/products.ts
-- snapshot.py
-- AdvancedPriceSearchPage.tsx
-- QuoteService.ts
-- KitBuilderPage
+- Plano de reconciliação e hardening do banco em 50 etapas
+- QuotesListPage.tsx
+- Relatório CI — adm01-debug/Brindes_Sicoob_V2
 - cenarios.mjs
-- dev.ts
+- Pendências atualizadas — 2026-10-31
+- products/index.ts
+- snapshot.py
+- Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)
+- AdvancedPriceSearchPage.tsx
+- KitBuilderPage
+- InboundEventsPanel.tsx
 - 🔐 Explicação das Policies (RLS)
 - ConnectionTestHistoryPanel.tsx
-- OrderDetailSheet.tsx
-- StockHistoryChart.tsx
-- ProductFiltersBar.tsx
+- framer-motion
+- TrendsPage.tsx
 - personalization/TechniqueSelector.tsx
 - ProductQuickView.tsx
-- 20251227100009_sql_optimizations.sql
-- IdentitySuggestionButton.tsx
+- dev.ts
 - graphify-local.mjs
-- fuse.js
-- rotina.mjs
-- ProductFormFullscreen.tsx
+- ref_utils
+- Plano de correções da auditoria tripla em 50 etapas
+- StockDashboard.tsx
 - products-detail.ts
 - routePrefetch.ts
 - AIRecommendationsPanel.tsx
-- Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)
-- ref_utils
-- useMagicUpState.ts
-- Pendências atualizadas — 2026-10-31
+- success
+- FilterPanel.tsx
 - automation.mjs
-- useGravacaoV2.ts
+- cli.mjs
+- ProductTableView.tsx
 - useMockupGenerator.ts
 - SicoobInvitationsPage.tsx
+- crm-db.ts
 - 📋 Inventário Completo de Funcionalidades e Ferramentas
-- MockupHistoryPanel.tsx
 - PriceFreshnessBadge.tsx
-- ProductTableView.tsx
-- GlobalSearchPaletteView.tsx
 - useQuotesDashboard.ts
 - orders/OrdersPage.tsx
-- 📊 Análise Exaustiva das 109 Tabelas do Banco de Dados Externo
-- docs/README.md
 - Relatório de Auditoria Exaustiva — Brindes Sicoob V2
-- Relatório CI — adm01-debug/Brindes_Sicoob_V2
-- FilterPanel.tsx
+- ProductCard.tsx
+- CompareTableView.tsx
 - QuickAddToQuote.tsx
 - useProductsLightweight.ts
 - useCommercialIntelligence.ts
 - ProductEngravingSection.tsx
-- ProductCard.tsx
 - QuoteConsolidationPanel.tsx
 - useQuoteInitialization.ts
 - stockFetcher.ts
 - filters-page-helpers.ts
 - FiltersPage.tsx
-- lib/index.ts
+- admin.ts
 - 🏗️ Arquitetura do Sistema
-- wizard/index.ts
-- gravacao-database.ts
+- devInfraGate
 - Evidências e refutações — anexo do ledger de recuperação
 - useVoiceAgent.ts
-- useExternalDatabase.ts
+- QuotesConfigurableList.tsx
+- useGravacaoV2.ts
 - orders/OrderDetailPage.tsx
-- TrendsPage.tsx
 - magic-up-result-panel-keyboard.test.tsx
-- CompanySearchDropdown.tsx
-- crm-db.ts
+- 20251227100009_sql_optimizations.sql
 - validations/index.ts
+- StockHistoryChart.tsx
 - 20260912190000_sicoob_consolidation_distribution.sql
+- CompanySearchDropdown.tsx
+- color-image-resolver.ts
 - ProductGallery.tsx
 - external-db/index.ts
-- VoiceOrb.tsx
-- success
-- process-scheduled-reports/index.ts
 - MainLayout.tsx
+- rotina.mjs
+- admin/ProductPersonalizationManager.tsx
+- ProductRiskDetail.tsx
 - VariantGridMatrix.tsx
+- gravacao-database.ts
+- Observabilidade — Promo Gifts
 - 🚀 Roadmap - Próximos Passos
-- §3. Segurança / RLS
-- plano-melhorias.mjs
+- lib/index.ts
 - MarketIntelligenceChart.tsx
 - FutureStockDialog.tsx
 - QuoteItemDetailSheet.tsx
 - useSimulatorWizard.ts
 - magicUpStrategy.ts
 - 20260927220000_sicoob_institutional_invitations.sql
-- useExpertChat.ts
 - NotificationDrawer.tsx
-- Observabilidade — Promo Gifts
+- VoiceOrb.tsx
 - 🚫 POLÍTICA DE IDIOMA - GIFTS-STORE
-- CollectionDetailPage.tsx
+- SocialProof.tsx
 - PromotionDialog.tsx
-- StockDashboard.tsx
 - QuoteKanbanBoard.tsx
+- GlobalSearchPaletteView.tsx
 - simulator/TechniqueCard.tsx
-- StepComparison.tsx
 - StepSpecs.tsx
-- useSimulation.ts
-- PublicQuoteApprovalPage.tsx
+- FavoritesPage
 - order-duplicate-atomic-fixture.sql
 - AdminProductFormPage.tsx
 - UntypedFilterBuilder
+- useExpertChat.ts
+- PAWalletPage.tsx
 - 🔔 SISTEMA UNIFICADO DE NOTIFICAÇÕES
+- TestAllConnectionsButton.tsx
 - personalization-manager/ProductPersonalizationManager.tsx
 - StepUpAttemptsPanel.tsx
 - AppHealthDashboard.tsx
-- LocationCard.tsx
-- ProductCustomizationOptions.tsx
 - useClientHealthScore.ts
-- PAsTab.tsx
 - 20260912120000_sicoob_approval_policy_guards.sql
-- bridgeCallMetrics.ts
 - personalization/types.ts
-- useColorEnrichment.ts
 - SkeletonShimmer.tsx
 - theme-presets.ts
-- Justificativa de cada PR
+- jspdf
 - time
 - a11y/index.ts
+- ProductFormFullscreen.tsx
 - SidebarReorganized.tsx
-- ProductListItem.tsx
-- stock-chart-utils.ts
+- AdvancedSearch.tsx
+- useGlobalSearch.ts
+- Arquivos finais
+- ConnectionTimelineDrawer.tsx
 - 🎁 Brindes Sicoob V2 — Portal corporativo de brindes
 - command.tsx
 - check-sicoob-hardcoded-colors.mjs
-- ProductRegistrationForm.tsx
 - gerar-banco.mjs
 - DataSourceDebugTab.tsx
-- BulkImportDialog.tsx
+- CatalogContent.tsx
 - useFilterPanelState.ts
 - layout/index.ts
 - MockupLayoutButtons.tsx
-- AdvancedSearch.tsx
 - SecurityDashboardSections.tsx
 - sidebar.tsx
 - MagicUpConfigPanel.tsx
@@ -225,127 +229,130 @@
 - external-fetch.ts
 - 20260412232015_a2d0b391-3c88-4cb8-8c47-0f49cb59524f.sql
 - main
+- 📊 Análise Exaustiva das 109 Tabelas do Banco de Dados Externo
+- ProductListItem.tsx
 - 22-header-sticky.spec.ts
-- QuotesListPage.tsx
 - CatalogToolbar.tsx
 - 20261007230000_optimize_foreign_keys_and_duplicate_indexes.sql
+- ProductRegistrationForm.tsx
 - ProductPriceSimulator.tsx
 - QuantityAndResult.tsx
 - FutureStockModal.tsx
+- useExternalDatabase.ts
 - useQuoteBuilderState.ts
 - invoke.ts
+- process-scheduled-reports/index.ts
+- PriceFreshnessBadge.colorAndIcon.test.tsx
 - class-variance-authority
-- StepUpload.tsx
-- PAWalletPage.tsx
 - bridge-status-events.ts
 - cleanup-client.ts
+- QuoteService.ts
 - AutoTestJobStatusCard.tsx
 - ImageGrid.tsx
-- CompareTableView.tsx
-- ProductRiskDetail.tsx
 - QuoteTemplateForm.tsx
 - GlobalSearch.tsx
 - SmartSearchInput.tsx
 - trends-projections.ts
-- MockupGenerator.tsx
 - SecretField.test.tsx
 - 🏢 Como Criar sua Primeira Organization
 - 💻 Integração Frontend (React)
-- client.ts
-- 🇧🇷 REMOÇÃO DE i18n E CONFIGURAÇÃO PT-BR - GIFTS-STORE
+- §3. Segurança / RLS
+- role-policy.ts
+- AdminVerbasPage.tsx
 - simular-conversao-pedido-sicoob.py
-- useClientsComparison.ts
+- useGravacaoPriceV2.ts
 - 20260416182133_c21e8da8-e57f-4a37-90e1-764aa94489c9.sql
 - ChatMessageList.tsx
 - AccessSecurityManager.tsx
 - DiscountManagementPanel.tsx
-- admin/ProductPersonalizationManager.tsx
 - ProductSupplierSection.tsx
-- KitSummary.tsx
-- ProductCardImage.tsx
 - AdminTemplatesManager.tsx
 - useSalesHistory.ts
 - external-db/types.ts
 - stock.ts
 - 20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql
+- MockupGenerator.tsx
 - mudou-conteudo.mjs
-- OrderService
 - pricing/simulator/index.ts
 - products-lightweight.ts
-- Persistência do Kit Builder: 13 lacunas confirmadas contra a PR #119
-- ErrorDetailsDialog.tsx
+- OffscreenLayoutCapture.tsx
 - IntegrationsHealthCard.tsx
 - ClientCategoryRadar.tsx
-- useProductRegistration.ts
+- ProductCardImage.tsx
+- VoiceSearchOverlay.tsx
 - useStockHistory.ts
 - SellerCartsPage.tsx
 - AdminRoute.tsx
 - indice.py
 - AuthEntry.tsx
 - useUserManagement
+- `docs/plano150-20260927` — liberada: NÃO
 - pricing.service.ts
 - priceTable.repository.ts
-- useGlobalSearch.ts
-- OnboardingTour.tsx
+- useClientBI.ts
 - 📘 Runbook Operacional — Promo Brindes
-- framer-motion
 - VariantRow.tsx
+- MockupConfigPanel.tsx
 - InlinePriceCalculator.tsx
-- QuotesConfigurableList.tsx
 - QuoteVersionCompare.tsx
+- ReplenishmentProductGrid.tsx
 - GeoBlockingManager.tsx
 - useKitStockForecast.ts
 - useReplenishments.ts
 - raw-row.adapter.ts
-- useQuoteViewData.ts
-- QuoteViewPage.tsx
 - 20260419130037_5f01e5dd-e3d5-4d26-8a08-328d432a05aa.sql
 - Header.tsx
+- useCollections.ts
+- useColorEnrichment.ts
 - DraggableQuoteItems.tsx
+- OrderConsolidationPanel.tsx
 - product-search.ts
 - useProductVideoGallery.ts
-- AdImageResult.tsx
-- Plano de reconciliação e hardening do banco em 50 etapas
-- jspdf
 - CartUtilComponents.tsx
-- EnhancedErrorBoundary.tsx
+- ✅ Onda D — Polimento, DX & Entrega (2026-04-20)
 - compare-types-api.mjs
 - gerar-rotas.mjs
+- ErrorDetailsDialog.tsx
+- ProductFlagsSection.tsx
 - PersonalizationConfig.tsx
-- VoiceSearchOverlay.tsx
 - chart.tsx
 - data/mockData.ts
+- useClientsComparison.ts
 - adapters/index.ts
 - ComparePage.tsx
 - trends-queries.ts
 - 20260912180000_sicoob_finance_artwork.sql
 - 20261013120512_fix_quote_governance_writers_and_freeze_content.sql
 - magic-up-onda5.test.tsx
-- sentry.ts
-- role-policy.ts
+- quotes/useQuotes.ts
 - Justificativa de cada branch
-- `docs/plano150-20260927` — liberada: NÃO
-- Lacunas apontadas e derrubadas na refutação
-- ConversionFunnel.tsx
+- stock-chart-utils.ts
+- OnboardingTour.tsx
 - devDependencies
+- @dnd-kit/sortable
 - check-edge-authorization.mjs
 - ZoneQuickNav.tsx
+- bulk-import/types.ts
+- BulkImportDialog.tsx
 - BulkAddToCartModal.tsx
+- BackButton.tsx
+- StockFilterToolbar.tsx
 - SidebarNavGroup.tsx
-- OffscreenLayoutCapture.tsx
+- AreaCard.tsx
 - NotificationOmnichannelPanel.tsx
 - useRamoAtividadeFilho.ts
 - cloud-status.ts
 - notifications-metrics.ts
 - print-area-grouping.ts
-- MatchCards.tsx
 - simular-consolidacao-sicoob.py
-- products
+- useSecretsManager.ts
 - GlobalCommandBar.tsx
-- useCollections.ts
 - ZoomableGallery.tsx
-- useClientBI.ts
+- AdImageResult.tsx
+- structuredLogger.ts
+- ClientLookalikes.tsx
 - sicoob-rbac.ts
+- @dnd-kit/core
 - ConnectionsIncidentStrip.tsx
 - ConnectionTestDetailsDialog.tsx
 - KeysValidationTab.tsx
@@ -355,13 +362,14 @@
 - BridgeMetricsOverlay.tsx
 - PageTransition.tsx
 - StockAlertsIndicator.tsx
-- StockFilterToolbar.tsx
-- MockupConfigPanel.tsx
 - ProductPersonalizationRules.tsx
 - QuoteBuilderSummaryColumn.tsx
 - sicoob/orders/OrderAuditTimeline.tsx
+- useProductRegistration.ts
 - personalization/selectors.ts
 - longTaskWatchdog.ts
+- AdminAiUsagePage.tsx
+- CollectionDetailPage.tsx
 - GestorConsolidatedOrdersPage.tsx
 - orderService.ts
 - 20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql
@@ -369,19 +377,19 @@
 - 20260927210000_sicoob_reorder_catalog_validity.sql
 - compilerOptions
 - Checklist
-- useGravacaoPriceV2.ts
-- useSecretsManager.ts
+- products
+- useMagicUpState.ts
 - useWorkspaceNotifications.tsx
 - proposalPdfReactGenerator.ts
-- ramoAtividadeService
 - simulator-wizard.ts
-- AdminAiUsagePage.tsx
+- logisticsReportService.ts
+- Business Intelligence (Ferramentas → BI)
 - PublicFavoriteListPage.tsx
 - IncidentDetailsDrawer.tsx
 - ProductImageGallery.tsx
+- ProductMaterialsSection.tsx
 - ProductVariantsSection.tsx
 - TechniqueFormDialog.tsx
-- SocialProof.tsx
 - ExportFavoritesButton.tsx
 - ProductRankingSearch.tsx
 - KitIsometricPreview.tsx
@@ -389,64 +397,64 @@
 - simulator/TechniqueSelector.tsx
 - KitComponentCard.tsx
 - RamoAtividadeGroupAccordion.tsx
+- StepComparison.tsx
 - useConnectionTester.ts
 - useProductMatch.ts
 - immutableCache.ts
-- FavoritesPage
 - simulator-wizard-pricing-parity.test.ts
 - public-quote-approval-fixture.sql
-- admin.ts
 - 📡 Documentação de APIs - Gifts Store
 - McpAuditRow.tsx
 - GlobalSearchIdleState.tsx
 - AdminCooperativasPage.tsx
 - CategoriesManager.tsx
-- useOrders.ts
-- Plano de implementação do portal Sicoob em 100 etapas
 - As 100 etapas
-- ClientLookalikes.tsx
+- Persistência do Kit Builder: 13 lacunas confirmadas contra a PR #119
 - e2e-resources.ts
 - Auth.tsx
-- FavoritesViewHeader.tsx
+- KitCard.tsx
+- Onda Inteligência & Colaboração
 - Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 - 20251227100004_audit_log_universal.sql
 - 20260515134521_5a4fd25a-60b0-4c47-904c-31a77b01357d.sql
-- recharts
 - has
-- secretValidators.ts
 - IncidentTimeline72h.tsx
 - ProductVideoGallery.tsx
-- FlowFilterPanel.tsx
+- ProductFiltersBar.tsx
+- ProductClassificationSection.tsx
+- ExpertChatDialog.tsx
 - PresetsBar.tsx
 - SupplierRiskPanel.tsx
 - PresentationMode.tsx
+- BulkImportPanel.tsx
 - FloatingParticles.tsx
 - useColorSystem.ts
+- useMagicUpGeneration.ts
 - useMockupTechniques.ts
 - useSupplierFiscalData.ts
 - MagicUpResultPanel.tsx
+- ramoAtividadeService
 - image-utils.ts
 - 20260503172408_b6bcb7cb-1200-49a2-b9b0-dc21b8b22cce.sql
 - sicoob-approval-policy-fixture.sql
-- useProductInsights.ts
 - useCart.ts
-- QuoteBitrixSync.ts
 - SpeechRecognition
 - useClientSeasonality.ts
 - useClientsPortfolioKpis.ts
-- Arquivos finais
-- AnomalyCards.tsx
+- bi-share-dossier/index.ts
+- ConfirmDialog.tsx
+- AuthContext.tsx
+- LogoColorAnalyzer.tsx
 - LoadingButton.tsx
-- gerar-repo.mjs
-- GroupComponentCard.tsx
-- CardSourceDiagnostic.tsx
+- secretValidators.ts
 - secretErrors.ts
 - SeverityFilterContext.tsx
 - SupplierFiscalInfo.tsx
 - ExecutiveSummaryButton.tsx
 - MicroInteractions.tsx
+- FlowFilterPanel.tsx
+- FavoritesViewHeader.tsx
 - ItemSelector.tsx
-- BulkImportPanel.tsx
 - ProductSparkline.tsx
 - SmartSuggestions.tsx
 - IPRestrictionManager.tsx
@@ -462,26 +470,19 @@
 - What You Must Do When Invoked
 - 🗺️ Mapa de Endpoints e Dependências Sicoob
 - useIncidentDetails.ts
-- useCrmCompanies.ts
 - MockupPromptManager.tsx
-- color-image-resolver.ts
-- telemetry-logs-connections-access.test.ts
 - QuoteAutoSave.tsx
-- 13 arquivos de teste — executados contra a `main`, 18/11/2026
-- PublicCollectionPage.tsx
+- useClientVsIndustry.ts
 - QuoteOrderBadge.tsx
 - playwright.config.ts
 - 20260102_20260102205635_add_soft_delete_support.sql
-- productPdfExport.ts
+- check-runtime-refs.mjs
 - simular-governanca-orcamento.sql
 - ConnectionErrorDetailsDialog.tsx
 - secretNormalizers.ts
 - GroupAccordionItem.tsx
-- FlowFilterSections.tsx
 - ColorGroupFilter.tsx
 - MagicUpBrandSafetyChecklist.tsx
-- AreaCard.tsx
-- MockupResultCard.tsx
 - ProductList.tsx
 - PdfGenerationDialog.tsx
 - QuoteStatusTimeline.tsx
@@ -496,7 +497,6 @@
 - useHighLimitTelemetry.ts
 - CollectionsPage.tsx
 - QuoteBuilderPage.tsx
-- bi-share-dossier/index.ts
 - 20260414193435_871210cd-f0d8-40ee-ae9f-401b4887727f.sql
 - route-no-error-element.test.tsx
 - commercial-intelligence.test.ts
@@ -505,13 +505,12 @@
 - components.json
 - Auditoria de validação — 22/09/2026
 - materialService.ts
-- check-runtime-refs.mjs
+- sicoob/orders.ts
+- CategoryCascadeSelector.tsx
+- useRecentlyViewedStore.ts
 - _load_snapshot_module
 - triage-edge-typecheck.mjs
-- ConnectionsPulseBar.tsx
 - SecretImpactTooltip.tsx
-- TestAllConnectionsButton.tsx
-- HorizontalStepper.tsx
 - ActiveIpsList.tsx
 - useMcpAuditFeed.ts
 - BridgeCallDetailDrawer.tsx
@@ -523,35 +522,33 @@
 - useProducts.ts
 - error-reporter.ts
 - transformers.ts
+- bridgeAlertThresholds.ts
 - useProductsListingLatencyAlert.ts
-- color-variant-carousel.ts
 - 20261117092000_quote_price_attestation_gate.sql
-- useVoiceAgent.test.ts
 - compilerOptions
 - Guia de Contribuição
+- 🇧🇷 REMOÇÃO DE i18n E CONFIGURAÇÃO PT-BR - GIFTS-STORE
 - executive-summary.ts
 - TechniqueTooltip.tsx
 - 5. Lista de Edge Functions (~106)
 - Top-10 Queries Auditadas
+- Lacunas apontadas e derrubadas na refutação
 - 2. Code Scanning (camada 4) — CodeQL
 - 14-favorites-remove-persistence.spec.ts
+- useClientAffinity.ts
 - form.tsx
 - uniq
-- e2e-smoke-coverage-doc.mjs
 - simular-salvamento-orcamento-atomico.py
-- rules/run.mjs
 - BridgeProductsPreviewPanel.tsx
 - CredentialCacheMetricsPanel.tsx
 - CredentialsSourceIndicator.tsx
 - ExpectedKeysMatchPanel.tsx
 - IssueMcpKeyForm.tsx
+- HorizontalStepper.tsx
 - AuditHistory.tsx
-- ExpertChatDialog.tsx
 - InlineColorGroupFilter.tsx
 - MaterialBadge.tsx
 - LogoPositionEditor.tsx
-- useClientVsIndustry.ts
-- quotes/useQuotes.ts
 - useAIRecommendations.ts
 - useAiUsage.ts
 - useKitStockValidation.ts
@@ -566,25 +563,23 @@
 - /graphify
 - Runbook de correções e melhorias — 50 etapas
 - date-utils.ts
-- sicoob/orders.ts
-- materialService
 - RECUPERACAO/README.md
-- logisticsReportService.ts
 - Matriz de cenários de RLS
 - E2E (Playwright)
 - log
-- Production Hardening Baseline
 - test_start_supabase_postgres.py
 - 20260922150000_reconcile_audit_controls.sql
 - check-npm-audit.mjs
+- carousel.tsx
+- MockupProductSelector.tsx
 - check-route-ref-usage.mjs
-- check-seller-scope.mjs
 - check-smoke-tags.mjs
-- CredentialsSourceFilterContext.tsx
 - useProductImageGallery.ts
 - ExportCollectionButton.tsx
 - ContextualSkeleton.tsx
 - OptimizedImage.tsx
+- FlowFilterSections.tsx
+- CategoryRanking.tsx
 - TrendsForecastChart.tsx
 - SalesHistoryChart.tsx
 - QuoteBuilderProductSearch.tsx
@@ -597,7 +592,6 @@
 - AdminConexoesStatusPage.tsx
 - Index.tsx
 - LayoutActions
-- usePublicQuoteApproval.ts
 - crm.ts
 - colorSorting.ts
 - e2e-cleanup/index.ts
@@ -608,23 +602,22 @@
 - reduced-app-navigation.test.tsx
 - useConnectionTester.test.tsx
 - tests/p0/_mocks.ts
-- main.tsx
-- QuoteHistoryPanel.tsx
+- DiagnosticsManager
+- bridgeCallMetrics.ts
 - useComparisonStore.ts
-- @e965/xlsx
 - usePhaseColors.ts
 - useProductImages.ts
+- As 11 capacidades perdidas
 - Rotação de credenciais — Brindes Sicoob V2
 - domain/simulation.ts
 - Hardening Roadmap — 10/10 ATINGIDO ✅
 - 20260522141706_ca436d53-f169-4b31-b184-a48a68edc89f.sql
 - 20260922165000_scope_public_role_helpers_to_actor.sql
+- client.ts
+- OrdersKanbanPage.tsx
 - convencoes
-- check-live-api-inventory.mjs
 - AdminDataTable.tsx
-- HeaderSeveritySummary.tsx
 - RotationHistoryDialog.tsx
-- CategoryCascadeSelector.tsx
 - BreakerStatusCard.tsx
 - BridgeAlertsCard.tsx
 - ClientVsIndustryComparison.tsx
@@ -633,10 +626,8 @@
 - StockBadge.tsx
 - BoxSelector.tsx
 - MockupClientSelector.tsx
-- MockupProductSelector.tsx
 - TechniqueColorConfigDialog.tsx
 - QuoteRowQuickActions.tsx
-- carousel.tsx
 - DataCard.tsx
 - use-toast.ts
 - useDiscountApproval.ts
@@ -646,6 +637,7 @@
 - QARunDetailPage.tsx
 - useResolveProductsSelectComparison.ts
 - useFiltersSelectionMode.ts
+- MatchCards.tsx
 - PublicKitViewPage.tsx
 - PADashboardPage.tsx
 - SicoobInvitationAcceptPage.tsx
@@ -663,26 +655,32 @@
 - 20260922223000_sicoob_approval_outbox_followup.sql
 - public.reconcile_sicoob_approval_delivery
 - quotes-flow.test.ts
+- useWorkspaceNotifications-cache-freshness.test.tsx
+- telemetry-logs-connections-access.test.ts
 - pa-budgets-authority-fixture.sql
 - public.get_connections_hub_operational_evidence
+- main.tsx
+- supabase/types.ts
 - EnhancedProductCard.tsx
 - LogoPreviewCanvas.tsx
 - Domínios
 - 📦 3. GESTÃO DE PRODUTOS
-- Plano de implementação do portal Sicoob
 - Fase C — Corrigir as referências código→banco quebradas ao vivo (Etapas 9-20)
 - public.reorder_sicoob_order_as_quote
+- EnhancedErrorBoundary
 - pptxGenerator.ts
 - QuoteSignaturePad.tsx
+- recharts
 - build_function_callers
+- LastTestLine.tsx
 - DiscountApprovalQueue.tsx
+- useProductsManager.ts
 - RoleMigrationPanel.tsx
 - RegressionGuardrailBanner.tsx
 - ResolveProductsSelectComparisonCard.tsx
 - RoleAuditLogPanel.tsx
 - PasswordStrengthIndicator.tsx
 - ClientHealthHero.tsx
-- BackButton.tsx
 - KitConflictAlerts.tsx
 - SmartRecommendations.tsx
 - RamoAtividadeBadge.tsx
@@ -691,6 +689,7 @@
 - ScenarioComparison.tsx
 - useAutoSave.ts
 - useCatalogMarketing.ts
+- useCrmCompanies.ts
 - usePrintAreas.ts
 - product-bounds-detector.ts
 - webhook-events-catalog.ts
@@ -701,6 +700,7 @@
 - useKitBuilderQuote.ts
 - KitLibraryPage.tsx
 - useFavoritesStore.ts
+- productPdfExport.ts
 - resilience.ts
 - 20260109154430_b2728cb8-f45f-418c-932f-56d27e5e3a44.sql
 - 20260312110229_71c6cfbf-a5f2-4dc2-9e64-e8417272a070.sql
@@ -712,23 +712,26 @@
 - compilerOptions
 - restricted-routes.ts
 - customization.ts
+- ramo-atividade.ts
+- StepUpload.tsx
 - 🆘 Plano de Recuperação de Desastres (DR)
 - 🔧 18. UTILITÁRIOS
 - 📱 Guia de Responsividade Mobile
 - 2. As 100 etapas
 - 🚀 1. Funcionalidades MAPEADAS (Prioridade Máxima)
-- Roadmap de Favoritos — 10/10 absoluto ✅
+- EnhancedErrorBoundary.tsx
 - navigation-layout.test.tsx
 - 20260503210523_c20e48ce-121f-47b6-b504-857d41593aa1.sql
 - manifest.json
 - 20260916130000_add_missing_fk_indexes.sql
 - readText
+- check-seller-scope.mjs
 - CurrentSqlSourcesTests
 - smoke-tests.mjs
 - SnapshotDBStatsTests
 - RetestButton.tsx
-- MaterialGroupTree.tsx
 - ProductMarketingSection.tsx
+- ProductsManager.tsx
 - EdgeFunctionLogsPanel.tsx
 - ClientComparator.tsx
 - ClientOverview360.tsx
@@ -747,7 +750,6 @@
 - SearchWithSuggestions.tsx
 - VoiceOverlaySections.tsx
 - OrderBudgetIntelligence.tsx
-- OrderLogisticsTab.tsx
 - useClientCategoryAffinity.ts
 - bulkSelectionActions.ts
 - useCommemorativeDates.ts
@@ -756,7 +758,6 @@
 - external-db-prewarm.ts
 - fetch-print-areas.ts
 - query-config.ts
-- useAppHealth.ts
 - ResetPassword.tsx
 - laser-logo-processor.ts
 - product-colors.ts
@@ -768,14 +769,14 @@
 - 20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql
 - public.validate_sicoob_order_document
 - 20260922225600_sicoob_document_quarantine_gate.sql
-- PriceFreshnessBadge.colorAndIcon.test.tsx
 - PriceFreshnessBadge.thresholdHosts.test.tsx
-- phase1-foundation-types.test.ts
 - app-router-parity.test.tsx
 - quote-versionamento-atomico-fixture.sql
+- Banco de dados — referência para agentes
 - Regras de negócio — preencha o que o código não diz
 - useExternalCategoriesQuery.ts
 - Fluxo de Deploy — Promo Brindes
+- RateLimiter
 - 📊 Guia de Integração - Botão Export Excel
 - 🔐 1. AUTENTICAÇÃO E SEGURANÇA
 - 🤖 2. INTELIGÊNCIA ARTIFICIAL
@@ -784,6 +785,7 @@
 - Bloco 01 — Diagnóstico e estratégia
 - Bloco 02 — Fundamentos e segurança
 - Bloco 03 — Estrutura e conteúdo
+- Bloco 04 — Sistema visual
 - Bloco 05 — Catálogo e decisão
 - Bloco 06 — Campanhas e propostas
 - Bloco 07 — Governança e aprovações
@@ -810,19 +812,17 @@
 - Fase 03 — Banco, segurança e reconciliação
 - Fase 04 — Orçamentos, status e transações
 - Fase 05 — Rascunhos, notificações e resiliência
-- Fase 06 — Governança institucional e catálogo
 - Fase 07 — Kits, embalagem e recompra
+- Fase 08 — Arte, documentos e integrações
 - Fase 09 — Logística, campanhas e finanças
 - Fase 10 — Experiência, homologação e operação
 - Post-Mortem — [Título do Incidente]
-- UX Onda 1 e 2: guardas de navegação (bloqueio central de saída com alterações não salvas), confirmação unificada (fim do confirm() nativo) e restauração de scroll / histórico de navegação
-- bi/mockData.ts
-- useExternalSimulator.ts
+- Cobertura das refs — toda branch remota contabilizada
 - "public"."reorder_sicoob_order_as_quote_legacy_20260927"
-- AutoDefenseTab.tsx
 - md-to-pdf-stub.mjs
 - dropdown-menu.tsx
 - toast.tsx
+- gerar-repo.mjs
 - simular-kit-orcamento-sicoob.py
 - SnapshotFunctionCallerTests
 - validate-lovable-sync-target.mjs
@@ -830,10 +830,7 @@
 - FieldSourceDrillDownDialog.tsx
 - LastSyncRunPanel.tsx
 - SecretsManagerHealthPanel.tsx
-- usePulseBarStatus.ts
-- useSeverityChangeNotifier.ts
 - StepPreview.tsx
-- ProductFlagsSection.tsx
 - useProductVariants.ts
 - VideoGrid.tsx
 - ProductsListingLatencyAlert.tsx
@@ -842,13 +839,10 @@
 - SortableCartItem.tsx
 - SortableProductItem.tsx
 - GlassElements.tsx
-- PersistentBreadcrumbs.tsx
 - StatusTimeline.tsx
 - ComparisonMobileView.tsx
 - SalesGoalsCard.tsx
-- StockAlertDialogs.tsx
 - StockCategoryTreeSelect.tsx
-- KitCompositionCard.tsx
 - DevRoute.tsx
 - MagicUpVariationComparator.tsx
 - ArtFileUpload.tsx
@@ -857,12 +851,15 @@
 - CustomizationOptions.tsx
 - PackagingModal.tsx
 - QuoteBuilderStepper.tsx
+- QuoteHistoryPanel.tsx
 - QuoteTotalsSummary.tsx
 - ReorderCatalogValidityBanner.tsx
+- ReplenishmentToolbar.tsx
 - SearchResultGroups.tsx
 - SecurityDashboard.tsx
 - StockAlert.tsx
 - useIndustryCategoryTrends.ts
+- useAdvancedFilters.ts
 - useConnectionsOverviewFilters.ts
 - useFavoriteQuickAdd.ts
 - useProductsByCategory.ts
@@ -872,14 +869,13 @@
 - AdminLoginAttemptsPage.tsx
 - SellerDiscountLimitsAdminPage.tsx
 - useRegressionGuardrail.ts
-- PublicComparisonPage.tsx
+- createApprovalData
 - GestorAuditPage.tsx
-- TrendsKpiCards.tsx
 - gravacao.ts
 - tecnica-unificada.ts
-- ramo-atividade.ts
 - excelExport.ts
 - product-sorting.ts
+- connections-health-check/index.ts
 - market-intelligence-insights/index.ts
 - 004_notification_functions.sql
 - 20251214200524_1f519508-285c-4649-ba22-b40d67618e67.sql
@@ -894,48 +890,44 @@
 - cross-cutting-regression.test.ts
 - phase3-detail-experience.test.ts
 - audit-controls-fixture.sql
+- 📁 CATEGORIA 1: PRODUTOS E CATÁLOGO
 - 1. Categorias de Conectores
 - kit-og-image.ts
 - Checklist de Compatibilidade
 - 🗄️ 32. TABELAS DO BANCO DE DADOS (COMPLETO)
-- Fase 3 — Contrato Sicoob: tabelas, índices, RLS, RPCs e buckets (Etapas 18–27)
-- verify-supabase-functions-published.mjs
 - 🗺️ Mapa Automático de Rotas
 - public.search_products_semantic
+- Coleções 10/10 — Roadmap completo
 - KitBuilderHeader.tsx
 - 2. RESUMO EXECUTIVO
+- .reorder
 - StorefrontDemoPage.tsx
-- LogoColorAnalyzer.tsx
 - alert-dialog.tsx
 - simular-aprovacao-publica.py
 - simular-identidade-itens-orcamento.py
-- McpTab.tsx
 - MaskedSuffixBadge.tsx
 - useRecentIncidents.ts
 - ProductRamosSection.tsx
-- ProductTagsSection.tsx
 - ProductVariationAxesConfig.tsx
-- ProductClassificationSection.tsx
+- BundleSuggestions.tsx
 - ProductLinkRenderer.tsx
 - SavedFilters.tsx
 - MarketIntelligenceInsightsCard.tsx
 - components/kit-builder/index.ts
 - KitHealthCard.tsx
-- KitPresentablePreview.tsx
 - WizardSteps.tsx
 - LogoSizeControls.tsx
 - techniqueColorUtils.ts
-- OrderConsolidationPanel.tsx
 - ProductVariantSelector.tsx
 - ProductIntelligence.tsx
+- RelatedProducts.tsx
+- useStockChartData.ts
 - EmptySearchState.tsx
 - VoiceTranscriptPanel.tsx
-- SimulatorErrorBoundary.tsx
 - StatCard.tsx
 - useSeasonalPeakNotifications.ts
 - useVoiceSearchAction.ts
 - useErrorHandler.ts
-- useFavoriteLists.ts
 - useGlobalShortcuts.ts
 - useProductFreshnessOverride.ts
 - auth-debug.ts
@@ -947,7 +939,6 @@
 - customization-options.adapter.ts
 - quote-status-config.ts
 - ClientDetailPage.tsx
-- CustomizableDashboard.tsx
 - ExternalDatabaseTest.tsx
 - MockupDialogs
 - SimuladorWizard.tsx
@@ -973,40 +964,39 @@
 - sicoob-cross-cooperative-rls-fixture.sql
 - sicoob-finance-artwork-fixture.sql
 - sicoob-order-status-events-fixture.sql
-- Regras de domínio que o código não deixa óbvio — referência para agentes
 - 🔐 Autenticação: Passkeys (WebAuthn) — Guia de Implementação Full 10/10
-- Automação local — Brindes_Sicoob_V2
 - 🎨 17. UI/UX
 - 🔗 20. INTEGRAÇÕES
 - Workflow de Pedidos - Documentação Técnica
-- Fase 4 — Segurança e RLS global (Etapas 28–34)
+- Plano de implementação do portal Sicoob em 100 etapas
+- Plano de implementação do portal Sicoob
 - ChurnRiskBanner.tsx
-- managerStatsService.ts
+- ProductsContext.tsx
 - Ledger de recuperação — trabalho de agentes fora da `main`
 - Security Runbook — Promo Gifts
 - public.notify_hardening_regression
 - select.tsx
+- BITourGuide.tsx
 - drawer.tsx
 - simular-recompra-sicoob.py
-- DevAccessDeniedPage.tsx
 - CategorySelect.tsx
 - ImageFilterBar.tsx
-- ProductMaterialsSection.tsx
 - ProductPreviewPanel.tsx
 - VariantForm.tsx
 - AutoRevocationsPanel.tsx
 - SecurityAnalytics.tsx
 - AccessManagement.tsx
 - CollectionTableView.tsx
-- PriceSparkline.tsx
 - UpcomingDatesWidget.tsx
 - FavoritesTrashView.tsx
 - SizeFilter.tsx
+- IdentitySuggestionButton.tsx
 - KitPersonalizationPreview.tsx
 - KitTemplatePreviewDialog.tsx
 - MobileProductActions.tsx
 - KeyboardShortcuts.tsx
 - useLogoProcessing.ts
+- PilotApprovalPanel.tsx
 - ProductHoverPreview.tsx
 - SingleVariantPicker.tsx
 - QuoteProductColorSelector.tsx
@@ -1019,26 +1009,23 @@
 - useComparisonScore.ts
 - useContextualSuggestions.ts
 - useGenericFuzzySearch.ts
+- useRBAC.tsx
 - useScheduledReports.ts
 - assistant-message-window.ts
 - invoke-full-scope.ts
-- DiagnosticsManager
 - dirty-registry.ts
 - rls-denial-logger.ts
 - orderBudgetProjection.ts
 - secretsManagerCallMetrics.ts
+- PreflightPage.tsx
 - pages/OrderDetailPage.tsx
 - SellerDashboardPage.tsx
-- OrderService.ts
 - fulfillmentService.ts
-- useRecentlyViewedStore.ts
-- color-matching.ts
 - orderExportUtils.ts
 - pixMask.ts
 - undoToast.tsx
 - rls-integration-tests/index.ts
 - rls-matrix-export/index.ts
-- pagination.ts
 - 20251214185703_ccfe43ae-d38d-40bd-a327-56e2c378b26e.sql
 - 20251215164521_6de8b3bc-1a58-4a1c-bc1a-3dc254c0ba68.sql
 - public.orders
@@ -1059,8 +1046,6 @@
 - public.catalog_product_marketing
 - 20261029213000_secure_webhook_dispatcher_callers.sql
 - react-warning-guard.ts
-- DevRoute.test.tsx
-- useWorkspaceNotifications-cache-freshness.test.tsx
 - _contracts.ts
 - QuoteBuilder.test.ts
 - sicoob-consolidation-fixture.sql
@@ -1071,11 +1056,9 @@
 - ADR 009: Padrão "Expand & Contract" para Migrações de Banco de Dados
 - Mapa do repositório — referência para agentes
 - 1. Gerente PA (GP)
-- QuoteHistoryTimeline.tsx
 - useTechniquePricing.test.ts
+- materialService
 - 📝 4. GESTÃO DE ORÇAMENTOS (QUOTES)
-- Fase 1 — Inventário e reparo do ledger de migrations (Etapas 7–13)
-- Cobertura das refs — toda branch remota contabilizada
 - Suíte de testes e simuladores da PR #119 — triagem executada
 - installReactWarningGuard
 - 20260503000000_sicoob_rbac_infrastructure.sql
@@ -1083,50 +1066,44 @@
 - 20260922225500_monitor_sicoob_approval_worker.sql
 - public.set_custom_kit_pinned
 - 20260427115542_a0e36268-9f56-40b5-af9f-270e48056052.sql
-- zustand
+- check-migration-immutability.mjs
 - simular-outbox-aprovacao.py
 - publish.sh
 - DevAccessAuditAlert.tsx
-- RlsIntegrationTestsDialog.tsx
-- ColdVsWarmCrmCard.tsx
-- PlatformFailureCards.tsx
 - BIBriefingMode.tsx
 - ExternalCollectionCard.tsx
-- ConfirmDialog.tsx
-- QuickListPicker.tsx
-- KitCard.tsx
 - RestrictedRouteNotice.tsx
-- PersonalizationArea
 - OrganizationSwitcher.tsx
 - RevisionRequest.tsx
 - ProductSearch.tsx
 - ProductDimensions.tsx
-- SimilarProducts.tsx
+- MarginInsightBadge.tsx
 - CommercialConditions.tsx
+- QuoteApprovalLinkCard.tsx
 - QuoteSingularApprovalActions.tsx
 - QuoteSummary.tsx
 - QuoteValidityBanner.tsx
-- admin/useAccessSecurity.ts
-- useClientAffinity.ts
+- constants/orders.ts
 - useCategoriesTree.ts
 - useDeviceDetection.ts
 - useExternalCollections.ts
 - useExternalVariantStock.ts
-- usePaBudget.ts
-- useRoleMigration.ts
 - useSalesGoals.ts
 - feedbackSounds.ts
 - request-dev-access.ts
 - CircuitBreaker
+- external-rpc.ts
 - format.ts
 - masked-suffix.ts
+- mockup-storage.ts
 - print-area.adapter.ts
 - route-matrix.ts
 - file-validation.ts
 - AiTables.tsx
-- DevChallengeExamplesPage.tsx
 - HelpCenterPage.tsx
+- MockupTabs
 - PreviewColumn
+- QuoteDetailPage.tsx
 - QuoteTemplatesPage.tsx
 - product-catalog.ts
 - quote.ts
@@ -1136,6 +1113,7 @@
 - StatsPopover.test.tsx
 - 20251215002803_1c29a752-89f0-406e-ba83-9332854de192.sql
 - public.generated_mockups
+- quote_comments
 - public.future_stock_entries
 - 20260320171208_7037bbd1-0532-40f0-9d66-743f3e065127.sql
 - 20260406202212_20735579-941a-46d2-b872-abe769fe774a.sql
@@ -1154,56 +1132,53 @@
 - 20261015230500_reconcile_search_analytics_telemetry.sql
 - route-guards-ref-warning.test.tsx
 - skeleton-navigation-integration.test.tsx
-- useLoginAttempts.test.ts
+- QuoteBuilderSummaryColumn.staleReactivity.test.tsx
 - GestorCompras.metrics.test.tsx
 - favorite-reactions-rls-fixture.sql
 - verba-atomica-fixture.sql
 - ADR 0008: Política Unificada de Soft-Delete
 - Serviços (deploy, domínios, integrações) — referência para agentes
-- SelectionCheckbox.tsx
+- §1. Inventário do Acoplamento
 - pantone-coated.ts
 - Master Module Index (mem://)
 - Plano de correções e melhorias — 150 etapas
-- Fase 0 — Congelamento, governança e backup (Etapas 1–6)
+- Fase D — Triagem dos achados banco→código (Etapas 21-26)
 - Estratégia para 5 migrations só no remoto
 - Security Best Practices
 - Seller-scope checker
 - 🤝 Testes de Contrato: Pact (Consumer-Driven Contracts)
 - Brindes_Sicoob_V2 — Regras da Casa (Hermes) — suplemento
 - useWorkspaceNotifications-badge-render-log.test.tsx
-- Atualização dos PRs e bloqueios — 2026-10-29
 - public.get_enum_values
 - 20251227100002_secure_approval_tokens.sql
 - 📦 Módulos Principais
-- Atualização após correções de dependências — 2026-10-31
 - simular-documentos-sicoob.py
+- typecheck-edge-functions.mjs
 - Política de Segurança
 - Módulo Sicoob - Documentação de Usuários de Teste
-- AutoTestIntervalCard.tsx
 - FailureWindowCard.tsx
-- ImageUploadButton.tsx
-- OwnershipRepairDialog
-- RecentAuditTable.tsx
 - CatalogHeader.tsx
 - ExternalCollectionTableView.tsx
 - ImageWithFallback.tsx
-- RiskTooltip.tsx
+- TrendsHeatmap.tsx
+- KitStockForecastCard.tsx
 - logoTechniqueFilters.ts
 - MockupWizard.tsx
+- PriceFreshnessThresholdEditor.tsx
+- ProductDetailSkeleton.tsx
 - ReplenishmentBadge.tsx
 - NegotiationMarkupCard.tsx
 - QuoteManagerApprovalBanner.tsx
 - QuoteProductCustomization.tsx
+- OrderActionDialog.tsx
 - OrderProductionReadiness.tsx
-- SimulationPriceSourceBadge.tsx
 - card.tsx
 - DevChallengeContext.tsx
-- useIndustryTrends.ts
 - useComparisonSync.ts
+- useDuplicateKitDetector.ts
 - useIPValidation.ts
 - useKitWizardShortcuts.ts
 - useLoginRateLimit.ts
-- useRetestCooldownSetting.ts
 - useSupplierComparison.ts
 - useSupplierSalesRanking.ts
 - useVariantSupplierSources.ts
@@ -1213,15 +1188,9 @@
 - roles.ts
 - sanitize-error.ts
 - consolidation-intent.ts
-- AdminRbacRoutesPage.tsx
-- AdminSegurancaAcessoPage.tsx
-- MockupTechniqueHandlers.tsx
-- MockupWorkspace
 - RolePermissionsPage.tsx
 - quoteVersionService.ts
 - imageProxy.ts
-- quotePdfUtils.ts
-- orderDossierExport.ts
 - templateExport.ts
 - 20251214202150_2537b013-3d76-49df-b2a9-1b345cc14878.sql
 - 20251215002227_ba71d2dc-e527-4f63-8c01-ca9b43f83daf.sql
@@ -1252,10 +1221,9 @@
 - "public"."reorder_sicoob_quote_as_quote"
 - public.get_public_quote_approval
 - KitComposition.test.tsx
-- PriceFreshnessBadge.thresholdMatrix.test.tsx
+- phase1-foundation-types.test.ts
 - phase5-propagation.test.ts
 - tools-simulator.test.ts
-- supabase-mock.ts
 - useProductMatch.test.ts
 - public.cleanup_test_auth_orphans
 - Codex CLI neste repositório
@@ -1267,53 +1235,48 @@
 - ADR 0007 — Arquitetura Multi-Tenant de 3 Bancos
 - 🌐 Diagrama C4 — Arquitetura do Sistema
 - Tabelas Principais
-- Proteção da branch `main`
+- 🔧 **AÇÕES NECESSÁRIAS**
 - forecast.ts
+- useTecnicasGravacao.ts
 - supplier-colors.ts
 - useCategoryIcons.ts
 - CollectionsContext.tsx
 - Auditoria de cobertura — Smoke E2E
 - Performance Optimization
-- buildCustomKitInsert.ts
-- PR #145 — RECUPERAR
-- D1. PR #3 — ref `pr/3` (branch `analise/sicoob-20260911115127`), fechada sem merge em 13/09/2026. Veredito anterior: NADA A RECUPERAR.
 - 🛡️ Cronograma de Segurança e Monitoramento
 - 📉 Metas de Nível de Serviço (SLO)
 - Remoção da edge function `migrate-helper`
 - public.check_order_constraints_trigger
+- overrides
 - 20261107190600_harden_rpc_acl_and_fk_indexes.sql
 - public.v_sicoob_hierarchy
-- sw.js
 - input-otp.tsx
 - Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026
-- Auditoria de sincronização e validação — 28/10/2026 (BRT)
-- GlobalRefreshFromDbButton.tsx
+- ZoneSection.tsx
 - ImageUploadArea.tsx
 - SkipToContent.tsx
-- ComparisonPresentationLauncher.tsx
-- SyncedZoomGallery.tsx
+- PriceDropBadge.tsx
 - CommemorativeDateFilter.tsx
-- ProductSectionNav.tsx
 - ItemsListEditor.tsx
-- QuoteCommentsThread.tsx
 - SecurityTabs
+- KpiCard.tsx
+- BICategoryFocusContext.tsx
 - useBIDossierExport.ts
+- useBridgeMetrics.ts
 - useLogoColorAnalysis.ts
 - usePositionHistory.ts
-- useQuoteFunnel.ts
 - useQuoteHistory.ts
 - useScroll.ts
+- useStepUpAuth.ts
 - dev-route-telemetry.ts
 - log-access-denied.ts
 - sso-errors.ts
 - filter-dev-only-items.ts
 - overlay.ts
-- router-utils.ts
 - sensitive-masking.ts
 - invitationForm.ts
 - order-permissions.ts
 - variant-matching.ts
-- createApprovalData
 - encryption.ts
 - approvalDelegationService.ts
 - masks.ts
@@ -1356,10 +1319,10 @@
 - useWorkspaceNotifications-cache-persistence.test.tsx
 - useWorkspaceNotifications-fetch-error.test.tsx
 - @/hooks/useWorkspaceNotifications
+- filter-dev-only-items.test.ts
 - rbac-permissions.test.ts
 - RLS Test Suite
 - rls-seller-policies.spec.ts
-- DeterministicClock
 - public.cleanup_discount_test_data
 - imports
 - 📊 CATEGORIES (Categorias)
@@ -1367,12 +1330,14 @@
 - 🎯 FASE 1: Setup Inicial (1-2 dias)
 - ADR 0004 — Plataforma Fechada (No Public Signup)
 - ADR 0005 — Circuit Breaker em Bridges Externas
+- 🧪 **TESTES A REALIZAR**
+- `useExternalDatabase.ts` (etapa 17, 8 → 0 erros)
 - 📁 10. COLEÇÕES E FAVORITOS
 - 💰 22. SIMULADOR DE PREÇOS
+- 🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`)
 - Helpers semânticos de RBAC (RLS)
 - 📑 Revisão de SLAs e Acordos de Serviço
 - pull_request_template.md
-- lazyWithRetry.ts
 - public.is_order_owner_or_admin
 - 20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql
 - 20260423163018_48a8bc1a-aa05-4f86-b4d2-c667c918ccbc.sql
@@ -1382,18 +1347,20 @@
 - simular-governanca-orcamento.sh
 - CatalogStorefrontHero.tsx
 - WeeklyActivityHeatmap.tsx
+- KitTemplates.tsx
+- KitLibraryFilters.tsx
+- PageHeader.tsx
 - QuoteClientInfo.tsx
-- PageSEO.tsx
 - GestorComprasMetrics.tsx
 - useCatalogRealStats.ts
 - useDebounce.ts
 - useFavorites.ts
 - useScrollLockFix.ts
+- useScrollRestoration.ts
 - industryRecommendations.ts
 - error-kind-inference.ts
 - image-converter.ts
 - custom-kit-payload.ts
-- order-status-config.ts
 - sicoob-status-config.ts
 - uxMetrics.ts
 - BaseHttpService
@@ -1401,7 +1368,6 @@
 - imports
 - imports
 - imports
-- parseAiResponse.ts
 - public.personalization_simulations
 - public.quote_history
 - public.quote_approval_tokens
@@ -1452,11 +1418,12 @@
 - skeleton-fallbacks-ref-warning.test.tsx
 - skeleton-snapshots.test.tsx
 - MockSpeechRecognition
-- phase4-admin-grid.test.ts
+- kit-builder-price.test.ts
+- kit-builder-volume.test.ts
+- price-response.adapter.test.ts
 - Contratos P0
 - group-personalization-fixture.sql
 - sicoob-notification-outbox-fixture.sql
-- stock-performance.test.ts
 - Brindes Sicoob V2 — convenções
 - Brindes Sicoob V2 — convenções
 - 🎯 Funções Helper
@@ -1465,10 +1432,8 @@
 - 🎯 FASE 6: Testes e Qualidade (3-4 dias)
 - Lote 2 — análises 2026-10-07 (`analises/Brindes_Sicoob_V2`)
 - Fixtures E2E por Papel
-- 👤 29. ADMINISTRAÇÃO
-- 🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`)
 - 👥 6. GESTÃO DE CLIENTES E CRM
-- `claude/feat-modulos-edge-recuperados-261117-0930` (PR #291, fechada) — **LIBERADA em 19/11/2026**
+- 📊 8. ANALYTICS E BI
 - Suíte E2E por rota
 - ☁️ Infraestrutura como Código (IaC) — Promo Brindes
 - Estado real do projeto — inventário gerado
@@ -1477,21 +1442,18 @@
 - 20260827102000_guardrails_integration_secrets_mv_benchmark.sql
 - public.limit_increase_requests
 - public.order_duplicate_requests
-- scroll-area.tsx
 - isSrc
 - redact
+- KitHeroPricingCard.tsx
+- BorderRadiusControl.tsx
 - tsconfig.probe.34358.json
 - quoteVariantIdentity.ts
+- usePasswordBreachCheck.tsx
 - usePWAInstall.ts
-- useSpeechRecognition.ts
-- useUndoStack
 - login-validation.ts
 - status.ts
-- filter-restricted-items.ts
 - sla-cycle.ts
 - tsconfig.probe.41777.json
-- approvalService.ts
-- documentIngestService.ts
 - campaignExport.ts
 - 20251214201605_1110a792-a1c9-43b9-9832-4cd68610e0ab.sql
 - 20251220181321_e148d318-752b-4c4a-8bb3-da2163faab3c.sql
@@ -1547,7 +1509,6 @@
 - public.notify_singular_quote_submission
 - 20261118150000_fix_connections_auto_test_interval_hourly.sql
 - ai-usage.test.ts
-- admin-module.test.ts
 - aiRecommendationsJsonParsing.test.ts
 - vercel.json
 - session-start.sh
@@ -1555,9 +1516,10 @@
 - 💵 PRODUCT_PRICE_HISTORY
 - 📦 PRODUCTS (Produtos)
 - 🏭 SUPPLIERS (Fornecedores)
-- ⚡ 15. PERFORMANCE E CACHE
-- 🔍 21. BUSCA E FILTROS
-- 🔔 9. NOTIFICAÇÕES
+- 📝 **CHECKLIST DE IMPLEMENTAÇÃO**
+- 📤 13. EXPORTAÇÃO
+- 📦 24. ESTOQUE
+- 🏆 7. GAMIFICAÇÃO
 - PR #3
 - PR #4
 - PR #75
@@ -1591,7 +1553,7 @@
 - mockupWizardStep.ts
 - onboarding.ts
 - useVariantesGravacao.ts
-- useFavoritesGlobalShortcuts
+- usePurchasingMetrics.ts
 - request-context.ts
 - trends-export.ts
 - mockup-approval.ts
@@ -1666,15 +1628,12 @@
 - favorite_items_list_product_variant_unique_idx
 - public.guard_quote_governance_write
 - verba-base.sql
-- .then
-- .then
 - manual/README.md
 - validacao.md
 - PR #187
 - fix/sicoob-csp-202635
 - Métricas reais do Gestor de Compras (fim de métrica fictícia) — PR #157
 - Paginação de remessas logísticas e histórico de orçamento (PRs #181 e #187)
-- Gate do antivírus não amarra o parecer ao arquivo: requireCleanScannerVerdict aceita verdict sem conferir sha256
 - idx_fk_access_security_settings_updated_by_fkey
 - idx_fk_blog_posts_author_id_fkey
 - idx_fk_cart_items_user_id_fkey
@@ -1738,16 +1697,16 @@
 - idx_fk_webhook_configs_user_id_fkey
 
 ## God Nodes (most connected - your core abstractions)
-1. `react` - 1208 edges
-2. `lucide-react` - 1021 edges
-3. `vitest` - 585 edges
+1. `react` - 1206 edges
+2. `lucide-react` - 1018 edges
+3. `vitest` - 583 edges
 4. `sonner` - 331 edges
 5. `@tanstack/react-query` - 306 edges
-6. `@testing-library/react` - 270 edges
+6. `@testing-library/react` - 269 edges
 7. `Validação do plano — sessão 2026-09-14` - 243 edges
-8. `react-router-dom` - 238 edges
+8. `react-router-dom` - 237 edges
 9. `framer-motion` - 141 edges
-10. `date-fns` - 138 edges
+10. `date-fns` - 136 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Contrato unico de credenciais E2E por papel: loginAs('user') deve usar E2E_USER_*, nao E2E_VIEWER_* (e o papel viewer deve sair do workflow e do .env.e2e.example)` --references--> `restoreRoleStorage()`  [INFERRED]
@@ -1758,93 +1717,93 @@
   docs/RECUPERACAO/itens.md → e2e/helpers/auth.ts
 - `Comandos` --references--> `doctor()`  [INFERRED]
   docs/AUTOMACAO_LOCAL.md → scripts/automation.mjs
-- `D11. scripts/deploy-edge-functions.mjs da pr/119` --references--> `runtime()`  [INFERRED]
-  docs/RECUPERACAO/reauditoria.md → scripts/graphify-local.mjs
+- `Scripts de banco (o que fazem / como rodar)` --references--> `validateE2ETarget()`  [INFERRED]
+  docs/agentes/banco.md → scripts/e2e-target.mjs
 
 ## Import Cycles
 - None detected.
 
-## Communities (2103 total, 696 thin omitted)
+## Communities (2062 total, 689 thin omitted)
 
-### Community 0 - "ref_hooks"
+### Community 0 - "ref_components"
 Cohesion: 0.01
-Nodes (156): jest-axe, react-dom, react-helmet-async, @tanstack/react-query, @testing-library/jest-dom, @testing-library/react, @testing-library/user-event, vitest (+148 more)
+Nodes (156): jest-axe, @testing-library/jest-dom, @testing-library/react, @testing-library/user-event, vitest, { from, rpc, listOrders }, UnsavedChangesDialogProps, queryClient (+148 more)
 
-### Community 1 - "ref_components"
+### Community 1 - "ref_integrations"
 Cohesion: 0.01
-Nodes (194): @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities, lucide-react, ExternalConnectionsSyncLogPanel, ZoneCommandTriggerProps, GroupPersonalizationManager(), useGroupPersonalization() (+186 more)
+Nodes (194): D1. PR #3 — ref `pr/3` (branch `analise/sicoob-20260911115127`), fechada sem merge em 13/09/2026. Veredito anterior: NADA A RECUPERAR., @tanstack/react-query, { from, listOrders }, fetchGoalStats(), GoalTracker(), AppLog, AppLogRow(), AppLogsBody() (+186 more)
 
-### Community 2 - "ref_lib"
+### Community 2 - "react"
 Cohesion: 0.01
-Nodes (127): @radix-ui/react-checkbox, @radix-ui/react-radio-group, TONE_CLS, ZoneActions(), ZoneHeader(), ZoneSection(), ZoneSectionProps, CacheHitCard() (+119 more)
+Nodes (167): fuse.js, lucide-react, react, ExternalConnectionsSyncLogPanel, ZoneCommandTriggerProps, UserStatsCardsProps, PasskeyLogin, PasskeyLoginProps (+159 more)
 
-### Community 3 - "ref_integrations"
+### Community 3 - "ref_hooks"
 Cohesion: 0.01
-Nodes (137): Onda 4 — Security Center ✅, CredentialsChangedBannerProps, PendingChange, fetchGoalStats(), GoalTracker(), ForceGlobalLogoutDialog(), LogoutConfirmation(), useForceGlobalLogout() (+129 more)
+Nodes (104): getVerificationStep(), Props, StepUpAuthDialog(), ClientSelectorProps, CartEmptyStateSmartProps, SmartTemplate, CartHealthChecklistProps, CheckItem (+96 more)
 
-### Community 4 - "react-router-dom"
-Cohesion: 0.01
-Nodes (132): embla-carousel-autoplay, embla-carousel-react, react-router-dom, AdminTemasPage, App(), AuthenticatedShell, ClientDetailPage, ClientsPage (+124 more)
-
-### Community 5 - "sonner"
-Cohesion: 0.01
-Nodes (119): sonner, use-local-storage-state, useZoneRefresh(), ZoneRefreshButton(), ZoneRefreshButtonProps, NewCategoryDialogProps, formatBucketTime(), TelemetryCharts() (+111 more)
-
-### Community 6 - "ref_contexts"
-Cohesion: 0.01
-Nodes (119): ApprovalBadge(), DiscountApprovalHeaderBadge(), QUERY_KEY, useDiscountApprovalRealtime(), FeatureToggle(), FeatureToggleProps, SystemFeatureToggles(), CreateUserDialog() (+111 more)
-
-### Community 7 - "getCorsHeaders"
+### Community 4 - "getCorsHeaders"
 Cohesion: 0.02
-Nodes (119): Achado novo, fora do plano original, Achados que invalidam etapas do plano original, Correções aplicadas nesta sessão, Pendências que ficaram de fora desta rodada (motivo), Validação do plano de 50 etapas — correções encontradas (2026-09-13), Fechadas sem merge fora das 32 de `prs.md`, ClientSchema, ProductSchema (+111 more)
+Nodes (108): Fechadas sem merge fora das 32 de `prs.md`, BitrixSyncSchema, parseColor(), parseColors(), corsHeaders, corsHeaders, CnpjBodySchema, cnpjLimiter (+100 more)
 
-### Community 8 - "date-fns"
+### Community 5 - "ref_node_fs"
 Cohesion: 0.02
-Nodes (119): date-fns, react-day-picker, CatalogQualityDashboard(), formatLastRun(), healthBarClass(), QualityMetrics, qualityPercentage(), successRate() (+111 more)
+Nodes (114): node-fetch, findingFrom(), inspectSarif(), main(), markdown(), ruleMap(), summaryMarkdown(), checkInternalCalls() (+106 more)
 
-### Community 9 - "react"
-Cohesion: 0.02
-Nodes (73): react, react-hot-toast, Props, AuthDiagnosticsWidget, DebugLog, FilterPanelHeaderProps, MultiLevelTracker(), MultiLevelTrackerProps (+65 more)
+### Community 6 - "sonner"
+Cohesion: 0.01
+Nodes (113): sonner, AutoTestIntervalCard(), formatLabel(), INTERVAL_OPTIONS, IntervalInfoTooltip(), useAutoTestInterval(), save(), CredentialsChangedBannerProps (+105 more)
 
-### Community 10 - "ref_stores"
-Cohesion: 0.02
-Nodes (110): AdminCMSPage.tsx (etapa 17), Coupon, CouponDraft, CouponForm(), CouponFormProps, CouponManager(), CouponTable(), CouponTableProps (+102 more)
+### Community 7 - "ref_contexts"
+Cohesion: 0.01
+Nodes (85): ApprovalBadge(), DiscountApprovalHeaderBadge(), QUERY_KEY, useDiscountApprovalRealtime(), FeatureToggle(), FeatureToggleProps, SystemFeatureToggles(), CreateUserDialog() (+77 more)
 
-### Community 11 - "external-db-bridge/index.ts"
+### Community 8 - "ref_lib"
+Cohesion: 0.01
+Nodes (51): PrivateStorageImageProps, KitComparisonDialogProps, KitForComparison, Props, PullToRefreshIndicatorProps, KitItem, KitVisualCompositionProps, ProductVariation (+43 more)
+
+### Community 9 - "external-db-bridge/index.ts"
 Cohesion: 0.03
-Nodes (115): callHandleBatchResolver(), callHandleSelectResolver(), QueryCall, addTechniqueToAreas(), applyFilters(), breaker, buildCacheKey(), buildVirtualRecords() (+107 more)
+Nodes (119): callHandleBatchResolver(), callHandleSelectResolver(), QueryCall, addTechniqueToAreas(), applyFilters(), breaker, buildCacheKey(), buildExternalClient() (+111 more)
 
-### Community 12 - "postgres_ready.py"
+### Community 10 - "react-router-dom"
+Cohesion: 0.02
+Nodes (80): react-router-dom, ClientDetailHeaderProps, Props, PriceDifference(), SupplierComparisonModal(), SupplierComparisonModalProps, SupplierHighlights(), formatCurrency() (+72 more)
+
+### Community 11 - "ai-usage.ts"
+Cohesion: 0.03
+Nodes (102): Achado novo, fora do plano original, Achados que invalidam etapas do plano original, Correções aplicadas nesta sessão, Pendências que ficaram de fora desta rodada (motivo), Validação do plano de 50 etapas — correções encontradas (2026-09-13), ClientSchema, ProductSchema, RecommendationInput (+94 more)
+
+### Community 12 - "date-fns"
+Cohesion: 0.02
+Nodes (100): date-fns, react-day-picker, CatalogQualityDashboard(), formatLastRun(), healthBarClass(), QualityMetrics, qualityPercentage(), successRate() (+92 more)
+
+### Community 13 - "ref_stores"
+Cohesion: 0.02
+Nodes (93): AdminCMSPage.tsx (etapa 17), { invokeExternalDb, maybeSingle }, item, Coupon, CouponDraft, CouponForm(), CouponFormProps, CouponManager() (+85 more)
+
+### Community 14 - "postgres_ready.py"
 Cohesion: 0.03
 Nodes (62): _images_from_env(), start_supabase_postgres(), _tail(), _vale_retentar(), wait_for_postgres(), command(), sql(), command() (+54 more)
 
-### Community 13 - "Validação do plano — sessão 2026-09-14"
+### Community 15 - "Validação do plano — sessão 2026-09-14"
 Cohesion: 0.02
-Nodes (112): AdImageResult.tsx (etapa 17), AdminDataTable.tsx (etapa 17), batch-import.ts (etapa 17), BulkVariantWizard.tsx (etapa 17), CartEmptyStateSmart.tsx (etapa 17), chart.tsx (etapa 17), ChatInputBar.tsx (etapa 17), CustomizationOptions.tsx (etapa 17) (+104 more)
+Nodes (117): AdImageResult.tsx (etapa 17), AdminDataTable.tsx (etapa 17), batch-import.ts (etapa 17), BulkVariantWizard.tsx (etapa 17), CartEmptyStateSmart.tsx (etapa 17), chart.tsx (etapa 17), ChatInputBar.tsx (etapa 17), ConfigurationPanel.tsx (products/customization, etapa 17) (+109 more)
 
-### Community 14 - "mcp-server/index.ts"
+### Community 16 - "ref_pages"
+Cohesion: 0.02
+Nodes (70): CHART_TOOLTIP_STYLE, ERROR_COLORS, ERROR_KINDS_FOR_STACK, formatTick(), HighLimitTelemetryCard(), RANGE_LABEL, CacheHitCard(), HitRateTone (+62 more)
+
+### Community 17 - "Itens a recuperar — tabela completa"
+Cohesion: 0.02
+Nodes (115): 11 migrations versionadas na main que o aplicador nunca pode aplicar (fora da allowlist), Annotations de diagnóstico de falha ficaram inalcançáveis na main: ela removeu o `continue-on-error: true` que o head tinha em `e2e_header_sticky` e `e2e_run`, mas manteve os dois steps que dependem de `steps.<id>.outcome == 'failure'` sem `if: always()`. Sem continue-on-error o job aborta no step que falhou, então as mensagens `::error title=Header sticky regression::` (com a causa raiz típica em MainLayout.tsx) e `::error title=Regression failed::` nunca são emitidas. O job falha de qualquer forma — o que se perde é só o diagnóstico, mas é comportamento do head ausente da main e código morto hoje., Apagar a aprovação pública legada na main (o que a PR #26 fez e nunca chegou lá), Apagar da main a aprovação pública legada órfã (a entrega que a branch fez e a main não replicou), aria-label no Switch 'Ilimitado' das cotas de IA, assertProjectRef recusa project ref válido que contenha dígito, Assistente de layout do Mockup é IA falsa (setTimeout + Math.random), Atualizar os docs de lacunas que descrevem codigo que a main ja corrigiu (FE-140, FE-030, ADM-43, EDG-24, EDG-30 + indice-lacunas.csv) (+107 more)
+
+### Community 18 - "mcp-server/index.ts"
 Cohesion: 0.03
 Nodes (76): BodySchema, corsHeaders, BodySchema, corsHeaders, BodySchema, corsHeaders, CreateSchema, DeleteSchema (+68 more)
 
-### Community 15 - "Itens a recuperar — tabela completa"
-Cohesion: 0.02
-Nodes (113): 11 migrations versionadas na main que o aplicador nunca pode aplicar (fora da allowlist), Annotations de diagnóstico de falha ficaram inalcançáveis na main: ela removeu o `continue-on-error: true` que o head tinha em `e2e_header_sticky` e `e2e_run`, mas manteve os dois steps que dependem de `steps.<id>.outcome == 'failure'` sem `if: always()`. Sem continue-on-error o job aborta no step que falhou, então as mensagens `::error title=Header sticky regression::` (com a causa raiz típica em MainLayout.tsx) e `::error title=Regression failed::` nunca são emitidas. O job falha de qualquer forma — o que se perde é só o diagnóstico, mas é comportamento do head ausente da main e código morto hoje., Apagar a aprovação pública legada na main (o que a PR #26 fez e nunca chegou lá), Apagar da main a aprovação pública legada órfã (a entrega que a branch fez e a main não replicou), aria-label no Switch 'Ilimitado' das cotas de IA, assertProjectRef recusa project ref válido que contenha dígito, Assistente de layout do Mockup é IA falsa (setTimeout + Math.random), Atualizar os docs de lacunas que descrevem codigo que a main ja corrigiu (FE-140, FE-030, ADM-43, EDG-24, EDG-30 + indice-lacunas.csv) (+105 more)
-
-### Community 16 - "ref_node_fs"
-Cohesion: 0.03
-Nodes (56): CANONICAL_PROJECT_IDS, validateSupabaseTarget(), axe-core, typescript, indexHasLogger(), LEGACY_ALLOWLIST, listEdgeFunctions(), main() (+48 more)
-
-### Community 17 - "dependencies"
+### Community 19 - "dependencies"
 Cohesion: 0.02
 Nodes (105): dependencies, canvas-confetti, class-variance-authority, clsx, cmdk, date-fns, @dnd-kit/core, @dnd-kit/sortable (+97 more)
-
-### Community 18 - "ref_npm_supabase"
-Cohesion: 0.04
-Nodes (65): corsHeaders, ColRow, BodySchema, ActiveConnection, assertServiceClient(), AUTO_TESTABLE_CONNECTION_STATUSES, BatchTestResult, processBatch() (+57 more)
-
-### Community 19 - "ref_node_child_process"
-Cohesion: 0.02
-Nodes (61): fixture(), GERADOR, isolatedFixture(), out, root, w(), baseline, counts (+53 more)
 
 ### Community 20 - "scripts"
 Cohesion: 0.02
@@ -1854,1829 +1813,1833 @@ Nodes (98): scripts, audit:dossier, autofix, autofix:apply, automation:check, au
 Cohesion: 0.04
 Nodes (28): SAMPLE_ID, AuthedRouteSpec, buildAuthedRouteSuite(), buildPublicTokenSuite(), PublicTokenRouteSpec, PublicTokenScenario, collection, comparison (+20 more)
 
-### Community 22 - "SupabaseConnectionsTab.tsx"
-Cohesion: 0.05
-Nodes (83): Bitrix24Tab.tsx (etapa 17), `SupabaseConnectionsTab.tsx` + `connectionStatus.ts` (etapa 17, 8 → 0 erros), Bitrix24Tab(), BitrixCard(), BitrixCardProps, canRunTest(), connectionStatus(), credentialsLookValid() (+75 more)
+### Community 22 - "ref_node_assert"
+Cohesion: 0.03
+Nodes (51): CANONICAL_PROJECT_IDS, validateSupabaseTarget(), ALLOWED_CACHES, STATIC_ASSETS, axe-core, typescript, fixture(), GERADOR (+43 more)
 
 ### Community 23 - "ProposalSections.tsx"
 Cohesion: 0.05
 Nodes (78): qrcode.react, logoCache, logoPromises, LogoWithTransparentBg(), processLogoTransparent(), Props, ProposalClientBar(), ProposalClientSignature() (+70 more)
 
-### Community 24 - "apply-sicoob-migrations.mjs"
+### Community 24 - "sicoob-reorder/index.ts"
+Cohesion: 0.04
+Nodes (65): Catálogo externo, E2E e QA, Edge functions, Escopo de vendedor — é gate de CI, não convenção, Kit, recompra e verba, Papéis e RBAC, Preço defasado (price freshness), Regras de domínio que o código não deixa óbvio — referência para agentes (+57 more)
+
+### Community 25 - "apply-sicoob-migrations.mjs"
 Cohesion: 0.05
 Nodes (68): Endurecer o redator de mensagem de erro do gate de ledger (`formatLedgerError` da main vaza credenciais que a PR já redigia), Pós-condições das duas migrations de segurança recém-aplicadas não são verificadas pelo aplicador, PR #187 — RECUPERAR, PR #75 — NADA_A_RECUPERAR, pg, FILE_THRESHOLDS, lines, summary (+60 more)
-
-### Community 25 - "structured-logger.ts"
-Cohesion: 0.04
-Nodes (53): BitrixSyncSchema, parseColor(), parseColors(), corsHeaders, corsHeaders, BodySchema, corsHeaders, RepairOrphansResult (+45 more)
 
 ### Community 26 - "useSuppliersManager.ts"
 Cohesion: 0.05
 Nodes (78): booleanDefault(), carrierName(), cnpjLookupDisabled(), dialogTitle(), fieldNumber(), fieldText(), loadingIcon(), parseOptionalFloat() (+70 more)
 
-### Community 27 - "sicoob-reorder/index.ts"
-Cohesion: 0.05
-Nodes (57): Kit, recompra e verba, EXTERNAL_ACTIVE_PRODUCT_FILTER, EXTERNAL_PRODUCT_CORE_COLUMNS, EXTERNAL_PRODUCT_CORE_SELECT, EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT, EXTERNAL_PRODUCT_REORDER_SELECT, FORBIDDEN_LEGACY_COLUMNS, assertCompleteVariantCatalog() (+49 more)
+### Community 27 - "Justificativa de cada PR"
+Cohesion: 0.04
+Nodes (67): Dependência não registrada e sem guarda: o lockfile da main prende 57 pacotes (48 de produção, 9 dev) ao registry privado de terceiro `europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache`. Os 10 workflows que rodam `npm ci` dependem desse host de fornecedor continuar público; não há `.npmrc`, nenhum doc e nenhum gate de CI que detecte isso. A PR #137 diagnosticou exatamente isso e parou aí — a conclusão que ela construiu em cima (npm ci impossível) está errada hoje e NÃO deve ser recuperada; o que falta é a metade não feita: normalizar os 57 `resolved` para `registry.npmjs.org` (mantendo os `integrity`, que já existem em todas as 57) ou registrar a dependência explicitamente e adicionar uma checagem que falhe se o lockfile apontar para host fora de `registry.npmjs.org`. Risco é de disponibilidade/vendor-lock, não de tamper., Justificativa de cada PR, PR #112 — RECUPERAR, PR #137 — NADA_A_RECUPERAR, PR #148 — RECUPERAR, PR #149 — NADA_A_RECUPERAR, PR #154 — NADA_A_RECUPERAR, PR #158 — NADA_A_RECUPERAR (+59 more)
 
-### Community 28 - "gerar.mjs"
+### Community 28 - "simular-lacunas.mjs"
 Cohesion: 0.03
-Nodes (68): AGG_KEYS, aliasesByBase, ALL, allDocs, ambiguos, apiHttp, args, banco (+60 more)
+Nodes (49): Achados que corrigem o plano original, ImageUploadButton.tsx (etapa 17), QuickTestLogin.tsx (etapa 17), useBulkImportFile.ts + ImportExportManager.tsx (etapa 17), 2. Logger estruturado (formato JSON), Fallback do catálogo local + timeout de 8s + propagação de erro na busca global (useGlobalSearch), Retry de erro transitório do PostgREST e timeout de 45 s nas três asserções anônimas de INSERT/UPDATE/DELETE do teste de RLS de `e2e_cleanup_rate_limit`, PR #161 — NADA_A_RECUPERAR (+41 more)
 
 ### Community 29 - "package.json"
 Cohesion: 0.03
-Nodes (68): tsParserOptions, engines, node, lint-staged, src/**/*.css, src/**/*.{ts,tsx}, name, overrides (+60 more)
+Nodes (68): tsParserOptions, engines, node, lint-staged, src/**/*.css, src/**/*.{ts,tsx}, name, private (+60 more)
 
-### Community 30 - "generate.py"
+### Community 30 - "gerar.mjs"
+Cohesion: 0.03
+Nodes (68): AGG_KEYS, aliasesByBase, ALL, allDocs, ambiguos, apiHttp, args, banco (+60 more)
+
+### Community 31 - "ui/index.ts"
+Cohesion: 0.03
+Nodes (59): `FocusTrap.tsx` (etapa 17, 8 → 0 erros), @radix-ui/react-aspect-ratio, @radix-ui/react-avatar, @radix-ui/react-checkbox, @radix-ui/react-collapsible, @radix-ui/react-radio-group, @radix-ui/react-scroll-area, @radix-ui/react-separator (+51 more)
+
+### Community 32 - "SupabaseConnectionsTab.tsx"
+Cohesion: 0.06
+Nodes (70): `SupabaseConnectionsTab.tsx` + `connectionStatus.ts` (etapa 17, 8 → 0 erros), Bitrix24Tab(), BitrixCard(), BitrixCardProps, canRunTest(), connectionStatus(), credentialsLookValid(), progressMessage() (+62 more)
+
+### Community 33 - "generate.py"
 Cohesion: 0.07
 Nodes (67): analyze_code_file(), balanced(), build_access(), build_audit(), build_dataflow(), chain(), collect_existing_docs(), collect_rules() (+59 more)
 
-### Community 31 - "ui/index.ts"
+### Community 34 - "PublicCollectionPage.tsx"
 Cohesion: 0.04
-Nodes (59): `FocusTrap.tsx` (etapa 17, 8 → 0 erros), @radix-ui/react-collapsible, @radix-ui/react-hover-card, @radix-ui/react-slider, @radix-ui/react-switch, @radix-ui/react-tabs, @radix-ui/react-tooltip, EmptyState (+51 more)
-
-### Community 32 - "credentials.ts"
-Cohesion: 0.04
-Nodes (63): 🔐 Rotação de Credenciais CRM, ActionSchema, buildCredsHealthSnapshot(), buildExternalClient(), getExternalClient(), warmupExternalClient(), MaterialsRequestSchema, fetchQuoteFromCRM() (+55 more)
-
-### Community 33 - "InboundEventsPanel.tsx"
-Cohesion: 0.04
-Nodes (69): Abas (5), Connections Hub — `/admin/conexoes`, Crons, Edge functions (6), Onda 11 — hardening, Onda 12 — observabilidade & DX, Onda 13 — classe enterprise (10/10 ⇒ 11/10), Tabelas (7) (+61 more)
-
-### Community 34 - "ref_node_path"
-Cohesion: 0.03
-Nodes (50): node-fetch, __dirname, ROOT, SRC, violations, walk(), findingFrom(), inspectSarif() (+42 more)
+Nodes (62): Onda P3 — Ativação Comercial ✅, react-helmet-async, AccessRequestButton(), DevAccessDeniedPage(), DevAccessDeniedPageProps, DevAccessUserRole, getRoleCopy(), isAgentRole() (+54 more)
 
 ### Community 35 - "useCatalogState.ts"
 Cohesion: 0.05
 Nodes (64): `useCatalogFiltering.ts` (etapa 17, 8 → 0 erros), getPersistedViewMode(), SortOption, useCatalogDisplay(), ViewMode, countActiveFilters(), useCatalogFilters(), ITEMS_PER_PAGE (+56 more)
 
-### Community 36 - "ProductKitComponentsSection.tsx"
+### Community 36 - "ref_types"
+Cohesion: 0.03
+Nodes (35): ClientCardProps, OrderClientInfoProps, OrderItemsListProps, OrderSummaryProps, OrderStatusBadge, OrderStatusBadgeProps, EstimatedPriceBadge(), formatDate() (+27 more)
+
+### Community 37 - "ProductKitComponentsSection.tsx"
 Cohesion: 0.06
 Nodes (64): ComponentMedia, createComponent(), createPrintArea(), deleteComponent(), deleteComponentMedia(), deletePrintArea(), fetchComponentMedia(), fetchKitComponents() (+56 more)
 
-### Community 37 - "test_snapshot.py"
+### Community 38 - "App.tsx"
+Cohesion: 0.05
+Nodes (53): AdminTemasPage, App(), AuthenticatedShell, ClientDetailPage, ClientsPage, ColorDocumentationPage, CustomizableDashboard, ForbiddenPage (+45 more)
+
+### Community 39 - "ConnectionsPulseBar.tsx"
+Cohesion: 0.05
+Nodes (63): CardSourceDiagnostic(), describeLoadError(), DiagnosticAdvice(), diagnosticClassName(), diagnosticPresentation(), DiagnosticRow, Field, LoadErrorAlert() (+55 more)
+
+### Community 40 - "test_snapshot.py"
 Cohesion: 0.07
 Nodes (18): AdminVerbasPage.tsx (etapa 17), `supabase/functions/admin-audit-hook/index.ts` (fora da etapa 17 — fix de código-fonte do bug ao vivo acima, deploy PENDENTE), db_stats_case(), function(), migration(), OfflineConnection, recovery_case(), run() (+10 more)
 
-### Community 38 - "cli.mjs"
-Cohesion: 0.04
-Nodes (53): Banco de dados — referência para agentes, Banco OFICIAL, Bancos que NÃO são este projeto, Edge functions e secrets, Incidentes que já custaram retrabalho, MCP de SQL — estado real, Migrations, Onde se trabalha (+45 more)
-
-### Community 39 - "SharePreviewDialog.tsx"
+### Community 41 - "SharePreviewDialog.tsx"
 Cohesion: 0.06
 Nodes (60): MESSAGE_TEMPLATES, MessageTemplate, TemplateKey, PhotoOption(), PhotoSelector(), PhotoSelectorProps, AllColorsBody(), ColorGrid() (+52 more)
 
-### Community 40 - "ref_https"
-Cohesion: 0.03
-Nodes (34): EXPECTED_NAMES, VALID_HEALTHS, VALID_SOURCES, { getCrmClient, __getClientBootStateForTests }, BridgeResponse, HEAVY_FIELDS_SAMPLE, HEAVY_FIELDS, BodySchema (+26 more)
+### Community 42 - "SecretField.tsx"
+Cohesion: 0.06
+Nodes (62): JustSavedFlash(), Props, ErrorActions(), SecretErrorAlert(), abortCurrent(), buildUpdatedTooltip(), canSaveSecret(), clearCurrentTimer() (+54 more)
 
-### Community 41 - "CatalogContent.tsx"
-Cohesion: 0.05
-Nodes (61): @tanstack/react-virtual, CatalogBulkModals(), CatalogBulkModalsProps, Sel, buildSharedProps(), CatalogContent(), CatalogContentProps, CatalogEmptyState() (+53 more)
+### Community 43 - "credentials.ts"
+Cohesion: 0.04
+Nodes (52): 🔐 Rotação de Credenciais CRM, ActionSchema, buildCredsHealthSnapshot(), MaterialsRequestSchema, fetchQuoteFromCRM(), getCrmCreds(), n8nWebhookUrl, PersonalizationData (+44 more)
 
-### Community 42 - "NoveltyProductGrid.tsx"
+### Community 44 - "NoveltyProductGrid.tsx"
 Cohesion: 0.06
 Nodes (62): CategoryBadge(), formatPrice(), getStockStatusColor(), getStockStatusLabel(), GridImage(), GridInfo(), isFresh(), ListImage() (+54 more)
 
-### Community 43 - "nav.ts"
+### Community 45 - "OrderService"
+Cohesion: 0.05
+Nodes (42): OrderPilotWorkflow.tsx (etapa 17), OrderStatusTimeline.tsx (etapa 17), `src/components/orders/OrderStatsBar.tsx` (etapa 17, 7 → 0 erros — **achado real de bug de crash em produção**), Etapa 28 — Habilitar RLS em `notification_templates`, `webhook_configs`, `webhook_logs` ✅ (aplicado em 16/09/2026), Etapa 29 — Policies para `access_security_settings` e `device_login_notifications` ✅ (aplicado em 16/09/2026), Etapa 30 — Auditoria das 507 policies ✅ (33 revisadas em 16/09/2026, 2 corrigidas), Etapa 31 — Auditoria das 203 funções (SECURITY DEFINER, search_path, ACL) ✅ (achado crítico de metodologia corrigido em 16/09/2026), Etapa 32 — Revisar as 96 Edge Functions com `verify_jwt=false` ⏳ (parcial — achado registrado em 16/09/2026) (+34 more)
+
+### Community 46 - "nav.ts"
 Cohesion: 0.06
 Nodes (25): gotoOrSkip(), getToggleButton(), gotoOrSkip(), toggleZoneWithKeyboard(), ZoneId, ZONES, addFirstProductToCart(), ensureActiveCart() (+17 more)
 
-### Community 44 - "autofix/run.mjs"
+### Community 47 - "autofix/run.mjs"
 Cohesion: 0.04
 Nodes (50): eslint, convertColors(), FAMILIES, hasHardcodedColor(), mapClass(), ALL, APPLY, argv (+42 more)
 
-### Community 45 - "ref_node_url"
-Cohesion: 0.08
-Nodes (48): @supabase/supabase-js, buildExport(), buildDossier(), escapeMarkdownText(), evidenceStatus(), getCoverageMetrics(), getFileInfo(), renderMarkdownPdf() (+40 more)
+### Community 48 - "ref_https"
+Cohesion: 0.04
+Nodes (32): EXPECTED_NAMES, VALID_HEALTHS, VALID_SOURCES, { getCrmClient, __getClientBootStateForTests }, BridgeResponse, HEAVY_FIELDS_SAMPLE, HEAVY_FIELDS, BodySchema (+24 more)
 
-### Community 46 - "SecretField.tsx"
+### Community 49 - "LocationCard.tsx"
 Cohesion: 0.06
-Nodes (59): JustSavedFlash(), Props, abortCurrent(), buildUpdatedTooltip(), canSaveSecret(), clearCurrentTimer(), createRetryNotifier(), detailsLatency() (+51 more)
+Nodes (55): canCalculatePrice(), ConfigurationPanel(), ConfigurationPanelProps, FaixaDimensional, LegacyColors(), LegacyDimensions(), LegacyPriceResult(), LegacyPriceState() (+47 more)
 
-### Community 47 - "crm-db-bridge/index.ts"
+### Community 50 - "useQuoteViewData.ts"
+Cohesion: 0.06
+Nodes (57): QuoteBitrixSync.ts (etapa 17), useQuoteViewData.ts (etapa 17), calcPersTotal(), BitrixResult, invokeBitrix(), logSuccessfulSync(), markQuoteAsSent(), parseBitrixQuoteId() (+49 more)
+
+### Community 51 - "crm-db-bridge/index.ts"
 Cohesion: 0.07
 Nodes (52): ALLOWED_TABLES, applyFilters(), applyOrdering(), applySearch(), AuthResult, BatchQuery, breaker, buildCrmClient() (+44 more)
 
-### Community 48 - "test-base.ts"
+### Community 52 - "test-base.ts"
 Cohesion: 0.11
 Nodes (22): PageSlug, Sel, CreateOpts, deriveSpecSlug(), E2eResources, Fixtures, requireAdmin(), requireAuth() (+14 more)
 
-### Community 49 - "08-favorites.spec.ts"
+### Community 53 - "08-favorites.spec.ts"
 Cohesion: 0.05
 Nodes (24): assertFavoritesHeader(), assertFavoritesHeaderVisuals(), readFavoritesCount(), readFavoritesCounters(), readFavoritesListsCount(), FavoriteItem, FavoriteItem, FavoriteItem (+16 more)
 
-### Community 50 - "ref_types"
-Cohesion: 0.03
-Nodes (30): OrderClientInfoProps, OrderSummaryProps, OrderStatusBadge, OrderStatusBadgeProps, defaultAdvancedFilters, SORT_OPTIONS, STOCK_FILTER_OPTIONS, FULFILLMENT_COLORS (+22 more)
-
-### Community 51 - "gerar-revisao-2026-09-12.py"
+### Community 54 - "ref_node_url"
 Cohesion: 0.04
-Nodes (11): ancestrais(), exigir(), visitar(), _garantir_commit(), _historical_excepthook(), _garantir_commit(), _historical_excepthook(), _garantir_commit() (+3 more)
-
-### Community 52 - "handler.ts"
-Cohesion: 0.06
-Nodes (46): AttestableQuoteItem, catalogCost(), exactMoney(), fallbackCost(), imageUrls(), isQuoteCatalogSnapshotUnchanged(), locationFromStorageUrl(), matchesPreviousIdentity() (+38 more)
-
-### Community 53 - "expert-chat/index.ts"
-Cohesion: 0.06
-Nodes (47): PR #119 — RECUPERAR, DEMO_CLIENT_ID, DEMO_COMPANY, isDemoClient(), authenticateRequest(), applyProductFilters(), ClientData, CustomerData (+39 more)
-
-### Community 54 - "maintenance/lib.mjs"
-Cohesion: 0.10
-Nodes (52): acquire(), activeChildren, checked(), commitWithHooks(), dependencyFingerprint(), digest(), directoryHash(), visit() (+44 more)
+Nodes (47): __dirname, ROOT, SRC, violations, walk(), C, FUNCTIONS_TO_CHECK, REACHABLE_HTTP_STATUSES (+39 more)
 
 ### Community 55 - "AdminTelemetriaPage.tsx"
 Cohesion: 0.06
 Nodes (38): AdminTelemetriaPage(), AppHealthDashboard, AppLogsTable, BreakerStatusCard, BridgeAlertsCard, BridgesLiveCard, ColdStartRetriesPanel, ColdVsWarmCrmCard (+30 more)
 
-### Community 56 - "McpKeyDetailsDrawer.tsx"
+### Community 56 - "gerar-revisao-2026-09-12.py"
+Cohesion: 0.04
+Nodes (11): ancestrais(), exigir(), visitar(), _garantir_commit(), _historical_excepthook(), _garantir_commit(), _historical_excepthook(), _garantir_commit() (+3 more)
+
+### Community 57 - "handler.ts"
+Cohesion: 0.06
+Nodes (46): AttestableQuoteItem, catalogCost(), exactMoney(), fallbackCost(), imageUrls(), isQuoteCatalogSnapshotUnchanged(), locationFromStorageUrl(), matchesPreviousIdentity() (+38 more)
+
+### Community 58 - "expert-chat/index.ts"
+Cohesion: 0.06
+Nodes (47): PR #119 — RECUPERAR, DEMO_CLIENT_ID, DEMO_COMPANY, isDemoClient(), authenticateRequest(), applyProductFilters(), ClientData, CustomerData (+39 more)
+
+### Community 59 - "AnomalyCards.tsx"
+Cohesion: 0.05
+Nodes (50): Itens não aplicados (decisão arquitetural), Onda 1 — Crítico ✅, Onda 2 — Alto ✅, Onda 3 — Médio ✅, Onda 4 — Security Center ✅, Onda 5 — Operacional 10/10 ✅, Onda 6 — Polimento Final ✅, Onda 7 — Defesa em Profundidade ✅ (+42 more)
+
+### Community 60 - "McpKeyDetailsDrawer.tsx"
 Cohesion: 0.07
 Nodes (52): ACTION_LABELS, AuditEntry, AuditHistory(), formatOptionalDate(), KeyCreator(), KeyDates(), KeyDetails(), KeyScopes() (+44 more)
 
-### Community 57 - "ProductFormStepContent.tsx"
+### Community 61 - "OrderDetailSheet.tsx"
+Cohesion: 0.05
+Nodes (49): Os 2 arquivos de código que sobraram — veredito de 19/11/2026, `src/components/orders/InvoicePaymentPanel.tsx` — **obsoleto, não recuperar**, Varredura mecânica das 93 refs — e o que ela encontrou, GlobalConfirmDialog(), useOpenerFocusRestore(), ApprovalKanbanBoard(), COLUMNS, FinancialPanel() (+41 more)
+
+### Community 62 - "ProductFormStepContent.tsx"
 Cohesion: 0.09
 Nodes (49): `src/components/admin/products/ProductFormStepContent.tsx` (etapa 17, 7 → 0 erros — drift de tipo em prop compartilhada `FormSectionProps` + widening desnecessário local), CharCounter(), FieldLabel(), FormSectionProps, SectionCard(), SectionDef, SectionId, SECTIONS (+41 more)
 
-### Community 58 - "helpers/auth.ts"
+### Community 63 - "helpers/auth.ts"
 Cohesion: 0.07
 Nodes (41): ADMIN_STORAGE, CURRENT_DIR, DEV_STORAGE, MANAGER_STORAGE, STORAGE, PERMISSION_MATRIX, PermissionRoute, resolvePath() (+33 more)
 
-### Community 59 - "useNewSupplierForm.ts"
+### Community 64 - "useNewSupplierForm.ts"
 Cohesion: 0.07
 Nodes (52): AddressTab(), AddressTabProps, CarrierField(), CoreAddressFields(), LocationMetadataFields(), BasicDataTab(), BasicDataTabProps, SupplierBillingFields() (+44 more)
 
-### Community 60 - "products/index.ts"
-Cohesion: 0.06
-Nodes (49): contextLabels, PackagingBadge(), PackagingContext, ProductCard, CardContentSkeleton(), CardImageSkeleton(), ProductCardSkeleton(), ProductCardSkeletonProps (+41 more)
+### Community 65 - "MockupHistoryPanel.tsx"
+Cohesion: 0.07
+Nodes (50): Annotation, MockupAnnotations(), MockupAnnotationsProps, MockupBeforeAfter(), MockupBeforeAfterProps, CompareMockup, MockupCompareDialog(), MockupCompareDialogProps (+42 more)
 
-### Community 61 - "AuthContext.tsx"
-Cohesion: 0.06
-Nodes (29): DevInfraGate.ts (etapa 17), AuthContext, AuthContextType, AuthProvider(), AuthStateDependencies, ClientLogger, closeRevokedLocalSession(), errorMessage() (+21 more)
-
-### Community 62 - "tecnicas/index.ts"
+### Community 66 - "tecnicas/index.ts"
 Cohesion: 0.10
 Nodes (49): `src/components/pricing/calculator/QuantityComparisonTable.tsx` (etapa 17, 6 → 0 erros), `src/hooks/tecnicas/usePrecoCalculation.ts` (etapa 17, 7 → 0 erros — **2º achado real de bug de crash em produção nesta etapa**), useTabelasPreco.ts (etapa 17), useTecnicasUnificadas.ts (etapa 17), TECNICAS_QUERY_KEYS, calcularPreco(), calculatePriceForQuantity(), extractPriceTiersFromTabela() (+41 more)
 
-### Community 63 - "ProductDetail.tsx"
+### Community 67 - "ProductDetail.tsx"
 Cohesion: 0.07
 Nodes (53): getStockStatusInfo(), ProductDetailHero(), ProductDetailHeroProps, compareProduct(), Description(), EMPTY_SUPPLIER_TRUST, formatPrice(), ProductFlags() (+45 more)
 
-### Community 64 - "simular-lacunas.mjs"
-Cohesion: 0.04
-Nodes (33): Achados que corrigem o plano original, ImageUploadButton.tsx (etapa 17), mockData.ts (etapa 17), useBulkImportFile.ts + ImportExportManager.tsx (etapa 17), 2. Logger estruturado (formato JSON), Fallback do catálogo local + timeout de 8s + propagação de erro na busca global (useGlobalSearch), PR #161 — NADA_A_RECUPERAR, PR #164 — RECUPERAR (+25 more)
+### Community 68 - "connections-auto-test/index.ts"
+Cohesion: 0.07
+Nodes (38): BodySchema, ActiveConnection, assertServiceClient(), AUTO_TESTABLE_CONNECTION_STATUSES, BatchTestResult, processBatch(), ProcessBatchDependencies, RETRY_BACKOFF_MS (+30 more)
 
-### Community 65 - "ConnectionsOverviewTable.tsx"
+### Community 69 - "maintenance/lib.mjs"
+Cohesion: 0.12
+Nodes (47): acquire(), activeChildren, checked(), commitWithHooks(), dependencyFingerprint(), digest(), directoryHash(), visit() (+39 more)
+
+### Community 70 - "audit-scripts.test.ts"
+Cohesion: 0.10
+Nodes (41): buildExport(), buildDossier(), escapeMarkdownText(), evidenceStatus(), getCoverageMetrics(), getFileInfo(), renderMarkdownPdf(), validateLink() (+33 more)
+
+### Community 71 - "ConnectionsOverviewTable.tsx"
 Cohesion: 0.07
 Nodes (45): Aggregate, aggregateSource(), ConnectionRowSourceBadge(), CredentialSourceDetails(), META, MissingSourceBadge(), SourceEntry, sourceEntryPresentation() (+37 more)
 
-### Community 66 - "PromptGenerator.tsx"
+### Community 72 - "KitSummary.tsx"
+Cohesion: 0.06
+Nodes (41): DiscontinuedItemsAlert(), DiscontinuedItemsAlertProps, fetchDiscontinuedItems(), FREIGHT_TABLE, FreightEstimator(), FreightEstimatorProps, METHOD_LABELS, KitActionsBar() (+33 more)
+
+### Community 73 - "PromptGenerator.tsx"
 Cohesion: 0.07
 Nodes (47): CATEGORIES, PromptBankProps, SCENE_PROMPTS, ScenePrompt, SEGMENT_CATEGORY_MAP, AreaDimensions(), areaLabel(), AreaSelector() (+39 more)
 
-### Community 67 - "e2e-feature-summary.mjs"
+### Community 74 - "useSimulation.ts"
+Cohesion: 0.07
+Nodes (42): copyAllOptionsToClipboard(), copyOptionToClipboard(), formatCurrency(), buildLegacyFallbackOption(), buildRpcOption(), buildUnavailableOption(), customizationFailureReason(), customizationRpcParams() (+34 more)
+
+### Community 75 - "wizard/index.ts"
+Cohesion: 0.06
+Nodes (36): PersonalizationSummary.tsx (etapa 17), MobilePersonalizationSummary(), MobilePersonalizationSummaryProps, groupByLocation(), PersonalizationRow(), PersonalizationRowProps, PersonalizationSummary(), PersonalizationSummaryProps (+28 more)
+
+### Community 76 - "e2e-feature-summary.mjs"
 Cohesion: 0.05
 Nodes (42): Tabelas, byE2eName, byFeature, C, errorsOfRun, extractE2eName(), failedByE2eName, failedFeatures (+34 more)
 
-### Community 68 - "Plano de correções da auditoria tripla em 50 etapas"
-Cohesion: 0.04
-Nodes (49): Estado medido em 17/09/2026 (ponto de partida desta rodada), Etapa 1 — Atualizar `main` local, Etapa 21 — Registrar as 21 tabelas/views órfãs com dono nomeado, Etapa 22 — Família `pontos_atendimento`/`singulares`/`pa_singularidades` vs. `postos_atendimento`/`cooperativas`, Etapa 23 — `blog_posts`, Etapa 24 — "Magic Up": 3 das 6 tabelas nunca usadas, Etapa 25 — RPCs Sicoob prontas mas nunca chamadas (`sicoob_performance_reports`, `sicoob_approval_policies`, `sicoob_order_shipments`), Etapa 26 — Views `sicoob_budget_audit`/`v_full_scope_grants` → `AuditEvidenceDashboard.tsx` (+41 more)
-
-### Community 69 - "sicoob-document-ingest/index.ts"
+### Community 77 - "sicoob-document-ingest/index.ts"
 Cohesion: 0.08
 Nodes (36): sicoob-document-ingest: estado de registro (confirmed/rejected/unknown) e escape de ILIKE, `claude/feat-modulos-edge-relatorios-261117-0950` (PR #292, fechada) — **LIBERADA em 19/11/2026**, rejected(), ARTWORK_BUCKET, assertArtworkContentType(), assertArtworkPath(), buildArtworkIdentity(), CONTENT_TYPE_BY_EXTENSION (+28 more)
 
-### Community 70 - "Cada descarte derrubado, por extenso"
+### Community 78 - "Cada descarte derrubado, por extenso"
 Cohesion: 0.05
 Nodes (43): AGENTS.md — Brindes Sicoob V2, Banco — ler `docs/agentes/banco.md` antes de SQL, migration ou deploy, Bugs e funcionalidades, Comunicação, Fluxo Git — detalhe em `docs/agentes/github-ci.md`, Grafo de código (graphify), Postura, Serviços (+35 more)
 
-### Community 71 - "lib/kit-builder/index.ts"
+### Community 79 - "docs/README.md"
+Cohesion: 0.04
+Nodes (36): Configuração alvo, Estado configurado em 31/10/2026, Estado observado em 22/09/2026 (histórico — superado abaixo), Proteção da branch `main`, Validação após configurar, CI e entrega — Brindes Sicoob V2, Estado comprovado em 22/09/2026, Fluxo de mudança (+28 more)
+
+### Community 80 - "lib/kit-builder/index.ts"
 Cohesion: 0.08
 Nodes (43): `src/components/admin/products/kit-components/VolumeValidation.tsx` (etapa 17, 6 → 0 erros), MOCK_BOXES, MOCK_ITEMS, calculateBoxPrice(), calculateItemsPrice(), calculatePersonalizationPrice(), calculateSavings(), calculateTotalKitPrice() (+35 more)
 
-### Community 72 - "external-db/products.ts"
+### Community 81 - "external-db/products.ts"
 Cohesion: 0.07
 Nodes (48): useProductsManager.ts (etapa 17), PR #94 — RECUPERAR, AdminProduct, addHeavyEnrichmentQueries(), applyEnrichments(), applyProductImages(), buildColorsByProduct(), buildEnrichmentQueries() (+40 more)
 
-### Community 73 - "snapshot.py"
+### Community 82 - "Plano de reconciliação e hardening do banco em 50 etapas"
+Cohesion: 0.04
+Nodes (48): Estado medido em 16/09/2026 (ponto de partida), Etapa 10 — Resolver prefixos de versão duplicados ✅ (concluído em 16/09/2026), Etapa 11 — Arquivar migrations superadas ⏳ (parcial — 1 de N clusters arquivados em 16/09/2026), Etapa 12 — Reparar o ledger `supabase_migrations.schema_migrations`, Etapa 13 — Validar drift zero, Etapa 14 — Criar ambiente de staging a partir do baseline, Etapa 15 — Pipeline "Supabase Preview" por PR, Etapa 16 — Seed determinístico de homologação (+40 more)
+
+### Community 83 - "QuotesListPage.tsx"
+Cohesion: 0.07
+Nodes (40): CartCompanyOption, fetchCartCompanyOptions(), fetchQuoteDirectoryCustomers(), CartCompanyPicker(), CartCompanyPickerProps, CartCompanyPickerDialog(), CartCompanyPickerDialogProps, readList() (+32 more)
+
+### Community 84 - "Relatório CI — adm01-debug/Brindes_Sicoob_V2"
+Cohesion: 0.04
+Nodes (48): 1. Quota Supabase (CRÍTICO — bloqueia 3 checks), 2. Quota GitHub Copilot, 3. PR #141 — 1 aprovação humana necessária para merge, Alteração verificada, Atualização da auditoria CI — 2026-10-31, Atualização supersedente — auditoria coordenada de CI (31/10/2026), Atualização supersedente — auditoria coordenada posterior (31/10/2026), Auditoria CI atualizada — 2026-10-31 (+40 more)
+
+### Community 85 - "cenarios.mjs"
+Cohesion: 0.05
+Nodes (35): Step 2.5 - Transcribe video / audio files (only if video files detected), Como ler sem trocar de branch, Contexto gerado para agentes de IA, Onde está cada fato (cada um tem um dono), Quem roda, quando, mockData.ts (etapa 17), base(), comp() (+27 more)
+
+### Community 86 - "Pendências atualizadas — 2026-10-31"
+Cohesion: 0.04
+Nodes (48): 1. Workflows que continuam falhando na `main`, 2. PR #151 — inventário/API e migration RLS, 3. E2E autenticado na PR #179, 4. PR #180, Atualização de auditoria dos PRs — 2026-10-31, Atualização de checks após o snapshot anterior — 2026-10-29, Atualização do verificador de Edge Functions — 2026-10-31, Atualização dos checks remotos das PRs (2026-10-31) (+40 more)
+
+### Community 87 - "products/index.ts"
+Cohesion: 0.08
+Nodes (40): contextLabels, PackagingBadge(), PackagingContext, ProductCard, CardContentSkeleton(), CardImageSkeleton(), ProductCardSkeleton(), ProductCardSkeletonProps (+32 more)
+
+### Community 88 - "snapshot.py"
 Cohesion: 0.12
 Nodes (34): diff_fingerprints(), excluded_sql(), get_columns(), get_constraints(), get_cron(), get_cron_runs(), get_db_stats(), get_extensions() (+26 more)
 
-### Community 74 - "AdvancedPriceSearchPage.tsx"
+### Community 89 - "Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)"
+Cohesion: 0.06
+Nodes (39): OrderService.ts + src/types/orders.ts (etapa 17), QuoteHistoryTimeline.tsx (etapa 17), QuoteTemplateForm.tsx (etapa 17), `src/components/cms/BannerCarousel.tsx` (etapa 17, 7 → 0 erros — drift de nulidade em `useCMS.ts` quebra a inferência de generics do `useQuery`), `src/hooks/useQuoteBuilderState.ts` + `useQuoteTemplates.ts` + `quote/useQuoteInitialization.ts` (etapa 17, 6 → 0 erros), `src/hooks/useQuoteTemplates.ts` (etapa 17, 2 → 0 erros — achado: `items_data` não é `Json`-serializável no tipo + 2 campos com drift de nulidade), TemplateGridView.tsx (etapa 17), useAuditLog.ts (etapa 17) — bug real de produção encontrado (+31 more)
+
+### Community 90 - "AdvancedPriceSearchPage.tsx"
 Cohesion: 0.10
 Nodes (43): `src/pages/advanced-price-search/ResultViews.tsx` (etapa 17, 6 → 0 erros), ProductCardResult(), ProductListResult(), ProductTableResult(), DEFAULT_FILTERS, formatCurrency(), ProductWithCalculatedPrice, QUANTITY_OPTIONS (+35 more)
 
-### Community 75 - "QuoteService.ts"
-Cohesion: 0.08
-Nodes (31): useQuotesDashboard.ts (etapa 17), useQuoteViewData.ts (etapa 17), Sexta varredura: o que está no ar (19/11/2026) — achou um P0, PR #179 — RECUPERAR, jszip, ConsolidationPanelFallback(), useQuotes(), useRealtimeSync() (+23 more)
-
-### Community 76 - "KitBuilderPage"
+### Community 91 - "KitBuilderPage"
 Cohesion: 0.08
 Nodes (39): canvas-confetti, customKitPayload(), KitBuilderPage(), BoxStep(), BuilderHeader(), BuilderSidebar(), BuilderSteps(), CapacityDetails() (+31 more)
 
-### Community 77 - "cenarios.mjs"
-Cohesion: 0.05
-Nodes (33): Step 2.5 - Transcribe video / audio files (only if video files detected), Como ler sem trocar de branch, Contexto gerado para agentes de IA, Onde está cada fato (cada um tem um dono), Quem roda, quando, base(), comp(), fails (+25 more)
+### Community 92 - "InboundEventsPanel.tsx"
+Cohesion: 0.07
+Nodes (43): Onda 12 — observabilidade & DX, EventGroup, EventGroupOptions(), EventsMultiSelect(), EventsSearchResults(), filterEventGroups(), LegacyEvents(), Props (+35 more)
 
-### Community 78 - "dev.ts"
-Cohesion: 0.05
-Nodes (12): devRoutes, makeRow(), makeRows(), mockUseAuth, mockUseCloudStatus, createManyRows(), createTelemetryRow(), mockFrom (+4 more)
-
-### Community 79 - "🔐 Explicação das Policies (RLS)"
+### Community 93 - "🔐 Explicação das Policies (RLS)"
 Cohesion: 0.04
 Nodes (46): 📊 ANALYTICS_EVENTS, 📋 AUDIT_LOG, 👥 BITRIX_CLIENTS (Clientes), 📚 COLLECTIONS, **Como funcionam:**, **Diferença:** User-scoped (não org-scoped!), 🔐 Explicação das Policies (RLS), 🖼️ GENERATED_MOCKUPS (+38 more)
 
-### Community 80 - "ConnectionTestHistoryPanel.tsx"
+### Community 94 - "ConnectionTestHistoryPanel.tsx"
 Cohesion: 0.08
 Nodes (45): ConnectionTestHistoryPanel.tsx (etapa 17), ConnectionTestHistoryPanel(), CronCounts, emptyMessage(), ExpandedContent(), ExpandedContentProps, filterChipClass(), FilterControls() (+37 more)
 
-### Community 81 - "OrderDetailSheet.tsx"
+### Community 95 - "framer-motion"
 Cohesion: 0.06
-Nodes (37): `src/components/orders/InvoicePaymentPanel.tsx` — **obsoleto, não recuperar**, Varredura mecânica das 93 refs — e o que ela encontrou, GlobalConfirmDialog(), useOpenerFocusRestore(), ApprovalKanbanBoard(), COLUMNS, FinancialPanel(), FinancialPanelProps (+29 more)
+Nodes (32): framer-motion, Props, RotateSecretConfirmDialog(), Props, SaveSecretConfirmDialog(), SecretConfirmationDialogs(), Props, safeSuffix() (+24 more)
 
-### Community 82 - "StockHistoryChart.tsx"
-Cohesion: 0.08
-Nodes (42): abcPresentation(), ChartControls(), ChartHeader(), ErrorCard(), HeaderBadges(), LoadingCard(), MarketChart(), MarketChartDatum (+34 more)
+### Community 96 - "TrendsPage.tsx"
+Cohesion: 0.07
+Nodes (41): isDemoMode(), buildCivilTrendWindow(), COLOR_CLASSES, ColorKey, DeltaBadge(), ITEMS, KpiData, KpiItem (+33 more)
 
-### Community 83 - "ProductFiltersBar.tsx"
-Cohesion: 0.08
-Nodes (42): ActiveFilterBadges(), activeFilterValue(), CategoryFilter(), CategoryOption, countActiveFilters(), FiltersContent(), FilterTrigger(), KitFilter() (+34 more)
-
-### Community 84 - "personalization/TechniqueSelector.tsx"
+### Community 97 - "personalization/TechniqueSelector.tsx"
 Cohesion: 0.08
 Nodes (42): AdvancedFilters(), AdvancedFilterToggle(), EmptyResults(), formatCurrency(), getSLABadgeStyle(), matchesSearch(), matchesSla(), MinimumQuantity() (+34 more)
 
-### Community 85 - "ProductQuickView.tsx"
+### Community 98 - "ProductQuickView.tsx"
 Cohesion: 0.08
 Nodes (40): ActionBadge(), CategoryBadges(), categoryIcon(), ProductActionBadges(), ProductCategoryBadges(), ProductCategoryBadgesProps, uniqueCategories(), CHECK_SIZES (+32 more)
 
-### Community 86 - "20251227100009_sql_optimizations.sql"
-Cohesion: 0.07
-Nodes (31): idx_quote_comments_created, idx_quote_comments_quote, quote_comments, idx_clients_email, idx_clients_name_search, idx_clients_segment, idx_collection_items_collection, idx_collection_items_product (+23 more)
+### Community 99 - "dev.ts"
+Cohesion: 0.05
+Nodes (11): devRoutes, makeRow(), makeRows(), mockUseAuth, mockUseCloudStatus, createManyRows(), createTelemetryRow(), mockFrom (+3 more)
 
-### Community 87 - "IdentitySuggestionButton.tsx"
-Cohesion: 0.06
-Nodes (37): Onda Inteligência & Colaboração, canSuggestIdentity(), getIcon(), IdentitySuggestionButton(), Props, SuggestIdentityButton(), SuggestIdentityButtonProps, SuggestionCard() (+29 more)
-
-### Community 88 - "graphify-local.mjs"
+### Community 100 - "graphify-local.mjs"
 Cohesion: 0.14
 Nodes (38): acquire(), acquireGlobal(), active, adoptInitial(), assertResources(), atomic(), canonical(), checked() (+30 more)
 
-### Community 89 - "fuse.js"
-Cohesion: 0.07
-Nodes (31): fuse.js, CartCompanyOption, fetchCartCompanyOptions(), fetchQuoteDirectoryCustomers(), CartCompanyPicker(), CartCompanyPickerProps, CartCompanyPickerDialog(), CartCompanyPickerDialogProps (+23 more)
-
-### Community 90 - "rotina.mjs"
+### Community 101 - "ref_utils"
 Cohesion: 0.05
-Nodes (37): acquireLock(), add, argv, base, bySev(), cleanup(), commit, cur (+29 more)
+Nodes (14): ARIA_KEYWORDS, FIXED_NOW, CASES, COMPACT_VARIANTS, Expected, FIXED_NOW, FULL_VARIANTS, FIXED_NOW (+6 more)
 
-### Community 91 - "ProductFormFullscreen.tsx"
+### Community 102 - "Plano de correções da auditoria tripla em 50 etapas"
+Cohesion: 0.05
+Nodes (42): Estado medido em 17/09/2026 (ponto de partida desta rodada), Etapa 1 — Atualizar `main` local, Etapa 27 — Classificar as 43 funções órfãs, Etapa 28 — Buckets órfãos `order-documents` e `component-media`, Etapa 29 — Job de CI: drift de ledger de migrations, Etapa 2 — Abrir PR retroativa para os commits sem revisão, Etapa 30 — Investigar e corrigir o gap de branch protection, Etapa 31 — Alerta de "commit sem PR há mais de N dias" (+34 more)
+
+### Community 103 - "StockDashboard.tsx"
 Cohesion: 0.09
-Nodes (39): ProductDraft, ProductFormDraftOptions, restoreFormValues(), useDraftPersistence(), useDraftRestore(), useProductFormDraft(), useSkuValidation(), AnimatedStep() (+31 more)
+Nodes (39): AlertCard(), severityIcons, severityStyles, AlertEmptyState(), AlertSummaryBar(), LowStockDialog(), OutOfStockDialog(), StockAlertDialogProps (+31 more)
 
-### Community 92 - "products-detail.ts"
+### Community 104 - "products-detail.ts"
 Cohesion: 0.08
 Nodes (41): getFreshFromCacheSafe(), putInCacheSafe(), hasPrivateReference(), ProductImageRecord, resolveProductImageRecords(), resolveProductRecordImages(), applyCachedReferences(), applyDetailImages() (+33 more)
 
-### Community 93 - "routePrefetch.ts"
+### Community 105 - "routePrefetch.ts"
 Cohesion: 0.07
 Nodes (5): prefetched, routeImportMap, productRoutes, quoteRoutes, toolRoutes
 
-### Community 94 - "AIRecommendationsPanel.tsx"
+### Community 106 - "AIRecommendationsPanel.tsx"
 Cohesion: 0.08
 Nodes (38): AIChat.tsx (etapa 17), AIChat(), AIChatProps, chatErrorMessage(), ChatMessage, extractProductMentions(), fetchAssistantContent(), makeId() (+30 more)
 
-### Community 95 - "Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)"
-Cohesion: 0.07
-Nodes (37): OrderService.ts + src/types/orders.ts (etapa 17), PresetsBar.tsx (etapa 17), QuoteTemplateForm.tsx (etapa 17), `src/components/cms/BannerCarousel.tsx` (etapa 17, 7 → 0 erros — drift de nulidade em `useCMS.ts` quebra a inferência de generics do `useQuery`), `src/hooks/useQuoteBuilderState.ts` + `useQuoteTemplates.ts` + `quote/useQuoteInitialization.ts` (etapa 17, 6 → 0 erros), `src/hooks/useQuoteTemplates.ts` (etapa 17, 2 → 0 erros — achado: `items_data` não é `Json`-serializável no tipo + 2 campos com drift de nulidade), `src/pages/sicoob/PAWalletPage.tsx` (etapa 17, 7 → 0 erros — **3 bugs reais ao vivo em produção**, não drift de tipos), TemplateGridView.tsx (etapa 17) (+29 more)
-
-### Community 96 - "ref_utils"
+### Community 107 - "success"
 Cohesion: 0.05
-Nodes (10): ARIA_KEYWORDS, FIXED_NOW, FIXED_NOW, FIXED_NOW, daysAgo(), FIXED_NOW, makeRaw(), FIXED_NOW (+2 more)
+Nodes (42): Aplicar migrations autorizadas, Estado e limites, Publicador oficial do frontend: Vercel, Publicar Edge Functions Sicoob, Publicação e migrations, Verificação da publicação, Ação do owner para liberar E2E isolado, Checks da PR #173 (observação em 2026-10-30, 11:10 UTC) (+34 more)
 
-### Community 97 - "useMagicUpState.ts"
+### Community 108 - "FilterPanel.tsx"
 Cohesion: 0.10
-Nodes (38): MagicUpConfigPanel.tsx (etapa 17), ProductSearchCombobox(), buildGenerationPayload(), GeneratedImageResponse, generateVariation(), GenerationDeps, generationRequestBody(), generationSubject() (+30 more)
+Nodes (34): react-hot-toast, DebouncedPriceInput(), DebouncedPriceInputProps, FilterPanelHeader(), FilterPanelHeaderProps, FilterSection(), GroupSeparator(), SECTION_ICON_COLORS (+26 more)
 
-### Community 98 - "Pendências atualizadas — 2026-10-31"
-Cohesion: 0.05
-Nodes (41): 1. Workflows que continuam falhando na `main`, 2. PR #151 — inventário/API e migration RLS, 3. E2E autenticado na PR #179, 4. PR #180, Atualização de auditoria dos PRs — 2026-10-31, Atualização do verificador de Edge Functions — 2026-10-31, Atualização dos checks remotos das PRs (2026-10-31), Atualização supersedente — 31/10/2026 (+33 more)
-
-### Community 99 - "automation.mjs"
+### Community 109 - "automation.mjs"
 Cohesion: 0.16
 Nodes (39): adapter(), appendExclude(), APPROVED, atomic(), command(), digest(), doctor(), EVENTS (+31 more)
 
-### Community 100 - "useGravacaoV2.ts"
-Cohesion: 0.12
-Nodes (35): AREA_SHAPES, calculateCustomizationTotal(), calculateSetupCost(), calculateTotalWithColorDiscount(), findPriceTier(), formatPrice(), getTechniqueColor(), getTechniqueIcon() (+27 more)
+### Community 110 - "cli.mjs"
+Cohesion: 0.08
+Nodes (32): checkFile(), HOOK_NAMES, RELATIVE_HOOK_IMPORT, SKIP_DIRS, SOURCE_EXTS, walkDir(), DEMO_ROUTES, annotate() (+24 more)
 
-### Community 101 - "useMockupGenerator.ts"
+### Community 111 - "ProductTableView.tsx"
+Cohesion: 0.09
+Nodes (40): appendQuoteVariant(), ColorDots(), compareProducts(), formatPrice(), hasColorMatch(), highlightedRowStyle(), isColorHighlighted(), numberOrZero() (+32 more)
+
+### Community 112 - "useMockupGenerator.ts"
 Cohesion: 0.10
 Nodes (39): clientIdentity(), createDefaultArea(), deleteMockupFromDb(), downloadMockupAsPdf(), fetchMockupHistory(), generateAreaMockup(), generateBatchMockups(), GeneratedMockup (+31 more)
 
-### Community 102 - "SicoobInvitationsPage.tsx"
+### Community 113 - "SicoobInvitationsPage.tsx"
 Cohesion: 0.09
 Nodes (40): AccessTerminationDialog(), CooperativeField(), CooperativeRow, effectiveStatus(), ExpiryField(), getInvitationRoleLabel(), getInvitationScopeLabel(), InvitationEmailField() (+32 more)
 
-### Community 103 - "📋 Inventário Completo de Funcionalidades e Ferramentas"
+### Community 114 - "crm-db.ts"
+Cohesion: 0.08
+Nodes (33): SystemStatusPage.tsx (etapa 17), `claude/feat-modulos-edge-recuperados-261117-0930` (PR #291, fechada) — **LIBERADA em 19/11/2026**, Refs liberadas por verificação byte a byte, batchErrorMessage(), bridgePayload(), crmAttemptMessage(), CrmBatchQuery, CrmBatchResult (+25 more)
+
+### Community 115 - "📋 Inventário Completo de Funcionalidades e Ferramentas"
 Cohesion: 0.05
-Nodes (39): 11.1 Reconhecimento de Fala, 🎙️ 11. COMANDOS DE VOZ, 13.1 Export Excel, 13.2 Export PDF, 📤 13. EXPORTAÇÃO, 14.1 Configuração pt-BR, 🌐 14. LOCALIZAÇÃO (pt-BR), 16.1 Service Worker (+31 more)
+Nodes (39): 11.1 Reconhecimento de Fala, 🎙️ 11. COMANDOS DE VOZ, 14.1 Configuração pt-BR, 🌐 14. LOCALIZAÇÃO (pt-BR), 15.1 Caching, 15.2 Rate Limit Dashboard, ⚡ 15. PERFORMANCE E CACHE, 16.1 Service Worker (+31 more)
 
-### Community 104 - "MockupHistoryPanel.tsx"
-Cohesion: 0.10
-Nodes (35): CompareMockup, MockupCompareDialog(), MockupCompareDialogProps, ClearFiltersButton(), Client, CompareControls(), CompareMarker(), filterHistory() (+27 more)
-
-### Community 105 - "PriceFreshnessBadge.tsx"
+### Community 116 - "PriceFreshnessBadge.tsx"
 Cohesion: 0.10
 Nodes (39): accessibleRelative(), accessibleStatusCopy(), BadgeBodyProps, BadgeWithTooltip(), buildAccessibleLabel(), buildClassificationRule(), canConfirmPrice(), CompactBody() (+31 more)
 
-### Community 106 - "ProductTableView.tsx"
-Cohesion: 0.09
-Nodes (39): appendQuoteVariant(), ColorDots(), compareProducts(), formatPrice(), hasColorMatch(), highlightedRowStyle(), isColorHighlighted(), numberOrZero() (+31 more)
-
-### Community 107 - "GlobalSearchPaletteView.tsx"
-Cohesion: 0.09
-Nodes (32): NavCard(), paletteItemStateClass, QuickAction, staggerStyle(), GlobalSearchPalette(), GlobalSearchState, openFirstResult(), selectNumberedResult() (+24 more)
-
-### Community 108 - "useQuotesDashboard.ts"
+### Community 117 - "useQuotesDashboard.ts"
 Cohesion: 0.10
 Nodes (38): buildMonthlyData(), buildStatusDistribution(), calculateAverageResponseTime(), calculateDashboardMetrics(), Client, DashboardMetrics, EMPTY_METRICS, exportDashboardPdf() (+30 more)
 
-### Community 109 - "orders/OrdersPage.tsx"
+### Community 118 - "orders/OrdersPage.tsx"
 Cohesion: 0.09
 Nodes (39): ActiveFilter(), ActiveFilters(), BulkActions(), calculateStats(), CriticalSlaCard(), DateRangeButton(), EMPTY_STATS, escapeCsvCell() (+31 more)
 
-### Community 110 - "📊 Análise Exaustiva das 109 Tabelas do Banco de Dados Externo"
-Cohesion: 0.05
-Nodes (38): 1.1 Tabela Principal de Produtos, 1.2 Imagens e Mídia, 1.3 Variantes e SKUs, 1.4 Categorias Hierárquicas, 1.5 Cores, 1.6 Materiais, 1.7 Atributos e Tags, 1.8 Fornecedores (+30 more)
-
-### Community 111 - "docs/README.md"
-Cohesion: 0.06
-Nodes (31): CI e entrega — Brindes Sicoob V2, Estado comprovado em 22/09/2026, Fluxo de mudança, No Inventário mas ausentes no Repositório (Obsoletas):, No Repositório mas ausentes no Inventário:, Relatório de Divergência de Edge Functions, Resumo, 1. Segurança & Auth (+23 more)
-
-### Community 112 - "Relatório de Auditoria Exaustiva — Brindes Sicoob V2"
+### Community 119 - "Relatório de Auditoria Exaustiva — Brindes Sicoob V2"
 Cohesion: 0.05
 Nodes (37): 10. CI/CD — Auditoria Detalhada dos Workflows (agente especializado), 11.1 RLS — Cobertura Total ✅, 11.2 SECURITY DEFINER — Zero Privilege Escalation Risk ✅, 11.3 ACL das Funções de Favoritos Públicos ✅, 11.4 Auditoria da ACL — Zero Violations ✅, 11.5 Migrations PR #106 e Ledger ✅, 11.6 Resumo Executivo, 11. Validação Direta ao Banco — Queries em Produção (2026-10-22) (+29 more)
 
-### Community 113 - "Relatório CI — adm01-debug/Brindes_Sicoob_V2"
-Cohesion: 0.05
-Nodes (38): 1. Quota Supabase (CRÍTICO — bloqueia 3 checks), 2. Quota GitHub Copilot, 3. PR #141 — 1 aprovação humana necessária para merge, Atualização da auditoria CI — 2026-10-31, Atualização supersedente — auditoria coordenada de CI (31/10/2026), Auditoria CI atualizada — 2026-10-31, Ações realizadas, Baseline anterior ao patch (+30 more)
+### Community 120 - "ProductCard.tsx"
+Cohesion: 0.09
+Nodes (38): addVariantQuoteParams(), CardDialogs, cardInteractionOpen(), CardVisuals, CollectionVariant, currentMatchingVariant(), FavoriteCompareOptions, filterKey() (+30 more)
 
-### Community 114 - "FilterPanel.tsx"
-Cohesion: 0.11
-Nodes (32): DebouncedPriceInput(), DebouncedPriceInputProps, FilterPanelHeader(), FilterSection(), GroupSeparator(), SECTION_ICON_COLORS, SECTION_TOOLTIPS, SectionHeader() (+24 more)
+### Community 121 - "CompareTableView.tsx"
+Cohesion: 0.08
+Nodes (33): CompareTableView.tsx (etapa 17), allEqual(), CompareEntry, CompareTableView(), CompareTableViewProps, HighlightedNumberRow(), leadTimeLabel(), leadTimeProxy() (+25 more)
 
-### Community 115 - "QuickAddToQuote.tsx"
+### Community 122 - "QuickAddToQuote.tsx"
 Cohesion: 0.10
 Nodes (32): ProductCardActions.tsx (etapa 17), ListAction(), ListItemActions(), ListItemActionsProps, ActionButton(), ActionsToggle(), CompareAction(), ExpandedCardActions() (+24 more)
 
-### Community 116 - "useProductsLightweight.ts"
+### Community 123 - "useProductsLightweight.ts"
 Cohesion: 0.09
 Nodes (36): `src/components/products/customization/VariationSelector.tsx` (etapa 17, 6 → 0 erros), useCatalogDisplay.ts (etapa 17), useFiltersPageState.ts (etapa 17), useEffect(), ColumnCount, ColumnOption, ColumnOptionButton(), columnOptions (+28 more)
 
-### Community 117 - "useCommercialIntelligence.ts"
+### Community 124 - "useCommercialIntelligence.ts"
 Cohesion: 0.10
 Nodes (35): useCommercialIntelligence.ts (etapa 17), aggregateClients(), aggregateSegments(), FilterParams, getSinceDate(), addTrendingOrder(), aggregateRevenueTrend(), CategoryRankingItem (+27 more)
 
-### Community 118 - "ProductEngravingSection.tsx"
+### Community 125 - "ProductEngravingSection.tsx"
 Cohesion: 0.11
 Nodes (34): areaDimensions(), areaLocationName(), AreaSummary(), EngravingAreaCard(), EngravingAreaCardProps, ExpandedAreaDetails(), moneyOrFallback(), COMMON_COMPONENTS (+26 more)
 
-### Community 119 - "ProductCard.tsx"
-Cohesion: 0.09
-Nodes (37): addVariantQuoteParams(), CardDialogs, cardInteractionOpen(), CardVisuals, CollectionVariant, currentMatchingVariant(), FavoriteCompareOptions, filterKey() (+29 more)
-
-### Community 120 - "QuoteConsolidationPanel.tsx"
+### Community 126 - "QuoteConsolidationPanel.tsx"
 Cohesion: 0.10
 Nodes (36): addQuoteItem(), ConsolidatedItemSource, ConsolidatedQuoteItem, consolidateQuoteItems(), ConsolidationSortConfig, ConsolidationSortKey, getConsolidationItemKey(), matchesSearch() (+28 more)
 
-### Community 121 - "useQuoteInitialization.ts"
+### Community 127 - "useQuoteInitialization.ts"
 Cohesion: 0.10
 Nodes (35): fetchCatalogProducts(), getCanonicalPrice(), getCatalogImage(), getMinimumQuantity(), getProductHints(), parseItemsParam(), QuoteItemHint, QuotePrefillProduct (+27 more)
 
-### Community 122 - "stockFetcher.ts"
+### Community 128 - "stockFetcher.ts"
 Cohesion: 0.10
 Nodes (34): AlertBase, generateStockAlerts(), predictedAlert(), STATUS_ALERTS, statusAlert(), variantAlerts(), addProductStockFallback(), BridgePage (+26 more)
 
-### Community 123 - "filters-page-helpers.ts"
+### Community 129 - "filters-page-helpers.ts"
 Cohesion: 0.11
 Nodes (36): ActiveFilterSummary, addCountSummary(), applyArrayParams(), applyBooleanParams(), applyProductFilters(), applyScalarParams(), ARRAY_FILTER_KEYS, ArrayFilterKey (+28 more)
 
-### Community 124 - "FiltersPage.tsx"
+### Community 130 - "FiltersPage.tsx"
 Cohesion: 0.09
 Nodes (36): activeColorFilter(), applyVoiceAction(), applyVoiceFilter(), applyVoiceNavigate(), applyVoiceSearch(), applyVoiceSort(), BulkControls(), CardsSkeleton() (+28 more)
 
-### Community 125 - "lib/index.ts"
-Cohesion: 0.07
-Nodes (23): clsx, tailwind-merge, breakers, CircuitBreakerOptions, CircuitState, getCircuitBreaker(), AppHealthStatus, DiagnosticLog (+15 more)
+### Community 131 - "admin.ts"
+Cohesion: 0.05
+Nodes (11): loadHistory(), saveHistory(), useVoiceHistory(), VoiceHistoryEntry, adminRoutes, AdminUser, sampleUsers, AxisConfig (+3 more)
 
-### Community 126 - "🏗️ Arquitetura do Sistema"
+### Community 132 - "🏗️ Arquitetura do Sistema"
 Cohesion: 0.05
 Nodes (37): **1. Context + Provider Pattern**, **2. Custom Hooks Pattern**, **3. Higher-Order Component (HOC)**, **4. Repository Pattern**, 🏗️ Arquitetura do Sistema, 🏛️ Arquitetura em Camadas, **Camadas de Segurança:**, **Características Principais:** (+29 more)
 
-### Community 127 - "wizard/index.ts"
-Cohesion: 0.10
-Nodes (29): PersonalizationSummary.tsx (etapa 17), MobilePersonalizationSummary(), MobilePersonalizationSummaryProps, groupByLocation(), PersonalizationRow(), PersonalizationRowProps, PersonalizationSummary(), PersonalizationSummaryProps (+21 more)
+### Community 133 - "devInfraGate"
+Cohesion: 0.11
+Nodes (13): DevInfraGate.ts (etapa 17), useAuth(), AccessPolicy, DEFAULT_ALLOWED_ROLES, DefaultAccessPolicy, devInfraGate, EnvGateProvider, FALSY (+5 more)
 
-### Community 128 - "gravacao-database.ts"
-Cohesion: 0.09
-Nodes (25): `src/hooks/gravacao/useTecnicasGravacao.ts` (etapa 17, 6 → 0 erros), Database, FornecedorGravacao, HotStampingFitaOpcao, Json, LaserAcabamentoOpcao, TecnicaFaixaArea, TecnicaFaixaPontos (+17 more)
-
-### Community 129 - "Evidências e refutações — anexo do ledger de recuperação"
+### Community 134 - "Evidências e refutações — anexo do ledger de recuperação"
 Cohesion: 0.05
 Nodes (37): claude/project-workflows-analysis-5n6hva, computador_local, Copiloto de vendas Sussurro (motor de análise e sugestões) — pr/116 + plano em pr/114, pr/117, pr/118, docs/plano150-20260927, Documentacao perdida em docs/ (diagnostico mecanico: 125 arquivos; contagem real: 118), Evidência, Evidência, Evidência (+29 more)
 
-### Community 130 - "useVoiceAgent.ts"
+### Community 135 - "useVoiceAgent.ts"
 Cohesion: 0.11
 Nodes (26): @elevenlabs/react, hasActiveScribe(), scribeIsStarting(), useVoiceAgent(), logVoiceCommand(), createSilentWavUrl(), playTtsAudio(), cleanup() (+18 more)
 
-### Community 131 - "useExternalDatabase.ts"
-Cohesion: 0.11
-Nodes (32): countActiveFilters(), useAdvancedFilters(), applyExternalSuccess(), ExternalDatabaseState, Operation, QueryOptions, QueryResult, StateSetter (+24 more)
+### Community 136 - "QuotesConfigurableList.tsx"
+Cohesion: 0.08
+Nodes (28): CELL_RENDERERS, CellRenderer, formatCurrency(), renderQuoteCell(), statusConfig, valueCell(), ALL_COLUMNS, ColumnDef (+20 more)
 
-### Community 132 - "orders/OrderDetailPage.tsx"
+### Community 137 - "useGravacaoV2.ts"
+Cohesion: 0.13
+Nodes (32): AREA_SHAPES, calculateCustomizationTotal(), calculateSetupCost(), calculateTotalWithColorDiscount(), findPriceTier(), formatPrice(), getTechniqueColor(), getTechniqueIcon() (+24 more)
+
+### Community 138 - "orders/OrderDetailPage.tsx"
 Cohesion: 0.10
 Nodes (36): ActionContext, allowedOrderTabs(), ApprovalActions(), ApprovalRequest, approveAction(), AuditRow(), BudgetProgress(), BudgetProgressNotice() (+28 more)
 
-### Community 133 - "TrendsPage.tsx"
-Cohesion: 0.09
-Nodes (33): isDemoMode(), buildCivilTrendWindow(), useRefetchOnRevision(), buildMockHotSearches(), buildMockTopProductFamilies(), DateRange, DemoBadge(), EMPTY_KPI (+25 more)
-
-### Community 134 - "magic-up-result-panel-keyboard.test.tsx"
+### Community 139 - "magic-up-result-panel-keyboard.test.tsx"
 Cohesion: 0.06
 Nodes (13): clickInactiveAndSyncState(), collectVariationTabStops(), expectRovingState(), expectSingleTabStop(), FOCUS_VISIBLE_CLASSES, getDots(), getDotsTablist(), getTabOrder() (+5 more)
 
-### Community 135 - "CompanySearchDropdown.tsx"
-Cohesion: 0.12
-Nodes (31): ContactSelector.tsx (etapa 17), Trabalho de etapa 17 (zerar arquivos com mais erros), CompanyDetails(), CompanyResults(), CompanySearchDropdown(), CompanySearchDropdownProps, fetchCompanies(), mergeCompanyResults() (+23 more)
+### Community 140 - "20251227100009_sql_optimizations.sql"
+Cohesion: 0.08
+Nodes (26): idx_clients_email, idx_clients_name_search, idx_clients_segment, idx_collection_items_collection, idx_collection_items_product, idx_order_history_order, idx_orders_client, idx_orders_created (+18 more)
 
-### Community 136 - "crm-db.ts"
-Cohesion: 0.09
-Nodes (29): SystemStatusPage.tsx (etapa 17), batchErrorMessage(), bridgePayload(), crmAttemptMessage(), CrmBatchQuery, CrmBatchResult, crmBreaker, CrmBridgePayload (+21 more)
-
-### Community 137 - "validations/index.ts"
+### Community 141 - "validations/index.ts"
 Cohesion: 0.09
 Nodes (28): zod, ForgotPasswordFormData, forgotPasswordSchema, LoginFormData, loginSchema, ResetPasswordFormData, resetPasswordSchema, SignupFormData (+20 more)
 
-### Community 138 - "20260912190000_sicoob_consolidation_distribution.sql"
+### Community 142 - "StockHistoryChart.tsx"
+Cohesion: 0.10
+Nodes (33): abcPresentation(), ChartControls(), ChartHeader(), ErrorCard(), HeaderBadges(), LoadingCard(), MarketChart(), MarketChartDatum (+25 more)
+
+### Community 143 - "20260912190000_sicoob_consolidation_distribution.sql"
 Cohesion: 0.13
 Nodes (26): idx_consolidation_orders_group, idx_delivery_allocations_destination, idx_delivery_destinations_group, idx_delivery_receipts_allocation, public.allocate_sicoob_consolidation_by_order_pa(), public.create_sicoob_order_consolidation(), public.dispatch_sicoob_order_consolidation(), public.get_sicoob_consolidation_sellers() (+18 more)
 
-### Community 139 - "ProductGallery.tsx"
+### Community 144 - "CompanySearchDropdown.tsx"
+Cohesion: 0.12
+Nodes (30): ContactSelector.tsx (etapa 17), CompanyDetails(), CompanyResults(), CompanySearchDropdown(), CompanySearchDropdownProps, fetchCompanies(), mergeCompanyResults(), ResultsDropdown() (+22 more)
+
+### Community 145 - "color-image-resolver.ts"
+Cohesion: 0.11
+Nodes (32): ProductCard.tsx (etapa 17), COLOR_GROUP_HEX, configuredHighlight(), groupHighlight(), ProductColor, resolveHighlightHex(), variationHighlight(), ActiveColorFilter (+24 more)
+
+### Community 146 - "ProductGallery.tsx"
 Cohesion: 0.09
 Nodes (31): `src/pages/product-detail/ProductDetailHero.tsx` (etapa 17, 6 → 0 erros), ColorMedia, ColorThumb(), ColorVariationCard(), GalleryColorVariations(), GalleryColorVariationsProps, ScrollButtons(), selectedCardStyle() (+23 more)
 
-### Community 140 - "external-db/index.ts"
+### Community 147 - "external-db/index.ts"
 Cohesion: 0.11
 Nodes (30): useKitBuilderTransformers.ts (etapa 17), useMockupTechniques.ts (etapa 17), BatchImportProgress, BatchImportResult, checkExistingSkus(), executeBatchImport(), generateErrorReportCSV(), importChunk() (+22 more)
 
-### Community 141 - "VoiceOrb.tsx"
-Cohesion: 0.11
-Nodes (33): VoiceVisualEffects.tsx (etapa 17), PhaseColors, usePhaseColors(), AmbientGlows(), ConicGlow(), CoreDecorations(), getCoreAnimation(), GlowProps (+25 more)
-
-### Community 142 - "success"
-Cohesion: 0.06
-Nodes (35): Aplicar migrations autorizadas, Estado e limites, Publicador oficial do frontend: Vercel, Publicar Edge Functions Sicoob, Publicação e migrations, Verificação da publicação, Ação do owner para liberar E2E isolado, Checks da PR #173 (observação em 2026-10-30, 11:10 UTC) (+27 more)
-
-### Community 143 - "process-scheduled-reports/index.ts"
-Cohesion: 0.07
-Nodes (20): As 11 capacidades perdidas, Copiloto de vendas Sussurro (motor de análise e sugestões) — pr/116 + plano em pr/114, pr/117, pr/118, Documentacao perdida em docs/ (diagnostico mecanico: 125 arquivos; contagem real: 118), Hardening perdido: bi-share-dossier e health-check publico (PR #150), kit-builder: persistencia e coordenador de concorrencia (pr/119), Suíte de testes perdida nas ~20 PRs fechadas sem merge em 31/10/2026 (diagnóstico dizia 133 arquivos; são 122), corsHeaders, getScheduledReportOwnerFilter() (+12 more)
-
-### Community 144 - "MainLayout.tsx"
+### Community 148 - "MainLayout.tsx"
 Cohesion: 0.09
 Nodes (25): BreadcrumbBar(), EnhancedSpotlight, FloatingCompareBar, FloatingLayoutTools(), GlobalCommandBar, GlobalHeader(), Header, LayoutBootstrap() (+17 more)
 
-### Community 145 - "VariantGridMatrix.tsx"
+### Community 149 - "rotina.mjs"
+Cohesion: 0.06
+Nodes (32): add, argv, base, bySev(), cleanup(), commit, cur, day (+24 more)
+
+### Community 150 - "admin/ProductPersonalizationManager.tsx"
+Cohesion: 0.11
+Nodes (30): getUploadStatus(), ImageUploadButton(), ImageUploadButtonProps, removeStoredImage(), uploadWithRetry(), wait(), GroupInheritance(), GroupInheritanceProps (+22 more)
+
+### Community 151 - "ProductRiskDetail.tsx"
+Cohesion: 0.10
+Nodes (32): buildRiskChartData(), buildRiskMetrics(), ChartControls(), classificationClass(), deriveFlags(), EffectiveVelocity, formatCurrentStock(), formatStockoutDays() (+24 more)
+
+### Community 152 - "VariantGridMatrix.tsx"
 Cohesion: 0.11
 Nodes (33): BulkToolbar(), formatStock(), getSizeOrder(), isLightColor(), SIZE_ORDER, stockColor(), AdminRowSelector(), buildGridModel() (+25 more)
 
-### Community 146 - "🚀 Roadmap - Próximos Passos"
+### Community 153 - "gravacao-database.ts"
+Cohesion: 0.09
+Nodes (23): Database, FornecedorGravacao, HotStampingFitaOpcao, Json, LaserAcabamentoOpcao, TecnicaFaixaArea, TecnicaFaixaPontos, TecnicaGravacao (+15 more)
+
+### Community 154 - "Observabilidade — Promo Gifts"
+Cohesion: 0.08
+Nodes (27): RFC-4122, 10. Gates de CI (Prevenção de Regressão), 11. Retornos antecipados nas Edge Functions, 1. Correlação ponta-a-ponta (`request_id`), 3. Webhooks — métricas e dashboard, 4. Alertas Sentry, 5. Rotas críticas instrumentadas (client), 6. Como debugar uma falha (+19 more)
+
+### Community 155 - "🚀 Roadmap - Próximos Passos"
 Cohesion: 0.06
 Nodes (34): **4.1: Bitrix24**, **4.2: n8n Automation**, **4.3: WhatsApp Business**, **5.1: Design System**, **5.2: Responsividade**, **5.3: Loading States**, **7.1: Checklist de Produção**, **7.2: Documentação** (+26 more)
 
-### Community 147 - "§3. Segurança / RLS"
-Cohesion: 0.06
-Nodes (33): 1.1 Tabelas acessadas via `supabase.from()`, 1.2 Edge Functions invocadas, 1.3 RPCs (`supabase.rpc()`), 1.4 Subscriptions Realtime, 1.5 Buckets de Storage, §1. Inventário do Acoplamento, 2.2 Tabelas em `types.ts` NÃO usadas diretamente no front-end, 2.3 Divergências de colunas identificadas (+25 more)
+### Community 156 - "lib/index.ts"
+Cohesion: 0.08
+Nodes (20): clsx, tailwind-merge, breakers, CircuitBreakerOptions, CircuitState, getCircuitBreaker(), invokeEdgeFunction(), handleImportFailure() (+12 more)
 
-### Community 148 - "plano-melhorias.mjs"
-Cohesion: 0.12
-Nodes (24): edgeFunctions(), fimDeLiteral(), mascararCorposDeFuncao(), readMigrations(), sh(), stripSqlComments(), run(), CHECKERS (+16 more)
-
-### Community 149 - "MarketIntelligenceChart.tsx"
+### Community 157 - "MarketIntelligenceChart.tsx"
 Cohesion: 0.11
 Nodes (33): buildChartData(), buildMockKpis(), buildSupplierOptions(), ChartControls(), chooseSupplierNames(), demandMetrics(), ErrorCard(), generateMockMarketData() (+25 more)
 
-### Community 150 - "FutureStockDialog.tsx"
+### Community 158 - "FutureStockDialog.tsx"
 Cohesion: 0.11
 Nodes (33): compareEntries(), ConfirmationProgress(), DATE_RANGE_LABELS, DateRange, daysUntil(), DEFAULT_STATUS_CONFIG, EntriesList(), EntryDays() (+25 more)
 
-### Community 151 - "QuoteItemDetailSheet.tsx"
+### Community 159 - "QuoteItemDetailSheet.tsx"
 Cohesion: 0.11
 Nodes (32): fmt(), getCurrentTierLabel(), getNextTier(), ItemNotes(), NextTierHint(), parseNotesField(), Personalization, PersonalizationDetail() (+24 more)
 
-### Community 152 - "useSimulatorWizard.ts"
+### Community 160 - "useSimulatorWizard.ts"
 Cohesion: 0.11
 Nodes (29): mapV6LocationsToWizard(), useSimulatorWizard(), HistoryState, TRACKED_ACTIONS, useUndoableReducer(), clearSession(), loadSession(), saveSession() (+21 more)
 
-### Community 153 - "magicUpStrategy.ts"
+### Community 161 - "magicUpStrategy.ts"
 Cohesion: 0.06
 Nodes (31): PreviewCard(), ASPECT_RATIOS, BATCH_PRESETS, BRAND_LOGO_VARIANTS, BRIEF_PRESETS, buildBrandKitNotes(), buildCopyPack(), CAMPAIGN_STATUSES (+23 more)
 
-### Community 154 - "20260927220000_sicoob_institutional_invitations.sql"
+### Community 162 - "20260927220000_sicoob_institutional_invitations.sql"
 Cohesion: 0.13
 Nodes (23): idx_sicoob_invitation_events_actor_id, idx_sicoob_invitation_events_cooperative_id, idx_sicoob_invitation_events_invitation_id, idx_sicoob_invitation_events_target_user_id, idx_sicoob_invitations_accepted_by, idx_sicoob_invitations_cooperative_id, idx_sicoob_invitations_invited_by, idx_sicoob_invitations_pa_id (+15 more)
 
-### Community 155 - "useExpertChat.ts"
-Cohesion: 0.10
-Nodes (31): QARunDetailPage.tsx (etapa 17), Kit recém-carregado pode ser regravado sem edição do usuário, autoPlayAnswer(), AutoPlayAnswerOptions, buildExpertRequestBody(), enabled(), ensureConversation(), EnsureConversationOptions (+23 more)
-
-### Community 156 - "NotificationDrawer.tsx"
+### Community 163 - "NotificationDrawer.tsx"
 Cohesion: 0.11
 Nodes (24): `src/components/notifications/NotificationsBadgeStatsPanel.tsx` + `useNotificationsMetricsPanel.ts` (etapa 17, 6 → 0 erros), EfficiencyGrid(), EfficiencyGridProps, SuspiciousWarning(), SuspiciousWarningProps, calculateStreakTrend(), isDebugMode(), RatioSample (+16 more)
 
-### Community 157 - "Observabilidade — Promo Gifts"
-Cohesion: 0.08
-Nodes (28): 10. Gates de CI (Prevenção de Regressão), 11. Retornos antecipados nas Edge Functions, 3. Webhooks — métricas e dashboard, 4. Alertas Sentry, 5. Rotas críticas instrumentadas (client), 6. Como debugar uma falha, 7. App Health Dashboard (`/admin/telemetria`), 8. Gates de CI (Prevenção de Regressão) (+20 more)
+### Community 164 - "VoiceOrb.tsx"
+Cohesion: 0.12
+Nodes (31): VoiceVisualEffects.tsx (etapa 17), PhaseColors, AmbientGlows(), ConicGlow(), CoreDecorations(), getCoreAnimation(), GlowProps, IdleIcon() (+23 more)
 
-### Community 158 - "🚫 POLÍTICA DE IDIOMA - GIFTS-STORE"
+### Community 165 - "🚫 POLÍTICA DE IDIOMA - GIFTS-STORE"
 Cohesion: 0.06
 Nodes (32): ⚠️ **ALERTA PARA DESENVOLVEDORES:**, 📝 **ALTERAÇÕES FEITAS NOS DOCUMENTOS:**, **ANALISE_EXAUSTIVA_GIFTS_STORE.md:**, 🎓 **BOAS PRÁTICAS:**, **Configuração global:**, 📋 **CONFIGURAÇÕES OBRIGATÓRIAS:**, **date-fns:**, 🇧🇷 DECISÃO DE NEGÓCIO: EXCLUSIVAMENTE PORTUGUÊS DO BRASIL (+24 more)
 
-### Community 159 - "CollectionDetailPage.tsx"
+### Community 166 - "SocialProof.tsx"
 Cohesion: 0.09
-Nodes (29): Onda P4 — Polimento & DX ✅, CollectionsEmptyStateSmart(), Props, CollectionsHeatmap(), WeekRow, useCollectionsGlobalShortcuts(), isTyping(), onKey() (+21 more)
+Nodes (28): `fix/sicoob-csp-202635` — liberada: sim, `fix/sicoob-trust-data-20260924` — liberada: NÃO, `src/hooks/useSupplierTrust.ts` — **obsoleto, não recuperar**, Religar os badges de confiança do fornecedor na página de produto (fornecedor verificado + prazo de entrega), sem mock, D4. PR #158 — ref `pr/158` (branch `fix/hermes-272703-ci-audit`), fechada sem merge em 2026-10-31. Título: "docs: atualiza auditoria de CI e pendências verificadas". 2 arquivos, 156 adições, 2 remoções., appendProductFlagBadges(), appendShippingBadge(), appendSupplierTrustBadges() (+20 more)
 
-### Community 160 - "PromotionDialog.tsx"
+### Community 167 - "PromotionDialog.tsx"
 Cohesion: 0.10
 Nodes (26): DeleteUserDialogProps, EditUserDialog(), EditUserDialogProps, EditUserFields(), EditUserForm, useEditUserDialog(), UserAvatarEditor(), changeUserRole() (+18 more)
 
-### Community 161 - "StockDashboard.tsx"
-Cohesion: 0.11
-Nodes (31): ActiveStatusFilter(), DashboardContent(), DashboardContentProps, DashboardHeader(), DashboardHeaderProps, exportStockCsv(), IncomingStockCard(), InfoAlerts() (+23 more)
-
-### Community 162 - "QuoteKanbanBoard.tsx"
+### Community 168 - "QuoteKanbanBoard.tsx"
 Cohesion: 0.11
 Nodes (32): CardFooter(), CardHeader(), CardSelection(), ExtendedQuoteCardProps, getMarginColor(), hasQuoteId(), isKanbanStatus(), KANBAN_STATUSES (+24 more)
 
-### Community 163 - "simulator/TechniqueCard.tsx"
+### Community 169 - "GlobalSearchPaletteView.tsx"
+Cohesion: 0.11
+Nodes (27): NavCard(), paletteItemStateClass, QuickAction, staggerStyle(), AiProcessingBanner(), EmptyAndShortQuery(), GlobalSearchPaletteView(), GlobalSearchState (+19 more)
+
+### Community 170 - "simulator/TechniqueCard.tsx"
 Cohesion: 0.12
 Nodes (31): ColorConfiguration(), CompactRecommendation(), CompactTechniqueCard(), CompactTechniqueVisual(), EngravingArea(), ExpandedRecommendation(), ExpandedTechniqueCard(), ExpandedTechniqueVisual() (+23 more)
 
-### Community 164 - "StepComparison.tsx"
-Cohesion: 0.11
-Nodes (28): calculateSavings(), ComparisonCard(), ComparisonCardProps, SelectionIndicator(), TechnicalBadges(), TechnicalDetails(), TechniqueBadges(), TechniquePrice() (+20 more)
-
-### Community 165 - "StepSpecs.tsx"
+### Community 171 - "StepSpecs.tsx"
 Cohesion: 0.10
 Nodes (32): AvailableTechniques, BreakdownDimensions(), ColorSpecs(), ColorSpecsProps, CompatibilityNotice(), compatibleTechniqueCount(), DimensionInput(), DimensionInputProps (+24 more)
 
-### Community 166 - "useSimulation.ts"
+### Community 172 - "FavoritesPage"
 Cohesion: 0.11
-Nodes (28): copyAllOptionsToClipboard(), copyOptionToClipboard(), formatCurrency(), buildLegacyFallbackOption(), buildRpcOption(), buildUnavailableOption(), customizationFailureReason(), customizationRpcParams() (+20 more)
+Nodes (32): FavoriteFilterOptions, FavoriteNoteMeta, FavoritePriceMeta, FavoritesPage(), ActiveFavorites(), ClearAllAction(), EmptyFavoriteResults(), FavoriteCardActions() (+24 more)
 
-### Community 167 - "PublicQuoteApprovalPage.tsx"
-Cohesion: 0.12
-Nodes (30): calcPersTotal(), formatCurrency(), PublicQuoteItemsList(), PublicQuoteItemsProps, PublicQuoteTotals(), PublicQuoteTotalsProps, SHIPPING_LABELS, AlreadyRespondedScreen() (+22 more)
-
-### Community 168 - "order-duplicate-atomic-fixture.sql"
+### Community 173 - "order-duplicate-atomic-fixture.sql"
 Cohesion: 0.10
 Nodes (21): auth.users, public.get_user_org_ids(), public.has_role(), public.order_audit_events, public.order_items, public.order_logistics, public.orders, public.organization_members (+13 more)
 
-### Community 169 - "AdminProductFormPage.tsx"
+### Community 174 - "AdminProductFormPage.tsx"
 Cohesion: 0.11
 Nodes (28): AdminProductFormPage(), AuditHistory, AuditTools, buildProductData(), duplicateSkuProduct(), durableProductImages(), EditableProduct, exportProduct() (+20 more)
 
-### Community 170 - "UntypedFilterBuilder"
+### Community 175 - "UntypedFilterBuilder"
 Cohesion: 0.07
 Nodes (17): NotificationSettingsTab.tsx (etapa 17), `src/hooks/usePasswordResetRequests.ts` (etapa 17, 7 → 0 erros — drift de tabela ausente do `types.ts` gerado), `src/pages/RolesPage.tsx` (etapa 17, 7 → 0 erros — mais um caso de drift schema real vs. tipos gerados, + bug real em `BackButton`), TrendsHeatmap.tsx + supabase-untyped.ts + TopCategoriesCard.tsx (etapa 17), `use2FA.ts` (etapa 17, 8 → 0 erros), Etapa 35 — Publicar as 4 Edge Functions ausentes via CI, Etapa 36 — Diff automático deploy ↔ repositório de Edge Functions, Etapa 37 — Regenerar `types.ts` e travar no CI (+9 more)
 
-### Community 171 - "🔔 SISTEMA UNIFICADO DE NOTIFICAÇÕES"
+### Community 176 - "useExpertChat.ts"
+Cohesion: 0.10
+Nodes (31): QARunDetailPage.tsx (etapa 17), Kit recém-carregado pode ser regravado sem edição do usuário, autoPlayAnswer(), AutoPlayAnswerOptions, buildExpertRequestBody(), enabled(), ensureConversation(), EnsureConversationOptions (+23 more)
+
+### Community 177 - "PAWalletPage.tsx"
+Cohesion: 0.09
+Nodes (26): `src/pages/sicoob/PAWalletPage.tsx` (etapa 17, 7 → 0 erros — **3 bugs reais ao vivo em produção**, não drift de tipos), Etapa 26 — Corrigir as 37 referências de runtime a objetos inexistentes ⏳ (parcial — 4 corrigidas, 5 achados reais confirmados ao vivo pendentes em 16/09/2026), BudgetExceededBanner(), BudgetExceededBannerProps, AdminPromptsIAPage(), AdminSegurancaPage(), ActiveQuoteFilters(), getDateRangeLabel() (+18 more)
+
+### Community 178 - "🔔 SISTEMA UNIFICADO DE NOTIFICAÇÕES"
 Cohesion: 0.06
 Nodes (31): 15 Sistemas Restantes ⏳, 1. Aplicar Migrations, 2. Deploy Edge Function, 3. Configurar Secrets, 4. Integrar no App, Aprovação Financeira (Urgente), 🏗️ ARQUITETURA, 📦 ARQUIVOS IMPLEMENTADOS (+23 more)
 
-### Community 172 - "personalization-manager/ProductPersonalizationManager.tsx"
+### Community 179 - "TestAllConnectionsButton.tsx"
+Cohesion: 0.11
+Nodes (28): CredentialSourceBadge(), Props, CredentialsSourceFilter(), Props, SourceChips(), sourceCounts(), CredentialSource, CredentialsSourceFilterContext (+20 more)
+
+### Community 180 - "personalization-manager/ProductPersonalizationManager.tsx"
 Cohesion: 0.15
 Nodes (25): availableTechniques(), ComponentAccordionItem(), ComponentAccordionItemProps, GroupInheritanceSection(), GroupInheritanceSectionProps, InheritanceAction(), InheritedRulesNotice(), AddComponentDialog() (+17 more)
 
-### Community 173 - "StepUpAttemptsPanel.tsx"
+### Community 181 - "StepUpAttemptsPanel.tsx"
 Cohesion: 0.11
 Nodes (30): ACTION_META, AttemptDetails(), AttemptKey(), AttemptRequest(), AttemptRow(), AttemptsFilters(), AttemptsList(), AttemptsState (+22 more)
 
-### Community 174 - "AppHealthDashboard.tsx"
+### Community 182 - "AppHealthDashboard.tsx"
 Cohesion: 0.12
 Nodes (30): AppHealthDashboard(), edgeLatencyClass(), EdgeLatencyRows(), EmptyTableRow(), fmtMs(), healthBadgeClass(), healthDotClass(), HealthOverview() (+22 more)
 
-### Community 175 - "LocationCard.tsx"
-Cohesion: 0.11
-Nodes (28): canCalculatePrice(), ConfigurationPanel(), ConfigurationPanelProps, FaixaDimensional, LegacyColors(), LegacyDimensions(), LegacyPriceResult(), LegacyPriceState() (+20 more)
-
-### Community 176 - "ProductCustomizationOptions.tsx"
-Cohesion: 0.12
-Nodes (27): colorButtonLabel(), ColorFields(), ConfigurationPanelV6(), ConfigurationPanelV6Props, DimensionFields(), PriceBreakdown(), PriceMetadata(), PriceResult() (+19 more)
-
-### Community 177 - "useClientHealthScore.ts"
+### Community 183 - "useClientHealthScore.ts"
 Cohesion: 0.10
 Nodes (30): buildHealthResult(), ClientBiData, ClientHealthScoreResult, ClientSeasonality, ComparisonMetric, comparisonScore(), fitsPremiumUpsell(), getScoreComponents() (+22 more)
 
-### Community 178 - "PAsTab.tsx"
-Cohesion: 0.11
-Nodes (25): SicoobManagementPage(), ApprovalDelegationsTab(), DelegationTableBody(), initialPeriod(), personName(), statusOf(), toLocalInput(), BudgetsTab() (+17 more)
-
-### Community 179 - "20260912120000_sicoob_approval_policy_guards.sql"
+### Community 184 - "20260912120000_sicoob_approval_policy_guards.sql"
 Cohesion: 0.10
 Nodes (16): idx_sicoob_approval_policies_lookup, public.approve_sicoob_order(), public.assert_sicoob_approval_actor(), public.get_sicoob_order_approval_policy(), public.request_sicoob_order_approval(), public.sicoob_actor_can_approve(), public.sicoob_actor_can_request_approval(), public.sicoob_approval_policies (+8 more)
 
-### Community 180 - "bridgeCallMetrics.ts"
-Cohesion: 0.09
-Nodes (24): bridgeCallMetrics.ts (etapa 17), AlertMetric, AlertSeverity, BridgeAlert, BridgeThresholds, current, DEFAULT_THRESHOLDS, emit() (+16 more)
-
-### Community 181 - "personalization/types.ts"
+### Community 185 - "personalization/types.ts"
 Cohesion: 0.11
 Nodes (25): calculators.ts (etapa 17), adjustPriceByArea(), adjustPriceByColors(), calculatePrice(), calculateTierSavings(), findPriceTier(), getMaximumQuantity(), suggestNextTier() (+17 more)
 
-### Community 182 - "useColorEnrichment.ts"
-Cohesion: 0.11
-Nodes (27): `FavoritesPage.tsx` (etapa 17, 8 → 0 erros — achado: import de `Product` errado propagado em 4 arquivos), useCatalogState.ts (etapa 17), ProductsContext, ProductsContextType, useProductsContext(), useProductsContextSafe(), arrayImageMatch(), bridgeRecords() (+19 more)
-
-### Community 183 - "SkeletonShimmer.tsx"
+### Community 186 - "SkeletonShimmer.tsx"
 Cohesion: 0.14
 Nodes (28): SkeletonShimmer.tsx (etapa 17), LoadingDots(), LoadingIndicator(), LoadingOverlay(), LoadingOverlayProps, ProgressLoader(), ProgressLoaderProps, Spinner() (+20 more)
 
-### Community 184 - "theme-presets.ts"
+### Community 187 - "theme-presets.ts"
 Cohesion: 0.08
 Nodes (24): theme-presets.ts (etapa 17), 1. Categorias de Skins, 2. Tecnologias de Deep Theming, 3. Cobertura de Tokens, 🟢 Categoria: Classic, 🦈 Categoria: Opera GX Edition (Neon/Gamer Tech), Inventário Visual de Skins — Skins Factory, applyGxDarkSurfaces() (+16 more)
 
-### Community 185 - "Justificativa de cada PR"
-Cohesion: 0.08
-Nodes (30): Justificativa de cada PR, PR #112 — RECUPERAR, PR #148 — RECUPERAR, PR #154 — NADA_A_RECUPERAR, PR #158 — NADA_A_RECUPERAR, PR #160 — NADA_A_RECUPERAR, PR #165 — NADA_A_RECUPERAR, PR #172 — NADA_A_RECUPERAR (+22 more)
+### Community 188 - "jspdf"
+Cohesion: 0.11
+Nodes (26): html2canvas, jspdf, jspdf-autotable, ExportComparisonButton(), MockupApprovalPreview(), ExportOptions, addClientLogo(), addComparisonImage() (+18 more)
 
-### Community 186 - "time"
+### Community 189 - "time"
 Cohesion: 0.10
 Nodes (18): actor_sql(), command(), create_order(), scalar(), sql(), actor_sql(), command(), duplicate() (+10 more)
 
-### Community 187 - "a11y/index.ts"
+### Community 190 - "a11y/index.ts"
 Cohesion: 0.11
 Nodes (26): A11yContext, A11yContextType, AccessibilityProvider, SkipToContent(), useA11y(), useFocusTrap(), useKeyboardShortcut(), ActionResultAnnouncer (+18 more)
 
-### Community 188 - "SidebarReorganized.tsx"
+### Community 191 - "ProductFormFullscreen.tsx"
+Cohesion: 0.12
+Nodes (29): useSkuValidation(), AnimatedStep(), buildProductExpirations(), buildProductFlags(), DuplicateSkuAlert(), emptyString(), falseBoolean(), FormNavigation() (+21 more)
+
+### Community 192 - "SidebarReorganized.tsx"
 Cohesion: 0.12
 Nodes (28): SidebarBrandHeader, SidebarBrandHeaderProps, ExpandedHealth(), fetchSystemHealth(), SidebarFooterHealth, StatusIcon(), StatusRow(), NavGroup (+20 more)
 
-### Community 189 - "ProductListItem.tsx"
-Cohesion: 0.12
-Nodes (28): FilterPanel.tsx (etapa 17), GENDER_CONFIG, GenderBadge(), GenderBadgeProps, appendVariantQuoteParams(), colorFilterKey(), createListItemHandlers(), formatPrice() (+20 more)
-
-### Community 190 - "stock-chart-utils.ts"
-Cohesion: 0.11
-Nodes (23): `fix/sicoob-intelligence-truth-20260924` — PARCIAL · pode apagar: NÃO, `fix/sicoob-trust-data-20260924` — liberada: NÃO, Religar os badges de confiança do fornecedor na página de produto (fornecedor verificado + prazo de entrega), sem mock, appendProductFlagBadges(), appendShippingBadge(), appendSupplierTrustBadges(), DynamicTrustBadges(), TrustBadge (+15 more)
-
-### Community 191 - "🎁 Brindes Sicoob V2 — Portal corporativo de brindes"
-Cohesion: 0.07
-Nodes (30): 🏗 Arquitetura, 🔐 Autenticação e Autorização, Auth, 🗄 Banco de Dados, Banco Externo (Promobrind), 🎁 Brindes Sicoob V2 — Portal corporativo de brindes, Comandos Disponíveis, Componentes (+22 more)
-
-### Community 192 - "command.tsx"
-Cohesion: 0.08
-Nodes (22): cmdk, @radix-ui/react-dialog, Command, CommandDialog(), CommandDialogProps, CommandEmpty, CommandGroup, CommandInput (+14 more)
-
-### Community 193 - "check-sicoob-hardcoded-colors.mjs"
-Cohesion: 0.07
-Nodes (19): fs, lines, map, serviceData, checkFile(), FORBIDDEN_PATTERNS, missingDirs, REPO_ROOT (+11 more)
-
-### Community 194 - "ProductRegistrationForm.tsx"
-Cohesion: 0.14
-Nodes (22): @hookform/resolvers, react-hook-form, ForgotPasswordFormData, ForgotPasswordFormProps, forgotPasswordSchema, ProductFormSchema, ReferenceDataState, ProductRegistrationForm() (+14 more)
-
-### Community 195 - "gerar-banco.mjs"
-Cohesion: 0.12
-Nodes (27): CAMPO_TODO, compararEdges(), conferirOrigem(), consultarBanco(), contarUsoNoCodigo(), edgesNoRepo(), extrairInventario(), LIMIARES (+19 more)
-
-### Community 196 - "DataSourceDebugTab.tsx"
-Cohesion: 0.13
-Nodes (29): buildDrillData(), catalogDrill(), CountsCards(), CredentialRowsCard(), CredentialRowsContent(), credentialsDrill(), DataSourceDebugTab(), DataSourceMap (+21 more)
-
-### Community 197 - "BulkImportDialog.tsx"
-Cohesion: 0.12
-Nodes (28): downloadBlob(), ImportErrors(), StepComplete(), StepImporting(), StepImportingProps, StepMapping(), Step, BOOLEAN_FIELDS (+20 more)
-
-### Community 198 - "useFilterPanelState.ts"
-Cohesion: 0.13
-Nodes (28): activePrice(), buildSectionCounts(), buildSectionSummaries(), canonicalMarketingSelection(), countRamos(), externallyReset(), filterValues(), hasMaterialSelection() (+20 more)
-
-### Community 199 - "layout/index.ts"
-Cohesion: 0.10
-Nodes (27): AnimatedContainer(), AnimatedContainerProps, Container(), ContainerProps, Divider(), DividerProps, Grid(), GridProps (+19 more)
-
-### Community 200 - "MockupLayoutButtons.tsx"
-Cohesion: 0.12
-Nodes (29): ActiveArea, AiLayoutButton(), approvalArea(), approvalClient(), approvalColors(), approvalPersonalization(), ApprovalPreviewState, approvalProduct() (+21 more)
-
-### Community 201 - "AdvancedSearch.tsx"
+### Community 193 - "AdvancedSearch.tsx"
 Cohesion: 0.12
 Nodes (28): AdvancedSearch(), AdvancedSearchProps, applyVoiceAction(), buildVoiceQuery(), handleSearchKeyboard(), LazyVoiceOverlay, ProductAnalysis, QuickSuggestions() (+20 more)
 
-### Community 202 - "SecurityDashboardSections.tsx"
+### Community 194 - "useGlobalSearch.ts"
+Cohesion: 0.11
+Nodes (25): Busca global, favoritos e cota de IA (PR #145 / branch origin/fix/hermes-h097437-ci-workflows), GlobalSearchPalette(), GlobalSearchState, openFirstResult(), selectNumberedResult(), useResultShortcuts(), CacheEntry, searchCache (+17 more)
+
+### Community 195 - "Arquivos finais"
+Cohesion: 0.11
+Nodes (25): Arquivos finais, ✅ Onda C — Ativação Comercial (2026-04-20), COLORS, CreateListDialog(), existingFormValues(), ListFields(), ListForm, Props (+17 more)
+
+### Community 196 - "ConnectionTimelineDrawer.tsx"
+Cohesion: 0.10
+Nodes (26): Abas (5), Connections Hub — `/admin/conexoes`, Crons, Edge functions (6), Onda 11 — hardening, Onda 13 — classe enterprise (10/10 ⇒ 11/10), Tabelas (7), ConnectionTimelineDrawer() (+18 more)
+
+### Community 197 - "🎁 Brindes Sicoob V2 — Portal corporativo de brindes"
+Cohesion: 0.07
+Nodes (30): 🏗 Arquitetura, 🔐 Autenticação e Autorização, Auth, 🗄 Banco de Dados, Banco Externo (Promobrind), 🎁 Brindes Sicoob V2 — Portal corporativo de brindes, Comandos Disponíveis, Componentes (+22 more)
+
+### Community 198 - "command.tsx"
+Cohesion: 0.08
+Nodes (22): cmdk, @radix-ui/react-dialog, Command, CommandDialog(), CommandDialogProps, CommandEmpty, CommandGroup, CommandInput (+14 more)
+
+### Community 199 - "check-sicoob-hardcoded-colors.mjs"
+Cohesion: 0.07
+Nodes (19): fs, lines, map, serviceData, checkFile(), FORBIDDEN_PATTERNS, missingDirs, REPO_ROOT (+11 more)
+
+### Community 200 - "gerar-banco.mjs"
+Cohesion: 0.12
+Nodes (27): CAMPO_TODO, compararEdges(), conferirOrigem(), consultarBanco(), contarUsoNoCodigo(), edgesNoRepo(), extrairInventario(), LIMIARES (+19 more)
+
+### Community 201 - "DataSourceDebugTab.tsx"
+Cohesion: 0.13
+Nodes (29): buildDrillData(), catalogDrill(), CountsCards(), CredentialRowsCard(), CredentialRowsContent(), credentialsDrill(), DataSourceDebugTab(), DataSourceMap (+21 more)
+
+### Community 202 - "CatalogContent.tsx"
+Cohesion: 0.13
+Nodes (27): CatalogBulkModals(), CatalogBulkModalsProps, Sel, buildSharedProps(), CatalogContent(), CatalogContentProps, CatalogEmptyState(), CatalogErrorState() (+19 more)
+
+### Community 203 - "useFilterPanelState.ts"
+Cohesion: 0.13
+Nodes (28): activePrice(), buildSectionCounts(), buildSectionSummaries(), canonicalMarketingSelection(), countRamos(), externallyReset(), filterValues(), hasMaterialSelection() (+20 more)
+
+### Community 204 - "layout/index.ts"
+Cohesion: 0.10
+Nodes (27): AnimatedContainer(), AnimatedContainerProps, Container(), ContainerProps, Divider(), DividerProps, Grid(), GridProps (+19 more)
+
+### Community 205 - "MockupLayoutButtons.tsx"
+Cohesion: 0.12
+Nodes (29): ActiveArea, AiLayoutButton(), approvalArea(), approvalClient(), approvalColors(), approvalPersonalization(), ApprovalPreviewState, approvalProduct() (+21 more)
+
+### Community 206 - "SecurityDashboardSections.tsx"
 Cohesion: 0.13
 Nodes (28): AdminUserSelectorProps, EmptySecurityAlerts(), getScoreIcon(), MfaOverviewCard(), MfaStateIcon(), MfaSummary(), SECURITY_TABS, SecurityAlertItem() (+20 more)
 
-### Community 203 - "sidebar.tsx"
+### Community 207 - "sidebar.tsx"
 Cohesion: 0.08
 Nodes (29): Sidebar, SidebarContent, SidebarContext, SidebarContextValue, SidebarFooter, sidebarGapClass(), SidebarGroup, SidebarGroupAction (+21 more)
 
-### Community 204 - "MagicUpConfigPanel.tsx"
+### Community 208 - "MagicUpConfigPanel.tsx"
 Cohesion: 0.12
 Nodes (29): AdditionalSceneDetails(), AiSceneSelector(), BrandKitCard(), BriefingCard(), ClientCard(), ClientSearch(), ClientSearchResults(), GenerateButton() (+21 more)
 
-### Community 205 - "SystemStatusPage.tsx"
+### Community 209 - "SystemStatusPage.tsx"
 Cohesion: 0.11
 Nodes (29): authenticationStatus(), BuildInfoCard(), CheckedTable, collectCrmStatuses(), collectHealthStatuses(), CRM_CRITICAL_TABLES, CrmStatusCard(), CrmStatusHeader() (+21 more)
 
-### Community 206 - "external-fetch.ts"
+### Community 210 - "external-fetch.ts"
 Cohesion: 0.11
 Nodes (13): assertExternalUrl(), ExternalFetchTimeoutError, fetchExternal(), InsecureUrlError, isReservedIpv4(), isReservedIpv6(), decodeLimitedBody(), LimitedBody (+5 more)
 
-### Community 207 - "20260412232015_a2d0b391-3c88-4cb8-8c47-0f49cb59524f.sql"
+### Community 211 - "20260412232015_a2d0b391-3c88-4cb8-8c47-0f49cb59524f.sql"
 Cohesion: 0.08
 Nodes (17): idx_ai_usage_user_created, idx_collection_items_collection, idx_login_attempts_email_created, idx_notifications_created, idx_notifications_user_read, idx_orders_created_at, idx_orders_org_id, idx_orders_seller_status (+9 more)
 
-### Community 208 - "main"
+### Community 212 - "main"
 Cohesion: 0.16
 Nodes (26): OrderAddItemDialog.tsx (etapa 17), UserAssignmentTab.tsx (etapa 17), api(), approx(), banner(), callers_status_table(), code(), dumps() (+18 more)
 
-### Community 209 - "22-header-sticky.spec.ts"
+### Community 213 - "📊 Análise Exaustiva das 109 Tabelas do Banco de Dados Externo"
+Cohesion: 0.07
+Nodes (28): 1. **Filtros Avançados para o Vendedor**, 2.1 Técnicas de Personalização, 2.2 Áreas de Impressão, 2.3 Mockups, 2. **Calculadora de Preços por Tiragem**, 3.1 Estoque, 3.2 Preços, 3. **Dashboard de Disponibilidade** (+20 more)
+
+### Community 214 - "ProductListItem.tsx"
+Cohesion: 0.13
+Nodes (27): FilterPanel.tsx (etapa 17), GENDER_CONFIG, GenderBadge(), GenderBadgeProps, appendVariantQuoteParams(), colorFilterKey(), createListItemHandlers(), formatPrice() (+19 more)
+
+### Community 215 - "22-header-sticky.spec.ts"
 Cohesion: 0.09
 Nodes (22): assertFeatureLoads(), pathOf(), PUBLIC_SMOKE_COVERAGE, ROUTE_BY_FEATURE, SMOKE_COVERAGE, assertHeaderSticky(), PROTECTED_NAV_SEQUENCE, VIEWPORTS (+14 more)
 
-### Community 210 - "QuotesListPage.tsx"
-Cohesion: 0.12
-Nodes (24): MeusOrcamentos(), buildExportRows(), calculateKpis(), exportQuotes(), exportSelectedQuotes(), filterAndSortQuotes(), formatCurrency(), hasQuoteId() (+16 more)
-
-### Community 211 - "CatalogToolbar.tsx"
+### Community 216 - "CatalogToolbar.tsx"
 Cohesion: 0.09
 Nodes (18): CatalogStatus(), CatalogToolbar(), CatalogToolbarProps, FilterPanelSkeleton(), FiltersSheet(), LazyFilterPanel, SelectionButton(), SortControl() (+10 more)
 
-### Community 212 - "20261007230000_optimize_foreign_keys_and_duplicate_indexes.sql"
+### Community 217 - "20261007230000_optimize_foreign_keys_and_duplicate_indexes.sql"
 Cohesion: 0.08
 Nodes (17): idx_bitrix_sync_logs_synced_by, idx_password_reset_requests_reviewed_by, idx_password_reset_requests_user_id, idx_quote_approval_tokens_signature_key_id, idx_quote_save_idempotency_quote_id, idx_sicoob_approval_delegations_pa_id, idx_sicoob_approval_delegations_revoked_by, idx_sicoob_approval_deliveries_supersedes_delivery (+9 more)
 
-### Community 213 - "ProductPriceSimulator.tsx"
+### Community 218 - "ProductRegistrationForm.tsx"
+Cohesion: 0.14
+Nodes (22): @hookform/resolvers, react-hook-form, ForgotPasswordFormData, ForgotPasswordFormProps, forgotPasswordSchema, ProductFormSchema, ReferenceDataState, ProductRegistrationForm() (+14 more)
+
+### Community 219 - "ProductPriceSimulator.tsx"
 Cohesion: 0.11
 Nodes (21): EngravingStep(), ProductPriceSimulator(), ProductPriceSimulatorProps, ProductStep(), ResultStep(), ResultStepProps, SimulatorMode, simulatorVisibility() (+13 more)
 
-### Community 214 - "QuantityAndResult.tsx"
+### Community 220 - "QuantityAndResult.tsx"
 Cohesion: 0.16
 Nodes (25): CalculationDetails(), CalculationPrice(), CalculationRow(), MultiEngravingResult(), BudgetCodeButton(), CustomizationSummary(), PriceFooter(), PriceResultV51() (+17 more)
 
-### Community 215 - "FutureStockModal.tsx"
+### Community 221 - "FutureStockModal.tsx"
 Cohesion: 0.12
 Nodes (28): ColorButton(), ColorGrid(), ColorSummary, compactQuantity(), compareEntries(), DateControl(), DateFilter, daysLabel() (+20 more)
 
-### Community 216 - "useQuoteBuilderState.ts"
+### Community 222 - "useExternalDatabase.ts"
+Cohesion: 0.13
+Nodes (27): applyExternalSuccess(), ExternalDatabaseState, Operation, QueryOptions, QueryResult, StateSetter, useExternalClientContacts(), useExternalCollections() (+19 more)
+
+### Community 223 - "useQuoteBuilderState.ts"
 Cohesion: 0.13
 Nodes (28): applyQuoteTransition(), applyTemplateDiscount(), BudgetValidationParams, buildQuoteData(), buildQuoteItem(), canPersistQuoteVersion(), completeQuoteSave(), CompleteSaveParams (+20 more)
 
-### Community 217 - "invoke.ts"
+### Community 224 - "invoke.ts"
 Cohesion: 0.14
 Nodes (26): emitBridgeStatus(), isColdStartSignal(), BridgeHealth, pingHealth(), waitForBridgeReady(), withTimeout(), bridgeBreaker, cloudGateOutcome() (+18 more)
 
-### Community 218 - "class-variance-authority"
+### Community 225 - "process-scheduled-reports/index.ts"
+Cohesion: 0.09
+Nodes (14): corsHeaders, getScheduledReportOwnerFilter(), corsHeaders, deliverScheduledReport(), EmailProvider, ReportDeliveryDependencies, ReportDeliveryResult, ScheduledReportRef (+6 more)
+
+### Community 226 - "PriceFreshnessBadge.colorAndIcon.test.tsx"
+Cohesion: 0.07
+Nodes (20): COLOR_FAMILY_BY_STATUS, DAYS_BY_STATUS, daysAgo(), FIXED_NOW, ICON_CLASS_BY_STATUS, renderBadge(), Status, STATUSES (+12 more)
+
+### Community 227 - "class-variance-authority"
 Cohesion: 0.08
 Nodes (23): StatusBadge.tsx (etapa 17), class-variance-authority, @radix-ui/react-toggle, @radix-ui/react-toggle-group, Alert, AlertDescription, AlertTitle, alertVariants (+15 more)
 
-### Community 219 - "StepUpload.tsx"
-Cohesion: 0.14
-Nodes (25): StepUpload.tsx + ComparisonPresentationLauncher.tsx (etapa 17), StepCompleteProps, StepMappingProps, StepPreviewProps, downloadBlob(), downloadTemplateCSV(), inferColumnMapping(), normalizeStr() (+17 more)
-
-### Community 220 - "PAWalletPage.tsx"
-Cohesion: 0.10
-Nodes (23): Etapa 26 — Corrigir as 37 referências de runtime a objetos inexistentes ⏳ (parcial — 4 corrigidas, 5 achados reais confirmados ao vivo pendentes em 16/09/2026), AdminPromptsIAPage(), AdminSegurancaPage(), ActiveQuoteFilters(), getDateRangeLabel(), quoteMatchesDateRange(), quoteMatchesFilters(), quoteMatchesSearch() (+15 more)
-
-### Community 221 - "bridge-status-events.ts"
+### Community 228 - "bridge-status-events.ts"
 Cohesion: 0.11
 Nodes (23): Fase 6 — Observabilidade, higiene e documentação (91–100), BridgeDegradedEvent, BridgeRecoveredEvent, BridgeStatusEvent, BridgeStatusEventBase, BridgeStatusType, BridgeUnavailableEvent, COLD_START_PATTERNS (+15 more)
 
-### Community 222 - "cleanup-client.ts"
+### Community 229 - "cleanup-client.ts"
 Cohesion: 0.13
 Nodes (24): Cleanup do E2E não purga as personas VIEWER/MANAGER/DEV e nunca casa o prefixo [E2E:<slug>] que a própria fixture gera, globalSetup(), globalTeardown(), attemptCleanupRequest(), AttemptOutcome, CleanupConfig, CleanupResponse, computeBackoff() (+16 more)
 
-### Community 223 - "AutoTestJobStatusCard.tsx"
+### Community 230 - "QuoteService.ts"
+Cohesion: 0.13
+Nodes (22): PR #179 — RECUPERAR, ConsolidationPanelFallback(), useRealtimeSync(), GestorOrcamentos(), assertAtomicQuoteResult(), calculateDocumentTotals(), chunkValues(), describeQuoteChanges() (+14 more)
+
+### Community 231 - "AutoTestJobStatusCard.tsx"
 Cohesion: 0.11
 Nodes (26): `AutoTestJobStatusCard` sempre "untested", Banner "Credenciais alteradas" não mostra qual secret mudou, "Carregando..." infinito no seletor de empresas (front), `connections-auto-test`, 🔁 Edge Functions que dependem de credenciais CRM, 🩺 Endpoints de Diagnóstico do `crm-db-bridge`, 📊 Logs Estruturados, 📚 Referências (+18 more)
 
-### Community 224 - "ImageGrid.tsx"
+### Community 232 - "ImageGrid.tsx"
 Cohesion: 0.15
 Nodes (24): BulkCheckbox(), HoverOverlay(), HoverOverlayProps, ImageBadges(), ImageTile(), ImageTypeInfo, MetaBadges(), Props (+16 more)
 
-### Community 225 - "CompareTableView.tsx"
-Cohesion: 0.11
-Nodes (24): allEqual(), CompareEntry, CompareTableView(), CompareTableViewProps, HighlightedNumberRow(), leadTimeLabel(), leadTimeProxy(), MaybeRow() (+16 more)
-
-### Community 226 - "ProductRiskDetail.tsx"
-Cohesion: 0.13
-Nodes (26): buildRiskChartData(), buildRiskMetrics(), ChartControls(), classificationClass(), deriveFlags(), EffectiveVelocity, formatCurrentStock(), formatStockoutDays() (+18 more)
-
-### Community 227 - "QuoteTemplateForm.tsx"
+### Community 233 - "QuoteTemplateForm.tsx"
 Cohesion: 0.13
 Nodes (26): BasicTemplateFields(), DiscountFields(), formatTemplateCurrency(), initialTemplateForm(), NotesFields(), personalizationTotal(), QuoteTemplateForm(), QuoteTemplateFormProps (+18 more)
 
-### Community 228 - "GlobalSearch.tsx"
+### Community 234 - "GlobalSearch.tsx"
 Cohesion: 0.11
 Nodes (26): categoryConfig, filterMockResults(), GlobalSearch(), GlobalSearchProps, HistorySection(), loadHistory(), MOCK_RESULTS, quickActions (+18 more)
 
-### Community 229 - "SmartSearchInput.tsx"
+### Community 235 - "SmartSearchInput.tsx"
 Cohesion: 0.12
 Nodes (27): buildDropdownProps(), EmptySearch(), KeyboardHints(), navigateToResult(), PopularSuggestions(), QuickSuggestion, RecentSearches(), RecentSearchesProps (+19 more)
 
-### Community 230 - "trends-projections.ts"
+### Community 236 - "trends-projections.ts"
 Cohesion: 0.12
 Nodes (27): AggregatedProduct, AggregatedSearch, buildDailyTrends(), buildHeatmap(), buildHotSearches(), buildKpiSnapshot(), buildTopProductFamilies(), buildTopProducts() (+19 more)
 
-### Community 231 - "MockupGenerator.tsx"
-Cohesion: 0.10
-Nodes (16): MockupEmptyState(), MockupToolbar(), HistoryPanel(), LoadingFallback(), MockupHistoryPanel, MockupState, MockupTabHeader(), MockupTabs() (+8 more)
-
-### Community 232 - "SecretField.test.tsx"
+### Community 237 - "SecretField.test.tsx"
 Cohesion: 0.08
 Nodes (11): axe, diagnosis, partialDiagnosis, rotateSecretMock, setSecretMock, getRotationHistoryMock, rotateSecretMock, setSecretMock (+3 more)
 
-### Community 233 - "🏢 Como Criar sua Primeira Organization"
+### Community 238 - "🏢 Como Criar sua Primeira Organization"
 Cohesion: 0.07
 Nodes (27): **2.1: Pegar seu User ID**, **2.2: Adicionar você à Organization**, **3.1: Associar Categorias**, **3.2: Associar Técnicas (Opcional)**, **4.1: Verificar sua membership**, **4.2: Testar acesso a categorias**, **4.3: Testar criação de produto**, **6.1: Convidar usuário** (+19 more)
 
-### Community 234 - "💻 Integração Frontend (React)"
+### Community 239 - "💻 Integração Frontend (React)"
 Cohesion: 0.07
 Nodes (27): **1.1: Criar o Context**, **1.2: Adicionar ao App**, **2.1: Hook para buscar dados com RLS**, **2.2: Hook para criar dados**, **3.1: Buscar Produtos**, **3.2: Criar Produto**, **3.3: Buscar Orçamentos**, **4.1: OrganizationSwitcher** (+19 more)
 
-### Community 235 - "client.ts"
-Cohesion: 0.09
-Nodes (22): 2.1 Tabelas usadas no front-end AUSENTES do `types.ts`, `useMagicUpState.ts` (etapa 17, 8 → 0 erros), @lovable.dev/cloud-auth-js, lovable, lovableAuth, SignInOptions, RuntimeConfig, RuntimeGlobal (+14 more)
-
-### Community 236 - "🇧🇷 REMOÇÃO DE i18n E CONFIGURAÇÃO PT-BR - GIFTS-STORE"
+### Community 240 - "§3. Segurança / RLS"
 Cohesion: 0.07
-Nodes (26): 1. **Calendário**, 1️⃣ **Configurar locale pt-BR no Componente Calendar**, 2️⃣ **Criar Utilitário de Formatação de Data**, 2. **Formatação de Datas**, 3. **Gráficos e BI**, 3️⃣ **Substituir Formatações Manuais de Data**, 4️⃣ **Adicionar Configuração Global de Locale (Opcional)**, 4. **Notificações** (+18 more)
+Nodes (26): 2.2 Tabelas em `types.ts` NÃO usadas diretamente no front-end, 2.3 Divergências de colunas identificadas, §2. Consistência de Tipos, §3. Segurança / RLS, 4.1 React Query — estatísticas gerais, 4.2 `queryKey` — consistência, 4.3 Erros silenciados, 4.4 `select('*')` em tabelas grandes — Top 5 piores (+18 more)
 
-### Community 237 - "simular-conversao-pedido-sicoob.py"
+### Community 241 - "role-policy.ts"
+Cohesion: 0.09
+Nodes (22): AdminUsuariosPage.tsx (etapa 17), auth-utils.ts (etapa 17), visibility-scope.ts (etapa 17), queryRolesWithRetry(), useUserRoles(), BASIC_ROLES, canAccessSicoobPath(), hasRequiredRole() (+14 more)
+
+### Community 242 - "AdminVerbasPage.tsx"
+Cohesion: 0.09
+Nodes (21): `src/pages/admin/AdminAuditPage.tsx` (etapa 17, 7 → 0 erros — achado de bug grave e AO VIVO em produção fora do arquivo), @e965/xlsx, papaparse, downloadTemplateXLSX(), getXLSX(), ImportMode, ImportStep, ParsedData (+13 more)
+
+### Community 243 - "simular-conversao-pedido-sicoob.py"
 Cohesion: 0.11
 Nodes (20): `feat/pdf-playwright-scripts-art-261108-0516` — INCORPORADA · pode apagar: sim, `feat/pdf-playwright-scripts-art-261108-0516` — liberada: sim, Scripts de QA e verificação de deploy perdidos (PRs #119, #112, #150, #157, #164, #179, #187), recency(), docker_is_mandatory(), _docker_unavailable(), _flag(), _require_docker() (+12 more)
 
-### Community 238 - "useClientsComparison.ts"
-Cohesion: 0.11
-Nodes (26): A única linha contestada em todo o repositório, availableValue(), buildComparisonRow(), CategoryAffinity, ClientAffinity, ClientBi, ClientComparisonRow, ClientHealth (+18 more)
+### Community 244 - "useGravacaoPriceV2.ts"
+Cohesion: 0.09
+Nodes (18): ExternalPrintArea, ExternalProduct, GroupedPrintArea, invokeExternalDb(), ProductImageRecord, useExternalPrintAreas(), useExternalProductSearch(), areaDisplayDefaults() (+10 more)
 
-### Community 239 - "20260416182133_c21e8da8-e57f-4a37-90e1-764aa94489c9.sql"
+### Community 245 - "20260416182133_c21e8da8-e57f-4a37-90e1-764aa94489c9.sql"
 Cohesion: 0.07
 Nodes (13): idx_cart_templates_user_id, idx_commission_entries_order_id, idx_commission_rules_seller_id, idx_expert_conversations_seller_id, idx_expert_messages_conversation_id, idx_kit_share_tokens_kit_id, idx_magic_up_generations_user_id, idx_orders_quote_id (+5 more)
 
-### Community 240 - "ChatMessageList.tsx"
+### Community 246 - "ChatMessageList.tsx"
 Cohesion: 0.13
 Nodes (25): react-markdown, remark-gfm, ChatEmptyState(), ChatEmptyStateProps, CLIENT_SUGGESTIONS, GENERAL_SUGGESTIONS, ActionProps, AssistantActions() (+17 more)
 
-### Community 241 - "AccessSecurityManager.tsx"
+### Community 247 - "AccessSecurityManager.tsx"
 Cohesion: 0.12
 Nodes (22): BLOCK_REASON_LABELS, BlockedLog, BlockedLogsTab(), BlockedLogsTabProps, CitiesTable(), CityAddForm(), CityEntry, CityWhitelistTab() (+14 more)
 
-### Community 242 - "DiscountManagementPanel.tsx"
+### Community 248 - "DiscountManagementPanel.tsx"
 Cohesion: 0.12
 Nodes (26): actionCopy(), ApprovalActions(), approvalBadgeClass(), ApprovalCard(), approvalCardClass(), ApprovalCardProps, ApprovalFilter, ApprovalNotes() (+18 more)
 
-### Community 243 - "admin/ProductPersonalizationManager.tsx"
-Cohesion: 0.14
-Nodes (24): GroupInheritance(), GroupInheritanceProps, filterProducts(), findGroup(), Membership, ProductOptions(), ProductSelector(), ProductSelectorProps (+16 more)
-
-### Community 244 - "ProductSupplierSection.tsx"
+### Community 249 - "ProductSupplierSection.tsx"
 Cohesion: 0.13
 Nodes (25): AlternativeSupplierDialog(), AlternativeSupplierDialogProps, DisplaySource, emptyForm, formatCurrency(), numericInputValue(), parseFloatOr(), parseIntOr() (+17 more)
 
-### Community 245 - "KitSummary.tsx"
-Cohesion: 0.12
-Nodes (19): DiscontinuedItemsAlert(), DiscontinuedItemsAlertProps, fetchDiscontinuedItems(), FreightEstimator(), KitActionsBar(), KitActionsBarProps, KitIdentificationCard(), KitIdentificationCardProps (+11 more)
-
-### Community 246 - "ProductCardImage.tsx"
-Cohesion: 0.14
-Nodes (25): NoveltyBadge(), NoveltyBadgeCompact(), NoveltyBadgeProps, noveltyLabel(), noveltySize(), noveltyVariant(), ProductImageSection(), ColorDot() (+17 more)
-
-### Community 247 - "AdminTemplatesManager.tsx"
+### Community 250 - "AdminTemplatesManager.tsx"
 Cohesion: 0.12
 Nodes (23): TemplateCard(), TemplateCardProps, TemplateGridView(), TemplateGridViewProps, TemplateTableView(), TemplateTableViewProps, CloneDialogProps, DeleteDialogProps (+15 more)
 
-### Community 248 - "useSalesHistory.ts"
+### Community 251 - "useSalesHistory.ts"
 Cohesion: 0.15
 Nodes (25): addOrderDaily(), addOrderSeller(), addQuoteDaily(), addQuoteSeller(), aggregateSales(), DailySalesPoint, emptyKpis(), loadSalesDocumentMaps() (+17 more)
 
-### Community 249 - "external-db/types.ts"
+### Community 252 - "external-db/types.ts"
 Cohesion: 0.07
 Nodes (26): ExternalBusinessSector, ExternalCategory, ExternalClientContact, ExternalCollection, ExternalColorGroup, ExternalColorVariation, ExternalCompany, ExternalMaterialGroup (+18 more)
 
-### Community 250 - "stock.ts"
+### Community 253 - "stock.ts"
 Cohesion: 0.10
 Nodes (24): aggregateVariantsToProduct(), boundedStockStatus(), calculateStockStatus(), ColorStockInfo, countVariantStatuses(), defaultStockFilters, emptyStockStatus(), FutureStockEntry (+16 more)
 
-### Community 251 - "20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql"
+### Community 254 - "20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql"
 Cohesion: 0.13
 Nodes (21): idx_coop_budgets_period, idx_cooperativas_active, idx_pa_budgets_pa, idx_pa_budgets_period, idx_pas_coop, idx_pas_responsavel, idx_profiles_cooperativa, idx_profiles_pa (+13 more)
 
-### Community 252 - "mudou-conteudo.mjs"
+### Community 255 - "MockupGenerator.tsx"
+Cohesion: 0.10
+Nodes (15): MockupEmptyState(), DraftRestoredNotice(), GenerationError(), MockupNotices(), MockupProgress(), MockupState, MockupWizard, MockupWorkspace() (+7 more)
+
+### Community 256 - "mudou-conteudo.mjs"
 Cohesion: 0.10
 Nodes (22): Pendências deste doc, CARIMBOS, IGNORADOS, limparFila(), limparHistoricoCron(), mudou(), normalizarAlerta(), PADRAO (+14 more)
 
-### Community 253 - "OrderService"
-Cohesion: 0.11
-Nodes (12): OrderPilotWorkflow.tsx (etapa 17), OrderStatusTimeline.tsx (etapa 17), formatApprovalDate(), OrderStatusTimeline(), OrderTemplatesSheet(), useLogisticsTracking(), useOrderAudit(), useOrderComments() (+4 more)
-
-### Community 254 - "pricing/simulator/index.ts"
+### Community 257 - "pricing/simulator/index.ts"
 Cohesion: 0.14
 Nodes (21): upsell-engine.ts (etapa 17), StepIndicator(), StepIndicatorProps, COMPLEMENTARY_MAP, generateSuggestions(), PRIORITY_ORDER, QUANTITY_TIERS, suggestAddPosition() (+13 more)
 
-### Community 255 - "products-lightweight.ts"
+### Community 258 - "products-lightweight.ts"
 Cohesion: 0.14
 Nodes (25): useSupplierNames.ts (etapa 17), extractBatchResults(), invokeBatchBridge(), invokeExternalDb(), InvokeResult, appendPages(), batchResultAsPage(), completeDegradedPage() (+17 more)
 
-### Community 256 - "Persistência do Kit Builder: 13 lacunas confirmadas contra a PR #119"
-Cohesion: 0.09
-Nodes (24): Autosave e salvamento manual não compartilham fila nem alvo, Autosave e salvamento manual não compartilham fila nem alvo, Autosave não está ligado a guarda de saída de página, Baseline adotado quando o kit termina de carregar (flag enabled), CAS por updated_at (trava otimista) ao atualizar custom_kits, isDirty exposto e guarda de saída no Kit Maker, Modo template continua gravando em custom_kits por autosave, Não existe adoção de baseline assíncrona com geração esperada (adoptBaseline) (+16 more)
+### Community 259 - "OffscreenLayoutCapture.tsx"
+Cohesion: 0.14
+Nodes (22): MockupApprovalPreviewProps, ApprovalFooter(), ApprovalHeader(), ClientSection(), getContrastColor(), InfoCell(), MockupApprovalTemplate, PantoneSection() (+14 more)
 
-### Community 257 - "ErrorDetailsDialog.tsx"
-Cohesion: 0.16
-Nodes (24): DetailsContent(), DetailsDialogHeader(), DetailsSections(), ErrorDetailsDialog(), ErrorSummarySection(), fmtMs(), hasTimingData(), KV() (+16 more)
-
-### Community 258 - "IntegrationsHealthCard.tsx"
+### Community 260 - "IntegrationsHealthCard.tsx"
 Cohesion: 0.14
 Nodes (25): autoTestStats(), AutoTestSummary(), countCredentialSources(), countOrZero(), countStaleSecrets(), CredentialSourceSummary(), deliveryStats(), fetchAutoTestSignals() (+17 more)
 
-### Community 259 - "ClientCategoryRadar.tsx"
+### Community 261 - "ClientCategoryRadar.tsx"
 Cohesion: 0.14
 Nodes (25): CategoryList(), CategoryListProps, CategoryRow(), CategoryRowProps, classify(), ClientCategoryRadar(), ClientProducts(), ComparisonBars() (+17 more)
 
-### Community 260 - "useProductRegistration.ts"
-Cohesion: 0.12
-Nodes (18): useAuditLog(), BulkImportRow, ColumnMapping, ImportValidationResult, PRODUCT_FIELDS, ProductFormData, ProductImageInput, recordsOrEmpty() (+10 more)
+### Community 262 - "ProductCardImage.tsx"
+Cohesion: 0.14
+Nodes (24): NoveltyBadge(), NoveltyBadgeCompact(), NoveltyBadgeProps, noveltyLabel(), noveltySize(), noveltyVariant(), ColorDot(), ColorDots() (+16 more)
 
-### Community 261 - "useStockHistory.ts"
+### Community 263 - "VoiceSearchOverlay.tsx"
+Cohesion: 0.13
+Nodes (23): usePhaseColors(), CommandSuggestions(), SUGGESTION_COMMANDS, TextCommandInput(), TextCommandProps, VoiceFooter(), VoiceSuggestionsPanel(), VoiceSuggestionsPanelProps (+15 more)
+
+### Community 264 - "useStockHistory.ts"
 Cohesion: 0.10
 Nodes (19): addMarketDay(), addSupplierDay(), emptySupplierAccumulator(), MacroMarketData, MacroMarketKpis, MacroMarketPoint, MacroSupplierMetrics, summarizeMarketDays() (+11 more)
 
-### Community 262 - "SellerCartsPage.tsx"
+### Community 265 - "SellerCartsPage.tsx"
 Cohesion: 0.14
 Nodes (25): CartSidebar(), useSellerCartsPage(), ActiveCart, ActiveCartHeader(), ActiveCartItems(), ActiveCartSidebar(), ActiveCartWorkspace(), CartCompanyIdentity() (+17 more)
 
-### Community 263 - "AdminRoute.tsx"
+### Community 266 - "AdminRoute.tsx"
 Cohesion: 0.15
 Nodes (20): AdminRoute(), AdminRouteLoader(), AdminRouteProps, auditDeniedAccess(), ChallengeGate(), EnrollmentGate(), hasRoleLoadError(), isRouteLoading() (+12 more)
 
-### Community 264 - "indice.py"
+### Community 267 - "indice.py"
 Cohesion: 0.13
 Nodes (14): entry_file(), git(), main(), _normaliza_nome(), parse_dt(), producer_health(), read_manifest(), _sem_acento() (+6 more)
 
-### Community 265 - "AuthEntry.tsx"
+### Community 268 - "AuthEntry.tsx"
 Cohesion: 0.12
 Nodes (10): AuthEntry(), DeferredNotifications(), EnterPortal(), ResetPassword, RouteFallback(), Sonner, SSOCallbackPage, Toaster (+2 more)
 
-### Community 266 - "useUserManagement"
+### Community 269 - "useUserManagement"
 Cohesion: 0.12
 Nodes (13): ADR 0001 — Nomes canônicos de buckets de Storage, Contexto, Decisão, Ressalva conhecida (não resolvida nesta sessão), useSicoobHierarchy(), hasRequiredCredentials(), isDuplicateUserMessage(), isStrongPassword() (+5 more)
 
-### Community 267 - "pricing.service.ts"
+### Community 270 - "`docs/plano150-20260927` — liberada: NÃO"
+Cohesion: 0.08
+Nodes (18): Automação local — Brindes_Sicoob_V2, Comandos, Gatilhos e ativação, Hooks e workflows anteriores, Registro exato dos demais scripts, Suites efetivamente executadas, `docs/plano150-20260927` — liberada: NÃO, Dois gates estáticos de CI (drift do doc de cobertura smoke e validação de tags @smoke) deixaram de rodar em qualquer gatilho. No head da #97 eram steps sem `if:` no job `e2e` disparado por `pull_request` em `ubuntu-latest`, bloqueando todo PR mesmo sem secrets; a main os moveu para `e2e-authenticated`, que é `workflow_dispatch`-only e morre antes de alcançá-los porque o environment `e2e-qa` está sem secrets. Hoje qualquer agente pode adicionar um `test()` fora de um describe `@smoke` (que o project `chromium-smoke` ignora silenciosamente, playwright.config.ts:262-266) ou alterar a suíte sem regenerar `docs/E2E_SMOKE_COVERAGE.md`, e nenhum check obrigatório pega. Recuperação de custo zero e sem exposição: os dois steps no job público `e2e`, que é required check. (+10 more)
+
+### Community 271 - "pricing.service.ts"
 Cohesion: 0.18
 Nodes (23): pricing.service.ts (etapa 17), calculateSavings(), BatchPricingRequest, BatchPricingResponse, calculateBatchPricing(), calculatePriceFromTable(), calculatePricing(), calculateQuantitySavings() (+15 more)
 
-### Community 268 - "priceTable.repository.ts"
+### Community 272 - "priceTable.repository.ts"
 Cohesion: 0.16
 Nodes (22): `src/lib/personalization/repositories/priceTable.repository.ts` (etapa 17, 6 → 0 erros), countByTechnique(), databaseFilters(), filterByColorLimits(), findAll(), findBestMatch(), findByCodeOption(), findById() (+14 more)
 
-### Community 269 - "useGlobalSearch.ts"
-Cohesion: 0.13
-Nodes (20): Busca global, favoritos e cota de IA (PR #145 / branch origin/fix/hermes-h097437-ci-workflows), CacheEntry, searchCache, store, createDefaultIntent(), executeClientSearch(), executeProductSearch(), GlobalSearchActionContext (+12 more)
+### Community 273 - "useClientBI.ts"
+Cohesion: 0.12
+Nodes (21): Convergência dos vereditos PARCIAL — medida em 19/11/2026, 13 arquivos de teste — executados contra a `main`, 18/11/2026, averageOrderInterval(), churnRisk(), ChurnRiskResult, highRiskReason(), isHighRisk(), RecentOrder (+13 more)
 
-### Community 270 - "OnboardingTour.tsx"
-Cohesion: 0.14
-Nodes (23): Clamp do retângulo de destaque do Onboarding Tour ao viewport, centeredPosition(), clampPosition(), equivalentRoute(), focoEmNinguem(), focusablesInside(), normalizeRoute(), OnboardingTour (+15 more)
-
-### Community 271 - "📘 Runbook Operacional — Promo Brindes"
+### Community 274 - "📘 Runbook Operacional — Promo Brindes"
 Cohesion: 0.08
 Nodes (24): Auditoria de RLS, Backup e Restauração, 🗄️ Banco de Dados, Bloqueio de Usuário, Cenário 1: Frontend Inacessível, Cenário 2: Edge Functions Falhando, Cenário 3: Banco de Dados Corrompido, Cenário 4: Integração Bitrix24 Offline (+16 more)
 
-### Community 272 - "framer-motion"
-Cohesion: 0.11
-Nodes (17): framer-motion, Props, RotateSecretConfirmDialog(), Props, SaveSecretConfirmDialog(), SecretConfirmationDialogs(), Props, safeSuffix() (+9 more)
-
-### Community 273 - "VariantRow.tsx"
+### Community 275 - "VariantRow.tsx"
 Cohesion: 0.16
 Nodes (21): ProductRow(), ProductRowProps, currentStockColor(), ReservedCell(), StockoutCell(), stockoutColor(), TransitCell(), VariantRow() (+13 more)
 
-### Community 274 - "InlinePriceCalculator.tsx"
+### Community 276 - "MockupConfigPanel.tsx"
+Cohesion: 0.16
+Nodes (24): LogoColorAnalyzer(), AreasSection(), ClientSection(), ConfigSections(), LoadingState(), LogoAnalysisSection(), MobileCollapsibleSection(), MobileCollapsibleSectionProps (+16 more)
+
+### Community 277 - "InlinePriceCalculator.tsx"
 Cohesion: 0.13
 Nodes (21): Discount(), MinimumBadge(), PriceTableRow, PriceTiersTable(), PriceTiersTableProps, TableHeader(), TierRow(), CalculatorViewProps (+13 more)
 
-### Community 275 - "QuotesConfigurableList.tsx"
-Cohesion: 0.13
-Nodes (23): renderQuoteCell(), ALL_COLUMNS, ColumnDef, Columns, ColumnSettings(), hasQuoteId(), PAGE_SIZE_OPTIONS, Pagination (+15 more)
-
-### Community 276 - "QuoteVersionCompare.tsx"
+### Community 278 - "QuoteVersionCompare.tsx"
 Cohesion: 0.14
 Nodes (23): ComparedItem(), ComparisonDetails(), ComparisonRow(), DiffBadge(), DifferencesCard(), fetchQuoteDetail(), formatCurrency(), ItemsComparison() (+15 more)
 
-### Community 277 - "GeoBlockingManager.tsx"
+### Community 279 - "ReplenishmentProductGrid.tsx"
+Cohesion: 0.17
+Nodes (22): CardSelection(), CardSelectionProps, formatPrice(), hasPrice(), isActivationKey(), isRecent(), ReplenishmentCardProps, ReplenishmentGridCard (+14 more)
+
+### Community 280 - "GeoBlockingManager.tsx"
 Cohesion: 0.14
 Nodes (24): AddCountryDialog(), AllowedCountry, buildCountryForm(), COMMON_COUNTRIES, CountriesTable(), CountryForm, CountryFormFields(), CountryOption (+16 more)
 
-### Community 278 - "useKitStockForecast.ts"
+### Community 281 - "useKitStockForecast.ts"
 Cohesion: 0.13
 Nodes (24): addDays(), aggregateEntries(), applicableVariants(), buildRequirements(), calculateKitStockForecast(), calculateRisk(), createIndexes(), currentStock() (+16 more)
 
-### Community 279 - "useReplenishments.ts"
+### Community 282 - "useReplenishments.ts"
 Cohesion: 0.14
 Nodes (24): calcDaysRemaining(), calcDaysSinceReplenishment(), CategoryRecord, enrichReplenishments(), getCutoffDate(), getReplenishmentStatus(), getStockStatus(), isReplenishment() (+16 more)
 
-### Community 280 - "raw-row.adapter.ts"
+### Community 283 - "raw-row.adapter.ts"
 Cohesion: 0.14
 Nodes (23): adaptFaixaPrecoRow(), adaptFaixaPrecoRows(), adaptPrintAreaTechniqueRow(), adaptPrintAreaTechniqueRows(), adaptTabelaPrecoRow(), adaptTabelaPrecoRows(), adaptTecnicaRow(), adaptTecnicaRows() (+15 more)
 
-### Community 281 - "useQuoteViewData.ts"
-Cohesion: 0.13
-Nodes (21): calcPersTotal(), ApprovalShareInput, asOptional(), BitrixSyncInput, buildProposalData(), buildProposalItem(), buildWhatsAppMessage(), calculateQuoteTotals() (+13 more)
-
-### Community 282 - "QuoteViewPage.tsx"
-Cohesion: 0.15
-Nodes (24): cancelSync(), CommercialTerm(), DiscountApprovalBanner(), duplicateQuote(), LoadedQuote(), LoadingQuote(), MissingQuote(), presentationDetails() (+16 more)
-
-### Community 283 - "20260419130037_5f01e5dd-e3d5-4d26-8a08-328d432a05aa.sql"
+### Community 284 - "20260419130037_5f01e5dd-e3d5-4d26-8a08-328d432a05aa.sql"
 Cohesion: 0.11
 Nodes (18): idx_inbound_events_endpoint_time, idx_outbound_webhooks_active_events, idx_webhook_deliveries_event_time, idx_webhook_deliveries_webhook_time, public.external_connections, public.inbound_webhook_endpoints, public.inbound_webhook_events, public.mcp_api_keys (+10 more)
 
-### Community 284 - "Header.tsx"
+### Community 285 - "Header.tsx"
 Cohesion: 0.14
 Nodes (18): CartHeaderButton, DesktopUtilities(), DiscountApprovalHeaderBadge, GlobalSearchPalette, Header(), HeaderActions(), HeaderLeft(), HeaderModel (+10 more)
 
-### Community 285 - "DraggableQuoteItems.tsx"
+### Community 286 - "useCollections.ts"
+Cohesion: 0.12
+Nodes (22): CollectionTableView.tsx (etapa 17), useCollections.ts (etapa 17), CheckboxSize, SelectionCheckbox, SelectionCheckboxProps, sizeMap, buildCollectionContentUpdates(), buildCollectionSharingUpdates() (+14 more)
+
+### Community 287 - "useColorEnrichment.ts"
+Cohesion: 0.14
+Nodes (23): `FavoritesPage.tsx` (etapa 17, 8 → 0 erros — achado: import de `Product` errado propagado em 4 arquivos), useCatalogState.ts (etapa 17), arrayImageMatch(), bridgeRecords(), buildImageLookups(), ColorEnrichmentData, directVariantMatch(), directVariantUrl() (+15 more)
+
+### Community 288 - "DraggableQuoteItems.tsx"
 Cohesion: 0.14
 Nodes (22): QuoteItemsList.tsx (etapa 17), ActiveItemOverlay(), DraggableQuoteItems(), DraggableQuoteItemsProps, EmptyItems(), GroupHeader(), ItemEntry(), ItemHeader() (+14 more)
 
-### Community 286 - "product-search.ts"
+### Community 289 - "OrderConsolidationPanel.tsx"
+Cohesion: 0.12
+Nodes (16): Trabalho de etapa 17 (zerar arquivos com mais erros), P0 do orçamento: resolvido em produção (19/11/2026, 02:30 UTC), jszip, AvailableQuotesColumn(), ConsolidationQuote, fetchConsolidationQuotes(), OrderConsolidationPanel(), PendingQuotesList() (+8 more)
+
+### Community 290 - "product-search.ts"
 Cohesion: 0.16
 Nodes (22): useGlobalSearch.ts (etapa 17), BucketName, classifyProducts(), codeIncludes(), codeMatchesStart(), combineBuckets(), dedupeById(), DEFAULT_FUSE_OPTIONS (+14 more)
 
-### Community 287 - "useProductVideoGallery.ts"
+### Community 291 - "useProductVideoGallery.ts"
 Cohesion: 0.16
 Nodes (21): useProductVideoGallery.ts (etapa 17), ACCEPTED_VIDEO_TYPES, ExternalVideo, extractThumbnailFromVideo(), MAX_FILE_SIZE, parseYouTubeId(), VariantLink, VIDEO_TYPES (+13 more)
 
-### Community 288 - "AdImageResult.tsx"
-Cohesion: 0.13
-Nodes (20): 4. Componentes cobertos, AdImageResult(), AdImageResultProps, EmptyAdImage(), GeneratedResult(), GeneratedResultProps, GenerationHistoryItem, HistoryGallery() (+12 more)
-
-### Community 289 - "Plano de reconciliação e hardening do banco em 50 etapas"
-Cohesion: 0.08
-Nodes (23): Estado medido em 16/09/2026 (ponto de partida), Etapa 14 — Criar ambiente de staging a partir do baseline, Etapa 15 — Pipeline "Supabase Preview" por PR, Etapa 16 — Seed determinístico de homologação, Etapa 17 — Smoke de conectividade e gates básicos em staging, Etapa 40 — Partições de `admin_audit_log` e automação ✅ (aplicado em 16/09/2026), Etapa 41 — Limpar `admin_audit_log_old` e `admin_audit_log_archive` ✅ (aplicado em 16/09/2026), Etapa 42 — Políticas de retenção com pg_cron ✅ (aplicado em 16/09/2026) (+15 more)
-
-### Community 290 - "jspdf"
-Cohesion: 0.14
-Nodes (18): html2canvas, jspdf, ExportComparisonButton(), MockupApprovalPreview(), MockupApprovalPreviewProps, blobToDataUrl(), decodeBase64Image(), downloadImageAsPdfFromUrl() (+10 more)
-
-### Community 291 - "CartUtilComponents.tsx"
+### Community 292 - "CartUtilComponents.tsx"
 Cohesion: 0.14
 Nodes (15): CompareCartsDialog(), LoadTemplateDialog(), SaveTemplateDialog(), exportCartToCSV(), exportCartToPDF(), shareCartLink(), MobileSummarySheet(), actionHistoryMap (+7 more)
 
-### Community 292 - "EnhancedErrorBoundary.tsx"
-Cohesion: 0.12
-Nodes (13): 🔧 Troubleshooting, AutoRecoveringView(), EnhancedErrorBoundary, ErrorActions(), ErrorActionsProps, ErrorDetails(), ErrorDetailsProps, ErrorHero() (+5 more)
+### Community 293 - "✅ Onda D — Polimento, DX & Entrega (2026-04-20)"
+Cohesion: 0.11
+Nodes (19): ✅ Onda A.2 — Integração visual (2026-04-20), ✅ Onda A — Fundação (2026-04-20), ✅ Onda B — Inteligência de Preço (2026-04-20), ✅ Onda D — Polimento, DX & Entrega (2026-04-20), Roadmap de Favoritos — 10/10 absoluto ✅, Status final, FavoritesEmptyStateSmart(), ColorSwatch() (+11 more)
 
-### Community 293 - "compare-types-api.mjs"
+### Community 294 - "compare-types-api.mjs"
 Cohesion: 0.08
 Nodes (21): allOnlyLocal, apiNames, ast, database, differences, funcs, ignoredPartitions, localNames (+13 more)
 
-### Community 294 - "gerar-rotas.mjs"
+### Community 295 - "gerar-rotas.mjs"
 Cohesion: 0.16
 Nodes (23): blocosBalanceados(), campo(), constantesDeString(), ehTeste(), EXTENSOES, extrairChamadas(), extrairImports(), fechoDaTela() (+15 more)
 
-### Community 295 - "PersonalizationConfig.tsx"
+### Community 296 - "ErrorDetailsDialog.tsx"
+Cohesion: 0.17
+Nodes (22): DetailsContent(), DetailsDialogHeader(), DetailsSections(), ErrorDetailsDialog(), ErrorSummarySection(), fmtMs(), hasTimingData(), KV() (+14 more)
+
+### Community 297 - "ProductFlagsSection.tsx"
+Cohesion: 0.13
+Nodes (21): ProductDraft, ProductFormDraftOptions, restoreFormValues(), useDraftPersistence(), useDraftRestore(), useProductFormDraft(), StepDef, ProductFormFullscreenProps (+13 more)
+
+### Community 298 - "PersonalizationConfig.tsx"
 Cohesion: 0.15
 Nodes (23): BoxPersonalization(), buildTechniqueConfig(), ColorCountField(), DimensionFields(), EmptyPersonalization(), FlatTechnique, flattenTechniques(), getPricingArguments() (+15 more)
 
-### Community 296 - "VoiceSearchOverlay.tsx"
-Cohesion: 0.14
-Nodes (21): CommandSuggestions(), SUGGESTION_COMMANDS, TextCommandInput(), TextCommandProps, VoiceFooter(), VoiceSuggestionsPanel(), VoiceSuggestionsPanelProps, buildBorderGlow() (+13 more)
-
-### Community 297 - "chart.tsx"
+### Community 299 - "chart.tsx"
 Cohesion: 0.14
 Nodes (23): buildTooltipLabel(), ChartConfig, ChartContainer, ChartContext, ChartContextProps, ChartLegendContent, ChartStyle(), ChartTooltipContent (+15 more)
 
-### Community 298 - "data/mockData.ts"
+### Community 300 - "data/mockData.ts"
 Cohesion: 0.08
 Nodes (20): CATEGORIES, Category, Client, CLIENTS, COLORS, DATAS_COMEMORATIVAS, ENDOMARKETING, FAIXAS_PRECO (+12 more)
 
-### Community 299 - "adapters/index.ts"
+### Community 301 - "useClientsComparison.ts"
+Cohesion: 0.12
+Nodes (23): availableValue(), buildComparisonRow(), CategoryAffinity, ClientAffinity, ClientBi, ClientComparisonRow, ClientHealth, ClientSeasonality (+15 more)
+
+### Community 302 - "adapters/index.ts"
 Cohesion: 0.15
 Nodes (22): AdaptResult, bumpStat(), ContractMismatchEntry, contractMismatches, detectPriceSchema(), FullSchemaStats, getContractMismatches(), getLegacyFieldsSeen() (+14 more)
 
-### Community 300 - "ComparePage.tsx"
+### Community 303 - "ComparePage.tsx"
 Cohesion: 0.14
 Nodes (23): ActiveComparison(), ActiveComparisonProps, ClientPicker(), CompareActions(), CompareEntry, CompareHeader(), ComparePage(), CompareTabsList() (+15 more)
 
-### Community 301 - "trends-queries.ts"
+### Community 304 - "trends-queries.ts"
 Cohesion: 0.14
 Nodes (19): TrendsActivity, ActivityCursor, ActivityPage, appendUniqueRows(), cursorFilter(), loadAllActivity(), loadProductViewActivity(), loadSearchActivity() (+11 more)
 
-### Community 302 - "20260912180000_sicoob_finance_artwork.sql"
+### Community 305 - "20260912180000_sicoob_finance_artwork.sql"
 Cohesion: 0.14
 Nodes (13): idx_sicoob_order_artwork_order, idx_sicoob_order_invoices_order, idx_sicoob_order_payments_order, public.require_sicoob_artwork_before_production(), public.sicoob_order_artwork_versions, public.sicoob_order_invoices, public.sicoob_order_payments, tr_protect_sicoob_order_artwork_version (+5 more)
 
-### Community 303 - "20261013120512_fix_quote_governance_writers_and_freeze_content.sql"
+### Community 306 - "20261013120512_fix_quote_governance_writers_and_freeze_content.sql"
 Cohesion: 0.11
 Nodes (10): aaa_guard_quote_governance_write, aaa_guard_quote_item_content_write, aaa_guard_quote_personalization_content_write, public.assert_quote_content_editable(), public.assert_quote_transition(), public.can_manage_quote_scope(), public.guard_quote_governance_write(), public.guard_quote_item_content_write() (+2 more)
 
-### Community 304 - "magic-up-onda5.test.tsx"
+### Community 307 - "magic-up-onda5.test.tsx"
 Cohesion: 0.10
 Nodes (12): ArrowHarness(), buildVariations(), expectActiveElementFocusVisible(), expectAllCardsFocusVisible(), expectAllWinnerButtonsFocusVisible(), expectFocusVisible(), FOCUS_VISIBLE_BASE_CLASSES, FOCUS_VISIBLE_FULL_CLASSES (+4 more)
 
-### Community 305 - "sentry.ts"
-Cohesion: 0.13
-Nodes (17): RFC-4122, 1. Correlação ponta-a-ponta (`request_id`), @sentry/react, uuid, injectRequestId(), BufferedError, captureException(), ERROR_BUFFER (+9 more)
+### Community 308 - "quotes/useQuotes.ts"
+Cohesion: 0.17
+Nodes (18): useQuotesDashboard.ts (etapa 17), asError(), ensureQuoteMutationApplied(), ensureQuotesAreAccessible(), MutationError, PersonalizationTechnique, Quote, QuoteItem (+10 more)
 
-### Community 306 - "role-policy.ts"
-Cohesion: 0.11
-Nodes (19): AdminUsuariosPage.tsx (etapa 17), auth-utils.ts (etapa 17), BASIC_ROLES, canAccessSicoobPath(), hasRequiredRole(), MANAGERS, matchesRoutePattern(), normalizeAssignedRoles() (+11 more)
-
-### Community 307 - "Justificativa de cada branch"
+### Community 309 - "Justificativa de cada branch"
 Cohesion: 0.09
 Nodes (22): As 6 branches re-medidas pelos commits próprios, `audit/revisao-plano-20260924` — PARCIAL · pode apagar: NÃO, Branches sem PR — anexo do ledger de recuperação, Branches sem PR — veredito individual, `claude/project-workflows-analysis-5n6hva`, `claude/project-workflows-analysis-5n6hva` — INCORPORADA · pode apagar: sim, `computador_local` — INCORPORADA · pode apagar: sim, `contexto` — INCORPORADA · pode apagar: NÃO (+14 more)
 
-### Community 308 - "`docs/plano150-20260927` — liberada: NÃO"
-Cohesion: 0.10
-Nodes (15): `docs/plano150-20260927` — liberada: NÃO, `fix/sicoob-csp-202635` — liberada: sim, Os 2 arquivos de código que sobraram — veredito de 19/11/2026, `src/hooks/useSupplierTrust.ts` — **obsoleto, não recuperar**, D4. PR #158 — ref `pr/158` (branch `fix/hermes-272703-ci-audit`), fechada sem merge em 2026-10-31. Título: "docs: atualiza auditoria de CI e pendências verificadas". 2 arquivos, 156 adições, 2 remoções., Ciclo de correção, Manutenção local sem IA, Relatórios e códigos de saída (+7 more)
-
-### Community 309 - "Lacunas apontadas e derrubadas na refutação"
-Cohesion: 0.17
-Nodes (20): Atualizar template pelo Kit Builder zera a categoria e reativa template desativado, Lacunas apontadas e derrubadas na refutação, AutoSaveResult, avisarFalhaDeAutosave(), createSnapshot(), explainEmptyUpdate(), isCreatedKitAdoption(), isEmptyKit() (+12 more)
-
-### Community 310 - "ConversionFunnel.tsx"
+### Community 310 - "stock-chart-utils.ts"
 Cohesion: 0.13
-Nodes (19): AnalyticsClient, buildStages(), ConversionFunnel(), ConversionFunnelProps, CountQueryResult, fetchFunnel(), FunnelData, FunnelRows() (+11 more)
+Nodes (16): `fix/sicoob-intelligence-truth-20260924` — PARCIAL · pode apagar: NÃO, COMMERCIAL_FLAG_CONFIG, FlagConfig, generateMockIntelligence(), generateMockStockData(), generateMockSupplierNames(), generateMockVelocities(), generateMockVelocity() (+8 more)
 
-### Community 311 - "devDependencies"
+### Community 311 - "OnboardingTour.tsx"
+Cohesion: 0.15
+Nodes (22): Clamp do retângulo de destaque do Onboarding Tour ao viewport, centeredPosition(), clampPosition(), equivalentRoute(), focoEmNinguem(), focusablesInside(), normalizeRoute(), OnboardingTour (+14 more)
+
+### Community 312 - "devDependencies"
 Cohesion: 0.09
 Nodes (23): devDependencies, autoprefixer, axe-core, braces, eslint-plugin-clean-code, eslint-plugin-sonarjs, marked, pdf-parse (+15 more)
 
-### Community 312 - "check-edge-authorization.mjs"
+### Community 313 - "@dnd-kit/sortable"
+Cohesion: 0.22
+Nodes (17): @dnd-kit/sortable, GroupComponentCard(), GroupComponentCardProps, GroupLocationCard(), GroupLocationCardProps, GroupPersonalizationManager(), GroupComponent, GroupLocation (+9 more)
+
+### Community 314 - "check-edge-authorization.mjs"
 Cohesion: 0.11
 Nodes (17): byCat, configSrc, entries, errors, fns, gatewayConfig, ghostInManifest, manifestSrc (+9 more)
 
-### Community 313 - "ZoneQuickNav.tsx"
+### Community 315 - "ZoneQuickNav.tsx"
 Cohesion: 0.13
 Nodes (18): FocusContext, ALL_EXPANDED, loadInitial(), useZoneCollapse(), ALL_VISIBLE, loadInitial(), useZoneVisibility(), ZoneId (+10 more)
 
-### Community 314 - "BulkAddToCartModal.tsx"
+### Community 316 - "bulk-import/types.ts"
+Cohesion: 0.15
+Nodes (20): downloadBlob(), ImportErrors(), StepComplete(), StepCompleteProps, StepImportingProps, StepMapping(), StepMappingProps, StepPreviewProps (+12 more)
+
+### Community 317 - "BulkImportDialog.tsx"
+Cohesion: 0.16
+Nodes (22): StepImporting(), BOOLEAN_FIELDS, buildImportRow(), BulkImportDialog(), BulkImportDialogProps, fieldLabel(), hasImportData(), mapSpreadsheetRow() (+14 more)
+
+### Community 318 - "BulkAddToCartModal.tsx"
 Cohesion: 0.16
 Nodes (21): BulkAddToCartModal(), BulkAddToCartModalProps, CartContent(), CartContentProps, getItems(), plural(), SubmitButton(), toCartItem() (+13 more)
 
-### Community 315 - "SidebarNavGroup.tsx"
+### Community 319 - "BackButton.tsx"
+Cohesion: 0.14
+Nodes (21): BackButton, BackButtonContent(), BackButtonContentProps, BackButtonView(), BackButtonViewProps, CRITICAL_PATHS, entranceAnimation(), getParentLabel() (+13 more)
+
+### Community 320 - "StockFilterToolbar.tsx"
+Cohesion: 0.13
+Nodes (22): StockFiltersCard(), ActiveFilterBadges(), ActiveFilterBadgesProps, AdvancedFiltersPopover(), AlertAndSortSections(), ColorAndCategorySections(), FilterInputs(), FilterInputsProps (+14 more)
+
+### Community 321 - "SidebarNavGroup.tsx"
 Cohesion: 0.17
 Nodes (22): canRenderItem(), CollapsedTooltip(), ExpandedGroup(), ExpandedGroupItems(), GroupItems(), hasDeclaredAccess(), HasPermission, hasRouteAccess() (+14 more)
 
-### Community 316 - "OffscreenLayoutCapture.tsx"
-Cohesion: 0.16
-Nodes (21): ApprovalFooter(), ApprovalHeader(), ClientSection(), getContrastColor(), InfoCell(), MockupApprovalTemplate, PantoneSection(), productSpecs() (+13 more)
+### Community 322 - "AreaCard.tsx"
+Cohesion: 0.17
+Nodes (20): AreaCard(), AreaCardProps, AreaMetadata(), AreaName(), ColorCount(), ExistingLogo(), LogoFileInput(), NewLogo() (+12 more)
 
-### Community 317 - "NotificationOmnichannelPanel.tsx"
+### Community 323 - "NotificationOmnichannelPanel.tsx"
 Cohesion: 0.15
 Nodes (21): DigestItem, DigestRow(), DigestsTable(), ExecutionLog(), ExecutionLogs(), LogItem, NotificationOmnichannelPanel(), OmnichannelData (+13 more)
 
-### Community 318 - "useRamoAtividadeFilho.ts"
+### Community 324 - "useRamoAtividadeFilho.ts"
 Cohesion: 0.10
 Nodes (7): QUERY_KEY, useRamosAtividadeGroups(), QUERY_KEY, useSegmentosCompletos(), defaultFilterState, useRamoAtividadeFilter(), UseRamoAtividadeFilterReturn
 
-### Community 319 - "cloud-status.ts"
+### Community 325 - "cloud-status.ts"
 Cohesion: 0.15
 Nodes (19): addEventListener(), checkAuth(), checkHealthFunction(), checkRest(), CloudNotReadyError, CloudStatus, CloudStatusSnapshot, deriveStatus() (+11 more)
 
-### Community 320 - "notifications-metrics.ts"
+### Community 326 - "notifications-metrics.ts"
 Cohesion: 0.09
 Nodes (20): AUTO_RESET_INTERVAL_MS, BADGE_RENDER_BUDGET_MS, BadgeListener, badgeListeners, BadgeRenderBudget, BadgeRenderSource, BadgeRenderStat, DEBUG_LOG_THROTTLE_MS (+12 more)
 
-### Community 321 - "print-area-grouping.ts"
+### Community 327 - "print-area-grouping.ts"
 Cohesion: 0.13
 Nodes (18): addAreaToComponentMap(), componentOrder(), countTotalLocations(), findLargestArea(), FlattenedTechnique, flattenTechniques(), getLocationMap(), getTechniques() (+10 more)
 
-### Community 322 - "MatchCards.tsx"
-Cohesion: 0.17
-Nodes (19): buildQuotePath(), formatPrice(), MATCH_TYPE_CONFIG, MatchActions(), MatchCard(), MatchHeading(), MatchMetadata(), MatchReasons() (+11 more)
-
-### Community 323 - "simular-consolidacao-sicoob.py"
+### Community 328 - "simular-consolidacao-sicoob.py"
 Cohesion: 0.13
 Nodes (11): actor_sql(), command(), rls_actor_sql(), sql(), actor_sql(), command(), sql(), actor() (+3 more)
 
-### Community 324 - "products"
-Cohesion: 0.10
-Nodes (17): Ação imediata necessária, Contagem de achados por severidade, Inventário resumido, Sumário Executivo — Auditoria Front-end ↔ DB (Promo_Gifts), CompareTableView.tsx (etapa 17), SyncedZoomGallery.tsx (etapa 17), idx_price_history_date, idx_price_history_product (+9 more)
+### Community 329 - "useSecretsManager.ts"
+Cohesion: 0.15
+Nodes (21): Bitrix24Tab.tsx (etapa 17), DataSourceDebugTab.tsx (etapa 17), KeysValidationTab.tsx (etapa 17), `src/hooks/useSecretsManager.ts` (etapa 17, 6 → 0 erros), errorPayload(), failedPayload(), InvokeBody, invokeSecretsManager() (+13 more)
 
-### Community 325 - "GlobalCommandBar.tsx"
+### Community 330 - "GlobalCommandBar.tsx"
 Cohesion: 0.14
 Nodes (16): `src/components/command/GlobalCommandBar.tsx` + `commandActions.tsx` + `ThemeContext.tsx` (etapa 17, 6 → 0 erros), CommandActionGroup(), CommandActionGroupProps, buildActions(), BuildActionsParams, CommandAction, RECENT_ITEMS_KEY, RecentItem (+8 more)
 
-### Community 326 - "useCollections.ts"
-Cohesion: 0.13
-Nodes (20): useCollections.ts (etapa 17), Arquivos-chave, Coleções 10/10 — Roadmap completo, Onda P1 — Confiança ✅, Onda P2 — Inteligência de preço ✅, buildCollectionContentUpdates(), buildCollectionSharingUpdates(), buildNewCollection() (+12 more)
-
-### Community 327 - "ZoomableGallery.tsx"
+### Community 331 - "ZoomableGallery.tsx"
 Cohesion: 0.16
 Nodes (18): ZoomableGallery.tsx (etapa 17), BlurThumb(), FullscreenThumbnails(), GalleryThumbnails(), GalleryThumbnailsProps, GalleryToolbar(), GalleryToolbarProps, useGalleryKeyboard() (+10 more)
 
-### Community 328 - "useClientBI.ts"
-Cohesion: 0.13
-Nodes (18): Convergência dos vereditos PARCIAL — medida em 19/11/2026, D16. achados de revisores que foram REJEITADOS (5 afirmações: RPC inexistente, prompt-safety ausente, sanitizador pgrest ausente, mock de BI não sinalizado, identidade do kit perdida no UPDATE), averageOrderInterval(), churnRisk(), ChurnRiskResult, highRiskReason(), isHighRisk(), RecentOrder (+10 more)
+### Community 332 - "AdImageResult.tsx"
+Cohesion: 0.14
+Nodes (19): 4. Componentes cobertos, AdImageResult(), AdImageResultProps, EmptyAdImage(), GeneratedResult(), GeneratedResultProps, GenerationHistoryItem, HistoryGallery() (+11 more)
 
-### Community 330 - "ConnectionsIncidentStrip.tsx"
+### Community 333 - "structuredLogger.ts"
+Cohesion: 0.13
+Nodes (18): 8. Gates de CI (Prevenção de Regressão), web-vitals, getDeviceType(), metricSeverity(), persistMetric(), useWebVitals(), WebVitalsConfig, appendFields() (+10 more)
+
+### Community 334 - "ClientLookalikes.tsx"
+Cohesion: 0.13
+Nodes (20): A única linha contestada em todo o repositório, `claude/feat-atestado-preco-orcamento-261117-0905` (#290): nada a recuperar, Portão de exclusão medido nas 93 branches (19/11/2026), ClientLookalikes(), excluirJaComprados(), fmtBRL(), IndustryProductRow, LookalikeData (+12 more)
+
+### Community 336 - "@dnd-kit/core"
+Cohesion: 0.16
+Nodes (16): @dnd-kit/core, @dnd-kit/utilities, SortableItemProps, SortableColumn(), SortableColumnProps, SortableColumnWrapper(), SortableColumnWrapperProps, WorkflowCanvas() (+8 more)
+
+### Community 337 - "ConnectionsIncidentStrip.tsx"
 Cohesion: 0.15
 Nodes (19): ConnectionsIncidentStrip(), hasIncidents(), IncidentCard(), SEV_META, getIncidentTargetZone(), getZoneAnchorId(), getZoneLabel(), HEALTH_TERMS (+11 more)
 
-### Community 331 - "ConnectionTestDetailsDialog.tsx"
+### Community 338 - "ConnectionTestDetailsDialog.tsx"
 Cohesion: 0.16
 Nodes (21): buildCurl(), bytesOf(), connectionErrorCopy(), ConnectionTestDetailsDialog(), defensiveMask(), ErrorBadges(), formatAbsolute(), formatRelative() (+13 more)
 
-### Community 332 - "KeysValidationTab.tsx"
+### Community 339 - "KeysValidationTab.tsx"
 Cohesion: 0.14
 Nodes (20): buildVisibleGroups(), classifyKey(), configurationScore(), EvalRow, ExpectedKey, FEATURE_GROUPS, FeatureGroup, FeatureGroupCard() (+12 more)
 
-### Community 333 - "SmokeTestChecklist.tsx"
+### Community 340 - "SmokeTestChecklist.tsx"
 Cohesion: 0.13
 Nodes (20): ALLOWED_SECRET_NAMES, ALLOWED_SECRET_PREFIXES, isAllowedSecretName(), SecretNameValidation, validateSecretName(), INITIAL_STEPS, makeTestValue(), Props (+12 more)
 
-### Community 334 - "ClientSeasonalityHeatmap.tsx"
+### Community 341 - "ClientSeasonalityHeatmap.tsx"
 Cohesion: 0.18
 Nodes (21): buildForecast(), CampaignWindowCard(), ClientMonthCell(), ClientSeasonalityHeatmap(), downloadFollowUp(), ForecastChart(), ForecastPoint, HeatmapGrid() (+13 more)
 
-### Community 335 - "CategorySidebarPanel.tsx"
+### Community 342 - "CategorySidebarPanel.tsx"
 Cohesion: 0.16
 Nodes (18): CategorySidebarPanel(), CategorySidebarPanelProps, CollapsedPanel(), collectExpandableIds(), PanelHeader(), PanelStatus(), SearchResults(), SelectionBreadcrumb() (+10 more)
 
-### Community 336 - "BridgeMetricsOverlay.tsx"
+### Community 343 - "BridgeMetricsOverlay.tsx"
 Cohesion: 0.20
 Nodes (17): BridgeMetricsOverlay(), CallsList, Header, HeaderProps, InfoModal, LongTasksList, Tabs, TabsProps (+9 more)
 
-### Community 337 - "PageTransition.tsx"
+### Community 344 - "PageTransition.tsx"
 Cohesion: 0.13
 Nodes (18): ConfettiPiece, defaultColors, MiniConfetti(), MiniConfettiProps, containerVariants, FadeInView(), FadeInViewProps, itemVariants (+10 more)
 
-### Community 338 - "StockAlertsIndicator.tsx"
+### Community 345 - "StockAlertsIndicator.tsx"
 Cohesion: 0.15
 Nodes (21): buildNotifications(), newProductNotification(), NotificationCounts, NotificationItem, NotificationRow(), NotificationsPanel(), NotificationTabs(), NotificationTrigger (+13 more)
 
-### Community 339 - "StockFilterToolbar.tsx"
-Cohesion: 0.14
-Nodes (21): ActiveFilterBadges(), ActiveFilterBadgesProps, AdvancedFiltersPopover(), AlertAndSortSections(), ColorAndCategorySections(), FilterInputs(), FilterInputsProps, FilterOption (+13 more)
-
-### Community 340 - "MockupConfigPanel.tsx"
-Cohesion: 0.19
-Nodes (21): LogoColorAnalyzer(), ClientSection(), ConfigSections(), LoadingState(), LogoAnalysisSection(), MobileCollapsibleSection(), MobileCollapsibleSectionProps, MobileSectionHeader() (+13 more)
-
-### Community 341 - "ProductPersonalizationRules.tsx"
+### Community 346 - "ProductPersonalizationRules.tsx"
 Cohesion: 0.15
 Nodes (21): ComponentInfo, ComponentRules(), CustomizationLocationRecord, CustomizationOptionRecord, CustomizationOptionsResponse, exportRules(), fetchCustomizationComponents(), LocationCard() (+13 more)
 
-### Community 342 - "QuoteBuilderSummaryColumn.tsx"
+### Community 347 - "QuoteBuilderSummaryColumn.tsx"
 Cohesion: 0.17
 Nodes (21): apparentDiscount(), DiscountHints(), NegotiationMarkup(), priceCountLabel(), primaryAction(), Props, QuoteBuilderSummaryColumn(), SelectionBar() (+13 more)
 
-### Community 343 - "sicoob/orders/OrderAuditTimeline.tsx"
+### Community 348 - "sicoob/orders/OrderAuditTimeline.tsx"
 Cohesion: 0.16
 Nodes (19): AuditEventRow(), AuditEvents(), AuditFilters, AuditFiltersPanel(), AuditPagination(), EventAuthor(), EventDetails(), eventIcon() (+11 more)
 
-### Community 344 - "personalization/selectors.ts"
+### Community 349 - "useProductRegistration.ts"
+Cohesion: 0.15
+Nodes (16): BulkImportRow, ColumnMapping, ImportValidationResult, PRODUCT_FIELDS, ProductFormData, ProductImageInput, recordsOrEmpty(), optionalFloat() (+8 more)
+
+### Community 350 - "personalization/selectors.ts"
 Cohesion: 0.15
 Nodes (13): activeScore(), calculateTableScore(), colorScore(), compareColorCapacity(), dimensionScore(), filterByDimensions(), filterByTechniqueCode(), filterByTechniqueName() (+5 more)
 
-### Community 345 - "longTaskWatchdog.ts"
+### Community 351 - "longTaskWatchdog.ts"
 Cohesion: 0.13
 Nodes (17): BridgeCallSample, getBridgeSamples(), isInstrumentationPaused(), listeners, paused, setInstrumentationPaused(), subscribeInstrumentationPaused(), toggleInstrumentationPaused() (+9 more)
 
-### Community 346 - "GestorConsolidatedOrdersPage.tsx"
+### Community 352 - "AdminAiUsagePage.tsx"
+Cohesion: 0.15
+Nodes (18): AdminAiUsagePage(), AiSummaryGrid(), AiUsageHeader(), AiUsageStats, formatCurrency(), formatNumber(), summaryValues(), UsagePeriod (+10 more)
+
+### Community 353 - "CollectionDetailPage.tsx"
+Cohesion: 0.16
+Nodes (21): CollectionBulkBar(), CollectionDetailPage(), CollectionOverlays(), CollectionToolbar(), DetailCollection, DetailProps, DetailState, EmptyLocalProducts() (+13 more)
+
+### Community 354 - "GestorConsolidatedOrdersPage.tsx"
 Cohesion: 0.16
 Nodes (21): Allocation, assertDistributionResult(), assertReceiptInput(), Consolidation, ConsolidationCard(), ConsolidationList(), ConsolidationProgress(), Destination (+13 more)
 
-### Community 347 - "orderService.ts"
+### Community 355 - "orderService.ts"
 Cohesion: 0.12
 Nodes (10): approvalTransitionHandlers, ApprovalTransitionInput, OrderListFilters, SicoobOrderQuery, beginReorderIntent(), completeReorderIntent(), memoryKeys, persist() (+2 more)
 
-### Community 348 - "20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql"
+### Community 356 - "20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql"
 Cohesion: 0.18
 Nodes (21): idx_addresses_company, idx_companies_bitrix, idx_companies_cnpj, idx_companies_nome_fantasia, idx_companies_ramo, idx_companies_razao_social, idx_companies_responsavel, idx_companies_status (+13 more)
 
-### Community 349 - "20260513164754_095ce121-7a88-4073-9019-ab0d12ae4b01.sql"
+### Community 357 - "20260513164754_095ce121-7a88-4073-9019-ab0d12ae4b01.sql"
 Cohesion: 0.09
 Nodes (10): update_order_items_updated_at, update_orders_updated_at, update_organizations_updated_at, update_pa_budgets_updated_at, update_product_groups_updated_at, update_profiles_updated_at, update_quote_items_updated_at, update_quote_templates_updated_at (+2 more)
 
-### Community 350 - "20260927210000_sicoob_reorder_catalog_validity.sql"
+### Community 358 - "20260927210000_sicoob_reorder_catalog_validity.sql"
 Cohesion: 0.13
 Nodes (7): idx_quotes_reorder_source_order, idx_quotes_reorder_source_quote, idx_sicoob_quote_reorder_requests_source, public.refresh_sicoob_reorder_quote(), public.reorder_sicoob_order_as_quote(), public.sicoob_quote_reorder_requests, tr_guard_sicoob_reorder_catalog_validity
 
-### Community 351 - "compilerOptions"
+### Community 359 - "compilerOptions"
 Cohesion: 0.09
 Nodes (21): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleDetection, moduleResolution (+13 more)
 
-### Community 352 - "Checklist"
+### Community 360 - "Checklist"
 Cohesion: 0.10
 Nodes (19): ✅ ARIA Labels, Atalhos de Teclado, Checklist, ✅ Contraste de Cores, ✅ Formulários Acessíveis, ♿ Guia de Acessibilidade (a11y), ✅ Imagens, ✅ Navegação por Teclado (+11 more)
 
-### Community 353 - "useGravacaoPriceV2.ts"
-Cohesion: 0.12
-Nodes (16): ConfigurationPanel.tsx (products/customization, etapa 17), useGravacaoPriceV2.ts (etapa 17), useWizardPricing.ts + wizardReducer.ts + simulator-wizard.ts (etapa 17), areaDisplayDefaults(), buildPrintAreasFromTables(), calculateCustomizationPrice(), CalculatePriceParams, CustomizationPriceFlat (+8 more)
+### Community 361 - "products"
+Cohesion: 0.11
+Nodes (16): Ação imediata necessária, Contagem de achados por severidade, Inventário resumido, Sumário Executivo — Auditoria Front-end ↔ DB (Promo_Gifts), SyncedZoomGallery.tsx (etapa 17), idx_price_history_date, idx_price_history_product, product_price_history (+8 more)
 
-### Community 354 - "useSecretsManager.ts"
-Cohesion: 0.16
-Nodes (20): DataSourceDebugTab.tsx (etapa 17), KeysValidationTab.tsx (etapa 17), `src/hooks/useSecretsManager.ts` (etapa 17, 6 → 0 erros), errorPayload(), failedPayload(), InvokeBody, invokeSecretsManager(), InvokeSecretsResult (+12 more)
+### Community 362 - "useMagicUpState.ts"
+Cohesion: 0.18
+Nodes (19): MagicUpConfigPanel.tsx (etapa 17), ProductSearchCombobox(), arrayOrEmpty(), brandColorPromptLine(), BrandKitRow, buildFullPromptPreview(), campaignPayload(), clientPromptLine() (+11 more)
 
-### Community 355 - "useWorkspaceNotifications.tsx"
+### Community 363 - "useWorkspaceNotifications.tsx"
 Cohesion: 0.20
 Nodes (19): NotificationsPage.tsx (etapa 17), useNotifications(), UseNotificationsReturn, usePushNotifications(), CacheEntry, debugLog(), isDebugEnabled(), log (+11 more)
 
-### Community 356 - "proposalPdfReactGenerator.ts"
+### Community 364 - "proposalPdfReactGenerator.ts"
 Cohesion: 0.13
 Nodes (15): QuoteActionHandlers.ts (etapa 17), CanvasRenderer, capturePages(), downloadPDF(), generateProposalPDFv2(), getHtml2Canvas(), getJsPDF(), PdfDocument (+7 more)
 
-### Community 358 - "simulator-wizard.ts"
+### Community 365 - "simulator-wizard.ts"
 Cohesion: 0.12
 Nodes (20): simulator-wizard.ts (etapa 17), useSimulatorWizard.ts (etapa 17), AvailableTechnique, canNavigateToStep(), EngravingLocation, EngravingSpecs, getNextStep(), getPreviousStep() (+12 more)
 
-### Community 359 - "AdminAiUsagePage.tsx"
-Cohesion: 0.15
-Nodes (18): Painel Admin, AdminAiUsagePage(), AiSummaryGrid(), AiUsageHeader(), AiUsageStats, formatCurrency(), formatNumber(), summaryValues() (+10 more)
+### Community 366 - "logisticsReportService.ts"
+Cohesion: 0.14
+Nodes (18): Paginação de remessas logísticas e histórico de orçamento (PRs #181 e #187), PR #181 — RECUPERAR, defineRoute(), ExtractRouteParams, RouteConfig, TypedRoute, listAllLogisticsOrders(), listShipmentsForOrders() (+10 more)
 
-### Community 360 - "PublicFavoriteListPage.tsx"
+### Community 367 - "Business Intelligence (Ferramentas → BI)"
+Cohesion: 0.10
+Nodes (19): PR #176 — RECUPERAR, 6 Zonas de Inteligência, Arquitetura, Business Intelligence (Ferramentas → BI), Categorização (limitação atual), Como evoluir para `orders` (Fase futura), Dossiê PDF (5 páginas), Fora de escopo (próximos sprints) (+11 more)
+
+### Community 368 - "PublicFavoriteListPage.tsx"
 Cohesion: 0.13
 Nodes (20): 1. E2E autenticado — secrets de homologação ausentes, 2. Dependências altas no `main`, 3. CodeQL na `main`, 4. Publicação das Edge Functions — verificador rejeita no-op idempotente, 5. Paridade das migrations — PR #151 bloqueada, 6. Webhooks — limite de memória e CI remoto do PR #180, 7. Banco canônico e deploy, Pendências atuais — auditoria de 31/10/2026 (+12 more)
 
-### Community 361 - "IncidentDetailsDrawer.tsx"
+### Community 369 - "IncidentDetailsDrawer.tsx"
 Cohesion: 0.17
 Nodes (20): DeliveryError(), DeliveryLog, DeliveryLogs(), IncidentData, IncidentDetailsDrawer(), IncidentHeader(), IncidentLogs(), LatencyCell() (+12 more)
 
-### Community 362 - "ProductImageGallery.tsx"
+### Community 370 - "ProductImageGallery.tsx"
 Cohesion: 0.17
 Nodes (16): AltTextPopover(), ImageBulkToolbar(), Props, SelectedImageActions(), ImageGrid(), getSeoScore(), ImageStatsBar(), GalleryControls() (+8 more)
 
-### Community 363 - "ProductVariantsSection.tsx"
+### Community 371 - "ProductMaterialsSection.tsx"
+Cohesion: 0.15
+Nodes (19): EmptyMaterialSearch(), LinkedMaterial, materialDetailText(), MaterialGroupHeader(), MaterialGroupHeaderProps, MaterialGroupNode(), MaterialGroupNodeProps, MaterialGroupTree() (+11 more)
+
+### Community 372 - "ProductVariantsSection.tsx"
 Cohesion: 0.19
 Nodes (20): isLightColor(), ProductVariant, ProductVariantsSection(), ProductVariantsSectionProps, StockBadge(), SwatchButton(), swatchStyle(), textOrEmpty() (+12 more)
 
-### Community 364 - "TechniqueFormDialog.tsx"
+### Community 373 - "TechniqueFormDialog.tsx"
 Cohesion: 0.16
 Nodes (18): EMPTY_FORM, NewTechniqueData, optionalNumber(), PricingTypeFields(), TechniqueFormDialog(), TechniqueFormDialogProps, TechniqueIdentityFields(), TechniqueNumericFields() (+10 more)
 
-### Community 365 - "SocialProof.tsx"
-Cohesion: 0.10
-Nodes (16): ConversionStatsProps, DynamicTrustBadgesProps, HIGHLIGHTED_BADGES, LowStockAlertProps, PopularityBadgeProps, ProductBadgeFlags, RecentActivityProps, StarRating() (+8 more)
-
-### Community 366 - "ExportFavoritesButton.tsx"
+### Community 374 - "ExportFavoritesButton.tsx"
 Cohesion: 0.17
 Nodes (20): csvEscape(), csvRow(), downloadBlob(), drawPdfCard(), drawPdfHeader(), drawPdfImage(), exportCsv(), ExportFormat (+12 more)
 
-### Community 367 - "ProductRankingSearch.tsx"
+### Community 375 - "ProductRankingSearch.tsx"
 Cohesion: 0.16
 Nodes (18): ProductRankingSearch(), RankingFooter(), RankingProducts, RankingResults(), RankingSummary(), Category, HighlightMatch(), LIMIT_OPTIONS (+10 more)
 
-### Community 368 - "KitIsometricPreview.tsx"
+### Community 376 - "KitIsometricPreview.tsx"
 Cohesion: 0.16
 Nodes (18): buildPreviewLayout(), buildProjection(), capacityStatus(), colorFor(), facePath(), iso(), KitBox, KitIsometricPreview() (+10 more)
 
-### Community 369 - "QuantityPriceCalculator.tsx"
+### Community 377 - "QuantityPriceCalculator.tsx"
 Cohesion: 0.25
 Nodes (16): Props, QuantityComparisonTable(), Props, TechniqueConfigCard(), fetchProductTechniques(), mapTechniques(), Props, TechniqueMultiSelector() (+8 more)
 
-### Community 370 - "simulator/TechniqueSelector.tsx"
+### Community 378 - "simulator/TechniqueSelector.tsx"
 Cohesion: 0.17
 Nodes (19): EngravingStepProps, CustomizationOptionsProps, ComponentStep(), currentWizardStep(), LocationStep(), SelectedTechniqueSummary(), StepIndicator(), TechniqueSelector() (+11 more)
 
-### Community 371 - "KitComponentCard.tsx"
+### Community 379 - "KitComponentCard.tsx"
 Cohesion: 0.17
 Nodes (19): ComponentActions(), ComponentBadges(), ComponentDetails(), ComponentIdentifiers(), ComponentImage(), ComponentSpecs(), CopyButton(), KitComponentCard() (+11 more)
 
-### Community 372 - "RamoAtividadeGroupAccordion.tsx"
+### Community 380 - "RamoAtividadeGroupAccordion.tsx"
 Cohesion: 0.19
 Nodes (18): CompactRamoAtividadeBadge(), AccordionViewProps, CompactGroup(), FullExpandButton(), FullGroup(), FullGroupCheckbox(), FullGroupCounters(), FullGroupHeader() (+10 more)
 
-### Community 373 - "useConnectionTester.ts"
+### Community 381 - "StepComparison.tsx"
+Cohesion: 0.18
+Nodes (19): calculateSavings(), ComparisonCard(), ComparisonCardProps, SelectionIndicator(), TechnicalBadges(), TechnicalDetails(), TechniqueBadges(), TechniquePrice() (+11 more)
+
+### Community 382 - "useConnectionTester.ts"
 Cohesion: 0.15
 Nodes (18): Args, inferLegacyErrorKind(), TestDetails, useConnectionTestDetails(), ConnectionType, ErrorKind, normalizeTestResult(), reportTestResult() (+10 more)
 
-### Community 374 - "useProductMatch.ts"
+### Community 383 - "useProductMatch.ts"
 Cohesion: 0.18
 Nodes (20): calculateMatchScore(), categoryScore(), COMPLEMENTARY_PAIRS, complementaryScore(), DEFAULT_FILTERS, findComplementaryKeywords(), getMatchType(), matchCandidate() (+12 more)
 
-### Community 375 - "immutableCache.ts"
+### Community 384 - "immutableCache.ts"
 Cohesion: 0.14
 Nodes (17): CacheEntry, Entity, fetchReferenceRecords(), getCachedByIds(), getFresh(), INFLIGHT, INFLIGHT_BY_ID, loadMissingRecords() (+9 more)
 
-### Community 376 - "FavoritesPage"
-Cohesion: 0.19
-Nodes (21): FavoritesPage(), ActiveFavorites(), ClearAllAction(), EmptyFavoriteResults(), FavoriteCardActions(), FavoriteGridItem(), FavoriteListRow(), FavoriteProducts() (+13 more)
-
-### Community 377 - "simulator-wizard-pricing-parity.test.ts"
+### Community 385 - "simulator-wizard-pricing-parity.test.ts"
 Cohesion: 0.10
 Nodes (16): baseSettings, baseTechnique, fetchProductPrintAreasV2Mock, flatRpcResponse, invokeExternalRpcMock, printArea, AREA_LASER, AREA_SERIG (+8 more)
 
-### Community 378 - "public-quote-approval-fixture.sql"
+### Community 386 - "public-quote-approval-fixture.sql"
 Cohesion: 0.13
 Nodes (12): public.quote_approval_tokens, public.quote_history, public.quote_item_personalizations, public.quote_items, public.quotes, public.request_rate_limits, tr_log_quote_status_change, trg_invalidate_used_approval_token (+4 more)
 
-### Community 380 - "📡 Documentação de APIs - Gifts Store"
+### Community 387 - "📡 Documentação de APIs - Gifts Store"
 Cohesion: 0.10
 Nodes (16): 1. **ai-recommendations**, 2. **bitrix-sync**, 3. **expert-chat**, 4. **quote-approval**, Autenticação, Códigos de Erro, 📡 Documentação de APIs - Gifts Store, Edge Functions (+8 more)
 
-### Community 381 - "McpAuditRow.tsx"
+### Community 388 - "McpAuditRow.tsx"
 Cohesion: 0.16
 Nodes (19): CollectionsHeatmap.tsx (etapa 17), FavoritesHeatmap.tsx (etapa 17), ActorSummary(), arr(), AuditDetails, AuditHeader(), AuditMeta, ChangedFields() (+11 more)
 
-### Community 382 - "GlobalSearchIdleState.tsx"
+### Community 389 - "GlobalSearchIdleState.tsx"
 Cohesion: 0.20
 Nodes (19): GlobalSearchPalette.tsx (etapa 17), ContextSuggestion, ContextSuggestionButton(), ContextualSection(), GlobalSearchIdleState(), GlobalSearchIdleStateProps, NavAction, NavCard() (+11 more)
 
-### Community 383 - "AdminCooperativasPage.tsx"
+### Community 390 - "AdminCooperativasPage.tsx"
 Cohesion: 0.17
 Nodes (19): QuoteAutoSave.tsx (etapa 17), AdminCooperativasPage(), CooperativeContact(), CooperativeDraft, CooperativeForm(), CooperativeFormFields(), CooperativeRow(), CooperativesBody() (+11 more)
 
-### Community 384 - "CategoriesManager.tsx"
+### Community 391 - "CategoriesManager.tsx"
 Cohesion: 0.17
 Nodes (18): `src/components/admin/categories/CategoriesManager.tsx` (etapa 17, 6 → 0 erros — abre o tier de 6 erros, drift de nulidade + tipagem solta em cascata), CategoriesManager(), Category, categoryAuditState(), categoryFormAuditState(), CategoryFormData, CategoryFormDialog(), CategoryFormDialogProps (+10 more)
 
-### Community 385 - "useOrders.ts"
-Cohesion: 0.14
-Nodes (15): `src/components/orders/OrderStatsBar.tsx` (etapa 17, 7 → 0 erros — **achado real de bug de crash em produção**), Conversão orçamento → pedido, OrderStatsBar(), StatCard(), asPostgrestError(), canTransitionTo(), recordStatusChange(), useConvertQuoteToOrder() (+7 more)
-
-### Community 386 - "Plano de implementação do portal Sicoob em 100 etapas"
+### Community 392 - "As 100 etapas"
 Cohesion: 0.10
-Nodes (20): Bloco 04 — Sistema visual, Compromissos do produto, Critérios de qualidade transversais, Dez blocos de implementação, E031 — Definir direção visual com a marca Sicoob, E032 — Estabelecer grade, espaçamento e densidade, E033 — Definir tipografia e hierarquia de leitura, E034 — Definir cores semânticas e contraste (+12 more)
+Nodes (20): As 100 etapas, Critério final de encerramento, Fase 06 — Governança institucional e catálogo, Marcos e caminhos de execução, O que precisa ser resolvido primeiro, Plano de encerramento da implantação em 100 etapas, Rastreabilidade e arquivos de acompanhamento, Regras para executar sem perder escopo (+12 more)
 
-### Community 387 - "As 100 etapas"
-Cohesion: 0.10
-Nodes (20): As 100 etapas, Critério final de encerramento, Fase 08 — Arte, documentos e integrações, Marcos e caminhos de execução, O que precisa ser resolvido primeiro, Plano de encerramento da implantação em 100 etapas, Rastreabilidade e arquivos de acompanhamento, Regras para executar sem perder escopo (+12 more)
+### Community 393 - "Persistência do Kit Builder: 13 lacunas confirmadas contra a PR #119"
+Cohesion: 0.13
+Nodes (19): Atualizar template pelo Kit Builder zera a categoria e reativa template desativado, Autosave e salvamento manual não compartilham fila nem alvo, Autosave e salvamento manual não compartilham fila nem alvo, Autosave não está ligado a guarda de saída de página, Baseline adotado quando o kit termina de carregar (flag enabled), CAS por updated_at (trava otimista) ao atualizar custom_kits, isDirty exposto e guarda de saída no Kit Maker, Modo template continua gravando em custom_kits por autosave (+11 more)
 
-### Community 388 - "ClientLookalikes.tsx"
-Cohesion: 0.15
-Nodes (18): `claude/feat-atestado-preco-orcamento-261117-0905` (#290): nada a recuperar, Portão de exclusão medido nas 93 branches (19/11/2026), ClientLookalikes(), excluirJaComprados(), fmtBRL(), IndustryProductRow, LookalikeData, LookalikeProduct() (+10 more)
-
-### Community 389 - "e2e-resources.ts"
+### Community 394 - "e2e-resources.ts"
 Cohesion: 0.22
 Nodes (17): e2eName(), getTestPrefix(), getTestUserEmail(), getTestUserId(), getTestUserIdentity(), isE2eName(), TestUserIdentity, userIdCache (+9 more)
 
-### Community 390 - "Auth.tsx"
+### Community 395 - "Auth.tsx"
 Cohesion: 0.17
 Nodes (17): Auth(), AuthBrandingPanel(), AuthenticationCard(), BlockedIpAlert(), checkAuthenticatedAccess(), ForgotPasswordForm, IpValidationApi, LoginBlock (+9 more)
 
-### Community 391 - "FavoritesViewHeader.tsx"
-Cohesion: 0.18
-Nodes (18): ✅ Onda D — Polimento, DX & Entrega (2026-04-20), ExportFavoritesButton(), ExportOption(), FavoritesHeatmap(), FavoritesSort, FavoritesSortBar(), LABELS, PriceDropCount() (+10 more)
+### Community 396 - "KitCard.tsx"
+Cohesion: 0.14
+Nodes (17): Frontend, Kit Library — Banco duplo (Meus Kits + Sugeridos), Onda Cliente-Facing & Operacional, Pontos de atenção, Skeletons & UX, ClientViewedBadge(), KitBadges(), KitCard() (+9 more)
 
-### Community 392 - "Pendências de CI — adm01-debug/Brindes_Sicoob_V2"
+### Community 397 - "Onda Inteligência & Colaboração"
+Cohesion: 0.13
+Nodes (17): Onda Inteligência & Colaboração, KitCollaborationPanel(), getIcon(), Props, SimilarKit, SimilarKitButton(), SimilarKitsWidget(), KitShareSummary (+9 more)
+
+### Community 398 - "Pendências de CI — adm01-debug/Brindes_Sicoob_V2"
 Cohesion: 0.10
 Nodes (19): Gap 1 — CRÍTICO: Migration `20261022120000` ausente de `supabase_migrations.schema_migrations`, Gap 2 — MÉDIO: `e2e_cleanup_check_rate_limit` com `search_path` incompleto, Gap 3 — MÉDIO: `relforcerowsecurity = false` em `e2e_cleanup_rate_limit`, Gaps de banco de dados identificados em auditoria (2026-10-22), Inventário completo de falhas — main (status=failure, consultado em 2026-10-22 19:30 UTC), Parte 1 — Testes vitest (authz + RLS) ✅ Resolvido, Parte 2 — Smoke gate Playwright ⚠️ Externo, Pendências de CI — adm01-debug/Brindes_Sicoob_V2 (+11 more)
 
-### Community 393 - "20251227100004_audit_log_universal.sql"
+### Community 399 - "20251227100004_audit_log_universal.sql"
 Cohesion: 0.13
 Nodes (12): audit_bitrix_clients, audit_log, audit_orders, audit_products, audit_quotes, audit_sales_goals, audit_trigger_func(), idx_audit_log_action (+4 more)
 
-### Community 394 - "20260515134521_5a4fd25a-60b0-4c47-904c-31a77b01357d.sql"
+### Community 400 - "20260515134521_5a4fd25a-60b0-4c47-904c-31a77b01357d.sql"
 Cohesion: 0.12
 Nodes (11): idx_admin_audit_log_y2026_m05_created_at, idx_admin_audit_log_y2026_m06_created_at, idx_notification_logs_user_id, idx_order_comments_order_id, idx_order_comments_parent_id, idx_order_invoices_order_id, idx_order_logistics_order_id, idx_sicoob_order_item_logs_item_id (+3 more)
 
-### Community 395 - "recharts"
-Cohesion: 0.11
-Nodes (15): recharts, CHART_TOOLTIP_STYLE, ERROR_COLORS, ERROR_KINDS_FOR_STACK, formatTick(), HighLimitTelemetryCard(), RANGE_LABEL, COLORS (+7 more)
-
-### Community 396 - "has"
+### Community 401 - "has"
 Cohesion: 0.17
 Nodes (20): aggregate(), anyFile(), camadaDe(), cap(), closure(), componentes, dominioDe(), enrich() (+12 more)
 
-### Community 397 - "secretValidators.ts"
-Cohesion: 0.14
-Nodes (17): Props, DEFAULT_RULE, getMinLength(), isHttpsUrl(), isJwt(), jwtRule(), MIN_SUFFIX_LENGTH, PreflightIssue (+9 more)
-
-### Community 398 - "IncidentTimeline72h.tsx"
+### Community 402 - "IncidentTimeline72h.tsx"
 Cohesion: 0.18
 Nodes (18): formatRelative(), IncidentTimeline72h(), SEV_DOT, SEV_LABEL, TimelineHeader(), TimelineMarker(), TimelineTrack(), fetchTimeline72h() (+10 more)
 
-### Community 399 - "ProductVideoGallery.tsx"
+### Community 403 - "ProductVideoGallery.tsx"
 Cohesion: 0.17
 Nodes (17): ConfirmDeleteDialog(), Props, GalleryFilters(), GalleryState, PreviewVideo, ProductVideoGalleryProps, ThumbnailButton(), VariantFilter() (+9 more)
 
-### Community 400 - "FlowFilterPanel.tsx"
-Cohesion: 0.18
-Nodes (18): defaultFlowFilters, DrawerProps, FilterDrawer(), FlowFilterPanel(), FlowFilterPanelProps, SECTION_GROUPS, sectionCount(), shouldShowSection() (+10 more)
+### Community 404 - "ProductFiltersBar.tsx"
+Cohesion: 0.17
+Nodes (19): ActiveFilterBadges(), activeFilterValue(), CategoryFilter(), CategoryOption, countActiveFilters(), FiltersContent(), FilterTrigger(), KitFilter() (+11 more)
 
-### Community 401 - "PresetsBar.tsx"
+### Community 405 - "ProductClassificationSection.tsx"
+Cohesion: 0.17
+Nodes (18): ExternalTag, fetchProductTags(), fetchTags(), ProductTag, ProductTagsSection(), ProductTagsSectionProps, removeProductTag(), SelectedTags() (+10 more)
+
+### Community 406 - "ExpertChatDialog.tsx"
+Cohesion: 0.16
+Nodes (15): ChatHeader(), ChatHeaderProps, ChatHistoryPanel(), ChatHistoryPanelProps, ChatInputBar(), ChatInputBarProps, RequestExpertAnswerOptions, ExpertChatButton (+7 more)
+
+### Community 407 - "PresetsBar.tsx"
 Cohesion: 0.21
 Nodes (16): useFilterPresets(), countFilters(), countLabel(), filterFlagLabels(), hasCustomPriceRange(), PRESET_COLORS, PRESET_EMOJIS, summarizeFilters() (+8 more)
 
-### Community 402 - "SupplierRiskPanel.tsx"
+### Community 408 - "SupplierRiskPanel.tsx"
 Cohesion: 0.18
 Nodes (18): deriveSeverity(), reachesStockoutBefore(), RiskProduct, RiskSeverity, SEVERITY_ORDER, EmptyRiskPanel(), latestStockUpdate(), riskCounts() (+10 more)
 
-### Community 403 - "PresentationMode.tsx"
+### Community 409 - "PresentationMode.tsx"
 Cohesion: 0.17
 Nodes (19): GridView(), KeyboardNavigationProps, Navigation(), PresentationController, PresentationMode(), PresentationModeProps, PresentationSlide, ProductSlide() (+11 more)
 
-### Community 404 - "FloatingParticles.tsx"
+### Community 410 - "BulkImportPanel.tsx"
+Cohesion: 0.17
+Nodes (17): BulkImportPanel(), BulkImportState, ImportResults, ImportStatusPanels(), MappingPanel(), PreviewPanel(), UploadArea(), UploadModePanel() (+9 more)
+
+### Community 411 - "FloatingParticles.tsx"
 Cohesion: 0.16
 Nodes (19): CanvasSize, createParticle(), drawConnection(), drawConnections(), drawParticle(), drawParticles(), FloatingParticles, FloatingParticlesProps (+11 more)
 
-### Community 405 - "useColorSystem.ts"
+### Community 412 - "useColorSystem.ts"
 Cohesion: 0.15
 Nodes (14): ColorFilters, ColorGroup, ColorNuance, ColorVariation, ExternalColorGroup, ExternalColorVariation, externalRecords(), fetchExternalColors() (+6 more)
 
-### Community 406 - "useMockupTechniques.ts"
+### Community 413 - "useMagicUpGeneration.ts"
+Cohesion: 0.20
+Nodes (19): buildGenerationPayload(), GeneratedImageResponse, generateVariation(), GenerationDeps, generationRequestBody(), generationSubject(), logoFields(), saveGeneration() (+11 more)
+
+### Community 414 - "useMockupTechniques.ts"
 Cohesion: 0.16
 Nodes (19): bestOptionsByTechnique(), buildDimensionMap(), CustomizationLocation, CustomizationOption, CustomizationResponse, definedOrNull(), FaixaPreco, groupPriceTiers() (+11 more)
 
-### Community 407 - "useSupplierFiscalData.ts"
+### Community 415 - "useSupplierFiscalData.ts"
 Cohesion: 0.18
 Nodes (19): BranchRecord, buildFromBranch(), buildFromVss(), createDefaultVariant(), definedOrNull(), fetchBranch(), fetchInheritedFiscalData(), fetchSupplierFiscalData() (+11 more)
 
-### Community 408 - "MagicUpResultPanel.tsx"
+### Community 416 - "MagicUpResultPanel.tsx"
 Cohesion: 0.19
 Nodes (18): currentCurationStatus(), currentFavorite(), currentImageUrl(), currentQualityDiagnosis(), favoriteAction(), handleVariationKey(), MagicImageResult(), MagicUpResultPanel() (+10 more)
 
-### Community 409 - "image-utils.ts"
+### Community 418 - "image-utils.ts"
 Cohesion: 0.11
 Nodes (11): CategorizedImages, CdnVariant, CF_ACCOUNT_HASH, CF_BASE_URL, COLOR_SPECIFIC_TYPES, GALLERY_TYPES, getCardImage(), getOgImage() (+3 more)
 
-### Community 410 - "20260503172408_b6bcb7cb-1200-49a2-b9b0-dc21b8b22cce.sql"
+### Community 419 - "20260503172408_b6bcb7cb-1200-49a2-b9b0-dc21b8b22cce.sql"
 Cohesion: 0.14
 Nodes (17): public.campaigns, public.cms_banners, public.cms_sections, public.cooperativas_parceiras, public.coupons, public.newsletter_subscribers, public.product_categories, public.singulares (+9 more)
 
-### Community 411 - "sicoob-approval-policy-fixture.sql"
+### Community 420 - "sicoob-approval-policy-fixture.sql"
 Cohesion: 0.13
 Nodes (14): auth.users, on_approval_request_created, public.cooperativas, public.pa_budgets, public.postos_atendimento, public.profiles, public.sicoob_approval_requests, public.sicoob_manager_audit (+6 more)
 
-### Community 412 - "useProductInsights.ts"
-Cohesion: 0.15
-Nodes (14): ProductStat, useClientTopProducts(), calculateAverageQuantity(), countOrderSegments(), EMPTY_INSIGHT, fetchRecentActivity(), fetchSegmentByClient(), fetchTopSegments() (+6 more)
-
-### Community 413 - "useCart.ts"
+### Community 421 - "useCart.ts"
 Cohesion: 0.17
 Nodes (16): MiniCart.tsx + useCart.ts (etapa 17), AppliedCoupon(), Coupon, CouponForm(), CouponInput(), couponValidationError(), fetchCoupon(), CartApprovalThreshold() (+8 more)
 
-### Community 414 - "QuoteBitrixSync.ts"
-Cohesion: 0.15
-Nodes (16): QuoteBitrixSync.ts (etapa 17), PR #84 — NADA_A_RECUPERAR, BitrixResult, invokeBitrix(), logSuccessfulSync(), markQuoteAsSent(), parseBitrixQuoteId(), requireQuoteId() (+8 more)
-
-### Community 415 - "SpeechRecognition"
+### Community 422 - "SpeechRecognition"
 Cohesion: 0.14
 Nodes (11): Reconciliação com origin/main (PR #15) + useSpeechRecognition.ts (etapa 17), SearchWithSuggestions.tsx (etapa 17), webSpeechFallback.ts (etapa 17), Navigator, Window, SpeechRecognition, SpeechRecognitionAlternative, SpeechRecognitionErrorEvent (+3 more)
 
-### Community 416 - "useClientSeasonality.ts"
+### Community 423 - "useClientSeasonality.ts"
 Cohesion: 0.14
 Nodes (18): `src/hooks/bi/useClientSeasonality.ts` (etapa 17, 6 → 0 erros), buildClientCells(), buildIndustryCells(), buildInsight(), ClientAccumulator, ClientMonthCell, ClientRow, findNextPeak() (+10 more)
 
-### Community 417 - "useClientsPortfolioKpis.ts"
+### Community 424 - "useClientsPortfolioKpis.ts"
 Cohesion: 0.15
 Nodes (13): As branches liberadas para exclusão, com a prova, `claude/project-workflows-analysis-5n6hva` — liberada: NÃO, `computador_local` — liberada: sim, ClientsPortfolioKpis, fetchClientsPortfolioKpis(), inicioDaJanela(), inicioDoMes(), lerPedidos() (+5 more)
 
-### Community 418 - "Arquivos finais"
-Cohesion: 0.18
-Nodes (16): Arquivos finais, ✅ Onda C — Ativação Comercial (2026-04-20), COLORS, CreateListDialog(), existingFormValues(), ListFields(), ListForm, Props (+8 more)
-
-### Community 419 - "AnomalyCards.tsx"
+### Community 425 - "bi-share-dossier/index.ts"
 Cohesion: 0.19
-Nodes (16): Onda 5 — Operacional 10/10 ✅, Onda 7 — Defesa em Profundidade ✅, AnomalyCards(), anomalySeverity(), AnomalyStats, shouldShowQuickBlock(), BlockIpButton(), BlockIpButtonProps (+8 more)
+Nodes (14): Suíte de testes perdida nas ~20 PRs fechadas sem merge em 31/10/2026 (diagnóstico dizia 133 arquivos; são 122), createBiShareUnavailableResponse(), resolveBiShareSecret(), b64urlDecode(), b64urlEncode(), fromUtf8(), hmac(), Payload (+6 more)
 
-### Community 420 - "LoadingButton.tsx"
+### Community 426 - "ConfirmDialog.tsx"
+Cohesion: 0.14
+Nodes (16): UX Onda 1 e 2: guardas de navegação (bloqueio central de saída com alterações não salvas), confirmação unificada (fim do confirm() nativo) e restauração de scroll / histórico de navegação, isCriticalPath(), ConfirmDialog(), ConfirmDialogProps, DeleteConfirmDialog(), LoadingIcon(), scopedTestId(), UnsavedChangesDialog() (+8 more)
+
+### Community 427 - "AuthContext.tsx"
+Cohesion: 0.16
+Nodes (16): AuthContext, AuthContextType, AuthProvider(), AuthStateDependencies, ClientLogger, closeRevokedLocalSession(), errorMessage(), getSicoobAccessState() (+8 more)
+
+### Community 428 - "LogoColorAnalyzer.tsx"
+Cohesion: 0.15
+Nodes (14): CatalogActiveFiltersProps, ColorRow(), ColorRowProps, LogoColorAnalyzerProps, PantoneDropdown(), PantoneDropdownProps, deltaE(), findNearestPantone() (+6 more)
+
+### Community 429 - "LoadingButton.tsx"
 Cohesion: 0.15
 Nodes (14): @radix-ui/react-slot, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, Button, ButtonProps (+6 more)
 
-### Community 421 - "gerar-repo.mjs"
-Cohesion: 0.13
-Nodes (16): base, diff, lines, resolveBaseCommit(), ROOT, runGit(), verifiedRef(), edges (+8 more)
+### Community 430 - "secretValidators.ts"
+Cohesion: 0.15
+Nodes (16): Props, DEFAULT_RULE, isHttpsUrl(), isJwt(), jwtRule(), MIN_SUFFIX_LENGTH, PreflightIssue, SECRET_VALIDATORS (+8 more)
 
-### Community 422 - "GroupComponentCard.tsx"
-Cohesion: 0.27
-Nodes (14): GroupComponentCard(), GroupComponentCardProps, GroupLocationCard(), GroupLocationCardProps, GroupComponent, GroupLocation, GroupLocationTechnique, ProductGroup (+6 more)
-
-### Community 423 - "CardSourceDiagnostic.tsx"
-Cohesion: 0.16
-Nodes (15): CardSourceDiagnostic(), describeLoadError(), DiagnosticAdvice(), diagnosticClassName(), diagnosticPresentation(), DiagnosticRow, Field, LoadErrorAlert() (+7 more)
-
-### Community 424 - "secretErrors.ts"
+### Community 431 - "secretErrors.ts"
 Cohesion: 0.18
 Nodes (18): ACTION_VERBS, CATEGORY_LABELS, containsAny(), createErrorFactory(), describeSecretError(), ErrorFactory, ErrorOptions, getErrorCode() (+10 more)
 
-### Community 425 - "SeverityFilterContext.tsx"
+### Community 432 - "SeverityFilterContext.tsx"
 Cohesion: 0.19
 Nodes (15): Ctx, readInitial(), SeverityFilter, SeverityFilterContext, SeverityFilterProvider(), useSeverityFilter(), VALID, PillCfg (+7 more)
 
-### Community 426 - "SupplierFiscalInfo.tsx"
+### Community 433 - "SupplierFiscalInfo.tsx"
 Cohesion: 0.22
 Nodes (18): BranchInfo(), BranchReferenceRates(), EditField(), FiscalEditForm(), FiscalField(), FiscalFieldPair(), FiscalHeader(), FiscalReadView() (+10 more)
 
-### Community 427 - "ExecutiveSummaryButton.tsx"
+### Community 434 - "ExecutiveSummaryButton.tsx"
 Cohesion: 0.18
 Nodes (18): buildSummary(), ExecutiveData, ExecutiveSummaryButton(), fmtBRL(), getAvailabilityMessage(), getExecutiveAvailability(), HEALTH_LABELS, lastOrderSuffix() (+10 more)
 
-### Community 428 - "MicroInteractions.tsx"
+### Community 435 - "MicroInteractions.tsx"
 Cohesion: 0.11
 Nodes (10): AnimatedCounterProps, dotColors, dotSizes, FadeInViewProps, HoverCard, HoverCardProps, PulseDotProps, SlideInProps (+2 more)
 
-### Community 429 - "ItemSelector.tsx"
+### Community 436 - "FlowFilterPanel.tsx"
+Cohesion: 0.19
+Nodes (17): defaultFlowFilters, DrawerProps, FilterDrawer(), FlowFilterPanelProps, SECTION_GROUPS, sectionCount(), shouldShowSection(), totalOptions() (+9 more)
+
+### Community 437 - "FavoritesViewHeader.tsx"
+Cohesion: 0.19
+Nodes (17): ExportFavoritesButton(), ExportOption(), FavoritesHeatmap(), FavoritesSort, FavoritesSortBar(), LABELS, PriceDropCount(), PriceDropFilter() (+9 more)
+
+### Community 438 - "ItemSelector.tsx"
 Cohesion: 0.19
 Nodes (15): CatalogLoadError(), catalogVisibility(), ItemSelector(), ItemSelectorProps, ItemWithCompatibility, ItemCardSkeleton(), SelectedItemsBadges(), SelectedItemsBadgesProps (+7 more)
 
-### Community 430 - "BulkImportPanel.tsx"
-Cohesion: 0.18
-Nodes (17): BulkImportPanel(), BulkImportState, ImportResults, ImportStatusPanels(), MappingPanel(), PreviewPanel(), UploadArea(), UploadModePanel() (+9 more)
-
-### Community 431 - "ProductSparkline.tsx"
+### Community 439 - "ProductSparkline.tsx"
 Cohesion: 0.18
 Nodes (17): average(), buildGeometry(), buildSummary(), changeTextClass(), Comparison(), ComparisonBar(), maximumOrZero(), percentageChange() (+9 more)
 
-### Community 432 - "SmartSuggestions.tsx"
+### Community 440 - "SmartSuggestions.tsx"
 Cohesion: 0.14
 Nodes (18): DEFAULT_SUGGESTED_FILTERS, findInlineSuggestions(), getSuggestedFilters(), INLINE_SUGGESTIONS, InlineSuggestions(), InlineSuggestionsProps, MOCK_SUGGESTIONS, SmartFilters() (+10 more)
 
-### Community 433 - "IPRestrictionManager.tsx"
+### Community 441 - "IPRestrictionManager.tsx"
 Cohesion: 0.18
 Nodes (18): AddIpDialog(), AddIpFields(), AllowedIp, AllowedIpRow(), AllowedIpsTable(), AllowedIpState, CurrentIp(), IpLoadingCard() (+10 more)
 
-### Community 434 - "quoteHelpers.ts"
+### Community 442 - "quoteHelpers.ts"
 Cohesion: 0.25
 Nodes (17): arrayOrEmpty(), buildAtomicQuoteItems(), buildInsertPayload(), buildItemsInsertPayload(), buildUpdatePayload(), calculateQuoteTotals(), clampNegotiationMarkup(), discountAmountFor() (+9 more)
 
-### Community 435 - "useCatalogRelationFilters.ts"
+### Community 443 - "useCatalogRelationFilters.ts"
 Cohesion: 0.20
 Nodes (18): CatalogRelationFilterResult, fetchActivityProductIds(), fetchActivityReference(), fetchAvailableCatalogSizes(), fetchReferenceRecords(), fetchRelationPages(), fetchRelationProductIds(), normalizedText() (+10 more)
 
-### Community 436 - "technique.repository.ts"
+### Community 444 - "technique.repository.ts"
 Cohesion: 0.16
 Nodes (15): definedOr(), externalOrderBy(), externalToTecnicaUnificada(), filterTechniques(), findAll(), findByCode(), findById(), orDefault() (+7 more)
 
-### Community 437 - "AdminExternalDbPage.tsx"
+### Community 445 - "AdminExternalDbPage.tsx"
 Cohesion: 0.19
 Nodes (17): AdminExternalDbPage(), collectEngravingDiffs(), ContractLiveResult(), ContractValidationRow(), ContractValidationRowProps, DatabaseExplorer(), DatabaseExplorerProps, inspectEngravingTable() (+9 more)
 
-### Community 438 - "OwnershipAuditAdminPage.tsx"
+### Community 446 - "OwnershipAuditAdminPage.tsx"
 Cohesion: 0.18
 Nodes (17): AuditHeader(), AuditHistory(), AuditSummary(), CountBadge(), IssuesDetails(), IssuesSummaryCard(), LastExecutionCard(), OwnershipAuditAdminPage() (+9 more)
 
-### Community 439 - "20260420123931_cfdf94d4-a89e-4f3a-bd30-2a7f43cc62df.sql"
+### Community 447 - "20260420123931_cfdf94d4-a89e-4f3a-bd30-2a7f43cc62df.sql"
 Cohesion: 0.18
 Nodes (15): idx_favorite_items_list, idx_favorite_items_product, idx_favorite_items_trash_expires, idx_favorite_items_trash_user, idx_favorite_items_unique, idx_favorite_items_user, idx_favorite_lists_one_default, idx_favorite_lists_shared_token (+7 more)
 
-### Community 440 - "20260927171216_quote_approval_security_hardening.sql"
+### Community 448 - "20260927171216_quote_approval_security_hardening.sql"
 Cohesion: 0.16
 Nodes (8): aaa_guard_quote_governance_write, discount_approval_one_pending_per_quote_idx, public.append_quote_history_note(), public.bulk_update_quote_status_atomic(), public.can_manage_quote_scope(), public.request_discount_approval_atomic(), public.respond_discount_approval_atomic(), public.validate_quote_real_discount()
 
-### Community 441 - "20260927213000_sicoob_consolidation_concurrency.sql"
+### Community 449 - "20260927213000_sicoob_consolidation_concurrency.sql"
 Cohesion: 0.18
 Nodes (8): idx_order_consolidations_singular_id, idx_order_consolidations_vendedor_id, idx_sicoob_delivery_allocations_order_item_id, idx_sicoob_delivery_destinations_pa_id, idx_sicoob_delivery_receipts_received_by, public.allocate_sicoob_consolidation_by_order_pa(), public.create_sicoob_order_consolidation(), public.dispatch_sicoob_order_consolidation()
 
-### Community 442 - "20261008010000_fix_plpgsql_lint_failures.sql"
+### Community 450 - "20261008010000_fix_plpgsql_lint_failures.sql"
 Cohesion: 0.11
 Nodes (3): "public"."auto_revoke_orphan_full_keys"(), "public"."get_quote_token_by_value"(), "public"."sicoob_current_actor_approval_authority"()
 
-### Community 443 - "What You Must Do When Invoked"
+### Community 451 - "What You Must Do When Invoked"
 Cohesion: 0.11
 Nodes (18): Part A - Structural extraction for code files, Part B - Semantic extraction (parallel subagents), Part C - Merge AST + semantic into final extraction, Step 1 - Ensure graphify is installed, Step 2 - Detect files, Step 3 - Extract entities and relationships, Step 4 - Build graph, cluster, analyze, generate outputs, Step 5 - Label communities (+10 more)
 
-### Community 444 - "🗺️ Mapa de Endpoints e Dependências Sicoob"
+### Community 452 - "🗺️ Mapa de Endpoints e Dependências Sicoob"
 Cohesion: 0.11
 Nodes (17): 🗺️ Mapa de Endpoints e Dependências Sicoob, 📱 Módulo: AccessManagement, 📱 Módulo: AutoTestIntervalCard, 📱 Módulo: CategoriesManager, 📱 Módulo: ConnectionErrorDetailsDialog, 📱 Módulo: CouponManager, 📱 Módulo: FailureWindowCard, 📱 Módulo: InboundEventsPanel (+9 more)
 
-### Community 445 - "useIncidentDetails.ts"
+### Community 453 - "useIncidentDetails.ts"
 Cohesion: 0.16
 Nodes (17): BridgesLiveCard.tsx (etapa 17), useIncidentDetails.ts (etapa 17), average(), buildIncidentMetrics(), createDeliveryQuery(), createTestQuery(), DeliveryEvent, fetchDetails() (+9 more)
 
-### Community 446 - "useCrmCompanies.ts"
-Cohesion: 0.17
-Nodes (16): `GestorApprovalsPage.tsx` (+ variante `sicoob/`) (etapa 17, 10 → 0 erros — achado: embed PostgREST quebrado em produção), `useExternalDatabase.ts` (etapa 17, 8 → 0 erros), buildCompanyFilters(), CrmSelectorResult, directoryRowToCrmCompany(), fetchDirectoryPages(), fitsQuoteDirectory(), setDefinedFilter() (+8 more)
-
-### Community 447 - "MockupPromptManager.tsx"
+### Community 454 - "MockupPromptManager.tsx"
 Cohesion: 0.19
 Nodes (15): MockupPromptManager.tsx (etapa 17), AddTechniqueDialog(), AddTechniqueDialogProps, HistoryDialog(), HistoryDialogProps, PromptHistory, Technique, TestDialog() (+7 more)
 
-### Community 448 - "color-image-resolver.ts"
-Cohesion: 0.24
-Nodes (17): ProductCard.tsx (etapa 17), findGroupColor(), findVariantForColor(), findVariationColor(), firstMatchingColor(), firstMatchingImage(), firstStock(), getActiveColorName() (+9 more)
-
-### Community 449 - "telemetry-logs-connections-access.test.ts"
-Cohesion: 0.20
-Nodes (16): visibility-scope.ts (etapa 17), queryRolesWithRetry(), useUserRoles(), canManageConnections(), canViewAuditLogs(), canViewConnections(), canViewTelemetry(), evaluateGate() (+8 more)
-
-### Community 450 - "QuoteAutoSave.tsx"
+### Community 455 - "QuoteAutoSave.tsx"
 Cohesion: 0.19
 Nodes (17): `fix/execucao-plano-20260928` — INCORPORADA · pode apagar: sim, `fix/execucao-plano-20260928` — liberada: sim, AutoSaveDetails(), AutoSaveIndicator(), createQuoteDraftId(), getQuoteDraftIdForScope(), QuoteAutoSave(), QuoteAutoSaveProps (+9 more)
 
-### Community 451 - "13 arquivos de teste — executados contra a `main`, 18/11/2026"
-Cohesion: 0.14
-Nodes (17): 13 arquivos de teste — executados contra a `main`, 18/11/2026, 6 relatórios de execução, só nessa ref, Lacuna nova: a branch de produção pré-re-raiz, Os 6 restantes (conferidos em 19/11/2026), 6 Zonas de Inteligência, Business Intelligence (Ferramentas → BI), Categorização (limitação atual), Como evoluir para `orders` (Fase futura) (+9 more)
+### Community 456 - "useClientVsIndustry.ts"
+Cohesion: 0.17
+Nodes (17): D16. achados de revisores que foram REJEITADOS (5 afirmações: RPC inexistente, prompt-safety ausente, sanitizador pgrest ausente, mock de BI não sinalizado, identidade do kit perdida no UPDATE), averageItems(), BenchmarkRow, buildInsight(), classify(), ClientBiResult, ClientVsIndustryResult, ComparisonClassification (+9 more)
 
-### Community 452 - "PublicCollectionPage.tsx"
-Cohesion: 0.16
-Nodes (16): Onda P3 — Ativação Comercial ✅, CollectionPresentationLauncher(), Props, EMOJIS, getOrCreateAnonId(), getProductPresentation(), loadCollectionReactions(), loadExternalProducts() (+8 more)
-
-### Community 453 - "QuoteOrderBadge.tsx"
+### Community 457 - "QuoteOrderBadge.tsx"
 Cohesion: 0.13
 Nodes (15): Detalhe `/orcamentos/:id`, Follow-up automático, Funil & Analytics, Lista `/orcamentos`, Sistema de Orçamentos — Master Spec, Tabelas relevantes, URL params (Quote Builder), LinkedOrder (+7 more)
 
-### Community 454 - "playwright.config.ts"
+### Community 458 - "playwright.config.ts"
 Cohesion: 0.11
 Nodes (17): ADMIN_INTEGRATION_SPECS, ADMIN_STORAGE_STATE, ARTIFACTS_DIR, CHROMIUM_DESKTOP, DEV_INTEGRATION_SPECS, DEV_STORAGE_STATE, __dirname, __filename (+9 more)
 
-### Community 455 - "20260102_20260102205635_add_soft_delete_support.sql"
+### Community 459 - "20260102_20260102205635_add_soft_delete_support.sql"
 Cohesion: 0.11
 Nodes (7): idx_categories_deleted_at, idx_clients_deleted_at, idx_collections_deleted_at, idx_orders_deleted_at, idx_products_deleted_at, idx_quotes_deleted_at, idx_suppliers_deleted_at
 
-### Community 456 - "productPdfExport.ts"
-Cohesion: 0.18
-Nodes (15): jspdf-autotable, ExportOptions, exportPDF(), exportProductPdf(), formatBool(), formatCurrency(), formatDimension(), formatOptionalNumber() (+7 more)
+### Community 460 - "check-runtime-refs.mjs"
+Cohesion: 0.19
+Nodes (14): analyzeSource(), assertInventoryFresh(), __dirname, IGNORE_DIR, isExternalEnvName(), isInternalEnvName(), loadJson(), main() (+6 more)
 
-### Community 457 - "simular-governanca-orcamento.sql"
+### Community 461 - "simular-governanca-orcamento.sql"
 Cohesion: 0.14
 Nodes (14): bbb_validate_real_discount, public.discount_approval_requests, public.get_user_org_ids(), public.organization_members, public.profiles, public.quote_history, public.quotes, public.seller_discount_limits (+6 more)
 
-### Community 458 - "ConnectionErrorDetailsDialog.tsx"
+### Community 462 - "ConnectionErrorDetailsDialog.tsx"
 Cohesion: 0.19
 Nodes (17): ConnectionErrorDetailsDialog(), DetailRow, ErrorDialogActions(), ErrorDialogBody(), ErrorDialogTitle(), ErrorSummary(), ErrorView, fetchLatestFailure() (+9 more)
 
-### Community 459 - "secretNormalizers.ts"
+### Community 463 - "secretNormalizers.ts"
 Cohesion: 0.25
 Nodes (17): NormalizationResult, normalizeBitrixDomain(), normalizeBitrixWebhook(), normalizeDefault(), normalizeDigitsOnly(), normalizeJwt(), normalizeMcpUrl(), normalizeN8nBaseUrl() (+9 more)
 
-### Community 460 - "GroupAccordionItem.tsx"
+### Community 464 - "GroupAccordionItem.tsx"
 Cohesion: 0.23
 Nodes (14): AddProductDialog(), GroupAccordionItem(), GroupAccordionItemProps, GroupFields(), GroupMembers(), GroupFormDialog(), GroupFormDialogProps, ProductGroup (+6 more)
 
-### Community 461 - "FlowFilterSections.tsx"
-Cohesion: 0.15
-Nodes (17): ChatHeaderProps, RequestExpertAnswerOptions, FlowFilterOptions, FlowFilterState, CHIP_SECTIONS, ChipSection(), ChipSectionConfig, GENDER_OPTIONS (+9 more)
-
-### Community 462 - "ColorGroupFilter.tsx"
+### Community 465 - "ColorGroupFilter.tsx"
 Cohesion: 0.19
 Nodes (17): collectSelectedNames(), ColorController, ColorFilterContent(), ColorFilterTrigger(), ColorGroupFilter(), ColorGroupFilterProps, ColorGroupsSection(), ColorNuancesSection() (+9 more)
 
-### Community 463 - "MagicUpBrandSafetyChecklist.tsx"
+### Community 466 - "MagicUpBrandSafetyChecklist.tsx"
 Cohesion: 0.20
 Nodes (15): MagicUpBrandKitPanel(), MagicUpBrandKitPanelProps, parseWordList(), BrandSafetyCheck, buildBrandSafetyChecks(), hasBrandGuidelines(), hasBrandTerms(), hasInstitutionalColors() (+7 more)
 
-### Community 464 - "AreaCard.tsx"
-Cohesion: 0.21
-Nodes (16): AreaCard(), AreaMetadata(), AreaName(), ColorCount(), ExistingLogo(), LogoFileInput(), NewLogo(), RemoveAreaButton() (+8 more)
-
-### Community 465 - "MockupResultCard.tsx"
-Cohesion: 0.20
-Nodes (15): Annotation, MockupAnnotations(), MockupAnnotationsProps, MockupBeforeAfter(), MockupBeforeAfterProps, FullscreenDialog(), LoadingCard(), MockupResultCard() (+7 more)
-
-### Community 466 - "ProductList.tsx"
+### Community 467 - "ProductList.tsx"
 Cohesion: 0.20
 Nodes (16): ActionButton(), actionVariants, BulkActionBar, BulkActionBarProps, PrimaryActions(), SelectionControls(), SelectionCount(), EmptyProductList() (+8 more)
 
-### Community 467 - "PdfGenerationDialog.tsx"
+### Community 468 - "PdfGenerationDialog.tsx"
 Cohesion: 0.18
 Nodes (17): ActionButton(), createPdf(), GeneratingStage(), isPdfOptions(), OptionToggle(), PdfGenerationDialog(), PdfGenerationDialogProps, PdfHeader() (+9 more)
 
-### Community 468 - "QuoteStatusTimeline.tsx"
+### Community 469 - "QuoteStatusTimeline.tsx"
 Cohesion: 0.18
 Nodes (17): buildTimeline(), circleState(), finalStep(), formatTs(), labelState(), QuoteStatusTimeline(), QuoteStatusTimelineProps, statusFlags() (+9 more)
 
-### Community 469 - "useLivePricePreview.ts"
+### Community 470 - "useLivePricePreview.ts"
 Cohesion: 0.18
 Nodes (15): AdaptedPrice, buildPreviewRpcParams(), effectiveColorCount(), fetchLiveEstimate(), LivePriceEstimate, PreviewTechnique, toLiveEstimate(), usedDimensions() (+7 more)
 
-### Community 470 - "useKitBuilder.ts"
+### Community 471 - "useKitBuilder.ts"
 Cohesion: 0.22
 Nodes (15): buildKitState(), buildWizardState(), canProceedFromStep(), completedKitSteps(), KitStateInput, kitValidationErrors(), useKitBuilder(), filterBoxes() (+7 more)
 
-### Community 471 - "useNovelties.ts"
+### Community 472 - "useNovelties.ts"
 Cohesion: 0.20
 Nodes (17): calcDaysRemaining(), CategoryRecord, enrichNovelties(), getCutoffDate(), NoveltyStatsDisplay, NoveltyWithDetails, RawProduct, SupplierRecord (+9 more)
 
-### Community 472 - "useProductsByColor.ts"
+### Community 473 - "useProductsByColor.ts"
 Cohesion: 0.20
 Nodes (17): addGroupFilters(), addLegacyColorFilters(), addNuanceFilters(), addProductIds(), addVariationFilters(), BatchResultShape, effectivePageLimit(), fetchColorChunk() (+9 more)
 
-### Community 473 - "dossierPdfGenerator.ts"
+### Community 474 - "dossierPdfGenerator.ts"
 Cohesion: 0.20
 Nodes (16): addBenchmarkPage(), addCategoryPage(), addCover(), addFooter(), addSeasonalityPage(), addSectionTitle(), classificationLabel(), DossierClient (+8 more)
 
-### Community 474 - "rpc-validator.ts"
+### Community 475 - "rpc-validator.ts"
 Cohesion: 0.18
 Nodes (16): ALL_CONTRACTS, OPTIONS_CONTRACT, PRICE_CONTRACT, RpcContract, findFieldName(), isObject(), knownTopLevel(), reportValidation() (+8 more)
 
-### Community 475 - "validators.ts"
+### Community 476 - "validators.ts"
 Cohesion: 0.20
 Nodes (15): validateAreaBounds(), validateHeight(), validateQuantity(), validateQuantityRange(), validateTableColors(), validateTableDimensions(), validateTableDimensionValues(), validateTableForParams() (+7 more)
 
-### Community 476 - "private-storage.ts"
+### Community 477 - "private-storage.ts"
 Cohesion: 0.19
 Nodes (16): canonicalPrivateStorageValue(), createPrivateStorageReference(), createPrivateStorageUrl(), inFlightSignatures, isPrivateStorageUrl(), locationFromStorageUrl(), parsePrivateStorageReference(), PRIVATE_STORAGE_BUCKETS (+8 more)
 
-### Community 477 - "useHighLimitTelemetry.ts"
+### Community 478 - "useHighLimitTelemetry.ts"
 Cohesion: 0.16
 Nodes (17): bucketize(), BucketPoint, ERROR_KIND_LABEL, ErrorKindFilter, fetchRows(), HighLimitFiltersState, HighLimitTimeseries, OPERATION_LABEL (+9 more)
 
-### Community 478 - "CollectionsPage.tsx"
+### Community 479 - "CollectionsPage.tsx"
 Cohesion: 0.21
 Nodes (17): useCollectionsPageState(), CollectionDialogs(), CollectionSelectionBar(), CollectionsHint(), CollectionsPage(), CollectionsPageState, CollectionStats(), CollectionsToolbar() (+9 more)
 
-### Community 479 - "QuoteBuilderPage.tsx"
+### Community 480 - "QuoteBuilderPage.tsx"
 Cohesion: 0.21
 Nodes (17): ActiveQuoteItem(), ClientAnalyticsLink(), EmptyItems(), isSelectedInfo(), QuoteBuilderDialogs(), QuoteBuilderHeader(), QuoteBuilderPage(), QuoteBuilderState (+9 more)
-
-### Community 480 - "bi-share-dossier/index.ts"
-Cohesion: 0.21
-Nodes (13): createBiShareUnavailableResponse(), resolveBiShareSecret(), b64urlDecode(), b64urlEncode(), fromUtf8(), hmac(), Payload, SHARE_SECRET (+5 more)
 
 ### Community 481 - "20260414193435_871210cd-f0d8-40ee-ae9f-401b4887727f.sql"
 Cohesion: 0.17
@@ -3710,117 +3673,117 @@ Nodes (15): Aprovação pública, Auditoria de validação — 22/09/2026, CI e 
 Cohesion: 0.25
 Nodes (12): materialService.ts (etapa 17), booleanOrTrue(), firstNumber(), firstString(), mapCompleteMaterial(), mapMaterialGroup(), mapMaterialType(), MaterialComplete (+4 more)
 
-### Community 489 - "check-runtime-refs.mjs"
-Cohesion: 0.21
-Nodes (14): analyzeSource(), assertInventoryFresh(), __dirname, IGNORE_DIR, isExternalEnvName(), isInternalEnvName(), loadJson(), main() (+6 more)
+### Community 489 - "sicoob/orders.ts"
+Cohesion: 0.12
+Nodes (14): PresetsBar.tsx (etapa 17), `src/pages/sicoob/orders/OrderDetailPage.tsx` (etapa 17, 8 → 0 erros — achado: dead code + drift de tipo hand-written), useState(), ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, OrderStatus, SICOOB_VALID_TRANSITIONS, SicoobApprovalRequest (+6 more)
 
-### Community 490 - "_load_snapshot_module"
+### Community 490 - "CategoryCascadeSelector.tsx"
+Cohesion: 0.18
+Nodes (13): buildTree(), setPaths(), CascadeSelects(), CategoryCascadeSelector(), CategoryCascadeSelectorProps, CategoryTreeDialog(), CatNode, TreeNode() (+5 more)
+
+### Community 491 - "useRecentlyViewedStore.ts"
+Cohesion: 0.17
+Nodes (14): zustand, OracleVoiceBridge, useOracleVoiceBridge, NavigationHistoryItem, NavigationState, useNavigationStore, loadFromStorage(), RecentlyViewedActions (+6 more)
+
+### Community 492 - "_load_snapshot_module"
 Cohesion: 0.15
 Nodes (4): _load_snapshot_module(), SnapshotConnectionAndAPIFailureTests, fake_api(), SnapshotScrubTests
 
-### Community 491 - "triage-edge-typecheck.mjs"
+### Community 493 - "triage-edge-typecheck.mjs"
 Cohesion: 0.15
 Nodes (14): args, checkFunction(), denoVersion, failures, flags, functions, isNoiseLine(), listFilesToCheck() (+6 more)
 
-### Community 492 - "ConnectionsPulseBar.tsx"
-Cohesion: 0.21
-Nodes (15): ConnectionsPulseBar(), MiniKpi(), MiniKpiProps, PulseData, PulseKpis(), PulseStatus(), pulseTones(), pulseValues() (+7 more)
-
-### Community 493 - "SecretImpactTooltip.tsx"
+### Community 494 - "SecretImpactTooltip.tsx"
 Cohesion: 0.17
 Nodes (15): CRM_FULL, CRM_READONLY, getSecretImpact(), impactForPrefix(), PROMOBRIND_FULL, PROMOBRIND_READONLY, SECRET_IMPACT_MAP, SecretImpact (+7 more)
 
-### Community 494 - "TestAllConnectionsButton.tsx"
-Cohesion: 0.20
-Nodes (16): ConnectionTest, CredCell(), EnvKey, fmtTime(), missingReason(), notifyResults(), PerEnvResult, ResultRow() (+8 more)
-
-### Community 495 - "HorizontalStepper.tsx"
-Cohesion: 0.19
-Nodes (16): DesktopStep(), getStepState(), HorizontalStepper(), HorizontalStepperProps, MissingFieldsTooltip(), MobileStepper(), stepAriaLabel(), stepAttentionClass() (+8 more)
-
-### Community 496 - "ActiveIpsList.tsx"
+### Community 495 - "ActiveIpsList.tsx"
 Cohesion: 0.20
 Nodes (16): ActiveIpsFilters(), ActiveIpsList(), ActiveIpsTable(), extendIp(), Filter, IpActions, IpEntry, IpExpiration() (+8 more)
 
-### Community 497 - "useMcpAuditFeed.ts"
+### Community 496 - "useMcpAuditFeed.ts"
 Cohesion: 0.22
 Nodes (14): McpAuditFeed(), toCsv(), AuditCounts(), McpAuditFilters(), Props, AuditAction, auditCounts(), AuditFilters (+6 more)
 
-### Community 498 - "BridgeCallDetailDrawer.tsx"
+### Community 497 - "BridgeCallDetailDrawer.tsx"
 Cohesion: 0.21
 Nodes (15): BridgeCallContent(), BridgeCallDetailDrawer(), BridgeIdentification(), CallMetadata(), CallMetrics(), formatBytes(), formatMs(), Props (+7 more)
 
-### Community 499 - "IndustryTrendingProducts.tsx"
+### Community 498 - "IndustryTrendingProducts.tsx"
 Cohesion: 0.20
 Nodes (16): CategoryChip, CategoryChips(), CategoryChipsProps, EnrichedTrend, fmtBRL(), industryAvailabilityMessage(), IndustryHeader(), IndustryHeaderProps (+8 more)
 
-### Community 500 - "DraggableDashboard.tsx"
+### Community 499 - "DraggableDashboard.tsx"
 Cohesion: 0.24
 Nodes (15): dashboardGridClass(), DashboardWidget, DraggableDashboard(), DraggableDashboardProps, DraggableWidget(), DraggableWidgetProps, EmptyDashboard(), useDashboardWidgets() (+7 more)
 
-### Community 501 - "ExternalCategoryFilter.tsx"
+### Community 500 - "ExternalCategoryFilter.tsx"
 Cohesion: 0.21
 Nodes (16): buildCategoryTree(), CategoryCount(), CategoryExpandButton(), CategoryNode, CategoryNodeChildren(), CategorySearch(), CategoryStats(), CategoryTreeNode() (+8 more)
 
-### Community 502 - "SkeletonLoaders.tsx"
+### Community 501 - "SkeletonLoaders.tsx"
 Cohesion: 0.19
 Nodes (15): AdminSkeleton, CATALOG_SKELETON_ROUTES, CatalogSkeleton, DashboardSkeleton, FALLBACK_MATCHERS, GenericSkeleton, getFallback(), OrdersSkeleton (+7 more)
 
-### Community 503 - "MfaEnrollmentDialog.tsx"
+### Community 502 - "MfaEnrollmentDialog.tsx"
 Cohesion: 0.20
 Nodes (16): EnrollmentContent(), EnrollmentContentProps, EnrollmentIntro(), EnrollmentQr(), EnrollmentState, EnrollmentStep, EnrollmentVerification(), enrollTotp() (+8 more)
 
-### Community 504 - "useProducts.ts"
+### Community 503 - "useProducts.ts"
 Cohesion: 0.18
 Nodes (11): fuseOptions, applyProductFilters(), compareSearchRelevance(), filterByCategory(), filterByMaximumPrice(), filterByMinimumPrice(), matchesCategory(), shouldRetryCatalog() (+3 more)
 
-### Community 505 - "error-reporter.ts"
+### Community 504 - "error-reporter.ts"
 Cohesion: 0.21
 Nodes (16): COLD_START_BUFFER, DeferredColdStart, deferTransientError(), enqueueReport(), enrichedErrorMetadata(), ERROR_QUEUE, errorCategory(), ErrorReport (+8 more)
 
-### Community 506 - "transformers.ts"
+### Community 505 - "transformers.ts"
 Cohesion: 0.17
 Nodes (12): extractTiersFromRaw(), faixaToPriceTier(), rawTableToPriceTableInput(), rawTechniqueToTechniqueInput(), rawToTecnicaUnificada(), tabelaToPriceTableInput(), tecnicaToTechniqueInput(), transformRawTables() (+4 more)
+
+### Community 506 - "bridgeAlertThresholds.ts"
+Cohesion: 0.15
+Nodes (12): AlertMetric, AlertSeverity, BridgeAlert, BridgeThresholds, current, DEFAULT_THRESHOLDS, emit(), listeners (+4 more)
 
 ### Community 507 - "useProductsListingLatencyAlert.ts"
 Cohesion: 0.18
 Nodes (16): calculateDelta(), evaluateRegression(), evaluateSla(), evaluateSpike(), fetchProductsListingLatencyAlert(), fetchWindow(), insufficientDataAlert(), LATENCY_ALERT_THRESHOLDS (+8 more)
 
-### Community 508 - "color-variant-carousel.ts"
-Cohesion: 0.20
-Nodes (15): COLOR_GROUP_HEX, configuredHighlight(), groupHighlight(), ProductColor, resolveHighlightHex(), variationHighlight(), ActiveColorFilter, addGroupMatches() (+7 more)
-
-### Community 509 - "20261117092000_quote_price_attestation_gate.sql"
+### Community 508 - "20261117092000_quote_price_attestation_gate.sql"
 Cohesion: 0.13
 Nodes (7): private.quote_price_attestations, public.guard_quote_price_attestation(), public.save_quote_atomic_attested(), quote_price_attestations_expiration_idx, zzz_guard_quote_item_price_attestation, zzz_guard_quote_personalization_price_attestation, zzz_guard_quote_price_attestation
 
-### Community 510 - "useVoiceAgent.test.ts"
-Cohesion: 0.12
-Nodes (9): ApprovalFilter, mockConnect, mockDisconnect, mockGetUserMedia, mockInvoke, mockLogVoiceCommand, mockPlayTtsAudio, mockProcessVoiceTranscript (+1 more)
-
-### Community 511 - "compilerOptions"
+### Community 509 - "compilerOptions"
 Cohesion: 0.12
 Nodes (16): compilerOptions, allowImportingTsExtensions, isolatedModules, lib, module, moduleDetection, moduleResolution, noEmit (+8 more)
 
-### Community 512 - "Guia de Contribuição"
+### Community 510 - "Guia de Contribuição"
 Cohesion: 0.12
 Nodes (15): Acessibilidade (a11y), 🧪 Antes de abrir PR, Bitrix24, 🎓 Convenções específicas, Edge Functions Supabase, 🔄 Fluxo de trabalho, Guia de Contribuição, Migrations Supabase (+7 more)
 
-### Community 513 - "executive-summary.ts"
+### Community 511 - "🇧🇷 REMOÇÃO DE i18n E CONFIGURAÇÃO PT-BR - GIFTS-STORE"
+Cohesion: 0.12
+Nodes (15): **Antes:**, 📅 **Bibliotecas de Data Encontradas:**, ✅ **BOA NOTÍCIA: QUASE TUDO JÁ ESTÁ CORRETO!**, **Depois:**, 📦 **EXEMPLO DE USO DAS FUNÇÕES**, ❌ **NÃO É NECESSÁRIO:**, ✅ **O QUE FAZER:**, 🚀 **PASSOS PARA IMPLEMENTAÇÃO RÁPIDA** (+7 more)
+
+### Community 512 - "executive-summary.ts"
 Cohesion: 0.23
 Nodes (15): executive-summary.ts (etapa 17), arrayOrEmpty(), buildCategorySection(), CategoryGap, categoryGaps(), categoryInsight(), categoryLabel(), CategoryMapRow (+7 more)
 
-### Community 514 - "TechniqueTooltip.tsx"
+### Community 513 - "TechniqueTooltip.tsx"
 Cohesion: 0.24
 Nodes (15): `src/components/mockup/TechniqueTooltip.tsx` (etapa 17, 6 → 0 erros), BasicTechniqueDetails(), ColorDetail(), DetailRow(), getTechniqueInfo(), LocationDetail(), SetupDetail(), SizeDetail() (+7 more)
 
-### Community 515 - "5. Lista de Edge Functions (~106)"
+### Community 514 - "5. Lista de Edge Functions (~106)"
 Cohesion: 0.12
 Nodes (15): 1. Resumo Executivo, 2. Visão Geral do Sistema, 3. Perfis de Usuário e Governança, 4. Módulos de Destaque, 5. Lista de Edge Functions (~106), 6. Arquitetura de Segurança e Observabilidade, Comunicação & Notificação, IA & Multimodalidade (+7 more)
 
-### Community 516 - "Top-10 Queries Auditadas"
+### Community 515 - "Top-10 Queries Auditadas"
 Cohesion: 0.12
 Nodes (15): 10. `useClientHistory` — cliente 360°, 1. `useExternalProducts` — listagem paginada, 2. `useProductDetail` — produto + variants + images, 3. `useQuotesList` — kanban de orçamentos, 4. `useNotifications` — polling 30s, 5. `useStockAlerts` — header indicator, 6. `useSupplierStats`, 7. `useCategoryTree` — sidebar (+7 more)
+
+### Community 516 - "Lacunas apontadas e derrubadas na refutação"
+Cohesion: 0.24
+Nodes (14): Lacunas apontadas e derrubadas na refutação, AutoSaveResult, avisarFalhaDeAutosave(), createSnapshot(), explainEmptyUpdate(), isCreatedKitAdoption(), isEmptyKit(), KitConflitoDeEdicao (+6 more)
 
 ### Community 517 - "2. Code Scanning (camada 4) — CodeQL"
 Cohesion: 0.12
@@ -3830,669 +3793,669 @@ Nodes (15): 1. Dependabot Security Alerts (camada 3), 2. Code Scanning (camada 4
 Cohesion: 0.20
 Nodes (10): expectFavoritesSnapshot(), FavoriteItem, FavoriteRenderedItem, FavoritesSnapshot, readFavoritesCount(), readFavoritesCountText(), readFavoritesItems(), readFavoritesListSize() (+2 more)
 
-### Community 519 - "form.tsx"
+### Community 519 - "useClientAffinity.ts"
+Cohesion: 0.16
+Nodes (14): Estratégia híbrida real + mock, AffinityCategory, ClientAffinityResult, ClientTopProduct, demoAffinity(), deriveCategoryFromName(), MOCK_SUGGESTIONS, useClientAffinity() (+6 more)
+
+### Community 520 - "form.tsx"
 Cohesion: 0.17
 Nodes (13): @radix-ui/react-label, FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue (+5 more)
 
-### Community 520 - "uniq"
+### Community 521 - "uniq"
 Cohesion: 0.18
 Nodes (16): allMatches(), byCount(), dockerfiles, envNames(), flags, git(), gitInfo, gitInfoCommit() (+8 more)
-
-### Community 521 - "e2e-smoke-coverage-doc.mjs"
-Cohesion: 0.12
-Nodes (11): CATALOG, catalogSrc, coverage, entries, isCheck, md, OUT, publicTests (+3 more)
 
 ### Community 522 - "simular-salvamento-orcamento-atomico.py"
 Cohesion: 0.20
 Nodes (9): actor_sql(), command(), register_attestation(), rpc(), save_attested(), save_idempotent_attested(), scalar(), service_role_sql() (+1 more)
 
-### Community 523 - "rules/run.mjs"
-Cohesion: 0.12
-Nodes (14): argv, comErro, ctx, dir, found, md, only, ORDER (+6 more)
-
-### Community 524 - "BridgeProductsPreviewPanel.tsx"
+### Community 523 - "BridgeProductsPreviewPanel.tsx"
 Cohesion: 0.20
 Nodes (15): ActiveBadge(), ActiveFilter, activeFilterCount(), BridgeProductsPreviewPanel(), FilterPanel(), FilterPanelProps, fmtCurrency(), PAGE_SIZE_OPTIONS (+7 more)
 
-### Community 525 - "CredentialCacheMetricsPanel.tsx"
+### Community 524 - "CredentialCacheMetricsPanel.tsx"
 Cohesion: 0.25
 Nodes (15): CacheEntries(), CacheEntry, CredentialCacheMetricsPanel(), fmtDuration(), fmtTs(), Kpi(), PanelContent(), PerName (+7 more)
 
-### Community 526 - "CredentialsSourceIndicator.tsx"
+### Community 525 - "CredentialsSourceIndicator.tsx"
 Cohesion: 0.21
 Nodes (15): CredentialsSourceIndicator(), formatAbsolute(), formatRelative(), GroupedSecrets, groupSecrets(), LatestUpdate(), latestUpdatedSecret(), LatestUpdateText() (+7 more)
 
-### Community 527 - "ExpectedKeysMatchPanel.tsx"
+### Community 526 - "ExpectedKeysMatchPanel.tsx"
 Cohesion: 0.18
 Nodes (15): buildDiagnosis(), DiagnosisCard(), ENV_KEYS, EnvDiagnosis, ExpectedKeysMatchPanel(), ExpectedKeysMatchPanelProps, ExtRow, ExtRowWithKey (+7 more)
 
-### Community 528 - "IssueMcpKeyForm.tsx"
+### Community 527 - "IssueMcpKeyForm.tsx"
 Cohesion: 0.21
 Nodes (15): FullScopeConfiguration(), FullScopeConfigurationProps, isoDaysFromNow(), issueActionLabel(), issueBody(), IssueMcpKeyForm(), Props, RootConfirmationDialog() (+7 more)
+
+### Community 528 - "HorizontalStepper.tsx"
+Cohesion: 0.21
+Nodes (15): DesktopStep(), getStepState(), HorizontalStepper(), HorizontalStepperProps, MissingFieldsTooltip(), MobileStepper(), stepAriaLabel(), stepAttentionClass() (+7 more)
 
 ### Community 529 - "AuditHistory.tsx"
 Cohesion: 0.22
 Nodes (14): actionConfig, asFieldRecord(), AuditActionSummary(), AuditActor(), AuditDetailsTrigger(), AuditFieldChanges(), AuditHistory(), AuditHistoryProps (+6 more)
 
-### Community 530 - "ExpertChatDialog.tsx"
-Cohesion: 0.20
-Nodes (11): ChatHeader(), ChatHistoryPanel(), ChatHistoryPanelProps, ChatInputBar(), ChatInputBarProps, ExpertChatButton, ExpertChatButtonProps, ExpertChatDialog (+3 more)
-
-### Community 531 - "InlineColorGroupFilter.tsx"
+### Community 530 - "InlineColorGroupFilter.tsx"
 Cohesion: 0.21
 Nodes (15): ColorFilterSelection, getInlineSwatchStyle(), INLINE_SWATCH_SIZES, InlineColorGroupFilter(), InlineColorGroupFilterProps, InlineColorSwatch(), InlineColorSwatchProps, InlineController (+7 more)
 
-### Community 532 - "MaterialBadge.tsx"
+### Community 531 - "MaterialBadge.tsx"
 Cohesion: 0.16
 Nodes (14): BadgeContent(), BadgeSize, BadgeTooltip(), BadgeVariant, COUNT_CLASSES, ICON_CLASSES, MaterialBadge(), MaterialBadgeProps (+6 more)
 
-### Community 533 - "LogoPositionEditor.tsx"
+### Community 532 - "LogoPositionEditor.tsx"
 Cohesion: 0.23
 Nodes (14): LogoQuickActions(), getTechniqueFilter(), useElementSize(), calculateLogoDisplay(), EditorControls(), EditorHeader(), EditorState, getColorConfigFilter() (+6 more)
 
-### Community 534 - "useClientVsIndustry.ts"
-Cohesion: 0.18
-Nodes (15): averageItems(), BenchmarkRow, buildInsight(), classify(), ClientBiResult, ClientVsIndustryResult, ComparisonClassification, comparisonMetric() (+7 more)
-
-### Community 535 - "quotes/useQuotes.ts"
-Cohesion: 0.22
-Nodes (12): asError(), ensureQuoteMutationApplied(), ensureQuotesAreAccessible(), MutationError, PersonalizationTechnique, Quote, QuoteItem, QuoteItemPersonalization (+4 more)
-
-### Community 536 - "useAIRecommendations.ts"
+### Community 533 - "useAIRecommendations.ts"
 Cohesion: 0.21
 Nodes (15): AIRecommendationsResult, cacheKey(), ClientProfile, delay(), getAccessToken(), isAbortError(), isRetryable(), parseRecommendationResponse() (+7 more)
 
-### Community 537 - "useAiUsage.ts"
+### Community 534 - "useAiUsage.ts"
 Cohesion: 0.17
 Nodes (11): AggregatedUsage, aggregateUsage(), AiUsageLog, AiUsageQuota, buildUsageStats(), fetchUsageStats(), namedEntries(), periodStart() (+3 more)
 
-### Community 538 - "useKitStockValidation.ts"
+### Community 535 - "useKitStockValidation.ts"
 Cohesion: 0.20
 Nodes (15): addItemRequirement(), addVariantStock(), boxStockAlert(), buildStockAlerts(), buildStockMaps(), initialProductStock(), itemAvailableStock(), itemStockKey() (+7 more)
 
-### Community 539 - "chunk-recovery.ts"
+### Community 536 - "chunk-recovery.ts"
 Cohesion: 0.22
 Nodes (15): appendCacheBust(), attemptChunkRecovery(), CHUNK_ERROR_PATTERNS, clearChunkRecoveryState(), errorMessage(), extractChunkUrl(), hardReload(), isChunkLoadError() (+7 more)
 
-### Community 540 - "purchasing-sla.ts"
+### Community 537 - "purchasing-sla.ts"
 Cohesion: 0.17
 Nodes (14): ApprovalDecision, APPROVED_STATUSES, calculateApprovalSla(), calculatePurchasingMetrics(), EventoDeFila, hasCompleteResult(), mapApprovalDecisions(), OrderListResult (+6 more)
 
-### Community 541 - "BusinessIntelligencePage.tsx"
+### Community 538 - "BusinessIntelligencePage.tsx"
 Cohesion: 0.23
 Nodes (15): BIActions(), BIHeader(), BITitle(), BIWorkspace(), BusinessIntelligencePage(), CategoryFocusBar(), ClientEmptyState(), ClientSelectorCard() (+7 more)
 
-### Community 542 - "trends-mock.ts"
+### Community 539 - "trends-mock.ts"
 Cohesion: 0.14
 Nodes (14): buildMockHeatmap(), heatmapCell(), heatmapHourWeight(), MOCK_FUNNEL, MOCK_HOT_SEARCHES, MOCK_INSIGHTS, MOCK_KPI_CURRENT, MOCK_KPI_PREVIOUS (+6 more)
 
-### Community 543 - "kitPdfGenerator.ts"
+### Community 540 - "kitPdfGenerator.ts"
 Cohesion: 0.22
 Nodes (15): downloadKitPDF(), drawCompositionTable(), drawFooter(), drawHeader(), drawKpiCards(), drawPersonalizationDetails(), drawPriceBreakdown(), drawSectionTitle() (+7 more)
 
-### Community 544 - "connections-hub-audit/index.ts"
+### Community 541 - "connections-hub-audit/index.ts"
 Cohesion: 0.17
 Nodes (13): classifyEdgeProbe(), CronEvidence, EdgeProbeResult, isCronEvidenceHealthy(), probeEdgeFunction(), NOW, AuditReport, CheckResult (+5 more)
 
-### Community 545 - "20260922225000_secure_public_quote_approval.sql"
+### Community 542 - "20260922225000_secure_public_quote_approval.sql"
 Cohesion: 0.21
 Nodes (7): public.get_public_quote_approval(), public.guard_local_quote_approval_token(), public.quote_approval_content_snapshot(), public.quote_approval_evidence_keys, public.rotate_quote_approval_evidence_key(), public.verify_quote_approval_signature(), quote_approval_evidence_one_active_key
 
-### Community 546 - "sicoob-reorder-fixture.sql"
+### Community 543 - "sicoob-reorder-fixture.sql"
 Cohesion: 0.20
 Nodes (14): public.can_manage_quote_scope(), public.cooperativas, public.organizations, public.postos_atendimento, public.profiles, public.quote_history, public.quote_item_personalizations, public.quote_items (+6 more)
 
-### Community 547 - "/graphify"
+### Community 544 - "/graphify"
 Cohesion: 0.13
 Nodes (14): For always-on context in Devin sessions, For --cluster-only, For git commit hook, For /graphify add, For /graphify explain, For /graphify path, For /graphify query, For --update (incremental re-extraction) (+6 more)
 
-### Community 548 - "Runbook de correções e melhorias — 50 etapas"
+### Community 545 - "Runbook de correções e melhorias — 50 etapas"
 Cohesion: 0.14
 Nodes (11): Comando pronto para rodar (com bypass explícito para o Lovable), O que foi confirmado, O que isso faz e não faz, Por que não rodei sozinho, Proteção de branch em `main` — pendente de aprovação, Fase 0 — Estabilizar (hoje, ordem obrigatória), Fase 1 — Governança do repositório (semana 1), Fase 3 — Segurança (semanas 2–3, paralelo à Fase 2) (+3 more)
 
-### Community 549 - "date-utils.ts"
+### Community 546 - "date-utils.ts"
 Cohesion: 0.27
 Nodes (13): 🎨 **EXEMPLOS DE OUTPUT**, formatDate(), formatDateCompact(), formatDateLong(), formatDateRelative(), formatDateSmart(), formatDateTime(), formatMonthYear() (+5 more)
 
-### Community 550 - "sicoob/orders.ts"
-Cohesion: 0.13
-Nodes (12): `src/pages/sicoob/orders/OrderDetailPage.tsx` (etapa 17, 8 → 0 erros — achado: dead code + drift de tipo hand-written), ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, OrderStatus, SICOOB_VALID_TRANSITIONS, SicoobApprovalRequest, SicoobBudget, SicoobOrder (+4 more)
-
-### Community 551 - "materialService"
-Cohesion: 0.17
-Nodes (8): `VoiceTranscriptPanel.tsx` (etapa 17, 8 → 0 erros), Como testar, Convenções, Edge Functions — Referência histórica, Helpers compartilhados, Padrões obrigatórios, Tabela de endpoints, materialService
-
-### Community 552 - "RECUPERACAO/README.md"
+### Community 547 - "RECUPERACAO/README.md"
 Cohesion: 0.17
 Nodes (6): Capacidades perdidas — anexo do ledger de recuperação, Persistência do Kit Builder — anexo do ledger de recuperação, As 32 PRs fechadas sem merge, Duas fechadas sem merge que faltavam nesta lista, PRs fechadas sem merge — anexo do ledger de recuperação, Vereditos revistos pela segunda rodada
 
-### Community 553 - "logisticsReportService.ts"
-Cohesion: 0.21
-Nodes (14): Paginação de remessas logísticas e histórico de orçamento (PRs #181 e #187), PR #181 — RECUPERAR, listAllLogisticsOrders(), listShipmentsForOrders(), listSicoobLogisticsTracking(), LOGISTICS_ORDER_STATUS_LIST, LOGISTICS_ORDER_STATUSES, orderDestination() (+6 more)
-
-### Community 554 - "Matriz de cenários de RLS"
+### Community 548 - "Matriz de cenários de RLS"
 Cohesion: 0.13
 Nodes (14): `collections`, Compartilhamento e itens de favoritos, Convenções, `custom_kits`, `favorite_lists`, Funções de apoio, `magic_up_campaigns`, Manutenção (+6 more)
 
-### Community 555 - "E2E (Playwright)"
+### Community 549 - "E2E (Playwright)"
 Cohesion: 0.13
 Nodes (14): Adicionando um novo seletor, Adicionar novas tabelas, CI, Cleanup automático (pós-suite), Cobertura por módulo, Comandos, Como funciona (camadas de segurança), Configuração (+6 more)
 
-### Community 556 - "log"
+### Community 550 - "log"
 Cohesion: 0.19
 Nodes (11): api_section(), _connect(), introspect_api(), introspect_db(), log(), record_error(), run_gen_types(), run_pg_dump() (+3 more)
 
-### Community 557 - "Production Hardening Baseline"
-Cohesion: 0.16
-Nodes (13): Itens não aplicados (decisão arquitetural), Onda 1 — Crítico ✅, Onda 2 — Alto ✅, Onda 3 — Médio ✅, Onda 6 — Polimento Final ✅, Production Hardening Baseline, Wire-ups pós-deploy, CheckItem (+5 more)
-
-### Community 558 - "test_start_supabase_postgres.py"
+### Community 551 - "test_start_supabase_postgres.py"
 Cohesion: 0.24
 Nodes (3): FakeDocker, resultado(), TestStartSupabasePostgres
 
-### Community 559 - "20260922150000_reconcile_audit_controls.sql"
+### Community 552 - "20260922150000_reconcile_audit_controls.sql"
 Cohesion: 0.13
 Nodes (3): public.audit_actor_email(), public.audit_rls_matrix(), public.v_full_scope_grants
 
-### Community 560 - "check-npm-audit.mjs"
+### Community 553 - "check-npm-audit.mjs"
 Cohesion: 0.20
 Nodes (9): braces, require, result, verifyBracesPatch(), ALLOWED_ADVISORIES, ALLOWLIST, collectAdvisoryIds(), isFullyAllowlisted() (+1 more)
 
-### Community 561 - "check-route-ref-usage.mjs"
+### Community 554 - "carousel.tsx"
+Cohesion: 0.17
+Nodes (14): embla-carousel-react, Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext (+6 more)
+
+### Community 555 - "MockupProductSelector.tsx"
+Cohesion: 0.22
+Nodes (14): @tanstack/react-virtual, EmptyProducts(), LoadingProducts(), MockupProductSelector(), MockupProductSelectorProps, ProductRow(), ProductSearchHeader(), ProductViewport() (+6 more)
+
+### Community 556 - "check-route-ref-usage.mjs"
 Cohesion: 0.24
 Nodes (14): checkFile(), __dirname, FILE_ALLOWLIST, hasAllowComment(), lineOf(), main(), ROUTE_DIRS, ROUTE_GUARDS (+6 more)
 
-### Community 562 - "check-seller-scope.mjs"
-Cohesion: 0.21
-Nodes (13): analyzeSource(), IGNORE_DIR, IGNORE_FILE_PATHS, main(), maskStrings(), scan(), SCOPE_SIGNALS, statementBounds() (+5 more)
-
-### Community 563 - "check-smoke-tags.mjs"
+### Community 557 - "check-smoke-tags.mjs"
 Cohesion: 0.20
 Nodes (13): analyzeSmokeSpec(), visit(), C, chain(), DESCRIBE_MODIFIERS, isFunction(), main(), ROOT (+5 more)
 
-### Community 564 - "CredentialsSourceFilterContext.tsx"
-Cohesion: 0.23
-Nodes (12): CredentialSourceBadge(), Props, CredentialsSourceFilter(), Props, SourceChips(), sourceCounts(), CredentialSource, CredentialsSourceFilterContext (+4 more)
-
-### Community 565 - "useProductImageGallery.ts"
+### Community 558 - "useProductImageGallery.ts"
 Cohesion: 0.23
 Nodes (14): buildAltText(), externalImagePayload(), ImageRecordResult, matchesImageFilters(), nextDisplayOrder(), partitionPersistenceResults(), PersistedImageResult, resolveVariant() (+6 more)
 
-### Community 566 - "ExportCollectionButton.tsx"
+### Community 559 - "ExportCollectionButton.tsx"
 Cohesion: 0.20
 Nodes (13): CollectionDetailHeader(), CollectionDetailHeaderProps, CollectionInfo, addProductCard(), addProductDetails(), addProductImage(), CollectionVariant, csvEscape() (+5 more)
 
-### Community 567 - "ContextualSkeleton.tsx"
+### Community 560 - "ContextualSkeleton.tsx"
 Cohesion: 0.27
 Nodes (14): ClientCardSkeleton(), DashboardSkeleton(), OrderTimelineSkeleton(), ProductCardSkeleton(), ProductGridSkeleton(), QuoteCardSkeleton(), QuoteListSkeleton(), shimmer (+6 more)
 
-### Community 568 - "OptimizedImage.tsx"
+### Community 561 - "OptimizedImage.tsx"
 Cohesion: 0.25
 Nodes (14): decodingMode(), fetchPriority(), imageErrorHandler(), imageLoadHandler(), imageSizes(), imageSource(), imageSourceSet(), imageVisualClass() (+6 more)
 
-### Community 569 - "TrendsForecastChart.tsx"
+### Community 562 - "FlowFilterSections.tsx"
+Cohesion: 0.18
+Nodes (14): FlowFilterOptions, CHIP_SECTIONS, ChipSection(), ChipSectionConfig, GENDER_OPTIONS, OptionKey, PRICE_PRESETS, PriceInput() (+6 more)
+
+### Community 563 - "CategoryRanking.tsx"
+Cohesion: 0.19
+Nodes (11): CategoryPieDatum, CategoryRanking(), CategoryRankingProps, CategoryTooltipProps, PIE_COLORS, SortMode, ViewMode, IntelligenceEmptyState() (+3 more)
+
+### Community 564 - "TrendsForecastChart.tsx"
 Cohesion: 0.21
 Nodes (14): buildChartData(), ChartData, chartPoint(), DailyTrend, ForecastContent(), ForecastError(), ForecastGraph(), ForecastHeader() (+6 more)
 
-### Community 570 - "SalesHistoryChart.tsx"
+### Community 565 - "SalesHistoryChart.tsx"
 Cohesion: 0.22
 Nodes (14): buildChartData(), ChartHeader(), EMPTY_KPIS, LoadingCard(), SalesChart(), SalesChartDatum, SalesHistoryChart(), SalesHistoryChartProps (+6 more)
 
-### Community 571 - "QuoteBuilderProductSearch.tsx"
+### Community 566 - "QuoteBuilderProductSearch.tsx"
 Cohesion: 0.22
 Nodes (13): formatStock(), Product, ProductColors(), ProductResult(), productResultClass(), ProductSearchHeader(), ProductStock(), ProductThumbnail() (+5 more)
 
-### Community 572 - "QuoteCommentsSection.tsx"
+### Community 567 - "QuoteCommentsSection.tsx"
 Cohesion: 0.21
 Nodes (14): AddComment, CommentActions(), CommentEditor(), CommentItem(), CommentItemProps, CommentsContent(), CommentThread(), DeleteComment (+6 more)
 
-### Community 573 - "OrganizationContext.tsx"
+### Community 568 - "OrganizationContext.tsx"
 Cohesion: 0.22
 Nodes (13): applyOrganizationSelection(), chooseOrganization(), clearOrganizationState(), fetchActiveOrganizations(), fetchOrganizationMemberships(), Organization, OrganizationContext, OrganizationContextType (+5 more)
 
-### Community 574 - "useQuotesStockStatus.ts"
+### Community 569 - "useQuotesStockStatus.ts"
 Cohesion: 0.22
 Nodes (14): availableForRequirement(), calculateQuoteStockIssues(), groupVariants(), latestSourceByVariant(), nonNegative(), QuoteStockItem, QuoteStockProduct, QuoteStockSupplierSource (+6 more)
 
-### Community 575 - "useMaterialTypes.ts"
+### Community 570 - "useMaterialTypes.ts"
 Cohesion: 0.16
 Nodes (10): defaultFilterState, MaterialFilterState, useMaterialFilter(), UseMaterialFilterReturn, useMaterialGroups(), useMaterialsComplete(), UseMaterialsCompleteReturn, UseMaterialSearchReturn (+2 more)
 
-### Community 576 - "useProductIntelligenceBadges.ts"
+### Community 571 - "useProductIntelligenceBadges.ts"
 Cohesion: 0.20
 Nodes (14): addMarketBadges(), bestVelocity(), buildBadgeResult(), catalogBadges(), CatalogFlags, classificationBadge(), demandLevel(), finiteTurnoverScore() (+6 more)
 
-### Community 577 - "techniques.ts"
+### Community 572 - "techniques.ts"
 Cohesion: 0.26
 Nodes (14): expandPrintArea(), fetchPromobrindPrintAreas(), fetchPromobrindTechniqueById(), fetchPromobrindTechniques(), firstField(), firstTruthy(), mappedPrintArea(), mapTechniqueFields() (+6 more)
 
-### Community 578 - "AdminConexoesStatusPage.tsx"
+### Community 573 - "AdminConexoesStatusPage.tsx"
 Cohesion: 0.22
 Nodes (14): AdminConexoesStatusPage(), buildDiagnosis(), classifyCredentials(), ConnectionDiagnosisCard(), ConnectionRow, ConnectionStatusBadge(), CredentialRow, CredentialStatusRow() (+6 more)
 
-### Community 579 - "Index.tsx"
+### Community 574 - "Index.tsx"
 Cohesion: 0.23
 Nodes (14): activeColorFilter(), BUYING_STEPS, CatalogSection(), CatalogSelection, CatalogState, HowToBuy(), Index(), scrollToCatalog() (+6 more)
 
-### Community 580 - "LayoutActions"
+### Community 575 - "LayoutActions"
 Cohesion: 0.21
 Nodes (15): approvalProduct(), dimensionValue(), firstMaterial(), LayoutActions(), layoutProduct(), layoutSeller(), layoutTechnique(), LogoPositionEditor (+7 more)
 
-### Community 581 - "usePublicQuoteApproval.ts"
-Cohesion: 0.21
-Nodes (13): formatDocument(), invokePublicQuote(), PublicQuoteApprovalState, PublicQuoteResult, PublicSeller, QuoteData, responsePayload(), ResponsePayloadParams (+5 more)
-
-### Community 582 - "crm.ts"
+### Community 576 - "crm.ts"
 Cohesion: 0.14
 Nodes (14): CrmAddress, CrmCarrier, CrmCompany, CrmCompanyFilters, CrmContact, CrmContactEmail, CrmContactPhone, CrmCustomer (+6 more)
 
-### Community 583 - "colorSorting.ts"
+### Community 577 - "colorSorting.ts"
 Cohesion: 0.22
 Nodes (14): COLOR_GROUP_ORDER, containsAny(), DARK_MODIFIERS, DARK_SPECIFIC_COLORS, getColorGroup(), getLuminanceFromHex(), getLuminosityPriority(), LIGHT_MODIFIERS (+6 more)
 
-### Community 584 - "e2e-cleanup/index.ts"
+### Community 578 - "e2e-cleanup/index.ts"
 Cohesion: 0.15
 Nodes (10): AuditPayload, corsHeaders, E2ERateLimitRow, maybeApplyNameFilter(), NAMEABLE_COLUMNS, purgeBySellerId(), purgeByUserId(), QUOTE_CHILD_TABLES_BY_QUOTE_ID (+2 more)
 
-### Community 585 - "20260418175315_6317f072-62ee-49c8-af36-6c992764a582.sql"
+### Community 579 - "20260418175315_6317f072-62ee-49c8-af36-6c992764a582.sql"
 Cohesion: 0.25
 Nodes (13): idx_kit_collab_kit, idx_kit_collab_user, idx_kit_comments_kit, idx_kit_comments_parent, idx_kit_variants_master, public.is_kit_collaborator(), public.is_kit_owner(), public.kit_collaborators (+5 more)
 
-### Community 586 - "public.snapshot_hardening_status"
+### Community 580 - "public.snapshot_hardening_status"
 Cohesion: 0.14
 Nodes (3): idx_hardening_snapshots_at, public.hardening_health_snapshots, public.snapshot_hardening_status()
 
-### Community 587 - "20260425203103_eec2662c-3ad4-48ca-8fcb-f3cbf6be16bc.sql"
+### Community 581 - "20260425203103_eec2662c-3ad4-48ca-8fcb-f3cbf6be16bc.sql"
 Cohesion: 0.22
 Nodes (11): idx_step_up_audit_action, idx_step_up_audit_user, idx_step_up_challenges_expires, idx_step_up_challenges_user, idx_step_up_tokens_hash, idx_step_up_tokens_user, public.request_step_up_challenge(), public.step_up_audit_log (+3 more)
 
-### Community 588 - "20260922210000_sicoob_approval_notification_outbox.sql"
+### Community 582 - "20260922210000_sicoob_approval_notification_outbox.sql"
 Cohesion: 0.23
 Nodes (7): idx_sicoob_approval_delivery_pending, idx_sicoob_approval_delivery_setting, public.claim_sicoob_approval_delivery(), public.enqueue_sicoob_approval_notifications(), public.get_sicoob_approval_delivery_summary(), public.sicoob_approval_deliveries, tr_queue_sicoob_approval_notifications
 
-### Community 589 - "reduced-app-navigation.test.tsx"
+### Community 583 - "reduced-app-navigation.test.tsx"
 Cohesion: 0.24
 Nodes (13): AdminConnectionsStub, AdminTelemetryStub, AdminThemesStub, AdminUsersStub, authState, DashboardStub, HomeStub, LoginStub (+5 more)
 
-### Community 590 - "useConnectionTester.test.tsx"
+### Community 584 - "useConnectionTester.test.tsx"
 Cohesion: 0.25
 Nodes (10): makeAuthResult(), makeDnsResult(), makeHttpResult(), makeNetworkResult(), makeOkResult(), makeTimeoutResult(), toLastTestInfo(), invokeMock (+2 more)
 
-### Community 591 - "tests/p0/_mocks.ts"
+### Community 585 - "tests/p0/_mocks.ts"
 Cohesion: 0.13
 Nodes (11): bitrixWebhook5xx, bitrixWebhookOk, bitrixWebhookTimeout, cloudflareStreamDown, crmDbBridgeOffline, crmDbBridgeStale, EdgeFnResponseSpec, mcpGatewayUnauthorized (+3 more)
 
-### Community 592 - "main.tsx"
-Cohesion: 0.16
-Nodes (6): authEntryPaths, earlyRuntimeErrors, onEarlyError(), onEarlyRejection(), queueEarlyRuntimeError(), rootElement
+### Community 586 - "DiagnosticsManager"
+Cohesion: 0.18
+Nodes (4): AppHealthStatus, DiagnosticLog, diagnostics, DiagnosticsManager
 
-### Community 593 - "QuoteHistoryPanel.tsx"
+### Community 587 - "bridgeCallMetrics.ts"
 Cohesion: 0.21
-Nodes (13): 📝 **CHECKLIST DE IMPLEMENTAÇÃO**, ✅ **Tarefas Obrigatórias:**, 🔧 **Tarefas Opcionais (Recomendadas):**, actionColors, actionIcons, AuditDetails(), displayMetadataValue(), EntryHeader() (+5 more)
+Nodes (12): bridgeCallMetrics.ts (etapa 17), aggregateByEndpoint(), BridgeAggregateRow, clearBridgeSamples(), emit(), estimateArrayBytes(), estimateObjectBytes(), estimatePayloadBytes() (+4 more)
 
-### Community 594 - "useComparisonStore.ts"
+### Community 588 - "useComparisonStore.ts"
 Cohesion: 0.23
 Nodes (13): NoveltyProductGrid.tsx (etapa 17), ReplenishmentProductGrid.tsx (etapa 17), applyState(), CompareItem, CompareVariantInfo, ComparisonActions, ComparisonState, ComparisonStore (+5 more)
 
-### Community 595 - "@e965/xlsx"
-Cohesion: 0.15
-Nodes (10): `src/pages/admin/AdminAuditPage.tsx` (etapa 17, 7 → 0 erros — achado de bug grave e AO VIVO em produção fora do arquivo), @e965/xlsx, papaparse, downloadTemplateXLSX(), getXLSX(), ImportMode, ImportStep, ParsedData (+2 more)
-
-### Community 596 - "usePhaseColors.ts"
+### Community 589 - "usePhaseColors.ts"
 Cohesion: 0.34
 Nodes (13): usePhaseColors.ts (etapa 17), BaseHsl, bootingColors(), createPhaseColors(), errorColors(), getThemeHSL(), hsl(), hsla() (+5 more)
 
-### Community 597 - "useProductImages.ts"
+### Community 590 - "useProductImages.ts"
 Cohesion: 0.21
 Nodes (10): useProductImages.ts (etapa 17), fetchPrimaryImage(), fetchProductImages(), fetchProductImagesBatch(), ProductImage, ProductImageForDisplay, resolveProductImageRows(), usePrimaryImage() (+2 more)
 
-### Community 598 - "Rotação de credenciais — Brindes Sicoob V2"
+### Community 591 - "As 11 capacidades perdidas"
+Cohesion: 0.21
+Nodes (11): As 11 capacidades perdidas, Copiloto de vendas Sussurro (motor de análise e sugestões) — pr/116 + plano em pr/114, pr/117, pr/118, Documentacao perdida em docs/ (diagnostico mecanico: 125 arquivos; contagem real: 118), Hardening perdido: bi-share-dossier e health-check publico (PR #150), kit-builder: persistencia e coordenador de concorrencia (pr/119), Métricas reais do Gestor de Compras (fim de métrica fictícia) — PR #157, GestorOrderSummary, GestorStats (+3 more)
+
+### Community 592 - "Rotação de credenciais — Brindes Sicoob V2"
 Cohesion: 0.14
 Nodes (13): Access token da Management API, Calendário, Checklist de fechamento, Classificação, Consumidores conhecidos, Contas E2E, Estado verificado em 07/10/2026, Procedimento para credencial privada (+5 more)
 
-### Community 599 - "domain/simulation.ts"
+### Community 593 - "domain/simulation.ts"
 Cohesion: 0.24
 Nodes (10): ProductColor, SavedSimulation, SimulationClient, SimulationOption, SimulationProduct, SimulationScenario, SimulatorState, SimulatorStep (+2 more)
 
-### Community 600 - "Hardening Roadmap — 10/10 ATINGIDO ✅"
+### Community 594 - "Hardening Roadmap — 10/10 ATINGIDO ✅"
 Cohesion: 0.14
 Nodes (13): Adoção `fetchWithBreaker` por service, Hardening Roadmap — 10/10 ATINGIDO ✅, Onda 10 — Auditoria Final ✅ COMPLETA (2026-04-19), Onda 1 ✅ COMPLETA (9/9), Onda 2 ✅ COMPLETA (9/9), Onda 3 ✅ COMPLETA (10/10), Onda 4 — Excelência Contínua ✅ COMPLETA (6/6), Onda 5 — Excelência Operacional ✅ COMPLETA (6/6) (+5 more)
 
-### Community 601 - "20260522141706_ca436d53-f169-4b31-b184-a48a68edc89f.sql"
+### Community 595 - "20260522141706_ca436d53-f169-4b31-b184-a48a68edc89f.sql"
 Cohesion: 0.18
 Nodes (8): idx_access_blocked_log_created_at, idx_access_blocked_log_ip, idx_access_blocked_log_user, idx_city_whitelist_lookup, idx_ip_whitelist_active, idx_ip_whitelist_created_by, idx_user_roles_user_id, public.telemetry_events
 
-### Community 602 - "20260922165000_scope_public_role_helpers_to_actor.sql"
+### Community 596 - "20260922165000_scope_public_role_helpers_to_actor.sql"
 Cohesion: 0.19
 Nodes (8): public.can_manage(), public.get_user_org_ids(), public.has_role(), public.is_admin(), public.is_dev(), public.is_kit_collaborator(), public.is_kit_owner(), public.is_supervisor_or_above()
 
-### Community 603 - "convencoes"
+### Community 597 - "client.ts"
+Cohesion: 0.15
+Nodes (10): @lovable.dev/cloud-auth-js, lovable, lovableAuth, SignInOptions, RuntimeConfig, RuntimeGlobal, supabase, supabasePublishableKey (+2 more)
+
+### Community 598 - "OrdersKanbanPage.tsx"
+Cohesion: 0.20
+Nodes (13): use-local-storage-state, ColumnDef, COLUMNS, DraggableCard(), DraggableCardProps, DroppableColumn(), DroppableColumnProps, getCardInteractionClass() (+5 more)
+
+### Community 599 - "convencoes"
 Cohesion: 0.16
 Nodes (14): aliasesFor(), baseOf(), componentFile(), convencoes, dirOf(), edges, exists(), i18n (+6 more)
 
-### Community 604 - "check-live-api-inventory.mjs"
-Cohesion: 0.29
-Nodes (11): CACHE_PATH, collectLiveInventory(), compareInventorySnapshots(), hasBlockingDifferences(), main(), ROOT, setDifference(), bucketContract() (+3 more)
-
-### Community 605 - "AdminDataTable.tsx"
+### Community 600 - "AdminDataTable.tsx"
 Cohesion: 0.21
 Nodes (13): AdminDataTable(), AdminDataTableProps, Column, DataGrid(), DataGridProps, DataTableRow, pageNumber(), Pagination() (+5 more)
 
-### Community 606 - "HeaderSeveritySummary.tsx"
-Cohesion: 0.22
-Nodes (13): ActivePulse(), buildSeverityPills(), HeaderSeveritySummary(), LEVEL_NAME, pillAria(), PillCounter(), PillDef, severityCounts() (+5 more)
-
-### Community 607 - "RotationHistoryDialog.tsx"
+### Community 601 - "RotationHistoryDialog.tsx"
 Cohesion: 0.29
 Nodes (12): ActionBadge(), formatDateTime(), formatRelative(), HistoryContent(), HistoryTableRow(), LastOperation(), Props, RotationHistoryDialog() (+4 more)
 
-### Community 608 - "CategoryCascadeSelector.tsx"
-Cohesion: 0.22
-Nodes (12): buildTree(), setPaths(), CascadeSelects(), CategoryCascadeSelector(), CategoryCascadeSelectorProps, CategoryTreeDialog(), CatNode, TreeNode() (+4 more)
-
-### Community 609 - "BreakerStatusCard.tsx"
+### Community 602 - "BreakerStatusCard.tsx"
 Cohesion: 0.25
 Nodes (13): BreakerContent(), BreakerState, BreakerStatusCard(), BreakerStatusResponse, FailureTile(), fmtCountdown(), fmtMs(), functionUrl (+5 more)
 
-### Community 610 - "BridgeAlertsCard.tsx"
+### Community 603 - "BridgeAlertsCard.tsx"
 Cohesion: 0.25
 Nodes (13): AlertRow(), BridgeAlertsCard(), BridgeAlertsContent(), BridgeAlertsHeader(), BRIDGES, BridgeThreshold, formatBytes(), formatMs() (+5 more)
 
-### Community 611 - "ClientVsIndustryComparison.tsx"
+### Community 604 - "ClientVsIndustryComparison.tsx"
 Cohesion: 0.26
 Nodes (13): AmostraInsuficiente(), AvisoDeCacheDesatualizado(), classificationStyles(), ClienteSemComparativo(), ClientVsIndustryComparison(), ComparativoIndisponivel(), ComparativoPronto(), formatIndustry() (+5 more)
 
-### Community 612 - "ErrorBoundary.tsx"
+### Community 605 - "ErrorBoundary.tsx"
 Cohesion: 0.18
 Nodes (7): ErrorActions(), ErrorBoundary, ErrorDebugDetails(), ErrorFallback(), ErrorFallbackProps, Props, State
 
-### Community 613 - "UnmetDemandCard.tsx"
+### Community 606 - "UnmetDemandCard.tsx"
 Cohesion: 0.24
 Nodes (12): aggregatePage(), cursorFilter(), loadUnmetDemand(), nextCursor(), UnmetDemandCursor, UnmetDemandItem, UnmetDemandResult, UnmetDemandRow (+4 more)
 
-### Community 614 - "StockBadge.tsx"
+### Community 607 - "StockBadge.tsx"
 Cohesion: 0.18
 Nodes (12): formatStockQuantity(), sizeConfig, SizeConfigEntry, statusConfig, StatusConfigEntry, StockBadge, StockBadgeContent(), StockBadgeProps (+4 more)
 
-### Community 615 - "BoxSelector.tsx"
+### Community 608 - "BoxSelector.tsx"
 Cohesion: 0.24
 Nodes (13): AdvancedFilters(), AdvancedFiltersProps, BoxList(), BoxListProps, boxMaterials(), BoxOption(), BoxSelector(), BoxSelectorProps (+5 more)
 
-### Community 616 - "MockupClientSelector.tsx"
+### Community 609 - "MockupClientSelector.tsx"
 Cohesion: 0.27
 Nodes (13): CompanyAvatar(), CompanyDropdown(), CompanyResult(), DropdownBackdrop(), DropdownProps, MockupClientSelector(), MockupClientSelectorProps, ResultsList() (+5 more)
 
-### Community 617 - "MockupProductSelector.tsx"
-Cohesion: 0.24
-Nodes (13): EmptyProducts(), LoadingProducts(), MockupProductSelector(), MockupProductSelectorProps, ProductRow(), ProductSearchHeader(), ProductViewport(), ProductViewportProps (+5 more)
-
-### Community 618 - "TechniqueColorConfigDialog.tsx"
+### Community 610 - "TechniqueColorConfigDialog.tsx"
 Cohesion: 0.26
 Nodes (13): buildTechniqueColorConfig(), categoryDescription(), ColorConfiguration(), DialogBody(), FullColorOptions(), isColorConfigurationValid(), LASER_TONES, LaserOptions() (+5 more)
 
-### Community 619 - "QuoteRowQuickActions.tsx"
+### Community 611 - "QuoteRowQuickActions.tsx"
 Cohesion: 0.25
 Nodes (12): DuplicateDialog(), QuickAction(), QuoteRowQuickActions(), QuoteRowQuickActionsProps, useDuplicateDialog(), buildQuoteWhatsappUrl(), ClientFields(), publicProposalLink() (+4 more)
 
-### Community 620 - "carousel.tsx"
-Cohesion: 0.19
-Nodes (13): Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext, CarouselOptions (+5 more)
-
-### Community 621 - "DataCard.tsx"
+### Community 612 - "DataCard.tsx"
 Cohesion: 0.18
 Nodes (11): colorStyles, DataCard(), DataCardGridProps, DataCardProps, displayMetric(), MiniStatCardProps, resolveTrendDirection(), sizeStyles (+3 more)
 
-### Community 622 - "use-toast.ts"
+### Community 613 - "use-toast.ts"
 Cohesion: 0.21
 Nodes (13): Action, ActionType, addToRemoveQueue(), dispatch(), genId(), listeners, memoryState, reducer() (+5 more)
 
-### Community 623 - "useDiscountApproval.ts"
+### Community 614 - "useDiscountApproval.ts"
 Cohesion: 0.24
 Nodes (13): approvalRequestMessage(), ApprovalRpcRow, DecisionRpcRow, DiscountApprovalRequest, DiscountApprovalWithQuote, logNegotiationMarkup(), notifyAdminsOfApprovalRequest(), notifyDecisionBestEffort() (+5 more)
 
-### Community 624 - "useTechniqueRecommendations.ts"
+### Community 615 - "useTechniqueRecommendations.ts"
 Cohesion: 0.20
 Nodes (13): calculateRecommendationScore(), extractKeywords(), MATERIAL_TECHNIQUE_MAP, POPULARITY_SCORES, recommendationOrder(), recommendationReasons(), selectedOrder(), SortOption (+5 more)
 
-### Community 625 - "price-response.adapter.ts"
+### Community 616 - "price-response.adapter.ts"
 Cohesion: 0.29
 Nodes (13): adaptPriceResponse(), adaptPriceResponseWithMeta(), copyAlias(), copyNestedAliases(), firstDefined(), FlatPriceResponse, NestedPriceResponse, normalizeV7Aliases() (+5 more)
 
-### Community 626 - "operationalMetrics.ts"
+### Community 617 - "operationalMetrics.ts"
 Cohesion: 0.14
 Nodes (9): APPROVED_STATUSES, CompletedOrderMetric, CompletionEventMetricInput, ProductRecurrenceSignal, RecurrenceItemInput, RecurrenceOrderInput, SAVINGS_NOT_MEASURED, SellerOrderMetricInput (+1 more)
 
-### Community 627 - "QARunDetailPage.tsx"
+### Community 618 - "QARunDetailPage.tsx"
 Cohesion: 0.25
 Nodes (13): createQaStep(), fetchQaRun(), fetchQaSteps(), QaRun, QARunDetailPage(), QaStep, RunChecklist(), RunHeader() (+5 more)
 
-### Community 628 - "useResolveProductsSelectComparison.ts"
+### Community 619 - "useResolveProductsSelectComparison.ts"
 Cohesion: 0.19
 Nodes (11): ComparisonWindow, DEFAULT_CUTOVER_LOCALSTORAGE_KEY, fetchRows(), pctDelta(), percentile(), ResolveProductsSelectComparison, ResolveProductsSelectMetrics, summarize() (+3 more)
 
-### Community 629 - "useFiltersSelectionMode.ts"
+### Community 620 - "useFiltersSelectionMode.ts"
 Cohesion: 0.29
 Nodes (13): compareSelections(), favoriteSelections(), pluralSuffix(), quoteItem(), selectedVariant(), sendSelectionsToQuote(), useFiltersSelectionMode(), UseFiltersSelectionModeParams (+5 more)
 
-### Community 630 - "PublicKitViewPage.tsx"
+### Community 621 - "MatchCards.tsx"
+Cohesion: 0.27
+Nodes (13): buildQuotePath(), formatPrice(), MATCH_TYPE_CONFIG, MatchActions(), MatchCard(), MatchHeading(), MatchMetadata(), MatchReasons() (+5 more)
+
+### Community 622 - "PublicKitViewPage.tsx"
 Cohesion: 0.24
 Nodes (13): Kit, KIT_TYPE_LABELS, KitBox(), KitError(), KitHeader(), KitItem(), KitItems(), KitPresentation() (+5 more)
 
-### Community 631 - "PADashboardPage.tsx"
+### Community 623 - "PADashboardPage.tsx"
 Cohesion: 0.26
 Nodes (13): BudgetMetric(), calculateBudgetUsed(), DashboardError(), DashboardHeader(), DashboardMetrics(), DashboardSidebar(), DashboardStats, getPaDisplayName() (+5 more)
 
-### Community 632 - "SicoobInvitationAcceptPage.tsx"
+### Community 624 - "SicoobInvitationAcceptPage.tsx"
 Cohesion: 0.23
 Nodes (13): activateInvitation(), fetchInvitation(), InvitationAction(), InvitationContent(), InvitationContentProps, InvitationDetails(), InvitationHeader(), InvitationIdentity() (+5 more)
 
-### Community 633 - "TrendsCharts.tsx"
+### Community 625 - "TrendsCharts.tsx"
 Cohesion: 0.19
 Nodes (12): ActivityChartProps, DailyTrend, ProductsTabContent(), ProductsTabProps, SearchesTabContent(), SearchesTabProps, tooltipStyle, TrendProduct (+4 more)
 
-### Community 634 - "publicFavoriteListService.ts"
+### Community 626 - "publicFavoriteListService.ts"
 Cohesion: 0.26
 Nodes (12): fetchPublicFavoriteList(), isNullableString(), isPublicFavoriteItem(), isRecord(), parsePublicFavoriteItem(), parsePublicFavoriteList(), parsePublicFavoriteListResponse(), parseVariantInfo() (+4 more)
 
-### Community 635 - "types/index.ts"
+### Community 627 - "types/index.ts"
 Cohesion: 0.22
 Nodes (11): GeneratedMockup, LogoData, MockupDraft, PersonalizationArea, KitItem, Product, ProductColor, ProductFilters (+3 more)
 
-### Community 636 - "step-up-verify/index.ts"
+### Community 628 - "step-up-verify/index.ts"
 Cohesion: 0.15
 Nodes (10): deliverStepUpOtp(), DeliveryOptions, StepUpOtpDelivery, StepUpOtpDeliveryResult, Action, corsHeaders, RequestBody, RpcEnvelope (+2 more)
 
-### Community 637 - "notifications"
+### Community 629 - "notifications"
 Cohesion: 0.21
 Nodes (11): idx_notifications_group, idx_notifications_scheduled, idx_notifications_source, idx_notifications_unread, idx_notifications_user, notifications, trigger_update_notification_updated_at, idx_notifications_created (+3 more)
 
-### Community 638 - "20260420164558_8d6e1541-e786-4b7a-9f6c-2f5ec1d3c7df.sql"
+### Community 630 - "20260420164558_8d6e1541-e786-4b7a-9f6c-2f5ec1d3c7df.sql"
 Cohesion: 0.25
 Nodes (12): idx_comparison_reactions_comp, idx_price_history_product_date, idx_user_comparisons_public, idx_user_comparisons_token, idx_user_comparisons_user, public.comparison_reactions, public.get_top_compared_products(), public.get_user_recent_comparisons() (+4 more)
 
-### Community 639 - "20260426125603_b96b3daf-08f4-4edd-bf2f-835a6c673dbf.sql"
+### Community 631 - "20260426125603_b96b3daf-08f4-4edd-bf2f-835a6c673dbf.sql"
 Cohesion: 0.14
 Nodes (5): trg_set_seller_id_default_dar, trg_set_seller_id_default_orders, trg_set_seller_id_default_qatokens, trg_set_seller_id_default_qtemplates, trg_set_seller_id_default_quotes
 
-### Community 640 - "20260521103842_39b615e5-f2d6-4070-ab11-8f3618e5fda4.sql"
+### Community 632 - "20260521103842_39b615e5-f2d6-4070-ab11-8f3618e5fda4.sql"
 Cohesion: 0.21
 Nodes (10): public.access_blocked_log, public.access_security_settings, public.can_manage(), public.city_whitelist, public.device_login_notifications, public.get_user_role(), public.has_role(), public.ip_whitelist (+2 more)
 
-### Community 641 - "20260911143000_sicoob_order_budget_atomicity.sql"
+### Community 633 - "20260911143000_sicoob_order_budget_atomicity.sql"
 Cohesion: 0.22
 Nodes (6): public.approve_sicoob_order(), public.confirm_sicoob_order(), public.reject_sicoob_order(), public.validate_sicoob_order_budget(), tr_validate_sicoob_order_status, trg_validate_sicoob_order_budget
 
-### Community 642 - "20260922152000_group_personalization_templates.sql"
+### Community 634 - "20260922152000_group_personalization_templates.sql"
 Cohesion: 0.23
 Nodes (10): product_component_location_techniques_location_idx, product_component_location_techniques_one_default_idx, product_group_components_group_order_idx, product_group_location_techniques_location_idx, product_group_location_techniques_one_default_idx, product_group_locations_component_idx, public.product_component_location_techniques, public.product_group_components (+2 more)
 
-### Community 643 - "20260922200000_public_quote_approval_contract.sql"
+### Community 635 - "20260922200000_public_quote_approval_contract.sql"
 Cohesion: 0.19
 Nodes (4): public.apply_local_quote_approval_response(), public.get_public_quote_approval(), public.get_quote_token_by_value(), trg_validate_approval_token_status
 
-### Community 644 - "20260922223000_sicoob_approval_outbox_followup.sql"
+### Community 636 - "20260922223000_sicoob_approval_outbox_followup.sql"
 Cohesion: 0.18
 Nodes (4): idx_sicoob_approval_delivery_expired_lease, idx_sicoob_approval_delivery_request_event, public.enqueue_sicoob_approval_event(), tr_queue_sicoob_approval_escalation
 
-### Community 645 - "public.reconcile_sicoob_approval_delivery"
+### Community 637 - "public.reconcile_sicoob_approval_delivery"
 Cohesion: 0.22
 Nodes (4): public.claim_sicoob_approval_delivery(), public.enqueue_sicoob_approval_event(), public.reconcile_sicoob_approval_delivery(), public.sicoob_approval_delivery_archive
 
-### Community 646 - "quotes-flow.test.ts"
+### Community 638 - "quotes-flow.test.ts"
 Cohesion: 0.15
 Nodes (9): calcDiscount(), calcTotal(), Quote, QuoteItem, QuoteStatus, sampleQuotes, STATUS_LABELS, STATUSES (+1 more)
 
-### Community 647 - "pa-budgets-authority-fixture.sql"
+### Community 639 - "useWorkspaceNotifications-cache-freshness.test.tsx"
+Cohesion: 0.16
+Nodes (6): limitMock, loadHookAndMetrics(), SEED, STABLE_USER, DeterministicClock, installDeterministicClock()
+
+### Community 640 - "telemetry-logs-connections-access.test.ts"
+Cohesion: 0.27
+Nodes (13): canManageConnections(), canViewAuditLogs(), canViewConnections(), canViewTelemetry(), evaluateGate(), Gate, isAdmin(), isDev() (+5 more)
+
+### Community 641 - "pa-budgets-authority-fixture.sql"
 Cohesion: 0.22
 Nodes (12): public.cooperativa_budgets, public.current_user_cooperativa_id(), public.current_user_pa_id(), public.has_role(), public.is_admin(), public.is_gerente_pa(), public.is_gestor_compras(), public.pa_budgets (+4 more)
 
-### Community 648 - "public.get_connections_hub_operational_evidence"
+### Community 642 - "public.get_connections_hub_operational_evidence"
 Cohesion: 0.15
 Nodes (3): public.audit_security_definer_acl(), public.dispatch_sicoob_connections_health_check(), public.get_connections_hub_operational_evidence()
 
-### Community 649 - "EnhancedProductCard.tsx"
+### Community 643 - "main.tsx"
+Cohesion: 0.18
+Nodes (6): authEntryPaths, earlyRuntimeErrors, onEarlyError(), onEarlyRejection(), queueEarlyRuntimeError(), rootElement
+
+### Community 644 - "supabase/types.ts"
+Cohesion: 0.18
+Nodes (12): 2.1 Tabelas usadas no front-end AUSENTES do `types.ts`, `useMagicUpState.ts` (etapa 17, 8 → 0 erros), CompositeTypes, Constants, DatabaseWithoutInternals, DefaultSchema, Enums, Json (+4 more)
+
+### Community 645 - "EnhancedProductCard.tsx"
 Cohesion: 0.27
 Nodes (12): EnhancedProductCard.tsx (etapa 17), CardImageArea(), ColorPreview(), EnhancedProductCard(), EnhancedProductCardProps, formatProductPrice(), HoverPreview(), normalizedCardProps() (+4 more)
 
-### Community 650 - "LogoPreviewCanvas.tsx"
+### Community 646 - "LogoPreviewCanvas.tsx"
 Cohesion: 0.27
 Nodes (12): logoTechniqueFilters.ts (etapa 17), colorConfigLabel(), getIndicatorBackground(), isProcessedLogo(), logoAppearance(), LogoLayer(), LogoPreviewCanvas(), LogoPreviewCanvasProps (+4 more)
 
-### Community 651 - "Domínios"
+### Community 647 - "Domínios"
 Cohesion: 0.15
 Nodes (12): 🔐 Auth & RBAC, Convenções, Data Dictionary — Promo Gifts (Local Supabase), Domínios, Funções de DB críticas, 🤖 IA & Conversational, 🎨 Kits & Mockups, 🏢 Multi-tenant (preparado, pouco usado) (+4 more)
 
-### Community 652 - "📦 3. GESTÃO DE PRODUTOS"
+### Community 648 - "📦 3. GESTÃO DE PRODUTOS"
 Cohesion: 0.15
 Nodes (13): 3.10 Cores e Variações, 3.11 Ramo de Atividade, 3.12 Fornecedores, 3.1 Catálogo de Produtos, 3.2 Virtualização, 3.3 Personalização de Produtos, 3.4 Registro de Produtos, 3.5 Histórico de Preços (+5 more)
 
-### Community 653 - "Plano de implementação do portal Sicoob"
-Cohesion: 0.15
-Nodes (9): Arquivos, Artefatos históricos E001–E100, Base da proposta, Como acompanhar, Plano de correções em 150 etapas — 27/09/2026, Plano de implementação do portal Sicoob, Regra de conclusão, Revisão atual — 12/09/2026 (+1 more)
-
-### Community 654 - "Fase C — Corrigir as referências código→banco quebradas ao vivo (Etapas 9-20)"
+### Community 649 - "Fase C — Corrigir as referências código→banco quebradas ao vivo (Etapas 9-20)"
 Cohesion: 0.15
 Nodes (13): Etapa 10 — Aplicar `create_quote_version_atomic` (migration + followup já escritos), Etapa 11 — Aplicar `check_rls_enabled`/`get_enum_values` (migration já escrita), Etapa 12 — Reauditar ACL/RLS de tudo aplicado nas Etapas 9-11 com o método correto, Etapa 13 — Varredura dirigida "migration existe, nunca aplicada" para os itens restantes, Etapa 14 — `sicoob_budgets`: confirmar identidade com `cooperativa_budgets`, Etapa 15 — `products`/`companies` nos call-sites locais: apontar para o client externo, Etapa 16 — Corrigir os 2 buckets errados (mecânico), Etapa 17 — `set_config` em `mcp-keys-revoke`: criar wrapper exposto corretamente (+5 more)
 
-### Community 655 - "public.reorder_sicoob_order_as_quote"
+### Community 650 - "public.reorder_sicoob_order_as_quote"
 Cohesion: 0.19
 Nodes (3): idx_sicoob_reorder_requests_source, public.reorder_sicoob_order_as_quote(), public.sicoob_reorder_requests
 
-### Community 656 - "pptxGenerator.ts"
+### Community 651 - "EnhancedErrorBoundary"
+Cohesion: 0.18
+Nodes (3): 🔧 Troubleshooting, AutoRecoveringView(), EnhancedErrorBoundary
+
+### Community 652 - "pptxGenerator.ts"
 Cohesion: 0.27
 Nodes (12): pptxgenjs, addBusinessSector(), addClientAffinity(), addIndustryComparison(), addIndustryTrends(), Args, C, fmtBRL() (+4 more)
 
-### Community 657 - "QuoteSignaturePad.tsx"
+### Community 653 - "QuoteSignaturePad.tsx"
 Cohesion: 0.26
 Nodes (12): react-signature-canvas, BadgeSecurity(), Loader2(), maskDocument(), QuoteSignaturePad(), QuoteSignaturePadProps, SignatureArea(), SignatureState (+4 more)
 
-### Community 658 - "build_function_callers"
+### Community 654 - "recharts"
+Cohesion: 0.17
+Nodes (9): recharts, COLORS, ComparisonRadarChart(), ComparisonRadarChartProps, leadTimeScore(), PriceHistoryChartProps, PricePoint, Sparkline() (+1 more)
+
+### Community 655 - "build_function_callers"
 Cohesion: 0.15
 Nodes (7): build_function_callers(), is_caller_source(), prepare_output_directory(), rx_name_keys(), scan_code_files(), sql_without_routine_declarations(), valid_previous_snapshot()
 
-### Community 659 - "DiscountApprovalQueue.tsx"
+### Community 656 - "LastTestLine.tsx"
+Cohesion: 0.27
+Nodes (12): errorPresentation(), formatRelative(), LastTestLine(), LineLayout(), ResultButton(), ResultControlProps, ResultHeader(), ResultRegion() (+4 more)
+
+### Community 657 - "DiscountApprovalQueue.tsx"
 Cohesion: 0.26
 Nodes (12): ClientSummary(), DiscountApprovalQueue(), DiscountApprovalRequest, DiscountHeader(), DiscountRequestCard(), DiscountRequestCardProps, fetchDiscountApprovalQueue(), MarkupSummary() (+4 more)
 
-### Community 660 - "RoleMigrationPanel.tsx"
+### Community 658 - "useProductsManager.ts"
+Cohesion: 0.26
+Nodes (12): ProductFilters, buildServerFilters(), firstDefined(), formatAdminProduct(), formatProductColors(), formatProductImages(), PAGE_SIZE_OPTIONS, ProductFetchOptions (+4 more)
+
+### Community 659 - "RoleMigrationPanel.tsx"
 Cohesion: 0.21
 Nodes (12): BatchHistory(), BatchHistoryProps, DEFAULT_STATUS_BADGE, fetchProfiles(), HighImpactAlert(), migrationValidation(), OPERATIONS, ProfileLite (+4 more)
 
-### Community 661 - "RegressionGuardrailBanner.tsx"
+### Community 660 - "RegressionGuardrailBanner.tsx"
 Cohesion: 0.24
 Nodes (12): badgeToneClass(), cardToneClass(), deltaPresentation(), GuardrailReportCard(), GuardrailState, iconToneClass(), MetricDelta(), MetricDeltaProps (+4 more)
 
-### Community 662 - "ResolveProductsSelectComparisonCard.tsx"
+### Community 661 - "ResolveProductsSelectComparisonCard.tsx"
 Cohesion: 0.27
 Nodes (12): ComparisonContent(), ComparisonHeader(), ComparisonHeaderProps, DeltaDirection, deltaTone(), formatMs(), formatPct(), MetricRow() (+4 more)
 
-### Community 663 - "RoleAuditLogPanel.tsx"
+### Community 662 - "RoleAuditLogPanel.tsx"
 Cohesion: 0.22
 Nodes (12): ACTION_LABEL, EMPTY_PROFILES, entryMatches(), ProfileLite, profileMatches(), ROLE_ACTIONS, RoleAction, RoleAuditEntry (+4 more)
 
-### Community 664 - "PasswordStrengthIndicator.tsx"
+### Community 663 - "PasswordStrengthIndicator.tsx"
 Cohesion: 0.24
 Nodes (12): analyzePassword(), BreachMessage(), BreachStatus(), BreachStatusProps, CriteriaList(), formatBreachCount(), getStrength(), PasswordStrengthIndicator() (+4 more)
 
-### Community 665 - "ClientHealthHero.tsx"
+### Community 664 - "ClientHealthHero.tsx"
 Cohesion: 0.26
 Nodes (11): categoriasSemFonte(), ClientHealthHero(), HealthUnavailableCard(), Props, renderHealthState(), resolveOportunidadeDeCategoria(), TIER_STYLES, ConfirmQuoteSuggestionsModal() (+3 more)
 
-### Community 666 - "BackButton.tsx"
-Cohesion: 0.24
-Nodes (11): BackButton, BackButtonContent(), BackButtonContentProps, BackButtonView(), BackButtonViewProps, CRITICAL_PATHS, entranceAnimation(), getParentLabel() (+3 more)
-
-### Community 667 - "KitConflictAlerts.tsx"
+### Community 665 - "KitConflictAlerts.tsx"
 Cohesion: 0.26
 Nodes (12): Conflict, conflictIconTone(), conflictTone(), detectConflicts(), FRAGILE_KEYWORDS, fragileConflict(), freightConflict(), KitConflictAlerts() (+4 more)
 
-### Community 668 - "SmartRecommendations.tsx"
+### Community 666 - "SmartRecommendations.tsx"
 Cohesion: 0.23
 Nodes (12): CarouselControls(), CarouselSkeleton(), MiniCard(), MiniCardProps, Recommendation, RecommendationCarousel(), RecommendationCarouselProps, RecommendationList() (+4 more)
 
-### Community 669 - "RamoAtividadeBadge.tsx"
+### Community 667 - "RamoAtividadeBadge.tsx"
 Cohesion: 0.21
 Nodes (12): BadgeContent(), BadgeTooltip(), COUNT_SIZE_CLASSES, ICON_SIZE_CLASSES, ProductCount(), RamoAtividadeBadge, RamoAtividadeBadgeProps, REMOVE_SIZE_CLASSES (+4 more)
 
-### Community 670 - "PasskeyManager.tsx"
+### Community 668 - "PasskeyManager.tsx"
 Cohesion: 0.27
 Nodes (12): getDeviceIcon(), Passkey, PasskeyDeleteDialog(), PasskeyHeader(), PasskeyManager(), PasskeyManagerProps, PasskeyRow(), PasskeysList() (+4 more)
 
-### Community 671 - "OrderAddItemDialog.tsx"
+### Community 669 - "OrderAddItemDialog.tsx"
 Cohesion: 0.22
 Nodes (12): AddItemContent(), AddItemContentProps, CatalogCategory, CatalogProduct, OrderAddItemDialog(), OrderAddItemDialogProps, ProductFilters(), ProductFiltersProps (+4 more)
 
-### Community 672 - "ScenarioComparison.tsx"
+### Community 670 - "ScenarioComparison.tsx"
 Cohesion: 0.26
 Nodes (12): calculateComparison(), Comparison, ComparisonDifference(), ComparisonHeader(), ComparisonResult(), optionDays(), optionTotal(), ScenarioComparison() (+4 more)
 
-### Community 673 - "useAutoSave.ts"
+### Community 671 - "useAutoSave.ts"
 Cohesion: 0.29
 Nodes (12): AutoSaveOptions, DraftPersistenceArgs, log, persistDraft(), readStoredData(), readStoredValue(), useAutoSave(), useCrossTabDraftGuard() (+4 more)
 
-### Community 674 - "useCatalogMarketing.ts"
+### Community 672 - "useCatalogMarketing.ts"
 Cohesion: 0.29
 Nodes (12): CatalogMarketingCategory, CatalogMarketingOption, fetchCatalogMarketingOptions(), fetchCatalogMarketingProductIds(), fetchProductIdsForTerms(), intersectProductIds(), normalized(), selectedValues() (+4 more)
 
-### Community 675 - "usePrintAreas.ts"
+### Community 673 - "useCrmCompanies.ts"
+Cohesion: 0.27
+Nodes (11): buildCompanyFilters(), CrmSelectorResult, directoryRowToCrmCompany(), fetchDirectoryPages(), fitsQuoteDirectory(), setDefinedFilter(), useCrmCompanies(), useCrmCompaniesLegacy() (+3 more)
+
+### Community 674 - "usePrintAreas.ts"
 Cohesion: 0.26
 Nodes (12): areaDimensions(), areaLocation(), areaShape(), areaTechnique(), areaTechniqueId(), fetchPriceTechniques(), fetchProductPrintAreas(), toPrintArea() (+4 more)
 
-### Community 676 - "product-bounds-detector.ts"
+### Community 675 - "product-bounds-detector.ts"
 Cohesion: 0.22
 Nodes (11): boundsCache, calculateDetectedBounds(), DEFAULT_BOUNDS, DetectorOptions, detectProductBounds(), isProductPixel(), loadImageCors(), naturalImageSize() (+3 more)
 
-### Community 677 - "webhook-events-catalog.ts"
+### Community 676 - "webhook-events-catalog.ts"
 Cohesion: 0.18
 Nodes (8): ALL_KNOWN_EVENTS, WEBHOOK_EVENTS_CATALOG, WebhookEvent, WebhookEventGroup, getEventSamplePayload(), isoNow(), SamplePayload, SAMPLES
 
-### Community 678 - "AdminPerformancePage.tsx"
+### Community 677 - "AdminPerformancePage.tsx"
 Cohesion: 0.26
 Nodes (12): AdminPerformancePage(), getChartColor(), getRating(), getRatingColor(), PerformanceChart(), PerformanceChartRow, PerformanceDashboard(), PerformanceRecommendations() (+4 more)
 
-### Community 679 - "KitTemplatesMetricsPage.tsx"
+### Community 678 - "KitTemplatesMetricsPage.tsx"
 Cohesion: 0.24
 Nodes (12): extractItem(), extractItems(), HeatmapItem, ItemsHeatmapCard(), KitRow, KitTemplatesMetricsPage(), pluralSuffix(), ShareConversion (+4 more)
 
-### Community 680 - "usePlatformFailureAlert.ts"
+### Community 679 - "usePlatformFailureAlert.ts"
 Cohesion: 0.26
 Nodes (11): AlertLevel, AlertState, classify(), DEFAULT_ALERT_CONFIG, FailureAlertConfig, loadAlertConfig(), saveAlertConfig(), usePlatformFailureAlert() (+3 more)
 
-### Community 681 - "FiltersToolbar"
+### Community 680 - "FiltersToolbar"
 Cohesion: 0.18
 Nodes (13): ActiveFilterSummary(), catalogCountLabel(), CatalogTitle(), FiltersSidebar(), FiltersToolbar(), handleSearchSelection(), MobileFilters(), MobileFiltersFooter() (+5 more)
 
-### Community 682 - "useKitBuilderQuote.ts"
+### Community 681 - "useKitBuilderQuote.ts"
 Cohesion: 0.27
 Nodes (11): buildKitQuotePayload(), kitQuoteFingerprint(), KitQuoteLinePayload, KitQuotePayload, serializePersonalization(), createKitQuote(), functionErrorMessage(), idempotencyKey() (+3 more)
 
-### Community 683 - "KitLibraryPage.tsx"
+### Community 682 - "KitLibraryPage.tsx"
 Cohesion: 0.32
 Nodes (12): applySort(), CustomKitActions, CustomKitCard(), EmptyState(), FavoriteKitsTab(), getItemsCount(), getVisibleFilterColors(), KitLibraryPage() (+4 more)
 
-### Community 684 - "useFavoritesStore.ts"
+### Community 683 - "useFavoritesStore.ts"
 Cohesion: 0.26
 Nodes (12): FavoriteItem, FavoritesActions, FavoritesState, FavoritesStore, FavoriteVariantInfo, isFavoriteItem(), isNonEmptyString(), isValidVariant() (+4 more)
+
+### Community 684 - "productPdfExport.ts"
+Cohesion: 0.28
+Nodes (12): exportProductPdf(), formatBool(), formatCurrency(), formatDimension(), formatOptionalNumber(), getAutoTable(), getJsPDF(), hasMarketingData() (+4 more)
 
 ### Community 685 - "resilience.ts"
 Cohesion: 0.18
@@ -4538,241 +4501,241 @@ Nodes (10): ADR 0006 — Separação de Papéis: Admin vs Dev, Consequências, C
 Cohesion: 0.18
 Nodes (11): `ConfigurationPanelV6.tsx` (etapa 17, 8 → 0 erros), ProductCustomizationOptions.tsx (etapa 17), useCallback(), CustomizationOptionsResponse, CustomizationPriceResponseV6, GravacaoLocation, MarkupInfo, PersonalizationItem (+3 more)
 
-### Community 696 - "🆘 Plano de Recuperação de Desastres (DR)"
+### Community 696 - "ramo-atividade.ts"
+Cohesion: 0.17
+Nodes (11): SegmentoCheckbox.tsx (etapa 17), ProdutoRamoAtividade, RamoAtividade, RamoAtividadeFilho, RamoAtividadeFilhoInput, RamoAtividadeFilters, RamoAtividadeFilterState, RamoAtividadeGroup (+3 more)
+
+### Community 697 - "StepUpload.tsx"
+Cohesion: 0.30
+Nodes (11): StepUpload.tsx + ComparisonPresentationLauncher.tsx (etapa 17), downloadBlob(), downloadTemplateCSV(), inferColumnMapping(), normalizeStr(), parseCSV(), parseCSVLine(), parseUploadedFile() (+3 more)
+
+### Community 698 - "🆘 Plano de Recuperação de Desastres (DR)"
 Cohesion: 0.17
 Nodes (10): 1. Métricas de Recuperação (RTO / RPO), 2. Estratégia de Backup (SSOT), 3. Cenários de Falha e Resposta, 4. Testes de DR, A. Indisponibilidade Regional (Cloud Provider), B. Corrupção de Dados / Erro Humano, 🆘 Plano de Recuperação de Desastres (DR), DEGRADED_BACKOFF (+2 more)
 
-### Community 697 - "🔧 18. UTILITÁRIOS"
+### Community 699 - "🔧 18. UTILITÁRIOS"
 Cohesion: 0.17
 Nodes (12): 18.10 Image Converter, 18.11 Lazy Loading com Retry, 18.1 Debounce e Throttle, 18.2 Seleção em Massa, 18.3 Teclado, 18.4 Validações, 18.5 Data/Hora, 18.6 Clipboard (+4 more)
 
-### Community 698 - "📱 Guia de Responsividade Mobile"
+### Community 700 - "📱 Guia de Responsividade Mobile"
 Cohesion: 0.17
 Nodes (11): Breakpoints, Checklist de Componentes, ✅ Formulários, ✅ Gráficos, 📱 Guia de Responsividade Mobile, ✅ Modais, Navegação Mobile, Otimizações (+3 more)
 
-### Community 699 - "2. As 100 etapas"
+### Community 701 - "2. As 100 etapas"
 Cohesion: 0.17
 Nodes (11): 1. Diagnóstico — o que está acontecendo de verdade, 2. As 100 etapas, 3. Ordem recomendada de execução, 4. O que este plano **não** cobre (fora do escopo de workflows), Fase 0 — Desbloqueio imediato (1–6), Fase 1 — Cortar consumo de minutos (7–24), Fase 2 — Corrigir defeitos de cada workflow (25–52), Fase 3 — Segredos, ambientes e entrega (53–68) (+3 more)
 
-### Community 700 - "🚀 1. Funcionalidades MAPEADAS (Prioridade Máxima)"
+### Community 702 - "🚀 1. Funcionalidades MAPEADAS (Prioridade Máxima)"
 Cohesion: 0.17
 Nodes (11): 🚀 1. Funcionalidades MAPEADAS (Prioridade Máxima), 🚫 2. Funcionalidades IGNORADAS (Fora de Escopo / Legado), 📊 3. Mapeamento de Transição, 🎯 Alinhamento de Escopo: Portal Sicoob Brindes, 🛍️ Catálogo & Produtos, 🔐 Estrutura Sicoob (Multi-tenant), 🎮 Gamificação & Rewards, 🔌 Integrações Legadas (+3 more)
 
-### Community 701 - "Roadmap de Favoritos — 10/10 absoluto ✅"
-Cohesion: 0.21
-Nodes (10): ✅ Onda A.2 — Integração visual (2026-04-20), ✅ Onda A — Fundação (2026-04-20), ✅ Onda B — Inteligência de Preço (2026-04-20), Roadmap de Favoritos — 10/10 absoluto ✅, Status final, fmt(), PriceDropBadge(), PriceMovement() (+2 more)
+### Community 703 - "EnhancedErrorBoundary.tsx"
+Cohesion: 0.26
+Nodes (10): ErrorActions(), ErrorActionsProps, ErrorDetails(), ErrorDetailsProps, ErrorHero(), ErrorMessage(), FullErrorView(), FullErrorViewProps (+2 more)
 
-### Community 702 - "navigation-layout.test.tsx"
+### Community 704 - "navigation-layout.test.tsx"
 Cohesion: 0.17
 Nodes (8): route(), Wrapper(), ADMIN_ROUTES, PROTECTED_ROUTES, PUBLIC_ROUTES, REDIRECT_ROUTES, SIDEBAR_SECTIONS, Wrapper()
 
-### Community 703 - "20260503210523_c20e48ce-121f-47b6-b504-857d41593aa1.sql"
+### Community 705 - "20260503210523_c20e48ce-121f-47b6-b504-857d41593aa1.sql"
 Cohesion: 0.17
 Nodes (4): public.admin_config_audit, public.audit_all_rls_compliance(), public.qa_rls_audits, trig_audit_user_roles
 
-### Community 704 - "manifest.json"
+### Community 706 - "manifest.json"
 Cohesion: 0.17
 Nodes (11): background_color, categories, description, display, icons, name, orientation, screenshots (+3 more)
 
-### Community 705 - "20260916130000_add_missing_fk_indexes.sql"
+### Community 707 - "20260916130000_add_missing_fk_indexes.sql"
 Cohesion: 0.24
 Nodes (8): idx_fk_quote_consolidations_consolidated_by_fkey, idx_fk_quote_consolidations_singular_id_fkey, idx_fk_quotes_approved_by_fkey, idx_fk_quotes_consolidation_id_fkey, idx_fk_quotes_pa_id_fkey, idx_fk_quotes_singular_id_fkey, idx_fk_sicoob_approval_requests_approver_id_fkey, idx_fk_sicoob_approval_requests_requester_id_fkey
 
-### Community 706 - "readText"
+### Community 708 - "readText"
 Cohesion: 0.20
 Nodes (12): changelogTopo, composes, countLines(), docsRaiz, docTitle(), envExample, pyImportados, pyReqs (+4 more)
 
-### Community 708 - "smoke-tests.mjs"
+### Community 709 - "check-seller-scope.mjs"
+Cohesion: 0.26
+Nodes (11): analyzeSource(), IGNORE_DIR, IGNORE_FILE_PATHS, main(), maskStrings(), scan(), SCOPE_SIGNALS, statementBounds() (+3 more)
+
+### Community 711 - "smoke-tests.mjs"
 Cohesion: 0.24
 Nodes (10): BASE_URL, checkHealthFunction(), checkPublicRoutes(), checkStaticRoutes(), log(), PUBLIC_ROUTES, REQUIRED_ROUTES, results (+2 more)
 
-### Community 710 - "RetestButton.tsx"
+### Community 713 - "RetestButton.tsx"
 Cohesion: 0.29
 Nodes (11): DisabledKind, isTypingElement(), matchesShortcut(), readPersistedCooldown(), resolveDisabledKind(), RetestButton(), RetestButtonProps, retestLabel() (+3 more)
 
-### Community 711 - "MaterialGroupTree.tsx"
-Cohesion: 0.24
-Nodes (11): EmptyMaterialSearch(), LinkedMaterial, materialDetailText(), MaterialGroupHeader(), MaterialGroupHeaderProps, MaterialGroupNode(), MaterialGroupNodeProps, MaterialGroupTree() (+3 more)
-
-### Community 712 - "ProductMarketingSection.tsx"
+### Community 714 - "ProductMarketingSection.tsx"
 Cohesion: 0.26
 Nodes (11): CATEGORY_COLORS, CategoryHeader(), CategoryKey, CategoryOptions(), fetchAssignedTermIds(), MarketingCategory, MarketingCategoryGroup(), marketingOptionsState() (+3 more)
 
-### Community 713 - "EdgeFunctionLogsPanel.tsx"
+### Community 715 - "ProductsManager.tsx"
+Cohesion: 0.29
+Nodes (11): ManagedProduct, ProductCurationDialog(), ProductFlags(), ProductPagination(), ProductRow(), ProductsManager(), ProductsState, ProductTableContent() (+3 more)
+
+### Community 716 - "EdgeFunctionLogsPanel.tsx"
 Cohesion: 0.29
 Nodes (11): copyText(), EdgeFunctionLogsPanel(), ExpandedLogRow(), fmtBytes(), fmtTime(), LogsTableBody(), LogSummaryRow(), RequestIdButton() (+3 more)
 
-### Community 714 - "ClientComparator.tsx"
+### Community 717 - "ClientComparator.tsx"
 Cohesion: 0.30
 Nodes (11): CategoryMetric(), ClientColumn(), ClientComparator(), comparisonScore(), comparisonTier(), fmtBRL(), formatDaysSinceOrder(), metricTitle() (+3 more)
 
-### Community 715 - "ClientOverview360.tsx"
+### Community 718 - "ClientOverview360.tsx"
 Cohesion: 0.33
 Nodes (11): ClientBI, ClientOverview360(), DeltaPill(), fmtBRL(), fmtDate(), getRecency(), OrdersCard(), OverviewControls() (+3 more)
 
-### Community 716 - "AIComparisonAdvisor.tsx"
+### Community 719 - "AIComparisonAdvisor.tsx"
 Cohesion: 0.29
 Nodes (11): AdvisorHeader(), AdvisorResult, AdvisorResultView(), AIComparisonAdvisor(), AIComparisonAdvisorProps, BestForCard(), cacheKey(), readCache() (+3 more)
 
-### Community 717 - "IntelligenceFilterBar.tsx"
+### Community 720 - "IntelligenceFilterBar.tsx"
 Cohesion: 0.26
 Nodes (11): ActiveFilters(), ActiveFiltersProps, HighlightText(), IntelligenceFilterBar(), IntelligenceFilterBarProps, IntelligenceFilters, PERIOD_OPTIONS, PeriodSelector() (+3 more)
 
-### Community 718 - "SalesOverviewChart.tsx"
+### Community 721 - "SalesOverviewChart.tsx"
 Cohesion: 0.26
 Nodes (11): ConversionBadge(), conversionClass(), EmptySalesOverview(), Props, SalesChart(), SalesKpiGrid(), SalesKpis, SalesMacroChartDatum (+3 more)
 
-### Community 719 - "KitIdentityPicker.tsx"
+### Community 722 - "KitIdentityPicker.tsx"
 Cohesion: 0.26
 Nodes (11): ColorPicker(), IconChoice(), IconPicker(), ICONS, KitIdentityPicker(), PRESET_COLORS, PRESET_ICONS, Props (+3 more)
 
-### Community 720 - "MockupColorSelector.tsx"
+### Community 723 - "MockupColorSelector.tsx"
 Cohesion: 0.32
 Nodes (11): compareVariants(), firstImage(), formatStock(), LoadingProduct(), ProductLoaderAndColorSelector(), ProductNotFound(), Props, VariantColor() (+3 more)
 
-### Community 721 - "TemplatePreview.tsx"
+### Community 724 - "TemplatePreview.tsx"
 Cohesion: 0.21
 Nodes (9): sizeConfig, TemplateArea, TemplatePreview(), TemplatePreviewExpandedProps, TemplatePreviewProps, ProductTemplate, TemplateArea, TemplateSelector() (+1 more)
 
-### Community 722 - "Breadcrumbs.tsx"
+### Community 725 - "Breadcrumbs.tsx"
 Cohesion: 0.26
 Nodes (11): BreadcrumbContext, BreadcrumbEntry(), BreadcrumbItem, BreadcrumbList(), Breadcrumbs(), BreadcrumbsProps, createBreadcrumb(), generateBreadcrumbs() (+3 more)
 
-### Community 723 - "DynamicBreadcrumbs.tsx"
+### Community 726 - "DynamicBreadcrumbs.tsx"
 Cohesion: 0.27
 Nodes (10): breadcrumbForSegment(), BreadcrumbItem, buildBreadcrumbs(), DynamicBreadcrumbs(), DynamicBreadcrumbsProps, dynamicSegmentLabel(), isRouteId(), namedBreadcrumb() (+2 more)
 
-### Community 724 - "NoveltyStatsCards.tsx"
+### Community 727 - "NoveltyStatsCards.tsx"
 Cohesion: 0.27
 Nodes (11): LoadingStats(), normalizeStats(), NoveltyStats, NoveltyStatsCards(), numeric(), StatCard(), StatCardProps, StatsCards() (+3 more)
 
-### Community 725 - "ProductQuickActions.tsx"
+### Community 728 - "ProductQuickActions.tsx"
 Cohesion: 0.24
 Nodes (11): ActionKey, actions, categoryIcons, CustomizationDialog(), IndicationDialog(), ModalType, NichesDialog(), PriceDialog() (+3 more)
 
-### Community 726 - "QuoteCard.tsx"
+### Community 729 - "QuoteCard.tsx"
 Cohesion: 0.27
 Nodes (10): OneClickReorderQuote(), Props, Building2(), QuoteCard(), QuoteCardData, QuoteCardHeader(), QuoteCardProps, QuoteClientSummary() (+2 more)
 
-### Community 727 - "QuoteNextActionBanner.tsx"
+### Community 730 - "QuoteNextActionBanner.tsx"
 Cohesion: 0.21
 Nodes (11): ActionContent, ActionVariant, APPROVED_STATUSES, PENDING_STATUSES, pendingDescription(), QuoteNextActionBanner(), QuoteNextActionBannerProps, REJECTED_STATUSES (+3 more)
 
-### Community 728 - "SearchWithSuggestions.tsx"
+### Community 731 - "SearchWithSuggestions.tsx"
 Cohesion: 0.27
 Nodes (11): KeyboardContext, SearchControl(), SearchControlActions(), SearchControlProps, SearchWithSuggestions(), SearchWithSuggestionsProps, SuggestionsList(), useDebouncedSearch() (+3 more)
 
-### Community 729 - "VoiceOverlaySections.tsx"
+### Community 732 - "VoiceOverlaySections.tsx"
 Cohesion: 0.21
 Nodes (10): FooterProps, SUGGESTION_COMMANDS, SuggestionButtons(), SuggestionsProps, TextInputProps, VoiceCommandForm(), VoiceCommandFormProps, VoiceFooter() (+2 more)
 
-### Community 730 - "OrderBudgetIntelligence.tsx"
+### Community 733 - "OrderBudgetIntelligence.tsx"
 Cohesion: 0.27
 Nodes (11): availabilityMessage(), availabilityTitle(), BUDGET_STATUS, BudgetAvailabilityCard(), BudgetNumbers(), BudgetState, getBudgetImpactLabel(), getBudgetMetrics() (+3 more)
 
-### Community 731 - "OrderLogisticsTab.tsx"
-Cohesion: 0.27
-Nodes (11): DELIVERY_IMAGE_EXTENSIONS, DeliveryProofCard(), LogisticsActionsContext, LogisticsInfo(), OrderLogisticsTab(), OrderLogisticsTabProps, ShipmentSummary(), TrackingCard() (+3 more)
-
-### Community 732 - "useClientCategoryAffinity.ts"
+### Community 734 - "useClientCategoryAffinity.ts"
 Cohesion: 0.27
 Nodes (11): addTemporalRevenue(), aggregateCategories(), buildDemoResult(), CategoryAggregate, categoryDelta(), categoryTrend(), ClientCategoryAffinityResult, ClientTopProductRow (+3 more)
 
-### Community 733 - "bulkSelectionActions.ts"
+### Community 735 - "bulkSelectionActions.ts"
 Cohesion: 0.32
 Nodes (11): addComparisons(), addFavorites(), CompleteBulkActionInput, completeBulkSelection(), pluralized(), quoteItemParam(), quoteProductImage(), quoteVariantFields() (+3 more)
 
-### Community 734 - "useCommemorativeDates.ts"
+### Community 736 - "useCommemorativeDates.ts"
 Cohesion: 0.29
 Nodes (11): callCommemorativeDatesAPI(), CommemorativeDate, CommemorativeDateVariant, CommemorativeDateWithColors, fetchProductsByCommemorativeDates(), useActiveCommemorativeDates(), useCommemorativeDateColorGroups(), useCommemorativeDatesWithColors() (+3 more)
 
-### Community 735 - "useSimilarProducts.ts"
+### Community 737 - "useSimilarProducts.ts"
 Cohesion: 0.32
 Nodes (11): buildFallbackFilters(), fetchFallbackProducts(), fetchGroupProducts(), fetchProductsByIds(), fetchRelationshipProducts(), findSimilarProducts(), LightweightProduct, mapLightweightToSimilarItem() (+3 more)
 
-### Community 736 - "useSparklineSales.tsx"
+### Community 738 - "useSparklineSales.tsx"
 Cohesion: 0.23
 Nodes (10): buildDailySeries(), fetchSparklineRecords(), fetchSupplierSparklineBatch(), indexSparklineRecords(), Props, SparklineCtx, SparklineMap, SparklineSalesData (+2 more)
 
-### Community 737 - "external-db-prewarm.ts"
+### Community 739 - "external-db-prewarm.ts"
 Cohesion: 0.29
 Nodes (10): alreadyPrewarmedThisSession(), cooldownIsActive(), crmSummary(), markSessionPrewarmed(), pingBridge(), pingCrmBridge(), PREWARM_TABLES, prewarmExternalDb() (+2 more)
 
-### Community 738 - "fetch-print-areas.ts"
+### Community 740 - "fetch-print-areas.ts"
 Cohesion: 0.35
 Nodes (11): calculatedArea(), collectPriceTableIds(), definedOr(), displayAreaName(), fetchPrintAreasFromProduct(), fetchRawPrintAreas(), fetchTechniquesById(), mapPrintArea() (+3 more)
 
-### Community 739 - "query-config.ts"
+### Community 741 - "query-config.ts"
 Cohesion: 0.17
 Nodes (8): CACHE_TIMES, defaultQueryOptions, GC_TIMES, PRODUTOS_QUERY_OPTIONS, QUERY_KEY_PREFIXES, STABLE_DATA_QUERY_OPTIONS, TABELAS_PRECO_QUERY_OPTIONS, TECNICAS_QUERY_OPTIONS
 
-### Community 740 - "useAppHealth.ts"
-Cohesion: 0.17
-Nodes (9): AppHealthKpis, AppHealthSummary, EdgeLatencyRow, HealthWindow, RequestIdEvent, RequestIdLookup, RouteErrorRow, SlowQueryRow (+1 more)
-
-### Community 741 - "ResetPassword.tsx"
+### Community 742 - "ResetPassword.tsx"
 Cohesion: 0.29
 Nodes (11): ConfirmPasswordInput(), LoadingTokenView(), PasswordInput(), ResetFormCard(), ResetFormView(), ResetPassword(), ResetPasswordFormData, resetPasswordSchema (+3 more)
 
-### Community 742 - "laser-logo-processor.ts"
+### Community 743 - "laser-logo-processor.ts"
 Cohesion: 0.29
 Nodes (11): applySerigraphyPalette(), fetchAsBlob(), hexToRgb(), hexToRgbInternal(), LASER_TONES, LaserToneConfig, nearestPaletteColor(), PaletteEntry (+3 more)
 
-### Community 743 - "product-colors.ts"
+### Community 744 - "product-colors.ts"
 Cohesion: 0.30
 Nodes (11): COLOR_GROUP_KEYWORDS, detectColorGroup(), findKnownHex(), firstText(), KNOWN_COLOR_HEX, normalizeColorObject(), normalizeColors(), NORMALIZED_HEX_MAP (+3 more)
 
-### Community 744 - "quote-data-mapper.ts"
+### Community 745 - "quote-data-mapper.ts"
 Cohesion: 0.33
 Nodes (11): composedProductCode(), formatProposalDate(), mapPersonalization(), mapProposalItem(), mapQuoteToProposalData(), ProposalItem, quoteDiscount(), QuoteItem (+3 more)
 
-### Community 745 - "20241231000000_saved_filters.sql"
+### Community 746 - "20241231000000_saved_filters.sql"
 Cohesion: 0.26
 Nodes (7): idx_saved_filters_default, idx_saved_filters_entity_type, idx_saved_filters_user_entity, idx_saved_filters_user_id, public.saved_filters, trigger_saved_filters_updated_at, trigger_single_default_filter
 
-### Community 746 - "20251214194907_a5a0f44d-0504-411d-842a-cb07597b6ed5.sql"
+### Community 747 - "20251214194907_a5a0f44d-0504-411d-842a-cb07597b6ed5.sql"
 Cohesion: 0.27
 Nodes (8): public.personalization_techniques, public.quote_item_personalizations, public.quote_items, public.quotes, set_quote_number, update_personalization_techniques_updated_at, update_quote_items_updated_at, update_quotes_updated_at
 
-### Community 747 - "20260412231951_faf4b360-0a4a-4dd0-b341-673e16044eb5.sql"
+### Community 748 - "20260412231951_faf4b360-0a4a-4dd0-b341-673e16044eb5.sql"
 Cohesion: 0.17
 Nodes (5): trg_validate_approval_token_status, trg_validate_kit_share_token_status, trg_validate_kit_status, trg_validate_order_status, trg_validate_quote_status
 
-### Community 748 - "20260502151453_2a172913-442b-4195-823e-fe40d933e0ab.sql"
+### Community 749 - "20260502151453_2a172913-442b-4195-823e-fe40d933e0ab.sql"
 Cohesion: 0.24
 Nodes (8): idx_sicoob_order_history_created_at, idx_sicoob_order_history_order_id, idx_sicoob_order_items_order_id, idx_sicoob_orders_cooperative_id, idx_sicoob_orders_created_by, idx_sicoob_orders_id_text, idx_sicoob_orders_pa_id, idx_sicoob_orders_status
 
-### Community 749 - "20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql"
+### Community 750 - "20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql"
 Cohesion: 0.23
 Nodes (6): idx_logistics_order, idx_logistics_tracking_code, public.is_order_owner_or_admin(), public.order_logistics_tracking, trg_, trg_log_order_status_change
 
-### Community 750 - "public.validate_sicoob_order_document"
+### Community 751 - "public.validate_sicoob_order_document"
 Cohesion: 0.17
 Nodes (3): public.validate_sicoob_order_document(), tr_preserve_sicoob_artwork_requirement, tr_validate_sicoob_delivery_document
 
-### Community 751 - "20260922225600_sicoob_document_quarantine_gate.sql"
+### Community 752 - "20260922225600_sicoob_document_quarantine_gate.sql"
 Cohesion: 0.17
 Nodes (3): public.sicoob_document_registry, tr_validate_sicoob_delivery_document, tr_validate_sicoob_invoice_document
-
-### Community 752 - "PriceFreshnessBadge.colorAndIcon.test.tsx"
-Cohesion: 0.18
-Nodes (11): COLOR_FAMILY_BY_STATUS, DAYS_BY_STATUS, daysAgo(), FIXED_NOW, ICON_CLASS_BY_STATUS, renderBadge(), Status, STATUSES (+3 more)
 
 ### Community 753 - "PriceFreshnessBadge.thresholdHosts.test.tsx"
 Cohesion: 0.18
 Nodes (10): COLOR_BY_STATUS, daysAgo(), FIXED_NOW, ICON_BY_STATUS, renderBadge(), Status, Surface, SURFACES (+2 more)
 
-### Community 754 - "phase1-foundation-types.test.ts"
-Cohesion: 0.15
-Nodes (6): BulkAction, KitItem, ProductColor, ProductVariant, SimulationProduct, VariantGridItem
-
-### Community 755 - "app-router-parity.test.tsx"
+### Community 754 - "app-router-parity.test.tsx"
 Cohesion: 0.18
 Nodes (10): ARQUIVOS_DE_CONSTANTES, caminhosMontadosEmApp(), constantesDeRota(), declaradasEmApp, inventario, rotasAdmin, rotasDev, rotasProtegidas (+2 more)
 
-### Community 756 - "quote-versionamento-atomico-fixture.sql"
+### Community 755 - "quote-versionamento-atomico-fixture.sql"
 Cohesion: 0.26
 Nodes (9): public.can_manage_quotes(), public.get_user_org_ids(), public.organization_members, public.quote_history, public.quote_item_personalizations, public.quote_items, public.quotes, public.user_roles (+1 more)
+
+### Community 756 - "Banco de dados — referência para agentes"
+Cohesion: 0.18
+Nodes (10): Banco de dados — referência para agentes, Banco OFICIAL, Bancos que NÃO são este projeto, Edge functions e secrets, Incidentes que já custaram retrabalho, MCP de SQL — estado real, Migrations, Onde se trabalha (+2 more)
 
 ### Community 757 - "Regras de negócio — preencha o que o código não diz"
 Cohesion: 0.18
@@ -4786,189 +4749,189 @@ Nodes (10): Achado fora da etapa 17: busca usando dado de negócio hardcoded (n�
 Cohesion: 0.18
 Nodes (10): 👥 Atores, 🔄 Diagrama BPMN, 🔗 Ferramentas, Fluxo de Deploy — Promo Brindes, 🚪 Gates (regras de negócio), 🚨 Gatilhos de exceção, Hotfix urgente em produção, 📊 KPIs do processo (+2 more)
 
-### Community 760 - "📊 Guia de Integração - Botão Export Excel"
+### Community 760 - "RateLimiter"
+Cohesion: 0.22
+Nodes (7): Como testar, Convenções, Edge Functions — Referência histórica, Helpers compartilhados, Padrões obrigatórios, Tabela de endpoints, RateLimiter
+
+### Community 761 - "📊 Guia de Integração - Botão Export Excel"
 Cohesion: 0.18
 Nodes (10): 1. QuotesListPage, 2. OrdersListPage, 3. ClientList, ✅ Arquivos Já Criados, 🎯 Benefícios, Formatação Customizada, 📊 Guia de Integração - Botão Export Excel, Múltiplas Abas (+2 more)
 
-### Community 761 - "🔐 1. AUTENTICAÇÃO E SEGURANÇA"
+### Community 762 - "🔐 1. AUTENTICAÇÃO E SEGURANÇA"
 Cohesion: 0.18
 Nodes (11): 1.10 Verificação de Senhas Comprometidas, 1.1 Autenticação de Usuários, 1.2 Controle de Acesso (RBAC), 1.3 Autenticação de Dois Fatores (2FA), 1.4 WebAuthn / Passkeys, 1.5 Restrição por IP, 1.6 Geo-Blocking, 1.7 Segurança de Acesso Avançada (+3 more)
 
-### Community 762 - "🤖 2. INTELIGÊNCIA ARTIFICIAL"
+### Community 763 - "🤖 2. INTELIGÊNCIA ARTIFICIAL"
 Cohesion: 0.18
 Nodes (11): 2.10 Sugestões Contextuais, 2.1 Chat com Especialista IA, 2.2 Recomendações de IA, 2.3 Busca Semântica, 2.4 Busca Visual (por Imagem), 2.5 Geração de Mockups com IA, 2.6 Layout de Aprovação de Mockups, 2.7 Gerenciamento de Prompts IA (+3 more)
 
-### Community 763 - "📚 Guia de Uso dos Hooks"
+### Community 764 - "📚 Guia de Uso dos Hooks"
 Cohesion: 0.18
 Nodes (10): ✅ Benefícios, 🎨 Componentes Melhorados, EmptyState, ErrorMessage, Exemplo: Clientes, Exemplo: Produtos, 📚 Guia de Uso dos Hooks, LoadingSkeleton (+2 more)
 
-### Community 764 - "Onboarding — Promo Gifts (Setup < 4h)"
+### Community 765 - "Onboarding — Promo Gifts (Setup < 4h)"
 Cohesion: 0.18
 Nodes (10): 1. Pré-requisitos (15 min), 2. Clone & Install (10 min), 3. Variáveis de Ambiente (5 min), 4. Run dev (2 min), 5. Estrutura Mental (30 min — leia nesta ordem), 6. Padrões obrigatórios (1h), 7. Primeira contribuição (2h), 8. Comandos úteis (+2 more)
 
-### Community 765 - "Bloco 01 — Diagnóstico e estratégia"
+### Community 766 - "Bloco 01 — Diagnóstico e estratégia"
 Cohesion: 0.18
 Nodes (11): Bloco 01 — Diagnóstico e estratégia, E001 — Fixar o ponto de partida verificável, E002 — Conter exposição de credenciais e ferramentas de teste, E003 — Garantir catálogo externo exclusivamente de consulta, E004 — Planejar pesquisa com compradores e marketing, E005 — Definir perfis funcionais e trabalhos a realizar, E006 — Mapear a jornada atual e a jornada pretendida, E007 — Desenhar o serviço por trás da interface (+3 more)
 
-### Community 766 - "Bloco 02 — Fundamentos e segurança"
+### Community 767 - "Bloco 02 — Fundamentos e segurança"
 Cohesion: 0.18
 Nodes (11): Bloco 02 — Fundamentos e segurança, E011 — Consolidar o modelo de dados do portal, E012 — Unificar permissões por ação e escopo, E013 — Implementar isolamento de dados e anexos, E014 — Corrigir rotas e contrato de autenticação, E015 — Definir autenticação confiável e acessível, E016 — Implementar convites e vínculos organizacionais, E017 — Tornar verba e compromissos consistentes (+3 more)
 
-### Community 767 - "Bloco 03 — Estrutura e conteúdo"
+### Community 768 - "Bloco 03 — Estrutura e conteúdo"
 Cohesion: 0.18
 Nodes (11): Bloco 03 — Estrutura e conteúdo, E021 — Organizar a arquitetura de informação, E022 — Construir taxonomia útil para brindes, E023 — Projetar o comportamento da busca, E024 — Projetar filtros e ordenação, E025 — Desenhar navegação entre cooperativas e unidades, E026 — Estabelecer linguagem e conteúdo de interface, E027 — Padronizar formulários e entrada de dados (+3 more)
 
-### Community 768 - "Bloco 05 — Catálogo e decisão"
+### Community 769 - "Bloco 04 — Sistema visual"
+Cohesion: 0.18
+Nodes (11): Bloco 04 — Sistema visual, E031 — Definir direção visual com a marca Sicoob, E032 — Estabelecer grade, espaçamento e densidade, E033 — Definir tipografia e hierarquia de leitura, E034 — Definir cores semânticas e contraste, E035 — Padronizar imagens, ícones e representação de produto, E036 — Implementar tokens de design, E037 — Consolidar componentes de ação e formulário (+3 more)
+
+### Community 770 - "Bloco 05 — Catálogo e decisão"
 Cohesion: 0.18
 Nodes (11): Bloco 05 — Catálogo e decisão, E041 — Redesenhar a experiência de acesso, E042 — Criar início orientado às pendências, E043 — Implementar listagem de catálogo útil, E044 — Implementar busca com recuperação de intenção, E045 — Implementar filtros acessíveis e persistentes, E046 — Construir página de produto para decisão, E047 — Especificar personalização sem ambiguidade (+3 more)
 
-### Community 769 - "Bloco 06 — Campanhas e propostas"
+### Community 771 - "Bloco 06 — Campanhas e propostas"
 Cohesion: 0.18
 Nodes (11): Bloco 06 — Campanhas e propostas, E051 — Criar briefing de campanha e necessidade, E052 — Planejar campanhas e marcos de prazo, E053 — Organizar biblioteca de marcas e arquivos, E054 — Produzir prova técnica da personalização, E055 — Construir kits com composição verificável, E056 — Planejar distribuição por PA e destino, E057 — Criar carrinho de solicitação institucional (+3 more)
 
-### Community 770 - "Bloco 07 — Governança e aprovações"
+### Community 772 - "Bloco 07 — Governança e aprovações"
 Cohesion: 0.18
 Nodes (11): Bloco 07 — Governança e aprovações, E061 — Formalizar a solicitação de compra, E062 — Construir a experiência de verba e saldo, E063 — Criar fila de aprovações orientada a decisão, E064 — Implementar decisão financeira compreensível, E065 — Implementar aprovação formal da arte, E066 — Tratar exceções sem perder governança, E067 — Administrar substituições e delegações temporárias (+3 more)
 
-### Community 771 - "Bloco 08 — Execução e pós-compra"
+### Community 773 - "Bloco 08 — Execução e pós-compra"
 Cohesion: 0.18
 Nodes (11): Bloco 08 — Execução e pós-compra, E071 — Formalizar a passagem do pedido ao fornecedor, E072 — Acompanhar produção e controle de qualidade, E073 — Reconfirmar disponibilidade sem escrever no catálogo, E074 — Preparar expedição e entregas por destino, E075 — Oferecer rastreio e previsão confiáveis, E076 — Registrar recebimento e conferência, E077 — Resolver faltas, avarias e devoluções (+3 more)
 
-### Community 772 - "Bloco 09 — Qualidade e validação"
+### Community 774 - "Bloco 09 — Qualidade e validação"
 Cohesion: 0.18
 Nodes (11): Bloco 09 — Qualidade e validação, E081 — Auditar acessibilidade da jornada completa, E082 — Validar uso móvel em situações reais, E083 — Testar responsividade e conteúdo extremo, E084 — Otimizar desempenho percebido e carregamento, E085 — Validar resiliência e preservação do trabalho, E086 — Verificar segurança das jornadas integradas, E087 — Validar privacidade e ciclo de vida dos dados (+3 more)
 
-### Community 773 - "Bloco 10 — Produção e expansão"
+### Community 775 - "Bloco 10 — Produção e expansão"
 Cohesion: 0.18
 Nodes (11): Bloco 10 — Produção e expansão, E091 — Ensaiar a compra integral antes do piloto, E092 — Revisar a experiência final e a aplicação da marca, E093 — Preparar a cooperativa piloto e seus dados, E094 — Preparar operação, suporte e treinamento, E095 — Preparar release e decisão de lançamento, E096 — Publicar o piloto e verificar produção, E097 — Acompanhar a primeira compra real até o recebimento (+3 more)
 
-### Community 774 - "Fase 01 — Governança, preservação e critérios"
+### Community 776 - "Fase 01 — Governança, preservação e critérios"
 Cohesion: 0.18
 Nodes (11): Fase 01 — Governança, preservação e critérios, P001 — Fixar a referência auditada, P002 — Preservar alterações e worktrees existentes, P003 — Consolidar a rastreabilidade dos planos, P004 — Revalidar os diagnósticos históricos, P005 — Atribuir responsáveis e capacidade, P006 — Definir critérios e estados de acompanhamento, P007 — Atualizar decisões arquiteturais e comerciais (+3 more)
 
-### Community 775 - "Fase 02 — Acesso, CI e ambiente de homologação"
+### Community 777 - "Fase 02 — Acesso, CI e ambiente de homologação"
 Cohesion: 0.18
 Nodes (11): Fase 02 — Acesso, CI e ambiente de homologação, P011 — Confirmar o projeto canônico e seus ambientes, P012 — Restabelecer acesso administrativo mínimo, P013 — Revisar credenciais e configuração pública, P014 — Restabelecer execução do GitHub Actions, P015 — Exigir checks e revisão em main, P016 — Reconciliar PRs #42 e #43, P017 — Criar homologação Supabase segregada (+3 more)
 
-### Community 776 - "Fase 03 — Reconciliação de schema, contratos e segurança"
+### Community 778 - "Fase 03 — Reconciliação de schema, contratos e segurança"
 Cohesion: 0.18
 Nodes (11): Fase 03 — Reconciliação de schema, contratos e segurança, P021 — Inventariar PostgreSQL e extensões, P022 — Comparar ledger, arquivos e definições, P023 — Classificar o histórico de migrations, P024 — Reconciliar tipos e contratos de API, P025 — Revalidar RLS e políticas de escrita, P026 — Auditar funções privilegiadas e views, P027 — Revisar índices e integridade referencial (+3 more)
 
-### Community 777 - "Fase 04 — Status, concorrência e histórico de orçamentos"
+### Community 779 - "Fase 04 — Status, concorrência e histórico de orçamentos"
 Cohesion: 0.18
 Nodes (11): Fase 04 — Status, concorrência e histórico de orçamentos, P031 — Definir contrato canônico dos status, P032 — Resolver compatibilidade do enum, P033 — Preservar versão esperada na transição, P034 — Completar autorização da RPC de status, P035 — Centralizar todos os escritores de status, P036 — Garantir histórico exatamente uma vez, P037 — Endurecer invariantes e concorrência do lote (+3 more)
 
-### Community 778 - "Fase 05 — Criação e edição transacional de orçamentos"
+### Community 780 - "Fase 05 — Criação e edição transacional de orçamentos"
 Cohesion: 0.18
 Nodes (11): Fase 05 — Criação e edição transacional de orçamentos, P041 — Definir agregado transacional de orçamento, P042 — Implementar criação atômica, P043 — Implementar edição atômica, P044 — Preservar identidades e referências dos itens, P045 — Validar totais no servidor, P046 — Proteger a edição contra tela antiga, P047 — Integrar QuoteService ao contrato novo (+3 more)
 
-### Community 779 - "Fase 06 — Rascunhos, identidade e recuperação"
+### Community 781 - "Fase 06 — Rascunhos, identidade e recuperação"
 Cohesion: 0.18
 Nodes (11): Fase 06 — Rascunhos, identidade e recuperação, P051 — Definir identidade persistente do rascunho, P052 — Implementar recuperação de rascunho novo, P053 — Proteger rascunhos de orçamentos existentes, P054 — Tratar logout, revogação e troca de unidade, P055 — Expor estados verdadeiros de persistência, P056 — Controlar concorrência entre abas, P057 — Versionar formato e retenção local (+3 more)
 
-### Community 780 - "Fase 07 — Notificações, outbox e observabilidade"
+### Community 782 - "Fase 07 — Notificações, outbox e observabilidade"
 Cohesion: 0.18
 Nodes (11): Fase 07 — Notificações, outbox e observabilidade, P061 — Catalogar eventos e destinatários, P062 — Unificar notificações em outbox transacional, P063 — Definir chave de deduplicação, P064 — Implementar processamento seguro e retomável, P065 — Resolver destinatários no momento correto, P066 — Validar provedor e templates, P067 — Reconciliar estados de entrega (+3 more)
 
-### Community 781 - "Fase 08 — Publicação e homologação de Edge Functions"
+### Community 783 - "Fase 08 — Publicação e homologação de Edge Functions"
 Cohesion: 0.18
 Nodes (11): Fase 08 — Publicação e homologação de Edge Functions, P071 — Preparar manifesto de publicação Edge, P072 — Revalidar autenticação das funções, P073 — Publicar reconciliação de aprovações, P074 — Publicar registro de arte, P075 — Publicar ingestão documental, P076 — Publicar cotação de kit, P077 — Publicar recompra (+3 more)
 
-### Community 782 - "Fase 09 — Convites, alçadas, cotações e delegações"
+### Community 784 - "Fase 09 — Convites, alçadas, cotações e delegações"
 Cohesion: 0.18
 Nodes (11): Fase 09 — Convites, alçadas, cotações e delegações, P081 — Modelar convite institucional, P082 — Implementar aceite, reenvio e revogação, P083 — Versionar políticas e alçadas, P084 — Completar fila e decisão de aprovação, P085 — Modelar delegação temporária, P086 — Aplicar delegação ao servidor e à interface, P087 — Cadastrar cotações institucionais comparáveis (+3 more)
 
-### Community 783 - "Fase 10 — Catálogo, kits, embalagem e recompra"
+### Community 785 - "Fase 10 — Catálogo, kits, embalagem e recompra"
 Cohesion: 0.18
 Nodes (11): Fase 10 — Catálogo, kits, embalagem e recompra, P091 — Comprovar catálogo mestre somente leitura, P092 — Padronizar preço, estoque e variante, P093 — Homologar busca, filtros e ordenação, P094 — Validar cálculo e apresentação de kit, P095 — Modelar capacidade física da embalagem, P096 — Validar embalagem no servidor, P097 — Revisar previsão e confiança de reposição (+3 more)
 
-### Community 784 - "Fase 11 — Marca, arte e documentos protegidos"
+### Community 786 - "Fase 11 — Marca, arte e documentos protegidos"
 Cohesion: 0.18
 Nodes (11): Fase 11 — Marca, arte e documentos protegidos, P101 — Consolidar biblioteca institucional de marca, P102 — Definir vínculo entre item, arte e versão, P103 — Completar elaboração da prova técnica, P104 — Implementar decisão formal de arte, P105 — Consolidar metadados e autorização documental, P106 — Validar upload e quarentena, P107 — Homologar scanner e falha fechada (+3 more)
 
-### Community 785 - "Fase 12 — Logística, distribuição e pós-entrega"
+### Community 787 - "Fase 12 — Logística, distribuição e pós-entrega"
 Cohesion: 0.18
 Nodes (11): Fase 12 — Logística, distribuição e pós-entrega, P111 — Corrigir consulta e paginação logística, P112 — Reconciliar remessas e destinos, P113 — Implementar importação assistida de distribuição, P114 — Reconfirmar disponibilidade antes da expedição, P115 — Registrar expedição e comprovantes, P116 — Integrar rastreio e previsão de entrega, P117 — Completar recebimento e conferência (+3 more)
 
-### Community 786 - "Fase 13 — Campanhas, finanças e operação administrativa"
+### Community 788 - "Fase 13 — Campanhas, finanças e operação administrativa"
 Cohesion: 0.18
 Nodes (11): Fase 13 — Campanhas, finanças e operação administrativa, P121 — Estruturar briefing institucional de campanha, P122 — Implementar marcos regressivos de campanha, P123 — Resolver colaboração Magic Up, P124 — Completar ciclo financeiro de verba, P125 — Tratar competência e virada de período, P126 — Conciliar notas, pagamentos e entregas, P127 — Ligar views administrativas ao painel (+3 more)
 
-### Community 787 - "Fase 14 — Experiência de loja, marca e acessibilidade"
+### Community 789 - "Fase 14 — Experiência de loja, marca e acessibilidade"
 Cohesion: 0.18
 Nodes (11): Fase 14 — Experiência de loja, marca e acessibilidade, P131 — Validar jornada com compradores e marketing, P132 — Homologar identidade visual Sicoob, P133 — Consolidar arquitetura de loja e navegação, P134 — Aprimorar cards e página de produto, P135 — Refinar carrinho, editor e resumo comercial, P136 — Padronizar estados de interface e feedback, P137 — Auditar acessibilidade ponta a ponta (+3 more)
 
-### Community 788 - "Fase 15 — Qualidade integrada, release e operação real"
+### Community 790 - "Fase 15 — Qualidade integrada, release e operação real"
 Cohesion: 0.18
 Nodes (11): Fase 15 — Qualidade integrada, release e operação real, P141 — Reduzir dívida técnica prioritária, P142 — Executar regressão e fechar testes ignorados, P143 — Auditar segurança integrada e privacidade, P144 — Reconciliar o candidato de release, P145 — Ensaiar a compra institucional completa, P146 — Preparar operação e decisão de piloto, P147 — Publicar piloto controlado (+3 more)
 
-### Community 789 - "Fase 01 — Preservação, decisões e acesso"
+### Community 791 - "Fase 01 — Preservação, decisões e acesso"
 Cohesion: 0.18
 Nodes (11): Fase 01 — Preservação, decisões e acesso, T001 — Fixar a referência e os ambientes, T002 — Preservar e reconciliar trabalhos locais, T003 — Consolidar a rastreabilidade integral, T004 — Atribuir responsáveis e resolver decisões, T005 — Segregar homologação e preparar personas, T006 — Restabelecer acesso administrativo verificável, T007 — Organizar credenciais e configuração pública (+3 more)
 
-### Community 790 - "Fase 02 — Qualidade e entrega contínua"
+### Community 792 - "Fase 02 — Qualidade e entrega contínua"
 Cohesion: 0.18
 Nodes (11): Fase 02 — Qualidade e entrega contínua, T011 — Estabilizar runners, cotas e artefatos, T012 — Tornar os gates honestos e obrigatórios, T013 — Eliminar regressões e reduzir dívida técnica, T014 — Revisar testes ignorados e cobertura, T015 — Reorganizar execução e custo do CI, T016 — Publicar e testar um artefato reproduzível, T017 — Fortalecer Actions e dependências (+3 more)
 
-### Community 791 - "Fase 03 — Banco, segurança e reconciliação"
+### Community 793 - "Fase 03 — Banco, segurança e reconciliação"
 Cohesion: 0.18
 Nodes (11): Fase 03 — Banco, segurança e reconciliação, T021 — Inventariar schema e capacidades atuais, T022 — Reconciliar migrations e preparar baseline, T023 — Alinhar tipos, APIs e inventário de runtime, T024 — Validar RLS por papel e unidade, T025 — Auditar funções privilegiadas e views, T026 — Reconciliar integridade e performance, T027 — Construir o aplicador seguro de migrations (+3 more)
 
-### Community 792 - "Fase 04 — Orçamentos, status e transações"
+### Community 794 - "Fase 04 — Orçamentos, status e transações"
 Cohesion: 0.18
 Nodes (11): Fase 04 — Orçamentos, status e transações, T031 — Fechar a falha de autorização de status, T032 — Unificar status, enum e escritores, T033 — Preservar concorrência de edição e transição, T034 — Proteger lotes e histórico único, T035 — Endurecer criação idempotente de orçamento, T036 — Preservar identidade dos itens e vínculos, T037 — Recalcular e validar o contrato comercial (+3 more)
 
-### Community 793 - "Fase 05 — Rascunhos, notificações e resiliência"
+### Community 795 - "Fase 05 — Rascunhos, notificações e resiliência"
 Cohesion: 0.18
 Nodes (11): Fase 05 — Rascunhos, notificações e resiliência, T041 — Consolidar identidade e recuperação de rascunhos, T042 — Controlar formato, retenção e concorrência local, T043 — Fechar ciclo de sessão e troca de unidade, T044 — Conectar autosave à intenção confirmada, T045 — Homologar edição resiliente, T046 — Definir eventos e outbox de notificações, T047 — Implementar processamento deduplicado e seguro (+3 more)
 
-### Community 794 - "Fase 06 — Governança institucional e catálogo"
-Cohesion: 0.18
-Nodes (11): Fase 06 — Governança institucional e catálogo, T051 — Concluir convites institucionais, T052 — Versionar políticas e alçadas, T053 — Fechar fila de aprovação e delegação, T054 — Cadastrar propostas institucionais comparáveis, T055 — Formalizar escolha e fornecedor único, T056 — Validar disponibilidade de verba na aprovação, T057 — Homologar governança entre cooperativas (+3 more)
-
-### Community 795 - "Fase 07 — Kits, embalagem e recompra"
+### Community 796 - "Fase 07 — Kits, embalagem e recompra"
 Cohesion: 0.18
 Nodes (11): Fase 07 — Kits, embalagem e recompra, T061 — Concluir templates, favoritos e coleções, T062 — Validar cálculo e demanda dos kits, T063 — Modelar embalagem e capacidade física, T064 — Validar embalagem no servidor, T065 — Concluir previsão e prazo de reposição, T066 — Fortalecer cotação e publicação de kit, T067 — Concluir persistência e compartilhamento de kits (+3 more)
 
-### Community 796 - "Fase 09 — Logística, campanhas e finanças"
+### Community 797 - "Fase 08 — Arte, documentos e integrações"
+Cohesion: 0.18
+Nodes (11): Fase 08 — Arte, documentos e integrações, T071 — Consolidar marca e ativos institucionais, T072 — Vincular arte à identidade e versão do item, T073 — Completar prova técnica e decisão de arte, T074 — Fortalecer ingestão e quarentena documental, T075 — Configurar e homologar scanner real, T076 — Fechar retenção, revogação e recuperação de anexos, T077 — Reconciliar arte, exportações e dossiê (+3 more)
+
+### Community 798 - "Fase 09 — Logística, campanhas e finanças"
 Cohesion: 0.18
 Nodes (11): Fase 09 — Logística, campanhas e finanças, T081 — Fechar paginação e distribuição logística, T082 — Implementar importação assistida de destinos, T083 — Reconfirmar estoque e registrar expedição, T084 — Integrar rastreio e recebimento, T085 — Concluir avarias, devoluções e cancelamentos, T086 — Estruturar campanha e cronograma regressivo, T087 — Completar ciclo financeiro da verba (+3 more)
 
-### Community 797 - "Fase 10 — Experiência, homologação e operação"
+### Community 799 - "Fase 10 — Experiência, homologação e operação"
 Cohesion: 0.18
 Nodes (11): Fase 10 — Experiência, homologação e operação, T091 — Pesquisar jornadas com compradores e marketing, T092 — Concluir experiência de loja e identidade visual, T093 — Validar acessibilidade e dispositivos, T094 — Medir e fechar desempenho por jornada, T095 — Executar segurança e privacidade integradas, T096 — Executar regressão e compra sintética integral, T097 — Reconciliar e publicar candidato de release (+3 more)
 
-### Community 798 - "Post-Mortem — [Título do Incidente]"
+### Community 800 - "Post-Mortem — [Título do Incidente]"
 Cohesion: 0.18
 Nodes (10): Anexos, Ações de follow-up, Causa Raiz, Impacto, Lições aprendidas, O que funcionou bem, O que precisa melhorar, Post-Mortem — [Título do Incidente] (+2 more)
 
-### Community 799 - "UX Onda 1 e 2: guardas de navegação (bloqueio central de saída com alterações não salvas), confirmação unificada (fim do confirm() nativo) e restauração de scroll / histórico de navegação"
-Cohesion: 0.20
-Nodes (9): UX Onda 1 e 2: guardas de navegação (bloqueio central de saída com alterações não salvas), confirmação unificada (fim do confirm() nativo) e restauração de scroll / histórico de navegação, isCriticalPath(), useUnsavedChangesGuard(), UseUnsavedChangesGuardOptions, askConfirm(), ConfirmDialogOptions, ConfirmDialogState, ConfirmRequest (+1 more)
+### Community 801 - "Cobertura das refs — toda branch remota contabilizada"
+Cohesion: 0.18
+Nodes (11): 6 relatórios de execução, só nessa ref, Cobertura das refs — toda branch remota contabilizada, Lacuna nova: a branch de produção pré-re-raiz, Método, Os 6 restantes (conferidos em 19/11/2026), Por que este anexo existe, Portão de exclusão de branch (19/11/2026), Quarta varredura: rotas (19/11/2026) (+3 more)
 
-### Community 800 - "bi/mockData.ts"
-Cohesion: 0.20
-Nodes (10): PR #176 — RECUPERAR, Arquitetura, getMockIndustryTrends(), getMockSeasonality(), MOCK_CLIENT_STATS, MockClientStats, MockIndustryTrend, MockSeasonalityClientCell (+2 more)
-
-### Community 801 - "useExternalSimulator.ts"
-Cohesion: 0.20
-Nodes (7): ExternalPrintArea, ExternalProduct, GroupedPrintArea, invokeExternalDb(), ProductImageRecord, useExternalPrintAreas(), useExternalProductSearch()
-
-### Community 803 - "AutoDefenseTab.tsx"
-Cohesion: 0.31
-Nodes (9): Onda 8 — Telemetria Executiva e Auto-cura ✅, AuditRow, AutoDefenseTab(), AutoDefenseTable(), useAutoDefenseRows(), HardeningTrendChart(), Snapshot, TrendContent() (+1 more)
-
-### Community 804 - "md-to-pdf-stub.mjs"
+### Community 803 - "md-to-pdf-stub.mjs"
 Cohesion: 0.20
 Nodes (8): marked, __dirname, inputResult, mdToPdf(), newestReport(), outputPath, REPO_ROOT, resolveInput()
 
-### Community 805 - "dropdown-menu.tsx"
+### Community 804 - "dropdown-menu.tsx"
 Cohesion: 0.18
 Nodes (9): @radix-ui/react-dropdown-menu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuSubContent (+1 more)
 
-### Community 806 - "toast.tsx"
+### Community 805 - "toast.tsx"
 Cohesion: 0.20
 Nodes (10): @radix-ui/react-toast, Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps, ToastTitle (+2 more)
+
+### Community 806 - "gerar-repo.mjs"
+Cohesion: 0.22
+Nodes (9): edges, executarRg(), FDIR, inventario, OUT, RAIZ, rgCount(), rgFiles() (+1 more)
 
 ### Community 807 - "simular-kit-orcamento-sicoob.py"
 Cohesion: 0.33
@@ -4994,2425 +4957,2285 @@ Nodes (10): formatRelative(), LastSyncHeader(), LastSyncRunPanel(), SyncContent(
 Cohesion: 0.36
 Nodes (10): bootBadgeFor(), copyToClipboard(), describeListError(), formatTime(), isHealthyResponse(), ListErrorAlert(), responseErrorMessage(), SampleRequestIdButton() (+2 more)
 
-### Community 814 - "usePulseBarStatus.ts"
-Cohesion: 0.35
-Nodes (10): calculateDeliveryRate(), countStaleSecrets(), criticalReasons(), derivePulsePresentation(), fetchPulseSignals(), fetchStatus(), numberOrZero(), pluralSuffix() (+2 more)
-
-### Community 815 - "useSeverityChangeNotifier.ts"
-Cohesion: 0.33
-Nodes (10): DEFAULT_STATE, isAlertSeverity(), loadState(), resetSeverityNotifierState(), saveState(), SEV_TITLE, shouldNotify(), showSeverityToast() (+2 more)
-
-### Community 816 - "StepPreview.tsx"
+### Community 814 - "StepPreview.tsx"
 Cohesion: 0.33
 Nodes (10): countPreviewRows(), DatabaseStatus(), ImportModeSelector(), mappedRawValue(), PreviewCounts, PreviewRow(), PreviewSummary(), PreviewTable() (+2 more)
 
-### Community 817 - "ProductFlagsSection.tsx"
-Cohesion: 0.27
-Nodes (10): daysToExpiry(), EXPIRY_OPTIONS, ExpiryKey, expiryToOption(), FLAG_CONFIG, FlagConfig, FlagExpiry(), formatRemaining() (+2 more)
-
-### Community 818 - "useProductVariants.ts"
+### Community 815 - "useProductVariants.ts"
 Cohesion: 0.33
 Nodes (10): createVariantApi(), deleteVariantApi(), EMPTY_FORM, fetchProductVariants(), formToPayload(), ProductVariant, updateVariantApi(), useProductVariants() (+2 more)
 
-### Community 819 - "VideoGrid.tsx"
+### Community 816 - "VideoGrid.tsx"
 Cohesion: 0.35
 Nodes (10): formatBytes(), LinkingPanel(), VariantDots(), VideoActions(), VideoBadges(), VideoCard(), VideoGrid(), VideoInfoBar() (+2 more)
 
-### Community 820 - "ProductsListingLatencyAlert.tsx"
+### Community 817 - "ProductsListingLatencyAlert.tsx"
 Cohesion: 0.33
 Nodes (10): AlertHeader(), AlertReasons(), deltaTone(), formatMs(), formatPct(), LatencyMetrics(), ListingAlert, Metric() (+2 more)
 
-### Community 821 - "BIAiCopilot.tsx"
+### Community 818 - "BIAiCopilot.tsx"
 Cohesion: 0.27
 Nodes (10): BIAiCopilot(), buildCopilotHealthContext(), buildCopilotHistoryContext(), canSendQuestion(), ContextSource, CopilotSourcesStatus(), Message, Props (+2 more)
 
-### Community 822 - "EnrichedOrdersTimeline.tsx"
+### Community 819 - "EnrichedOrdersTimeline.tsx"
 Cohesion: 0.33
 Nodes (10): AnomalyBadge(), deltaClass(), EnrichedOrdersTimeline(), fmtBRL(), fmtDate(), OrderCategoryBadge(), orderDelta(), OrderTimelineItem() (+2 more)
 
-### Community 823 - "SortableCartItem.tsx"
+### Community 820 - "SortableCartItem.tsx"
 Cohesion: 0.29
 Nodes (10): CartActionsMenu(), CartActionsMenuProps, CartItemDetails(), CartItemDetailsProps, ColorBadge(), formatCurrency(), ProductImage(), SortableCartItem (+2 more)
 
-### Community 824 - "SortableProductItem.tsx"
+### Community 821 - "SortableProductItem.tsx"
 Cohesion: 0.29
 Nodes (10): CollectionProduct, ItemActions(), NotesEditor(), ProductDetails(), ProductImage(), ProductPriceChange(), ProductVariant, SortableProductItem() (+2 more)
 
-### Community 826 - "PersistentBreadcrumbs.tsx"
-Cohesion: 0.31
-Nodes (10): breadcrumbForPart(), BreadcrumbItem(), BreadcrumbItemData, buildBreadcrumbs(), canShowBreadcrumb(), hidesFollowingId(), isRouteId(), PersistentBreadcrumbs (+2 more)
-
-### Community 827 - "StatusTimeline.tsx"
+### Community 823 - "StatusTimeline.tsx"
 Cohesion: 0.18
 Nodes (7): CurrentStatusProps, HorizontalStatusBarProps, StatusBarStep, statusConfig, StatusTimelineProps, TimelineEvent, TimelineStatus
 
-### Community 828 - "ComparisonMobileView.tsx"
+### Community 824 - "ComparisonMobileView.tsx"
 Cohesion: 0.27
 Nodes (10): CellProps, ComparisonMobileView(), ProductCell(), ProductColors(), ProductImageCell(), Props, RowKey, ROWS (+2 more)
 
-### Community 829 - "SalesGoalsCard.tsx"
+### Community 825 - "SalesGoalsCard.tsx"
 Cohesion: 0.29
 Nodes (10): ActiveGoal(), DaysRemaining(), EmptyGoal(), formatGoalCurrency(), GOAL_TYPE_LABELS, GoalDialog(), GoalMetric(), INITIAL_GOAL (+2 more)
 
-### Community 830 - "StockAlertDialogs.tsx"
-Cohesion: 0.33
-Nodes (9): AlertCard(), severityIcons, severityStyles, AlertEmptyState(), AlertSummaryBar(), LowStockDialog(), OutOfStockDialog(), StockAlertDialogProps (+1 more)
-
-### Community 831 - "StockCategoryTreeSelect.tsx"
+### Community 826 - "StockCategoryTreeSelect.tsx"
 Cohesion: 0.31
 Nodes (10): CategorySearch(), CategorySelection(), CategoryTree(), NodeChevron(), nodeOrDescendantsMatch(), StockCategoryTreeSelect(), StockCategoryTreeSelectProps, TreeNodeChildren() (+2 more)
 
-### Community 832 - "KitCompositionCard.tsx"
-Cohesion: 0.27
-Nodes (10): BoxSummary(), ItemPersonalization, ItemStockBadge(), KitBox, KitCompositionCard(), KitCompositionCardProps, KitItem, KitItemRow() (+2 more)
-
-### Community 833 - "DevRoute.tsx"
+### Community 827 - "DevRoute.tsx"
 Cohesion: 0.33
 Nodes (10): DeniedDevRoute(), DevMfaGate(), DevRoute(), DevRouteProps, DevRouteResult(), DevRouteResultProps, RouteLoader(), shouldShowBlockedToast() (+2 more)
 
-### Community 834 - "MagicUpVariationComparator.tsx"
+### Community 828 - "MagicUpVariationComparator.tsx"
 Cohesion: 0.33
 Nodes (10): focusVariation(), MagicUpVariationComparator(), MagicUpVariationComparatorProps, nextIndexForKey(), resolveScore(), variationAriaLabel(), VariationCard(), VariationImage() (+2 more)
 
-### Community 835 - "ArtFileUpload.tsx"
+### Community 829 - "ArtFileUpload.tsx"
 Cohesion: 0.27
 Nodes (10): ACCEPTED_EXTENSIONS, ACCEPTED_MIME, ArtFileAttachment, ArtFileUpload(), ArtFileUploadProps, fileContentType(), formatBytes(), insertFailed() (+2 more)
 
-### Community 836 - "GeneratingOverlay.tsx"
+### Community 830 - "GeneratingOverlay.tsx"
 Cohesion: 0.27
 Nodes (10): AnimatedDots(), GeneratingOverlay(), GeneratingOverlayProps, GENERATION_STEPS, GenerationStep(), GenerationStepProps, OverlayHeader(), stepAt() (+2 more)
 
-### Community 837 - "OrderFulfillmentManager.tsx"
+### Community 831 - "OrderFulfillmentManager.tsx"
 Cohesion: 0.31
 Nodes (10): FormField(), FulfillmentForm, isFormDirty(), LoadingCard(), Logistics, LogisticsForm(), OrderFulfillmentManager(), OrderFulfillmentManagerProps (+2 more)
 
-### Community 838 - "CustomizationOptions.tsx"
+### Community 832 - "CustomizationOptions.tsx"
 Cohesion: 0.29
 Nodes (10): ColorOption, ColorOptions(), CustomizationOptions(), EmptyOptions(), LoadingOptions(), OptionsError(), PricingResult, SizeOption (+2 more)
 
-### Community 839 - "PackagingModal.tsx"
+### Community 833 - "PackagingModal.tsx"
 Cohesion: 0.31
 Nodes (10): contextLabels, DimensionItem(), formatDimension(), PackagingContext, PackagingDimensions(), PackagingImage(), PackagingModal(), PackagingModalProps (+2 more)
 
-### Community 840 - "QuoteBuilderStepper.tsx"
+### Community 834 - "QuoteBuilderStepper.tsx"
 Cohesion: 0.27
 Nodes (10): QuoteBuilderStep, QuoteBuilderStepper(), QuoteBuilderStepperProps, stepCircleClass(), StepConnector(), StepDef, StepIcon(), StepIndicator() (+2 more)
 
-### Community 841 - "QuoteTotalsSummary.tsx"
+### Community 835 - "QuoteHistoryPanel.tsx"
+Cohesion: 0.29
+Nodes (10): actionColors, actionIcons, AuditDetails(), displayMetadataValue(), EntryHeader(), HistoryEntry(), QuoteHistoryPanel(), QuoteHistoryPanelProps (+2 more)
+
+### Community 836 - "QuoteTotalsSummary.tsx"
 Cohesion: 0.35
 Nodes (10): calcPersTotal(), discountValue(), formatCurrency(), OptionalTotalRow(), personalizationTotal(), QuoteTotalsSummary(), QuoteTotalsSummaryProps, shippingLabel() (+2 more)
 
-### Community 842 - "ReorderCatalogValidityBanner.tsx"
+### Community 837 - "ReorderCatalogValidityBanner.tsx"
 Cohesion: 0.31
 Nodes (10): CatalogValidityContent(), formatDateTime(), isCatalogExpired(), ReorderCatalogState, ReorderCatalogValidityBanner(), ReorderCatalogValidityBannerProps, RevalidateButton(), revalidateCatalog() (+2 more)
 
-### Community 843 - "SearchResultGroups.tsx"
+### Community 838 - "ReplenishmentToolbar.tsx"
+Cohesion: 0.27
+Nodes (10): ActiveFilterChips(), CategoryOption, ReplenishmentFilters(), ReplenishmentHeader(), ReplenishmentToolbar(), ReplenishmentToolbarProps, SearchInput(), SortMode (+2 more)
+
+### Community 839 - "SearchResultGroups.tsx"
 Cohesion: 0.25
 Nodes (10): GroupedResultsProps, GroupedSearchResults(), ResultGroup(), ResultGroupProps, ResultItemProps, ResultsSummary(), ResultText(), SearchResultItem() (+2 more)
 
-### Community 844 - "SecurityDashboard.tsx"
+### Community 840 - "SecurityDashboard.tsx"
 Cohesion: 0.31
 Nodes (9): SecurityDashboard(), useAdminProfiles(), AdminUserSelector(), buildSecurityRecommendations(), SecurityAlertsCard(), SecurityOverview(), SecurityRecommendations(), UserSelectOption() (+1 more)
 
-### Community 845 - "StockAlert.tsx"
+### Community 841 - "StockAlert.tsx"
 Cohesion: 0.29
 Nodes (10): AlertLevel, getAlertLevel(), getAlertTitle(), getStockInfo(), STOCK_BADGE_CONFIG, StockAlert(), StockAlertDescription(), StockAlertProps (+2 more)
 
-### Community 846 - "useIndustryCategoryTrends.ts"
+### Community 842 - "useIndustryCategoryTrends.ts"
 Cohesion: 0.31
 Nodes (10): aggregateIndustryRows(), buildDemoResult(), fetchCompanyIds(), fetchIndustryCategoryTrends(), fetchIndustryRows(), IndustryCategoryAggregate, IndustryCategoryTrendsResult, IndustryRow (+2 more)
 
-### Community 847 - "useConnectionsOverviewFilters.ts"
+### Community 843 - "useAdvancedFilters.ts"
+Cohesion: 0.27
+Nodes (6): countActiveFilters(), useAdvancedFilters(), useExternalCategories(), useExternalSuppliers(), useExternalTechniques(), SupplierOption
+
+### Community 844 - "useConnectionsOverviewFilters.ts"
 Cohesion: 0.24
 Nodes (9): applyFilters(), DEFAULT_FILTERS, matchesFailureCount(), matchesTypeAndStatus(), matchesWindow(), OverviewFilters, OverviewStatusFilter, OverviewWindowFilter (+1 more)
 
-### Community 848 - "useFavoriteQuickAdd.ts"
+### Community 845 - "useFavoriteQuickAdd.ts"
 Cohesion: 0.31
 Nodes (10): FavoriteClickOptions, FavoriteDecision, handleAddFailure(), handleRemoveFailure(), membershipMap(), normalizedFavoriteOptions(), persistFavorite(), preferredListId() (+2 more)
 
-### Community 849 - "useProductsByCategory.ts"
+### Community 846 - "useProductsByCategory.ts"
 Cohesion: 0.27
 Nodes (9): categoryFetchErrorMessage(), CategoryProductsResponse, keepEmptyProductIds(), loadCategoryProducts(), shouldResetCategoryFilter(), shouldSkipCategoryFetch(), useProductsByCategory(), UseProductsByCategoryOptions (+1 more)
 
-### Community 850 - "useSmartNavigation.ts"
+### Community 847 - "useSmartNavigation.ts"
 Cohesion: 0.31
 Nodes (9): BackNavigationDeps, goBackStack, isCriticalPathname(), performBackNavigation(), precisaConfirmarSaida(), useSmartBackRegistration(), useSmartNavigation(), useTrackNavigation() (+1 more)
 
-### Community 851 - "price-tables.ts"
+### Community 848 - "price-tables.ts"
 Cohesion: 0.33
 Nodes (10): fetchPromobrindPriceTables(), filterByColors(), filterByMaximum(), filterByQuantity(), findBestPriceTable(), mapPriceTable(), nullableNumber(), numericOr() (+2 more)
 
-### Community 852 - "CircuitBreaker"
+### Community 849 - "CircuitBreaker"
 Cohesion: 0.25
 Nodes (3): CircuitBreaker, CircuitBreakerOptions, CircuitState
 
-### Community 853 - "AdminLoginAttemptsPage.tsx"
+### Community 850 - "AdminLoginAttemptsPage.tsx"
 Cohesion: 0.31
 Nodes (10): AdminLoginAttemptsPage(), AttemptRow(), AttemptsBody(), AttemptsTable(), LoginAttemptData, LoginAttemptStats, LoginFilters(), LoginPagination() (+2 more)
 
-### Community 854 - "SellerDiscountLimitsAdminPage.tsx"
+### Community 851 - "SellerDiscountLimitsAdminPage.tsx"
 Cohesion: 0.27
 Nodes (10): ExceededRequest, ImpactPill(), ImpactRow, KpiCard(), SellerDiscountLimitsAdminPage(), SellerEdit, SellerIdentity(), SellerImpact() (+2 more)
 
-### Community 855 - "useRegressionGuardrail.ts"
+### Community 852 - "useRegressionGuardrail.ts"
 Cohesion: 0.27
 Nodes (10): errorReport(), fetchRegressionGuardrail(), GuardrailDeltas, GuardrailReport, GuardrailStatus, GuardrailWindow, isRecord(), parseGuardrailReport() (+2 more)
 
-### Community 856 - "PublicComparisonPage.tsx"
-Cohesion: 0.29
-Nodes (10): EMOJIS, getOrCreateAnonId(), parseCompareItems(), ProductDetail, ProductImage(), ProductVariant(), PublicComparison, PublicComparisonPage() (+2 more)
+### Community 853 - "createApprovalData"
+Cohesion: 0.18
+Nodes (11): useTechniqueHandlers(), approvalPersonalization(), clientName(), createApprovalData(), createLayoutCaptureRequest(), documentNumber(), MockupGenerator(), OffscreenLayoutCapture (+3 more)
 
-### Community 857 - "GestorAuditPage.tsx"
+### Community 854 - "GestorAuditPage.tsx"
 Cohesion: 0.33
 Nodes (10): actionPresentation(), AuditActionBadge(), AuditContent(), AuditLog, AuditRow(), AuditTable(), fetchAuditLogs(), filterAuditLogs() (+2 more)
 
-### Community 858 - "TrendsKpiCards.tsx"
-Cohesion: 0.22
-Nodes (9): COLOR_CLASSES, ColorKey, DeltaBadge(), ITEMS, KpiData, KpiItem, TrendsKpiCards(), TrendsKpiCardsProps (+1 more)
-
-### Community 859 - "gravacao.ts"
+### Community 855 - "gravacao.ts"
 Cohesion: 0.18
 Nodes (10): GroupedPrintArea, PersonalizacaoSelecionada, PrintAreaWithTechniques, ProductPrintArea, SHAPE_STYLES, TECHNIQUE_COLORS, TECHNIQUE_ICONS, TechniqueStats (+2 more)
 
-### Community 860 - "tecnica-unificada.ts"
+### Community 856 - "tecnica-unificada.ts"
 Cohesion: 0.18
 Nodes (9): CustomizationPriceTableRaw, PersonalizationTechniqueRaw, FaixaQuantidade, ResultadoCalculoPreco, TabelaPrecoFiltros, TabelaPrecoTecnica, TecnicaFiltros, TecnicaResumo (+1 more)
 
-### Community 861 - "ramo-atividade.ts"
-Cohesion: 0.18
-Nodes (10): ProdutoRamoAtividade, RamoAtividade, RamoAtividadeFilho, RamoAtividadeFilhoInput, RamoAtividadeFilters, RamoAtividadeFilterState, RamoAtividadeGroup, RamoAtividadeHierarquia (+2 more)
-
-### Community 862 - "excelExport.ts"
+### Community 857 - "excelExport.ts"
 Cohesion: 0.27
 Nodes (7): ExcelColumn, ExcelExportConfig, exportMultipleSheets(), exportToExcel(), formatValue(), getNestedValue(), getXLSX()
 
-### Community 863 - "product-sorting.ts"
+### Community 858 - "product-sorting.ts"
 Cohesion: 0.27
 Nodes (8): BASIC_COMPARATORS, fallbackSalesScore(), ProductComparator, productStock(), promoSalesComparator(), SortOptions, supplierMetrics(), supplierSalesComparator()
 
-### Community 864 - "market-intelligence-insights/index.ts"
+### Community 859 - "connections-health-check/index.ts"
+Cohesion: 0.29
+Nodes (8): buildTestFreshnessIncident(), DEFAULT_TEST_STALE_MINUTES, IncidentKey, MonitoredConnection, CONNECTION, NOW, alreadyNotified(), notifyAdmins()
+
+### Community 860 - "market-intelligence-insights/index.ts"
 Cohesion: 0.22
 Nodes (8): aggregateData(), AggregatedSummary, buildCacheKey(), InsightPayload, log(), pctChange(), RequestBody, sha256()
 
-### Community 865 - "004_notification_functions.sql"
+### Community 861 - "004_notification_functions.sql"
 Cohesion: 0.20
 Nodes (4): notification_preferences, on_user_created_preferences, get_unread_count(), is_dnd_active()
 
-### Community 866 - "20251214200524_1f519508-285c-4649-ba22-b40d67618e67.sql"
+### Community 862 - "20251214200524_1f519508-285c-4649-ba22-b40d67618e67.sql"
 Cohesion: 0.33
 Nodes (10): idx_products_category_id, idx_products_external_id, idx_products_featured, idx_products_is_active, idx_products_sku, idx_products_stock_status, idx_products_supplier_id, public.product_sync_logs (+2 more)
 
-### Community 867 - "20260416183342_786cf75e-5ec6-4c53-a314-9b622e8b7027.sql"
+### Community 863 - "20260416183342_786cf75e-5ec6-4c53-a314-9b622e8b7027.sql"
 Cohesion: 0.29
 Nodes (8): idx_bot_log_blocked, idx_bot_log_created, idx_bot_log_ip, idx_rate_limits_blocked_until, idx_rate_limits_identifier_endpoint, idx_rate_limits_window_start, public.bot_detection_log, public.request_rate_limits
 
-### Community 868 - "20260420142542_7ad9d3cc-c5e1-44e6-b3f8-6b315c4da7f8.sql"
+### Community 864 - "20260420142542_7ad9d3cc-c5e1-44e6-b3f8-6b315c4da7f8.sql"
 Cohesion: 0.29
 Nodes (8): idx_collection_reactions_collection, idx_collection_reactions_item, idx_collections_client, idx_collections_share_token, public.collection_item_reactions, public.get_collections_weekly_count(), public.get_top_collected_products(), uq_collection_reactions_anon
 
-### Community 869 - "20260420185009_19ba5060-cb2d-4030-82d6-dc64b8365cee.sql"
+### Community 865 - "20260420185009_19ba5060-cb2d-4030-82d6-dc64b8365cee.sql"
 Cohesion: 0.29
 Nodes (8): public.magic_up_brand_kits, public.magic_up_campaigns, public.magic_up_comments, public.magic_up_public_shares, public.magic_up_reactions, set_magic_up_brand_kits_updated_at, set_magic_up_campaigns_updated_at, set_magic_up_public_shares_updated_at
 
-### Community 870 - "20260424213841_362def7e-d8f7-4853-8e49-b6195611d178.sql"
+### Community 866 - "20260424213841_362def7e-d8f7-4853-8e49-b6195611d178.sql"
 Cohesion: 0.25
 Nodes (5): idx_optimization_queue_runs_queue, idx_optimization_queue_status_priority, public.optimization_queue, public.optimization_queue_runs, trg_optimization_queue_updated_at
 
-### Community 871 - "20260426124745_a1de9fd9-f880-4613-8aa4-9a0684805b7b.sql"
+### Community 867 - "20260426124745_a1de9fd9-f880-4613-8aa4-9a0684805b7b.sql"
 Cohesion: 0.29
 Nodes (8): idx_role_mig_batches_created_at, idx_role_mig_batches_initiated_by, idx_role_mig_items_batch, idx_role_mig_items_status, idx_role_mig_items_user, public.execute_role_migration_batch(), public.role_migration_batches, public.role_migration_items
 
-### Community 872 - "20260503210856_c31b8c3b-7810-4295-b4ec-89988b27b0b4.sql"
+### Community 868 - "20260503210856_c31b8c3b-7810-4295-b4ec-89988b27b0b4.sql"
 Cohesion: 0.18
 Nodes (4): public.check_security_health(), public.sensitive_access_logs, trig_prevent_order_deletion, trig_prevent_quote_deletion
 
-### Community 873 - "public.convert_quote_to_sicoob_order"
+### Community 869 - "public.convert_quote_to_sicoob_order"
 Cohesion: 0.18
 Nodes (3): public.convert_quote_to_sicoob_order(), public.require_sicoob_artwork_before_production(), ux_sicoob_orders_source_quote
 
-### Community 875 - "cross-cutting-regression.test.ts"
+### Community 871 - "cross-cutting-regression.test.ts"
 Cohesion: 0.18
 Nodes (5): KitItem, PriceTier, ProductVariant, Step, VariantSelectionData
 
-### Community 876 - "phase3-detail-experience.test.ts"
+### Community 872 - "phase3-detail-experience.test.ts"
 Cohesion: 0.22
 Nodes (7): buildGrid(), buildSizeOptions(), getGridSizeOrder(), getSizeOrder(), GridItem, SIZE_ORDER, SizeOption
 
-### Community 877 - "audit-controls-fixture.sql"
+### Community 873 - "audit-controls-fixture.sql"
 Cohesion: 0.18
 Nodes (6): auth.users, public.admin_audit_log, public.cooperativas, public.profiles, public.step_up_audit_log, public.user_roles
 
-### Community 878 - "1. Categorias de Conectores"
+### Community 874 - "📁 CATEGORIA 1: PRODUTOS E CATÁLOGO"
+Cohesion: 0.20
+Nodes (10): 1.1 Tabela Principal de Produtos, 1.2 Imagens e Mídia, 1.3 Variantes e SKUs, 1.4 Categorias Hierárquicas, 1.5 Cores, 1.6 Materiais, 1.7 Atributos e Tags, 1.8 Fornecedores (+2 more)
+
+### Community 875 - "1. Categorias de Conectores"
 Cohesion: 0.20
 Nodes (9): 1. Categorias de Conectores, 2. Infraestrutura Técnica, 3. Monitoramento, 🏦 Bancos de Dados, 🏢 Bitrix24 / SalesPro, Inventário de Conectores e Integrações — Connections Hub, 🔌 MCP (Model Context Protocol), 🤖 n8n (Automações) (+1 more)
 
-### Community 879 - "kit-og-image.ts"
+### Community 876 - "kit-og-image.ts"
 Cohesion: 0.31
 Nodes (9): kit-og-image.ts (etapa 17), drawItemsCount(), drawTruncatedLine(), generateKitOgImage(), kitColor(), KitOgInput, shade(), TextLayout (+1 more)
 
-### Community 880 - "Checklist de Compatibilidade"
+### Community 877 - "Checklist de Compatibilidade"
 Cohesion: 0.20
 Nodes (9): Checklist de Compatibilidade, Classes Tailwind para Dark Mode, Componentes com Atenção Especial, ✅ Componentes Verificados, Cores do Tema, 🌙 Guia de Dark Mode - Gifts Store, Regras de Contraste, Testando Dark Mode (+1 more)
 
-### Community 881 - "🗄️ 32. TABELAS DO BANCO DE DADOS (COMPLETO)"
+### Community 878 - "🗄️ 32. TABELAS DO BANCO DE DADOS (COMPLETO)"
 Cohesion: 0.20
 Nodes (10): 🗄️ 32. TABELAS DO BANCO DE DADOS (COMPLETO), Carrinho, Clientes e CRM, Core, Cores e Categorias, Estoque, Notificações, Outros (+2 more)
 
-### Community 882 - "Fase 3 — Contrato Sicoob: tabelas, índices, RLS, RPCs e buckets (Etapas 18–27)"
-Cohesion: 0.20
-Nodes (10): Etapa 18 — Migration única e idempotente para as 11 tabelas Sicoob ✅ (11/11 aplicadas em 16/09/2026), Etapa 19 — Índices das tabelas Sicoob ✅ (confirmado em 16/09/2026, sem ação necessária), Etapa 20 — RLS e policies por papel nas tabelas Sicoob ✅ (matriz extraída em 16/09/2026), Etapa 21 — RPCs atômicas de escrita ⏳ (verificação estrutural feita em 16/09/2026, teste dinâmico pendente), Etapa 22 — RPCs de consulta e apoio, Etapa 23 — Testes SQL de invariantes (pgTAP ou script), Etapa 24 — View `v_sicoob_hierarchy` e views de leitura ✅ (achado real corrigido em 16/09/2026), Etapa 25 — Buckets de Storage e policies ✅ (concluído em 16/09/2026) (+2 more)
-
-### Community 883 - "verify-supabase-functions-published.mjs"
-Cohesion: 0.38
-Nodes (7): PR #149 — NADA_A_RECUPERAR, getFunction(), getFunctions(), getVersion(), main(), requiredFunctions, verifyPublishedFunctions()
-
-### Community 884 - "🗺️ Mapa Automático de Rotas"
+### Community 879 - "🗺️ Mapa Automático de Rotas"
 Cohesion: 0.20
 Nodes (9): 🗺️ Mapa Automático de Rotas, 📂 Seção: ADMIN, 📂 Seção: DEV, 📂 Seção: PRODUCTS, 📂 Seção: PUBLIC, 📂 Seção: QUOTES, 📂 Seção: SICOOB, 📂 Seção: SICOOB-RBAC (+1 more)
 
-### Community 886 - "KitBuilderHeader.tsx"
+### Community 881 - "Coleções 10/10 — Roadmap completo"
+Cohesion: 0.22
+Nodes (9): Arquivos-chave, Coleções 10/10 — Roadmap completo, Onda P1 — Confiança ✅, Onda P2 — Inteligência de preço ✅, Onda P4 — Polimento & DX ✅, CollectionsEmptyStateSmart(), useCollectionsGlobalShortcuts(), isTyping() (+1 more)
+
+### Community 882 - "KitBuilderHeader.tsx"
 Cohesion: 0.31
 Nodes (9): Fluxo completo (Onda Pós-10/10), HistoryActions(), KitActions(), KitBuilderHeader(), KitBuilderHeaderProps, KitStatus(), SaveStatus(), TemplateAction() (+1 more)
 
-### Community 887 - "2. RESUMO EXECUTIVO"
+### Community 883 - "2. RESUMO EXECUTIVO"
 Cohesion: 0.20
 Nodes (9): 1. ÍNDICE DE NAVEGAÇÃO, 2. RESUMO EXECUTIVO, 6. TRILHA DE EVIDÊNCIAS (GIT GENESIS), 📑 Checklist Auditável de Conformidade, 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB [PROD], 🔴 Evidências com Falha de Validação, ⚠️ Lacunas Quantificadas (Audit Gaps), 📈 Métricas de Cobertura de Código (Métricas Reais: ❌) (+1 more)
 
-### Community 888 - "StorefrontDemoPage.tsx"
+### Community 884 - ".reorder"
+Cohesion: 0.24
+Nodes (5): createSupabaseMock(), MockOptions, MutationCall, SupabaseMock, UpdateCall
+
+### Community 885 - "StorefrontDemoPage.tsx"
 Cohesion: 0.22
 Nodes (8): budgetRanges, categories, occasions, Product, ProductImage(), products, purchaseSteps, StorefrontDemoPage()
 
-### Community 889 - "LogoColorAnalyzer.tsx"
-Cohesion: 0.22
-Nodes (6): CatalogActiveFiltersProps, ColorRow(), ColorRowProps, LogoColorAnalyzerProps, PantoneDropdown(), PantoneDropdownProps
-
-### Community 890 - "alert-dialog.tsx"
+### Community 886 - "alert-dialog.tsx"
 Cohesion: 0.22
 Nodes (7): @radix-ui/react-alert-dialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogOverlay, AlertDialogTitle
 
-### Community 891 - "simular-aprovacao-publica.py"
+### Community 887 - "simular-aprovacao-publica.py"
 Cohesion: 0.33
 Nodes (7): actor(), command(), issue(), new_governed_quote(), new_quote(), prepare_governance_prerequisites(), sql()
 
-### Community 892 - "simular-identidade-itens-orcamento.py"
+### Community 888 - "simular-identidade-itens-orcamento.py"
 Cohesion: 0.29
 Nodes (5): actor_sql(), command(), item_rows(), rpc(), sql()
 
-### Community 893 - "McpTab.tsx"
-Cohesion: 0.27
-Nodes (8): CheckResult, GitHubCredentialsTester(), LABELS, Report, formatExpiresIn(), MCP_URL, McpKey, McpTab()
-
-### Community 894 - "MaskedSuffixBadge.tsx"
+### Community 889 - "MaskedSuffixBadge.tsx"
 Cohesion: 0.36
 Nodes (9): FallbackExplanation(), hasPositiveLength(), isFallbackSuffix(), MaskedSuffixBadge(), PlainSuffix(), Props, shouldShowPlainSuffix(), SuffixStatusChip() (+1 more)
 
-### Community 895 - "useRecentIncidents.ts"
+### Community 890 - "useRecentIncidents.ts"
 Cohesion: 0.31
 Nodes (9): fetchIncidents(), IncidentSource, notificationEntity(), NotifRow, severityFromNotification(), severityFromTestKind(), TestRow, toNotificationIncident() (+1 more)
 
-### Community 896 - "ProductRamosSection.tsx"
+### Community 891 - "ProductRamosSection.tsx"
 Cohesion: 0.36
 Nodes (9): arrayOrEmpty(), filteredRamos(), ProductRamosSection(), ProductRamosSectionProps, RamoHeader(), RamosTree(), RamoTreeNode(), SegmentOption() (+1 more)
 
-### Community 897 - "ProductTagsSection.tsx"
-Cohesion: 0.31
-Nodes (9): ExternalTag, fetchProductTags(), fetchTags(), ProductTag, ProductTagsSection(), ProductTagsSectionProps, removeProductTag(), SelectedTags() (+1 more)
-
-### Community 898 - "ProductVariationAxesConfig.tsx"
+### Community 892 - "ProductVariationAxesConfig.tsx"
 Cohesion: 0.24
 Nodes (9): AxisDefinition, ColorDot(), GENDER_OPTIONS, GenderAxis(), PRESET_SIZES, ProductVariationAxesConfig(), ProductVariationAxesConfigProps, VARIANT_AXES (+1 more)
 
-### Community 899 - "ProductClassificationSection.tsx"
-Cohesion: 0.33
-Nodes (9): ClassificationCard(), ClassificationCardProps, ClassificationGrid(), ClassificationHeader(), DisabledPlaceholder(), ProductBoundCard(), ProductBoundCardProps, ProductClassificationSection() (+1 more)
+### Community 893 - "BundleSuggestions.tsx"
+Cohesion: 0.31
+Nodes (9): AffinityCategory, BundleCard(), BundleHeader(), BundleResults(), BundleRow, BundleSuggestions(), CategorySelector(), Props (+1 more)
 
-### Community 900 - "ProductLinkRenderer.tsx"
+### Community 894 - "ProductLinkRenderer.tsx"
 Cohesion: 0.31
 Nodes (9): MessageBody(), decodeImage(), parseProductLink(), preprocessProductLinks(), ProductAwareLink(), ProductLinkButton(), ProductLinkButtonProps, ProductLinkData (+1 more)
 
-### Community 901 - "SavedFilters.tsx"
+### Community 895 - "SavedFilters.tsx"
 Cohesion: 0.42
 Nodes (8): ActiveFiltersBar(), ActiveFiltersBarProps, FilterChip(), FilterChipProps, SavedFilter, SavedFilters(), SavedFiltersProps, useSavedFilters()
 
-### Community 902 - "MarketIntelligenceInsightsCard.tsx"
+### Community 896 - "MarketIntelligenceInsightsCard.tsx"
 Cohesion: 0.33
 Nodes (9): InsightData(), InsightHighlights(), InsightResponse, InsightRow(), InsightsContent(), InsightsHeader(), MarketIntelligenceInsightsCard(), Props (+1 more)
 
-### Community 903 - "components/kit-builder/index.ts"
+### Community 897 - "components/kit-builder/index.ts"
 Cohesion: 0.31
 Nodes (7): CompatibilityBadge(), ItemAction(), ItemCard(), ItemCardProps, ItemImage(), VolumeIndicator(), VolumeIndicatorProps
 
-### Community 904 - "KitHealthCard.tsx"
+### Community 898 - "KitHealthCard.tsx"
 Cohesion: 0.31
 Nodes (9): calculateHealthScore(), HistoricalComparison(), HistoricalComparisonProps, HistoricalRow, KitHealthCard(), KitHealthCardProps, kitHealthMetrics(), percentile() (+1 more)
 
-### Community 905 - "KitPresentablePreview.tsx"
-Cohesion: 0.36
-Nodes (9): buildNarrative(), CompositionItem(), KitComposition(), KitPresentablePreview(), KitPresentablePreviewProps, PresentationHeader(), PricingSummary(), SharePresentation() (+1 more)
-
-### Community 906 - "WizardSteps.tsx"
+### Community 899 - "WizardSteps.tsx"
 Cohesion: 0.33
 Nodes (9): getStepIndicatorClass(), getStepSummary(), StepConnector(), StepItem(), StepLabel(), STEPS, StepStatusIcon(), WizardSteps() (+1 more)
 
-### Community 907 - "LogoSizeControls.tsx"
+### Community 900 - "LogoSizeControls.tsx"
 Cohesion: 0.31
 Nodes (9): EngravingArea(), EngravingAreaProps, firstSliderValue(), LogoScale(), LogoScaleProps, LogoSizeControls(), LogoSizeControlsProps, NumericControl() (+1 more)
 
-### Community 908 - "techniqueColorUtils.ts"
+### Community 901 - "techniqueColorUtils.ts"
 Cohesion: 0.24
 Nodes (9): classifyTechnique(), DIGITAL_TERMS, includesAny(), LASER_TERMS, LASER_UV_TERMS, LaserTone, SERIGRAPHY_TERMS, TechniqueCategory (+1 more)
 
-### Community 909 - "OrderConsolidationPanel.tsx"
-Cohesion: 0.33
-Nodes (9): AvailableQuotesColumn(), ConsolidationQuote, fetchConsolidationQuotes(), OrderConsolidationPanel(), PendingQuotesList(), Props, SelectedQuoteList(), SelectedQuotesColumn() (+1 more)
-
-### Community 910 - "ProductVariantSelector.tsx"
+### Community 902 - "ProductVariantSelector.tsx"
 Cohesion: 0.33
 Nodes (9): ColorGroup(), FlatVariant(), groupVariants(), ProductVariantSelector(), ProductVariantSelectorProps, SelectionSummary(), SIZE_ORDER, SizeChip() (+1 more)
 
-### Community 911 - "ProductIntelligence.tsx"
+### Community 903 - "ProductIntelligence.tsx"
 Cohesion: 0.31
 Nodes (9): BoughtProduct, BoughtTogether(), EmptyIntelligence(), IntelligenceHeader(), MetricCard(), MetricCardProps, ProductIntelligence(), ProductIntelligenceProps (+1 more)
 
-### Community 912 - "EmptySearchState.tsx"
+### Community 904 - "RelatedProducts.tsx"
+Cohesion: 0.33
+Nodes (9): ProductCards(), ProductMiniCard(), recommendationScore(), recommendedFor(), RecommendedProducts(), RecommendedProductsProps, RelatedProducts(), RelatedProductsProps (+1 more)
+
+### Community 905 - "useStockChartData.ts"
+Cohesion: 0.33
+Nodes (9): buildChartData(), DEMAND_LABEL, demandLevel(), MarketDemandLevel, selectBestVelocity(), useCommercialInsights(), useStockChartData(), useStockSources() (+1 more)
+
+### Community 906 - "EmptySearchState.tsx"
 Cohesion: 0.31
 Nodes (8): buildActions(), EmptySearchState, EmptySearchStateProps, getRecentSearches(), NoResultsHeader(), RecentSearches(), SearchAction, SearchActions()
 
-### Community 913 - "VoiceTranscriptPanel.tsx"
+### Community 907 - "VoiceTranscriptPanel.tsx"
 Cohesion: 0.33
 Nodes (9): ACTION_META, ActionIcon(), ActionMetaKey, AgentResponse(), getActionMeta(), Transcript(), VoiceError(), VoiceTranscriptPanel() (+1 more)
 
-### Community 914 - "SimulatorErrorBoundary.tsx"
-Cohesion: 0.22
-Nodes (4): Props, SimulatorErrorBoundary, SimulatorErrorFallback(), State
-
-### Community 915 - "StatCard.tsx"
+### Community 908 - "StatCard.tsx"
 Cohesion: 0.27
 Nodes (8): MiniStatCardProps, StatCard(), StatCardProps, StatIcon(), StatVariant, Trend(), variantGlowClass(), variantStyles
 
-### Community 916 - "useSeasonalPeakNotifications.ts"
+### Community 909 - "useSeasonalPeakNotifications.ts"
 Cohesion: 0.31
 Nodes (9): Args, dedupKey(), hasDedupMarker(), MONTHS, NotificationInput, peakTitle(), saveDedupMarker(), sendPeakNotification() (+1 more)
 
-### Community 917 - "useVoiceSearchAction.ts"
+### Community 910 - "useVoiceSearchAction.ts"
 Cohesion: 0.44
 Nodes (9): delayed(), runNavigate(), runOracle(), runSearch(), runSort(), runVoiceAction(), searchQuery(), useVoiceSearchAction() (+1 more)
 
-### Community 918 - "useErrorHandler.ts"
+### Community 911 - "useErrorHandler.ts"
 Cohesion: 0.33
 Nodes (8): ErrorHandlerOptions, errorMessage(), errorMetadata(), handleErrorValue(), isCancellation(), logDatabaseError(), reportHandledError(), useErrorHandler()
 
-### Community 919 - "useFavoriteLists.ts"
-Cohesion: 0.24
-Nodes (9): FavoriteList, FavoriteListItem, FavoriteListUpdate, ITEMS_KEY(), LISTS_KEY, useFavoriteListItems(), useFavoriteLists(), useFavoriteTrash() (+1 more)
-
-### Community 920 - "useGlobalShortcuts.ts"
+### Community 912 - "useGlobalShortcuts.ts"
 Cohesion: 0.36
 Nodes (9): handleAltNavigation(), handleCartShortcut(), handleKitChord(), handleNewQuoteShortcut(), handleOracleShortcut(), handleSmartBack(), isEditableElement(), ShortcutHandlers (+1 more)
 
-### Community 921 - "useProductFreshnessOverride.ts"
+### Community 913 - "useProductFreshnessOverride.ts"
 Cohesion: 0.27
 Nodes (8): ALLOWED_FRESHNESS_THRESHOLDS, FreshnessThreshold, ProductFreshnessOverride, QK(), QK_ALL, useDeleteFreshnessOverride(), useProductFreshnessOverride(), useUpsertFreshnessOverride()
 
-### Community 922 - "auth-debug.ts"
+### Community 914 - "auth-debug.ts"
 Cohesion: 0.33
 Nodes (8): authDebug(), authDebugInternals, authDebugUrl(), decodeJwtPayload(), maskEmail(), maskToken(), summarizeSession(), summarizeUser()
 
-### Community 923 - "step-up-error.ts"
+### Community 915 - "step-up-error.ts"
 Cohesion: 0.33
 Nodes (9): BackendErrorShape, candidateKind(), candidateMessage(), collectCandidates(), extractStepUpError(), handleStepUpError(), parseErrorBody(), showStepUpToast() (+1 more)
 
-### Community 924 - "connection-error-copy.ts"
+### Community 916 - "connection-error-copy.ts"
 Cohesion: 0.27
 Nodes (7): ErrorCopy, ErrorTone, getErrorCopy(), httpCopy(), STATIC_ERROR_COPY, timeoutCopy(), unknownCopy()
 
-### Community 925 - "tables.ts"
+### Community 917 - "tables.ts"
 Cohesion: 0.20
 Nodes (9): BRIDGE_ALIASES, BridgeAlias, COMPANY_TABLES, CompanyTable, ExternalTable, PRODUCT_TABLES, PRODUCT_VIEWS, ProductTable (+1 more)
 
-### Community 926 - "feature-flags.ts"
+### Community 918 - "feature-flags.ts"
 Cohesion: 0.22
 Nodes (6): FeatureFlag, FLAG_REGISTRY, FlagConfig, getAllFlags(), isFeatureEnabled(), runtimeOverrides
 
-### Community 927 - "scopes.ts"
+### Community 919 - "scopes.ts"
 Cohesion: 0.20
 Nodes (8): FULL_SCOPE, FULL_SCOPE_CONFIRMATION, FULL_SCOPE_DEFAULT_TTL_DAYS, FULL_SCOPE_MAX_TTL_DAYS, FULL_SCOPE_MIN_JUSTIFICATION, KNOWN_SCOPES, McpScope, SCOPE_DESCRIPTIONS
 
-### Community 928 - "customization-options.adapter.ts"
+### Community 920 - "customization-options.adapter.ts"
 Cohesion: 0.49
 Nodes (9): adaptCustomizationOptions(), adaptLocation(), adaptOption(), nullableNumber(), pick(), Raw, stringValue(), toBool() (+1 more)
 
-### Community 929 - "quote-status-config.ts"
+### Community 921 - "quote-status-config.ts"
 Cohesion: 0.20
 Nodes (4): EDITABLE_QUOTE_STATUSES, QUOTE_STATUS_CONFIG, QUOTE_STATUSES_REQUIRING_DRAFT_RESET, QuoteStatusConfig
 
-### Community 930 - "ClientDetailPage.tsx"
+### Community 922 - "ClientDetailPage.tsx"
 Cohesion: 0.33
 Nodes (9): ClientDetailPage(), ClientHistory, ClientNotFound(), ClientOrders(), ClientStats(), ClientTopProducts(), formatBRL(), TopProduct() (+1 more)
 
-### Community 931 - "CustomizableDashboard.tsx"
-Cohesion: 0.29
-Nodes (9): CustomizableDashboard(), DashboardMetrics, DEFAULT_WIDGETS, MetricCard(), renderMetricWidget(), renderWidgetContent(), SortableWidget(), STATIC_WIDGET_RENDERERS (+1 more)
-
-### Community 932 - "ExternalDatabaseTest.tsx"
+### Community 923 - "ExternalDatabaseTest.tsx"
 Cohesion: 0.36
 Nodes (9): ConnectionCard(), ConnectionsGrid(), ConnectionStatus(), DatabaseTabs(), ExternalDatabaseHeader(), ExternalDatabaseTest(), ExternalDatabaseViewProps, ExternalDataPanel() (+1 more)
 
-### Community 933 - "MockupDialogs"
+### Community 924 - "MockupDialogs"
 Cohesion: 0.22
 Nodes (9): DeleteDialogProps, DeleteMockupDialog(), TechniqueChangeDialog(), TechniqueChangeDialogProps, AIMockupAssistant, colorConfigMessage(), confirmColorConfig(), MockupDialogs() (+1 more)
 
-### Community 934 - "SimuladorWizard.tsx"
+### Community 925 - "SimuladorWizard.tsx"
 Cohesion: 0.31
 Nodes (9): CurrentWizardStep(), Draft, DraftsMenu(), PreSelectedProductState, SaveDraftDialog(), SimuladorWizard(), Wizard, WizardFlow() (+1 more)
 
-### Community 935 - "advancedFilters.ts"
+### Community 926 - "advancedFilters.ts"
 Cohesion: 0.20
 Nodes (9): AdvancedFilterState, CategoryOption, ColorGroupData, ColorOption, MaterialOption, StockFilterOption, SupplierOption, TagData (+1 more)
 
-### Community 936 - "personalizationExport.ts"
+### Community 927 - "personalizationExport.ts"
 Cohesion: 0.27
 Nodes (9): ComponentInfo, ExportData, exportToExcel(), exportToPDF(), getAutoTable(), getJsPDF(), getXLSX(), LocationInfo (+1 more)
 
-### Community 937 - "20250102000000_gifts_production.sql"
+### Community 928 - "20250102000000_gifts_production.sql"
 Cohesion: 0.36
 Nodes (9): idx_products_category, idx_products_featured, idx_products_sku, idx_products_supplier, idx_quotes_status, public.categories, public.products, public.quotes (+1 more)
 
-### Community 938 - "20251214183243_14916945-c09e-42a0-bdf1-8972c41f9210.sql"
+### Community 929 - "20251214183243_14916945-c09e-42a0-bdf1-8972c41f9210.sql"
 Cohesion: 0.31
 Nodes (6): on_auth_user_created, public.get_user_role(), public.has_role(), public.profiles, public.user_roles, update_profiles_updated_at
 
-### Community 939 - "20260410165642_7339bf0f-8ade-45d9-9065-79663e2c2364.sql"
+### Community 930 - "20260410165642_7339bf0f-8ade-45d9-9065-79663e2c2364.sql"
 Cohesion: 0.20
 Nodes (3): trg_notify_new_order, trg_notify_quote_client_response, trg_notify_quote_status_change
 
-### Community 940 - "20260416195918_397d6363-83a0-45f5-a8f6-ea33e21352a6.sql"
+### Community 931 - "20260416195918_397d6363-83a0-45f5-a8f6-ea33e21352a6.sql"
 Cohesion: 0.36
 Nodes (9): idx_art_files_mockup, idx_art_files_quote, idx_art_files_user, idx_mockup_templates_product, idx_mockup_templates_user, public.art_file_attachments, public.mockup_templates, update_art_files_updated_at (+1 more)
 
-### Community 941 - "20260420142509_3657c725-d2da-43e4-9c02-36993a7e02f4.sql"
+### Community 932 - "20260420142509_3657c725-d2da-43e4-9c02-36993a7e02f4.sql"
 Cohesion: 0.27
 Nodes (6): idx_collection_trash_collection, idx_collection_trash_expires, idx_collection_trash_user, public.collection_items_trash, public.move_collection_item_to_trash(), trg_move_collection_item_to_trash
 
-### Community 942 - "20260425172528_a08671a6-52a2-4d70-acfe-45293eb64233.sql"
+### Community 933 - "20260425172528_a08671a6-52a2-4d70-acfe-45293eb64233.sql"
 Cohesion: 0.27
 Nodes (5): idx_ext_conn_sync_log_ran_at, idx_ext_conn_sync_log_secret, public.external_connections_sync_log, public.sync_external_connections_from_credentials(), sync_external_connections_on_credential_change
 
-### Community 943 - "20260425214848_66d5769e-6e89-4d0d-b49b-c44d1dd2285b.sql"
+### Community 934 - "20260425214848_66d5769e-6e89-4d0d-b49b-c44d1dd2285b.sql"
 Cohesion: 0.27
 Nodes (5): idx_mcp_violations_created, idx_mcp_violations_ip_created, idx_mcp_violations_user_created, public.mcp_access_violations, trg_guard_mcp_api_keys
 
-### Community 944 - "20260426135145_2730e107-3cee-4688-aa6c-6bcd9e7c3920.sql"
+### Community 935 - "20260426135145_2730e107-3cee-4688-aa6c-6bcd9e7c3920.sql"
 Cohesion: 0.27
 Nodes (6): idx_dar_seller_created_at, idx_dar_seller_status_created_at, idx_orders_seller_status_updated_at, idx_orders_seller_updated_at, idx_quotes_seller_status_updated_at, idx_quotes_seller_updated_at
 
-### Community 945 - "20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql"
+### Community 936 - "20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql"
 Cohesion: 0.33
 Nodes (6): public.order_audit_events, public.order_invoices, public.order_logistics, public.order_payments, public.order_pilot_approvals, tr_audit_order_status
 
-### Community 947 - "20260912160000_sicoob_approval_policy_snapshot.sql"
+### Community 938 - "20260912160000_sicoob_approval_policy_snapshot.sql"
 Cohesion: 0.27
 Nodes (4): public.get_sicoob_order_approval_policy(), tr_capture_sicoob_order_approval_policy, tr_freeze_sicoob_order_scope_pending_approval, tr_protect_sicoob_approval_policy_version
 
-### Community 949 - "20260922161000_repair_sicoob_approval_policy_snapshot.sql"
+### Community 940 - "20260922161000_repair_sicoob_approval_policy_snapshot.sql"
 Cohesion: 0.27
 Nodes (4): public.get_sicoob_order_approval_policy(), tr_capture_sicoob_order_approval_policy, tr_freeze_sicoob_order_scope_pending_approval, tr_protect_sicoob_approval_policy_version
 
-### Community 950 - "useKitAutoSave.test.tsx"
+### Community 941 - "useKitAutoSave.test.tsx"
 Cohesion: 0.27
 Nodes (8): cadeia(), initialKit, insert, leituraVersao, maybeSingle, selectTabela, single, update
 
-### Community 951 - "useWorkspaceNotifications-cache-invalidation.test.tsx"
+### Community 942 - "useWorkspaceNotifications-cache-invalidation.test.tsx"
 Cohesion: 0.20
 Nodes (9): deleteEqMock, deleteMock, limitMock, loadHook(), SEED, STABLE_USER, updateEqEqMock, updateEqMock (+1 more)
 
-### Community 952 - "useWorkspaceNotifications-unread-count.test.tsx"
+### Community 943 - "useWorkspaceNotifications-unread-count.test.tsx"
 Cohesion: 0.20
 Nodes (6): cacheScenarios, limitMock, loadHookAndMetrics(), networkScenarios, SeedRow, STABLE_USER
 
-### Community 954 - "sicoob-cross-cooperative-rls-fixture.sql"
+### Community 945 - "sicoob-cross-cooperative-rls-fixture.sql"
 Cohesion: 0.27
 Nodes (8): public.profiles, public.sicoob_actor_can_approve(), public.sicoob_approval_requests, public.sicoob_order_history, public.sicoob_order_item_logs, public.sicoob_order_items, public.sicoob_orders, public.user_roles
 
-### Community 955 - "sicoob-finance-artwork-fixture.sql"
+### Community 946 - "sicoob-finance-artwork-fixture.sql"
 Cohesion: 0.27
 Nodes (7): auth.users, public.assert_sicoob_approval_actor(), public.sicoob_actor_can_manage_fulfillment(), public.sicoob_orders, public.user_roles, storage.buckets, storage.objects
 
-### Community 956 - "sicoob-order-status-events-fixture.sql"
+### Community 947 - "sicoob-order-status-events-fixture.sql"
 Cohesion: 0.27
 Nodes (7): on_approval_request_created, public.profiles, public.sicoob_approval_requests, public.sicoob_order_history, public.sicoob_orders, public.user_roles, public.workspace_notifications
 
-### Community 957 - "Regras de domínio que o código não deixa óbvio — referência para agentes"
-Cohesion: 0.22
-Nodes (8): Catálogo externo, E2E e QA, Edge functions, Escopo de vendedor — é gate de CI, não convenção, Papéis e RBAC, Preço defasado (price freshness), Regras de domínio que o código não deixa óbvio — referência para agentes, UI
-
-### Community 958 - "🔐 Autenticação: Passkeys (WebAuthn) — Guia de Implementação Full 10/10"
+### Community 948 - "🔐 Autenticação: Passkeys (WebAuthn) — Guia de Implementação Full 10/10"
 Cohesion: 0.22
 Nodes (8): 1. Desafio (Challenge) no Backend, 2. Verificação de Atestação (Registro), 3. Verificação de Asserção (Login), 🔐 Autenticação: Passkeys (WebAuthn) — Guia de Implementação Full 10/10, Benefícios, Gaps Atuais (Nota 9.5), Proposta Técnica (Edge Function), Roadmap de Implementação
 
-### Community 959 - "Automação local — Brindes_Sicoob_V2"
-Cohesion: 0.22
-Nodes (8): Automação local — Brindes_Sicoob_V2, Comandos, Gatilhos e ativação, Hooks e workflows anteriores, Registro exato dos demais scripts, Suites efetivamente executadas, Dois gates estáticos de CI (drift do doc de cobertura smoke e validação de tags @smoke) deixaram de rodar em qualquer gatilho. No head da #97 eram steps sem `if:` no job `e2e` disparado por `pull_request` em `ubuntu-latest`, bloqueando todo PR mesmo sem secrets; a main os moveu para `e2e-authenticated`, que é `workflow_dispatch`-only e morre antes de alcançá-los porque o environment `e2e-qa` está sem secrets. Hoje qualquer agente pode adicionar um `test()` fora de um describe `@smoke` (que o project `chromium-smoke` ignora silenciosamente, playwright.config.ts:262-266) ou alterar a suíte sem regenerar `docs/E2E_SMOKE_COVERAGE.md`, e nenhum check obrigatório pega. Recuperação de custo zero e sem exposição: os dois steps no job público `e2e`, que é required check., test()
-
-### Community 960 - "🎨 17. UI/UX"
+### Community 949 - "🎨 17. UI/UX"
 Cohesion: 0.22
 Nodes (9): 17.1 Componentes Base, 17.2 Layout e Navegação, 17.3 Animações e Efeitos, 17.4 Drag and Drop, 17.5 Componentes Comuns, 17.6 Loading States, 17.7 Responsive e Mobile, 17.8 Toast e Dialogs (+1 more)
 
-### Community 961 - "🔗 20. INTEGRAÇÕES"
+### Community 950 - "🔗 20. INTEGRAÇÕES"
 Cohesion: 0.22
 Nodes (9): 20.1 Supabase (Lovable Cloud), 20.2 Banco de Dados Externo (Promobrind), 20.3 Bitrix24, 20.4 Lovable AI Gateway, 20.5 Dropbox, 20.6 GitHub, 20.7 Email, 20.8 Webhooks (+1 more)
 
-### Community 962 - "Workflow de Pedidos - Documentação Técnica"
+### Community 951 - "Workflow de Pedidos - Documentação Técnica"
 Cohesion: 0.22
 Nodes (8): Auditoria e Timeline, Regras de Transição, Status de Pedido, Status Sicoob, Testes, Workflow de Pedidos - Documentação Técnica, Workflow Principal (Onda A), Workflow Sicoob
 
-### Community 963 - "Fase 4 — Segurança e RLS global (Etapas 28–34)"
+### Community 952 - "Plano de implementação do portal Sicoob em 100 etapas"
 Cohesion: 0.22
-Nodes (8): Etapa 28 — Habilitar RLS em `notification_templates`, `webhook_configs`, `webhook_logs` ✅ (aplicado em 16/09/2026), Etapa 29 — Policies para `access_security_settings` e `device_login_notifications` ✅ (aplicado em 16/09/2026), Etapa 30 — Auditoria das 507 policies ✅ (33 revisadas em 16/09/2026, 2 corrigidas), Etapa 31 — Auditoria das 203 funções (SECURITY DEFINER, search_path, ACL) ✅ (achado crítico de metodologia corrigido em 16/09/2026), Etapa 32 — Revisar as 96 Edge Functions com `verify_jwt=false` ⏳ (parcial — achado registrado em 16/09/2026), Etapa 33 — Reconciliar `auth.users` ↔ `profiles` ✅ (aplicado em 16/09/2026, com ressalvas), Etapa 34 — Rotação de credenciais e trilha, Fase 4 — Segurança e RLS global (Etapas 28–34)
+Nodes (9): Compromissos do produto, Critérios de qualidade transversais, Dez blocos de implementação, Etapas e checklists, Marcos de liberação, Ordem, dependências e capacidade, Plano de implementação do portal Sicoob em 100 etapas, Referências (+1 more)
 
-### Community 964 - "ChurnRiskBanner.tsx"
+### Community 953 - "Plano de implementação do portal Sicoob"
+Cohesion: 0.22
+Nodes (9): Arquivos, Artefatos históricos E001–E100, Base da proposta, Como acompanhar, Plano de correções em 150 etapas — 27/09/2026, Plano de implementação do portal Sicoob, Regra de conclusão, Revisão atual — 12/09/2026 (+1 more)
+
+### Community 954 - "ChurnRiskBanner.tsx"
 Cohesion: 0.33
 Nodes (8): `backup/local-rascunho-20261031` — PARCIAL · pode apagar: NÃO, D2. PR #4 (ref `pr/4`, tip f94a92241, 11/09/2026) — 3.376 arquivos auditados contra origin/main (ca76bcdbb, 18/11/2026), useZoneCommandPalette(), buildReactivationHook(), buildWhatsappMessage(), ChurnRiskBanner(), getRiskTheme(), Props
 
-### Community 965 - "managerStatsService.ts"
-Cohesion: 0.39
-Nodes (6): Métricas reais do Gestor de Compras (fim de métrica fictícia) — PR #157, GestorOrderSummary, GestorStats, getCooperativeDashboardStats(), loadBudgetTotals(), loadRecentOrders()
+### Community 955 - "ProductsContext.tsx"
+Cohesion: 0.31
+Nodes (6): PR #145 — RECUPERAR, ProductsContext, ProductsContextType, useProductsContext(), useProductsContextSafe(), Input
 
-### Community 966 - "Ledger de recuperação — trabalho de agentes fora da `main`"
+### Community 956 - "Ledger de recuperação — trabalho de agentes fora da `main`"
 Cohesion: 0.22
 Nodes (9): A regra, Como atualizar este documento, Decisões revistas, Ledger de recuperação — trabalho de agentes fora da `main`, O que a segunda rodada mudou, O que falta, em ordem, O que já voltou nesta sessão, Onde está cada coisa (+1 more)
 
-### Community 967 - "Security Runbook — Promo Gifts"
+### Community 957 - "Security Runbook — Promo Gifts"
 Cohesion: 0.22
 Nodes (8): 1. Como usar o Security Center, 2. Quando acionar "Forçar logout global", 3. Como interpretar Anomalias 24h, 4. Resposta rápida a incidente (IP suspeito), 5. Escalation path, 6. Checklist pós-incidente, 7. Referências internas, Security Runbook — Promo Gifts
 
-### Community 969 - "select.tsx"
+### Community 959 - "select.tsx"
 Cohesion: 0.28
 Nodes (8): @radix-ui/react-select, SelectContent, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger
 
-### Community 970 - "drawer.tsx"
+### Community 960 - "BITourGuide.tsx"
+Cohesion: 0.22
+Nodes (4): react-dom, Props, Step, STEPS
+
+### Community 961 - "drawer.tsx"
 Cohesion: 0.25
 Nodes (5): vaul, DrawerContent, DrawerDescription, DrawerOverlay, DrawerTitle
 
-### Community 971 - "simular-recompra-sicoob.py"
+### Community 962 - "simular-recompra-sicoob.py"
 Cohesion: 0.33
 Nodes (5): actor_sql(), command(), payload(), scalar(), sql()
 
-### Community 972 - "DevAccessDeniedPage.tsx"
-Cohesion: 0.31
-Nodes (8): AccessRequestButton(), DevAccessDeniedPage(), DevAccessDeniedPageProps, DevAccessUserRole, getRoleCopy(), isAgentRole(), RoleCopy, SUPERVISOR_AREAS
-
-### Community 973 - "CategorySelect.tsx"
+### Community 963 - "CategorySelect.tsx"
 Cohesion: 0.33
 Nodes (8): BreadcrumbNavigation(), CategoryItem(), CategoryItems(), CategoryNode, CategorySelect(), buildPath(), CategorySelectProps, CurrentParentSelection()
 
-### Community 974 - "ImageFilterBar.tsx"
+### Community 964 - "ImageFilterBar.tsx"
 Cohesion: 0.36
 Nodes (8): ImageFilterBar(), Props, TypeFilters(), VariantFilters(), ViewModeFilters(), Props, FilterMode, GalleryStats
 
-### Community 975 - "ProductMaterialsSection.tsx"
-Cohesion: 0.36
-Nodes (8): filterTypes(), LinkedMaterial, materialBadgeName(), MaterialDetailEditor(), ProductMaterialsSection(), ProductMaterialsSectionProps, SelectedMaterialItem(), SelectedMaterials()
-
-### Community 976 - "ProductPreviewPanel.tsx"
+### Community 965 - "ProductPreviewPanel.tsx"
 Cohesion: 0.42
 Nodes (8): formatPrice(), getStockStatus(), PreviewImage(), PreviewInfo(), PreviewPicture(), PreviewThumbnails(), ProductPreviewPanel, ProductPreviewPanelProps
 
-### Community 977 - "VariantForm.tsx"
+### Community 966 - "VariantForm.tsx"
 Cohesion: 0.36
 Nodes (8): VariantFormData, BasicVariantFields(), ExtraVariantFields(), hasExtraVariantData(), numberInputValue(), SetVariantField, VariantForm(), VariantFormProps
 
-### Community 978 - "AutoRevocationsPanel.tsx"
+### Community 967 - "AutoRevocationsPanel.tsx"
 Cohesion: 0.36
 Nodes (7): AutoRevocationItem(), AutoRevocationsContent(), AutoRevocationsPanel(), SOURCE_META, AutoRevocationRow, RawRow, useAutoRevocations()
 
-### Community 979 - "SecurityAnalytics.tsx"
+### Community 968 - "SecurityAnalytics.tsx"
 Cohesion: 0.33
 Nodes (8): aggregateLogs(), aggregateRow(), AggRow, BotLog, buildAnalytics(), buildTimeline(), Props, SecurityAnalytics()
 
-### Community 980 - "AccessManagement.tsx"
+### Community 969 - "AccessManagement.tsx"
 Cohesion: 0.31
 Nodes (8): AccessManagement(), AppRole, Permission, PermissionMatrix(), renderCheck(), ROLE_COLUMNS, RolePermission, SecuritySummary()
 
-### Community 981 - "CollectionTableView.tsx"
+### Community 970 - "CollectionTableView.tsx"
 Cohesion: 0.31
 Nodes (8): CollectionTableRow(), CollectionTableRowProps, CollectionTableView(), CollectionTableViewProps, selectedRowClass(), SortDir, SortHeader(), SortKey
 
-### Community 982 - "PriceSparkline.tsx"
-Cohesion: 0.36
-Nodes (8): fetchPricePoints(), priceEndpoints(), PricePoint, PriceSparkline(), Props, SparklineResult(), TrendIcon(), trendStroke()
-
-### Community 983 - "UpcomingDatesWidget.tsx"
+### Community 971 - "UpcomingDatesWidget.tsx"
 Cohesion: 0.39
 Nodes (8): CompactDateCard(), countdownClass(), DateCardProps, FullDateCard(), fullDateCardClass(), getDaysUntilText(), UpcomingDatesWidget(), UpcomingDatesWidgetProps
 
-### Community 984 - "FavoritesTrashView.tsx"
+### Community 972 - "FavoritesTrashView.tsx"
 Cohesion: 0.36
 Nodes (8): daysLabel(), FavoritesTrashView(), formatDaysLeft(), TrashCard(), TrashHeader(), TrashItem, TrashProduct, TrashThumbnail()
 
-### Community 985 - "SizeFilter.tsx"
+### Community 973 - "SizeFilter.tsx"
 Cohesion: 0.39
 Nodes (8): CachedSizesWarning(), EmptySizesState(), getSizeOrder(), RetryButton(), SIZE_ORDER, SizeFilter(), SizeFilterProps, SizeOptions()
 
-### Community 986 - "KitPersonalizationPreview.tsx"
+### Community 974 - "IdentitySuggestionButton.tsx"
+Cohesion: 0.33
+Nodes (8): canSuggestIdentity(), getIcon(), IdentitySuggestionButton(), Props, SuggestIdentityButton(), SuggestIdentityButtonProps, SuggestionCard(), SuggestionCardProps
+
+### Community 975 - "KitPersonalizationPreview.tsx"
 Cohesion: 0.31
 Nodes (8): KitPersonalizationPreview(), KitPersonalizationPreviewProps, PersonalizationConfig, PersonalizationRow(), PersonalizationRowProps, PersonalizationSummary(), PersonalizationSummaryProps, PreviewHeader()
 
-### Community 987 - "KitTemplatePreviewDialog.tsx"
+### Community 976 - "KitTemplatePreviewDialog.tsx"
 Cohesion: 0.33
 Nodes (8): BoxPreview(), KitTemplatePreviewDialog(), Props, TemplateBox, TemplateFooter(), TemplateHeader(), TemplateItem, TemplateItems()
 
-### Community 988 - "MobileProductActions.tsx"
+### Community 977 - "MobileProductActions.tsx"
 Cohesion: 0.36
 Nodes (8): createWizardProduct(), firstText(), MobileActionsBar(), MobileProductActions, MobileProductActionsProps, quoteUrl(), shareProduct(), WizardSelections
 
-### Community 989 - "KeyboardShortcuts.tsx"
+### Community 978 - "KeyboardShortcuts.tsx"
 Cohesion: 0.42
 Nodes (7): hasCommandModifier(), isTypingTarget(), KeyboardShortcutsProps, runDownloadShortcut(), runGenerateShortcut(), runResetShortcut(), useKeyboardShortcuts()
 
-### Community 990 - "useLogoProcessing.ts"
+### Community 979 - "useLogoProcessing.ts"
 Cohesion: 0.28
 Nodes (8): createProcessingTask(), ProcessingSetters, trackProcessing(), useLogoProcessing(), LogoPositionEditorProps, DialogBodyProps, TechniqueColorConfigDialogProps, TechniqueColorConfig
 
-### Community 991 - "ProductHoverPreview.tsx"
+### Community 980 - "PilotApprovalPanel.tsx"
+Cohesion: 0.36
+Nodes (8): ApprovalContent(), mayUploadPilot(), PILOT_STATUS, PilotApprovalPanel(), PilotApprovalPanelProps, PilotHeader(), PilotUpload(), ReviewActions()
+
+### Community 981 - "ProductHoverPreview.tsx"
 Cohesion: 0.39
 Nodes (8): ColorPreview(), formatPrice(), MaterialPreview(), PreviewBadges(), PreviewContent(), ProductHoverPreview(), ProductHoverPreviewProps, ProductPreviewImage()
 
-### Community 992 - "SingleVariantPicker.tsx"
+### Community 982 - "SingleVariantPicker.tsx"
 Cohesion: 0.39
 Nodes (8): formatVariantQuantity(), SingleVariantPicker(), SingleVariantPickerProps, SkipVariantButton(), VariantButton(), VariantImage(), VariantLoading(), VariantStock()
 
-### Community 993 - "QuoteProductColorSelector.tsx"
+### Community 983 - "QuoteProductColorSelector.tsx"
 Cohesion: 0.42
 Nodes (8): formatStock(), LoadingVariants(), QuoteProductColorSelector(), QuoteProductColorSelectorProps, VariantChoices(), VariantOption(), VariantStock(), VariantThumbnail()
 
-### Community 994 - "ReplenishmentStatsCards.tsx"
+### Community 984 - "ReplenishmentStatsCards.tsx"
 Cohesion: 0.33
 Nodes (8): ReplenishmentStatsCards(), StatCard(), StatCardProps, StatsErrorState(), StatsLoadingSkeleton(), StatVariant, useCountUp(), VARIANT_STYLES
 
-### Community 995 - "MfaChallengeDialog.tsx"
+### Community 985 - "MfaChallengeDialog.tsx"
 Cohesion: 0.31
 Nodes (7): ChallengeContent(), ChallengeContentProps, MfaChallengeDialog(), MfaChallengeDialogProps, useMfaChallenge(), verify(), useMfaFactorId()
 
-### Community 996 - "PushNotificationSettings.tsx"
+### Community 986 - "PushNotificationSettings.tsx"
 Cohesion: 0.42
 Nodes (8): AlertTypeRow(), EnabledNotificationSettings(), PermissionDeniedNotice(), PushHeader(), PushNotificationSettings(), PushStatus(), UnsupportedPushCard(), usePushNotificationSettings()
 
-### Community 997 - "TwoFactorSetup.tsx"
+### Community 987 - "TwoFactorSetup.tsx"
 Cohesion: 0.36
 Nodes (8): DisableMfaDialog(), disableMfaFactor(), ManagedUserMfaNotice(), MfaStatusContent(), MfaStatusContentProps, TwoFactorSetup(), TwoFactorSetupProps, useMfaDisable()
 
-### Community 998 - "pagination.tsx"
+### Community 988 - "pagination.tsx"
 Cohesion: 0.28
 Nodes (6): PaginationContent, PaginationItem, PaginationLink(), PaginationLinkProps, PaginationNext(), PaginationPrevious()
 
-### Community 999 - "table.tsx"
+### Community 989 - "table.tsx"
 Cohesion: 0.22
 Nodes (8): Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow
 
-### Community 1000 - "useComparisonScore.ts"
+### Community 990 - "useComparisonScore.ts"
 Cohesion: 0.33
 Nodes (8): ComparisonProduct, ComparisonScoreWeights, DEFAULT_SCORE_WEIGHTS, leadTimeProxy(), metricAt(), normalizeHigherBetter(), normalizeLowerBetter(), useComparisonScore()
 
-### Community 1001 - "useContextualSuggestions.ts"
+### Community 991 - "useContextualSuggestions.ts"
 Cohesion: 0.28
 Nodes (8): ContextualSuggestion, getFilterBasedSuggestions(), getTimeBasedSuggestions(), ROUTE_PATTERNS, RouteContext, SECTION_SUGGESTIONS, useContextualSuggestions(), UseContextualSuggestionsOptions
 
-### Community 1002 - "useGenericFuzzySearch.ts"
+### Community 992 - "useGenericFuzzySearch.ts"
 Cohesion: 0.28
 Nodes (8): ClientSearchItem, FuzzyKey, FuzzyKeyConfig, FuzzySearchOptions, QuoteSearchItem, useClientFuzzySearch(), useGenericFuzzySearch(), useQuoteFuzzySearch()
 
-### Community 1003 - "useScheduledReports.ts"
+### Community 993 - "useRBAC.tsx"
+Cohesion: 0.33
+Nodes (8): getDescriptionForRole(), normalizeRole(), parsePermissionCode(), Permission, Role, RoleName, toDbRole(), useRBAC()
+
+### Community 994 - "useScheduledReports.ts"
 Cohesion: 0.25
 Nodes (8): calculateNextRun(), CreateReportInput, FREQUENCY_LABELS, REPORT_TYPE_LABELS, ReportFrequency, ReportType, ScheduledReport, useScheduledReports()
 
-### Community 1004 - "assistant-message-window.ts"
+### Community 995 - "assistant-message-window.ts"
 Cohesion: 0.31
 Nodes (8): AssistantMessageLike, EXPERT_CHAT_MAX_CONTENT_LENGTH, EXPERT_CHAT_MAX_MESSAGE_LENGTH, EXPERT_CHAT_MAX_MESSAGES, fitsContract(), normalizeMessages(), recentWindow(), selectExpertChatMessages()
 
-### Community 1005 - "invoke-full-scope.ts"
+### Community 996 - "invoke-full-scope.ts"
 Cohesion: 0.31
 Nodes (8): ChallengeFn, classifyStepUpError(), invokeFullScopeFunction(), InvokeFullScopeOptions, InvokeFullScopeResult, isDevRoleFailure(), responseFailed(), StepUpErrorKind
 
-### Community 1008 - "rls-denial-logger.ts"
+### Community 998 - "rls-denial-logger.ts"
 Cohesion: 0.33
 Nodes (8): currentEndpoint(), currentUserAgent(), isRlsDenialError(), logRlsDenial(), LogRlsDenialContext, logRlsDenialIfApplicable, rlsLogParams(), RlsOperation
 
-### Community 1009 - "orderBudgetProjection.ts"
+### Community 999 - "orderBudgetProjection.ts"
 Cohesion: 0.33
 Nodes (8): calculateImpact(), getPercentageAfterOrder(), hasStatus(), ORDER_STATUSES_CONSUMING_BUDGET, ORDER_STATUSES_PROJECTING_BUDGET, ORDER_STATUSES_WITHOUT_BUDGET_IMPACT, projectOrderAgainstBudget(), shouldProjectOrder()
 
-### Community 1010 - "secretsManagerCallMetrics.ts"
+### Community 1000 - "secretsManagerCallMetrics.ts"
 Cohesion: 0.28
 Nodes (6): clearSecretsManagerSamples(), emit(), listeners, recordSecretsManagerCall(), samples, SecretsManagerCallSample
 
-### Community 1011 - "pages/OrderDetailPage.tsx"
+### Community 1001 - "PreflightPage.tsx"
+Cohesion: 0.36
+Nodes (8): CheckItem(), EMPTY_PREFLIGHT, LastCheck(), PreflightCards(), PreflightData, PreflightHeader(), PreflightPage(), usePreflight()
+
+### Community 1002 - "pages/OrderDetailPage.tsx"
 Cohesion: 0.42
 Nodes (8): OrderConditions(), OrderDetailPage(), OrderDetails(), OrderLoading(), OrderNotes(), OrderNotFound(), OrderTabs(), StatusManager()
 
-### Community 1012 - "SellerDashboardPage.tsx"
+### Community 1003 - "SellerDashboardPage.tsx"
 Cohesion: 0.42
 Nodes (8): RecentActivity(), SellerDashboardPage(), SellerError(), SellerHeader(), SellerLoading(), SellerStats, SellerSummary(), TopClients()
 
-### Community 1013 - "OrderService.ts"
-Cohesion: 0.33
-Nodes (7): applyOrderFieldFilters(), applyOrderListFilters(), applyOrderScope(), applyOrderSearch(), ConvertQuoteToOrderParams, createOrderListQuery(), OrderListQuery
-
-### Community 1014 - "fulfillmentService.ts"
+### Community 1004 - "fulfillmentService.ts"
 Cohesion: 0.31
 Nodes (8): hasShipmentDetails(), hasShipmentIdentity(), isNullableString(), parseShipment(), ShipmentResponse, ShipmentRpc, sicoobFulfillmentService, UpdateSicoobShipmentInput
 
-### Community 1015 - "useRecentlyViewedStore.ts"
-Cohesion: 0.42
-Nodes (8): loadFromStorage(), RecentlyViewedActions, RecentlyViewedItem, RecentlyViewedState, RecentlyViewedStore, saveToStorage(), storageKey(), useRecentlyViewedStore
-
-### Community 1016 - "color-matching.ts"
-Cohesion: 0.39
-Nodes (8): deltaE(), findNearestPantone(), getBestPantoneMatch(), getCatalogWithLab(), hexToRgb(), PantoneMatch, PantoneWithLab, rgbToLab()
-
-### Community 1017 - "orderExportUtils.ts"
+### Community 1005 - "orderExportUtils.ts"
 Cohesion: 0.22
 Nodes (4): ExportRow, ORDER_EXPORT_COLUMNS, QUOTE_EXPORT_COLUMNS, RFC-4180
 
-### Community 1018 - "pixMask.ts"
+### Community 1006 - "pixMask.ts"
 Cohesion: 0.39
 Nodes (6): calculateCpfVerifier(), calculateVerifier(), toDigitArray(), validateCnpjDigits(), validateCpfDigits(), validatePixKey()
 
-### Community 1019 - "undoToast.tsx"
+### Community 1007 - "undoToast.tsx"
 Cohesion: 0.25
 Nodes (4): ActionToastOptions, createUndoableAction(), showUndoToast(), UndoToastOptions
 
-### Community 1020 - "rls-integration-tests/index.ts"
+### Community 1008 - "rls-integration-tests/index.ts"
 Cohesion: 0.25
 Nodes (5): CaseResult, classify(), Expect, Op, runCase()
 
-### Community 1021 - "rls-matrix-export/index.ts"
+### Community 1009 - "rls-matrix-export/index.ts"
 Cohesion: 0.31
 Nodes (7): corsHeaders, csvEscape(), escapeHtml(), MatrixRow, renderCsv(), renderHtml(), sevColor()
 
-### Community 1022 - "pagination.ts"
-Cohesion: 0.31
-Nodes (6): loadAllTrendActivity(), nextCursor(), TrendActivityCursor, TrendActivityPage, trendCursorFilter(), TRENDS_INSIGHTS_PAGE_SIZE
-
-### Community 1023 - "20251214185703_ccfe43ae-d38d-40bd-a327-56e2c378b26e.sql"
+### Community 1010 - "20251214185703_ccfe43ae-d38d-40bd-a327-56e2c378b26e.sql"
 Cohesion: 0.33
 Nodes (7): idx_bitrix_clients_bitrix_id, idx_bitrix_deals_client_id, idx_bitrix_sync_logs_synced_by, public.bitrix_clients, public.bitrix_deals, public.bitrix_sync_logs, update_bitrix_clients_updated_at
 
-### Community 1024 - "20251215164521_6de8b3bc-1a58-4a1c-bc1a-3dc254c0ba68.sql"
+### Community 1011 - "20251215164521_6de8b3bc-1a58-4a1c-bc1a-3dc254c0ba68.sql"
 Cohesion: 0.36
 Nodes (7): idx_product_views_created_at, idx_product_views_product_id, idx_product_views_seller_id, idx_search_analytics_created_at, idx_search_analytics_search_term, public.product_views, public.search_analytics
 
-### Community 1025 - "public.orders"
+### Community 1012 - "public.orders"
 Cohesion: 0.33
 Nodes (5): public.order_history, public.order_items, public.orders, set_order_number, update_orders_updated_at
 
-### Community 1026 - "20260109125132_c8eb2ca4-378d-455c-b380-0f1b3b55efd6.sql"
+### Community 1013 - "20260109125132_c8eb2ca4-378d-455c-b380-0f1b3b55efd6.sql"
 Cohesion: 0.36
 Nodes (7): idx_color_groups_active, idx_color_nuances_active, idx_color_variations_active, idx_color_variations_group, public.color_groups, public.color_nuances, public.color_variations
 
-### Community 1027 - "20260214152115_900b7a1c-3aa4-48e7-afc1-5e44ea411a12.sql"
+### Community 1014 - "20260214152115_900b7a1c-3aa4-48e7-afc1-5e44ea411a12.sql"
 Cohesion: 0.42
 Nodes (8): enforce_seller_cart_limit, idx_seller_cart_items_cart, idx_seller_carts_seller, public.check_seller_cart_limit(), public.seller_cart_items, public.seller_carts, update_seller_cart_items_updated_at, update_seller_carts_updated_at
 
-### Community 1028 - "20260220001443_54c4d527-34ff-47cb-b192-8821dee4b9ae.sql"
+### Community 1015 - "20260220001443_54c4d527-34ff-47cb-b192-8821dee4b9ae.sql"
 Cohesion: 0.39
 Nodes (7): public.access_blocked_log, public.access_security_settings, public.city_whitelist, public.ip_whitelist, update_access_security_settings_updated_at, update_city_whitelist_updated_at, update_ip_whitelist_updated_at
 
-### Community 1029 - "20260416153503_5163f0f9-e6f0-4664-9f53-8cdb24d9150e.sql"
+### Community 1016 - "20260416153503_5163f0f9-e6f0-4664-9f53-8cdb24d9150e.sql"
 Cohesion: 0.31
 Nodes (5): public.commission_entries, public.commission_rules, trg_validate_commission_status, update_commission_entries_updated_at, update_commission_rules_updated_at
 
-### Community 1030 - "20260416200125_980ed90e-0927-4d03-be42-7db5bbe12309.sql"
+### Community 1017 - "20260416200125_980ed90e-0927-4d03-be42-7db5bbe12309.sql"
 Cohesion: 0.39
 Nodes (7): idx_mockup_prompt_configs_key, idx_mockup_prompt_configs_technique, idx_mockup_prompt_history_config, public.mockup_prompt_configs, public.mockup_prompt_history, trg_log_mockup_prompt_change, update_mockup_prompt_configs_updated_at
 
-### Community 1031 - "20260418183756_107f80f6-c724-4ce3-a61f-d3b256419118.sql"
+### Community 1018 - "20260418183756_107f80f6-c724-4ce3-a61f-d3b256419118.sql"
 Cohesion: 0.33
 Nodes (6): idx_custom_kits_tag, idx_custom_kits_user_favorite, idx_kit_templates_active_category, idx_kit_templates_usage, public.kit_templates, trg_kit_templates_updated_at
 
-### Community 1032 - "20260420130407_e4ba785a-ef0c-4a8d-a1ce-b5b9c84d5c94.sql"
+### Community 1019 - "20260420130407_e4ba785a-ef0c-4a8d-a1ce-b5b9c84d5c94.sql"
 Cohesion: 0.36
 Nodes (6): idx_favorite_reactions_created, idx_favorite_reactions_item, idx_favorite_reactions_list, public.favorite_item_reactions, public.get_favorites_weekly_count(), public.get_top_favorited_products()
 
-### Community 1033 - "20260426122751_c0bc82e4-dc78-47da-8da4-74691b181d3d.sql"
+### Community 1020 - "20260426122751_c0bc82e4-dc78-47da-8da4-74691b181d3d.sql"
 Cohesion: 0.31
 Nodes (5): idx_mcp_auto_rev_key, idx_mcp_auto_rev_user, public.auto_revoke_orphan_full_keys(), public.mcp_key_auto_revocations, trg_user_roles_auto_revoke_mcp
 
-### Community 1034 - "20260503155656_36119a71-7ede-4c56-a659-149cb49fa638.sql"
+### Community 1021 - "20260503155656_36119a71-7ede-4c56-a659-149cb49fa638.sql"
 Cohesion: 0.31
 Nodes (5): public.export_audit_log, public.export_jobs, public.get_user_cooperative_id(), public.get_user_pa_id(), public.is_vendedor()
 
-### Community 1035 - "20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
+### Community 1022 - "20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
 Cohesion: 0.28
 Nodes (4): public.audit_sicoob_order_status_change(), public.limit_increase_requests, public.order_audit_events, tr_audit_sicoob_order_status
 
-### Community 1036 - "20260912090000_sicoob_fulfillment.sql"
+### Community 1023 - "20260912090000_sicoob_fulfillment.sql"
 Cohesion: 0.28
 Nodes (3): idx_sicoob_order_shipments_order_id, idx_sicoob_order_shipments_tracking_code, public.sicoob_order_shipments
 
-### Community 1037 - "20260922224700_validate_sicoob_order_documents.sql"
+### Community 1024 - "20260922224700_validate_sicoob_order_documents.sql"
 Cohesion: 0.28
 Nodes (5): public.validate_sicoob_order_document(), tr_validate_sicoob_delivery_document, tr_validate_sicoob_invoice_document, ux_sicoob_order_invoice_file_path, ux_sicoob_order_shipment_delivery_photo
 
-### Community 1040 - "public.catalog_product_marketing"
+### Community 1027 - "public.catalog_product_marketing"
 Cohesion: 0.39
 Nodes (5): idx_catalog_product_marketing_term_product, public.catalog_marketing_term_usage, public.catalog_marketing_terms, public.catalog_product_marketing, set_catalog_marketing_terms_updated_at
 
-### Community 1041 - "20261029213000_secure_webhook_dispatcher_callers.sql"
+### Community 1028 - "20261029213000_secure_webhook_dispatcher_callers.sql"
 Cohesion: 0.33
 Nodes (4): public.dispatch_quote_webhook_event(), public.webhook_retry_claims, webhook_retry_claims_attempt_unique_idx, webhook_retry_claims_claimed_at_idx
 
-### Community 1042 - "react-warning-guard.ts"
+### Community 1029 - "react-warning-guard.ts"
 Cohesion: 0.22
 Nodes (4): NOISE_ALLOWLIST, OTHER_RELEVANT, ReactWarningGuard, REF_WARNING_CONTEXT
 
-### Community 1043 - "DevRoute.test.tsx"
-Cohesion: 0.31
-Nodes (8): baseAuthShape, mockUseAuth, PathProbe(), Persona, renderAgente(), renderProtected(), renderSupervisor(), TECH_ROUTES
-
-### Community 1044 - "useWorkspaceNotifications-cache-freshness.test.tsx"
-Cohesion: 0.25
-Nodes (5): limitMock, loadHookAndMetrics(), SEED, STABLE_USER, installDeterministicClock()
-
-### Community 1045 - "_contracts.ts"
+### Community 1030 - "_contracts.ts"
 Cohesion: 0.56
 Nodes (4): expectContract(), expectInOrder(), filesRecursively(), source()
 
-### Community 1046 - "QuoteBuilder.test.ts"
+### Community 1031 - "QuoteBuilder.test.ts"
 Cohesion: 0.25
 Nodes (4): calculateItemTotal(), calculateQuoteSubtotal(), QuoteItem, sampleItems
 
-### Community 1047 - "sicoob-consolidation-fixture.sql"
+### Community 1032 - "sicoob-consolidation-fixture.sql"
 Cohesion: 0.25
 Nodes (7): auth.users, public.order_consolidations, public.postos_atendimento, public.profiles, public.sicoob_order_items, public.sicoob_orders, public.user_roles
 
-### Community 1048 - "singular-quote-notification-fixture.sql"
+### Community 1033 - "singular-quote-notification-fixture.sql"
 Cohesion: 0.22
 Nodes (5): public.profiles, public.quote_history, public.quotes, public.user_roles, public.workspace_notifications
 
-### Community 1049 - "setup-ref-warning-capture.ts"
+### Community 1034 - "setup-ref-warning-capture.ts"
 Cohesion: 0.25
 Nodes (8): captured, CapturedEntry, formatArgs(), makeWrapper(), origError, origWarn, REF_PATTERNS, SNAPSHOT_PATH
 
-### Community 1050 - "📑 ÍNDICE"
+### Community 1035 - "📑 ÍNDICE"
 Cohesion: 0.25
 Nodes (7): Blockchain Audit Trail, Cold Storage Logs, 📂 EXPORTAÇÃO DE INVENTÁRIO FILTRADA, Fallback Automático, Precisão 4 Casas, RLS Cross-Tenant, 📑 ÍNDICE
 
-### Community 1051 - "20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql"
+### Community 1036 - "20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql"
 Cohesion: 0.29
 Nodes (3): idx_web_vitals_metric_created, idx_web_vitals_page_metric, public.get_web_vitals_summary()
 
-### Community 1052 - "ADR 009: Padrão "Expand & Contract" para Migrações de Banco de Dados"
+### Community 1037 - "ADR 009: Padrão "Expand & Contract" para Migrações de Banco de Dados"
 Cohesion: 0.25
 Nodes (7): ADR 009: Padrão "Expand & Contract" para Migrações de Banco de Dados, Consequências, Contexto, Decisão, Fases da Migração, Regras de Ouro, Status
 
-### Community 1053 - "Mapa do repositório — referência para agentes"
+### Community 1038 - "Mapa do repositório — referência para agentes"
 Cohesion: 0.25
 Nodes (7): Automações (`scripts/`), Comandos, Divergências doc↔realidade conhecidas (não confie nesses números), Grafo de código (graphify) — detalhes, Mapa do repositório — referência para agentes, Mapa rápido, Onde olhar primeiro
 
-### Community 1054 - "1. Gerente PA (GP)"
+### Community 1039 - "1. Gerente PA (GP)"
 Cohesion: 0.25
 Nodes (7): 1. Gerente PA (GP), 2. Gestor Compras (GC), Casos de Teste E2E por Papel, TC-GC-01: Aprovar Lote no Kanban, TC-GP-01: Configurar Notificações, TC-GP-02: Criar Pedido Normal, TC-GP-03: Criar Pedido Acima da Verba
 
-### Community 1055 - "QuoteHistoryTimeline.tsx"
-Cohesion: 0.36
-Nodes (7): QuoteHistoryTimeline.tsx (etapa 17), fetchTimeline(), getRejectionNotes(), QuoteHistoryTimeline(), QuoteHistoryTimelineProps, TimelineEntry(), TimelineEvent
-
-### Community 1056 - "useTechniquePricing.test.ts"
+### Community 1040 - "useTechniquePricing.test.ts"
 Cohesion: 0.25
 Nodes (3): useTechniquePricing.ts (etapa 17), findMatchingTable(), mockRecords
 
-### Community 1057 - "📝 4. GESTÃO DE ORÇAMENTOS (QUOTES)"
+### Community 1042 - "📝 4. GESTÃO DE ORÇAMENTOS (QUOTES)"
 Cohesion: 0.25
 Nodes (8): 4.1 CRUD de Orçamentos, 4.2 Kanban de Orçamentos, 4.3 Templates de Orçamento, 4.4 Aprovação de Orçamentos, 4.5 Histórico e Versões, 4.6 Geração de Propostas PDF, 4.7 Sincronização com Bitrix, 📝 4. GESTÃO DE ORÇAMENTOS (QUOTES)
 
-### Community 1058 - "Fase 1 — Inventário e reparo do ledger de migrations (Etapas 7–13)"
-Cohesion: 0.25
-Nodes (8): Etapa 10 — Resolver prefixos de versão duplicados ✅ (concluído em 16/09/2026), Etapa 11 — Arquivar migrations superadas ⏳ (parcial — 1 de N clusters arquivados em 16/09/2026), Etapa 12 — Reparar o ledger `supabase_migrations.schema_migrations`, Etapa 13 — Validar drift zero, Etapa 7 — Inventário completo do schema remoto, Etapa 8 — Gerar e versionar `schema.sql` baseline, Etapa 9 — Classificar as 503 migrations históricas ⏳ (parcial — 42/503 classificados em 16/09/2026), Fase 1 — Inventário e reparo do ledger de migrations (Etapas 7–13)
-
-### Community 1059 - "Cobertura das refs — toda branch remota contabilizada"
-Cohesion: 0.25
-Nodes (8): Cobertura das refs — toda branch remota contabilizada, Método, P0 do orçamento: resolvido em produção (19/11/2026, 02:30 UTC), Por que este anexo existe, Portão de exclusão de branch (19/11/2026), Quarta varredura: rotas (19/11/2026), Quinta varredura: banco (19/11/2026), Tabela
-
-### Community 1060 - "Suíte de testes e simuladores da PR #119 — triagem executada"
+### Community 1043 - "Suíte de testes e simuladores da PR #119 — triagem executada"
 Cohesion: 0.25
 Nodes (8): Achado novo, do cenário de realtime: canal do Kanban não é exclusivo, Os 52 que falham, Os 8 que entram sem mexer em `src/`, Os 9 cenários `.mjs`, executados um a um, Por que a triagem não é opcional, Resultado, Suíte de testes e simuladores da PR #119 — triagem executada, Tabela completa
 
-### Community 1061 - "installReactWarningGuard"
+### Community 1044 - "installReactWarningGuard"
 Cohesion: 0.32
 Nodes (7): Allowlist / debug, Auditoria, Como funciona a coexistência com `installReactWarningGuard`, Componentes, Rodar local, Strict Ref-Warning Gate, installReactWarningGuard()
 
-### Community 1062 - "20260503000000_sicoob_rbac_infrastructure.sql"
+### Community 1045 - "20260503000000_sicoob_rbac_infrastructure.sql"
 Cohesion: 0.29
 Nodes (4): public.get_user_pa_id(), public.get_user_singular_id(), public.logistics_tracking, public.pa_budgets
 
-### Community 1063 - "PULL_REQUEST_TEMPLATE.md"
+### Community 1046 - "PULL_REQUEST_TEMPLATE.md"
 Cohesion: 0.25
 Nodes (7): ✅ Checklist pré-merge, 🧪 Como testar, 📋 Descrição, 🔗 Issues relacionadas, 🎯 Tipo de mudança, 🔄 Plano de rollback, 🌐 Sistemas afetados
 
-### Community 1064 - "20260922225500_monitor_sicoob_approval_worker.sql"
+### Community 1047 - "20260922225500_monitor_sicoob_approval_worker.sql"
 Cohesion: 0.32
 Nodes (4): idx_sicoob_approval_worker_dispatch_state, public.dispatch_sicoob_approval_worker(), public.monitor_sicoob_approval_worker(), public.sicoob_approval_worker_dispatches
 
-### Community 1065 - "public.set_custom_kit_pinned"
+### Community 1048 - "public.set_custom_kit_pinned"
 Cohesion: 0.25
 Nodes (3): idx_custom_kits_one_pinned_per_user, public._backup_custom_kits_pinned_20261118, public.set_custom_kit_pinned()
 
-### Community 1066 - "20260427115542_a0e36268-9f56-40b5-af9f-270e48056052.sql"
+### Community 1049 - "20260427115542_a0e36268-9f56-40b5-af9f-270e48056052.sql"
 Cohesion: 0.29
 Nodes (4): idx_magic_up_public_shares_campaign_id, idx_magic_up_public_shares_generation_id, idx_product_price_freshness_overrides_updated_by, idx_step_up_tokens_challenge_id
 
-### Community 1067 - "zustand"
-Cohesion: 0.25
-Nodes (6): zustand, OracleVoiceBridge, useOracleVoiceBridge, NavigationHistoryItem, NavigationState, useNavigationStore
+### Community 1050 - "check-migration-immutability.mjs"
+Cohesion: 0.36
+Nodes (7): base, diff, lines, resolveBaseCommit(), ROOT, runGit(), verifiedRef()
 
-### Community 1068 - "simular-outbox-aprovacao.py"
+### Community 1051 - "simular-outbox-aprovacao.py"
 Cohesion: 0.43
 Nodes (6): claim(), command(), finish(), new_request(), scalar(), sql()
 
-### Community 1069 - "publish.sh"
+### Community 1052 - "publish.sh"
 Cohesion: 0.46
 Nodes (7): assert_no_foreign_staged_changes(), discard_generated_output_commit(), generated_commit_is_head(), generated_output_conflict_is_recoverable(), remember_generated_head(), publish.sh script, stage()
 
-### Community 1070 - "DevAccessAuditAlert.tsx"
+### Community 1053 - "DevAccessAuditAlert.tsx"
 Cohesion: 0.46
 Nodes (7): AuditState, BlockedAuditRows(), DevAccessAuditAlert(), formattedRunTime(), HealthyAuditAlert(), MismatchAuditAlert(), refreshIconClass()
 
-### Community 1071 - "RlsIntegrationTestsDialog.tsx"
-Cohesion: 0.32
-Nodes (6): CaseResult, Op, RlsIntegrationTestsDialog(), TestResponse, TestResultsTable(), useRlsIntegrationTests()
-
-### Community 1072 - "ColdVsWarmCrmCard.tsx"
-Cohesion: 0.39
-Nodes (7): ColdVsWarmCrmCard(), DiagSnapshot, fmtAge(), fmtMs(), functionUrl, tone(), WarmBadge()
-
-### Community 1073 - "PlatformFailureCards.tsx"
-Cohesion: 0.43
-Nodes (7): DeltaIndicator(), FailureCardsContent(), FailureMetrics, FailureRateCard(), PlatformFailureCards(), statusClass(), statusForRate()
-
-### Community 1074 - "BIBriefingMode.tsx"
+### Community 1054 - "BIBriefingMode.tsx"
 Cohesion: 0.43
 Nodes (7): BIBriefingMode(), BriefingContextSource, BriefingSourcesStatus(), buildBriefingHistoryDetail(), fmtBRL(), Props, resolveBriefingContext()
 
-### Community 1075 - "ExternalCollectionCard.tsx"
+### Community 1055 - "ExternalCollectionCard.tsx"
 Cohesion: 0.46
 Nodes (7): CollectionImage(), DuplicateCollectionButton(), ExternalCollectionCard(), ExternalCollectionCardProps, GridCollectionCard(), GridCollectionDetails(), ListCollectionCard()
 
-### Community 1076 - "ConfirmDialog.tsx"
-Cohesion: 0.43
-Nodes (7): ConfirmDialog(), ConfirmDialogProps, DeleteConfirmDialog(), LoadingIcon(), scopedTestId(), UnsavedChangesDialog(), variantConfig
-
-### Community 1077 - "QuickListPicker.tsx"
-Cohesion: 0.43
-Nodes (7): ColorSwatch(), ContextName(), CreateListControl(), ListOption(), ProductContext(), Props, QuickListPicker()
-
-### Community 1078 - "KitCard.tsx"
-Cohesion: 0.39
-Nodes (7): ClientViewedBadge(), KitBadges(), KitCard(), KitCardData, KitFooterActions(), KitHeaderActions(), Props
-
-### Community 1079 - "RestrictedRouteNotice.tsx"
+### Community 1056 - "RestrictedRouteNotice.tsx"
 Cohesion: 0.43
 Nodes (7): CollapsedRestrictedNotice(), ExpandedRestrictedNotice(), isRouteBlocked(), NoticeViewProps, RequiredRole(), RestrictedRouteNotice(), RestrictedRouteNoticeProps
 
-### Community 1080 - "PersonalizationArea"
-Cohesion: 0.32
-Nodes (7): AreaCardProps, MockupConfigPanelProps, MockupProductSelection, PersonalizationArea, SavedAreasSummary(), SaveTemplateDialog(), SaveTemplateDialogProps
-
-### Community 1081 - "OrganizationSwitcher.tsx"
+### Community 1057 - "OrganizationSwitcher.tsx"
 Cohesion: 0.39
 Nodes (7): CreateOrganizationDialog(), OrganizationContext, OrganizationMenu(), OrganizationsList(), OrganizationSwitcher(), OrganizationSwitcherProps, useCreateOrganization()
 
-### Community 1082 - "RevisionRequest.tsx"
+### Community 1058 - "RevisionRequest.tsx"
 Cohesion: 0.36
 Nodes (6): Props, QUICK_REPLIES, QuickReplySelector(), Props, RevisionForm(), RevisionRequest()
 
-### Community 1083 - "ProductSearch.tsx"
+### Community 1059 - "ProductSearch.tsx"
 Cohesion: 0.50
 Nodes (7): NoSearchResults(), ProductResults(), ProductSearch(), ProductThumbnail(), SearchField(), SearchLoading(), SelectedProduct()
 
-### Community 1084 - "ProductDimensions.tsx"
+### Community 1060 - "ProductDimensions.tsx"
 Cohesion: 0.39
 Nodes (7): buildSpecs(), formatCapacity(), formatWeight(), ProductDimensions(), ProductDimensionsProps, SpecItem(), SpecItemProps
 
-### Community 1085 - "SimilarProducts.tsx"
+### Community 1061 - "MarginInsightBadge.tsx"
 Cohesion: 0.43
-Nodes (7): enrichSimilarItems(), SimilarHeader(), SimilarLoading(), SimilarProductCard, SimilarProducts(), SimilarProductsProps, SimilarScroller()
+Nodes (7): DualMarginBadge(), fetchMedianMargin(), getDualMargin(), HistoricalMarginBadge(), MarginInsightBadge(), MarginInsightBadgeProps, useMedianMargin()
 
-### Community 1086 - "CommercialConditions.tsx"
+### Community 1062 - "CommercialConditions.tsx"
 Cohesion: 0.57
 Nodes (7): CommercialConditions(), CommercialConditionsProps, DeliveryConditions(), fieldError(), PaymentConditions(), RequiredMark(), ShippingConditions()
 
-### Community 1087 - "QuoteSingularApprovalActions.tsx"
+### Community 1063 - "QuoteApprovalLinkCard.tsx"
+Cohesion: 0.43
+Nodes (7): ActiveApprovalLink(), ApprovalLinkContent(), ApprovalStatusBadge(), ApprovalStatusInfo(), QuoteApprovalLinkCard(), QuoteApprovalLinkCardProps, useApprovalLinkController()
+
+### Community 1064 - "QuoteSingularApprovalActions.tsx"
 Cohesion: 0.39
 Nodes (7): AdjustmentDialog(), ApprovalActions, ApprovalToolbar(), Props, QuoteSingularApprovalActions(), RejectionDialog(), useApprovalActions()
 
-### Community 1088 - "QuoteSummary.tsx"
+### Community 1065 - "QuoteSummary.tsx"
 Cohesion: 0.50
 Nodes (7): CommercialTerms(), DiscountRow(), formatCurrency(), marginColor(), Profitability(), QuoteSummary(), QuoteSummaryProps
 
-### Community 1089 - "QuoteValidityBanner.tsx"
+### Community 1066 - "QuoteValidityBanner.tsx"
 Cohesion: 0.36
 Nodes (7): APPROVED_STATUSES, ApprovedBanner(), daySuffix(), QuoteValidityBanner(), QuoteValidityBannerProps, REJECTED_STATUSES, ValidityMessage()
 
-### Community 1090 - "admin/useAccessSecurity.ts"
-Cohesion: 0.43
-Nodes (6): AccessBlockedLog, AccessSecuritySettings, AccessSecurityUpdate, CityWhitelistEntry, IpWhitelistEntry, useAccessSecurity()
+### Community 1067 - "constants/orders.ts"
+Cohesion: 0.25
+Nodes (6): FULFILLMENT_COLORS, FULFILLMENT_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_FLOW, ORDER_STATUS_LABELS, VALID_TRANSITIONS
 
-### Community 1091 - "useClientAffinity.ts"
-Cohesion: 0.32
-Nodes (7): AffinityCategory, ClientAffinityResult, ClientTopProduct, demoAffinity(), deriveCategoryFromName(), MOCK_SUGGESTIONS, useClientAffinity()
-
-### Community 1092 - "useCategoriesTree.ts"
+### Community 1068 - "useCategoriesTree.ts"
 Cohesion: 0.32
 Nodes (7): CategoryIcon, CategoryNode, CategoryOption, CategoryTreeItem, HIDDEN_CATEGORIES, useCategoriesTree(), useCategorySelection()
 
-### Community 1093 - "useDeviceDetection.ts"
+### Community 1069 - "useDeviceDetection.ts"
 Cohesion: 0.43
 Nodes (7): DeviceInfo, generateDeviceFingerprint(), getBrowserName(), getDeviceInfo(), getDeviceType(), getOSName(), useDeviceDetection()
 
-### Community 1094 - "useExternalCollections.ts"
+### Community 1070 - "useExternalCollections.ts"
 Cohesion: 0.32
 Nodes (5): ExternalCollection, ExternalCollectionProduct, useExternalCollectionMutations(), useExternalCollections(), useExternalCollectionsManager()
 
-### Community 1095 - "useExternalVariantStock.ts"
+### Community 1071 - "useExternalVariantStock.ts"
 Cohesion: 0.39
 Nodes (7): ExternalVariantStock, indexImageCode(), indexImageVariant(), indexVariantImages(), useExternalVariantStock(), VariantImageRow, withVariantThumbnail()
 
-### Community 1096 - "usePaBudget.ts"
-Cohesion: 0.39
-Nodes (7): getConsumptionPercentage(), getRemainingBudget(), PaBudget, PaBudgetCompetence, requiresBoardApproval(), resolvePaBudgetCompetence(), usePaBudget()
-
-### Community 1097 - "useRoleMigration.ts"
-Cohesion: 0.25
-Nodes (6): AppRole, BatchRow, BatchStatus, ItemRow, ItemStatus, MigrationItemInput
-
-### Community 1098 - "useSalesGoals.ts"
+### Community 1072 - "useSalesGoals.ts"
 Cohesion: 0.36
 Nodes (7): calculateProgressUpdate(), CreateGoalInput, GoalProgressIncrement, resolveAchievedAt(), SalesGoal, targetWasReached(), useSalesGoals()
 
-### Community 1099 - "feedbackSounds.ts"
+### Community 1073 - "feedbackSounds.ts"
 Cohesion: 0.46
 Nodes (7): getAudioContext(), playErrorSound(), playProcessingSound(), playSpeakingSound(), playStartSound(), playStopSound(), playTone()
 
-### Community 1100 - "request-dev-access.ts"
+### Community 1074 - "request-dev-access.ts"
 Cohesion: 0.39
 Nodes (7): buildMailto(), DEV_ACCESS_CONTACT_EMAIL, getThrottleStatus(), requestDevAccess(), RequestDevAccessInput, RequestDevAccessResult, throttleKey()
 
-### Community 1103 - "masked-suffix.ts"
+### Community 1076 - "external-rpc.ts"
+Cohesion: 0.32
+Nodes (6): externalRpcBreaker, invokeExternalRpc(), isRetryableError(), RETRYABLE_PATTERNS, RpcAttempt, waitBeforeRetry()
+
+### Community 1078 - "masked-suffix.ts"
 Cohesion: 0.32
 Nodes (6): formatDisplaySuffix(), formatMaskedSuffix(), MaskedSuffixDiagnosis, MaskedSuffixStatus, normalizeMaskedSuffix(), resolveDisplaySuffix()
 
-### Community 1104 - "print-area.adapter.ts"
+### Community 1079 - "mockup-storage.ts"
+Cohesion: 0.43
+Nodes (6): blobToDataUrl(), decodeBase64Image(), downloadImageAsPdfFromUrl(), getImageInfo(), uploadLogoToStorage(), valueOr()
+
+### Community 1080 - "print-area.adapter.ts"
 Cohesion: 0.39
 Nodes (7): adaptPrintAreaRow(), adaptPrintAreaRows(), NormalizedPrintAreaRow, pick(), Raw, toBool(), toNumber()
 
-### Community 1105 - "route-matrix.ts"
+### Community 1081 - "route-matrix.ts"
 Cohesion: 0.29
 Nodes (6): findInconsistencies(), RBAC_ROUTES, RbacRouteEntry, RouteGuard, routeInconsistencies(), RouteRole
 
-### Community 1106 - "file-validation.ts"
+### Community 1082 - "file-validation.ts"
 Cohesion: 0.36
 Nodes (7): basicValidationError(), getFileSignature(), hasValidSignature(), MAGIC_NUMBERS, validateFile(), ValidationOptions, ValidationResult
 
-### Community 1107 - "AiTables.tsx"
+### Community 1083 - "AiTables.tsx"
 Cohesion: 0.32
 Nodes (7): AiTables(), AiTablesProps, formatCurrency(), formatNumber(), LogEntry, ModelStats, UserStats
 
-### Community 1108 - "DevChallengeExamplesPage.tsx"
-Cohesion: 0.36
-Nodes (7): CodeBlock(), DevChallengeExamplesPage(), ExampleCard(), ExampleConfig, ExampleId, EXAMPLES, ResultState
-
-### Community 1109 - "HelpCenterPage.tsx"
+### Community 1084 - "HelpCenterPage.tsx"
 Cohesion: 0.39
 Nodes (7): FAQ, HelpCenterPage(), HelpGuidance(), HelpHero(), KeyboardShortcuts(), QUICK_PATHS, QuickPathCards()
 
-### Community 1110 - "PreviewColumn"
+### Community 1085 - "MockupTabs"
+Cohesion: 0.25
+Nodes (8): MockupToolbar(), HistoryPanel(), LoadingFallback(), MockupHistoryPanel, MockupTabHeader(), MockupTabs(), removeHistoryItem(), restorePosition()
+
+### Community 1086 - "PreviewColumn"
 Cohesion: 0.25
 Nodes (8): BatchResults(), ConfigurationPanel(), GeneratorWorkspace(), MockupConfigPanel, MockupResultCard, PreviewColumn(), ResultCard(), updateProductSelection()
 
-### Community 1111 - "QuoteTemplatesPage.tsx"
+### Community 1087 - "QuoteDetailPage.tsx"
+Cohesion: 0.43
+Nodes (7): ConvertedQuoteNotice(), fetchQuote(), QuoteDetail, QuoteDetailHeader(), QuoteDetailPage(), QuoteDetails(), QuoteDetailTabs()
+
+### Community 1088 - "QuoteTemplatesPage.tsx"
 Cohesion: 0.39
 Nodes (7): ActiveTab, QuoteTemplatesPage(), TemplatesContent(), TemplatesHeader(), TemplatesListContent(), viewCopy(), ViewMode
 
-### Community 1112 - "product-catalog.ts"
+### Community 1089 - "product-catalog.ts"
 Cohesion: 0.25
 Nodes (7): KitComponent, Product, ProductColor, ProductFilters, ProductLightweight, ProductVariation, ProductVideo
 
-### Community 1113 - "quote.ts"
+### Community 1090 - "quote.ts"
 Cohesion: 0.29
 Nodes (7): ClientResponse, Quote, QuoteInput, QuoteItem, QuoteItemInput, QuoteStatus, QuoteWithItems
 
-### Community 1114 - "cloudflare-stream.ts"
+### Community 1091 - "cloudflare-stream.ts"
 Cohesion: 0.46
 Nodes (7): appendThumbnailOptions(), CloudflareEmbedOptions, CloudflareThumbnailOptions, extractCloudflareStreamId(), getCloudflareEmbedUrl(), getCloudflareThumbnailUrl(), normalizeCloudflarePoster()
 
-### Community 1115 - "price-freshness.ts"
+### Community 1092 - "price-freshness.ts"
 Cohesion: 0.32
 Nodes (6): DEFAULT_PRICE_FRESHNESS_THRESHOLD_DAYS, formatPriceDateLong(), formatRelativeDays(), getPriceFreshness(), PriceFreshness, PriceFreshnessStatus
 
-### Community 1116 - "quote-calculations.ts"
+### Community 1093 - "quote-calculations.ts"
 Cohesion: 0.39
 Nodes (6): calculateItemCost(), calculateItemPersonalizationCost(), calculateItemPersonalizationTotal(), calculateItemTotal(), calculateQuoteTotals(), QuoteTotalsInput
 
-### Community 1117 - "StatsPopover.test.tsx"
+### Community 1094 - "StatsPopover.test.tsx"
 Cohesion: 0.29
 Nodes (4): makeProduct(), makeProducts(), MockProduct, StatItem
 
-### Community 1118 - "20251215002803_1c29a752-89f0-406e-ba83-9332854de192.sql"
+### Community 1095 - "20251215002803_1c29a752-89f0-406e-ba83-9332854de192.sql"
 Cohesion: 0.36
 Nodes (4): idx_products_description_trgm, idx_products_name_trgm, idx_products_search_vector, products_search_vector_trigger
 
-### Community 1119 - "public.generated_mockups"
+### Community 1096 - "public.generated_mockups"
 Cohesion: 0.36
 Nodes (4): idx_generated_mockups_client_id, idx_generated_mockups_created_at, idx_generated_mockups_seller_id, public.generated_mockups
 
-### Community 1120 - "public.future_stock_entries"
+### Community 1097 - "quote_comments"
+Cohesion: 0.32
+Nodes (5): idx_quote_comments_created, idx_quote_comments_quote, quote_comments, idx_quote_comments_created, idx_quote_comments_quote
+
+### Community 1098 - "public.future_stock_entries"
 Cohesion: 0.43
 Nodes (6): idx_future_stock_color, idx_future_stock_expected_date, idx_future_stock_product_id, idx_future_stock_status, public.future_stock_entries, update_future_stock_entries_updated_at
 
-### Community 1121 - "20260320171208_7037bbd1-0532-40f0-9d66-743f3e065127.sql"
+### Community 1099 - "20260320171208_7037bbd1-0532-40f0-9d66-743f3e065127.sql"
 Cohesion: 0.43
 Nodes (7): public.generate_quote_number(), public.quote_history, public.quote_item_personalizations, public.quote_items, public.quote_templates, public.quotes, trigger_generate_quote_number
 
-### Community 1122 - "20260406202212_20735579-941a-46d2-b872-abe769fe774a.sql"
+### Community 1100 - "20260406202212_20735579-941a-46d2-b872-abe769fe774a.sql"
 Cohesion: 0.39
 Nodes (6): idx_ai_usage_logs_created_at, idx_ai_usage_logs_function, idx_ai_usage_logs_user_id, idx_ai_usage_logs_user_month, public.ai_usage_logs, public.ai_usage_quotas
 
-### Community 1123 - "20260416184056_e28ea309-c50d-46b1-85e5-9e283352d97d.sql"
+### Community 1101 - "20260416184056_e28ea309-c50d-46b1-85e5-9e283352d97d.sql"
 Cohesion: 0.43
 Nodes (6): idx_ip_access_control_ip, idx_ip_access_control_type_expires, public.check_ip_access(), public.ip_access_control, trg_ip_access_control_updated_at, trg_validate_ip_access_control
 
-### Community 1124 - "20260416200310_2cc4af04-9203-498c-874b-d923fcfdc7fc.sql"
+### Community 1102 - "20260416200310_2cc4af04-9203-498c-874b-d923fcfdc7fc.sql"
 Cohesion: 0.39
 Nodes (6): idx_product_comp_loc_component, idx_product_sync_logs_created, idx_product_sync_logs_source, public.product_component_locations, public.product_sync_logs, update_product_comp_loc_updated_at
 
-### Community 1126 - "20260426101707_47c20611-2342-44a9-8ad3-981586b226dd.sql"
+### Community 1104 - "20260426101707_47c20611-2342-44a9-8ad3-981586b226dd.sql"
 Cohesion: 0.32
 Nodes (4): idx_admin_audit_log_role_actions, trg_user_roles_audit_del, trg_user_roles_audit_ins, trg_user_roles_audit_upd
 
-### Community 1127 - "public.sicoob_orders"
+### Community 1105 - "public.sicoob_orders"
 Cohesion: 0.39
 Nodes (4): public.sicoob_order_history, public.sicoob_order_items, public.sicoob_orders, update_sicoob_orders_updated_at
 
-### Community 1128 - "20260502174647_e6dbb1b4-e317-48af-83c3-5cef1aef6728.sql"
+### Community 1106 - "20260502174647_e6dbb1b4-e317-48af-83c3-5cef1aef6728.sql"
 Cohesion: 0.36
 Nodes (4): public.notification_preferences, public.order_audit_events, public.order_pilot_approvals, tr_audit_order_status_change
 
-### Community 1130 - "20260504210817_51f845c9-9fdc-4ed2-892a-4a1bd1607dff.sql"
+### Community 1108 - "20260504210817_51f845c9-9fdc-4ed2-892a-4a1bd1607dff.sql"
 Cohesion: 0.39
 Nodes (6): idx_digests_user_status, idx_scheduled_notif_status_time, public.notification_channels, public.notification_digests, public.notification_logs, public.scheduled_notifications
 
-### Community 1131 - "20260915143442_sicoob_reconciliation_baseline.sql"
+### Community 1109 - "20260915143442_sicoob_reconciliation_baseline.sql"
 Cohesion: 0.29
 Nodes (4): public.get_user_pa_id(), public.get_user_singular_id(), public.order_consolidations, ux_sicoob_orders_order_number
 
-### Community 1132 - "20260922160000_bitrix_secure_cache.sql"
+### Community 1110 - "20260922160000_bitrix_secure_cache.sql"
 Cohesion: 0.36
 Nodes (6): bitrix_deals_client_idx, bitrix_sync_logs_started_idx, public.bitrix_clients, public.bitrix_deals, public.bitrix_sync_logs, update_bitrix_clients_updated_at
 
-### Community 1133 - "20260927204500_sicoob_delegated_authority_indicator.sql"
+### Community 1111 - "20260927204500_sicoob_delegated_authority_indicator.sql"
 Cohesion: 0.29
 Nodes (3): public.list_sicoob_approval_delegate_candidates(), public.sicoob_current_actor_approval_authority(), tr_validate_sicoob_approval_delegate_role
 
-### Community 1134 - "20261013115605_harden_sicoob_budget_authority.sql"
+### Community 1112 - "20261013115605_harden_sicoob_budget_authority.sql"
 Cohesion: 0.32
 Nodes (3): aaa_guard_profile_authority_fields, public.current_user_cooperativa_id(), public.current_user_pa_id()
 
-### Community 1135 - "20261015230500_reconcile_search_analytics_telemetry.sql"
+### Community 1113 - "20261015230500_reconcile_search_analytics_telemetry.sql"
 Cohesion: 0.39
 Nodes (6): idx_product_views_created_id, idx_product_views_seller_created_id, idx_search_analytics_created_id, idx_search_analytics_user_created_id, idx_search_analytics_zero_results_created_id, public.search_analytics
 
-### Community 1137 - "skeleton-navigation-integration.test.tsx"
+### Community 1115 - "skeleton-navigation-integration.test.tsx"
 Cohesion: 0.39
 Nodes (7): buildHarness(), App(), ControlledLazy, createControlledLazy(), NavigationProbe(), ROUTE_FIXTURES, RouteSuspense()
 
-### Community 1138 - "useLoginAttempts.test.ts"
-Cohesion: 0.25
-Nodes (6): mockEq, mockGte, mockIlike, mockOrder, mockRange, mockSelect
-
-### Community 1139 - "GestorCompras.metrics.test.tsx"
+### Community 1117 - "GestorCompras.metrics.test.tsx"
 Cohesion: 0.29
 Nodes (6): aprovados(), getCooperativeDashboardStats, loadManagerApprovalHistory, loadPurchasingOrders, pedidos(), statsCompletas
 
-### Community 1140 - "favorite-reactions-rls-fixture.sql"
+### Community 1118 - "favorite-reactions-rls-fixture.sql"
 Cohesion: 0.50
 Nodes (5): public.favorite_item_reactions, public.favorite_items, public.favorite_lists, public.get_public_favorite_list(), public.get_public_favorite_reactions()
 
-### Community 1141 - "verba-atomica-fixture.sql"
+### Community 1119 - "verba-atomica-fixture.sql"
 Cohesion: 0.29
 Nodes (6): public.pa_budgets, public.profiles, public.sicoob_approval_requests, public.sicoob_manager_audit, public.sicoob_orders, public.user_roles
 
-### Community 1142 - "ADR 0008: Política Unificada de Soft-Delete"
+### Community 1120 - "ADR 0008: Política Unificada de Soft-Delete"
 Cohesion: 0.29
 Nodes (6): ADR 0008: Política Unificada de Soft-Delete, Consequências, Contexto, Decisão, Padrão Técnico, Status
 
-### Community 1143 - "Serviços (deploy, domínios, integrações) — referência para agentes"
+### Community 1121 - "Serviços (deploy, domínios, integrações) — referência para agentes"
 Cohesion: 0.29
 Nodes (6): Deploy de backend — manual e com confirmação, Deploy do front — Vercel é o publicador oficial (decidido em 08/11/2026), Env vars e CSP, Integrações externas, Runner self-hosted, Serviços (deploy, domínios, integrações) — referência para agentes
 
-### Community 1144 - "SelectionCheckbox.tsx"
+### Community 1122 - "§1. Inventário do Acoplamento"
 Cohesion: 0.29
-Nodes (6): CollectionTableView.tsx (etapa 17), CheckboxSize, SelectionCheckbox, SelectionCheckboxProps, sizeMap, Collection
+Nodes (7): 1.1 Tabelas acessadas via `supabase.from()`, 1.2 Edge Functions invocadas, 1.3 RPCs (`supabase.rpc()`), 1.4 Subscriptions Realtime, 1.5 Buckets de Storage, §1. Inventário do Acoplamento, remove()
 
-### Community 1145 - "pantone-coated.ts"
+### Community 1123 - "pantone-coated.ts"
 Cohesion: 0.29
 Nodes (4): TechniqueCard.tsx (etapa 17), h(), PANTONE_CATALOG, PantoneColor
 
-### Community 1146 - "Master Module Index (mem://)"
+### Community 1124 - "Master Module Index (mem://)"
 Cohesion: 0.29
 Nodes (6): Arquitetura & Governança, Core Features, Integrações, Master Module Index (mem://), Segurança & Telemetria, UI & Design System
 
-### Community 1147 - "Plano de correções e melhorias — 150 etapas"
+### Community 1125 - "Plano de correções e melhorias — 150 etapas"
 Cohesion: 0.29
 Nodes (7): Como executar e encerrar, Controle dos artefatos, Etapas detalhadas, Fontes de execução, Frentes e marcos, Objetivo e limites, Plano de correções e melhorias — 150 etapas
 
-### Community 1148 - "Fase 0 — Congelamento, governança e backup (Etapas 1–6)"
+### Community 1126 - "Fase D — Triagem dos achados banco→código (Etapas 21-26)"
 Cohesion: 0.29
-Nodes (7): Etapa 1 — Congelar mudanças no projeto remoto, Etapa 2 — Proteger a branch `main` ✅ (aplicado em 16/09/2026), Etapa 3 — Cadastrar secrets e ambientes do GitHub, Etapa 4 — Fechar o ciclo dos PRs #8 e #9, Etapa 5 — Backup lógico completo e verificação de PITR, Etapa 6 — Declarar o baseline auditável, Fase 0 — Congelamento, governança e backup (Etapas 1–6)
+Nodes (7): Etapa 21 — Registrar as 21 tabelas/views órfãs com dono nomeado, Etapa 22 — Família `pontos_atendimento`/`singulares`/`pa_singularidades` vs. `postos_atendimento`/`cooperativas`, Etapa 23 — `blog_posts`, Etapa 24 — "Magic Up": 3 das 6 tabelas nunca usadas, Etapa 25 — RPCs Sicoob prontas mas nunca chamadas (`sicoob_performance_reports`, `sicoob_approval_policies`, `sicoob_order_shipments`), Etapa 26 — Views `sicoob_budget_audit`/`v_full_scope_grants` → `AuditEvidenceDashboard.tsx`, Fase D — Triagem dos achados banco→código (Etapas 21-26)
 
-### Community 1149 - "Estratégia para 5 migrations só no remoto"
+### Community 1127 - "Estratégia para 5 migrations só no remoto"
 Cohesion: 0.29
 Nodes (6): Aplicação prática, Escopo, Estratégia para 5 migrations só no remoto, Procedimento seguro, Regra, Resultado esperado
 
-### Community 1150 - "Security Best Practices"
+### Community 1128 - "Security Best Practices"
 Cohesion: 0.29
 Nodes (6): API Security, Authentication, Browser Security Headers, Data Protection, Monitoring, Security Best Practices
 
-### Community 1151 - "Seller-scope checker"
+### Community 1129 - "Seller-scope checker"
 Cohesion: 0.29
 Nodes (6): Allowlist explícita, Comandos, Por que não confiar só no RLS?, Seller-scope checker, Sinais aceitos como "scope aplicado", Tabelas monitoradas
 
-### Community 1152 - "🤝 Testes de Contrato: Pact (Consumer-Driven Contracts)"
+### Community 1130 - "🤝 Testes de Contrato: Pact (Consumer-Driven Contracts)"
 Cohesion: 0.29
 Nodes (6): Arquitetura Proposta, Exemplo de Teste (Roadmap), Ferramenta, Objetivo, Próximos Passos, 🤝 Testes de Contrato: Pact (Consumer-Driven Contracts)
 
-### Community 1153 - "Brindes_Sicoob_V2 — Regras da Casa (Hermes) — suplemento"
+### Community 1131 - "Brindes_Sicoob_V2 — Regras da Casa (Hermes) — suplemento"
 Cohesion: 0.29
 Nodes (6): Barreiras (cadeado físico), Brindes_Sicoob_V2 — Regras da Casa (Hermes) — suplemento, Comandos usuais, Identidade, Padrão de Chat (Hermes) — subpasta por sessão, Regra de Ouro (casa do Joaquim)
 
-### Community 1154 - "useWorkspaceNotifications-badge-render-log.test.tsx"
+### Community 1132 - "useWorkspaceNotifications-badge-render-log.test.tsx"
 Cohesion: 0.29
 Nodes (4): limitMock, loadHookAndMetrics(), SEED, STABLE_USER
 
-### Community 1155 - "Atualização dos PRs e bloqueios — 2026-10-29"
-Cohesion: 0.29
-Nodes (7): Atualização de checks após o snapshot anterior — 2026-10-29, Atualização dos PRs e bloqueios — 2026-10-29, Bloqueio de merge e banco, E2E e ação do owner, Estado da `main`, PR #164 — dependências e compatibilidade Zod, PR #165 — somente workflows
-
-### Community 1157 - "20251227100002_secure_approval_tokens.sql"
+### Community 1134 - "20251227100002_secure_approval_tokens.sql"
 Cohesion: 0.43
 Nodes (4): idx_approval_tokens_expires, idx_approval_tokens_quote, idx_approval_tokens_used, trigger_invalidate_token
 
-### Community 1158 - "📦 Módulos Principais"
+### Community 1135 - "📦 Módulos Principais"
 Cohesion: 0.29
 Nodes (7): 1. Catálogo (`/` e `/filtros`), 2. Simulador de Preços (`/simulador`), 3. Criador de Orçamentos (`/orcamentos/novo`), 4. Flow — Assistente IA, 5. Montador de Kits (`/montar-kit`), 6. Dashboard BI (`/bi`), 📦 Módulos Principais
 
-### Community 1159 - "Atualização após correções de dependências — 2026-10-31"
-Cohesion: 0.29
-Nodes (7): Atualização após correções de dependências — 2026-10-31, Atualização verificada — PR #184, SHA `78eb93b02e88bb11d2767c13f7445850466afa75` — 2026-10-31, CI após a atualização documental — PR #184, SHA `e466ef7f788ef20640530a93aa9110ace1988a16` — 2026-10-31, Estado pós-commit — PR #184, SHA `4cca418cdda15c6604b527ac7374b83973c7eda3` — 2026-10-31, Execuçãoo mais recente e decisão de merge, Resultado remoto da PR #184 — SHA `c1c0a6e30fb1be755aee9b30fec5835600514cc7`, Revalidação remota da PR #186 — SHA `3838556b62e6a3c6f0e9a67e7f57f4a408318da6` — 2026-10-31
-
-### Community 1160 - "simular-documentos-sicoob.py"
+### Community 1136 - "simular-documentos-sicoob.py"
 Cohesion: 0.48
 Nodes (5): as_actor(), command(), register(), scalar(), sql()
 
-### Community 1161 - "Política de Segurança"
+### Community 1137 - "typecheck-edge-functions.mjs"
+Cohesion: 0.48
+Nodes (6): checkFunction(), ensureDeno(), listFilesToCheck(), listFunctions(), main(), SKIP
+
+### Community 1138 - "Política de Segurança"
 Cohesion: 0.29
 Nodes (6): 🛡️ Escopo, 🚫 O que NÃO fazer, Política de Segurança, 🏆 Reconhecimento, 🔐 Reportar Vulnerabilidades, ⏱️ SLA de resposta
 
-### Community 1162 - "Módulo Sicoob - Documentação de Usuários de Teste"
+### Community 1139 - "Módulo Sicoob - Documentação de Usuários de Teste"
 Cohesion: 0.29
 Nodes (6): 1. Organização, 2. Papéis e Permissões, Como Recriar o Ambiente, Estrutura de Teste Criada pelo Seed, Módulo Sicoob - Documentação de Usuários de Teste, Variáveis de Ambiente (Opcionais)
 
-### Community 1163 - "AutoTestIntervalCard.tsx"
-Cohesion: 0.48
-Nodes (6): AutoTestIntervalCard(), formatLabel(), INTERVAL_OPTIONS, IntervalInfoTooltip(), useAutoTestInterval(), save()
-
-### Community 1164 - "FailureWindowCard.tsx"
+### Community 1140 - "FailureWindowCard.tsx"
 Cohesion: 0.48
 Nodes (6): FailureWindowCard(), FailureWindowInfo(), formatLabel(), useFailureWindow(), save(), WINDOW_OPTIONS
 
-### Community 1165 - "ImageUploadButton.tsx"
-Cohesion: 0.48
-Nodes (6): getUploadStatus(), ImageUploadButton(), ImageUploadButtonProps, removeStoredImage(), uploadWithRetry(), wait()
-
-### Community 1166 - "OwnershipRepairDialog"
-Cohesion: 0.38
-Nodes (6): AppliedRepairAlert(), OwnershipRepairDialog(), applyRepair(), invoke(), runDryRun(), Stat()
-
-### Community 1167 - "RecentAuditTable.tsx"
-Cohesion: 0.43
-Nodes (6): AuditEntry, auditMatchesFilter(), auditMatchesSearch(), Label(), ProfileLite, RecentAuditTable()
-
-### Community 1169 - "CatalogHeader.tsx"
+### Community 1142 - "CatalogHeader.tsx"
 Cohesion: 0.43
 Nodes (6): CatalogHeader(), CatalogHeaderProps, CatalogSearchHistory(), CatalogSearchHistoryProps, productCountLabel(), shouldFocusCatalogSearch()
 
-### Community 1170 - "ExternalCollectionTableView.tsx"
+### Community 1143 - "ExternalCollectionTableView.tsx"
 Cohesion: 0.38
 Nodes (6): CollectionRow(), ExternalCollectionTableView(), ExternalCollectionTableViewProps, SortDir, SortHeader(), SortKey
 
-### Community 1171 - "ImageWithFallback.tsx"
+### Community 1144 - "ImageWithFallback.tsx"
 Cohesion: 0.48
 Nodes (6): imageStateClass(), ImageWithFallback, ImageWithFallbackProps, LoadingBackground(), resolveImageSource(), responsiveImageProps()
 
-### Community 1172 - "RiskTooltip.tsx"
-Cohesion: 0.48
-Nodes (6): isPositive(), RiskMovement(), RiskTooltip, RiskTooltipDatum, RiskTooltipProps, StockValue()
+### Community 1145 - "TrendsHeatmap.tsx"
+Cohesion: 0.43
+Nodes (6): DAYS_PT, HeatmapBody(), HeatmapError(), HeatmapGrid(), TrendsHeatmap(), TrendsHeatmapProps
 
-### Community 1173 - "logoTechniqueFilters.ts"
+### Community 1146 - "KitStockForecastCard.tsx"
+Cohesion: 0.48
+Nodes (6): ForecastLookupError(), ForecastRiskCard(), formatDate(), KitStockForecastCard(), Props, StockReadyCard()
+
+### Community 1147 - "logoTechniqueFilters.ts"
 Cohesion: 0.38
 Nodes (5): clamp(), DEFAULT_TECHNIQUE_FILTER, TECHNIQUE_FILTERS, TECHNIQUE_MATCH_ORDER, useLogoDrag()
 
-### Community 1174 - "MockupWizard.tsx"
+### Community 1148 - "MockupWizard.tsx"
 Cohesion: 0.43
 Nodes (6): DesktopWizardStep(), MockupWizard, MockupWizardProps, MockupWizardStep, WizardStepCircle(), WizardStepLabel()
 
-### Community 1175 - "ReplenishmentBadge.tsx"
+### Community 1149 - "PriceFreshnessThresholdEditor.tsx"
+Cohesion: 0.48
+Nodes (6): PriceFreshnessThresholdEditor(), Props, resolveInitialThreshold(), ThresholdActions(), ThresholdOptions(), ThresholdPanel()
+
+### Community 1150 - "ProductDetailSkeleton.tsx"
+Cohesion: 0.52
+Nodes (6): DetailHeaderSkeleton(), GallerySkeleton(), PriceSkeleton(), ProductDetailSkeleton(), SimilarSkeleton(), SpecsSkeleton()
+
+### Community 1151 - "ReplenishmentBadge.tsx"
 Cohesion: 0.48
 Nodes (6): ReplenishmentBadge(), ReplenishmentBadgeCompact(), ReplenishmentBadgeProps, replenishmentLabel(), replenishmentSize(), replenishmentVariant()
 
-### Community 1176 - "NegotiationMarkupCard.tsx"
+### Community 1152 - "NegotiationMarkupCard.tsx"
 Cohesion: 0.43
 Nodes (6): DiscountStatus(), MarkupDetails(), MarkupDetailsProps, MarkupHeader(), NegotiationMarkupCard(), Props
 
-### Community 1177 - "QuoteManagerApprovalBanner.tsx"
+### Community 1153 - "QuoteManagerApprovalBanner.tsx"
 Cohesion: 0.48
 Nodes (6): ApprovalActions(), ApprovalMessage(), Props, QuoteManagerApprovalBanner(), RejectDialog(), useApprovalController()
 
-### Community 1178 - "QuoteProductCustomization.tsx"
+### Community 1154 - "QuoteProductCustomization.tsx"
 Cohesion: 0.48
 Nodes (6): ConfirmedPersonalizations(), fmt(), QuoteProductCustomization(), QuoteProductCustomizationProps, toQuotePersonalization(), usePersonalizationEditor()
 
-### Community 1179 - "OrderProductionReadiness.tsx"
+### Community 1155 - "OrderActionDialog.tsx"
+Cohesion: 0.43
+Nodes (6): ActionFooter(), ActionFooterProps, ActionHeader(), OrderActionDialog(), OrderActionDialogProps, SignaturePanel()
+
+### Community 1156 - "OrderProductionReadiness.tsx"
 Cohesion: 0.43
 Nodes (6): artworkStatusLabels, getArtworkLabel(), getReadinessViewModel(), OrderProductionReadiness(), OrderProductionReadinessProps, Requirement()
 
-### Community 1180 - "SimulationPriceSourceBadge.tsx"
-Cohesion: 0.52
-Nodes (6): EstimatedPriceBadge(), formatDate(), formatTime(), OfficialPriceBadge(), SimulationPriceSourceBadge(), SimulationPriceSourceBadgeProps
-
-### Community 1181 - "card.tsx"
+### Community 1157 - "card.tsx"
 Cohesion: 0.29
 Nodes (6): Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 
-### Community 1182 - "DevChallengeContext.tsx"
+### Community 1158 - "DevChallengeContext.tsx"
 Cohesion: 0.33
 Nodes (4): ChallengeRequest, DevChallengeContext, DevChallengeContextValue, PendingChallenge
 
-### Community 1183 - "useIndustryTrends.ts"
-Cohesion: 0.38
-Nodes (6): deriveCategory(), IndustryTopProduct, IndustryTrendItem, IndustryTrendsResult, mockToItem(), useIndustryTrends()
-
-### Community 1184 - "useComparisonSync.ts"
+### Community 1159 - "useComparisonSync.ts"
 Cohesion: 0.52
 Nodes (6): applyMergedComparison(), comparisonKey(), fetchRemoteComparison(), hydrateComparison(), mergeComparisonItems(), useComparisonSync()
 
-### Community 1185 - "useIPValidation.ts"
+### Community 1160 - "useDuplicateKitDetector.ts"
+Cohesion: 0.43
+Nodes (6): bestDuplicate(), duplicateCandidate(), DuplicateMatch, extractSkus(), KitRow, useDuplicateKitDetector()
+
+### Community 1161 - "useIPValidation.ts"
 Cohesion: 0.43
 Nodes (6): accessDenialMessage(), AccessValidationResponse, accessValidationResult(), IPValidationResult, useIPValidation(), valueOr()
 
-### Community 1186 - "useKitWizardShortcuts.ts"
+### Community 1162 - "useKitWizardShortcuts.ts"
 Cohesion: 0.43
 Nodes (6): isEditableTarget(), Options, resolveArrowAction(), resolveJumpAction(), STEP_BY_INDEX, useKitWizardShortcuts()
 
-### Community 1187 - "useLoginRateLimit.ts"
+### Community 1163 - "useLoginRateLimit.ts"
 Cohesion: 0.57
 Nodes (6): AttemptRecord, checkLoginAllowed(), clearLoginAttempts(), getRecords(), recordFailedAttempt(), saveRecords()
 
-### Community 1188 - "useRetestCooldownSetting.ts"
-Cohesion: 0.33
-Nodes (6): broadcast(), listeners, RETEST_COOLDOWN_PRESETS_MS, RetestCooldownPreset, SettingRow, useRetestCooldownSetting()
-
-### Community 1189 - "useSupplierComparison.ts"
+### Community 1164 - "useSupplierComparison.ts"
 Cohesion: 0.33
 Nodes (5): calculateNameSimilarity(), STOP_WORDS, SupplierComparisonResult, SupplierProduct, useSupplierComparison()
 
-### Community 1190 - "useSupplierSalesRanking.ts"
+### Community 1165 - "useSupplierSalesRanking.ts"
 Cohesion: 0.43
 Nodes (6): ProductIntelligenceRanking, salesEntry(), SupplierSalesEntry, unavailableMaterializedView(), useSupplierSalesRanking(), valueOr()
 
-### Community 1191 - "useVariantSupplierSources.ts"
+### Community 1166 - "useVariantSupplierSources.ts"
 Cohesion: 0.29
 Nodes (3): ColorSummary, StockEntry, VariantWithStock
 
-### Community 1192 - "useVoiceCommandHistory.ts"
+### Community 1167 - "useVoiceCommandHistory.ts"
 Cohesion: 0.43
 Nodes (6): CommandPattern, detectCommandType(), normalizeCommand(), useVoiceCommandHistory(), UseVoiceCommandHistoryReturn, VoiceCommandRecord
 
-### Community 1193 - "useWebAuthn.ts"
+### Community 1168 - "useWebAuthn.ts"
 Cohesion: 0.48
 Nodes (5): autenticacaoNegada(), indisponivel(), nenhumaPasskey(), Passkey, useWebAuthn()
 
-### Community 1194 - "categoryResolver.ts"
+### Community 1169 - "categoryResolver.ts"
 Cohesion: 0.33
 Nodes (6): BICategoryMeta, BICategorySlug, FALLBACK, REGEX_RULES, resolveBICategory(), resolveBICategoryLabel()
 
-### Community 1195 - "roles.ts"
+### Community 1170 - "roles.ts"
 Cohesion: 0.29
 Nodes (4): AppRole, ROLE_ALIASES, ROLE_VISUAL, RoleVisual
 
-### Community 1196 - "sanitize-error.ts"
+### Community 1171 - "sanitize-error.ts"
 Cohesion: 0.38
 Nodes (6): ErrorLike, SAFE_MESSAGES, sanitizeError(), SENSITIVE_CODES, sensitiveMessage(), statusMessage()
 
-### Community 1197 - "consolidation-intent.ts"
+### Community 1172 - "consolidation-intent.ts"
 Cohesion: 0.29
 Nodes (3): ConsolidationIntent, DeliveryReceiptInput, DeliveryReceiptIntent
 
-### Community 1198 - "AdminRbacRoutesPage.tsx"
-Cohesion: 0.43
-Nodes (6): AdminRbacRoutesPage(), csvEscape(), ROLE_LABEL, ROLE_VARIANT, routeMatchesFilters(), toCsv()
-
-### Community 1199 - "AdminSegurancaAcessoPage.tsx"
-Cohesion: 0.33
-Nodes (6): AdminSegurancaAcessoPage(), BotLog, IpAccessEntry, ipSchema, RateLimit, StatCard()
-
-### Community 1200 - "MockupTechniqueHandlers.tsx"
-Cohesion: 0.29
-Nodes (6): TechniqueHandlersOptions, useTechniqueHandlers(), createLayoutCaptureRequest(), MockupGenerator(), OffscreenLayoutCapture, temTrabalhoNoGerador()
-
-### Community 1201 - "MockupWorkspace"
-Cohesion: 0.29
-Nodes (7): DraftRestoredNotice(), GenerationError(), MockupNotices(), MockupProgress(), MockupWizard, MockupWorkspace(), selectWizardStep()
-
-### Community 1202 - "RolePermissionsPage.tsx"
+### Community 1173 - "RolePermissionsPage.tsx"
 Cohesion: 0.33
 Nodes (6): AppRole, getErrorMessage(), Permission, RolePermission, RolePermissionsPage(), ROLES
 
-### Community 1203 - "quoteVersionService.ts"
+### Community 1174 - "quoteVersionService.ts"
 Cohesion: 0.29
 Nodes (4): QuoteVersionRpc, QuoteVersionRpcError, QuoteVersionRpcResponse, quoteVersionService
 
-### Community 1204 - "imageProxy.ts"
+### Community 1175 - "imageProxy.ts"
 Cohesion: 0.38
 Nodes (5): appendProxyOptions(), getProxiedImageUrl(), ImageTransformOptions, PROXIED_DOMAINS, storageTransform()
 
-### Community 1205 - "quotePdfUtils.ts"
-Cohesion: 0.48
-Nodes (6): CURRENCY_FORMATTER, generateQuotePDF(), itemTotal(), money(), quoteDate(), textOrNA()
-
-### Community 1206 - "orderDossierExport.ts"
-Cohesion: 0.48
-Nodes (6): AutoTableDocument, commercialBreakdown(), currency(), ExportDossierOptions, exportOrderDossier(), lastTableY()
-
-### Community 1207 - "templateExport.ts"
+### Community 1176 - "templateExport.ts"
 Cohesion: 0.43
 Nodes (6): ExportedTemplate, exportSingleTemplate(), exportTemplatesToJson(), isValidImportedTemplate(), readTemplateFile(), validateImportedTemplates()
 
-### Community 1208 - "20251214202150_2537b013-3d76-49df-b2a9-1b345cc14878.sql"
+### Community 1177 - "20251214202150_2537b013-3d76-49df-b2a9-1b345cc14878.sql"
 Cohesion: 0.43
 Nodes (4): public.product_component_location_techniques, public.product_component_locations, public.product_components, update_product_components_updated_at
 
-### Community 1209 - "20251215002227_ba71d2dc-e527-4f63-8c01-ca9b43f83daf.sql"
+### Community 1178 - "20251215002227_ba71d2dc-e527-4f63-8c01-ca9b43f83daf.sql"
 Cohesion: 0.48
 Nodes (5): idx_expert_conversations_seller, idx_expert_messages_conversation, public.expert_conversations, public.expert_messages, update_expert_conversations_updated_at
 
-### Community 1210 - "public.follow_up_reminders"
+### Community 1179 - "public.follow_up_reminders"
 Cohesion: 0.43
 Nodes (4): idx_follow_up_reminders_client, idx_follow_up_reminders_user_date, public.follow_up_reminders, update_follow_up_reminders_updated_at
 
-### Community 1211 - "public.mockup_drafts"
+### Community 1180 - "public.mockup_drafts"
 Cohesion: 0.38
 Nodes (3): idx_mockup_drafts_user, public.mockup_drafts, update_mockup_drafts_updated_at
 
-### Community 1212 - "20260304004120_5ce3d07d-0560-4175-93f4-9307b6247652.sql"
+### Community 1181 - "20260304004120_5ce3d07d-0560-4175-93f4-9307b6247652.sql"
 Cohesion: 0.43
 Nodes (4): on_auth_user_created, public.has_role(), public.profiles, public.user_roles
 
-### Community 1213 - "20260304014416_bbad6fe9-94ed-41cb-9ca2-0aba506fdab9.sql"
+### Community 1182 - "20260304014416_bbad6fe9-94ed-41cb-9ca2-0aba506fdab9.sql"
 Cohesion: 0.48
 Nodes (5): public.expert_conversations, public.expert_messages, public.seller_cart_items, public.seller_carts, public.user_onboarding
 
-### Community 1214 - "public.organization_members"
+### Community 1183 - "public.organization_members"
 Cohesion: 0.48
 Nodes (5): public.get_user_org_ids(), public.has_org_role(), public.is_org_member(), public.organization_members, public.organizations
 
-### Community 1215 - "20260402112639_5bd2b86f-e2ed-4592-ba30-28e73bd297ef.sql"
+### Community 1184 - "20260402112639_5bd2b86f-e2ed-4592-ba30-28e73bd297ef.sql"
 Cohesion: 0.38
 Nodes (3): idx_approval_tokens_token_status, trg_generate_secure_approval_token, trg_invalidate_used_approval_token
 
-### Community 1216 - "20260404160306_350650c2-1099-41a7-bc9f-1db35424776f.sql"
+### Community 1185 - "20260404160306_350650c2-1099-41a7-bc9f-1db35424776f.sql"
 Cohesion: 0.29
 Nodes (3): idx_order_items_organization_id, idx_orders_organization_id, idx_quotes_organization_id
 
-### Community 1217 - "20260412182408_a60c0965-6c47-4779-82e3-a2bbc011e204.sql"
+### Community 1186 - "20260412182408_a60c0965-6c47-4779-82e3-a2bbc011e204.sql"
 Cohesion: 0.48
 Nodes (5): idx_collection_items_collection_id, idx_collections_user_id, public.collection_items, public.collections, update_collections_updated_at
 
-### Community 1218 - "20260418131950_ac0f8ad7-b1bf-4c81-8849-6cd759e19198.sql"
+### Community 1187 - "20260418131950_ac0f8ad7-b1bf-4c81-8849-6cd759e19198.sql"
 Cohesion: 0.48
 Nodes (6): idx_ai_insights_cache_expires, idx_ai_usage_events_fn_created, idx_ai_usage_events_user_created, public.ai_insights_cache, public.ai_usage_events, ux_ai_insights_cache_user_fn_key
 
-### Community 1220 - "20260426130335_aa01f61b-1df1-491d-a5b7-7517413f30f1.sql"
+### Community 1189 - "20260426130335_aa01f61b-1df1-491d-a5b7-7517413f30f1.sql"
 Cohesion: 0.29
 Nodes (3): idx_quote_history_user_id, idx_quote_templates_seller_id, idx_seller_discount_limits_user_id
 
-### Community 1221 - "20260426131442_16ccbfea-d95c-4715-9650-8fa00b4709e7.sql"
+### Community 1190 - "20260426131442_16ccbfea-d95c-4715-9650-8fa00b4709e7.sql"
 Cohesion: 0.43
 Nodes (5): idx_rls_denial_created, idx_rls_denial_table, idx_rls_denial_user, public.log_rls_denial(), public.rls_denial_log
 
-### Community 1223 - "20260426200011_1f6f92f7-035d-49de-a218-78241e85c1ba.sql"
+### Community 1192 - "20260426200011_1f6f92f7-035d-49de-a218-78241e85c1ba.sql"
 Cohesion: 0.43
 Nodes (5): idx_e2e_cleanup_audit_created_at, idx_e2e_cleanup_audit_email, idx_e2e_cleanup_audit_status, public.e2e_cleanup_audit, public.e2e_cleanup_rate_limit
 
-### Community 1224 - "20260427122230_9848331f-fc90-4721-bf9e-caf78ba9cbfd.sql"
+### Community 1193 - "20260427122230_9848331f-fc90-4721-bf9e-caf78ba9cbfd.sql"
 Cohesion: 0.52
 Nodes (6): idx_webhook_metrics_failures, idx_webhook_metrics_occurred_at, idx_webhook_metrics_request_id, idx_webhook_metrics_source_status, public.get_webhook_delivery_summary(), public.webhook_delivery_metrics
 
-### Community 1230 - "20260912130000_quote_versioning_family_roots.sql"
+### Community 1199 - "20260912130000_quote_versioning_family_roots.sql"
 Cohesion: 0.43
 Nodes (4): idx_quotes_one_latest_version_per_family, public.normalize_quote_parent_root(), tr_normalize_quote_parent_root, tr_protect_latest_quote_version_deletion
 
-### Community 1236 - "KitComposition.test.tsx"
+### Community 1205 - "KitComposition.test.tsx"
 Cohesion: 0.29
 Nodes (4): ITEM_A, ITEM_B, ITEM_C, PACKAGING
 
-### Community 1237 - "PriceFreshnessBadge.thresholdMatrix.test.tsx"
+### Community 1206 - "phase1-foundation-types.test.ts"
 Cohesion: 0.29
-Nodes (5): CASES, COMPACT_VARIANTS, Expected, FIXED_NOW, FULL_VARIANTS
+Nodes (6): BulkAction, KitItem, ProductColor, ProductVariant, SimulationProduct, VariantGridItem
 
-### Community 1238 - "phase5-propagation.test.ts"
+### Community 1207 - "phase5-propagation.test.ts"
 Cohesion: 0.29
 Nodes (4): KitItem, ProductVariant, QuoteItem, VariantSelectionData
 
-### Community 1239 - "tools-simulator.test.ts"
+### Community 1208 - "tools-simulator.test.ts"
 Cohesion: 0.33
 Nodes (6): calcSimulatorTotal(), getPriceForQuantity(), PriceTier, priceTiers, TECHNIQUES, WIZARD_STEPS
 
-### Community 1240 - "supabase-mock.ts"
-Cohesion: 0.33
-Nodes (5): createSupabaseMock(), MockOptions, MutationCall, SupabaseMock, UpdateCall
-
-### Community 1241 - "useProductMatch.test.ts"
+### Community 1209 - "useProductMatch.test.ts"
 Cohesion: 0.43
 Nodes (4): calculateMatchScore(), COMPLEMENTARY_PAIRS, findComplementaryKeywords(), normalizeText()
 
-### Community 1243 - "Codex CLI neste repositório"
+### Community 1211 - "Codex CLI neste repositório"
 Cohesion: 0.33
 Nodes (5): Baseline de MCP, Codex CLI neste repositório, Multi-agente, Ordem de leitura, Skill do repo
 
-### Community 1244 - "🎯 FASE 2: Páginas Principais (3-5 dias)"
+### Community 1212 - "🎯 FASE 2: Páginas Principais (3-5 dias)"
 Cohesion: 0.33
 Nodes (6): **2.1: Dashboard**, **2.2: Produtos**, **2.3: Orçamentos (Quotes)**, **2.4: Pedidos (Orders)**, **2.5: Clientes**, 🎯 FASE 2: Páginas Principais (3-5 dias)
 
-### Community 1245 - "🎯 FASE 3: Features Avançadas (5-7 dias)"
+### Community 1213 - "🎯 FASE 3: Features Avançadas (5-7 dias)"
 Cohesion: 0.33
 Nodes (6): **3.1: Geração de Mockups com IA**, **3.2: Aprovação Pública de Orçamentos**, **3.3: Módulo de Pagamentos**, **3.4: Relatórios e Analytics**, **3.5: Gerenciamento de Usuários**, 🎯 FASE 3: Features Avançadas (5-7 dias)
 
-### Community 1246 - "ADR 0001 — SSOT em Banco Externo (Catálogo & CRM)"
+### Community 1214 - "ADR 0001 — SSOT em Banco Externo (Catálogo & CRM)"
 Cohesion: 0.33
 Nodes (5): ADR 0001 — SSOT em Banco Externo (Catálogo & CRM), Alternativas rejeitadas, Consequências, Contexto, Decisão
 
-### Community 1247 - "ADR 0002 — RLS-First Security Model"
+### Community 1215 - "ADR 0002 — RLS-First Security Model"
 Cohesion: 0.33
 Nodes (5): ADR 0002 — RLS-First Security Model, Alternativas rejeitadas, Consequências, Contexto, Decisão
 
-### Community 1248 - "ADR 0003 — Validação Zod Obrigatória em Edge Functions"
+### Community 1216 - "ADR 0003 — Validação Zod Obrigatória em Edge Functions"
 Cohesion: 0.33
 Nodes (5): ADR 0003 — Validação Zod Obrigatória em Edge Functions, Consequências, Contexto, Decisão, Padrão
 
-### Community 1249 - "ADR 0007 — Arquitetura Multi-Tenant de 3 Bancos"
+### Community 1217 - "ADR 0007 — Arquitetura Multi-Tenant de 3 Bancos"
 Cohesion: 0.33
 Nodes (5): ADR 0007 — Arquitetura Multi-Tenant de 3 Bancos, Alternativas rejeitadas, Consequências, Contexto, Decisão
 
-### Community 1250 - "🌐 Diagrama C4 — Arquitetura do Sistema"
+### Community 1218 - "🌐 Diagrama C4 — Arquitetura do Sistema"
 Cohesion: 0.33
 Nodes (5): 🌐 Diagrama C4 — Arquitetura do Sistema, Entidades Principais, Nível 1: Contexto do Sistema, Nível 2: Contêineres, Nível 3: Componentes (Edge Functions)
 
-### Community 1251 - "Tabelas Principais"
+### Community 1219 - "Tabelas Principais"
 Cohesion: 0.33
 Nodes (5): 🗄️ Diagrama Entidade-Relacionamento (ER), Núcleo de Vendas, Organização Sicoob, Segurança e Governança, Tabelas Principais
 
-### Community 1252 - "Proteção da branch `main`"
+### Community 1220 - "🔧 **AÇÕES NECESSÁRIAS**"
 Cohesion: 0.33
-Nodes (5): Configuração alvo, Estado configurado em 31/10/2026, Estado observado em 22/09/2026 (histórico — superado abaixo), Proteção da branch `main`, Validação após configurar
+Nodes (6): 1️⃣ **Configurar locale pt-BR no Componente Calendar**, 2️⃣ **Criar Utilitário de Formatação de Data**, 3️⃣ **Substituir Formatações Manuais de Data**, 4️⃣ **Adicionar Configuração Global de Locale (Opcional)**, 5️⃣ **Configurar Timezone para Brasília (Opcional)**, 🔧 **AÇÕES NECESSÁRIAS**
 
-### Community 1253 - "forecast.ts"
+### Community 1221 - "forecast.ts"
 Cohesion: 0.47
 Nodes (4): forecast.ts (etapa 17), ForecastPoint, linearRegression(), projectForecast()
 
-### Community 1254 - "supplier-colors.ts"
+### Community 1222 - "useTecnicasGravacao.ts"
+Cohesion: 0.40
+Nodes (5): `src/hooks/gravacao/useTecnicasGravacao.ts` (etapa 17, 6 → 0 erros), generateSlug(), useTecnicaGravacao(), useTecnicasGravacao(), TecnicaGravacaoVariante
+
+### Community 1223 - "supplier-colors.ts"
 Cohesion: 0.40
 Nodes (5): supplier-colors.ts (etapa 17), getSupplierBadgeClasses(), getSupplierColors(), SUPPLIER_COLORS, SupplierColorConfig
 
-### Community 1255 - "useCategoryIcons.ts"
+### Community 1224 - "useCategoryIcons.ts"
 Cohesion: 0.33
 Nodes (4): useCategoryIcons.ts (etapa 17), CategoryIcon, getCategoryIcon(), KEYWORD_ICONS
 
-### Community 1256 - "CollectionsContext.tsx"
+### Community 1225 - "CollectionsContext.tsx"
 Cohesion: 0.40
 Nodes (4): useCollectionsPageState.ts (etapa 17), CollectionsContext, CollectionsContextType, useCollectionsContext()
 
-### Community 1257 - "Auditoria de cobertura — Smoke E2E"
+### Community 1226 - "Auditoria de cobertura — Smoke E2E"
 Cohesion: 0.33
 Nodes (5): Auditoria de cobertura — Smoke E2E, Governança, Resumo, Smoke autenticado — features × rotas, Smoke público (sem auth)
 
-### Community 1258 - "Performance Optimization"
+### Community 1227 - "Performance Optimization"
 Cohesion: 0.33
 Nodes (5): Backend, Frontend, Monitoring, Performance Optimization, Targets (Google Core Web Vitals — official thresholds)
 
-### Community 1259 - "buildCustomKitInsert.ts"
-Cohesion: 0.40
-Nodes (5): Dependência não registrada e sem guarda: o lockfile da main prende 57 pacotes (48 de produção, 9 dev) ao registry privado de terceiro `europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache`. Os 10 workflows que rodam `npm ci` dependem desse host de fornecedor continuar público; não há `.npmrc`, nenhum doc e nenhum gate de CI que detecte isso. A PR #137 diagnosticou exatamente isso e parou aí — a conclusão que ela construiu em cima (npm ci impossível) está errada hoje e NÃO deve ser recuperada; o que falta é a metade não feita: normalizar os 57 `resolved` para `registry.npmjs.org` (mantendo os `integrity`, que já existem em todas as 57) ou registrar a dependência explicitamente e adicionar uma checagem que falhe se o lockfile apontar para host fora de `registry.npmjs.org`. Risco é de disponibilidade/vendor-lock, não de tamper., PR #137 — NADA_A_RECUPERAR, buildCustomKitInsert(), CustomKitInsertPayload, resolved()
-
-### Community 1260 - "PR #145 — RECUPERAR"
-Cohesion: 0.40
-Nodes (5): PR #145 — RECUPERAR, IdentitySuggestion, Input, parseSuggestion(), useKitIdentitySuggestion()
-
-### Community 1261 - "D1. PR #3 — ref `pr/3` (branch `analise/sicoob-20260911115127`), fechada sem merge em 13/09/2026. Veredito anterior: NADA A RECUPERAR."
-Cohesion: 0.40
-Nodes (5): D1. PR #3 — ref `pr/3` (branch `analise/sicoob-20260911115127`), fechada sem merge em 13/09/2026. Veredito anterior: NADA A RECUPERAR., useOrderPayments(), LatestArtworkDecision, productionReadinessQueryKey(), useOrderProductionReadiness()
-
-### Community 1262 - "🛡️ Cronograma de Segurança e Monitoramento"
+### Community 1228 - "🛡️ Cronograma de Segurança e Monitoramento"
 Cohesion: 0.33
 Nodes (5): 1. Monitoramento de Uptime (Externo), 2. Pen Tests (Testes de Intrusão), 3. Rotação de Credenciais, 🛡️ Cronograma de Segurança e Monitoramento, Meta (SLA)
 
-### Community 1263 - "📉 Metas de Nível de Serviço (SLO)"
+### Community 1229 - "📉 Metas de Nível de Serviço (SLO)"
 Cohesion: 0.33
 Nodes (5): 1. Disponibilidade (Uptime), 2. Performance (Latência), 3. Integridade de Dados, 4. Segurança, 📉 Metas de Nível de Serviço (SLO)
 
-### Community 1264 - "Remoção da edge function `migrate-helper`"
+### Community 1230 - "Remoção da edge function `migrate-helper`"
 Cohesion: 0.33
 Nodes (5): Detalhes técnicos, Plano, Remoção da edge function `migrate-helper`, Se o objetivo era migrar o banco, Situação atual (verificada)
 
-### Community 1266 - "20261107190600_harden_rpc_acl_and_fk_indexes.sql"
+### Community 1232 - "overrides"
+Cohesion: 0.33
+Nodes (6): overrides, braces, dompurify, minimatch, postcss-selector-parser, source-map-js
+
+### Community 1233 - "20261107190600_harden_rpc_acl_and_fk_indexes.sql"
 Cohesion: 0.40
 Nodes (3): idx_catalog_marketing_terms_created_by, idx_catalog_marketing_terms_updated_by, idx_catalog_product_marketing_created_by
 
-### Community 1268 - "sw.js"
-Cohesion: 0.33
-Nodes (3): ALLOWED_CACHES, STATIC_ASSETS, request()
-
-### Community 1269 - "input-otp.tsx"
+### Community 1235 - "input-otp.tsx"
 Cohesion: 0.33
 Nodes (5): input-otp, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot
 
-### Community 1270 - "Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026"
+### Community 1236 - "Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026"
 Cohesion: 0.33
 Nodes (6): 1. O deploy de edge functions já morreu por política de Actions, não por Docker Hub, 2. O `Processing Request` do Copilot já foi diagnosticado: firewall da action, 3. Medição de 28/10/2026: 16 funções publicadas divergiam do repositório, 4.1. Causa encontrada e publicação executada em 18/11/2026, 4. Medição nova, de 18/11/2026: 11 das 28 funções medidas divergem, Causas de CI recuperadas das PRs #149 e #158 — registrado em 18/11/2026
 
-### Community 1271 - "Auditoria de sincronização e validação — 28/10/2026 (BRT)"
-Cohesion: 0.33
-Nodes (6): Alteração verificada, Auditoria de sincronização e validação — 28/10/2026 (BRT), Baseline local antes da correção × validação final, Divergência local remanescente, Estado remoto de `main` e PRs relacionados, Reconciliação do banco canônico
-
-### Community 1272 - "GlobalRefreshFromDbButton.tsx"
+### Community 1237 - "ZoneSection.tsx"
 Cohesion: 0.47
-Nodes (5): GlobalRefreshFromDbButton(), onKey(), GlobalRefreshFromDbButtonProps, isRefreshShortcut(), reportRefresh()
+Nodes (5): TONE_CLS, ZoneActions(), ZoneHeader(), ZoneSection(), ZoneSectionProps
 
-### Community 1273 - "ImageUploadArea.tsx"
+### Community 1238 - "ImageUploadArea.tsx"
 Cohesion: 0.60
 Nodes (5): ImageDropZone(), ImageTypeSelect(), ImageUploadArea(), UploadContextBadge(), VariantSelect()
 
-### Community 1274 - "SkipToContent.tsx"
+### Community 1239 - "SkipToContent.tsx"
 Cohesion: 0.33
 Nodes (5): defaultLinks, SkipLink, SkipLinkProps, SkipToContent, SkipToContentProps
 
-### Community 1275 - "ComparisonPresentationLauncher.tsx"
+### Community 1240 - "PriceDropBadge.tsx"
 Cohesion: 0.53
-Nodes (5): ComparisonPresentationLauncher(), FinalSlide(), ProductSlide(), Props, Stat()
+Nodes (5): fmt(), PriceDropBadge(), PriceMovement(), Props, SavedPriceDetails()
 
-### Community 1276 - "SyncedZoomGallery.tsx"
-Cohesion: 0.40
-Nodes (5): Product, ProductColor, productSlotKey(), SyncedZoomGallery(), SyncedZoomGalleryProps
-
-### Community 1277 - "CommemorativeDateFilter.tsx"
+### Community 1241 - "CommemorativeDateFilter.tsx"
 Cohesion: 0.47
 Nodes (5): CommemorativeDateFilter(), CommemorativeDateFilterProps, CommemorativeDateItem(), CommemorativeDateItemProps, getDaysUntilText()
 
-### Community 1278 - "ProductSectionNav.tsx"
-Cohesion: 0.47
-Nodes (5): ProductSectionNav(), ProductSectionNavProps, SectionTab, SectionTabButton(), useSectionObserver()
-
-### Community 1279 - "ItemsListEditor.tsx"
+### Community 1242 - "ItemsListEditor.tsx"
 Cohesion: 0.40
 Nodes (5): ItemRow(), ItemRowProps, ItemsListEditor(), ItemsListEditorProps, QuoteItemRow
 
-### Community 1280 - "QuoteCommentsThread.tsx"
-Cohesion: 0.47
-Nodes (5): CommentRow, CommentsList(), QuoteCommentsThread(), QuoteCommentsThreadProps, useQuoteComments()
-
-### Community 1281 - "SecurityTabs"
+### Community 1243 - "SecurityTabs"
 Cohesion: 0.33
 Nodes (6): LoginAttemptRow(), LoginHistory(), RecentLogins(), SecurityTabList(), SecurityTabs(), SecurityTabTrigger()
 
-### Community 1282 - "useBIDossierExport.ts"
+### Community 1244 - "KpiCard.tsx"
+Cohesion: 0.53
+Nodes (5): getCardTone(), getIconTone(), getValueTone(), KpiCard(), KpiCardProps
+
+### Community 1245 - "BICategoryFocusContext.tsx"
+Cohesion: 0.33
+Nodes (3): BICategoryFocusContext, BICategoryFocusContextValue, FocusedCategorySlug
+
+### Community 1246 - "useBIDossierExport.ts"
 Cohesion: 0.53
 Nodes (5): DossierSourceErrors, evaluateDossierReadiness(), listFailedDossierSources(), requiresIndustryData(), useBIDossierExport
 
-### Community 1283 - "useLogoColorAnalysis.ts"
+### Community 1247 - "useBridgeMetrics.ts"
+Cohesion: 0.33
+Nodes (4): BridgeMetricsFilter, BridgeMetricsTab, EMPTY, EMPTY_LT
+
+### Community 1248 - "useLogoColorAnalysis.ts"
 Cohesion: 0.47
 Nodes (5): DetectedColor, detectedColorsFromResponse(), isCancelledAnalysis(), LogoColorAnalysisResult, useLogoColorAnalysis()
 
-### Community 1284 - "usePositionHistory.ts"
+### Community 1249 - "usePositionHistory.ts"
 Cohesion: 0.47
 Nodes (5): isEditableTarget(), PositionState, requestedHistoryAction(), usePositionHistory(), UsePositionHistoryOptions
 
-### Community 1285 - "useQuoteFunnel.ts"
-Cohesion: 0.47
-Nodes (5): FunnelStage, quoteCycleDays(), QuoteFunnelData, useQuoteFunnel(), wasViewed()
-
-### Community 1286 - "useQuoteHistory.ts"
+### Community 1250 - "useQuoteHistory.ts"
 Cohesion: 0.47
 Nodes (5): HistoryOptions, historyRpcParams(), QuoteHistoryEntry, useQuoteHistory(), valueOr()
 
-### Community 1288 - "dev-route-telemetry.ts"
+### Community 1252 - "useStepUpAuth.ts"
+Cohesion: 0.33
+Nodes (4): initial, StartParams, StepUpAction, StepUpState
+
+### Community 1253 - "dev-route-telemetry.ts"
 Cohesion: 0.40
 Nodes (5): DevRouteUxEvent, recent, recordDevRouteTelemetry(), RecordParams, shouldDrop()
 
-### Community 1289 - "log-access-denied.ts"
+### Community 1254 - "log-access-denied.ts"
 Cohesion: 0.47
 Nodes (5): loadThrottle(), logAccessDenied(), LogAccessDeniedInput, saveThrottle(), ThrottleMap
 
-### Community 1290 - "sso-errors.ts"
+### Community 1255 - "sso-errors.ts"
 Cohesion: 0.33
 Nodes (3): SSO_ERROR_QUERY_PARAM, SSO_FAILURE_MESSAGES, SsoFailureReason
 
-### Community 1291 - "filter-dev-only-items.ts"
+### Community 1256 - "filter-dev-only-items.ts"
 Cohesion: 0.47
 Nodes (5): filterDevOnlyItems(), isItemVisibleForRoles(), isPathVisible(), NavFlagItem, NavRoles
 
-### Community 1292 - "overlay.ts"
+### Community 1257 - "overlay.ts"
 Cohesion: 0.47
 Nodes (4): dismissTopmostOverlay(), hasOpenOverlay(), isInteractivePopperWrapper(), OPEN_OVERLAY_SELECTOR
 
-### Community 1293 - "router-utils.ts"
-Cohesion: 0.40
-Nodes (4): defineRoute(), ExtractRouteParams, RouteConfig, TypedRoute
-
-### Community 1294 - "sensitive-masking.ts"
+### Community 1258 - "sensitive-masking.ts"
 Cohesion: 0.40
 Nodes (4): FILL, maskSecretValue(), maskSensitiveText(), PATTERNS
 
-### Community 1295 - "invitationForm.ts"
+### Community 1259 - "invitationForm.ts"
 Cohesion: 0.33
 Nodes (3): InvitationField, InvitationFormErrors, InvitationFormInput
 
-### Community 1296 - "order-permissions.ts"
+### Community 1260 - "order-permissions.ts"
 Cohesion: 0.47
 Nodes (5): canManageSicoobOrderFulfillment(), hasAnyRole(), sameDefinedId(), SicoobOrderActor, SicoobOrderScope
 
-### Community 1297 - "variant-matching.ts"
+### Community 1261 - "variant-matching.ts"
 Cohesion: 0.53
 Nodes (5): ColorLike, findMatchingColorIndex(), hexDistance(), normalizeColorName(), parseHex()
 
-### Community 1298 - "createApprovalData"
-Cohesion: 0.33
-Nodes (6): approvalPersonalization(), clientName(), createApprovalData(), documentNumber(), pantoneName(), techniqueLocation()
-
-### Community 1299 - "encryption.ts"
+### Community 1262 - "encryption.ts"
 Cohesion: 0.60
 Nodes (5): decryptData(), deriveKey(), encryptData(), protectPII(), revealPII()
 
-### Community 1300 - "approvalDelegationService.ts"
+### Community 1263 - "approvalDelegationService.ts"
 Cohesion: 0.33
 Nodes (4): ApprovalDelegation, DelegationCandidate, DelegationRow, sicoobApprovalDelegationService
 
-### Community 1303 - "003_notification_templates.sql"
+### Community 1266 - "003_notification_templates.sql"
 Cohesion: 0.47
 Nodes (4): idx_webhook_logs_webhook, notification_templates, webhook_configs, webhook_logs
 
-### Community 1304 - "push_subscriptions"
+### Community 1267 - "push_subscriptions"
 Cohesion: 0.47
 Nodes (3): idx_push_subscriptions_active, idx_push_subscriptions_user, push_subscriptions
 
-### Community 1305 - "public.entity_versions"
+### Community 1268 - "public.entity_versions"
 Cohesion: 0.47
 Nodes (3): idx_versions_date, idx_versions_entity, public.entity_versions
 
-### Community 1306 - "20251215113936_0e13449e-e4f8-4811-8902-d69704923f5c.sql"
+### Community 1269 - "20251215113936_0e13449e-e4f8-4811-8902-d69704923f5c.sql"
 Cohesion: 0.53
 Nodes (4): public.achievements, public.seller_achievements, public.seller_gamification, update_seller_gamification_updated_at
 
-### Community 1307 - "20251228100001_quote_versioning.sql"
+### Community 1270 - "20251228100001_quote_versioning.sql"
 Cohesion: 0.47
 Nodes (3): create_quote_version(), idx_quotes_parent, idx_quotes_version
 
-### Community 1308 - "20260109202835_4a232f3b-350c-4aa9-ab9e-91f038c72716.sql"
+### Community 1271 - "20260109202835_4a232f3b-350c-4aa9-ab9e-91f038c72716.sql"
 Cohesion: 0.60
 Nodes (5): idx_audit_log_action, idx_audit_log_created, idx_audit_log_entity, idx_audit_log_user, public.audit_log
 
-### Community 1309 - "20260322010007_d4d996b0-d883-4e68-936d-5bcf4ad29032.sql"
+### Community 1272 - "20260322010007_d4d996b0-d883-4e68-936d-5bcf4ad29032.sql"
 Cohesion: 0.47
 Nodes (4): public.generate_order_number(), public.login_attempts, public.orders, set_order_number
 
-### Community 1311 - "public.connection_test_history"
+### Community 1274 - "public.connection_test_history"
 Cohesion: 0.53
 Nodes (4): idx_connection_test_history_conn_time, public.connection_test_history, public.trim_connection_test_history(), trg_trim_connection_test_history
 
-### Community 1315 - "20260425205426_5eacced4-9096-4fa6-9962-5408341f9d11.sql"
+### Community 1278 - "20260425205426_5eacced4-9096-4fa6-9962-5408341f9d11.sql"
 Cohesion: 0.47
 Nodes (3): public.has_role(), public.is_dev(), public.is_supervisor_or_above()
 
-### Community 1316 - "20260426010557_27a64407-f199-43c2-87b2-e8aeaec63f40.sql"
+### Community 1279 - "20260426010557_27a64407-f199-43c2-87b2-e8aeaec63f40.sql"
 Cohesion: 0.47
 Nodes (3): public.has_role(), public.is_dev(), public.is_supervisor_or_above()
 
-### Community 1317 - "20260426145642_948756c0-6c4a-4be4-8757-9533bd4e291a.sql"
+### Community 1280 - "20260426145642_948756c0-6c4a-4be4-8757-9533bd4e291a.sql"
 Cohesion: 0.47
 Nodes (3): idx_ownership_repair_logs_created_at, idx_ownership_repair_logs_report, public.ownership_repair_logs
 
-### Community 1319 - "20260503150940_278af794-cf56-48b3-a1c1-e8b3e9548a70.sql"
+### Community 1282 - "20260503150940_278af794-cf56-48b3-a1c1-e8b3e9548a70.sql"
 Cohesion: 0.47
 Nodes (3): public.is_singular_buyer_for_quote(), public.set_quote_hierarchy(), tr_set_quote_hierarchy
 
-### Community 1321 - "20260503160341_84e732be-f325-45ef-80a0-ec5d22b0326b.sql"
+### Community 1284 - "20260503160341_84e732be-f325-45ef-80a0-ec5d22b0326b.sql"
 Cohesion: 0.40
 Nodes (3): public.get_user_cooperative_id(), public.get_user_pa_id(), public.scheduled_exports
 
-### Community 1322 - "20260503175512_115f0a9c-0f07-4475-8cb2-753fe80adc2e.sql"
+### Community 1285 - "20260503175512_115f0a9c-0f07-4475-8cb2-753fe80adc2e.sql"
 Cohesion: 0.40
 Nodes (3): public.admin_audit_log, public.pa_singularidades, public.pontos_atendimento
 
-### Community 1325 - "20260503204735_d54feab6-81d5-44bd-8ec3-ae33e3a71de1.sql"
+### Community 1288 - "20260503204735_d54feab6-81d5-44bd-8ec3-ae33e3a71de1.sql"
 Cohesion: 0.47
 Nodes (3): public.qa_release_evidences, public.qa_releases, public.qa_run_steps
 
-### Community 1327 - "20260504211811_2c878015-23d1-40c7-8b0b-2a442cf2411e.sql"
+### Community 1290 - "20260504211811_2c878015-23d1-40c7-8b0b-2a442cf2411e.sql"
 Cohesion: 0.40
 Nodes (3): idx_category_threshold_lookup, public.manager_notification_config, public.pa_category_thresholds
 
-### Community 1331 - "public.audit_log"
+### Community 1294 - "public.audit_log"
 Cohesion: 0.53
 Nodes (4): idx_audit_log_created_at, idx_audit_log_entity, idx_audit_log_user_id, public.audit_log
 
-### Community 1337 - "products-catalog.test.ts"
+### Community 1300 - "products-catalog.test.ts"
 Cohesion: 0.33
 Nodes (3): Product, sampleProducts, SortBy
 
-### Community 1338 - "seller-carts.test.ts"
+### Community 1301 - "seller-carts.test.ts"
 Cohesion: 0.33
 Nodes (3): Cart, CartItem, sampleItems
 
-### Community 1340 - "useWorkspaceNotifications-cache-persistence.test.tsx"
+### Community 1303 - "useWorkspaceNotifications-cache-persistence.test.tsx"
 Cohesion: 0.33
 Nodes (4): limitMock, loadHookAndMetrics(), SEED, STABLE_USER
 
-### Community 1341 - "useWorkspaceNotifications-fetch-error.test.tsx"
+### Community 1304 - "useWorkspaceNotifications-fetch-error.test.tsx"
 Cohesion: 0.33
 Nodes (3): limitMock, loadHookAndMetrics(), STABLE_USER
 
-### Community 1342 - "@/hooks/useWorkspaceNotifications"
+### Community 1305 - "@/hooks/useWorkspaceNotifications"
 Cohesion: 0.33
 Nodes (4): limitMock, loadHook(), SAMPLE_NOTIFICATIONS, STABLE_USER
 
-### Community 1343 - "rbac-permissions.test.ts"
+### Community 1306 - "filter-dev-only-items.test.ts"
+Cohesion: 0.33
+Nodes (5): ADMIN, DEV, Item, items, VENDEDOR
+
+### Community 1307 - "rbac-permissions.test.ts"
 Cohesion: 0.33
 Nodes (3): Permission, RoleName, rolePermissions
 
-### Community 1344 - "RLS Test Suite"
+### Community 1308 - "RLS Test Suite"
 Cohesion: 0.33
 Nodes (5): Matriz de cobertura, Personas, RLS Test Suite, Setup, Status
 
-### Community 1345 - "rls-seller-policies.spec.ts"
+### Community 1309 - "rls-seller-policies.spec.ts"
 Cohesion: 0.33
 Nodes (4): CHILD_POLICY_SNAPSHOT, EXPECTED_POLICIES, POLICY_SNAPSHOT, PolicyExpectation
 
-### Community 1348 - "imports"
+### Community 1311 - "imports"
 Cohesion: 0.40
 Nodes (4): imports, hono, mcp-lite, nodeModulesDir
 
-### Community 1350 - "📊 CATEGORIES (Categorias)"
+### Community 1313 - "📊 CATEGORIES (Categorias)"
 Cohesion: 0.40
 Nodes (5): 📊 CATEGORIES (Categorias), **Policy 1: org_members_view_categories**, **Policy 2: org_admins_create_categories**, **Policy 3: org_admins_update_categories**, **Policy 4: org_admins_delete_categories**
 
-### Community 1351 - "💰 QUOTES (Orçamentos)"
+### Community 1314 - "💰 QUOTES (Orçamentos)"
 Cohesion: 0.40
 Nodes (5): **Policy 1: org_members_view_quotes**, **Policy 2: org_members_create_quotes**, **Policy 3: org_members_update_own_quotes**, **Policy 4: org_admins_delete_quotes**, 💰 QUOTES (Orçamentos)
 
-### Community 1352 - "🎯 FASE 1: Setup Inicial (1-2 dias)"
+### Community 1315 - "🎯 FASE 1: Setup Inicial (1-2 dias)"
 Cohesion: 0.40
 Nodes (5): **1.1: Criar primeira Organization**, **1.2: Implementar OrganizationContext**, **1.3: Criar hooks customizados**, **1.4: Adicionar OrganizationSwitcher**, 🎯 FASE 1: Setup Inicial (1-2 dias)
 
-### Community 1353 - "ADR 0004 — Plataforma Fechada (No Public Signup)"
+### Community 1316 - "ADR 0004 — Plataforma Fechada (No Public Signup)"
 Cohesion: 0.40
 Nodes (4): ADR 0004 — Plataforma Fechada (No Public Signup), Consequências, Contexto, Decisão
 
-### Community 1354 - "ADR 0005 — Circuit Breaker em Bridges Externas"
+### Community 1317 - "ADR 0005 — Circuit Breaker em Bridges Externas"
 Cohesion: 0.40
 Nodes (4): ADR 0005 — Circuit Breaker em Bridges Externas, Consequências, Contexto, Decisão
 
-### Community 1355 - "📁 10. COLEÇÕES E FAVORITOS"
+### Community 1318 - "🧪 **TESTES A REALIZAR**"
+Cohesion: 0.40
+Nodes (5): 1. **Calendário**, 2. **Formatação de Datas**, 3. **Gráficos e BI**, 4. **Notificações**, 🧪 **TESTES A REALIZAR**
+
+### Community 1319 - "`useExternalDatabase.ts` (etapa 17, 8 → 0 erros)"
+Cohesion: 0.40
+Nodes (5): `GestorApprovalsPage.tsx` (+ variante `sicoob/`) (etapa 17, 10 → 0 erros — achado: embed PostgREST quebrado em produção), `useExternalDatabase.ts` (etapa 17, 8 → 0 erros), EdgeFunctionEnvelope, useExternalBusinessSectors(), useExternalCompanies()
+
+### Community 1320 - "📁 10. COLEÇÕES E FAVORITOS"
 Cohesion: 0.40
 Nodes (5): 10.1 Sistema de Favoritos, 10.2 Coleções de Produtos, 10.3 Comparação de Produtos, 10.4 Visualizados Recentemente, 📁 10. COLEÇÕES E FAVORITOS
 
-### Community 1356 - "💰 22. SIMULADOR DE PREÇOS"
+### Community 1321 - "💰 22. SIMULADOR DE PREÇOS"
 Cohesion: 0.40
 Nodes (5): 22.1 Simulador Wizard (Principal), 22.2 Simulador de Preços (Compacto), 22.3 Simulador de Personalização (Legacy), 22.4 Gravação e Técnicas de Preço, 💰 22. SIMULADOR DE PREÇOS
 
-### Community 1357 - "Helpers semânticos de RBAC (RLS)"
+### Community 1322 - "🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`)"
+Cohesion: 0.40
+Nodes (5): 🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`), Backend, Componentes, Painel Admin, Performance
+
+### Community 1323 - "Helpers semânticos de RBAC (RLS)"
 Cohesion: 0.40
 Nodes (4): Exemplo de uso em policy, Funções disponíveis, Helpers semânticos de RBAC (RLS), Regras
 
-### Community 1358 - "📑 Revisão de SLAs e Acordos de Serviço"
+### Community 1324 - "📑 Revisão de SLAs e Acordos de Serviço"
 Cohesion: 0.40
 Nodes (4): Penalidades e Notificações, Procedimento de Review, 📑 Revisão de SLAs e Acordos de Serviço, SLAs Vigentes (Q2 2026)
 
-### Community 1359 - "pull_request_template.md"
+### Community 1325 - "pull_request_template.md"
 Cohesion: 0.40
 Nodes (4): Checklist, Evidência verificada, Tipo de mudança, O que muda
 
-### Community 1360 - "lazyWithRetry.ts"
-Cohesion: 0.60
-Nodes (3): handleImportFailure(), isRetryableImportError(), lazyWithRetry()
-
-### Community 1364 - "simulate-webhooks.mjs"
+### Community 1329 - "simulate-webhooks.mjs"
 Cohesion: 0.60
 Nodes (3): hmacSign(), runSimulation(), sendWebhook()
 
-### Community 1365 - "accordion.tsx"
+### Community 1330 - "accordion.tsx"
 Cohesion: 0.40
 Nodes (4): @radix-ui/react-accordion, AccordionContent, AccordionItem, AccordionTrigger
 
-### Community 1366 - "inventario — estado real do banco e do código"
+### Community 1331 - "inventario — estado real do banco e do código"
 Cohesion: 0.40
 Nodes (4): Como rodar, Garantias, inventario — estado real do banco e do código, Quem roda isso sozinho
 
-### Community 1367 - "simular-governanca-orcamento.sh"
+### Community 1332 - "simular-governanca-orcamento.sh"
 Cohesion: 0.60
 Nodes (3): docker_mandatory(), is_true(), simular-governanca-orcamento.sh script
 
-### Community 1368 - "CatalogStorefrontHero.tsx"
+### Community 1333 - "CatalogStorefrontHero.tsx"
 Cohesion: 0.40
 Nodes (3): budgetRanges, CatalogStorefrontHeroProps, purchaseIntents
 
-### Community 1369 - "WeeklyActivityHeatmap.tsx"
+### Community 1334 - "WeeklyActivityHeatmap.tsx"
 Cohesion: 0.50
 Nodes (4): parseLocalDate(), WeeklyActivityHeatmap(), WeeklyActivityHeatmapProps, WeeklyActivityRow
 
-### Community 1370 - "QuoteClientInfo.tsx"
+### Community 1335 - "KitTemplates.tsx"
+Cohesion: 0.40
+Nodes (3): KitTemplate, KitTemplatesProps, TEMPLATES
+
+### Community 1336 - "KitLibraryFilters.tsx"
+Cohesion: 0.40
+Nodes (3): Props, SORT_LABELS, SortOption
+
+### Community 1338 - "QuoteClientInfo.tsx"
 Cohesion: 0.60
 Nodes (4): CompanyInfo(), ContactInfo(), QuoteClientInfo(), QuoteClientInfoProps
 
-### Community 1371 - "PageSEO.tsx"
-Cohesion: 0.50
-Nodes (4): OptionalSeoTags(), OptionalSeoTagsProps, PageSEO, PageSEOProps
-
-### Community 1372 - "GestorComprasMetrics.tsx"
+### Community 1339 - "GestorComprasMetrics.tsx"
 Cohesion: 0.80
 Nodes (4): ConsumoDaVerba(), GestorComprasMetrics(), Indicador(), MetricasDaFila()
 
-### Community 1373 - "useCatalogRealStats.ts"
+### Community 1340 - "useCatalogRealStats.ts"
 Cohesion: 0.50
 Nodes (4): CatalogRealStats, HIDDEN_CATEGORY_PATTERNS, isHiddenCategory(), useCatalogRealStats()
 
-### Community 1375 - "useFavorites.ts"
+### Community 1342 - "useFavorites.ts"
 Cohesion: 0.50
 Nodes (4): FavoriteItem, parseFavorites(), useFavorites(), UseFavoritesOptions
 
-### Community 1376 - "useScrollLockFix.ts"
+### Community 1343 - "useScrollLockFix.ts"
 Cohesion: 0.70
 Nodes (4): cleanupScrollLock(), hasActiveOverlay(), resetScrollStyles(), useScrollLockFix()
 
-### Community 1377 - "industryRecommendations.ts"
+### Community 1344 - "useScrollRestoration.ts"
+Cohesion: 0.40
+Nodes (3): containerPositions, RESTORE_RETRIES_MS, scrollPositions
+
+### Community 1345 - "industryRecommendations.ts"
 Cohesion: 0.40
 Nodes (3): FALLBACK, INDUSTRY_RECOMMENDATIONS, IndustryRecommendation
 
-### Community 1378 - "error-kind-inference.ts"
+### Community 1346 - "error-kind-inference.ts"
 Cohesion: 0.60
 Nodes (4): inferConfigOrUnknown(), inferErrorKind(), inferMessageKind(), MESSAGE_KIND_PATTERNS
 
-### Community 1379 - "image-converter.ts"
+### Community 1347 - "image-converter.ts"
 Cohesion: 0.60
 Nodes (4): convertToPng(), ensureSupportedFormat(), needsConversion(), SUPPORTED_FORMATS
 
-### Community 1380 - "custom-kit-payload.ts"
+### Community 1348 - "custom-kit-payload.ts"
 Cohesion: 0.70
 Nodes (4): buildCustomKitPayload(), customKitStatus(), kitIdentityDetails(), kitIdentityLabels()
 
-### Community 1381 - "order-status-config.ts"
-Cohesion: 0.40
-Nodes (3): ORDER_STATUS_CONFIG, OrderStatus, OrderStatusConfig
-
-### Community 1382 - "sicoob-status-config.ts"
+### Community 1349 - "sicoob-status-config.ts"
 Cohesion: 0.40
 Nodes (3): SICOOB_STATUS_CONFIG, SicoobFulfillmentStatus, StatusConfig
 
-### Community 1386 - "external-db.ts"
+### Community 1353 - "external-db.ts"
 Cohesion: 0.40
 Nodes (4): ExternalPrintArea, ExternalProduct, ExternalTechnique, MockupTechnique
 
-### Community 1388 - "imports"
+### Community 1354 - "imports"
 Cohesion: 0.40
 Nodes (4): imports, hono, mcp-lite, @supabase/supabase-js
 
-### Community 1389 - "imports"
+### Community 1355 - "imports"
 Cohesion: 0.40
 Nodes (4): imports, hono, mcp-lite, @supabase/supabase-js
 
-### Community 1390 - "imports"
+### Community 1356 - "imports"
 Cohesion: 0.40
 Nodes (4): imports, hono, mcp-lite, @supabase/supabase-js
 
-### Community 1391 - "parseAiResponse.ts"
-Cohesion: 0.50
-Nodes (4): FALLBACK_RESULT, parseAiResponse(), validateResult(), VoiceCommandResult
-
-### Community 1393 - "public.quote_history"
+### Community 1358 - "public.quote_history"
 Cohesion: 0.60
 Nodes (3): idx_quote_history_created_at, idx_quote_history_quote_id, public.quote_history
 
-### Community 1394 - "public.quote_approval_tokens"
+### Community 1359 - "public.quote_approval_tokens"
 Cohesion: 0.60
 Nodes (3): idx_quote_approval_tokens_quote_id, idx_quote_approval_tokens_token, public.quote_approval_tokens
 
-### Community 1395 - "20251220140213_3ea8f71f-d506-46a7-8f3b-ef6b5607a592.sql"
+### Community 1360 - "20251220140213_3ea8f71f-d506-46a7-8f3b-ef6b5607a592.sql"
 Cohesion: 0.70
 Nodes (4): idx_notifications_created_at, idx_notifications_is_read, idx_notifications_user_id, public.notifications
 
-### Community 1396 - "push_subscriptions"
+### Community 1361 - "push_subscriptions"
 Cohesion: 0.60
 Nodes (3): idx_push_subscriptions_active, idx_push_subscriptions_user, push_subscriptions
 
-### Community 1397 - "sync_jobs"
+### Community 1362 - "sync_jobs"
 Cohesion: 0.60
 Nodes (3): idx_sync_jobs_created, idx_sync_jobs_status, sync_jobs
 
-### Community 1398 - "user_filter_presets"
+### Community 1363 - "user_filter_presets"
 Cohesion: 0.60
 Nodes (3): idx_user_filters_context, idx_user_filters_user, user_filter_presets
 
-### Community 1399 - "public.password_reset_requests"
+### Community 1364 - "public.password_reset_requests"
 Cohesion: 0.60
 Nodes (3): idx_password_reset_requests_email, idx_password_reset_requests_status, public.password_reset_requests
 
-### Community 1400 - "20251231024837_c924e1c3-b77f-4076-9cdc-195effdf6ea2.sql"
+### Community 1365 - "20251231024837_c924e1c3-b77f-4076-9cdc-195effdf6ea2.sql"
 Cohesion: 0.50
 Nodes (4): public.login_attempts, public.user_2fa_settings, public.user_allowed_ips, update_user_2fa_settings_updated_at
 
-### Community 1401 - "20251231121324_9bfed8fc-56ff-45e4-8175-e1bd0bb0f72f.sql"
+### Community 1366 - "20251231121324_9bfed8fc-56ff-45e4-8175-e1bd0bb0f72f.sql"
 Cohesion: 0.70
 Nodes (4): idx_user_known_devices_user_fingerprint, idx_user_known_devices_user_ip, public.device_login_notifications, public.user_known_devices
 
-### Community 1403 - "20260110122053_76b9a5d8-add2-4fb9-a27f-dceca92cf817.sql"
+### Community 1368 - "20260110122053_76b9a5d8-add2-4fb9-a27f-dceca92cf817.sql"
 Cohesion: 0.60
 Nodes (3): public.can_manage(), public.get_user_role(), public.has_role()
 
-### Community 1404 - "public.magic_up_generations"
+### Community 1369 - "public.magic_up_generations"
 Cohesion: 0.60
 Nodes (3): idx_magic_up_generations_favorite, idx_magic_up_generations_user, public.magic_up_generations
 
-### Community 1406 - "public.mockup_prompt_configs"
+### Community 1371 - "public.mockup_prompt_configs"
 Cohesion: 0.60
 Nodes (3): public.mockup_prompt_configs, public.mockup_prompt_history, update_mockup_prompt_configs_updated_at
 
-### Community 1407 - "public.product_price_history"
+### Community 1372 - "public.product_price_history"
 Cohesion: 0.60
 Nodes (3): idx_price_history_created, idx_price_history_product, public.product_price_history
 
-### Community 1408 - "public.web_vitals"
+### Community 1373 - "public.web_vitals"
 Cohesion: 0.60
 Nodes (3): idx_web_vitals_created_at, idx_web_vitals_metric_name, public.web_vitals
 
-### Community 1409 - "20260326191912_07b386c9-cb61-45d6-aa44-bf2452d07c0e.sql"
+### Community 1374 - "20260326191912_07b386c9-cb61-45d6-aa44-bf2452d07c0e.sql"
 Cohesion: 0.70
 Nodes (4): idx_admin_audit_log_action, idx_admin_audit_log_created_at, idx_admin_audit_log_user_id, public.admin_audit_log
 
-### Community 1411 - "20260416231122_95edd411-9f96-4389-a9fe-93b2d4c557d8.sql"
+### Community 1376 - "20260416231122_95edd411-9f96-4389-a9fe-93b2d4c557d8.sql"
 Cohesion: 0.70
 Nodes (4): idx_search_analytics_created_at, idx_search_analytics_term_lower, idx_search_analytics_zero_results, public.search_analytics
 
-### Community 1414 - "20260419025022_7d122b20-2611-49b6-874d-b1d72d133ad3.sql"
+### Community 1379 - "20260419025022_7d122b20-2611-49b6-874d-b1d72d133ad3.sql"
 Cohesion: 0.60
 Nodes (3): idx_public_token_failures_ip, idx_public_token_failures_resource, public.public_token_failures
 
-### Community 1416 - "20260423145604_f3748654-19e3-4d8c-bc72-bcfeee5df79c.sql"
+### Community 1381 - "20260423145604_f3748654-19e3-4d8c-bc72-bcfeee5df79c.sql"
 Cohesion: 0.60
 Nodes (3): idx_integration_credentials_name, public.integration_credentials, trg_fill_integration_credential_metadata
 
-### Community 1417 - "public.product_price_freshness_overrides"
+### Community 1382 - "public.product_price_freshness_overrides"
 Cohesion: 0.60
 Nodes (3): idx_pfo_product_id, public.product_price_freshness_overrides, trg_pfo_set_updated_at
 
-### Community 1419 - "20260425200038_59ad5d9b-5dfa-4155-9def-36eee218c2ee.sql"
+### Community 1384 - "20260425200038_59ad5d9b-5dfa-4155-9def-36eee218c2ee.sql"
 Cohesion: 0.60
 Nodes (3): idx_admin_audit_log_request_id, idx_admin_audit_log_source, idx_admin_audit_log_status
 
-### Community 1426 - "20260517124846_126d6f73-eac5-4be3-8a6b-08919cb18539.sql"
+### Community 1391 - "20260517124846_126d6f73-eac5-4be3-8a6b-08919cb18539.sql"
 Cohesion: 0.50
 Nodes (3): public.sicoob_centrais, public.sicoob_temas, tr_sicoob_centrais_updated_at
 
-### Community 1431 - "public.sicoob_order_payments"
+### Community 1396 - "public.sicoob_order_payments"
 Cohesion: 0.40
 Nodes (4): idx_fk_sicoob_order_payments_created_by_fkey, idx_fk_sicoob_order_payments_invoice_id_fkey, idx_fk_sicoob_order_payments_refunded_by_fkey, idx_fk_sicoob_order_payments_updated_by_fkey
 
-### Community 1432 - "public.password_reset_requests"
+### Community 1397 - "public.password_reset_requests"
 Cohesion: 0.60
 Nodes (3): idx_password_reset_requests_email_status, idx_password_reset_requests_requested_at, public.password_reset_requests
 
-### Community 1433 - "public.personalization_simulations"
+### Community 1398 - "public.personalization_simulations"
 Cohesion: 0.60
 Nodes (3): personalization_simulations_seller_created_idx, public.personalization_simulations, update_personalization_simulations_updated_at
 
-### Community 1447 - "Contratos P0"
+### Community 1411 - "kit-builder-price.test.ts"
+Cohesion: 0.40
+Nodes (4): emptyPersonalization, fullPersonalization, mockBox, mockItems
+
+### Community 1412 - "kit-builder-volume.test.ts"
+Cohesion: 0.40
+Nodes (4): bigItem, mockBox, oversizedItem, smallItem
+
+### Community 1413 - "price-response.adapter.test.ts"
+Cohesion: 0.40
+Nodes (3): FLAT_V6, NESTED_V59, NEW_V7
+
+### Community 1415 - "Contratos P0"
 Cohesion: 0.40
 Nodes (4): Como validar, Contratos P0, Convenção, Mapeamento P0 → Arquivo
 
-### Community 1448 - "group-personalization-fixture.sql"
+### Community 1416 - "group-personalization-fixture.sql"
 Cohesion: 0.60
 Nodes (4): public.product_component_locations, public.product_components, public.product_group_members, public.product_groups
 
-### Community 1449 - "sicoob-notification-outbox-fixture.sql"
+### Community 1417 - "sicoob-notification-outbox-fixture.sql"
 Cohesion: 0.50
 Nodes (4): public.pa_notification_settings, public.profiles, public.sicoob_approval_requests, public.sicoob_orders
 
-### Community 1450 - "stock-performance.test.ts"
-Cohesion: 0.60
-Nodes (3): generateLargeDataset(), makeProduct(), makeVariant()
-
-### Community 1451 - "Brindes Sicoob V2 — convenções"
+### Community 1418 - "Brindes Sicoob V2 — convenções"
 Cohesion: 0.50
 Nodes (3): Brindes Sicoob V2 — convenções, Commits, Código
 
-### Community 1452 - "Brindes Sicoob V2 — convenções"
+### Community 1419 - "Brindes Sicoob V2 — convenções"
 Cohesion: 0.50
 Nodes (3): Brindes Sicoob V2 — convenções, Commits, Código
 
-### Community 1453 - "🎯 Funções Helper"
+### Community 1420 - "🎯 Funções Helper"
 Cohesion: 0.50
 Nodes (4): **1. user_is_org_member()**, **2. is_org_admin()**, **3. is_org_owner_or_admin()**, 🎯 Funções Helper
 
-### Community 1454 - "🧪 Como Testar Policies"
+### Community 1421 - "🧪 Como Testar Policies"
 Cohesion: 0.50
 Nodes (4): 🧪 Como Testar Policies, **Teste 1: Member vê apenas dados da própria org**, **Teste 2: Member não pode deletar**, **Teste 3: Admin pode gerenciar**
 
-### Community 1455 - "⭐ PRODUCT_REVIEWS"
+### Community 1422 - "⭐ PRODUCT_REVIEWS"
 Cohesion: 0.50
 Nodes (4): **Policy 1: org_members_view_product_reviews**, **Policy 2: authenticated_create_reviews**, **Policy 3: users_manage_own_reviews**, ⭐ PRODUCT_REVIEWS
 
-### Community 1456 - "🎯 FASE 6: Testes e Qualidade (3-4 dias)"
+### Community 1423 - "🎯 FASE 6: Testes e Qualidade (3-4 dias)"
 Cohesion: 0.50
 Nodes (4): **6.1: Testes Unitários**, **6.2: Testes E2E**, **6.3: Testes de RLS**, 🎯 FASE 6: Testes e Qualidade (3-4 dias)
 
-### Community 1457 - "Lote 2 — análises 2026-10-07 (`analises/Brindes_Sicoob_V2`)"
+### Community 1424 - "Lote 2 — análises 2026-10-07 (`analises/Brindes_Sicoob_V2`)"
 Cohesion: 0.50
 Nodes (3): Arquivos deste lote (24, ~2 MB; texto somado ≈ 77 KB), Fica para o lote 2b (mesma origem, ~78 KB de texto), Lote 2 — análises 2026-10-07 (`analises/Brindes_Sicoob_V2`)
 
-### Community 1458 - "Fixtures E2E por Papel"
+### Community 1425 - "Fixtures E2E por Papel"
 Cohesion: 0.50
 Nodes (3): 1. Gerente PA, 2. Gestor Compras, Fixtures E2E por Papel
 
-### Community 1459 - "👤 29. ADMINISTRAÇÃO"
-Cohesion: 0.50
-Nodes (4): 29.1 Painel Admin, 29.2 Perfil do Usuário, 29.3 Status do Sistema, 👤 29. ADMINISTRAÇÃO
-
-### Community 1460 - "🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`)"
-Cohesion: 0.50
-Nodes (4): 🧠 34. INTELIGÊNCIA DE MERCADO (`/inteligencia-comercial`), Backend, Componentes, Performance
-
-### Community 1461 - "👥 6. GESTÃO DE CLIENTES E CRM"
+### Community 1426 - "👥 6. GESTÃO DE CLIENTES E CRM"
 Cohesion: 0.50
 Nodes (4): 6.1 CRM de Empresas, 6.2 Integração Bitrix24, 6.3 Datas Comemorativas, 👥 6. GESTÃO DE CLIENTES E CRM
 
-### Community 1462 - "`claude/feat-modulos-edge-recuperados-261117-0930` (PR #291, fechada) — **LIBERADA em 19/11/2026**"
+### Community 1427 - "📊 8. ANALYTICS E BI"
 Cohesion: 0.50
-Nodes (4): `claude/feat-modulos-edge-recuperados-261117-0930` (PR #291, fechada) — **LIBERADA em 19/11/2026**, Refs liberadas por verificação byte a byte, fetchQuoteDirectoryCompanies(), selectCrm()
+Nodes (4): 8.1 Dashboard Customizável, 8.3 Tendências, 8.4 Analytics de Produtos, 📊 8. ANALYTICS E BI
 
-### Community 1463 - "Suíte E2E por rota"
+### Community 1428 - "Suíte E2E por rota"
 Cohesion: 0.50
 Nodes (3): Como rodar, Padrão por rota (8 casos), Suíte E2E por rota
 
-### Community 1464 - "☁️ Infraestrutura como Código (IaC) — Promo Brindes"
+### Community 1429 - "☁️ Infraestrutura como Código (IaC) — Promo Brindes"
 Cohesion: 0.50
 Nodes (3): Estrutura, ☁️ Infraestrutura como Código (IaC) — Promo Brindes, Uso (Roadmap 10/10)
 
-### Community 1465 - "Estado real do projeto — inventário gerado"
+### Community 1430 - "Estado real do projeto — inventário gerado"
 Cohesion: 0.50
 Nodes (3): Como ler `banco.json`, Como ler `rotas.json`, Estado real do projeto — inventário gerado
 
-### Community 1469 - "public.limit_increase_requests"
+### Community 1434 - "public.limit_increase_requests"
 Cohesion: 0.50
 Nodes (3): idx_fk_limit_increase_requests_approved_by_fkey, idx_fk_limit_increase_requests_pa_id_fkey, idx_fk_limit_increase_requests_requested_by_fkey
 
-### Community 1471 - "scroll-area.tsx"
-Cohesion: 0.67
-Nodes (3): @radix-ui/react-scroll-area, ScrollArea, ScrollBar
-
-### Community 1472 - "isSrc"
+### Community 1436 - "isSrc"
 Cohesion: 0.50
 Nodes (4): appFiles, envUsadas, isSrc(), routeFiles
 
-### Community 1473 - "redact"
+### Community 1437 - "redact"
 Cohesion: 0.50
 Nodes (3): redact(), scrub(), scrub_value()
 
-### Community 1474 - "tsconfig.probe.34358.json"
+### Community 1438 - "KitHeroPricingCard.tsx"
+Cohesion: 0.67
+Nodes (3): EmptyKitPricingCard(), KitHeroPricingCard(), KitHeroPricingCardProps
+
+### Community 1440 - "tsconfig.probe.34358.json"
 Cohesion: 0.50
 Nodes (3): extends, include, ./tsconfig.app.json
 
-### Community 1480 - "status.ts"
+### Community 1442 - "usePasswordBreachCheck.tsx"
+Cohesion: 0.67
+Nodes (3): BreachCheckResult, sha1Hash(), usePasswordBreachCheck()
+
+### Community 1445 - "status.ts"
 Cohesion: 0.50
 Nodes (3): CUSTOM_KIT_STATUS, CUSTOM_KIT_STATUS_LABELS, CustomKitStatus
 
-### Community 1483 - "tsconfig.probe.41777.json"
+### Community 1447 - "tsconfig.probe.41777.json"
 Cohesion: 0.50
 Nodes (3): extends, include, ./tsconfig.app.json
 
-### Community 1485 - "documentIngestService.ts"
-Cohesion: 0.50
-Nodes (3): IngestedDocument, sicoobDocumentIngestService, SicoobDocumentPurpose
-
-### Community 1486 - "campaignExport.ts"
+### Community 1448 - "campaignExport.ts"
 Cohesion: 0.67
 Nodes (3): CampaignExportRow, campaignRowsToCsv(), escapeCsvCell()
 
-### Community 1488 - "20251220181321_e148d318-752b-4c4a-8bb3-da2163faab3c.sql"
+### Community 1450 - "20251220181321_e148d318-752b-4c4a-8bb3-da2163faab3c.sql"
 Cohesion: 0.83
 Nodes (3): idx_sales_goals_user_date, public.sales_goals, update_sales_goals_updated_at
 
-### Community 1489 - "20251231124614_527fd53c-cfd4-4106-b454-fdc2ed3a708e.sql"
+### Community 1451 - "20251231124614_527fd53c-cfd4-4106-b454-fdc2ed3a708e.sql"
 Cohesion: 0.83
 Nodes (3): idx_user_passkeys_credential_id, idx_user_passkeys_user_id, public.user_passkeys
 
-### Community 1491 - "20260314133410_b4a5983b-76fc-4419-b422-a590dc0fa2ed.sql"
+### Community 1453 - "20260314133410_b4a5983b-76fc-4419-b422-a590dc0fa2ed.sql"
 Cohesion: 0.83
 Nodes (3): idx_query_telemetry_created, idx_query_telemetry_severity, public.query_telemetry
 
-### Community 1499 - "20260416232134_c5bae7ef-804a-4d27-81b4-73ce0154fdc8.sql"
+### Community 1461 - "20260416232134_c5bae7ef-804a-4d27-81b4-73ce0154fdc8.sql"
 Cohesion: 0.83
 Nodes (3): idx_saved_trends_views_user, public.saved_trends_views, update_saved_trends_views_updated_at
 
-### Community 1513 - "20260427213016_bce59025-f18c-4ad2-a056-23de8ca5d9a8.sql"
+### Community 1475 - "20260427213016_bce59025-f18c-4ad2-a056-23de8ca5d9a8.sql"
 Cohesion: 0.83
 Nodes (3): idx_file_scan_logs_hash, idx_file_scan_logs_user_id, public.file_scan_logs
 
-### Community 1544 - "vercel.json"
+### Community 1505 - "vercel.json"
 Cohesion: 0.50
 Nodes (3): headers, rewrites, $schema
 
-### Community 1546 - "👀 PRODUCT_VIEWS (Analytics)"
+### Community 1507 - "👀 PRODUCT_VIEWS (Analytics)"
 Cohesion: 0.67
 Nodes (3): **Policy 1: authenticated_view_product_views**, **Policy 2: authenticated_create_product_views**, 👀 PRODUCT_VIEWS (Analytics)
 
-### Community 1547 - "💵 PRODUCT_PRICE_HISTORY"
+### Community 1508 - "💵 PRODUCT_PRICE_HISTORY"
 Cohesion: 0.67
 Nodes (3): **Policy 1: org_members_view_price_history**, **Policy 2: system_create_price_history**, 💵 PRODUCT_PRICE_HISTORY
 
-### Community 1548 - "📦 PRODUCTS (Produtos)"
+### Community 1509 - "📦 PRODUCTS (Produtos)"
 Cohesion: 0.67
 Nodes (3): **Policy 1: org_members_view_products**, **Policy 2: org_admins_manage_products**, 📦 PRODUCTS (Produtos)
 
-### Community 1549 - "🏭 SUPPLIERS (Fornecedores)"
+### Community 1510 - "🏭 SUPPLIERS (Fornecedores)"
 Cohesion: 0.67
 Nodes (3): **Policy 1: org_members_view_suppliers**, **Policy 2: org_admins_manage_suppliers**, 🏭 SUPPLIERS (Fornecedores)
 
-### Community 1550 - "⚡ 15. PERFORMANCE E CACHE"
+### Community 1511 - "📝 **CHECKLIST DE IMPLEMENTAÇÃO**"
 Cohesion: 0.67
-Nodes (3): 15.1 Caching, 15.2 Rate Limit Dashboard, ⚡ 15. PERFORMANCE E CACHE
+Nodes (3): 📝 **CHECKLIST DE IMPLEMENTAÇÃO**, ✅ **Tarefas Obrigatórias:**, 🔧 **Tarefas Opcionais (Recomendadas):**
 
-### Community 1551 - "🔍 21. BUSCA E FILTROS"
+### Community 1512 - "📤 13. EXPORTAÇÃO"
 Cohesion: 0.67
-Nodes (3): 21.1 Busca Global, 21.2 Filtros Avançados, 🔍 21. BUSCA E FILTROS
+Nodes (3): 13.1 Export Excel, 13.2 Export PDF, 📤 13. EXPORTAÇÃO
 
-### Community 1552 - "🔔 9. NOTIFICAÇÕES"
+### Community 1513 - "📦 24. ESTOQUE"
 Cohesion: 0.67
-Nodes (3): 9.1 Sistema de Notificações, 9.2 Notificações Push, 🔔 9. NOTIFICAÇÕES
+Nodes (3): 24.1 Dashboard de Estoque, 24.2 Estoque Futuro, 📦 24. ESTOQUE
 
-### Community 1553 - "PR #3"
+### Community 1514 - "🏆 7. GAMIFICAÇÃO"
+Cohesion: 0.67
+Nodes (3): 7.1 Sistema de Recompensas, 7.2 Metas de Vendas, 🏆 7. GAMIFICAÇÃO
+
+### Community 1515 - "PR #3"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #3, Tentativa de refutação
 
-### Community 1554 - "PR #4"
+### Community 1516 - "PR #4"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #4, Tentativa de refutação
 
-### Community 1555 - "PR #75"
+### Community 1517 - "PR #75"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #75, Tentativa de refutação
 
-### Community 1556 - "PR #80"
+### Community 1518 - "PR #80"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #80, Tentativa de refutação
 
-### Community 1557 - "PR #81"
+### Community 1519 - "PR #81"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #81, Tentativa de refutação
 
-### Community 1558 - "PR #82"
+### Community 1520 - "PR #82"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #82, Tentativa de refutação
 
-### Community 1559 - "PR #84"
+### Community 1521 - "PR #84"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #84, Tentativa de refutação
 
-### Community 1560 - "PR #85"
+### Community 1522 - "PR #85"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #85, Tentativa de refutação
 
-### Community 1561 - "PR #97"
+### Community 1523 - "PR #97"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #97, Tentativa de refutação
 
-### Community 1562 - "PR #137"
+### Community 1524 - "PR #137"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #137, Tentativa de refutação
 
-### Community 1563 - "PR #149"
+### Community 1525 - "PR #149"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #149, Tentativa de refutação
 
-### Community 1564 - "PR #154"
+### Community 1526 - "PR #154"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #154, Tentativa de refutação
 
-### Community 1565 - "PR #158"
+### Community 1527 - "PR #158"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #158, Tentativa de refutação
 
-### Community 1566 - "PR #160"
+### Community 1528 - "PR #160"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #160, Tentativa de refutação
 
-### Community 1567 - "PR #161"
+### Community 1529 - "PR #161"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #161, Tentativa de refutação
 
-### Community 1568 - "PR #165"
+### Community 1530 - "PR #165"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #165, Tentativa de refutação
 
-### Community 1569 - "PR #172"
+### Community 1531 - "PR #172"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #172, Tentativa de refutação
 
-### Community 1570 - "PR #182"
+### Community 1532 - "PR #182"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #182, Tentativa de refutação
 
-### Community 1571 - "PR #185"
+### Community 1533 - "PR #185"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #185, Tentativa de refutação
 
-### Community 1572 - "PR #209"
+### Community 1534 - "PR #209"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #209, Tentativa de refutação
 
-### Community 1573 - "PR #228"
+### Community 1535 - "PR #228"
 Cohesion: 0.67
 Nodes (3): Evidência, PR #228, Tentativa de refutação
 
-### Community 1586 - "useFavoritesGlobalShortcuts"
-Cohesion: 1.00
-Nodes (3): useFavoritesGlobalShortcuts(), isTyping(), onKey()
-
 ## Knowledge Gaps
-- **8005 isolated node(s):** `session-start.sh script`, `PATH`, `$schema`, `style`, `rsc` (+8000 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 11430 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **696 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **7994 isolated node(s):** `session-start.sh script`, `PATH`, `$schema`, `style`, `rsc` (+7989 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 11417 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **689 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `react` to `ref_hooks`, `ref_components`, `ref_lib`, `ref_integrations`, `react-router-dom`, `sonner`, `ref_contexts`, `date-fns`, `ref_stores`, `SupabaseConnectionsTab.tsx`, `ProposalSections.tsx`, `useSuppliersManager.ts`, `package.json`, `ui/index.ts`, `InboundEventsPanel.tsx`, `useCatalogState.ts`, `ProductKitComponentsSection.tsx`, `SharePreviewDialog.tsx`, `CatalogContent.tsx`, `NoveltyProductGrid.tsx`, `SecretField.tsx`, `ref_types`, `AdminTelemetriaPage.tsx`, `McpKeyDetailsDrawer.tsx`, `ProductFormStepContent.tsx`, `useNewSupplierForm.ts`, `products/index.ts`, `AuthContext.tsx`, `tecnicas/index.ts`, `ProductDetail.tsx`, `ConnectionsOverviewTable.tsx`, `PromptGenerator.tsx`, `AdvancedPriceSearchPage.tsx`, `KitBuilderPage`, `dev.ts`, `ConnectionTestHistoryPanel.tsx`, `OrderDetailSheet.tsx`, `StockHistoryChart.tsx`, `ProductFiltersBar.tsx`, `personalization/TechniqueSelector.tsx`, `ProductQuickView.tsx`, `IdentitySuggestionButton.tsx`, `fuse.js`, `ProductFormFullscreen.tsx`, `AIRecommendationsPanel.tsx`, `useMagicUpState.ts`, `useGravacaoV2.ts`, `useMockupGenerator.ts`, `SicoobInvitationsPage.tsx`, `MockupHistoryPanel.tsx`, `PriceFreshnessBadge.tsx`, `ProductTableView.tsx`, `GlobalSearchPaletteView.tsx`, `useQuotesDashboard.ts`, `orders/OrdersPage.tsx`, `FilterPanel.tsx`, `QuickAddToQuote.tsx`, `useProductsLightweight.ts`, `ProductEngravingSection.tsx`, `ProductCard.tsx`, `QuoteConsolidationPanel.tsx`, `useQuoteInitialization.ts`, `stockFetcher.ts`, `filters-page-helpers.ts`, `FiltersPage.tsx`, `wizard/index.ts`, `useVoiceAgent.ts`, `useExternalDatabase.ts`, `orders/OrderDetailPage.tsx`, `TrendsPage.tsx`, `magic-up-result-panel-keyboard.test.tsx`, `CompanySearchDropdown.tsx`, `validations/index.ts`, `ProductGallery.tsx`, `VoiceOrb.tsx`, `MainLayout.tsx`, `VariantGridMatrix.tsx`, `MarketIntelligenceChart.tsx`, `FutureStockDialog.tsx`, `QuoteItemDetailSheet.tsx`, `useSimulatorWizard.ts`, `useExpertChat.ts`, `NotificationDrawer.tsx`, `Observabilidade — Promo Gifts`, `CollectionDetailPage.tsx`, `PromotionDialog.tsx`, `StockDashboard.tsx`, `QuoteKanbanBoard.tsx`, `simulator/TechniqueCard.tsx`, `StepComparison.tsx`, `StepSpecs.tsx`, `useSimulation.ts`, `AdminProductFormPage.tsx`, `personalization-manager/ProductPersonalizationManager.tsx`, `StepUpAttemptsPanel.tsx`, `AppHealthDashboard.tsx`, `LocationCard.tsx`, `ProductCustomizationOptions.tsx`, `useClientHealthScore.ts`, `PAsTab.tsx`, `useColorEnrichment.ts`, `SkeletonShimmer.tsx`, `a11y/index.ts`, `SidebarReorganized.tsx`, `ProductListItem.tsx`, `command.tsx`, `ProductRegistrationForm.tsx`, `DataSourceDebugTab.tsx`, `BulkImportDialog.tsx`, `useFilterPanelState.ts`, `layout/index.ts`, `MockupLayoutButtons.tsx`, `AdvancedSearch.tsx`, `SecurityDashboardSections.tsx`, `sidebar.tsx`, `SystemStatusPage.tsx`, `QuotesListPage.tsx`, `CatalogToolbar.tsx`, `ProductPriceSimulator.tsx`, `QuantityAndResult.tsx`, `FutureStockModal.tsx`, `useQuoteBuilderState.ts`, `class-variance-authority`, `StepUpload.tsx`, `PAWalletPage.tsx`, `AutoTestJobStatusCard.tsx`, `ImageGrid.tsx`, `CompareTableView.tsx`, `ProductRiskDetail.tsx`, `QuoteTemplateForm.tsx`, `GlobalSearch.tsx`, `SmartSearchInput.tsx`, `MockupGenerator.tsx`, `SecretField.test.tsx`, `ChatMessageList.tsx`, `AccessSecurityManager.tsx`, `DiscountManagementPanel.tsx`, `admin/ProductPersonalizationManager.tsx`, `ProductSupplierSection.tsx`, `KitSummary.tsx`, `ProductCardImage.tsx`, `AdminTemplatesManager.tsx`, `pricing/simulator/index.ts`, `ErrorDetailsDialog.tsx`, `IntegrationsHealthCard.tsx`, `ClientCategoryRadar.tsx`, `useProductRegistration.ts`, `SellerCartsPage.tsx`, `AdminRoute.tsx`, `AuthEntry.tsx`, `useUserManagement`, `useGlobalSearch.ts`, `OnboardingTour.tsx`, `framer-motion`, `VariantRow.tsx`, `InlinePriceCalculator.tsx`, `QuotesConfigurableList.tsx`, `QuoteVersionCompare.tsx`, `GeoBlockingManager.tsx`, `useQuoteViewData.ts`, `QuoteViewPage.tsx`, `Header.tsx`, `DraggableQuoteItems.tsx`, `useProductVideoGallery.ts`, `AdImageResult.tsx`, `jspdf`, `CartUtilComponents.tsx`, `EnhancedErrorBoundary.tsx`, `PersonalizationConfig.tsx`, `VoiceSearchOverlay.tsx`, `chart.tsx`, `ComparePage.tsx`, `magic-up-onda5.test.tsx`, `Lacunas apontadas e derrubadas na refutação`, `ConversionFunnel.tsx`, `ZoneQuickNav.tsx`, `BulkAddToCartModal.tsx`, `SidebarNavGroup.tsx`, `OffscreenLayoutCapture.tsx`, `NotificationOmnichannelPanel.tsx`, `useRamoAtividadeFilho.ts`, `MatchCards.tsx`, `GlobalCommandBar.tsx`, `useCollections.ts`, `ZoomableGallery.tsx`, `useClientBI.ts`, `ConnectionsIncidentStrip.tsx`, `ConnectionTestDetailsDialog.tsx`, `KeysValidationTab.tsx`, `SmokeTestChecklist.tsx`, `ClientSeasonalityHeatmap.tsx`, `CategorySidebarPanel.tsx`, `BridgeMetricsOverlay.tsx`, `PageTransition.tsx`, `StockAlertsIndicator.tsx`, `StockFilterToolbar.tsx`, `MockupConfigPanel.tsx`, `QuoteBuilderSummaryColumn.tsx`, `sicoob/orders/OrderAuditTimeline.tsx`, `GestorConsolidatedOrdersPage.tsx`, `useGravacaoPriceV2.ts`, `useSecretsManager.ts`, `useWorkspaceNotifications.tsx`, `proposalPdfReactGenerator.ts`, `AdminAiUsagePage.tsx`, `PublicFavoriteListPage.tsx`, `ProductImageGallery.tsx`, `ProductVariantsSection.tsx`, `TechniqueFormDialog.tsx`, `SocialProof.tsx`, `ExportFavoritesButton.tsx`, `ProductRankingSearch.tsx`, `KitIsometricPreview.tsx`, `QuantityPriceCalculator.tsx`, `simulator/TechniqueSelector.tsx`, `KitComponentCard.tsx`, `RamoAtividadeGroupAccordion.tsx`, `useConnectionTester.ts`, `useProductMatch.ts`, `GlobalSearchIdleState.tsx`, `AdminCooperativasPage.tsx`, `CategoriesManager.tsx`, `useOrders.ts`, `Auth.tsx`, `recharts`, `IncidentTimeline72h.tsx`, `ProductVideoGallery.tsx`, `FlowFilterPanel.tsx`, `PresetsBar.tsx`, `SupplierRiskPanel.tsx`, `PresentationMode.tsx`, `FloatingParticles.tsx`, `useMockupTechniques.ts`, `useSupplierFiscalData.ts`, `MagicUpResultPanel.tsx`, `useCart.ts`, `useClientsPortfolioKpis.ts`, `Arquivos finais`, `AnomalyCards.tsx`, `LoadingButton.tsx`, `GroupComponentCard.tsx`, `CardSourceDiagnostic.tsx`, `SeverityFilterContext.tsx`, `SupplierFiscalInfo.tsx`, `ExecutiveSummaryButton.tsx`, `MicroInteractions.tsx`, `ItemSelector.tsx`, `BulkImportPanel.tsx`, `ProductSparkline.tsx`, `SmartSuggestions.tsx`, `IPRestrictionManager.tsx`, `useCatalogRelationFilters.ts`, `AdminExternalDbPage.tsx`, `OwnershipAuditAdminPage.tsx`, `MockupPromptManager.tsx`, `telemetry-logs-connections-access.test.ts`, `QuoteAutoSave.tsx`, `PublicCollectionPage.tsx`, `QuoteOrderBadge.tsx`, `ConnectionErrorDetailsDialog.tsx`, `GroupAccordionItem.tsx`, `ColorGroupFilter.tsx`, `AreaCard.tsx`, `MockupResultCard.tsx`, `ProductList.tsx`, `PdfGenerationDialog.tsx`, `useLivePricePreview.ts`, `useKitBuilder.ts`, `useProductsByColor.ts`, `route-no-error-element.test.tsx`, `SecretImpactTooltip.tsx`, `TestAllConnectionsButton.tsx`, `HorizontalStepper.tsx`, `ActiveIpsList.tsx`, `useMcpAuditFeed.ts`, `BridgeCallDetailDrawer.tsx`, `IndustryTrendingProducts.tsx`, `DraggableDashboard.tsx`, `ExternalCategoryFilter.tsx`, `SkeletonLoaders.tsx`, `MfaEnrollmentDialog.tsx`, `useProducts.ts`, `TechniqueTooltip.tsx`, `form.tsx`, `BridgeProductsPreviewPanel.tsx`, `CredentialCacheMetricsPanel.tsx`, `CredentialsSourceIndicator.tsx`, `ExpectedKeysMatchPanel.tsx`, `IssueMcpKeyForm.tsx`, `AuditHistory.tsx`, `ExpertChatDialog.tsx`, `InlineColorGroupFilter.tsx`, `MaterialBadge.tsx`, `LogoPositionEditor.tsx`, `quotes/useQuotes.ts`, `useAIRecommendations.ts`, `BusinessIntelligencePage.tsx`, `Production Hardening Baseline`, `CredentialsSourceFilterContext.tsx`, `useProductImageGallery.ts`, `ExportCollectionButton.tsx`, `OptimizedImage.tsx`, `TrendsForecastChart.tsx`, `SalesHistoryChart.tsx`, `QuoteBuilderProductSearch.tsx`, `QuoteCommentsSection.tsx`, `OrganizationContext.tsx`, `useMaterialTypes.ts`, `useProductIntelligenceBadges.ts`, `AdminConexoesStatusPage.tsx`, `Index.tsx`, `usePublicQuoteApproval.ts`, `reduced-app-navigation.test.tsx`, `useConnectionTester.test.tsx`, `main.tsx`, `QuoteHistoryPanel.tsx`, `@e965/xlsx`, `usePhaseColors.ts`, `AdminDataTable.tsx`, `RotationHistoryDialog.tsx`, `CategoryCascadeSelector.tsx`, `BreakerStatusCard.tsx`, `BridgeAlertsCard.tsx`, `ClientVsIndustryComparison.tsx`, `ErrorBoundary.tsx`, `StockBadge.tsx`, `BoxSelector.tsx`, `MockupClientSelector.tsx`, `MockupProductSelector.tsx`, `TechniqueColorConfigDialog.tsx`, `QuoteRowQuickActions.tsx`, `carousel.tsx`, `DataCard.tsx`, `use-toast.ts`, `useDiscountApproval.ts`, `useTechniqueRecommendations.ts`, `QARunDetailPage.tsx`, `useFiltersSelectionMode.ts`, `PublicKitViewPage.tsx`, `PADashboardPage.tsx`, `SicoobInvitationAcceptPage.tsx`, `TrendsCharts.tsx`, `EnhancedProductCard.tsx`, `LogoPreviewCanvas.tsx`, `QuoteSignaturePad.tsx`, `DiscountApprovalQueue.tsx`, `RoleMigrationPanel.tsx`, `RegressionGuardrailBanner.tsx`, `ResolveProductsSelectComparisonCard.tsx`, `RoleAuditLogPanel.tsx`, `PasswordStrengthIndicator.tsx`, `ClientHealthHero.tsx`, `BackButton.tsx`, `KitConflictAlerts.tsx`, `SmartRecommendations.tsx`, `RamoAtividadeBadge.tsx`, `PasskeyManager.tsx`, `OrderAddItemDialog.tsx`, `useAutoSave.ts`, `useCatalogMarketing.ts`, `AdminPerformancePage.tsx`, `KitTemplatesMetricsPage.tsx`, `usePlatformFailureAlert.ts`, `useKitBuilderQuote.ts`, `KitLibraryPage.tsx`, `🆘 Plano de Recuperação de Desastres (DR)`, `RetestButton.tsx`, `MaterialGroupTree.tsx`, `ProductMarketingSection.tsx`, `EdgeFunctionLogsPanel.tsx`, `ClientComparator.tsx`, `ClientOverview360.tsx`, `AIComparisonAdvisor.tsx`, `IntelligenceFilterBar.tsx`, `SalesOverviewChart.tsx`, `KitIdentityPicker.tsx`, `MockupColorSelector.tsx`, `TemplatePreview.tsx`, `DynamicBreadcrumbs.tsx`, `NoveltyStatsCards.tsx`, `ProductQuickActions.tsx`, `QuoteCard.tsx`, `QuoteNextActionBanner.tsx`, `SearchWithSuggestions.tsx`, `VoiceOverlaySections.tsx`, `OrderBudgetIntelligence.tsx`, `OrderLogisticsTab.tsx`, `useClientCategoryAffinity.ts`, `useSparklineSales.tsx`, `ResetPassword.tsx`, `UX Onda 1 e 2: guardas de navegação (bloqueio central de saída com alterações não salvas), confirmação unificada (fim do confirm() nativo) e restauração de scroll / histórico de navegação`, `AutoDefenseTab.tsx`, `dropdown-menu.tsx`, `toast.tsx`, `ImportExportManager.tsx`, `FieldSourceDrillDownDialog.tsx`, `LastSyncRunPanel.tsx`, `SecretsManagerHealthPanel.tsx`, `useSeverityChangeNotifier.ts`, `useProductVariants.ts`, `VideoGrid.tsx`, `BIAiCopilot.tsx`, `EnrichedOrdersTimeline.tsx`, `SortableCartItem.tsx`, `SortableProductItem.tsx`, `GlassElements.tsx`, `PersistentBreadcrumbs.tsx`, `SalesGoalsCard.tsx`, `StockAlertDialogs.tsx`, `StockCategoryTreeSelect.tsx`, `DevRoute.tsx`, `MagicUpVariationComparator.tsx`, `ArtFileUpload.tsx`, `GeneratingOverlay.tsx`, `OrderFulfillmentManager.tsx`, `CustomizationOptions.tsx`, `PackagingModal.tsx`, `ReorderCatalogValidityBanner.tsx`, `SearchResultGroups.tsx`, `SecurityDashboard.tsx`, `StockAlert.tsx`, `useIndustryCategoryTrends.ts`, `useConnectionsOverviewFilters.ts`, `useFavoriteQuickAdd.ts`, `useProductsByCategory.ts`, `useSmartNavigation.ts`, `AdminLoginAttemptsPage.tsx`, `SellerDiscountLimitsAdminPage.tsx`, `PublicComparisonPage.tsx`, `GestorAuditPage.tsx`, `KitBuilderHeader.tsx`, `StorefrontDemoPage.tsx`, `LogoColorAnalyzer.tsx`, `alert-dialog.tsx`, `McpTab.tsx`, `ProductRamosSection.tsx`, `ProductTagsSection.tsx`, `ProductVariationAxesConfig.tsx`, `ProductClassificationSection.tsx`, `ProductLinkRenderer.tsx`, `SavedFilters.tsx`, `MarketIntelligenceInsightsCard.tsx`, `KitPresentablePreview.tsx`, `OrderConsolidationPanel.tsx`, `ProductVariantSelector.tsx`, `ProductIntelligence.tsx`, `EmptySearchState.tsx`, `VoiceTranscriptPanel.tsx`, `SimulatorErrorBoundary.tsx`, `useSeasonalPeakNotifications.ts`, `useVoiceSearchAction.ts`, `useErrorHandler.ts`, `useFavoriteLists.ts`, `useGlobalShortcuts.ts`, `CustomizableDashboard.tsx`, `ExternalDatabaseTest.tsx`, `SimuladorWizard.tsx`, `useKitAutoSave.test.tsx`, `select.tsx`, `drawer.tsx`, `DevAccessDeniedPage.tsx`, `CategorySelect.tsx`, `ProductMaterialsSection.tsx`, `ProductPreviewPanel.tsx`, `VariantForm.tsx`, `SecurityAnalytics.tsx`, `AccessManagement.tsx`, `CollectionTableView.tsx`, `PriceSparkline.tsx`, `FavoritesTrashView.tsx`, `SizeFilter.tsx`, `KitPersonalizationPreview.tsx`, `KitTemplatePreviewDialog.tsx`, `MobileProductActions.tsx`, `KeyboardShortcuts.tsx`, `useLogoProcessing.ts`, `ProductHoverPreview.tsx`, `SingleVariantPicker.tsx`, `QuoteProductColorSelector.tsx`, `ReplenishmentStatsCards.tsx`, `MfaChallengeDialog.tsx`, `PushNotificationSettings.tsx`, `TwoFactorSetup.tsx`, `pagination.tsx`, `table.tsx`, `useComparisonScore.ts`, `useContextualSuggestions.ts`, `useGenericFuzzySearch.ts`, `useScheduledReports.ts`, `DevAccessAuditAlert.tsx`, `RlsIntegrationTestsDialog.tsx`, `ColdVsWarmCrmCard.tsx`, `PlatformFailureCards.tsx`, `BIBriefingMode.tsx`, `QuickListPicker.tsx`, `KitCard.tsx`, `OrganizationSwitcher.tsx`, `RevisionRequest.tsx`, `ProductSearch.tsx`, `ProductDimensions.tsx`, `SimilarProducts.tsx`, `QuoteSingularApprovalActions.tsx`, `QuoteSummary.tsx`, `admin/useAccessSecurity.ts`, `useCategoriesTree.ts`, `useDeviceDetection.ts`, `useRoleMigration.ts`, `DevChallengeExamplesPage.tsx`, `QuoteTemplatesPage.tsx`, `route-guards-ref-warning.test.tsx`, `skeleton-navigation-integration.test.tsx`, `GestorCompras.metrics.test.tsx`, `SelectionCheckbox.tsx`, `AutoTestIntervalCard.tsx`, `FailureWindowCard.tsx`, `ImageUploadButton.tsx`, `RecentAuditTable.tsx`, `CatalogHeader.tsx`, `ExternalCollectionTableView.tsx`, `ImageWithFallback.tsx`, `RiskTooltip.tsx`, `logoTechniqueFilters.ts`, `MockupWizard.tsx`, `NegotiationMarkupCard.tsx`, `QuoteManagerApprovalBanner.tsx`, `QuoteProductCustomization.tsx`, `card.tsx`, `DevChallengeContext.tsx`, `useComparisonSync.ts`, `useIPValidation.ts`, `useKitWizardShortcuts.ts`, `useRetestCooldownSetting.ts`, `useSupplierComparison.ts`, `useVoiceCommandHistory.ts`, `AdminRbacRoutesPage.tsx`, `AdminSegurancaAcessoPage.tsx`, `MockupTechniqueHandlers.tsx`, `RolePermissionsPage.tsx`, `CollectionsContext.tsx`, `PR #145 — RECUPERAR`, `input-otp.tsx`, `GlobalRefreshFromDbButton.tsx`, `ImageUploadArea.tsx`, `SkipToContent.tsx`, `ComparisonPresentationLauncher.tsx`, `SyncedZoomGallery.tsx`, `ProductSectionNav.tsx`, `QuoteCommentsThread.tsx`, `useBIDossierExport.ts`, `useLogoColorAnalysis.ts`, `usePositionHistory.ts`, `useQuoteFunnel.ts`, `useQuoteHistory.ts`, `useScroll.ts`, `router-utils.ts`, `lazyWithRetry.ts`, `accordion.tsx`, `PageSEO.tsx`, `useDebounce.ts`, `useFavorites.ts`, `useScrollLockFix.ts`, `skeleton-fallbacks-ref-warning.test.tsx`, `skeleton-snapshots.test.tsx`, `scroll-area.tsx`, `usePWAInstall.ts`, `useSpeechRecognition.ts`, `useUndoStack`?**
-  _High betweenness centrality (0.151) - this node is a cross-community bridge._
-- **Why does `vitest` connect `ref_hooks` to `ref_components`, `ref_lib`, `ref_integrations`, `ai-usage.test.ts`, `react-router-dom`, `ref_contexts`, `sonner`, `admin-module.test.ts`, `react`, `ref_stores`, `phase2-filters-catalog.test.ts`, `getCorsHeaders`, `aiRecommendationsJsonParsing.test.ts`, `external-db-bridge/index.ts`, `Validação do plano — sessão 2026-09-14`, `ref_node_fs`, `react-warning-guard.ts`, `ref_node_child_process`, `DevRoute.test.tsx`, `useWorkspaceNotifications-cache-freshness.test.tsx`, `pagination.ts`, `_contracts.ts`, `QuoteBuilder.test.ts`, `structured-logger.ts`, `apply-sicoob-migrations.mjs`, `sicoob-reorder/index.ts`, `setup-ref-warning-capture.ts`, `package.json`, `useTechniquePricing.test.ts`, `ref_node_path`, `cli.mjs`, `nav.ts`, `autofix/run.mjs`, `ref_node_url`, `check-npm-audit.mjs`, `ref_types`, `check-seller-scope.mjs`, `handler.ts`, `expert-chat/index.ts`, `check-smoke-tags.mjs`, `AuthContext.tsx`, `simular-lacunas.mjs`, `e2e-feature-summary.mjs`, `sicoob-document-ingest/index.ts`, `Cada descarte derrubado, por extenso`, `QuoteService.ts`, `reduced-app-navigation.test.tsx`, `useConnectionTester.test.tsx`, `dev.ts`, `tests/p0/_mocks.ts`, `cenarios.mjs`, `graphify-local.mjs`, `rotina.mjs`, `StatsPopover.test.tsx`, `ref_utils`, `route-guards-ref-warning.test.tsx`, `skeleton-navigation-integration.test.tsx`, `useLoginAttempts.test.ts`, `GestorCompras.metrics.test.tsx`, `useWorkspaceNotifications-badge-render-log.test.tsx`, `magic-up-result-panel-keyboard.test.tsx`, `quotes-flow.test.ts`, `validations/index.ts`, `process-scheduled-reports/index.ts`, `plano-melhorias.mjs`, `useWebAuthn.ts`, `critical-tables-rls.test.ts`, `Justificativa de cada PR`, `navigation-layout.test.tsx`, `check-sicoob-hardcoded-colors.mjs`, `external-fetch.ts`, `CatalogToolbar.tsx`, `KitComposition.test.tsx`, `PriceFreshnessBadge.thresholdMatrix.test.tsx`, `phase5-propagation.test.ts`, `tools-simulator.test.ts`, `supabase-mock.ts`, `useProductMatch.test.ts`, `cleanup-client.ts`, `SecretField.test.tsx`, `PriceFreshnessBadge.colorAndIcon.test.tsx`, `PriceFreshnessBadge.thresholdHosts.test.tsx`, `phase1-foundation-types.test.ts`, `app-router-parity.test.tsx`, `trends-queries.ts`, `magic-up-onda5.test.tsx`, `PageUtilities.test.ts`, `products-catalog.test.ts`, `seller-carts.test.ts`, `useReplenishments.test.ts`, `useWorkspaceNotifications-cache-persistence.test.tsx`, `useWorkspaceNotifications-fetch-error.test.tsx`, `@/hooks/useWorkspaceNotifications`, `rbac-permissions.test.ts`, `check-edge-authorization.mjs`, `rls-seller-policies.spec.ts`, `products`, `sicoob-rbac.ts`, `TrendsKpiCards.tsx`, `proposalPdfReactGenerator.ts`, `cross-cutting-regression.test.ts`, `phase3-detail-experience.test.ts`, `KitIsometricPreview.tsx`, `verify-supabase-functions-published.mjs`, `simulator-wizard-pricing-parity.test.ts`, `useOrders.ts`, `skeleton-fallbacks-ref-warning.test.tsx`, `skeleton-snapshots.test.tsx`, `phase4-admin-grid.test.ts`, `validate.test.ts`, `stock-performance.test.ts`, `useKitAutoSave.test.tsx`, `useWorkspaceNotifications-cache-invalidation.test.tsx`, `useWorkspaceNotifications-unread-count.test.tsx`, `telemetry-logic.test.ts`, `telemetry-logs-connections-access.test.ts`, `bi-share-dossier/index.ts`, `route-no-error-element.test.tsx`, `commercial-intelligence.test.ts`, `useVoiceAgent.test.ts`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
-- **Why does `lucide-react` connect `ref_components` to `ref_hooks`, `ref_lib`, `ref_integrations`, `react-router-dom`, `sonner`, `ref_contexts`, `date-fns`, `react`, `ref_stores`, `SupabaseConnectionsTab.tsx`, `useSuppliersManager.ts`, `package.json`, `ui/index.ts`, `InboundEventsPanel.tsx`, `useCatalogState.ts`, `ProductKitComponentsSection.tsx`, `SharePreviewDialog.tsx`, `CatalogContent.tsx`, `NoveltyProductGrid.tsx`, `SecretField.tsx`, `ref_types`, `AdminTelemetriaPage.tsx`, `McpKeyDetailsDrawer.tsx`, `ProductFormStepContent.tsx`, `useNewSupplierForm.ts`, `products/index.ts`, `ProductDetail.tsx`, `ConnectionsOverviewTable.tsx`, `PromptGenerator.tsx`, `AdvancedPriceSearchPage.tsx`, `KitBuilderPage`, `ConnectionTestHistoryPanel.tsx`, `OrderDetailSheet.tsx`, `StockHistoryChart.tsx`, `ProductFiltersBar.tsx`, `personalization/TechniqueSelector.tsx`, `ProductQuickView.tsx`, `IdentitySuggestionButton.tsx`, `fuse.js`, `ProductFormFullscreen.tsx`, `AIRecommendationsPanel.tsx`, `SicoobInvitationsPage.tsx`, `MockupHistoryPanel.tsx`, `PriceFreshnessBadge.tsx`, `ProductTableView.tsx`, `GlobalSearchPaletteView.tsx`, `useQuotesDashboard.ts`, `orders/OrdersPage.tsx`, `FilterPanel.tsx`, `QuickAddToQuote.tsx`, `ProductEngravingSection.tsx`, `ProductCard.tsx`, `QuoteConsolidationPanel.tsx`, `FiltersPage.tsx`, `wizard/index.ts`, `orders/OrderDetailPage.tsx`, `TrendsPage.tsx`, `CompanySearchDropdown.tsx`, `ProductGallery.tsx`, `VoiceOrb.tsx`, `VariantGridMatrix.tsx`, `MarketIntelligenceChart.tsx`, `FutureStockDialog.tsx`, `QuoteItemDetailSheet.tsx`, `NotificationDrawer.tsx`, `CollectionDetailPage.tsx`, `PromotionDialog.tsx`, `StockDashboard.tsx`, `QuoteKanbanBoard.tsx`, `simulator/TechniqueCard.tsx`, `StepComparison.tsx`, `StepSpecs.tsx`, `PublicQuoteApprovalPage.tsx`, `AdminProductFormPage.tsx`, `personalization-manager/ProductPersonalizationManager.tsx`, `StepUpAttemptsPanel.tsx`, `AppHealthDashboard.tsx`, `LocationCard.tsx`, `ProductCustomizationOptions.tsx`, `PAsTab.tsx`, `SkeletonShimmer.tsx`, `SidebarReorganized.tsx`, `ProductListItem.tsx`, `stock-chart-utils.ts`, `command.tsx`, `ProductRegistrationForm.tsx`, `DataSourceDebugTab.tsx`, `BulkImportDialog.tsx`, `layout/index.ts`, `MockupLayoutButtons.tsx`, `AdvancedSearch.tsx`, `SecurityDashboardSections.tsx`, `sidebar.tsx`, `MagicUpConfigPanel.tsx`, `SystemStatusPage.tsx`, `QuotesListPage.tsx`, `CatalogToolbar.tsx`, `ProductPriceSimulator.tsx`, `QuantityAndResult.tsx`, `FutureStockModal.tsx`, `class-variance-authority`, `StepUpload.tsx`, `PAWalletPage.tsx`, `AutoTestJobStatusCard.tsx`, `ImageGrid.tsx`, `CompareTableView.tsx`, `ProductRiskDetail.tsx`, `QuoteTemplateForm.tsx`, `GlobalSearch.tsx`, `SmartSearchInput.tsx`, `MockupGenerator.tsx`, `simular-conversao-pedido-sicoob.py`, `ChatMessageList.tsx`, `AccessSecurityManager.tsx`, `DiscountManagementPanel.tsx`, `admin/ProductPersonalizationManager.tsx`, `ProductSupplierSection.tsx`, `KitSummary.tsx`, `ProductCardImage.tsx`, `AdminTemplatesManager.tsx`, `pricing/simulator/index.ts`, `ErrorDetailsDialog.tsx`, `IntegrationsHealthCard.tsx`, `ClientCategoryRadar.tsx`, `SellerCartsPage.tsx`, `AdminRoute.tsx`, `OnboardingTour.tsx`, `framer-motion`, `VariantRow.tsx`, `InlinePriceCalculator.tsx`, `QuotesConfigurableList.tsx`, `QuoteVersionCompare.tsx`, `GeoBlockingManager.tsx`, `QuoteViewPage.tsx`, `Header.tsx`, `DraggableQuoteItems.tsx`, `useProductVideoGallery.ts`, `AdImageResult.tsx`, `jspdf`, `CartUtilComponents.tsx`, `EnhancedErrorBoundary.tsx`, `PersonalizationConfig.tsx`, `VoiceSearchOverlay.tsx`, `ComparePage.tsx`, `ConversionFunnel.tsx`, `ZoneQuickNav.tsx`, `BulkAddToCartModal.tsx`, `SidebarNavGroup.tsx`, `NotificationOmnichannelPanel.tsx`, `MatchCards.tsx`, `GlobalCommandBar.tsx`, `ZoomableGallery.tsx`, `ConnectionsIncidentStrip.tsx`, `ConnectionTestDetailsDialog.tsx`, `KeysValidationTab.tsx`, `SmokeTestChecklist.tsx`, `ClientSeasonalityHeatmap.tsx`, `CategorySidebarPanel.tsx`, `BridgeMetricsOverlay.tsx`, `PageTransition.tsx`, `StockAlertsIndicator.tsx`, `StockFilterToolbar.tsx`, `MockupConfigPanel.tsx`, `ProductPersonalizationRules.tsx`, `QuoteBuilderSummaryColumn.tsx`, `sicoob/orders/OrderAuditTimeline.tsx`, `GestorConsolidatedOrdersPage.tsx`, `AdminAiUsagePage.tsx`, `PublicFavoriteListPage.tsx`, `IncidentDetailsDrawer.tsx`, `ProductImageGallery.tsx`, `ProductVariantsSection.tsx`, `TechniqueFormDialog.tsx`, `SocialProof.tsx`, `ExportFavoritesButton.tsx`, `ProductRankingSearch.tsx`, `KitIsometricPreview.tsx`, `QuantityPriceCalculator.tsx`, `simulator/TechniqueSelector.tsx`, `KitComponentCard.tsx`, `RamoAtividadeGroupAccordion.tsx`, `McpAuditRow.tsx`, `GlobalSearchIdleState.tsx`, `AdminCooperativasPage.tsx`, `CategoriesManager.tsx`, `ClientLookalikes.tsx`, `Auth.tsx`, `FavoritesViewHeader.tsx`, `recharts`, `secretValidators.ts`, `IncidentTimeline72h.tsx`, `ProductVideoGallery.tsx`, `FlowFilterPanel.tsx`, `PresetsBar.tsx`, `SupplierRiskPanel.tsx`, `PresentationMode.tsx`, `MagicUpResultPanel.tsx`, `useCart.ts`, `Arquivos finais`, `AnomalyCards.tsx`, `LoadingButton.tsx`, `GroupComponentCard.tsx`, `CardSourceDiagnostic.tsx`, `SeverityFilterContext.tsx`, `SupplierFiscalInfo.tsx`, `ExecutiveSummaryButton.tsx`, `ItemSelector.tsx`, `BulkImportPanel.tsx`, `ProductSparkline.tsx`, `SmartSuggestions.tsx`, `IPRestrictionManager.tsx`, `AdminExternalDbPage.tsx`, `OwnershipAuditAdminPage.tsx`, `MockupPromptManager.tsx`, `QuoteAutoSave.tsx`, `PublicCollectionPage.tsx`, `QuoteOrderBadge.tsx`, `ConnectionErrorDetailsDialog.tsx`, `GroupAccordionItem.tsx`, `ColorGroupFilter.tsx`, `MagicUpBrandSafetyChecklist.tsx`, `AreaCard.tsx`, `MockupResultCard.tsx`, `ProductList.tsx`, `PdfGenerationDialog.tsx`, `QuoteStatusTimeline.tsx`, `CollectionsPage.tsx`, `QuoteBuilderPage.tsx`, `ConnectionsPulseBar.tsx`, `SecretImpactTooltip.tsx`, `TestAllConnectionsButton.tsx`, `HorizontalStepper.tsx`, `ActiveIpsList.tsx`, `useMcpAuditFeed.ts`, `BridgeCallDetailDrawer.tsx`, `IndustryTrendingProducts.tsx`, `DraggableDashboard.tsx`, `ExternalCategoryFilter.tsx`, `MfaEnrollmentDialog.tsx`, `TechniqueTooltip.tsx`, `BridgeProductsPreviewPanel.tsx`, `CredentialCacheMetricsPanel.tsx`, `CredentialsSourceIndicator.tsx`, `ExpectedKeysMatchPanel.tsx`, `IssueMcpKeyForm.tsx`, `AuditHistory.tsx`, `ExpertChatDialog.tsx`, `InlineColorGroupFilter.tsx`, `MaterialBadge.tsx`, `LogoPositionEditor.tsx`, `BusinessIntelligencePage.tsx`, `Production Hardening Baseline`, `CredentialsSourceFilterContext.tsx`, `ExportCollectionButton.tsx`, `TrendsForecastChart.tsx`, `SalesHistoryChart.tsx`, `QuoteBuilderProductSearch.tsx`, `QuoteCommentsSection.tsx`, `AdminConexoesStatusPage.tsx`, `QuoteHistoryPanel.tsx`, `AdminDataTable.tsx`, `HeaderSeveritySummary.tsx`, `RotationHistoryDialog.tsx`, `CategoryCascadeSelector.tsx`, `BreakerStatusCard.tsx`, `BridgeAlertsCard.tsx`, `ClientVsIndustryComparison.tsx`, `ErrorBoundary.tsx`, `UnmetDemandCard.tsx`, `StockBadge.tsx`, `BoxSelector.tsx`, `MockupClientSelector.tsx`, `MockupProductSelector.tsx`, `TechniqueColorConfigDialog.tsx`, `QuoteRowQuickActions.tsx`, `carousel.tsx`, `DataCard.tsx`, `QARunDetailPage.tsx`, `PublicKitViewPage.tsx`, `PADashboardPage.tsx`, `SicoobInvitationAcceptPage.tsx`, `TrendsCharts.tsx`, `EnhancedProductCard.tsx`, `LogoPreviewCanvas.tsx`, `QuoteSignaturePad.tsx`, `DiscountApprovalQueue.tsx`, `RoleMigrationPanel.tsx`, `RegressionGuardrailBanner.tsx`, `ResolveProductsSelectComparisonCard.tsx`, `RoleAuditLogPanel.tsx`, `PasswordStrengthIndicator.tsx`, `ClientHealthHero.tsx`, `BackButton.tsx`, `KitConflictAlerts.tsx`, `SmartRecommendations.tsx`, `RamoAtividadeBadge.tsx`, `PasskeyManager.tsx`, `OrderAddItemDialog.tsx`, `ScenarioComparison.tsx`, `AdminPerformancePage.tsx`, `KitTemplatesMetricsPage.tsx`, `KitLibraryPage.tsx`, `Roadmap de Favoritos — 10/10 absoluto ✅`, `RetestButton.tsx`, `MaterialGroupTree.tsx`, `ProductMarketingSection.tsx`, `EdgeFunctionLogsPanel.tsx`, `ClientComparator.tsx`, `ClientOverview360.tsx`, `AIComparisonAdvisor.tsx`, `IntelligenceFilterBar.tsx`, `SalesOverviewChart.tsx`, `KitIdentityPicker.tsx`, `MockupColorSelector.tsx`, `TemplatePreview.tsx`, `Breadcrumbs.tsx`, `DynamicBreadcrumbs.tsx`, `NoveltyStatsCards.tsx`, `ProductQuickActions.tsx`, `QuoteCard.tsx`, `QuoteNextActionBanner.tsx`, `SearchWithSuggestions.tsx`, `VoiceOverlaySections.tsx`, `OrderBudgetIntelligence.tsx`, `OrderLogisticsTab.tsx`, `ResetPassword.tsx`, `AutoDefenseTab.tsx`, `dropdown-menu.tsx`, `toast.tsx`, `ImportExportManager.tsx`, `FieldSourceDrillDownDialog.tsx`, `LastSyncRunPanel.tsx`, `SecretsManagerHealthPanel.tsx`, `StepPreview.tsx`, `ProductFlagsSection.tsx`, `VideoGrid.tsx`, `ProductsListingLatencyAlert.tsx`, `BIAiCopilot.tsx`, `EnrichedOrdersTimeline.tsx`, `SortableCartItem.tsx`, `SortableProductItem.tsx`, `PersistentBreadcrumbs.tsx`, `StatusTimeline.tsx`, `ComparisonMobileView.tsx`, `SalesGoalsCard.tsx`, `StockAlertDialogs.tsx`, `StockCategoryTreeSelect.tsx`, `KitCompositionCard.tsx`, `DevRoute.tsx`, `MagicUpVariationComparator.tsx`, `ArtFileUpload.tsx`, `GeneratingOverlay.tsx`, `OrderFulfillmentManager.tsx`, `CustomizationOptions.tsx`, `PackagingModal.tsx`, `QuoteBuilderStepper.tsx`, `ReorderCatalogValidityBanner.tsx`, `SearchResultGroups.tsx`, `SecurityDashboard.tsx`, `StockAlert.tsx`, `AdminLoginAttemptsPage.tsx`, `SellerDiscountLimitsAdminPage.tsx`, `PublicComparisonPage.tsx`, `GestorAuditPage.tsx`, `TrendsKpiCards.tsx`, `KitBuilderHeader.tsx`, `StorefrontDemoPage.tsx`, `LogoColorAnalyzer.tsx`, `McpTab.tsx`, `MaskedSuffixBadge.tsx`, `ProductRamosSection.tsx`, `ProductTagsSection.tsx`, `ProductVariationAxesConfig.tsx`, `ProductClassificationSection.tsx`, `ProductLinkRenderer.tsx`, `SavedFilters.tsx`, `MarketIntelligenceInsightsCard.tsx`, `components/kit-builder/index.ts`, `KitHealthCard.tsx`, `KitPresentablePreview.tsx`, `WizardSteps.tsx`, `LogoSizeControls.tsx`, `OrderConsolidationPanel.tsx`, `ProductVariantSelector.tsx`, `ProductIntelligence.tsx`, `EmptySearchState.tsx`, `VoiceTranscriptPanel.tsx`, `SimulatorErrorBoundary.tsx`, `StatCard.tsx`, `connection-error-copy.ts`, `ClientDetailPage.tsx`, `CustomizableDashboard.tsx`, `ExternalDatabaseTest.tsx`, `SimuladorWizard.tsx`, `ChurnRiskBanner.tsx`, `select.tsx`, `DevAccessDeniedPage.tsx`, `CategorySelect.tsx`, `ImageFilterBar.tsx`, `ProductMaterialsSection.tsx`, `ProductPreviewPanel.tsx`, `VariantForm.tsx`, `AutoRevocationsPanel.tsx`, `SecurityAnalytics.tsx`, `AccessManagement.tsx`, `CollectionTableView.tsx`, `PriceSparkline.tsx`, `UpcomingDatesWidget.tsx`, `FavoritesTrashView.tsx`, `SizeFilter.tsx`, `KitPersonalizationPreview.tsx`, `KitTemplatePreviewDialog.tsx`, `MobileProductActions.tsx`, `ProductHoverPreview.tsx`, `SingleVariantPicker.tsx`, `QuoteProductColorSelector.tsx`, `ReplenishmentStatsCards.tsx`, `MfaChallengeDialog.tsx`, `PushNotificationSettings.tsx`, `TwoFactorSetup.tsx`, `pagination.tsx`, `pages/OrderDetailPage.tsx`, `SellerDashboardPage.tsx`, `undoToast.tsx`, `QuoteHistoryTimeline.tsx`, `DevAccessAuditAlert.tsx`, `RlsIntegrationTestsDialog.tsx`, `ColdVsWarmCrmCard.tsx`, `PlatformFailureCards.tsx`, `BIBriefingMode.tsx`, `ExternalCollectionCard.tsx`, `ConfirmDialog.tsx`, `QuickListPicker.tsx`, `KitCard.tsx`, `RestrictedRouteNotice.tsx`, `PersonalizationArea`, `OrganizationSwitcher.tsx`, `RevisionRequest.tsx`, `ProductSearch.tsx`, `ProductDimensions.tsx`, `SimilarProducts.tsx`, `CommercialConditions.tsx`, `QuoteSingularApprovalActions.tsx`, `QuoteSummary.tsx`, `QuoteValidityBanner.tsx`, `AiTables.tsx`, `DevChallengeExamplesPage.tsx`, `HelpCenterPage.tsx`, `QuoteTemplatesPage.tsx`, `AutoTestIntervalCard.tsx`, `FailureWindowCard.tsx`, `ImageUploadButton.tsx`, `RecentAuditTable.tsx`, `CatalogHeader.tsx`, `ExternalCollectionTableView.tsx`, `MockupWizard.tsx`, `ReplenishmentBadge.tsx`, `NegotiationMarkupCard.tsx`, `QuoteManagerApprovalBanner.tsx`, `QuoteProductCustomization.tsx`, `OrderProductionReadiness.tsx`, `SimulationPriceSourceBadge.tsx`, `roles.ts`, `AdminRbacRoutesPage.tsx`, `AdminSegurancaAcessoPage.tsx`, `RolePermissionsPage.tsx`, `input-otp.tsx`, `GlobalRefreshFromDbButton.tsx`, `ImageUploadArea.tsx`, `ComparisonPresentationLauncher.tsx`, `SyncedZoomGallery.tsx`, `ItemsListEditor.tsx`, `QuoteCommentsThread.tsx`, `accordion.tsx`, `CatalogStorefrontHero.tsx`, `WeeklyActivityHeatmap.tsx`, `QuoteClientInfo.tsx`, `GestorComprasMetrics.tsx`, `order-status-config.ts`, `sicoob-status-config.ts`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+- **Why does `react` connect `react` to `ref_components`, `ref_integrations`, `ref_hooks`, `sonner`, `ref_contexts`, `ref_lib`, `react-router-dom`, `date-fns`, `ref_stores`, `ref_pages`, `ProposalSections.tsx`, `useSuppliersManager.ts`, `package.json`, `ui/index.ts`, `SupabaseConnectionsTab.tsx`, `PublicCollectionPage.tsx`, `useCatalogState.ts`, `ref_types`, `ProductKitComponentsSection.tsx`, `App.tsx`, `ConnectionsPulseBar.tsx`, `SharePreviewDialog.tsx`, `SecretField.tsx`, `NoveltyProductGrid.tsx`, `OrderService`, `LocationCard.tsx`, `useQuoteViewData.ts`, `AdminTelemetriaPage.tsx`, `AnomalyCards.tsx`, `McpKeyDetailsDrawer.tsx`, `OrderDetailSheet.tsx`, `ProductFormStepContent.tsx`, `useNewSupplierForm.ts`, `MockupHistoryPanel.tsx`, `tecnicas/index.ts`, `ProductDetail.tsx`, `ConnectionsOverviewTable.tsx`, `KitSummary.tsx`, `PromptGenerator.tsx`, `useSimulation.ts`, `wizard/index.ts`, `QuotesListPage.tsx`, `products/index.ts`, `Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)`, `AdvancedPriceSearchPage.tsx`, `KitBuilderPage`, `InboundEventsPanel.tsx`, `ConnectionTestHistoryPanel.tsx`, `framer-motion`, `TrendsPage.tsx`, `personalization/TechniqueSelector.tsx`, `ProductQuickView.tsx`, `StockDashboard.tsx`, `AIRecommendationsPanel.tsx`, `FilterPanel.tsx`, `ProductTableView.tsx`, `useMockupGenerator.ts`, `SicoobInvitationsPage.tsx`, `PriceFreshnessBadge.tsx`, `useQuotesDashboard.ts`, `orders/OrdersPage.tsx`, `ProductCard.tsx`, `CompareTableView.tsx`, `QuickAddToQuote.tsx`, `useProductsLightweight.ts`, `ProductEngravingSection.tsx`, `QuoteConsolidationPanel.tsx`, `useQuoteInitialization.ts`, `stockFetcher.ts`, `filters-page-helpers.ts`, `FiltersPage.tsx`, `admin.ts`, `useVoiceAgent.ts`, `QuotesConfigurableList.tsx`, `useGravacaoV2.ts`, `orders/OrderDetailPage.tsx`, `magic-up-result-panel-keyboard.test.tsx`, `validations/index.ts`, `CompanySearchDropdown.tsx`, `ProductGallery.tsx`, `MainLayout.tsx`, `admin/ProductPersonalizationManager.tsx`, `ProductRiskDetail.tsx`, `VariantGridMatrix.tsx`, `lib/index.ts`, `MarketIntelligenceChart.tsx`, `FutureStockDialog.tsx`, `QuoteItemDetailSheet.tsx`, `useSimulatorWizard.ts`, `NotificationDrawer.tsx`, `VoiceOrb.tsx`, `SocialProof.tsx`, `PromotionDialog.tsx`, `QuoteKanbanBoard.tsx`, `GlobalSearchPaletteView.tsx`, `simulator/TechniqueCard.tsx`, `StepSpecs.tsx`, `FavoritesPage`, `AdminProductFormPage.tsx`, `useExpertChat.ts`, `PAWalletPage.tsx`, `TestAllConnectionsButton.tsx`, `personalization-manager/ProductPersonalizationManager.tsx`, `StepUpAttemptsPanel.tsx`, `AppHealthDashboard.tsx`, `useClientHealthScore.ts`, `SkeletonShimmer.tsx`, `a11y/index.ts`, `ProductFormFullscreen.tsx`, `SidebarReorganized.tsx`, `AdvancedSearch.tsx`, `useGlobalSearch.ts`, `Arquivos finais`, `ConnectionTimelineDrawer.tsx`, `command.tsx`, `DataSourceDebugTab.tsx`, `CatalogContent.tsx`, `useFilterPanelState.ts`, `layout/index.ts`, `MockupLayoutButtons.tsx`, `SecurityDashboardSections.tsx`, `sidebar.tsx`, `SystemStatusPage.tsx`, `ProductListItem.tsx`, `CatalogToolbar.tsx`, `ProductRegistrationForm.tsx`, `ProductPriceSimulator.tsx`, `QuantityAndResult.tsx`, `FutureStockModal.tsx`, `useExternalDatabase.ts`, `useQuoteBuilderState.ts`, `class-variance-authority`, `AutoTestJobStatusCard.tsx`, `ImageGrid.tsx`, `QuoteTemplateForm.tsx`, `GlobalSearch.tsx`, `SmartSearchInput.tsx`, `SecretField.test.tsx`, `role-policy.ts`, `AdminVerbasPage.tsx`, `useGravacaoPriceV2.ts`, `ChatMessageList.tsx`, `AccessSecurityManager.tsx`, `DiscountManagementPanel.tsx`, `ProductSupplierSection.tsx`, `AdminTemplatesManager.tsx`, `MockupGenerator.tsx`, `pricing/simulator/index.ts`, `OffscreenLayoutCapture.tsx`, `IntegrationsHealthCard.tsx`, `ClientCategoryRadar.tsx`, `ProductCardImage.tsx`, `VoiceSearchOverlay.tsx`, `SellerCartsPage.tsx`, `AdminRoute.tsx`, `AuthEntry.tsx`, `useUserManagement`, `useClientBI.ts`, `VariantRow.tsx`, `MockupConfigPanel.tsx`, `InlinePriceCalculator.tsx`, `QuoteVersionCompare.tsx`, `ReplenishmentProductGrid.tsx`, `GeoBlockingManager.tsx`, `Header.tsx`, `useCollections.ts`, `useColorEnrichment.ts`, `DraggableQuoteItems.tsx`, `OrderConsolidationPanel.tsx`, `useProductVideoGallery.ts`, `CartUtilComponents.tsx`, `✅ Onda D — Polimento, DX & Entrega (2026-04-20)`, `ErrorDetailsDialog.tsx`, `ProductFlagsSection.tsx`, `PersonalizationConfig.tsx`, `chart.tsx`, `ComparePage.tsx`, `magic-up-onda5.test.tsx`, `quotes/useQuotes.ts`, `OnboardingTour.tsx`, `@dnd-kit/sortable`, `ZoneQuickNav.tsx`, `BulkImportDialog.tsx`, `BulkAddToCartModal.tsx`, `BackButton.tsx`, `StockFilterToolbar.tsx`, `SidebarNavGroup.tsx`, `AreaCard.tsx`, `NotificationOmnichannelPanel.tsx`, `useRamoAtividadeFilho.ts`, `useSecretsManager.ts`, `GlobalCommandBar.tsx`, `ZoomableGallery.tsx`, `AdImageResult.tsx`, `structuredLogger.ts`, `@dnd-kit/core`, `ConnectionsIncidentStrip.tsx`, `ConnectionTestDetailsDialog.tsx`, `KeysValidationTab.tsx`, `SmokeTestChecklist.tsx`, `ClientSeasonalityHeatmap.tsx`, `CategorySidebarPanel.tsx`, `BridgeMetricsOverlay.tsx`, `PageTransition.tsx`, `StockAlertsIndicator.tsx`, `QuoteBuilderSummaryColumn.tsx`, `sicoob/orders/OrderAuditTimeline.tsx`, `useProductRegistration.ts`, `AdminAiUsagePage.tsx`, `CollectionDetailPage.tsx`, `GestorConsolidatedOrdersPage.tsx`, `useMagicUpState.ts`, `useWorkspaceNotifications.tsx`, `proposalPdfReactGenerator.ts`, `logisticsReportService.ts`, `PublicFavoriteListPage.tsx`, `ProductImageGallery.tsx`, `ProductMaterialsSection.tsx`, `ProductVariantsSection.tsx`, `TechniqueFormDialog.tsx`, `ExportFavoritesButton.tsx`, `ProductRankingSearch.tsx`, `KitIsometricPreview.tsx`, `QuantityPriceCalculator.tsx`, `simulator/TechniqueSelector.tsx`, `KitComponentCard.tsx`, `RamoAtividadeGroupAccordion.tsx`, `StepComparison.tsx`, `useConnectionTester.ts`, `useProductMatch.ts`, `GlobalSearchIdleState.tsx`, `AdminCooperativasPage.tsx`, `CategoriesManager.tsx`, `Auth.tsx`, `KitCard.tsx`, `Onda Inteligência & Colaboração`, `IncidentTimeline72h.tsx`, `ProductVideoGallery.tsx`, `ProductFiltersBar.tsx`, `ProductClassificationSection.tsx`, `ExpertChatDialog.tsx`, `PresetsBar.tsx`, `SupplierRiskPanel.tsx`, `PresentationMode.tsx`, `BulkImportPanel.tsx`, `FloatingParticles.tsx`, `useMagicUpGeneration.ts`, `useMockupTechniques.ts`, `useSupplierFiscalData.ts`, `MagicUpResultPanel.tsx`, `useCart.ts`, `useClientsPortfolioKpis.ts`, `ConfirmDialog.tsx`, `AuthContext.tsx`, `LogoColorAnalyzer.tsx`, `LoadingButton.tsx`, `SeverityFilterContext.tsx`, `SupplierFiscalInfo.tsx`, `ExecutiveSummaryButton.tsx`, `MicroInteractions.tsx`, `FlowFilterPanel.tsx`, `ItemSelector.tsx`, `ProductSparkline.tsx`, `SmartSuggestions.tsx`, `IPRestrictionManager.tsx`, `useCatalogRelationFilters.ts`, `AdminExternalDbPage.tsx`, `OwnershipAuditAdminPage.tsx`, `MockupPromptManager.tsx`, `QuoteAutoSave.tsx`, `QuoteOrderBadge.tsx`, `ConnectionErrorDetailsDialog.tsx`, `GroupAccordionItem.tsx`, `ColorGroupFilter.tsx`, `ProductList.tsx`, `PdfGenerationDialog.tsx`, `useLivePricePreview.ts`, `useKitBuilder.ts`, `useProductsByColor.ts`, `route-no-error-element.test.tsx`, `CategoryCascadeSelector.tsx`, `SecretImpactTooltip.tsx`, `ActiveIpsList.tsx`, `useMcpAuditFeed.ts`, `BridgeCallDetailDrawer.tsx`, `IndustryTrendingProducts.tsx`, `DraggableDashboard.tsx`, `ExternalCategoryFilter.tsx`, `SkeletonLoaders.tsx`, `MfaEnrollmentDialog.tsx`, `useProducts.ts`, `TechniqueTooltip.tsx`, `Lacunas apontadas e derrubadas na refutação`, `form.tsx`, `BridgeProductsPreviewPanel.tsx`, `CredentialCacheMetricsPanel.tsx`, `CredentialsSourceIndicator.tsx`, `ExpectedKeysMatchPanel.tsx`, `IssueMcpKeyForm.tsx`, `HorizontalStepper.tsx`, `AuditHistory.tsx`, `InlineColorGroupFilter.tsx`, `MaterialBadge.tsx`, `LogoPositionEditor.tsx`, `useAIRecommendations.ts`, `BusinessIntelligencePage.tsx`, `carousel.tsx`, `MockupProductSelector.tsx`, `useProductImageGallery.ts`, `ExportCollectionButton.tsx`, `OptimizedImage.tsx`, `CategoryRanking.tsx`, `TrendsForecastChart.tsx`, `SalesHistoryChart.tsx`, `QuoteBuilderProductSearch.tsx`, `QuoteCommentsSection.tsx`, `OrganizationContext.tsx`, `useMaterialTypes.ts`, `useProductIntelligenceBadges.ts`, `AdminConexoesStatusPage.tsx`, `Index.tsx`, `reduced-app-navigation.test.tsx`, `useConnectionTester.test.tsx`, `usePhaseColors.ts`, `OrdersKanbanPage.tsx`, `AdminDataTable.tsx`, `RotationHistoryDialog.tsx`, `BreakerStatusCard.tsx`, `BridgeAlertsCard.tsx`, `ClientVsIndustryComparison.tsx`, `ErrorBoundary.tsx`, `StockBadge.tsx`, `BoxSelector.tsx`, `MockupClientSelector.tsx`, `TechniqueColorConfigDialog.tsx`, `QuoteRowQuickActions.tsx`, `DataCard.tsx`, `use-toast.ts`, `useDiscountApproval.ts`, `useTechniqueRecommendations.ts`, `QARunDetailPage.tsx`, `useFiltersSelectionMode.ts`, `PublicKitViewPage.tsx`, `PADashboardPage.tsx`, `SicoobInvitationAcceptPage.tsx`, `TrendsCharts.tsx`, `main.tsx`, `EnhancedProductCard.tsx`, `LogoPreviewCanvas.tsx`, `QuoteSignaturePad.tsx`, `recharts`, `LastTestLine.tsx`, `DiscountApprovalQueue.tsx`, `useProductsManager.ts`, `RoleMigrationPanel.tsx`, `RegressionGuardrailBanner.tsx`, `ResolveProductsSelectComparisonCard.tsx`, `RoleAuditLogPanel.tsx`, `PasswordStrengthIndicator.tsx`, `ClientHealthHero.tsx`, `KitConflictAlerts.tsx`, `SmartRecommendations.tsx`, `RamoAtividadeBadge.tsx`, `PasskeyManager.tsx`, `OrderAddItemDialog.tsx`, `useAutoSave.ts`, `useCatalogMarketing.ts`, `AdminPerformancePage.tsx`, `KitTemplatesMetricsPage.tsx`, `usePlatformFailureAlert.ts`, `useKitBuilderQuote.ts`, `KitLibraryPage.tsx`, `StepUpload.tsx`, `🆘 Plano de Recuperação de Desastres (DR)`, `EnhancedErrorBoundary.tsx`, `RetestButton.tsx`, `ProductMarketingSection.tsx`, `ProductsManager.tsx`, `EdgeFunctionLogsPanel.tsx`, `ClientComparator.tsx`, `ClientOverview360.tsx`, `AIComparisonAdvisor.tsx`, `IntelligenceFilterBar.tsx`, `SalesOverviewChart.tsx`, `KitIdentityPicker.tsx`, `MockupColorSelector.tsx`, `TemplatePreview.tsx`, `DynamicBreadcrumbs.tsx`, `NoveltyStatsCards.tsx`, `ProductQuickActions.tsx`, `QuoteCard.tsx`, `QuoteNextActionBanner.tsx`, `SearchWithSuggestions.tsx`, `VoiceOverlaySections.tsx`, `OrderBudgetIntelligence.tsx`, `useClientCategoryAffinity.ts`, `useSparklineSales.tsx`, `ResetPassword.tsx`, `dropdown-menu.tsx`, `toast.tsx`, `ImportExportManager.tsx`, `FieldSourceDrillDownDialog.tsx`, `LastSyncRunPanel.tsx`, `SecretsManagerHealthPanel.tsx`, `useProductVariants.ts`, `VideoGrid.tsx`, `BIAiCopilot.tsx`, `EnrichedOrdersTimeline.tsx`, `SortableCartItem.tsx`, `SortableProductItem.tsx`, `GlassElements.tsx`, `SalesGoalsCard.tsx`, `StockCategoryTreeSelect.tsx`, `DevRoute.tsx`, `MagicUpVariationComparator.tsx`, `ArtFileUpload.tsx`, `GeneratingOverlay.tsx`, `OrderFulfillmentManager.tsx`, `CustomizationOptions.tsx`, `PackagingModal.tsx`, `QuoteHistoryPanel.tsx`, `ReorderCatalogValidityBanner.tsx`, `SearchResultGroups.tsx`, `SecurityDashboard.tsx`, `StockAlert.tsx`, `useIndustryCategoryTrends.ts`, `useAdvancedFilters.ts`, `useConnectionsOverviewFilters.ts`, `useFavoriteQuickAdd.ts`, `useProductsByCategory.ts`, `useSmartNavigation.ts`, `AdminLoginAttemptsPage.tsx`, `SellerDiscountLimitsAdminPage.tsx`, `GestorAuditPage.tsx`, `KitBuilderHeader.tsx`, `StorefrontDemoPage.tsx`, `alert-dialog.tsx`, `ProductRamosSection.tsx`, `ProductVariationAxesConfig.tsx`, `BundleSuggestions.tsx`, `ProductLinkRenderer.tsx`, `SavedFilters.tsx`, `MarketIntelligenceInsightsCard.tsx`, `ProductVariantSelector.tsx`, `ProductIntelligence.tsx`, `RelatedProducts.tsx`, `useStockChartData.ts`, `EmptySearchState.tsx`, `VoiceTranscriptPanel.tsx`, `useSeasonalPeakNotifications.ts`, `useVoiceSearchAction.ts`, `useErrorHandler.ts`, `useGlobalShortcuts.ts`, `ExternalDatabaseTest.tsx`, `SimuladorWizard.tsx`, `useKitAutoSave.test.tsx`, `ProductsContext.tsx`, `select.tsx`, `BITourGuide.tsx`, `drawer.tsx`, `CategorySelect.tsx`, `ProductPreviewPanel.tsx`, `VariantForm.tsx`, `SecurityAnalytics.tsx`, `AccessManagement.tsx`, `CollectionTableView.tsx`, `FavoritesTrashView.tsx`, `SizeFilter.tsx`, `IdentitySuggestionButton.tsx`, `KitPersonalizationPreview.tsx`, `KitTemplatePreviewDialog.tsx`, `MobileProductActions.tsx`, `KeyboardShortcuts.tsx`, `useLogoProcessing.ts`, `PilotApprovalPanel.tsx`, `ProductHoverPreview.tsx`, `SingleVariantPicker.tsx`, `QuoteProductColorSelector.tsx`, `ReplenishmentStatsCards.tsx`, `MfaChallengeDialog.tsx`, `PushNotificationSettings.tsx`, `TwoFactorSetup.tsx`, `pagination.tsx`, `table.tsx`, `useComparisonScore.ts`, `useContextualSuggestions.ts`, `useGenericFuzzySearch.ts`, `useRBAC.tsx`, `useScheduledReports.ts`, `PreflightPage.tsx`, `DevAccessAuditAlert.tsx`, `BIBriefingMode.tsx`, `OrganizationSwitcher.tsx`, `RevisionRequest.tsx`, `ProductSearch.tsx`, `ProductDimensions.tsx`, `QuoteApprovalLinkCard.tsx`, `QuoteSingularApprovalActions.tsx`, `QuoteSummary.tsx`, `useCategoriesTree.ts`, `useDeviceDetection.ts`, `QuoteTemplatesPage.tsx`, `route-guards-ref-warning.test.tsx`, `skeleton-navigation-integration.test.tsx`, `QuoteBuilderSummaryColumn.staleReactivity.test.tsx`, `GestorCompras.metrics.test.tsx`, `FailureWindowCard.tsx`, `CatalogHeader.tsx`, `ExternalCollectionTableView.tsx`, `ImageWithFallback.tsx`, `logoTechniqueFilters.ts`, `MockupWizard.tsx`, `PriceFreshnessThresholdEditor.tsx`, `NegotiationMarkupCard.tsx`, `QuoteManagerApprovalBanner.tsx`, `QuoteProductCustomization.tsx`, `OrderActionDialog.tsx`, `card.tsx`, `DevChallengeContext.tsx`, `useComparisonSync.ts`, `useDuplicateKitDetector.ts`, `useIPValidation.ts`, `useKitWizardShortcuts.ts`, `useSupplierComparison.ts`, `useVoiceCommandHistory.ts`, `RolePermissionsPage.tsx`, `CollectionsContext.tsx`, `input-otp.tsx`, `ZoneSection.tsx`, `ImageUploadArea.tsx`, `SkipToContent.tsx`, `BICategoryFocusContext.tsx`, `useBIDossierExport.ts`, `useBridgeMetrics.ts`, `useLogoColorAnalysis.ts`, `usePositionHistory.ts`, `useQuoteHistory.ts`, `useScroll.ts`, `useStepUpAuth.ts`, `accordion.tsx`, `PageHeader.tsx`, `useDebounce.ts`, `useFavorites.ts`, `useScrollLockFix.ts`, `useScrollRestoration.ts`, `skeleton-fallbacks-ref-warning.test.tsx`, `skeleton-snapshots.test.tsx`, `usePasswordBreachCheck.tsx`, `usePWAInstall.ts`?**
+  _High betweenness centrality (0.163) - this node is a cross-community bridge._
+- **Why does `vitest` connect `ref_components` to `ref_integrations`, `ref_hooks`, `getCorsHeaders`, `ref_node_fs`, `react-warning-guard.ts`, `ref_contexts`, `sonner`, `external-db-bridge/index.ts`, `react-router-dom`, `ai-usage.ts`, `ref_lib`, `ref_stores`, `_contracts.ts`, `QuoteBuilder.test.ts`, `ref_pages`, `useTechniquePricing.test.ts`, `Validação do plano — sessão 2026-09-14`, `setup-ref-warning-capture.ts`, `sicoob-reorder/index.ts`, `apply-sicoob-migrations.mjs`, `Justificativa de cada PR`, `simular-lacunas.mjs`, `package.json`, `PublicCollectionPage.tsx`, `ref_types`, `check-npm-audit.mjs`, `check-smoke-tags.mjs`, `nav.ts`, `autofix/run.mjs`, `OrderService`, `handler.ts`, `expert-chat/index.ts`, `StatsPopover.test.tsx`, `reduced-app-navigation.test.tsx`, `useConnectionTester.test.tsx`, `tests/p0/_mocks.ts`, `audit-scripts.test.ts`, `e2e-feature-summary.mjs`, `sicoob-document-ingest/index.ts`, `Cada descarte derrubado, por extenso`, `cenarios.mjs`, `route-guards-ref-warning.test.tsx`, `skeleton-navigation-integration.test.tsx`, `QuoteBuilderSummaryColumn.staleReactivity.test.tsx`, `GestorCompras.metrics.test.tsx`, `dev.ts`, `graphify-local.mjs`, `ref_utils`, `useWorkspaceNotifications-badge-render-log.test.tsx`, `quotes-flow.test.ts`, `useWorkspaceNotifications-cache-freshness.test.tsx`, `telemetry-logs-connections-access.test.ts`, `admin.ts`, `magic-up-result-panel-keyboard.test.tsx`, `validations/index.ts`, `useWebAuthn.ts`, `critical-tables-rls.test.ts`, `KitComposition.test.tsx`, `phase1-foundation-types.test.ts`, `phase5-propagation.test.ts`, `tools-simulator.test.ts`, `useProductMatch.test.ts`, `navigation-layout.test.tsx`, `check-sicoob-hardcoded-colors.mjs`, `external-fetch.ts`, `CatalogToolbar.tsx`, `process-scheduled-reports/index.ts`, `PriceFreshnessBadge.colorAndIcon.test.tsx`, `cleanup-client.ts`, `QuoteService.ts`, `SecretField.test.tsx`, `PriceFreshnessBadge.thresholdHosts.test.tsx`, `app-router-parity.test.tsx`, `PageUtilities.test.ts`, `products-catalog.test.ts`, `seller-carts.test.ts`, `useReplenishments.test.ts`, `useWorkspaceNotifications-cache-persistence.test.tsx`, `useWorkspaceNotifications-fetch-error.test.tsx`, `@/hooks/useWorkspaceNotifications`, `filter-dev-only-items.test.ts`, `rbac-permissions.test.ts`, `rls-seller-policies.spec.ts`, `trends-queries.ts`, `magic-up-onda5.test.tsx`, `check-edge-authorization.mjs`, `sicoob-rbac.ts`, `cross-cutting-regression.test.ts`, `phase3-detail-experience.test.ts`, `products`, `proposalPdfReactGenerator.ts`, `.reorder`, `KitIsometricPreview.tsx`, `skeleton-fallbacks-ref-warning.test.tsx`, `skeleton-snapshots.test.tsx`, `simulator-wizard-pricing-parity.test.ts`, `useQuotes-helpers.test.ts`, `kit-builder-price.test.ts`, `kit-builder-volume.test.ts`, `price-response.adapter.test.ts`, `validate.test.ts`, `bi-share-dossier/index.ts`, `AuthContext.tsx`, `useKitAutoSave.test.tsx`, `useWorkspaceNotifications-cache-invalidation.test.tsx`, `useWorkspaceNotifications-unread-count.test.tsx`, `telemetry-logic.test.ts`, `BITourGuide.tsx`, `ai-usage.test.ts`, `phase2-filters-catalog.test.ts`, `aiRecommendationsJsonParsing.test.ts`, `route-no-error-element.test.tsx`, `commercial-intelligence.test.ts`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `lucide-react` connect `react` to `ref_components`, `ref_integrations`, `ref_hooks`, `sonner`, `ref_contexts`, `ref_lib`, `react-router-dom`, `date-fns`, `ref_stores`, `ref_pages`, `useSuppliersManager.ts`, `package.json`, `ui/index.ts`, `SupabaseConnectionsTab.tsx`, `PublicCollectionPage.tsx`, `useCatalogState.ts`, `ref_types`, `ProductKitComponentsSection.tsx`, `App.tsx`, `ConnectionsPulseBar.tsx`, `SharePreviewDialog.tsx`, `SecretField.tsx`, `NoveltyProductGrid.tsx`, `LocationCard.tsx`, `useQuoteViewData.ts`, `AdminTelemetriaPage.tsx`, `AnomalyCards.tsx`, `McpKeyDetailsDrawer.tsx`, `OrderDetailSheet.tsx`, `ProductFormStepContent.tsx`, `useNewSupplierForm.ts`, `MockupHistoryPanel.tsx`, `ProductDetail.tsx`, `ConnectionsOverviewTable.tsx`, `KitSummary.tsx`, `PromptGenerator.tsx`, `wizard/index.ts`, `QuotesListPage.tsx`, `products/index.ts`, `Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)`, `AdvancedPriceSearchPage.tsx`, `KitBuilderPage`, `InboundEventsPanel.tsx`, `ConnectionTestHistoryPanel.tsx`, `framer-motion`, `TrendsPage.tsx`, `personalization/TechniqueSelector.tsx`, `ProductQuickView.tsx`, `StockDashboard.tsx`, `AIRecommendationsPanel.tsx`, `FilterPanel.tsx`, `ProductTableView.tsx`, `SicoobInvitationsPage.tsx`, `PriceFreshnessBadge.tsx`, `useQuotesDashboard.ts`, `orders/OrdersPage.tsx`, `ProductCard.tsx`, `CompareTableView.tsx`, `QuickAddToQuote.tsx`, `ProductEngravingSection.tsx`, `QuoteConsolidationPanel.tsx`, `FiltersPage.tsx`, `QuotesConfigurableList.tsx`, `orders/OrderDetailPage.tsx`, `StockHistoryChart.tsx`, `CompanySearchDropdown.tsx`, `ProductGallery.tsx`, `admin/ProductPersonalizationManager.tsx`, `ProductRiskDetail.tsx`, `VariantGridMatrix.tsx`, `lib/index.ts`, `MarketIntelligenceChart.tsx`, `FutureStockDialog.tsx`, `QuoteItemDetailSheet.tsx`, `NotificationDrawer.tsx`, `VoiceOrb.tsx`, `SocialProof.tsx`, `PromotionDialog.tsx`, `QuoteKanbanBoard.tsx`, `GlobalSearchPaletteView.tsx`, `simulator/TechniqueCard.tsx`, `StepSpecs.tsx`, `FavoritesPage`, `AdminProductFormPage.tsx`, `PAWalletPage.tsx`, `TestAllConnectionsButton.tsx`, `personalization-manager/ProductPersonalizationManager.tsx`, `StepUpAttemptsPanel.tsx`, `AppHealthDashboard.tsx`, `SkeletonShimmer.tsx`, `ProductFormFullscreen.tsx`, `SidebarReorganized.tsx`, `AdvancedSearch.tsx`, `Arquivos finais`, `ConnectionTimelineDrawer.tsx`, `command.tsx`, `DataSourceDebugTab.tsx`, `CatalogContent.tsx`, `layout/index.ts`, `MockupLayoutButtons.tsx`, `SecurityDashboardSections.tsx`, `sidebar.tsx`, `MagicUpConfigPanel.tsx`, `SystemStatusPage.tsx`, `ProductListItem.tsx`, `CatalogToolbar.tsx`, `ProductRegistrationForm.tsx`, `ProductPriceSimulator.tsx`, `QuantityAndResult.tsx`, `FutureStockModal.tsx`, `class-variance-authority`, `AutoTestJobStatusCard.tsx`, `ImageGrid.tsx`, `QuoteTemplateForm.tsx`, `GlobalSearch.tsx`, `SmartSearchInput.tsx`, `AdminVerbasPage.tsx`, `simular-conversao-pedido-sicoob.py`, `ChatMessageList.tsx`, `AccessSecurityManager.tsx`, `DiscountManagementPanel.tsx`, `ProductSupplierSection.tsx`, `AdminTemplatesManager.tsx`, `MockupGenerator.tsx`, `pricing/simulator/index.ts`, `OffscreenLayoutCapture.tsx`, `IntegrationsHealthCard.tsx`, `ClientCategoryRadar.tsx`, `ProductCardImage.tsx`, `VoiceSearchOverlay.tsx`, `SellerCartsPage.tsx`, `AdminRoute.tsx`, `VariantRow.tsx`, `MockupConfigPanel.tsx`, `InlinePriceCalculator.tsx`, `QuoteVersionCompare.tsx`, `ReplenishmentProductGrid.tsx`, `GeoBlockingManager.tsx`, `Header.tsx`, `DraggableQuoteItems.tsx`, `OrderConsolidationPanel.tsx`, `useProductVideoGallery.ts`, `CartUtilComponents.tsx`, `✅ Onda D — Polimento, DX & Entrega (2026-04-20)`, `ErrorDetailsDialog.tsx`, `ProductFlagsSection.tsx`, `PersonalizationConfig.tsx`, `ComparePage.tsx`, `stock-chart-utils.ts`, `OnboardingTour.tsx`, `@dnd-kit/sortable`, `ZoneQuickNav.tsx`, `bulk-import/types.ts`, `BulkImportDialog.tsx`, `BulkAddToCartModal.tsx`, `BackButton.tsx`, `StockFilterToolbar.tsx`, `SidebarNavGroup.tsx`, `AreaCard.tsx`, `NotificationOmnichannelPanel.tsx`, `GlobalCommandBar.tsx`, `ZoomableGallery.tsx`, `AdImageResult.tsx`, `ClientLookalikes.tsx`, `@dnd-kit/core`, `ConnectionsIncidentStrip.tsx`, `ConnectionTestDetailsDialog.tsx`, `KeysValidationTab.tsx`, `SmokeTestChecklist.tsx`, `ClientSeasonalityHeatmap.tsx`, `CategorySidebarPanel.tsx`, `BridgeMetricsOverlay.tsx`, `PageTransition.tsx`, `StockAlertsIndicator.tsx`, `ProductPersonalizationRules.tsx`, `QuoteBuilderSummaryColumn.tsx`, `sicoob/orders/OrderAuditTimeline.tsx`, `AdminAiUsagePage.tsx`, `CollectionDetailPage.tsx`, `GestorConsolidatedOrdersPage.tsx`, `PublicFavoriteListPage.tsx`, `IncidentDetailsDrawer.tsx`, `ProductImageGallery.tsx`, `ProductMaterialsSection.tsx`, `ProductVariantsSection.tsx`, `TechniqueFormDialog.tsx`, `ExportFavoritesButton.tsx`, `ProductRankingSearch.tsx`, `KitIsometricPreview.tsx`, `QuantityPriceCalculator.tsx`, `simulator/TechniqueSelector.tsx`, `KitComponentCard.tsx`, `RamoAtividadeGroupAccordion.tsx`, `StepComparison.tsx`, `McpAuditRow.tsx`, `GlobalSearchIdleState.tsx`, `AdminCooperativasPage.tsx`, `CategoriesManager.tsx`, `Auth.tsx`, `KitCard.tsx`, `Onda Inteligência & Colaboração`, `IncidentTimeline72h.tsx`, `ProductVideoGallery.tsx`, `ProductFiltersBar.tsx`, `ProductClassificationSection.tsx`, `ExpertChatDialog.tsx`, `PresetsBar.tsx`, `SupplierRiskPanel.tsx`, `PresentationMode.tsx`, `BulkImportPanel.tsx`, `MagicUpResultPanel.tsx`, `useCart.ts`, `ConfirmDialog.tsx`, `LogoColorAnalyzer.tsx`, `LoadingButton.tsx`, `secretValidators.ts`, `SeverityFilterContext.tsx`, `SupplierFiscalInfo.tsx`, `ExecutiveSummaryButton.tsx`, `FlowFilterPanel.tsx`, `FavoritesViewHeader.tsx`, `ItemSelector.tsx`, `ProductSparkline.tsx`, `SmartSuggestions.tsx`, `IPRestrictionManager.tsx`, `AdminExternalDbPage.tsx`, `OwnershipAuditAdminPage.tsx`, `MockupPromptManager.tsx`, `QuoteAutoSave.tsx`, `QuoteOrderBadge.tsx`, `ConnectionErrorDetailsDialog.tsx`, `GroupAccordionItem.tsx`, `ColorGroupFilter.tsx`, `MagicUpBrandSafetyChecklist.tsx`, `ProductList.tsx`, `PdfGenerationDialog.tsx`, `QuoteStatusTimeline.tsx`, `CollectionsPage.tsx`, `QuoteBuilderPage.tsx`, `CategoryCascadeSelector.tsx`, `SecretImpactTooltip.tsx`, `ActiveIpsList.tsx`, `useMcpAuditFeed.ts`, `BridgeCallDetailDrawer.tsx`, `IndustryTrendingProducts.tsx`, `DraggableDashboard.tsx`, `ExternalCategoryFilter.tsx`, `MfaEnrollmentDialog.tsx`, `TechniqueTooltip.tsx`, `BridgeProductsPreviewPanel.tsx`, `CredentialCacheMetricsPanel.tsx`, `CredentialsSourceIndicator.tsx`, `ExpectedKeysMatchPanel.tsx`, `IssueMcpKeyForm.tsx`, `HorizontalStepper.tsx`, `AuditHistory.tsx`, `InlineColorGroupFilter.tsx`, `MaterialBadge.tsx`, `LogoPositionEditor.tsx`, `BusinessIntelligencePage.tsx`, `carousel.tsx`, `MockupProductSelector.tsx`, `ExportCollectionButton.tsx`, `CategoryRanking.tsx`, `TrendsForecastChart.tsx`, `SalesHistoryChart.tsx`, `QuoteBuilderProductSearch.tsx`, `QuoteCommentsSection.tsx`, `AdminConexoesStatusPage.tsx`, `OrdersKanbanPage.tsx`, `AdminDataTable.tsx`, `RotationHistoryDialog.tsx`, `BreakerStatusCard.tsx`, `BridgeAlertsCard.tsx`, `ClientVsIndustryComparison.tsx`, `ErrorBoundary.tsx`, `UnmetDemandCard.tsx`, `StockBadge.tsx`, `BoxSelector.tsx`, `MockupClientSelector.tsx`, `TechniqueColorConfigDialog.tsx`, `QuoteRowQuickActions.tsx`, `DataCard.tsx`, `QARunDetailPage.tsx`, `MatchCards.tsx`, `PublicKitViewPage.tsx`, `PADashboardPage.tsx`, `SicoobInvitationAcceptPage.tsx`, `TrendsCharts.tsx`, `EnhancedProductCard.tsx`, `LogoPreviewCanvas.tsx`, `QuoteSignaturePad.tsx`, `recharts`, `LastTestLine.tsx`, `DiscountApprovalQueue.tsx`, `RoleMigrationPanel.tsx`, `RegressionGuardrailBanner.tsx`, `ResolveProductsSelectComparisonCard.tsx`, `RoleAuditLogPanel.tsx`, `PasswordStrengthIndicator.tsx`, `ClientHealthHero.tsx`, `KitConflictAlerts.tsx`, `SmartRecommendations.tsx`, `RamoAtividadeBadge.tsx`, `PasskeyManager.tsx`, `OrderAddItemDialog.tsx`, `ScenarioComparison.tsx`, `AdminPerformancePage.tsx`, `KitTemplatesMetricsPage.tsx`, `KitLibraryPage.tsx`, `StepUpload.tsx`, `EnhancedErrorBoundary.tsx`, `RetestButton.tsx`, `ProductMarketingSection.tsx`, `ProductsManager.tsx`, `EdgeFunctionLogsPanel.tsx`, `ClientComparator.tsx`, `ClientOverview360.tsx`, `AIComparisonAdvisor.tsx`, `IntelligenceFilterBar.tsx`, `SalesOverviewChart.tsx`, `KitIdentityPicker.tsx`, `MockupColorSelector.tsx`, `TemplatePreview.tsx`, `Breadcrumbs.tsx`, `DynamicBreadcrumbs.tsx`, `NoveltyStatsCards.tsx`, `ProductQuickActions.tsx`, `QuoteCard.tsx`, `QuoteNextActionBanner.tsx`, `SearchWithSuggestions.tsx`, `VoiceOverlaySections.tsx`, `OrderBudgetIntelligence.tsx`, `ResetPassword.tsx`, `dropdown-menu.tsx`, `toast.tsx`, `ImportExportManager.tsx`, `FieldSourceDrillDownDialog.tsx`, `LastSyncRunPanel.tsx`, `SecretsManagerHealthPanel.tsx`, `StepPreview.tsx`, `VideoGrid.tsx`, `ProductsListingLatencyAlert.tsx`, `BIAiCopilot.tsx`, `EnrichedOrdersTimeline.tsx`, `SortableCartItem.tsx`, `SortableProductItem.tsx`, `StatusTimeline.tsx`, `ComparisonMobileView.tsx`, `SalesGoalsCard.tsx`, `StockCategoryTreeSelect.tsx`, `DevRoute.tsx`, `MagicUpVariationComparator.tsx`, `ArtFileUpload.tsx`, `GeneratingOverlay.tsx`, `OrderFulfillmentManager.tsx`, `CustomizationOptions.tsx`, `PackagingModal.tsx`, `QuoteBuilderStepper.tsx`, `QuoteHistoryPanel.tsx`, `ReorderCatalogValidityBanner.tsx`, `ReplenishmentToolbar.tsx`, `SearchResultGroups.tsx`, `SecurityDashboard.tsx`, `StockAlert.tsx`, `AdminLoginAttemptsPage.tsx`, `SellerDiscountLimitsAdminPage.tsx`, `GestorAuditPage.tsx`, `KitBuilderHeader.tsx`, `StorefrontDemoPage.tsx`, `MaskedSuffixBadge.tsx`, `ProductRamosSection.tsx`, `ProductVariationAxesConfig.tsx`, `BundleSuggestions.tsx`, `ProductLinkRenderer.tsx`, `SavedFilters.tsx`, `MarketIntelligenceInsightsCard.tsx`, `components/kit-builder/index.ts`, `KitHealthCard.tsx`, `WizardSteps.tsx`, `LogoSizeControls.tsx`, `ProductVariantSelector.tsx`, `ProductIntelligence.tsx`, `RelatedProducts.tsx`, `EmptySearchState.tsx`, `VoiceTranscriptPanel.tsx`, `StatCard.tsx`, `connection-error-copy.ts`, `ClientDetailPage.tsx`, `ExternalDatabaseTest.tsx`, `SimuladorWizard.tsx`, `ChurnRiskBanner.tsx`, `select.tsx`, `BITourGuide.tsx`, `CategorySelect.tsx`, `ImageFilterBar.tsx`, `ProductPreviewPanel.tsx`, `VariantForm.tsx`, `AutoRevocationsPanel.tsx`, `SecurityAnalytics.tsx`, `AccessManagement.tsx`, `CollectionTableView.tsx`, `UpcomingDatesWidget.tsx`, `FavoritesTrashView.tsx`, `SizeFilter.tsx`, `IdentitySuggestionButton.tsx`, `KitPersonalizationPreview.tsx`, `KitTemplatePreviewDialog.tsx`, `MobileProductActions.tsx`, `PilotApprovalPanel.tsx`, `ProductHoverPreview.tsx`, `SingleVariantPicker.tsx`, `QuoteProductColorSelector.tsx`, `ReplenishmentStatsCards.tsx`, `MfaChallengeDialog.tsx`, `PushNotificationSettings.tsx`, `TwoFactorSetup.tsx`, `pagination.tsx`, `PreflightPage.tsx`, `pages/OrderDetailPage.tsx`, `SellerDashboardPage.tsx`, `undoToast.tsx`, `DevAccessAuditAlert.tsx`, `BIBriefingMode.tsx`, `ExternalCollectionCard.tsx`, `RestrictedRouteNotice.tsx`, `OrganizationSwitcher.tsx`, `RevisionRequest.tsx`, `ProductSearch.tsx`, `ProductDimensions.tsx`, `MarginInsightBadge.tsx`, `CommercialConditions.tsx`, `QuoteApprovalLinkCard.tsx`, `QuoteSingularApprovalActions.tsx`, `QuoteSummary.tsx`, `QuoteValidityBanner.tsx`, `AiTables.tsx`, `HelpCenterPage.tsx`, `QuoteDetailPage.tsx`, `QuoteTemplatesPage.tsx`, `FailureWindowCard.tsx`, `CatalogHeader.tsx`, `ExternalCollectionTableView.tsx`, `TrendsHeatmap.tsx`, `KitStockForecastCard.tsx`, `MockupWizard.tsx`, `PriceFreshnessThresholdEditor.tsx`, `ReplenishmentBadge.tsx`, `NegotiationMarkupCard.tsx`, `QuoteManagerApprovalBanner.tsx`, `QuoteProductCustomization.tsx`, `OrderActionDialog.tsx`, `OrderProductionReadiness.tsx`, `roles.ts`, `RolePermissionsPage.tsx`, `input-otp.tsx`, `ZoneSection.tsx`, `ImageUploadArea.tsx`, `PriceDropBadge.tsx`, `ItemsListEditor.tsx`, `KpiCard.tsx`, `accordion.tsx`, `CatalogStorefrontHero.tsx`, `WeeklyActivityHeatmap.tsx`, `KitTemplates.tsx`, `KitLibraryFilters.tsx`, `QuoteClientInfo.tsx`, `GestorComprasMetrics.tsx`, `sicoob-status-config.ts`, `KitHeroPricingCard.tsx`, `BorderRadiusControl.tsx`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
 - **What connects `session-start.sh script`, `PATH`, `$schema` to the rest of the system?**
-  _8005 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `ref_hooks` be split into smaller, more focused modules?**
-  _Cohesion score 0.007749770923604964 - nodes in this community are weakly interconnected._
+  _7994 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ref_components` be split into smaller, more focused modules?**
-  _Cohesion score 0.007045134893236159 - nodes in this community are weakly interconnected._
-- **Should `ref_lib` be split into smaller, more focused modules?**
-  _Cohesion score 0.007079441946270033 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.007745870668250027 - nodes in this community are weakly interconnected._
+- **Should `ref_integrations` be split into smaller, more focused modules?**
+  _Cohesion score 0.006975144906179389 - nodes in this community are weakly interconnected._
+- **Should `react` be split into smaller, more focused modules?**
+  _Cohesion score 0.009106600797571572 - nodes in this community are weakly interconnected._

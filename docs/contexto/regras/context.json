@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "c17e905bcf74063611a9fbb5ff439578cc59715a",
+  "sha": "fed706761bb2d779acd5b63d91cfb5f898781668",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 03:34 UTC",
-  "files_total": 4406,
-  "code_files": 3750,
-  "code_lines": 549540
+  "generated_at": "2026-11-19 03:46 UTC",
+  "files_total": 4400,
+  "code_files": 3744,
+  "code_lines": 548579
  },
  "version": "1.3.2",
- "facts_hash": "f47738f613367def",
+ "facts_hash": "46c8fb0d25cc017d",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1461,
-   ".tsx": 1430,
+   ".ts": 1459,
+   ".tsx": 1426,
    ".sql": 674,
    ".mjs": 134,
    ".py": 60,
@@ -55932,17 +55932,6 @@
    },
    {
     "path": "",
-    "file": "src/pages/PublicQuoteApprovalPage.tsx",
-    "component": "PublicQuoteApprovalPage",
-    "tables_transitive": [],
-    "invokes_transitive": [
-     "quote-public-view"
-    ],
-    "rpc_transitive": [],
-    "deps_count": 17
-   },
-   {
-    "path": "",
     "file": "src/pages/QAPage.tsx",
     "component": "QAPage",
     "tables_transitive": [
@@ -63154,10 +63143,6 @@
     "file": "src/pages/mockup-generator/MockupTechniqueHandlers.tsx"
    },
    {
-    "name": "usePublicQuoteApproval",
-    "file": "src/pages/public-approval/usePublicQuoteApproval.ts"
-   },
-   {
     "name": "useQuoteViewData",
     "file": "src/pages/quote-view/useQuoteViewData.ts"
    },
@@ -64603,8 +64588,8 @@
   },
   {
    "module": "src/pages",
-   "files": 199,
-   "lines": 50913,
+   "files": 195,
+   "lines": 50074,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -64799,7 +64784,6 @@
     "src/pages/PublicDossierPage.tsx",
     "src/pages/PublicFavoriteListPage.tsx",
     "src/pages/PublicKitViewPage.tsx",
-    "src/pages/PublicQuoteApprovalPage.tsx",
     "src/pages/QAPage.tsx",
     "src/pages/QuoteApprovalPage.tsx",
     "src/pages/QuoteBuilderPage.tsx",
@@ -64832,7 +64816,8 @@
     "src/pages/admin/AdminCentraisPage.tsx",
     "src/pages/admin/AdminConexoesPage.tsx",
     "src/pages/admin/AdminConexoesStatusPage.tsx",
-    "src/pages/admin/AdminCooperativasPage.tsx"
+    "src/pages/admin/AdminCooperativasPage.tsx",
+    "src/pages/admin/AdminExternalDbPage.tsx"
    ]
   },
   {
@@ -65598,8 +65583,8 @@
   },
   {
    "module": "tests",
-   "files": 621,
-   "lines": 84557,
+   "files": 619,
+   "lines": 84435,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -70909,9 +70894,6 @@
    "quote-approval": [
     "src/hooks/useQuoteApprovalToken.ts",
     "src/pages/QuoteApprovalPage.tsx"
-   ],
-   "quote-public-view": [
-    "src/pages/public-approval/usePublicQuoteApproval.ts"
    ],
    "rls-audit": [
     "scripts/test-rls.mjs"
@@ -108676,12 +108658,6 @@
     "body": "return ( <> <PageSEO title=\"Simulador de Preços\" description=\"Simule preços de brindes com personalização, quantidades e custos.\" path=\"/simulador-precos\" /> <div className=\"w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in\"> {/* Hero Header — #1 */} <div className=\"flex flex-col gap-1\"> <h1 data-testid=\"page-title-simulador-precos\" className=\"font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground\"> Si …"
    },
    {
-    "file": "src/pages/PublicQuoteApprovalPage.tsx",
-    "name": "calculateTotals",
-    "params": "quote: ApprovalQuote",
-    "body": "const items = quote.items || []; const subtotal = items.reduce( (sum, item) => sum + item.quantity * item.unit_price + calcPersonalizationTotal(item), 0, ); const discountAmount = quote.discount_percent ? subtotal * (quote.discount_percent / 100) : quote.discount_amount || 0; const hasShippingCost = quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre'; const shippingCost = hasShippingCost ? quote.shipping_cost || 0 : 0; return { discountAmount, shippingCost, subtotal, total: subtot …"
-   },
-   {
     "file": "src/pages/QuoteDetailPage.tsx",
     "name": "ConvertedQuoteNotice",
     "params": "{ visible }: { visible: boolean }",
@@ -108848,36 +108824,6 @@
     "name": "formatPrice",
     "params": "value: number",
     "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);"
-   },
-   {
-    "file": "src/pages/public-approval/PublicQuoteItems.tsx",
-    "name": "formatCurrency",
-    "params": "value: number",
-    "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
-   },
-   {
-    "file": "src/pages/public-approval/PublicQuoteItems.tsx",
-    "name": "calcPersTotal",
-    "params": "item: QuoteItem",
-    "body": "return (item.personalizations || []).reduce( (sum, p) => sum + (p.total_cost || 0), 0 );"
-   },
-   {
-    "file": "src/pages/public-approval/usePublicQuoteApproval.ts",
-    "name": "validateSignature",
-    "params": "response: string, signerName: string, signerDocument: string",
-    "body": "if (response !== 'approved') return null; if (signerName.trim().length < 3) { return 'Informe seu nome completo para assinar a aprovação.'; } const length = signerDocument.replace(/\\D/g, '').length; if (length !== 11 && length !== 14) { return 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.'; } return null;"
-   },
-   {
-    "file": "src/pages/public-approval/usePublicQuoteApproval.ts",
-    "name": "formatCurrency",
-    "params": "value: number",
-    "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', }).format(value);"
-   },
-   {
-    "file": "src/pages/public-approval/usePublicQuoteApproval.ts",
-    "name": "calcPersonalizationTotal",
-    "params": "item: QuoteItem",
-    "body": "return (item.personalizations || []).reduce( (sum, personalization) => sum + (personalization.total_cost || 0), 0, );"
    },
    {
     "file": "src/pages/quote-view/QuoteActionHandlers.ts",
@@ -134472,78 +134418,6 @@
     "name": "não chama a Edge Function sem sessão"
    },
    {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "PublicQuoteStatusScreens"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "LoadingScreen shows loading text"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "ExpiredScreen shows expired message"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "AlreadyRespondedScreen shows approved state"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "AlreadyRespondedScreen shows rejected state"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "AlreadyRespondedScreen shows response notes"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "ErrorScreen shows custom error"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "ErrorScreen shows default message when no error"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "SubmittedScreen shows approved confirmation"
-   },
-   {
-    "file": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-    "name": "SubmittedScreen shows rejected confirmation"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "formatCurrency"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "formats BRL currency correctly"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "formats zero"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "formats negative values"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "calcPersonalizationTotal"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "returns 0 for item without personalizations"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "sums total_cost from personalizations"
-   },
-   {
-    "file": "tests/public-approval/usePublicQuoteApproval.test.ts",
-    "name": "handles null total_cost gracefully"
-   },
-   {
     "file": "tests/rls/critical-tables-rls.test.ts",
     "name": "RLS: quotes"
    },
@@ -139418,10 +139292,6 @@
    {
     "file": "src/pages/kit-builder/useKitBuilderQuote.ts",
     "call": "notifyQuoteCreated"
-   },
-   {
-    "file": "src/pages/public-approval/usePublicQuoteApproval.ts",
-    "call": "invoke("
    },
    {
     "file": "src/pages/quote-view/QuoteBitrixSync.ts",
@@ -217410,21 +217280,6 @@
     "invoke("
    ]
   },
-  "src/pages/PublicQuoteApprovalPage.tsx": {
-   "path": "src/pages/PublicQuoteApprovalPage.tsx",
-   "lines": 330,
-   "exports": [
-    "function PublicQuoteApprovalPage"
-   ],
-   "doc": "PublicQuoteApprovalPage — Refactored orchestrator. Logic in usePublicQuoteApproval, status screens in PublicQuoteStatusScreens.",
-   "calc_fns": [
-    {
-     "name": "calculateTotals",
-     "params": "quote: ApprovalQuote",
-     "body": "const items = quote.items || []; const subtotal = items.reduce( (sum, item) => sum + item.quantity * item.unit_price + calcPersonalizationTotal(item), 0, ); const discountAmount = quote.discount_percent ? subtotal * (quote.discount_percent / 100) : quote.discount_amount || 0; const hasShippingCost = quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre'; const shippingCost = hasShippingCost ? quote.shipping_cost || 0 : 0; return { discountAmount, shippingCost, subtotal, total: subtot …"
-    }
-   ]
-  },
   "src/pages/QAPage.tsx": {
    "path": "src/pages/QAPage.tsx",
    "lines": 241,
@@ -220919,80 +220774,6 @@
      "params": "value: number",
      "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);"
     }
-   ]
-  },
-  "src/pages/public-approval/PublicQuoteItems.tsx": {
-   "path": "src/pages/public-approval/PublicQuoteItems.tsx",
-   "lines": 132,
-   "exports": [
-    "function PublicQuoteItemsList",
-    "function PublicQuoteTotals"
-   ],
-   "doc": "Items list and totals extracted from PublicQuoteApprovalPage",
-   "calc_fns": [
-    {
-     "name": "formatCurrency",
-     "params": "value: number",
-     "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
-    },
-    {
-     "name": "calcPersTotal",
-     "params": "item: QuoteItem",
-     "body": "return (item.personalizations || []).reduce( (sum, p) => sum + (p.total_cost || 0), 0 );"
-    }
-   ]
-  },
-  "src/pages/public-approval/PublicQuoteStatusScreens.tsx": {
-   "path": "src/pages/public-approval/PublicQuoteStatusScreens.tsx",
-   "lines": 145,
-   "exports": [
-    "function LoadingScreen",
-    "function ExpiredScreen",
-    "function AlreadyRespondedScreen",
-    "function ErrorScreen",
-    "function SubmittedScreen"
-   ],
-   "doc": "Status screens for PublicQuoteApprovalPage — loading, expired, already responded, error, submitted."
-  },
-  "src/pages/public-approval/usePublicQuoteApproval.ts": {
-   "path": "src/pages/public-approval/usePublicQuoteApproval.ts",
-   "lines": 232,
-   "exports": [
-    "interface PublicSeller",
-    "interface AlreadyRespondedData",
-    "interface QuoteData",
-    "interface SignatureReceipt",
-    "interface PublicQuoteApprovalState",
-    "function usePublicQuoteApproval",
-    "function formatCurrency",
-    "function calcPersonalizationTotal"
-   ],
-   "invokes": [
-    "quote-public-view"
-   ],
-   "doc": "usePublicQuoteApproval — dados e resposta da aprovação pública de orçamento.",
-   "hooks": [
-    "usePublicQuoteApproval"
-   ],
-   "calc_fns": [
-    {
-     "name": "validateSignature",
-     "params": "response: string, signerName: string, signerDocument: string",
-     "body": "if (response !== 'approved') return null; if (signerName.trim().length < 3) { return 'Informe seu nome completo para assinar a aprovação.'; } const length = signerDocument.replace(/\\D/g, '').length; if (length !== 11 && length !== 14) { return 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.'; } return null;"
-    },
-    {
-     "name": "formatCurrency",
-     "params": "value: number",
-     "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', }).format(value);"
-    },
-    {
-     "name": "calcPersonalizationTotal",
-     "params": "item: QuoteItem",
-     "body": "return (item.personalizations || []).reduce( (sum, personalization) => sum + (personalization.total_cost || 0), 0, );"
-    }
-   ],
-   "side_effects": [
-    "invoke("
    ]
   },
   "src/pages/quote-view/QuoteActionHandlers.ts": {
@@ -248572,38 +248353,6 @@
     "não chama a Edge Function sem sessão"
    ]
   },
-  "tests/public-approval/PublicQuoteStatusScreens.test.tsx": {
-   "path": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-   "lines": 77,
-   "is_test": true,
-   "tests": [
-    "PublicQuoteStatusScreens",
-    "LoadingScreen shows loading text",
-    "ExpiredScreen shows expired message",
-    "AlreadyRespondedScreen shows approved state",
-    "AlreadyRespondedScreen shows rejected state",
-    "AlreadyRespondedScreen shows response notes",
-    "ErrorScreen shows custom error",
-    "ErrorScreen shows default message when no error",
-    "SubmittedScreen shows approved confirmation",
-    "SubmittedScreen shows rejected confirmation"
-   ]
-  },
-  "tests/public-approval/usePublicQuoteApproval.test.ts": {
-   "path": "tests/public-approval/usePublicQuoteApproval.test.ts",
-   "lines": 45,
-   "is_test": true,
-   "tests": [
-    "formatCurrency",
-    "formats BRL currency correctly",
-    "formats zero",
-    "formats negative values",
-    "calcPersonalizationTotal",
-    "returns 0 for item without personalizations",
-    "sums total_cost from personalizations",
-    "handles null total_cost gracefully"
-   ]
-  },
   "tests/rls/critical-tables-rls.test.ts": {
    "path": "tests/rls/critical-tables-rls.test.ts",
    "lines": 484,
@@ -251333,10 +251082,25 @@
   }
  },
  "git": {
-  "sha": "c17e905bcf74063611a9fbb5ff439578cc59715a",
+  "sha": "fed706761bb2d779acd5b63d91cfb5f898781668",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "fed7067",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)",
+    "files": [
+     "scripts/revisao/gerar-revisao-2026-09-12.py",
+     "src/pages/PublicQuoteApprovalPage.tsx",
+     "src/pages/public-approval/PublicQuoteItems.tsx",
+     "src/pages/public-approval/PublicQuoteStatusScreens.tsx",
+     "src/pages/public-approval/usePublicQuoteApproval.ts",
+     "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
+     "tests/public-approval/usePublicQuoteApproval.test.ts"
+    ]
+   },
    {
     "sha": "c17e905",
     "date": "2026-11-19",
@@ -251840,37 +251604,6 @@
      "tests/lib/assistant-message-window.test.ts",
      "tests/p0/edge-functions-failing.test.ts"
     ]
-   },
-   {
-    "sha": "ca0c320",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)",
-    "files": [
-     "src/components/admin/CouponManager.tsx",
-     "src/components/admin/OwnershipRepairDialog.tsx",
-     "src/components/admin/categories/CategoriesManager.tsx",
-     "src/components/admin/products/sections/engraving/useEngravingWizard.ts",
-     "src/components/admin/suppliers-manager/useSuppliersManager.ts",
-     "src/components/cart/MiniCart.tsx",
-     "src/components/common/GlobalConfirmDialog.tsx",
-     "src/components/layout/MainLayout.tsx",
-     "src/pages/admin/AdminCMSPage.tsx",
-     "src/pages/admin/AdminCampanhasPage.tsx",
-     "src/pages/admin/AdminCentraisPage.tsx",
-     "src/pages/admin/AdminCooperativasPage.tsx",
-     "src/pages/admin/AdminNewsletterPage.tsx",
-     "src/pages/admin/AdminPAsPage.tsx",
-     "src/pages/admin/AdminSingularesPage.tsx",
-     "src/pages/admin/AdminVerbasPage.tsx",
-     "src/pages/admin/sicoob/tabs/CooperativasTab.tsx",
-     "src/pages/admin/sicoob/tabs/PAsTab.tsx",
-     "src/pages/sicoob/GestorApprovalsPage.tsx",
-     "src/pages/sicoob/orders/OrderDetailPage.tsx",
-     "src/stores/useConfirmDialogStore.ts",
-     "tests/components/GlobalConfirmDialog.test.tsx",
-     "tests/stores/useConfirmDialogStore.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251885,10 +251618,6 @@
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
-   ],
-   [
-    "src/components/layout/MainLayout.tsx",
-    2
    ],
    [
     "PENDENCIAS.md",
@@ -251952,6 +251681,10 @@
    ],
    [
     "supabase/functions/crm-db-bridge/search-pattern.test.ts",
+    2
+   ],
+   [
+    ".github/workflows/automation-local.yml",
     2
    ]
   ]

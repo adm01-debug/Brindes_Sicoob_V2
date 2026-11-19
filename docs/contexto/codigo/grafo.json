@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2244,
- "arestas": 9156,
+ "nos": 2240,
+ "arestas": 9137,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 635
+   "importado_por": 634
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,19 +14,19 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 513
+   "importado_por": 511
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 419
+   "importado_por": 418
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 400
+   "importado_por": 397
   },
   {
    "arquivo": "src/components/ui/input.tsx",
-   "importado_por": 270
+   "importado_por": 269
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
@@ -42,7 +42,7 @@
   },
   {
    "arquivo": "src/components/ui/label.tsx",
-   "importado_por": 153
+   "importado_por": 152
   },
   {
    "arquivo": "src/components/ui/select.tsx",
@@ -54,7 +54,7 @@
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
-   "importado_por": 118
+   "importado_por": 117
   },
   {
    "arquivo": "src/components/ui/scroll-area.tsx",
@@ -86,7 +86,7 @@
   },
   {
    "arquivo": "src/components/ui/textarea.tsx",
-   "importado_por": 64
+   "importado_por": 63
   },
   {
    "arquivo": "src/components/ui/switch.tsx",
@@ -110,7 +110,7 @@
   },
   {
    "arquivo": "src/components/ui/separator.tsx",
-   "importado_por": 44
+   "importado_por": 43
   },
   {
    "arquivo": "src/components/ui/dropdown-menu.tsx",
@@ -432,18 +432,18 @@
   },
   {
    "modulo": "pages",
-   "depende_de": 79,
+   "depende_de": 78,
    "importado_por": 3
   },
   {
    "modulo": "components/ui",
    "depende_de": 5,
-   "importado_por": 68
+   "importado_por": 67
   },
   {
    "modulo": "integrations/supabase",
    "depende_de": 0,
-   "importado_por": 64
+   "importado_por": 63
   },
   {
    "modulo": "contexts",
@@ -506,14 +506,14 @@
    "importado_por": 5
   },
   {
-   "modulo": "hooks/quotes",
-   "depende_de": 8,
-   "importado_por": 12
-  },
-  {
    "modulo": "pages/sicoob",
    "depende_de": 18,
    "importado_por": 2
+  },
+  {
+   "modulo": "hooks/quotes",
+   "depende_de": 8,
+   "importado_por": 11
   },
   {
    "modulo": "lib/auth",

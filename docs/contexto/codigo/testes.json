@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 850,
+ "total": 848,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 625
+  "unit": 623
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 603
+   "arquivos": 601
   },
   {
    "padrao": "e2e/",
@@ -6121,24 +6121,6 @@
    "casos": 119
   },
   {
-   "arquivo": "tests/public-approval/PublicQuoteStatusScreens.test.tsx",
-   "tipo": "unit",
-   "linhas": 77,
-   "testa": [
-    "src/pages/public-approval/PublicQuoteStatusScreens.tsx"
-   ],
-   "casos": 9
-  },
-  {
-   "arquivo": "tests/public-approval/usePublicQuoteApproval.test.ts",
-   "tipo": "unit",
-   "linhas": 45,
-   "testa": [
-    "src/pages/public-approval/usePublicQuoteApproval.ts"
-   ],
-   "casos": 6
-  },
-  {
    "arquivo": "tests/rls/critical-tables-rls.test.ts",
    "tipo": "unit",
    "linhas": 484,
@@ -7799,8 +7781,6 @@
   "src/pages/kit-builder/useKitBuilderQuote.ts": 1,
   "src/pages/magic-up/MagicUpResultPanel.tsx": 1,
   "src/pages/magic-up/magicUpStrategy.ts": 4,
-  "src/pages/public-approval/PublicQuoteStatusScreens.tsx": 1,
-  "src/pages/public-approval/usePublicQuoteApproval.ts": 1,
   "src/pages/sicoob/SicoobInvitationAcceptPage.tsx": 2,
   "src/pages/sicoob/SicoobInvitationsPage.tsx": 1,
   "src/pages/sicoob/reports/SicoobReportsPage.tsx": 1,

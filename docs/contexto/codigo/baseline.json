@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "c17e905bcf74063611a9fbb5ff439578cc59715a",
+  "commit": "fed706761bb2d779acd5b63d91cfb5f898781668",
   "branch": "main",
-  "data_commit": "2026-11-19T03:34:15Z",
+  "data_commit": "2026-11-19T03:45:29Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "fed7067",
+    "data": "2026-11-19",
+    "assunto": "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)"
+   },
    {
     "sha": "c17e905",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "d8d7dcd",
     "data": "2026-11-18",
     "assunto": "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)"
-   },
-   {
-    "sha": "781ee20",
-    "data": "2026-11-18",
-    "assunto": "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)"
    }
   ],
-  "arquivos_mudados_7d": 454,
+  "arquivos_mudados_7d": 461,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 70
+    "mudancas": 69
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 69
+    "mudancas": 68
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 152
+    "commits": 153
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4404,
-  "arquivos_codigo": 3094,
-  "linhas_codigo": 488191,
+  "arquivos_total": 4398,
+  "arquivos_codigo": 3088,
+  "linhas_codigo": 487230,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
-  "modulos": 146,
-  "componentes": 1173,
-  "hooks": 393,
+  "modulos": 145,
+  "componentes": 1170,
+  "hooks": 392,
   "edge_functions": 107,
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 850,
+  "testes": 848,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 262
@@ -807,8 +807,8 @@
    "linhas": 126
   },
   "src/pages": {
-   "arquivos": 199,
-   "linhas": 50913
+   "arquivos": 195,
+   "linhas": 50074
   },
   "src/routes": {
    "arquivos": 9,
@@ -945,10 +945,6 @@
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
    "linhas": 1054
-  },
-  "tests/public-approval": {
-   "arquivos": 2,
-   "linhas": 122
   },
   "tests/rls": {
    "arquivos": 6,
@@ -1294,6 +1290,7 @@
    "product-webhook",
    "qa-block-monitor",
    "quote-price-attestation",
+   "quote-public-view",
    "quote-sync",
    "rate-limit-check",
    "rls-audit",
@@ -1485,7 +1482,6 @@
    "LoadTemplateDialog",
    "LoadingButton",
    "LoadingOverlay",
-   "LoadingScreen",
    "MiniStatCard",
    "MobileSummarySheet",
    "OrderAuditTimeline",
