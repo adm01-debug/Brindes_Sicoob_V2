@@ -3,6 +3,11 @@
 
 Atualizado em: 2026-10-30
 
+> **Recuperação de trabalho fora da `main` (18/11/2026):** o ledger com o veredito de cada
+> branch e de cada PR fechada sem merge, e os 122 itens a recuperar, está em
+> [`docs/RECUPERACAO/README.md`](docs/RECUPERACAO/README.md). **Nenhuma branch ou PR é
+> apagada sem veredito escrito lá.**
+
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
 
