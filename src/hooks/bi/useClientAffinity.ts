@@ -1,10 +1,12 @@
 /**
  * useClientAffinity — produtos reais já orçados pelo cliente + sugestões similares.
  * Estratégia: usa quote_items via RPC get_client_top_products (proxy de "interesse confirmado").
- * Quando vazio → fallback mock determinístico por ramo.
+ * Quando vazio, mantém estado vazio em vez de sugerir produto fictício: o
+ * conjunto simulado é só do cliente de demonstração.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProduct {
@@ -65,6 +67,19 @@ const MOCK_SUGGESTIONS: Record<string, AffinityCategory["suggestions"]> = {
   ],
 };
 
+/** Conjunto simulado, exclusivo do cliente de demonstração. */
+function demoAffinity(): ClientAffinityResult {
+  return {
+    isMock: true,
+    realProductsCount: 0,
+    categories: MOCK_CLIENT_STATS.topCategories.map((category) => ({
+      ...category,
+      suggestions: MOCK_SUGGESTIONS[category.category] ?? [],
+    })),
+    topProducts: [],
+  };
+}
+
 /**
  * Agrupa top produtos reais em "categorias" derivadas do nome do produto.
  * Heurística simples: primeira palavra significativa.
@@ -88,8 +103,9 @@ export function useClientAffinity(clientId?: string) {
     enabled: !!clientId,
     queryFn: async () => {
       if (!clientId) {
-        return { isMock: true, realProductsCount: 0, categories: [], topProducts: [] };
+        return { isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
       }
+      if (isDemoClient(clientId)) return demoAffinity();
 
       // 1) Tenta dados reais via RPC
       const { data: rpcData, error } = await supabase.rpc("get_client_top_products", {
@@ -97,7 +113,10 @@ export function useClientAffinity(clientId?: string) {
         _limit: 15,
       });
 
-      const realProducts = (!error && Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
+      // O erro deixa de ser engolido: antes, RPC negada virava "cliente sem
+      // produto" e caía no mock, afirmando afinidade que ninguém mediu.
+      if (error) throw error;
+      const realProducts = (Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
 
       if (realProducts.length > 0) {
         // Agrupa por categoria derivada
@@ -136,12 +155,7 @@ export function useClientAffinity(clientId?: string) {
         };
       }
 
-      // 2) Fallback mock
-      const mockCategories: AffinityCategory[] = MOCK_CLIENT_STATS.topCategories.map((c) => ({
-        ...c,
-        suggestions: MOCK_SUGGESTIONS[c.category] ?? [],
-      }));
-      return { isMock: true, realProductsCount: 0, categories: mockCategories, topProducts: [] };
+      return { isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
     },
     staleTime: 5 * 60 * 1000,
   });

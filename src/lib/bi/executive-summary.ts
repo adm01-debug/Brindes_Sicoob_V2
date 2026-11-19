@@ -11,7 +11,8 @@ import type { IndustryCategoryTrendsResult, IndustryCategoryAggregate } from "@/
 export interface CategoryMapRow {
   label: string;
   clientSharePct: number;
-  industrySharePct: number;
+  /** null = o setor não respondeu categoria nenhuma; zero seria afirmar que ele não compra. */
+  industrySharePct: number | null;
   trend: "up" | "down" | "stable" | "n/a";
   deltaPct: number | null;
 }
@@ -25,6 +26,8 @@ export interface CategoryGap {
 export interface CategorySection {
   hasData: boolean;
   isMock: boolean;
+  /** Sem nenhuma categoria do setor não há comparativo: nem 0%, nem "alinhado". */
+  industryUnavailable: boolean;
   rows: CategoryMapRow[];
   gaps: CategoryGap[];
   insight: string;
@@ -84,13 +87,16 @@ function categoryRow(
   slug: string,
   client: Map<string, CategoryAggregate>,
   industry: Map<string, IndustryCategoryAggregate>,
+  industryUnavailable = false,
 ): CategoryMapRow {
   const clientCategory = client.get(slug);
   const industryCategory = industry.get(slug);
   return {
     label: firstDefined([clientCategory?.label, industryCategory?.label], slug),
     clientSharePct: clampPct(firstDefined([clientCategory?.revenueSharePct], 0)),
-    industrySharePct: clampPct(firstDefined([industryCategory?.revenueSharePct], 0)),
+    industrySharePct: industryUnavailable
+      ? null
+      : clampPct(firstDefined([industryCategory?.revenueSharePct], 0)),
     trend: firstDefined([clientCategory?.trend], "n/a"),
     deltaPct: firstDefined([clientCategory?.deltaPct], null),
   };
@@ -131,12 +137,14 @@ export function buildCategorySection(
   const clientCats = arrayOrEmpty(catAffinity?.categories);
   const industryCats = arrayOrEmpty(catIndustry?.categories);
 
+  // O setor não devolveu categoria alguma: não há comparativo a imprimir.
+  const industryUnavailable = industryCats.length === 0;
   const clientBySlug = new Map<string, CategoryAggregate>(clientCats.map((c) => [c.slug, c]));
   const industryBySlug = new Map<string, IndustryCategoryAggregate>(industryCats.map((c) => [c.slug, c]));
 
   const rows = orderedCategorySlugs(clientCats, industryCats)
     .slice(0, 8)
-    .map(slug => categoryRow(slug, clientBySlug, industryBySlug));
+    .map(slug => categoryRow(slug, clientBySlug, industryBySlug, industryUnavailable));
 
   // GAPs: forte no setor (≥8%) e fraco no cliente (<5%)
   const gaps = categoryGaps(industryCats, clientBySlug);
@@ -151,5 +159,5 @@ export function buildCategorySection(
   const hasData = hasCategoryData(rows, gaps);
   const isMock = usesMockData(catAffinity, catIndustry);
 
-  return { hasData, isMock, rows, gaps, insight, favoriteLabel, topGapLabel };
+  return { hasData, isMock, industryUnavailable, rows, gaps, insight, favoriteLabel, topGapLabel };
 }
