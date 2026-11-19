@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (594)",
+   "tests/ (599)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)",
+   "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)",
    "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)",
    "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)",
-   "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)",
-   "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)",
-   "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)"
+   "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

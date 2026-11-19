@@ -3,9 +3,9 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2884)",
+   "TypeScript (2889)",
    "SQL (674)",
-   "Markdown (247)",
+   "Markdown (257)",
    "JSON (233)",
    "JavaScript (144)",
    "Python (60)",
@@ -838,7 +838,7 @@
   {
    "arquivo": "PENDENCIAS.md",
    "titulo": "Pendências de CI — adm01-debug/Brindes_Sicoob_V2",
-   "linhas": 728
+   "linhas": 733
   },
   {
    "arquivo": "README.md",
@@ -1204,6 +1204,10 @@
   {
    "pasta": "docs/pesquisa",
    "arquivos_md": 11
+  },
+  {
+   "pasta": "docs/RECUPERACAO",
+   "arquivos_md": 10
   },
   {
    "pasta": "docs/adr",
@@ -1899,7 +1903,7 @@
    },
    {
     "papel": "vendedor",
-    "ocorrencias": 23
+    "ocorrencias": 24
    },
    {
     "papel": "admin",

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 841,
+ "total": 846,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 616
+  "unit": 621
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 594
+   "arquivos": 599
   },
   {
    "padrao": "e2e/",
@@ -3740,6 +3740,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/edge-functions/trends-insights-pagination.test.ts",
+   "tipo": "unit",
+   "linhas": 56,
+   "testa": [
+    "supabase/functions/trends-insights/pagination.ts"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/edge-functions/verify-email.test.ts",
    "tipo": "unit",
    "linhas": 27,
@@ -4520,6 +4529,15 @@
     "src/hooks/orders/extensions/useOrderPayments.ts"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "tests/hooks/usePaBudget.test.tsx",
+   "tipo": "unit",
+   "linhas": 79,
+   "testa": [
+    "src/hooks/usePaBudget.ts"
+   ],
+   "casos": 3
   },
   {
    "arquivo": "tests/hooks/usePasswordBreachCheck.test.tsx",
@@ -5653,6 +5671,25 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+   "tipo": "unit",
+   "linhas": 88,
+   "testa": [
+    "src/lib/sicoob/orderBudgetProjection.ts",
+    "src/types/sicoob/orders.ts"
+   ],
+   "casos": 3
+  },
+  {
+   "arquivo": "tests/lib/sicoob/sla-cycle.test.ts",
+   "tipo": "unit",
+   "linhas": 52,
+   "testa": [
+    "src/lib/sicoob/sla-cycle.ts"
+   ],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/lib/sso-errors.test.ts",
    "tipo": "unit",
    "linhas": 29,
@@ -6641,6 +6678,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/security/portal-access-policy.test.ts",
+   "tipo": "unit",
+   "linhas": 155,
+   "testa": [
+    "supabase/functions/_shared/portal-access-policy.ts"
+   ],
+   "casos": 9
+  },
+  {
    "arquivo": "tests/security/rls-seller-policies.spec.ts",
    "tipo": "unit",
    "linhas": 379,
@@ -7559,6 +7605,7 @@
   "src/hooks/useMagicUpState.ts": 2,
   "src/hooks/useMockupGenerator.ts": 1,
   "src/hooks/useOnboarding.ts": 1,
+  "src/hooks/usePaBudget.ts": 1,
   "src/hooks/usePasswordBreachCheck.tsx": 1,
   "src/hooks/usePrintAreas.ts": 1,
   "src/hooks/useProductAnalytics.ts": 1,
@@ -7671,7 +7718,9 @@
   "src/lib/sicoob/invitationForm.ts": 1,
   "src/lib/sicoob/operationalMetrics.ts": 1,
   "src/lib/sicoob/order-permissions.ts": 1,
+  "src/lib/sicoob/orderBudgetProjection.ts": 1,
   "src/lib/sicoob/paBudgetState.ts": 1,
+  "src/lib/sicoob/sla-cycle.ts": 1,
   "src/lib/supabase-untyped.ts": 1,
   "src/lib/supplier-colors.ts": 1,
   "src/lib/system/dev-gate/DevInfraGate.ts": 4,
@@ -7745,7 +7794,7 @@
   "src/types/gravacao.ts": 1,
   "src/types/orders.ts": 1,
   "src/types/product-catalog.ts": 6,
-  "src/types/sicoob/orders.ts": 2,
+  "src/types/sicoob/orders.ts": 3,
   "src/types/simulation.ts": 2,
   "src/types/stock.ts": 4,
   "src/utils/campaignExport.ts": 1,
@@ -7781,7 +7830,7 @@
   "supabase/functions/_shared/jwt-structure.ts": 1,
   "supabase/functions/_shared/pgrest-filter.ts": 1,
   "supabase/functions/_shared/pii-redaction.ts": 1,
-  "supabase/functions/_shared/portal-access-policy.ts": 1,
+  "supabase/functions/_shared/portal-access-policy.ts": 2,
   "supabase/functions/_shared/prompt-safety.ts": 1,
   "supabase/functions/_shared/read-limited-body.ts": 1,
   "supabase/functions/_shared/retry-backoff.ts": 1,
@@ -7807,6 +7856,7 @@
   "supabase/functions/sicoob-kit-quote/idempotency.ts": 1,
   "supabase/functions/sicoob-reorder/catalog.ts": 1,
   "supabase/functions/sicoob-reorder/idempotency.ts": 1,
+  "supabase/functions/trends-insights/pagination.ts": 1,
   "supabase/functions/verify-email/index.ts": 1
  },
  "sem_teste": {
@@ -8090,7 +8140,6 @@
    "src/hooks/useNotifications.ts",
    "src/hooks/useNovelties.ts",
    "src/hooks/useNoveltiesSelectionMode.ts",
-   "src/hooks/usePaBudget.ts",
    "src/hooks/usePasswordResetRequests.ts",
    "src/hooks/usePilotApprovals.ts",
    "src/hooks/usePositionHistory.ts",

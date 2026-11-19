@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "489c13dab90068cdcebd417b58b68877c775daef",
+  "commit": "3da86112a9fcd37b872f1663b9883c14e1042f95",
   "branch": "main",
-  "data_commit": "2026-11-19T02:49:10Z",
+  "data_commit": "2026-11-19T03:08:29Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "3da8611",
+    "data": "2026-11-19",
+    "assunto": "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)"
+   },
+   {
+    "sha": "f9b0686",
+    "data": "2026-11-19",
+    "assunto": "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)"
+   },
    {
     "sha": "489c13d",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "71d515b",
     "data": "2026-11-18",
     "assunto": "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)"
-   },
-   {
-    "sha": "90a9cb3",
-    "data": "2026-11-18",
-    "assunto": "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)"
-   },
-   {
-    "sha": "ca0c320",
-    "data": "2026-11-18",
-    "assunto": "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)"
    }
   ],
-  "arquivos_mudados_7d": 425,
+  "arquivos_mudados_7d": 440,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -149,7 +149,7 @@
    },
    {
     "pasta": "PENDENCIAS.md",
-    "mudancas": 20
+    "mudancas": 21
    },
    {
     "pasta": "RELATORIO_CI.md",
@@ -199,11 +199,15 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 75
+    "mudancas": 73
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 74
+    "mudancas": 72
+   },
+   {
+    "arquivo": "PENDENCIAS.md",
+    "mudancas": 21
    },
    {
     "arquivo": "package.json",
@@ -212,10 +216,6 @@
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 21
-   },
-   {
-    "arquivo": "PENDENCIAS.md",
-    "mudancas": 20
    },
    {
     "arquivo": "RELATORIO_CI.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 147
+    "commits": 149
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4378,
-  "arquivos_codigo": 3085,
-  "linhas_codigo": 487163,
+  "arquivos_total": 4393,
+  "arquivos_codigo": 3090,
+  "linhas_codigo": 487602,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,10 +324,10 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 841,
+  "testes": 846,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 247
+  "docs_md": 257
  },
  "por_pasta": {
   "docs/execucao": {
@@ -800,7 +800,7 @@
   },
   "src/lib": {
    "arquivos": 167,
-   "linhas": 22627
+   "linhas": 22636
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -899,8 +899,8 @@
    "linhas": 60
   },
   "tests/edge-functions": {
-   "arquivos": 16,
-   "linhas": 1353
+   "arquivos": 17,
+   "linhas": 1409
   },
   "tests/fixtures": {
    "arquivos": 1,
@@ -915,16 +915,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 131,
-   "linhas": 14289
+   "arquivos": 132,
+   "linhas": 14368
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 71,
-   "linhas": 8842
+   "arquivos": 73,
+   "linhas": 8982
   },
   "tests/load": {
    "arquivos": 1,
@@ -967,8 +967,8 @@
    "linhas": 54
   },
   "tests/security": {
-   "arquivos": 5,
-   "linhas": 670
+   "arquivos": 6,
+   "linhas": 825
   },
   "tests/services": {
    "arquivos": 13,

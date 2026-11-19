@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "489c13dab90068cdcebd417b58b68877c775daef",
+  "sha": "3da86112a9fcd37b872f1663b9883c14e1042f95",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 02:49 UTC",
-  "files_total": 4380,
-  "code_files": 3741,
-  "code_lines": 548512
+  "generated_at": "2026-11-19 03:09 UTC",
+  "files_total": 4395,
+  "code_files": 3746,
+  "code_lines": 548951
  },
  "version": "1.3.2",
- "facts_hash": "8b1cb06b2e932c02",
+ "facts_hash": "8905b8626e3f6eff",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1457,
-   ".tsx": 1425,
+   ".ts": 1461,
+   ".tsx": 1426,
    ".sql": 674,
    ".mjs": 134,
    ".py": 60,
@@ -64436,7 +64436,7 @@
   {
    "module": "src/lib",
    "files": 167,
-   "lines": 22627,
+   "lines": 22636,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -65598,8 +65598,8 @@
   },
   {
    "module": "tests",
-   "files": 612,
-   "lines": 83659,
+   "files": 617,
+   "lines": 84089,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -80499,6 +80499,10 @@
    {
     "file": "src/lib/security/sanitize-error.ts",
     "text": "* Regra de ouro: para qualquer falha de autorização/credencial, mostre"
+   },
+   {
+    "file": "src/lib/sicoob/sla-cycle.ts",
+    "text": "`find` devolveria o primeiro da ordem recebida: o ciclo certo viria apenas"
    },
    {
     "file": "src/lib/system/dev-gate/DevInfraGate.ts",
@@ -124680,6 +124684,26 @@
     "name": "separa a identidade de pedido da identidade de orçamento"
    },
    {
+    "file": "tests/edge-functions/trends-insights-pagination.test.ts",
+    "name": "paginação dos insights de tendências"
+   },
+   {
+    "file": "tests/edge-functions/trends-insights-pagination.test.ts",
+    "name": "carrega todas as páginas, remove sobreposição e usa o último cursor"
+   },
+   {
+    "file": "tests/edge-functions/trends-insights-pagination.test.ts",
+    "name": "propaga falha de qualquer página sem devolver totais parciais"
+   },
+   {
+    "file": "tests/edge-functions/trends-insights-pagination.test.ts",
+    "name": "interrompe se uma página cheia repetir o mesmo cursor"
+   },
+   {
+    "file": "tests/edge-functions/trends-insights-pagination.test.ts",
+    "name": "monta o filtro keyset composto por data e id"
+   },
+   {
     "file": "tests/edge-functions/verify-email.test.ts",
     "name": "recusa confirmação por UUID sem ler segredos nem acessar rede"
    },
@@ -126842,6 +126866,22 @@
    {
     "file": "tests/hooks/useOrderPayments.test.ts",
     "name": "avança o dia depois da meia-noite em Brasília"
+   },
+   {
+    "file": "tests/hooks/usePaBudget.test.tsx",
+    "name": "usePaBudget"
+   },
+   {
+    "file": "tests/hooks/usePaBudget.test.tsx",
+    "name": "consulta a competência histórica do pedido, alinhada ao created_at"
+   },
+   {
+    "file": "tests/hooks/usePaBudget.test.tsx",
+    "name": "não consulta outra competência quando a data informada é inválida"
+   },
+   {
+    "file": "tests/hooks/usePaBudget.test.tsx",
+    "name": "resolve a competência em UTC como o banco canônico"
    },
    {
     "file": "tests/hooks/usePasswordBreachCheck.test.tsx",
@@ -133204,6 +133244,46 @@
     "name": "nega pedidos e papéis ausentes"
    },
    {
+    "file": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+    "name": "projeção de consumo da verba por status do pedido"
+   },
+   {
+    "file": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+    "name": "não desconta novamente pedidos em %s"
+   },
+   {
+    "file": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+    "name": "não atribui consumo a pedido encerrado quando a verba configurada é zero"
+   },
+   {
+    "file": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+    "name": "sinaliza saldo insuficiente somente quando o pedido ainda precisa consumir verba"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "getSlaCycleStartedAt"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "usa o início da escalada atual, sem reaproveitar o ciclo anterior"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "usa a transição mais recente para aprovação pendente"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "com o status repetido, usa a transição mais recente — não a primeira da lista"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "a escolha não depende da ordem em que o histórico chega"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "não estima o ciclo para status sem transição registrada"
+   },
+   {
     "file": "tests/observability/structured-logger.test.ts",
     "name": "structuredLogger (client)"
    },
@@ -136174,6 +136254,46 @@
    {
     "file": "tests/security/edge-authz-bypass.test.ts",
     "name": "${name}: Bearer inválido → 401"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "política de acesso privilegiado do portal"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "falha fechado quando o usuário não possui papel"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "avalia todos os papéis sem permitir que vendedor amplie o acesso"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "nega CRM e clientId para vendedor"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "permite ao vendedor e ao agente somente o DTO fechado de empresas do orçamento"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "libera contatos somente pela operação dedicada e por company UUID"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "bloqueia relações e projeções relacionais para qualquer papel não-dev, inclusive batch"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "mantém leitura ampla somente para gestão"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "permite escrita somente a dev/admin"
+   },
+   {
+    "file": "tests/security/portal-access-policy.test.ts",
+    "name": "nega vínculo ausente, inativo ou excluído"
    },
    {
     "file": "tests/security/rls-seller-policies.spec.ts",
@@ -215763,9 +215883,12 @@
   },
   "src/lib/sicoob/sla-cycle.ts": {
    "path": "src/lib/sicoob/sla-cycle.ts",
-   "lines": 13,
+   "lines": 22,
    "exports": [
     "function getSlaCycleStartedAt"
+   ],
+   "rule_comments": [
+    "`find` devolveria o primeiro da ordem recebida: o ciclo certo viria apenas"
    ]
   },
   "src/lib/system/dev-infra-messages.ts": {
@@ -243429,6 +243552,18 @@
     "separa a identidade de pedido da identidade de orçamento"
    ]
   },
+  "tests/edge-functions/trends-insights-pagination.test.ts": {
+   "path": "tests/edge-functions/trends-insights-pagination.test.ts",
+   "lines": 56,
+   "is_test": true,
+   "tests": [
+    "paginação dos insights de tendências",
+    "carrega todas as páginas, remove sobreposição e usa o último cursor",
+    "propaga falha de qualquer página sem devolver totais parciais",
+    "interrompe se uma página cheia repetir o mesmo cursor",
+    "monta o filtro keyset composto por data e id"
+   ]
+  },
   "tests/edge-functions/verify-email.test.ts": {
    "path": "tests/edge-functions/verify-email.test.ts",
    "lines": 27,
@@ -244595,6 +244730,17 @@
     "getSicoobFinancialDate",
     "mantém o dia financeiro de Brasília antes da meia-noite local",
     "avança o dia depois da meia-noite em Brasília"
+   ]
+  },
+  "tests/hooks/usePaBudget.test.tsx": {
+   "path": "tests/hooks/usePaBudget.test.tsx",
+   "lines": 79,
+   "is_test": true,
+   "tests": [
+    "usePaBudget",
+    "consulta a competência histórica do pedido, alinhada ao created_at",
+    "não consulta outra competência quando a data informada é inválida",
+    "resolve a competência em UTC como o banco canônico"
    ]
   },
   "tests/hooks/usePasswordBreachCheck.test.tsx": {
@@ -247625,6 +247771,33 @@
     "nega pedidos e papéis ausentes"
    ]
   },
+  "tests/lib/sicoob/orderBudgetProjection.test.ts": {
+   "path": "tests/lib/sicoob/orderBudgetProjection.test.ts",
+   "lines": 88,
+   "is_test": true,
+   "tests": [
+    "projeção de consumo da verba por status do pedido",
+    "não desconta novamente pedidos em %s",
+    "não atribui consumo a pedido encerrado quando a verba configurada é zero",
+    "sinaliza saldo insuficiente somente quando o pedido ainda precisa consumir verba"
+   ]
+  },
+  "tests/lib/sicoob/sla-cycle.test.ts": {
+   "path": "tests/lib/sicoob/sla-cycle.test.ts",
+   "lines": 52,
+   "is_test": true,
+   "rule_comments": [
+    "mudar, o SLA não pode passar a medir o ciclo anterior em silêncio."
+   ],
+   "tests": [
+    "getSlaCycleStartedAt",
+    "usa o início da escalada atual, sem reaproveitar o ciclo anterior",
+    "usa a transição mais recente para aprovação pendente",
+    "com o status repetido, usa a transição mais recente — não a primeira da lista",
+    "a escolha não depende da ordem em que o histórico chega",
+    "não estima o ciclo para status sem transição registrada"
+   ]
+  },
   "tests/load/basic-smoke.js": {
    "path": "tests/load/basic-smoke.js",
    "lines": 41,
@@ -249854,6 +250027,23 @@
    ],
    "uses_service_role": true
   },
+  "tests/security/portal-access-policy.test.ts": {
+   "path": "tests/security/portal-access-policy.test.ts",
+   "lines": 155,
+   "is_test": true,
+   "tests": [
+    "política de acesso privilegiado do portal",
+    "falha fechado quando o usuário não possui papel",
+    "avalia todos os papéis sem permitir que vendedor amplie o acesso",
+    "nega CRM e clientId para vendedor",
+    "permite ao vendedor e ao agente somente o DTO fechado de empresas do orçamento",
+    "libera contatos somente pela operação dedicada e por company UUID",
+    "bloqueia relações e projeções relacionais para qualquer papel não-dev, inclusive batch",
+    "mantém leitura ampla somente para gestão",
+    "permite escrita somente a dev/admin",
+    "nega vínculo ausente, inativo ou excluído"
+   ]
+  },
   "tests/security/rls-seller-policies.spec.ts": {
    "path": "tests/security/rls-seller-policies.spec.ts",
    "lines": 379,
@@ -251035,10 +251225,43 @@
   }
  },
  "git": {
-  "sha": "489c13dab90068cdcebd417b58b68877c775daef",
+  "sha": "3da86112a9fcd37b872f1663b9883c14e1042f95",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "3da8611",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)",
+    "files": [
+     "src/lib/sicoob/sla-cycle.ts",
+     "tests/edge-functions/trends-insights-pagination.test.ts",
+     "tests/hooks/usePaBudget.test.tsx",
+     "tests/lib/sicoob/orderBudgetProjection.test.ts",
+     "tests/lib/sicoob/sla-cycle.test.ts",
+     "tests/security/portal-access-policy.test.ts"
+    ]
+   },
+   {
+    "sha": "f9b0686",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)",
+    "files": [
+     "PENDENCIAS.md",
+     "docs/RECUPERACAO/README.md",
+     "docs/RECUPERACAO/branches.md",
+     "docs/RECUPERACAO/capacidades.md",
+     "docs/RECUPERACAO/cobertura-refs.md",
+     "docs/RECUPERACAO/evidencias.md",
+     "docs/RECUPERACAO/itens.md",
+     "docs/RECUPERACAO/kit-builder.md",
+     "docs/RECUPERACAO/prs.md",
+     "docs/RECUPERACAO/reauditoria.md",
+     "docs/RECUPERACAO/testes-pr119.md"
+    ]
+   },
    {
     "sha": "489c13d",
     "date": "2026-11-18",
@@ -251540,37 +251763,6 @@
     "files": [
      "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql"
     ]
-   },
-   {
-    "sha": "6e81460",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)",
-    "files": [
-     "src/components/orders/FinancialPanel.tsx",
-     "src/components/sicoob/orders/OrderBudgetIntelligence.tsx",
-     "src/components/sicoob/orders/SLABadge.tsx",
-     "src/hooks/sicoob/useSicoobOrder.ts",
-     "src/hooks/usePaBudget.ts",
-     "src/hooks/useSicoobApprovals.ts",
-     "src/lib/sicoob/orderBudgetProjection.ts",
-     "src/lib/sicoob/paBudgetState.ts",
-     "src/lib/sicoob/sla-cycle.ts",
-     "src/pages/sicoob/orders/OrderDetailPage.tsx",
-     "tests/components/data-trust-indicators.test.tsx"
-    ]
-   },
-   {
-    "sha": "5ecb93f",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix: isola rascunho de orcamento por cooperativa e PA (#304)",
-    "files": [
-     "src/hooks/useQuoteBuilderState.ts",
-     "src/lib/quotes/quote-draft-scope.ts",
-     "src/pages/QuoteBuilderPage.tsx",
-     "tests/lib/quotes/quote-draft-scope.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251587,15 +251779,15 @@
     3
    ],
    [
+    "PENDENCIAS.md",
+    2
+   ],
+   [
     "src/contexts/AuthContext.tsx",
     2
    ],
    [
     "src/hooks/useSmartNavigation.ts",
-    2
-   ],
-   [
-    "src/pages/QuoteBuilderPage.tsx",
     2
    ],
    [

@@ -4751,7 +4751,7 @@
     "lib/sicoob",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {
@@ -4788,7 +4788,7 @@
     "getSlaCycleStartedAt"
    ],
    "export_default": null,
-   "linhas": 13,
+   "linhas": 22,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4801,7 +4801,7 @@
    "usado_por_modulos": [
     "pages/sicoob"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

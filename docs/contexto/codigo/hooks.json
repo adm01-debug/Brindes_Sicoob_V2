@@ -6761,7 +6761,7 @@
    "usado_por_arquivos": [
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/usePasswordBreachCheck.tsx",

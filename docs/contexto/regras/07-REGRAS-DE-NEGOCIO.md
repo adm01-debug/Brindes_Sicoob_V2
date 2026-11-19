@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `489c13dab9` · branch `main` · 2026-11-19 02:49 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `3da86112a9` · branch `main` · 2026-11-19 03:09 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5725,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6783 testes em 665 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6812 testes em 670 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5924,6 +5924,7 @@ _nenhum item encontrado_
 | `tests/public-approval/PublicQuoteStatusScreens.test.tsx` | 10 | PublicQuoteStatusScreens · LoadingScreen shows loading text · ExpiredScreen shows expired message · AlreadyRespondedScreen shows approved state … |
 | `tests/scripts/check-critical-test-skip-budget.test.ts` | 10 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/scripts/verifier-arguments.test.ts` | 10 | check-price-freshness-coverage — tolerância · COVERAGE_TOLERANCE_PP=%j é recusado (exit 2) · valor válido passa da validação (falha depois, por falta do coverage-summary) · check-edge-functions-health — --timeout … |
+| `tests/security/portal-access-policy.test.ts` | 10 | política de acesso privilegiado do portal · falha fechado quando o usuário não possui papel · avalia todos os papéis sem permitir que vendedor amplie o acesso · nega CRM e clientId para vendedor … |
 | `tests/utils/price-freshness-timezone.test.ts` | 10 | getPriceFreshness — robustez de timezone · instante 23h atrás escrito em qualquer fuso ainda é  · instante de %i dias atrás produz o mesmo label em todos os fusos · singular  … |
 | `tests/utils/price-freshness.test.ts` | 10 | getPriceFreshness · returns  · returns  · returns  … |
 | `e2e/routes/public/login.spec.ts` | 9 | /login · render: form de login renderiza com campos essenciais · happy: validação de email triggera mensagem inline · auth fail: credenciais erradas → permanece em /login … |
@@ -6028,8 +6029,7 @@ _nenhum item encontrado_
 | `tests/scripts/check-migration-immutability.test.ts` | 7 | check-migration-immutability · migration nova passa · editar migration existente reprova · remover migration existente reprova … |
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
-| `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| … +365 linhas — lista completa em `context.json` | | |
+| … +370 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6514,4 +6514,4 @@ _nenhum item encontrado_
 | * A tela saiu: volta a valer a regra antiga para essa rota. */ | `src/lib/navigation/dirty-registry.ts` |
 | 1. `devOnly: true`           → visível somente para `isDev`. | `src/lib/navigation/filter-dev-only-items.ts` |
 | 2. `adminOnly: true`         → visível somente para `isAdmin` (ou `isDev`). | `src/lib/navigation/filter-dev-only-items.ts` |
-| … +260 linhas — lista completa em `context.json` | |
+| … +261 linhas — lista completa em `context.json` | |
