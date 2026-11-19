@@ -25,9 +25,11 @@ import type { Product, ProductVariation } from "@/types/product-catalog";
  * Confiança do fornecedor a partir do dado que o catálogo realmente tem.
  *
  * Até aqui esta tela passava uma constante vazia, então o prazo de entrega
- * nunca aparecia — a seção existia e não mostrava nada. `leadTimeDays` vem do
- * catálogo e já chega mapeado em `product-mapper.ts:215`; é o prazo do produto,
- * medido, e varia (2, 3 ou 5 dias úteis no catálogo de hoje).
+ * nunca aparecia — a seção existia e não mostrava nada. `leadTimeDays` sai de
+ * `product-mapper.ts:215`, mas só chega preenchido porque `lead_time_days`
+ * está no `PRODUCT_SELECT_FIELDS_DETAIL`: o mapper não inventa coluna que a
+ * consulta não pediu. `tests/lib/external-db/ficha-prazo-entrega.test.ts`
+ * trava essa ligação. É o prazo do produto, medido (2, 3 ou 5 dias úteis).
  *
  * `isVerified` e `avgRating` continuam fora: o catálogo não tem homologação de
  * fornecedor nem avaliação de comprador, e o hook perdido que prometia os dois
