@@ -15806,7 +15806,7 @@
     "AuthProvider"
    ],
    "export_default": null,
-   "linhas": 492,
+   "linhas": 497,
    "dominio": "contexts",
    "hooks_locais": [
     "useAuth",
@@ -17477,12 +17477,13 @@
     "MockupGenerator"
    ],
    "export_default": "MockupGenerator",
-   "linhas": 423,
+   "linhas": 440,
    "dominio": "pages",
    "hooks_locais": [
     "useAuth",
     "useKeyboardShortcuts",
     "useMockupGenerator",
+    "useScreenDirtyState",
     "useTechniqueHandlers"
    ],
    "tabelas": [],
@@ -17984,10 +17985,11 @@
     "QuoteBuilderPage"
    ],
    "export_default": "QuoteBuilderPage",
-   "linhas": 137,
+   "linhas": 141,
    "dominio": "pages",
    "hooks_locais": [
     "useQuoteBuilderState",
+    "useScreenDirtyState",
     "useUnsavedChangesGuard"
    ],
    "tabelas": [],
@@ -18554,9 +18556,10 @@
     "SimuladorWizard"
    ],
    "export_default": "SimuladorWizard",
-   "linhas": 443,
+   "linhas": 455,
    "dominio": "pages",
    "hooks_locais": [
+    "useScreenDirtyState",
     "useSimulatorWizard",
     "useWizardDrafts"
    ],

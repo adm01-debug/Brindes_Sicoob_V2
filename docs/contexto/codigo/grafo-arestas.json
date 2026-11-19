@@ -7894,6 +7894,7 @@
    "src/lib/auth/auth-utils.ts",
    "src/lib/auth/sensitive-browser-data.ts",
    "src/lib/external-db-prewarm.ts",
+   "src/lib/navigation/dirty-registry.ts",
    "src/lib/telemetry/structuredLogger.ts",
    "src/stores/useRecentlyViewedStore.ts",
    "src/types/users.ts"
@@ -9111,6 +9112,9 @@
    "src/integrations/supabase/client.ts",
    "src/integrations/supabase/types.ts"
   ],
+  "src/hooks/useScreenDirtyState.ts": [
+   "src/lib/navigation/dirty-registry.ts"
+  ],
   "src/hooks/useScrollRestoration.ts": [
    "src/lib/uxMetrics.ts"
   ],
@@ -9178,6 +9182,7 @@
    "src/types/simulation.ts"
   ],
   "src/hooks/useSmartNavigation.ts": [
+   "src/lib/navigation/dirty-registry.ts",
    "src/lib/overlay.ts",
    "src/lib/uxMetrics.ts",
    "src/stores/useConfirmDialogStore.ts",
@@ -10220,6 +10225,7 @@
    "src/hooks/useLogoColorAnalysis.ts",
    "src/hooks/useMockupGenerator.ts",
    "src/hooks/useMockupTechniques.ts",
+   "src/hooks/useScreenDirtyState.ts",
    "src/lib/lazyWithRetry.ts",
    "src/pages/mockup-generator/MockupDialogs.tsx",
    "src/pages/mockup-generator/MockupEmptyState.tsx",
@@ -10487,6 +10493,7 @@
    "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/hooks/useQuoteBuilderState.ts",
+   "src/hooks/useScreenDirtyState.ts",
    "src/hooks/useUnsavedChangesGuard.ts",
    "src/lib/utils.ts"
   ],
@@ -10694,6 +10701,7 @@
    "src/components/ui/input.tsx",
    "src/hooks/simulator/useSimulatorWizard.ts",
    "src/hooks/simulator/useWizardDrafts.ts",
+   "src/hooks/useScreenDirtyState.ts",
    "src/types/domain/simulator-wizard.ts"
   ],
   "src/pages/StockDashboardPage.tsx": [

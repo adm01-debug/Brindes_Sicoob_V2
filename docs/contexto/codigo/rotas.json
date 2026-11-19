@@ -449,7 +449,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 270
+   "arquivos_puxados": 271
   },
   {
    "protegida": false,
@@ -716,7 +716,7 @@
     "img",
     "manager"
    ],
-   "arquivos_puxados": 158
+   "arquivos_puxados": 159
   },
   {
    "protegida": true,
@@ -803,7 +803,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 47
+   "arquivos_puxados": 48
   },
   {
    "protegida": true,
@@ -1273,7 +1273,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 40
+   "arquivos_puxados": 41
   },
   {
    "protegida": true,
@@ -1436,7 +1436,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 44
+   "arquivos_puxados": 45
   },
   {
    "protegida": true,
@@ -1637,7 +1637,7 @@
     "menu",
     "tooltip"
    ],
-   "arquivos_puxados": 31
+   "arquivos_puxados": 32
   },
   {
    "protegida": true,
@@ -1819,7 +1819,7 @@
     "manager",
     "public"
    ],
-   "arquivos_puxados": 34
+   "arquivos_puxados": 35
   },
   {
    "protegida": true,
@@ -1899,7 +1899,7 @@
     "menu",
     "tooltip"
    ],
-   "arquivos_puxados": 29
+   "arquivos_puxados": 30
   },
   {
    "protegida": true,
@@ -1945,7 +1945,7 @@
     "menu",
     "tooltip"
    ],
-   "arquivos_puxados": 25
+   "arquivos_puxados": 26
   },
   {
    "protegida": true,
@@ -2070,7 +2070,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 71
+   "arquivos_puxados": 72
   },
   {
    "protegida": true,
@@ -2313,7 +2313,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 49
+   "arquivos_puxados": 50
   },
   {
    "protegida": true,
@@ -2578,7 +2578,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 77
+   "arquivos_puxados": 78
   },
   {
    "protegida": true,
@@ -2765,7 +2765,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 37
+   "arquivos_puxados": 38
   },
   {
    "protegida": false,
@@ -2980,7 +2980,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 101
+   "arquivos_puxados": 102
   },
   {
    "protegida": true,
@@ -3069,7 +3069,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 101
+   "arquivos_puxados": 102
   },
   {
    "protegida": true,
@@ -3158,7 +3158,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 101
+   "arquivos_puxados": 102
   },
   {
    "protegida": true,
@@ -3231,7 +3231,7 @@
     "presentation",
     "supervisor"
    ],
-   "arquivos_puxados": 45
+   "arquivos_puxados": 46
   },
   {
    "protegida": false,
@@ -3608,7 +3608,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 174
+   "arquivos_puxados": 175
   },
   {
    "protegida": true,
@@ -3771,7 +3771,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 156
+   "arquivos_puxados": 157
   },
   {
    "protegida": true,
@@ -3969,7 +3969,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 30
+   "arquivos_puxados": 31
   },
   {
    "protegida": true,
@@ -4084,7 +4084,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 108
+   "arquivos_puxados": 109
   },
   {
    "protegida": true,
@@ -4140,7 +4140,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 40
+   "arquivos_puxados": 41
   },
   {
    "protegida": false,
@@ -4613,7 +4613,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 173
+   "arquivos_puxados": 174
   },
   {
    "protegida": true,
@@ -4721,7 +4721,7 @@
     "status",
     "user"
    ],
-   "arquivos_puxados": 91
+   "arquivos_puxados": 92
   },
   {
    "protegida": true,
@@ -5181,7 +5181,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 254
+   "arquivos_puxados": 255
   },
   {
    "protegida": true,
@@ -5238,7 +5238,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 38
+   "arquivos_puxados": 39
   },
   {
    "protegida": true,
@@ -5299,7 +5299,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 37
+   "arquivos_puxados": 38
   },
   {
    "protegida": true,
@@ -5579,7 +5579,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 156
+   "arquivos_puxados": 157
   },
   {
    "protegida": true,
@@ -5642,7 +5642,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 36
+   "arquivos_puxados": 37
   },
   {
    "protegida": false,
@@ -5803,7 +5803,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 130
+   "arquivos_puxados": 131
   },
   {
    "protegida": true,
@@ -5975,7 +5975,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 110
+   "arquivos_puxados": 111
   },
   {
    "protegida": false,
@@ -6056,7 +6056,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 33
+   "arquivos_puxados": 34
   },
   {
    "protegida": false,
@@ -6163,7 +6163,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 43
+   "arquivos_puxados": 44
   },
   {
    "protegida": false,
@@ -6226,7 +6226,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 43
+   "arquivos_puxados": 44
   },
   {
    "protegida": false,
@@ -6353,7 +6353,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 111
+   "arquivos_puxados": 112
   },
   {
    "protegida": true,
@@ -6474,7 +6474,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 56
+   "arquivos_puxados": 57
   },
   {
    "protegida": true,
@@ -6596,7 +6596,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 117
+   "arquivos_puxados": 118
   },
   {
    "protegida": true,
@@ -6636,6 +6636,7 @@
     "useGenericFuzzySearch",
     "useKeyboardShortcuts",
     "useLayoutActions",
+    "useLocation",
     "useLogoColorAnalysis",
     "useLogoDrag",
     "useLogoDrop",
@@ -6658,6 +6659,7 @@
     "useQuery",
     "useRef",
     "useRelatedProducts",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useState",
     "useSuccessAnimation",
@@ -6701,6 +6703,7 @@
     "useProductsContextSafe",
     "useProductsLightweight",
     "useRelatedProducts",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useTechniqueHandlers",
     "useUserProfile",
@@ -6740,7 +6743,7 @@
     "tooltip",
     "user"
    ],
-   "arquivos_puxados": 163
+   "arquivos_puxados": 165
   },
   {
    "protegida": true,
@@ -6791,7 +6794,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 32
+   "arquivos_puxados": 33
   },
   {
    "protegida": true,
@@ -6934,7 +6937,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 161
+   "arquivos_puxados": 162
   },
   {
    "protegida": true,
@@ -7008,7 +7011,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 49
+   "arquivos_puxados": 50
   },
   {
    "protegida": true,
@@ -7151,7 +7154,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 142
+   "arquivos_puxados": 143
   },
   {
    "protegida": true,
@@ -7260,7 +7263,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 111
+   "arquivos_puxados": 112
   },
   {
    "protegida": true,
@@ -7429,7 +7432,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 153
+   "arquivos_puxados": 154
   },
   {
    "protegida": true,
@@ -7491,6 +7494,7 @@
     "useSalesScope",
     "useSaveTemplate",
     "useScopedQuoteDraftId",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useSearchParams",
     "useSellerDiscountLimits",
@@ -7530,6 +7534,7 @@
     "useRealtimeSync",
     "useRelatedProducts",
     "useSalesScope",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useSellerDiscountLimits",
     "useUnsavedChangesGuard",
@@ -7593,7 +7598,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 157
+   "arquivos_puxados": 159
   },
   {
    "protegida": true,
@@ -7762,7 +7767,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 153
+   "arquivos_puxados": 154
   },
   {
    "protegida": true,
@@ -7858,7 +7863,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 85
+   "arquivos_puxados": 86
   },
   {
    "protegida": true,
@@ -7953,7 +7958,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 93
+   "arquivos_puxados": 94
   },
   {
    "protegida": true,
@@ -8062,7 +8067,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 111
+   "arquivos_puxados": 112
   },
   {
    "protegida": true,
@@ -8124,6 +8129,7 @@
     "useSalesScope",
     "useSaveTemplate",
     "useScopedQuoteDraftId",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useSearchParams",
     "useSellerDiscountLimits",
@@ -8163,6 +8169,7 @@
     "useRealtimeSync",
     "useRelatedProducts",
     "useSalesScope",
+    "useScreenDirtyState",
     "useSearchAsYouType",
     "useSellerDiscountLimits",
     "useUnsavedChangesGuard",
@@ -8226,7 +8233,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 157
+   "arquivos_puxados": 159
   },
   {
    "protegida": true,
@@ -8321,7 +8328,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 101
+   "arquivos_puxados": 102
   },
   {
    "protegida": true,
@@ -8384,7 +8391,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 39
+   "arquivos_puxados": 40
   },
   {
    "protegida": true,
@@ -8559,7 +8566,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 126
+   "arquivos_puxados": 127
   },
   {
    "protegida": true,
@@ -8745,7 +8752,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 132
+   "arquivos_puxados": 133
   },
   {
    "protegida": true,
@@ -8847,7 +8854,7 @@
     "all",
     "manager"
    ],
-   "arquivos_puxados": 51
+   "arquivos_puxados": 52
   },
   {
    "protegida": false,
@@ -9045,7 +9052,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 185
+   "arquivos_puxados": 186
   },
   {
    "protegida": true,
@@ -9435,7 +9442,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 254
+   "arquivos_puxados": 255
   },
   {
    "protegida": false,
@@ -9768,7 +9775,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 38
+   "arquivos_puxados": 39
   },
   {
    "protegida": true,
@@ -9910,7 +9917,7 @@
     "tablist",
     "toolbar"
    ],
-   "arquivos_puxados": 146
+   "arquivos_puxados": 147
   },
   {
    "protegida": false,
@@ -10106,7 +10113,7 @@
     "gestor_singular",
     "manager"
    ],
-   "arquivos_puxados": 42
+   "arquivos_puxados": 43
   },
   {
    "protegida": true,
@@ -10262,7 +10269,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 132
+   "arquivos_puxados": 133
   },
   {
    "protegida": true,
@@ -10335,7 +10342,7 @@
     "gestor_singular",
     "manager"
    ],
-   "arquivos_puxados": 36
+   "arquivos_puxados": 37
   },
   {
    "protegida": true,
@@ -10417,7 +10424,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 34
+   "arquivos_puxados": 35
   },
   {
    "protegida": true,
@@ -10450,6 +10457,7 @@
     "useQueryClient",
     "useReducer",
     "useRef",
+    "useScreenDirtyState",
     "useSimulatorWizard",
     "useState",
     "useUndoableReducer",
@@ -10467,6 +10475,7 @@
     "useExternalProductsList",
     "useLivePricePreview",
     "useProductPrintAreasV2",
+    "useScreenDirtyState",
     "useSimulatorWizard",
     "useUndoableReducer",
     "useWizardDrafts",
@@ -10486,7 +10495,7 @@
    "papeis": [
     "dialog"
    ],
-   "arquivos_puxados": 86
+   "arquivos_puxados": 88
   },
   {
    "protegida": true,
@@ -10636,7 +10645,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 26
+   "arquivos_puxados": 27
   },
   {
    "protegida": false,
@@ -10687,7 +10696,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 26
+   "arquivos_puxados": 27
   },
   {
    "protegida": true,
@@ -10799,7 +10808,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 64
+   "arquivos_puxados": 65
   },
   {
    "protegida": true,
@@ -10854,7 +10863,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 31
+   "arquivos_puxados": 32
   },
   {
    "protegida": false,

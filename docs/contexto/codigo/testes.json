@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 838,
+ "total": 841,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 613
+  "unit": 616
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 591
+   "arquivos": 594
   },
   {
    "padrao": "e2e/",
@@ -4478,11 +4478,11 @@
   {
    "arquivo": "tests/hooks/useMockupGenerator.test.ts",
    "tipo": "unit",
-   "linhas": 145,
+   "linhas": 168,
    "testa": [
     "src/hooks/useMockupGenerator.ts"
    ],
-   "casos": 4
+   "casos": 5
   },
   {
    "arquivo": "tests/hooks/useOnboarding.test.tsx",
@@ -4818,6 +4818,19 @@
     "src/types/domain/simulator-wizard.ts"
    ],
    "casos": 16
+  },
+  {
+   "arquivo": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+   "tipo": "unit",
+   "linhas": 153,
+   "testa": [
+    "src/hooks/useScreenDirtyState.ts",
+    "src/hooks/useSmartNavigation.ts",
+    "src/lib/navigation/dirty-registry.ts",
+    "src/stores/useConfirmDialogStore.ts",
+    "src/stores/useNavigationStore.ts"
+   ],
+   "casos": 6
   },
   {
    "arquivo": "tests/hooks/useSmartNavigation.test.tsx",
@@ -5435,6 +5448,24 @@
     "src/lib/masked-suffix.ts"
    ],
    "casos": 24
+  },
+  {
+   "arquivo": "tests/lib/navigation-dirty-registry.test.ts",
+   "tipo": "unit",
+   "linhas": 51,
+   "testa": [
+    "src/lib/navigation/dirty-registry.ts"
+   ],
+   "casos": 5
+  },
+  {
+   "arquivo": "tests/lib/navigation/dirty-registry.test.ts",
+   "tipo": "unit",
+   "linhas": 63,
+   "testa": [
+    "src/lib/navigation/dirty-registry.ts"
+   ],
+   "casos": 5
   },
   {
    "arquivo": "tests/lib/notifications-metrics-budget.test.ts",
@@ -7552,13 +7583,14 @@
   "src/hooks/useReplenishments.ts": 1,
   "src/hooks/useReplenishmentsSelectionMode.ts": 1,
   "src/hooks/useSalesGoals.ts": 1,
+  "src/hooks/useScreenDirtyState.ts": 1,
   "src/hooks/useScroll.ts": 1,
   "src/hooks/useScrollRestoration.ts": 1,
   "src/hooks/useSearch.ts": 1,
   "src/hooks/useSellerCarts.ts": 1,
   "src/hooks/useSellerDiscountLimits.ts": 1,
   "src/hooks/useSimilarProducts.ts": 1,
-  "src/hooks/useSmartNavigation.ts": 1,
+  "src/hooks/useSmartNavigation.ts": 2,
   "src/hooks/useSparklineSales.tsx": 1,
   "src/hooks/useSpeechRecognition.ts": 1,
   "src/hooks/useStockHistory.ts": 1,
@@ -7616,6 +7648,7 @@
   "src/lib/kit-builder/volume-calculator.ts": 1,
   "src/lib/logger.ts": 1,
   "src/lib/masked-suffix.ts": 2,
+  "src/lib/navigation/dirty-registry.ts": 3,
   "src/lib/navigation/filter-dev-only-items.ts": 1,
   "src/lib/navigation/filter-restricted-items.ts": 1,
   "src/lib/notifications-metrics.ts": 8,
@@ -7703,9 +7736,9 @@
   "src/services/sicoob/logisticsReportService.ts": 1,
   "src/services/sicoob/orderService.ts": 1,
   "src/stores/useComparisonStore.ts": 1,
-  "src/stores/useConfirmDialogStore.ts": 3,
+  "src/stores/useConfirmDialogStore.ts": 4,
   "src/stores/useFavoritesStore.ts": 3,
-  "src/stores/useNavigationStore.ts": 2,
+  "src/stores/useNavigationStore.ts": 3,
   "src/stores/useRecentlyViewedStore.ts": 3,
   "src/types/advancedFilters.ts": 1,
   "src/types/domain/simulator-wizard.ts": 1,

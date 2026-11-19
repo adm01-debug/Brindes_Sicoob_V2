@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e0e36d44c700670eba068fb947efe83ddb65eb0b",
+  "sha": "489c13dab90068cdcebd417b58b68877c775daef",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 02:29 UTC",
-  "files_total": 4375,
-  "code_files": 3736,
-  "code_lines": 548081
+  "generated_at": "2026-11-19 02:49 UTC",
+  "files_total": 4380,
+  "code_files": 3741,
+  "code_lines": 548512
  },
  "version": "1.3.2",
- "facts_hash": "483917dbc4d27343",
+ "facts_hash": "8b1cb06b2e932c02",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1453,
-   ".tsx": 1424,
+   ".ts": 1457,
+   ".tsx": 1425,
    ".sql": 674,
    ".mjs": 134,
    ".py": 60,
@@ -54756,7 +54756,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 77
+    "deps_count": 78
    },
    {
     "path": "",
@@ -54785,7 +54785,7 @@
      "get_industry_top_products",
      "get_sicoob_access_state"
     ],
-    "deps_count": 117
+    "deps_count": 118
    },
    {
     "path": "",
@@ -54809,7 +54809,7 @@
      "get_industry_top_products",
      "get_sicoob_access_state"
     ],
-    "deps_count": 65
+    "deps_count": 66
    },
    {
     "path": "",
@@ -54872,7 +54872,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 93
+    "deps_count": 94
    },
    {
     "path": "",
@@ -54894,7 +54894,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 73
+    "deps_count": 74
    },
    {
     "path": "",
@@ -54914,7 +54914,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 130
+    "deps_count": 131
    },
    {
     "path": "",
@@ -54947,7 +54947,7 @@
      "get_sicoob_access_state",
      "get_top_collected_products"
     ],
-    "deps_count": 157
+    "deps_count": 158
    },
    {
     "path": "",
@@ -54973,7 +54973,7 @@
      "create_organization_with_owner",
      "get_sicoob_access_state"
     ],
-    "deps_count": 109
+    "deps_count": 110
    },
    {
     "path": "",
@@ -54998,7 +54998,7 @@
      "get_top_compared_products",
      "get_user_recent_comparisons"
     ],
-    "deps_count": 106
+    "deps_count": 107
    },
    {
     "path": "",
@@ -55034,7 +55034,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 112
+    "deps_count": 113
    },
    {
     "path": "",
@@ -55082,7 +55082,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 56
+    "deps_count": 57
    },
    {
     "path": "",
@@ -55113,7 +55113,7 @@
      "get_sicoob_access_state",
      "get_top_favorited_products"
     ],
-    "deps_count": 180
+    "deps_count": 181
    },
    {
     "path": "",
@@ -55147,7 +55147,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 254
+    "deps_count": 255
    },
    {
     "path": "",
@@ -55175,7 +55175,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 64
+    "deps_count": 65
    },
    {
     "path": "",
@@ -55250,7 +55250,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 141
+    "deps_count": 142
    },
    {
     "path": "",
@@ -55289,7 +55289,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 134
+    "deps_count": 135
    },
    {
     "path": "",
@@ -55307,7 +55307,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 33
+    "deps_count": 34
    },
    {
     "path": "",
@@ -55342,7 +55342,7 @@
      "ensure_default_favorite_list",
      "get_sicoob_access_state"
     ],
-    "deps_count": 221
+    "deps_count": 222
    },
    {
     "path": "",
@@ -55373,7 +55373,7 @@
      "get_sicoob_access_state",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 173
+    "deps_count": 174
    },
    {
     "path": "",
@@ -55394,7 +55394,7 @@
      "increment_kit_template_usage",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 52
+    "deps_count": 53
    },
    {
     "path": "",
@@ -55419,7 +55419,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 127
+    "deps_count": 128
    },
    {
     "path": "",
@@ -55467,7 +55467,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 115
+    "deps_count": 116
    },
    {
     "path": "",
@@ -55493,7 +55493,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 146
+    "deps_count": 148
    },
    {
     "path": "",
@@ -55510,7 +55510,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 28
+    "deps_count": 29
    },
    {
     "path": "",
@@ -55542,7 +55542,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 74
+    "deps_count": 75
    },
    {
     "path": "",
@@ -55561,7 +55561,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 125
+    "deps_count": 126
    },
    {
     "path": "",
@@ -55605,7 +55605,7 @@
      "record_sicoob_order_payment",
      "refund_sicoob_order_payment"
     ],
-    "deps_count": 79
+    "deps_count": 80
    },
    {
     "path": "",
@@ -55675,7 +55675,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 123
+    "deps_count": 124
    },
    {
     "path": "",
@@ -55739,7 +55739,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 112
+    "deps_count": 113
    },
    {
     "path": "",
@@ -55756,7 +55756,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 43
+    "deps_count": 44
    },
    {
     "path": "",
@@ -55765,7 +55765,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 29
+    "deps_count": 30
    },
    {
     "path": "",
@@ -55794,7 +55794,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 115
+    "deps_count": 116
    },
    {
     "path": "",
@@ -55824,7 +55824,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 173
+    "deps_count": 174
    },
    {
     "path": "",
@@ -55844,7 +55844,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 79
+    "deps_count": 80
    },
    {
     "path": "",
@@ -55956,7 +55956,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 33
+    "deps_count": 34
    },
    {
     "path": "",
@@ -56016,7 +56016,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 164
+    "deps_count": 166
    },
    {
     "path": "",
@@ -56067,7 +56067,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 75
+    "deps_count": 76
    },
    {
     "path": "",
@@ -56092,7 +56092,7 @@
      "bulk_update_quote_status_atomic",
      "get_sicoob_access_state"
     ],
-    "deps_count": 101
+    "deps_count": 102
    },
    {
     "path": "",
@@ -56158,7 +56158,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 162
+    "deps_count": 163
    },
    {
     "path": "",
@@ -56191,7 +56191,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 90
+    "deps_count": 91
    },
    {
     "path": "",
@@ -56226,7 +56226,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 104
+    "deps_count": 105
    },
    {
     "path": "",
@@ -56261,7 +56261,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 89
+    "deps_count": 90
    },
    {
     "path": "",
@@ -56278,7 +56278,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 46
+    "deps_count": 47
    },
    {
     "path": "",
@@ -56297,7 +56297,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 104
+    "deps_count": 105
    },
    {
     "path": "",
@@ -56306,7 +56306,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 27
+    "deps_count": 28
    },
    {
     "path": "",
@@ -56315,7 +56315,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 23
+    "deps_count": 24
    },
    {
     "path": "",
@@ -56336,7 +56336,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 103
+    "deps_count": 104
    },
    {
     "path": "",
@@ -56355,7 +56355,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 92
+    "deps_count": 94
    },
    {
     "path": "",
@@ -56374,7 +56374,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 85
+    "deps_count": 86
    },
    {
     "path": "",
@@ -56402,7 +56402,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 43
+    "deps_count": 44
    },
    {
     "path": "",
@@ -56428,7 +56428,7 @@
      "get_sicoob_access_state",
      "has_role"
     ],
-    "deps_count": 91
+    "deps_count": 92
    },
    {
     "path": "",
@@ -56455,7 +56455,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 35
+    "deps_count": 36
    },
    {
     "path": "",
@@ -56614,7 +56614,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 128
+    "deps_count": 129
    },
    {
     "path": "",
@@ -56632,7 +56632,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 33
+    "deps_count": 34
    },
    {
     "path": "",
@@ -56724,7 +56724,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 34
+    "deps_count": 35
    },
    {
     "path": "/reset-password",
@@ -56750,7 +56750,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 22
+    "deps_count": 23
    },
    {
     "path": "/verificacao",
@@ -62870,6 +62870,10 @@
     "file": "src/hooks/useScheduledReports.ts"
    },
    {
+    "name": "useScreenDirtyState",
+    "file": "src/hooks/useScreenDirtyState.ts"
+   },
+   {
     "name": "useScroll",
     "file": "src/hooks/useScroll.ts"
    },
@@ -64079,7 +64083,7 @@
   {
    "module": "src/contexts",
    "files": 10,
-   "lines": 1517,
+   "lines": 1522,
    "tables": [
     "organization_members",
     "organizations"
@@ -64153,8 +64157,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 313,
-   "lines": 47168,
+   "files": 314,
+   "lines": 47211,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64431,8 +64435,8 @@
   },
   {
    "module": "src/lib",
-   "files": 166,
-   "lines": 22567,
+   "files": 167,
+   "lines": 22627,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64600,7 +64604,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 50880,
+   "lines": 50913,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65594,8 +65598,8 @@
   },
   {
    "module": "tests",
-   "files": 609,
-   "lines": 83369,
+   "files": 612,
+   "lines": 83659,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -79773,6 +79777,14 @@
     "text": "máximo, no próximo intervalo."
    },
    {
+    "file": "src/contexts/AuthContext.tsx",
+    "text": "O estado sujo de quem saiu não pode interrogar o próximo login."
+   },
+   {
+    "file": "src/contexts/AuthContext.tsx",
+    "text": "O estado sujo de quem saiu não pode interrogar o próximo login."
+   },
+   {
     "file": "src/contexts/DevChallengeContext.tsx",
     "text": "- Apenas UM modal de challenge fica aberto por vez."
    },
@@ -80359,6 +80371,10 @@
    {
     "file": "src/lib/kit-builder/volume-calculator.ts",
     "text": "* Verifica se a caixa está no limite de alerta"
+   },
+   {
+    "file": "src/lib/navigation/dirty-registry.ts",
+    "text": "* A tela saiu: volta a valer a regra antiga para essa rota. */"
    },
    {
     "file": "src/lib/navigation/filter-dev-only-items.ts",
@@ -126769,6 +126785,14 @@
    },
    {
     "file": "tests/hooks/useMockupGenerator.test.ts",
+    "name": "restauração de rascunho"
+   },
+   {
+    "file": "tests/hooks/useMockupGenerator.test.ts",
+    "name": "restaura a empresa quando o rascunho só tem a empresa"
+   },
+   {
+    "file": "tests/hooks/useMockupGenerator.test.ts",
     "name": "GeneratedMockup data shape"
    },
    {
@@ -128010,6 +128034,34 @@
    {
     "file": "tests/hooks/useSimulatorWizard.test.ts",
     "name": "can advance when prior steps are complete"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "voltar x registro de estado sujo"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "tela ALTERADA pergunta, e "
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "a tela escolhe o texto do aviso, em vez do genérico"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "tela montada DE VERDADE declara pelo hook, e o voltar obedece"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "DEPOIS do desmonte da tela, volta a valer a regra antiga da rota crítica"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "rota NÃO crítica sem declaração continua saindo sem perguntar"
    },
    {
     "file": "tests/hooks/useSmartNavigation.test.tsx",
@@ -131004,6 +131056,30 @@
     "name": "comprimento total sempre 8"
    },
    {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "registro de trabalho não salvo por rota"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "rota que nao declarou nada continua sem estado — a regra antiga vale"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "tela limpa declara que nao ha o que perder"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "tela com trabalho pendente declara sujo"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "ao desmontar, a rota volta a nao ter estado declarado"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "rotas sao independentes entre si"
+   },
+   {
     "file": "tests/lib/notifications-metrics-budget.test.ts",
     "name": "notifications-metrics — badge budget hit/miss counters"
    },
@@ -132850,6 +132926,30 @@
    {
     "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
     "name": "o percentual do cliente continua sendo mostrado — ele foi medido"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "dirty-registry"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "registra e remove rotas sujas"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "rota sem mensagem própria devolve null, para o chamador usar o texto padrão"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "a mensagem é por rota e não vaza para outra"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "esquecer a rota devolve a decisão à regra antiga"
+   },
+   {
+    "file": "tests/lib/navigation/dirty-registry.test.ts",
+    "name": "limpar o registro invalida sujeira e mensagem — é o que o logout faz"
    },
    {
     "file": "tests/lib/personalization/rpc-contracts.test.ts",
@@ -200451,7 +200551,7 @@
   },
   "src/contexts/AuthContext.tsx": {
    "path": "src/contexts/AuthContext.tsx",
-   "lines": 492,
+   "lines": 497,
    "exports": [
     "const AuthProvider",
     "function useAuth"
@@ -200477,7 +200577,9 @@
     }
    ],
    "rule_comments": [
-    "máximo, no próximo intervalo."
+    "máximo, no próximo intervalo.",
+    "O estado sujo de quem saiu não pode interrogar o próximo login.",
+    "O estado sujo de quem saiu não pode interrogar o próximo login."
    ],
    "hooks": [
     "useAuth"
@@ -204732,7 +204834,7 @@
   },
   "src/hooks/useMockupGenerator.ts": {
    "path": "src/hooks/useMockupGenerator.ts",
-   "lines": 600,
+   "lines": 603,
    "exports": [
     "function useMockupGenerator"
    ],
@@ -207121,6 +207223,17 @@
     "return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);"
    ]
   },
+  "src/hooks/useScreenDirtyState.ts": {
+   "path": "src/hooks/useScreenDirtyState.ts",
+   "lines": 18,
+   "exports": [
+    "function useScreenDirtyState"
+   ],
+   "doc": "Liga o estado real de uma tela ao registro que o voltar consulta. Sem isto, a decisão de pedir confirmação depende do pathname e não do que o usuário fez — ver `src/lib/navigation/dirty-registry.ts`.",
+   "hooks": [
+    "useScreenDirtyState"
+   ]
+  },
   "src/hooks/useScroll.ts": {
    "path": "src/hooks/useScroll.ts",
    "lines": 148,
@@ -207676,7 +207789,7 @@
   },
   "src/hooks/useSmartNavigation.ts": {
    "path": "src/hooks/useSmartNavigation.ts",
-   "lines": 145,
+   "lines": 167,
    "exports": [
     "function isCriticalPathname",
     "function useSmartNavigation"
@@ -214327,6 +214440,21 @@
    ],
    "doc": "SSOT for sidebar / navigation \"active\" matching. Rules: - Root href \"/\" only matches the exact pathname \"/\" (otherwise it would match every route). - When `exact` is true, only an exact pathname match counts as active. - Otherwise, the item is active when the current pathname equals the href OR is a …"
   },
+  "src/lib/navigation/dirty-registry.ts": {
+   "path": "src/lib/navigation/dirty-registry.ts",
+   "lines": 60,
+   "exports": [
+    "function declararEstadoDaRota",
+    "function esquecerRota",
+    "function rotaTemEstadoDeclarado",
+    "function rotaEstaSuja",
+    "function mensagemDaRota",
+    "function limparRegistroDeRotas"
+   ],
+   "rule_comments": [
+    "* A tela saiu: volta a valer a regra antiga para essa rota. */"
+   ]
+  },
   "src/lib/navigation/filter-dev-only-items.ts": {
    "path": "src/lib/navigation/filter-dev-only-items.ts",
    "lines": 56,
@@ -216663,7 +216791,7 @@
   },
   "src/pages/MockupGenerator.tsx": {
    "path": "src/pages/MockupGenerator.tsx",
-   "lines": 423,
+   "lines": 440,
    "exports": [
     "function MockupGenerator"
    ],
@@ -217140,7 +217268,7 @@
   },
   "src/pages/QuoteBuilderPage.tsx": {
    "path": "src/pages/QuoteBuilderPage.tsx",
-   "lines": 137,
+   "lines": 141,
    "exports": [
     "function QuoteBuilderPage"
    ],
@@ -217470,7 +217598,7 @@
   },
   "src/pages/SimuladorWizard.tsx": {
    "path": "src/pages/SimuladorWizard.tsx",
-   "lines": 443,
+   "lines": 455,
    "exports": [
     "function SimuladorWizard"
    ],
@@ -244417,13 +244545,15 @@
   },
   "tests/hooks/useMockupGenerator.test.ts": {
    "path": "tests/hooks/useMockupGenerator.test.ts",
-   "lines": 145,
+   "lines": 168,
    "is_test": true,
    "doc": "useMockupGenerator — testes leves: mockamos TODAS as dependências pesadas antes de importar o hook para evitar pagar o custo de transformar o grafo de imports (image-converter, ProductsContext, MultiAreaManager, mockup service, MockupSuccessToast, etc.). Mantém a cobertura: shape de dados (smoke) + …",
    "tests": [
     "useMockupGenerator (smoke)",
     "exporta o hook como função",
     "monta sem crashar com providers padrão",
+    "restauração de rascunho",
+    "restaura a empresa quando o rascunho só tem a empresa",
     "GeneratedMockup data shape",
     "valida estrutura completa",
     "aceita campos opcionais nulos"
@@ -245106,6 +245236,30 @@
     "can go to comparison if personalizations exist",
     "cannot skip ahead without completing prior steps",
     "can advance when prior steps are complete"
+   ]
+  },
+  "tests/hooks/useSmartNavigation.registro-sujo.test.tsx": {
+   "path": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+   "lines": 153,
+   "is_test": true,
+   "params": [
+    {
+     "name": "ROTA_CRITICA",
+     "value": "'/simulador'"
+    }
+   ],
+   "rule_comments": [
+    "continuariam verdes e a regra desta PR morreria em silêncio. Estes testes"
+   ],
+   "doc": "Integração entre o \"voltar\" e o registro de estado sujo por rota. As catracas do registro são isoladas: exercitam `declararEstadoDaRota` / `rotaEstaSuja` direto. Se `useSmartNavigation` parasse de consultar o registro — voltando a decidir só pelo pathname — aquelas catracas continuariam verdes e a r …",
+   "tests": [
+    "voltar x registro de estado sujo",
+    "tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica",
+    "tela ALTERADA pergunta, e ",
+    "a tela escolhe o texto do aviso, em vez do genérico",
+    "tela montada DE VERDADE declara pelo hook, e o voltar obedece",
+    "DEPOIS do desmonte da tela, volta a valer a regra antiga da rota crítica",
+    "rota NÃO crítica sem declaração continua saindo sem perguntar"
    ]
   },
   "tests/hooks/useSmartNavigation.test.tsx": {
@@ -246595,6 +246749,20 @@
     "comprimento total sempre 8"
    ]
   },
+  "tests/lib/navigation-dirty-registry.test.ts": {
+   "path": "tests/lib/navigation-dirty-registry.test.ts",
+   "lines": 51,
+   "is_test": true,
+   "doc": "O voltar pedia confirmação por pathname: em /simulador, /orcamentos/novo e /mockup-generator ele afirmava \"Você tem alterações não salvas nesta tela\" a cada clique, com a tela em branco inclusive. Interrogar sem motivo ensina o usuário a confirmar sem ler.",
+   "tests": [
+    "registro de trabalho não salvo por rota",
+    "rota que nao declarou nada continua sem estado — a regra antiga vale",
+    "tela limpa declara que nao ha o que perder",
+    "tela com trabalho pendente declara sujo",
+    "ao desmontar, a rota volta a nao ter estado declarado",
+    "rotas sao independentes entre si"
+   ]
+  },
   "tests/lib/notifications-metrics-budget.test.ts": {
    "path": "tests/lib/notifications-metrics-budget.test.ts",
    "lines": 195,
@@ -247330,6 +247498,20 @@
     "marca o comparativo como indisponível em vez de preencher com zero",
     "com o setor respondendo, o percentual volta a ser número",
     "o percentual do cliente continua sendo mostrado — ele foi medido"
+   ]
+  },
+  "tests/lib/navigation/dirty-registry.test.ts": {
+   "path": "tests/lib/navigation/dirty-registry.test.ts",
+   "lines": 63,
+   "is_test": true,
+   "doc": "Recupera o contrato que vivia em `useNavigationGuardStore` (branch de produção pré-re-raiz, PRs #308/#318 fechadas) sobre o registro que a main tem: mensagem por escopo e limpeza total no logout.",
+   "tests": [
+    "dirty-registry",
+    "registra e remove rotas sujas",
+    "rota sem mensagem própria devolve null, para o chamador usar o texto padrão",
+    "a mensagem é por rota e não vaza para outra",
+    "esquecer a rota devolve a decisão à regra antiga",
+    "limpar o registro invalida sujeira e mensagem — é o que o logout faz"
    ]
   },
   "tests/lib/personalization/rpc-contracts.test.ts": {
@@ -250853,10 +251035,30 @@
   }
  },
  "git": {
-  "sha": "e0e36d44c700670eba068fb947efe83ddb65eb0b",
+  "sha": "489c13dab90068cdcebd417b58b68877c775daef",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "489c13d",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)",
+    "files": [
+     "src/contexts/AuthContext.tsx",
+     "src/hooks/useMockupGenerator.ts",
+     "src/hooks/useScreenDirtyState.ts",
+     "src/hooks/useSmartNavigation.ts",
+     "src/lib/navigation/dirty-registry.ts",
+     "src/pages/MockupGenerator.tsx",
+     "src/pages/QuoteBuilderPage.tsx",
+     "src/pages/SimuladorWizard.tsx",
+     "tests/hooks/useMockupGenerator.test.ts",
+     "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+     "tests/lib/navigation-dirty-registry.test.ts",
+     "tests/lib/navigation/dirty-registry.test.ts"
+    ]
+   },
    {
     "sha": "e0e36d4",
     "date": "2026-11-18",
@@ -251369,57 +251571,6 @@
      "src/pages/QuoteBuilderPage.tsx",
      "tests/lib/quotes/quote-draft-scope.test.ts"
     ]
-   },
-   {
-    "sha": "c2b0099",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)",
-    "files": [
-     "src/components/admin/ImageUploadButton.tsx",
-     "src/components/admin/products/ProductPreviewPanel.tsx",
-     "src/components/admin/products/image-gallery/ImageGrid.tsx",
-     "src/components/admin/products/image-gallery/ImagePreviewDialog.tsx",
-     "src/components/admin/products/image-gallery/useProductImageGallery.ts",
-     "src/components/admin/products/new-supplier/tabs/BasicDataTab.tsx",
-     "src/components/admin/products/new-supplier/useNewSupplierForm.ts",
-     "src/components/admin/products/video-gallery/useProductVideoGallery.ts",
-     "src/components/admin/suppliers-manager/SupplierFormDialog.tsx",
-     "src/components/admin/suppliers-manager/SupplierTable.tsx",
-     "src/components/admin/suppliers-manager/useSuppliersManager.ts",
-     "src/components/common/OptimizedImage.tsx",
-     "src/components/common/PrivateStorageImage.tsx",
-     "src/components/mockup/ArtFileUpload.tsx",
-     "src/components/mockup/approval/OffscreenLayoutCapture.tsx",
-     "src/components/products/ProductCardImage.tsx",
-     "src/hooks/mockup/mockupGenerationService.ts",
-     "src/hooks/useColorEnrichment.ts",
-     "src/hooks/useExternalSimulator.ts",
-     "src/hooks/useExternalVariantStock.ts",
-     "src/hooks/useKitBuilderQueries.ts",
-     "src/hooks/useMagicUpState.ts",
-     "src/hooks/useNovelties.ts",
-     "src/hooks/useProductImages.ts",
-     "src/hooks/useReplenishments.ts",
-     "src/hooks/useSimilarProducts.ts",
-     "src/lib/external-db/product-record-images.ts",
-     "src/lib/external-db/products-detail.ts",
-     "src/lib/external-db/products-lightweight.ts",
-     "src/lib/external-db/products.ts",
-     "src/lib/mockup-storage.ts",
-     "src/lib/private-storage.ts",
-     "src/lib/storage-resilience.ts",
-     "src/pages/admin/AdminProductFormPage.tsx",
-     "src/services/OrderService.ts",
-     "supabase/functions/secure-upload/index.ts",
-     "tests/components/products/ProductCardImage.private-storage.test.tsx",
-     "tests/hooks/useExternalVariantStock.private-storage.test.tsx",
-     "tests/hooks/useSimilarProducts.private-storage.test.tsx",
-     "tests/lib/external-db-products-lightweight-pagination.test.ts",
-     "tests/lib/private-storage-persistence.test.ts",
-     "tests/lib/private-storage.test.ts",
-     "tests/lib/product-record-images.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -251434,6 +251585,18 @@
    [
     "tests/hooks/useKitAutoSave.test.tsx",
     3
+   ],
+   [
+    "src/contexts/AuthContext.tsx",
+    2
+   ],
+   [
+    "src/hooks/useSmartNavigation.ts",
+    2
+   ],
+   [
+    "src/pages/QuoteBuilderPage.tsx",
+    2
    ],
    [
     "src/services/QuoteService.ts",
@@ -251489,18 +251652,6 @@
    ],
    [
     ".github/workflows/automation-local.yml",
-    2
-   ],
-   [
-    "scripts/db/.check-runtime-refs-allowlist.json",
-    2
-   ],
-   [
-    "src/hooks/useExternalVariantStock.ts",
-    2
-   ],
-   [
-    "src/hooks/useQuoteBuilderState.ts",
     2
    ]
   ]

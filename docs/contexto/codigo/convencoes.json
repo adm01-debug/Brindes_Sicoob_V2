@@ -11,17 +11,17 @@
    "src/contexts (9)"
   ],
   "hooks": [
-   "src/hooks (286)",
+   "src/hooks (287)",
    "src/components (66)",
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (166)",
+   "src/lib (167)",
    "src/utils (37)",
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (591)",
+   "tests/ (594)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)",
    "fix(orçamento): atesto de preço passa a ser servido por sicoob-kit-quote (#364)",
    "fix(kit): duas abas no mesmo kit param de se sobrescrever em silêncio (#334)",
    "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)",
-   "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)",
-   "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)"
+   "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

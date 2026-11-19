@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e0e36d44c700670eba068fb947efe83ddb65eb0b",
+  "commit": "489c13dab90068cdcebd417b58b68877c775daef",
   "branch": "main",
-  "data_commit": "2026-11-19T02:29:10Z",
+  "data_commit": "2026-11-19T02:49:10Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "489c13d",
+    "data": "2026-11-19",
+    "assunto": "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)"
+   },
    {
     "sha": "e0e36d4",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "ca0c320",
     "data": "2026-11-18",
     "assunto": "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)"
-   },
-   {
-    "sha": "bdeb172",
-    "data": "2026-11-18",
-    "assunto": "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)"
    }
   ],
-  "arquivos_mudados_7d": 416,
+  "arquivos_mudados_7d": 425,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 76
+    "mudancas": 75
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 75
+    "mudancas": 74
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 146
+    "commits": 147
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4373,
-  "arquivos_codigo": 3080,
-  "linhas_codigo": 486732,
+  "arquivos_total": 4378,
+  "arquivos_codigo": 3085,
+  "linhas_codigo": 487163,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 146,
   "componentes": 1173,
-  "hooks": 392,
+  "hooks": 393,
   "edge_functions": 107,
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 838,
+  "testes": 841,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 247
@@ -784,23 +784,23 @@
   },
   "src/contexts": {
    "arquivos": 10,
-   "linhas": 1517
+   "linhas": 1522
   },
   "src/data": {
    "arquivos": 3,
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 313,
-   "linhas": 47168
+   "arquivos": 314,
+   "linhas": 47211
   },
   "src/integrations": {
    "arquivos": 3,
    "linhas": 13490
   },
   "src/lib": {
-   "arquivos": 166,
-   "linhas": 22567
+   "arquivos": 167,
+   "linhas": 22627
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50880
+   "linhas": 50913
   },
   "src/routes": {
    "arquivos": 9,
@@ -915,16 +915,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 130,
-   "linhas": 14113
+   "arquivos": 131,
+   "linhas": 14289
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 69,
-   "linhas": 8728
+   "arquivos": 71,
+   "linhas": 8842
   },
   "tests/load": {
    "arquivos": 1,

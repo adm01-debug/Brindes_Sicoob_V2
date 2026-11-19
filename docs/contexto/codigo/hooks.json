@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 392,
+ "total": 393,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -1660,7 +1660,7 @@
    "hooks_exportados": [
     "useAuth"
    ],
-   "linhas": 492,
+   "linhas": 497,
    "dominio": "contexts",
    "tabelas": [],
    "rpcs": [
@@ -6559,7 +6559,7 @@
    "hooks_exportados": [
     "useMockupGenerator"
    ],
-   "linhas": 600,
+   "linhas": 603,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -8166,6 +8166,29 @@
    "coberto_por_testes": 0
   },
   {
+   "arquivo": "src/hooks/useScreenDirtyState.ts",
+   "hooks_exportados": [
+    "useScreenDirtyState"
+   ],
+   "linhas": 18,
+   "dominio": "hooks",
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [
+    "useEffect",
+    "useLocation"
+   ],
+   "canais_realtime": [],
+   "usado_por": 3,
+   "usado_por_arquivos": [
+    "src/pages/MockupGenerator.tsx",
+    "src/pages/QuoteBuilderPage.tsx",
+    "src/pages/SimuladorWizard.tsx"
+   ],
+   "coberto_por_testes": 1
+  },
+  {
    "arquivo": "src/hooks/useScroll.ts",
    "hooks_exportados": [
     "useIsScrolled",
@@ -8559,7 +8582,7 @@
    "hooks_exportados": [
     "useSmartNavigation"
    ],
-   "linhas": 145,
+   "linhas": 167,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -8580,7 +8603,7 @@
     "src/components/navigation/Breadcrumbs.tsx",
     "src/hooks/useSwipeBack.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useSparklineSales.tsx",
@@ -9906,7 +9929,7 @@
     "src/pages/sicoob/GestorApprovalsPage.tsx",
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
-   "coberto_por_testes": 3
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/stores/useFavoritesStore.ts",
@@ -9958,7 +9981,7 @@
     "src/hooks/useSmartNavigation.ts",
     "src/lib/auth/sensitive-browser-data.ts"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 3
   },
   {
    "arquivo": "src/stores/useRecentlyViewedStore.ts",

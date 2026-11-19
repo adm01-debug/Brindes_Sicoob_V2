@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2242,
- "arestas": 9149,
+ "nos": 2244,
+ "arestas": 9155,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -422,7 +422,7 @@
  "modulos_mais_acoplados": [
   {
    "modulo": "hooks",
-   "depende_de": 49,
+   "depende_de": 50,
    "importado_por": 74
   },
   {
@@ -447,7 +447,7 @@
   },
   {
    "modulo": "contexts",
-   "depende_de": 11,
+   "depende_de": 12,
    "importado_por": 46
   },
   {

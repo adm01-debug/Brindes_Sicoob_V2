@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0e36d44c7` · branch `main` · 2026-11-19 02:29 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `489c13dab9` · branch `main` · 2026-11-19 02:49 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5725,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6762 testes em 662 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6783 testes em 665 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5973,6 +5973,7 @@ _nenhum item encontrado_
 | `tests/hooks/useErrorHandler.test.ts` | 8 | useErrorHandler · handleError shows toast with error message · handleError uses custom message when provided · handleError suppresses toast when silent … |
 | `tests/hooks/useFavoriteQuickAdd.test.tsx` | 8 | useFavoriteQuickAdd · reflete a inclusão local antes de a gravação remota terminar · serializa duas alterações rápidas e preserva a intenção mais recente · mantém removido quando inclusão e remoção rápidas falham no banco … |
 | `tests/hooks/useLoginRateLimit.test.ts` | 8 | useLoginRateLimit · permite login quando não há registro · incrementa tentativas e bloqueia após 5 · é case-insensitive no email … |
+| `tests/hooks/useMockupGenerator.test.ts` | 8 | useMockupGenerator (smoke) · exporta o hook como função · monta sem crashar com providers padrão · restauração de rascunho … |
 | `tests/hooks/useWorkspaceNotifications-cache-invalidation.test.tsx` | 8 | useWorkspaceNotifications — cache invalidation after mutations · markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch · clearAll removes the sessionStorage cache entry and triggers a silent re-fetch · re-fetch after markAllAsRead bypasses the 5s prefetch TTL window … |
 | `tests/hooks/useWorkspaceNotifications-prefetch.test.tsx` | 8 | useWorkspaceNotifications — prefetch TTL idempotency · does not refetch when prefetch is called within 5s of last fetch · refetches when prefetch is called after the 5s TTL window · never toggles isLoading=true during a silent prefetch … |
 | `tests/lib/format-utils.test.ts` | 8 | formatCurrency · formats zero · formats positive values · formats negative values … |
@@ -6015,6 +6016,7 @@ _nenhum item encontrado_
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
 | `tests/hooks/useSellerDiscountLimits.test.ts` | 7 | useSellerDiscountLimits · fetchMyLimit popula myLimit com max_discount_percent · myLimit fica null quando não há registro · fetchAllLimits popula limits … |
+| `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 7 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
 | `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
@@ -6027,9 +6029,7 @@ _nenhum item encontrado_
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
-| `tests/utils/viacep.test.ts` | 7 | fetchAddressByCep · should return null for invalid CEP length · should strip non-digits · should return address data on success … |
-| … +362 linhas — lista completa em `context.json` | | |
+| … +365 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6362,6 +6362,8 @@ _nenhum item encontrado_
 | Row 2: Location (only if single group) + Specs */} | `src/components/simulator/wizard/PersonalizationSummary.tsx` |
 | * Mostra apenas o ícone (modo compacto, ex.: sidebar colapsada). */ | `src/components/ui/RoleBadge.tsx` |
 | máximo, no próximo intervalo. | `src/contexts/AuthContext.tsx` |
+| O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
+| O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
 | - Apenas UM modal de challenge fica aberto por vez. | `src/contexts/DevChallengeContext.tsx` |
 | é resolvida com `null` (`superseded`) e somente a mais recente pode | `src/contexts/DevChallengeContext.tsx` |
 | * Identificador monotônico para garantir que apenas a última solicitação valide o token. */ | `src/contexts/DevChallengeContext.tsx` |
@@ -6509,9 +6511,7 @@ _nenhum item encontrado_
 | Utilitários para cálculo e validação de volume | `src/lib/kit-builder/volume-calculator.ts` |
 | Limite de alerta de volume | `src/lib/kit-builder/volume-calculator.ts` |
 | * Verifica se a caixa está no limite de alerta | `src/lib/kit-builder/volume-calculator.ts` |
+| * A tela saiu: volta a valer a regra antiga para essa rota. */ | `src/lib/navigation/dirty-registry.ts` |
 | 1. `devOnly: true`           → visível somente para `isDev`. | `src/lib/navigation/filter-dev-only-items.ts` |
 | 2. `adminOnly: true`         → visível somente para `isAdmin` (ou `isDev`). | `src/lib/navigation/filter-dev-only-items.ts` |
-| * Decide se um link/segmento de breadcrumb deve ser **navegável** para o | `src/lib/navigation/restricted-routes.ts` |
-| Se o cliente precisa de mais cores que o máximo da tabela, aplica proporcional | `src/lib/personalization/calculators.ts` |
-| Se a área excede o máximo, aplica proporcional | `src/lib/personalization/calculators.ts` |
-| … +257 linhas — lista completa em `context.json` | |
+| … +260 linhas — lista completa em `context.json` | |
