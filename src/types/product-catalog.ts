@@ -39,6 +39,7 @@ export interface Product {
   images: string[];
   sku: string;
   stock: number;
+  costPrice?: number;
   created_at?: string;
   updated_at?: string;
   colors: ProductColor[];
