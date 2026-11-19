@@ -9,7 +9,7 @@
    "Markdown (285)",
    "JavaScript (151)",
    "Python (66)",
-   "YAML (23)",
+   "YAML (24)",
    "CSS (7)"
   ],
   "linguagem_principal": "TypeScript",
@@ -475,6 +475,30 @@
    "actions": [
     "actions/checkout",
     "actions/setup-node"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/dependency-review.yml",
+   "nome": "Dependency Review",
+   "gatilhos": [
+    "pull_request"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "dependency-review"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [],
+   "npm_scripts": [],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/dependency-review-action"
    ]
   },
   {

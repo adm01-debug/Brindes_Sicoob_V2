@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "05af443ea9c50410f08cb4966e4a8fc2837ef25f",
+  "commit": "a73abe01634ac1e55e2b5474d13933c3683e639a",
   "branch": "main",
-  "data_commit": "2026-11-19T14:23:57-03:00",
+  "data_commit": "2026-11-19T14:47:32-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "a73abe0",
+    "data": "2026-11-19",
+    "assunto": "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)"
+   },
+   {
+    "sha": "5830e19",
+    "data": "2026-11-19",
+    "assunto": "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)"
+   },
    {
     "sha": "05af443",
     "data": "2026-11-19",
@@ -121,23 +131,13 @@
     "sha": "b364a12",
     "data": "2026-11-19",
     "assunto": "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)"
-   },
-   {
-    "sha": "95aa5bd",
-    "data": "2026-11-19",
-    "assunto": "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)"
-   },
-   {
-    "sha": "87b4f99",
-    "data": "2026-11-19",
-    "assunto": "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)"
    }
   ],
-  "arquivos_mudados_7d": 606,
+  "arquivos_mudados_7d": 607,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
-    "mudancas": 84
+    "mudancas": 85
    },
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 40
+    "mudancas": 38
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 39
+    "mudancas": 37
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 179
+    "commits": 181
    },
    {
     "autor": "dependabot[bot]",
@@ -310,7 +310,7 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4541,
+  "arquivos_total": 4542,
   "arquivos_codigo": 3131,
   "linhas_codigo": 492339,
   "rotas": 139,
@@ -325,7 +325,7 @@
   "migrations": 622,
   "cron_jobs": 27,
   "testes": 879,
-  "workflows": 16,
+  "workflows": 17,
   "scripts": 121,
   "docs_md": 285
  },

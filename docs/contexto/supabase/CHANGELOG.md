@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-19 18:20 UTC
+
+- **functions** alterado (1): `public.audit_empty_rls_policies()`
+
 ## 2026-11-19 16:18 UTC
 
 - **realtime** removido (1): `supabase_realtime_messages_publication:realtime.messages_2026_11_15`

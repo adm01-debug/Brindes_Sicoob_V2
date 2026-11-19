@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `05af443ea9c50410f08cb4966e4a8fc2837ef25f` (2026-11-19T14:23:57-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `a73abe01634ac1e55e2b5474d13933c3683e639a` (2026-11-19T14:47:32-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2917), SQL (684), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (23), CSS (7)
+- linguagens: TypeScript (2917), SQL (684), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,7 +34,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4541 |
+| arquivos_total | 4542 |
 | arquivos_codigo | 3131 |
 | linhas_codigo | 492339 |
 | rotas | 139 |
@@ -49,7 +49,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | migrations | 622 |
 | cron_jobs | 27 |
 | testes | 879 |
-| workflows | 16 |
+| workflows | 17 |
 | scripts | 121 |
 | docs_md | 285 |
 
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29659 nós · 54436 arestas · 2138 comunidades · grafo do commit `05af443e`
+- 29659 nós · 54436 arestas · 2138 comunidades · grafo do commit `a73abe01`
 - comunidades maiores: ref_integrations (463), ref_lib (342), ref_components (317), ref_hooks (297), lucide-react (271), react (229), ref_node_fs (205), framer-motion (202), getCorsHeaders (188), expert-chat/index.ts (179), react-router-dom (168), date-fns (167)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (40)
-- docs/correcoes-validacao-2026-09-14.md (39)
+- docs/plano-melhorias-50-etapas.md (38)
+- docs/correcoes-validacao-2026-09-14.md (37)
 - package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -502,6 +502,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `codeql.yml` — CodeQL (pull_request, push, schedule; cron 0 9 * * 1)
 - `contexto.yml` — Contexto para agentes de IA (10 min) (push, schedule, workflow_dispatch; cron 7 * * * *)
 - `db-performance-audit.yml` — Monthly DB Audit (schedule, workflow_dispatch; cron 0 0 1 * *)
+- `dependency-review.yml` — Dependency Review (pull_request)
 - `deploy-sicoob-functions.yml` — Publicar funções Sicoob (workflow_dispatch)
 - `e2e.yml` — E2E (Playwright) (pull_request, workflow_dispatch)
 - `inventario-estado-semanal.yml` — Inventário do estado real (semanal) (schedule, workflow_dispatch; cron 41 10 * * 1)
@@ -694,6 +695,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `a73abe0` docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)
+- 2026-11-19 `5830e19` feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)
 - 2026-11-19 `05af443` fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)
 - 2026-11-19 `e7671e8` ci(testes): fixa o fuso do projeto na suite, com catraca (#380)
 - 2026-11-19 `4a46225` ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)
@@ -707,8 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `a202373` docs(recuperação): veredito medido para as 62 refs restantes (#367)
 - 2026-11-19 `f21dbfd` fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)
 - 2026-11-19 `138474b` chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)
-- 2026-11-19 `1059478` fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)
-- 2026-11-19 `c19e38a` docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

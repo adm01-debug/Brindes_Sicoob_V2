@@ -50290,9 +50290,13 @@
             {
               "file": "supabase/migrations/20260928140600_rls_deny_all_internal_tables.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 2,
+          "code_total_files": 3,
           "cron": [],
           "db": [],
           "triggers": [],
