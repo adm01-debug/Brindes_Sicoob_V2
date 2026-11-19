@@ -11,9 +11,6 @@ import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.t
 import { summarizePayload } from "../_shared/audit-log.ts";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
-// Fallback CORS headers (injected by recovery codemod) — substituído per-request quando aplicável.
-let corsHeaders: Record<string, string> = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
-
 type ValidateMcpKeyRow = {
   key_id: string;
   scopes: string[] | null;
@@ -420,7 +417,7 @@ app.all("/*", async (c) => {
         message: "Chave MCP de escopo total revogada: emissor original perdeu o papel dev.",
         request_id: reqId,
       }),
-      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
+      { status: 403, headers: { ...getCorsHeaders(c.req.raw), "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
     );
   }
 
@@ -454,7 +451,7 @@ app.all("/*", async (c) => {
     } catch (_) { /* never block on audit */ }
     return new Response(
       JSON.stringify({ error: code, message: `Chave MCP ${auth.reason}.`, request_id: reqId }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
+      { status: 401, headers: { ...getCorsHeaders(c.req.raw), "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
     );
   }
 
@@ -486,7 +483,7 @@ app.all("/*", async (c) => {
     } catch (_) { /* never block on audit */ }
     return new Response(
       JSON.stringify({ error: ERR.UNAUTHENTICATED, message: "Chave MCP inválida ou ausente.", request_id: reqId }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
+      { status: 401, headers: { ...getCorsHeaders(c.req.raw), "Content-Type": "application/json", [REQUEST_ID_HEADER]: reqId } },
     );
   }
 
