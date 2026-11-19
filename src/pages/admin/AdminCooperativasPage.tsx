@@ -25,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type PartnerCooperative = Tables<'cooperativas_parceiras'>;
 type CooperativeDraft = TablesUpdate<'cooperativas_parceiras'>;
@@ -361,7 +362,7 @@ async function saveDraft(
 }
 
 async function deleteCooperative(id: string, refresh: () => Promise<void>) {
-  if (!confirm('Tem certeza que deseja excluir esta cooperativa?')) return;
+  if (!(await askConfirm({ title: 'Excluir cooperativa?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
   try {
     await removeCooperative(id);
     toast.success('Cooperativa excluída com sucesso');

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CLIENT_DETAIL_ROUTE, clientDetailPath } from "@/routes/clientRoutes";
 import { executeClientSearch } from "@/components/search/useGlobalSearch";
-import { searchCrm } from "@/lib/crm-db";
+import { fetchQuoteDirectoryCompanies } from "@/lib/crm-db";
 
 vi.mock("@/lib/crm-db", () => ({
-  searchCrm: vi.fn(),
+  fetchQuoteDirectoryCompanies: vi.fn(),
 }));
 
-const mockSearchCrm = vi.mocked(searchCrm);
+const mockFetchQuoteDirectoryCompanies = vi.mocked(fetchQuoteDirectoryCompanies);
 
 describe("rota de detalhe do cliente na busca global", () => {
   beforeEach(() => {
@@ -28,12 +28,17 @@ describe("rota de detalhe do cliente na busca global", () => {
   });
 
   it("faz a busca de empresas apontar para a página de detalhe registrada", async () => {
-    mockSearchCrm.mockResolvedValue([
+    mockFetchQuoteDirectoryCompanies.mockResolvedValue([
       {
         id: "empresa-123",
+        name: "Cooperativa Sicoob",
         nome_fantasia: "Cooperativa Sicoob",
         razao_social: "Cooperativa de Crédito",
         ramo_atividade: "Cooperativa de crédito",
+        cnpj: null,
+        logo_url: null,
+        cidade: null,
+        estado: null,
       },
     ]);
 

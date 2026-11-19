@@ -121,8 +121,15 @@ export function useClientBI(clientId?: string): ClientBI {
       ordersCount: data.ordersCount,
       lastOrderDate: data.lastOrderAt,
       daysSinceLastOrder: daysSince,
-      // Categorias reais ainda não temos (depende de order_items + categoria) — fallback mock parcial
-      topCategories: MOCK_CLIENT_STATS.topCategories,
+      // Vazio, não mock. Este é o caminho de DADO REAL (`isMock: false`), e a UI
+      // afirma "100% baseado em pedidos reais" quando ele roda
+      // (ClientCategoryRadar). Devolver MOCK_CLIENT_STATS.topCategories aqui
+      // fazia `useClientsComparison.resolveTopCategory` eleger a MESMA categoria
+      // fictícia como principal para todo cliente real. A categoria por pedido
+      // depende de order_items + categoria do produto, que este hook não lê:
+      // enquanto não ler, a lista fica vazia e quem consome cai no próximo
+      // fallback — que já existe e termina em `null`.
+      topCategories: [],
       recentOrders: (() => {
         const totals = valid.map((o) => o.total ?? 0).filter((t) => t > 0);
         const mean = totals.length > 0 ? totals.reduce((s, v) => s + v, 0) / totals.length : 0;

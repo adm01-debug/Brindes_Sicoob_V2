@@ -5,8 +5,7 @@ import { Building2, User, Search, X, Loader2, Phone, Mail, Check } from "lucide-
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { searchCrm, selectCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany, type CrmContact, type CrmContactEmail, type CrmContactPhone } from "@/types/crm";
+import { fetchQuoteDirectoryCompanies, fetchQuoteDirectoryContacts } from "@/lib/crm-db";
 
 interface CompanyOption {
   id: string;
@@ -113,25 +112,38 @@ function CompanySearch({ search, debouncedSearch, showDropdown, companies, loadi
   );
 }
 
+/**
+ * O seletor de destinatário usa o contrato fechado `quote_directory`, o único que
+ * a política de acesso do portal libera para `vendedor` e `agente`; `search` e
+ * `select` genéricos passaram a ser negados para esses papéis e deixariam o envio
+ * por WhatsApp sem contato nenhum. O Edge impõe `is_customer = true`,
+ * `deleted_at is null`, a projeção e a ordenação por `razao_social`.
+ */
 async function findCompanies(search: string): Promise<CompanyOption[]> {
   if (search.length < 2) return [];
-  const results = await searchCrm<CrmCompany>("companies", "razao_social", search, { select: "id, razao_social, nome_fantasia, cnpj, logo_url", limit: 10 });
-  return results.map((company) => ({ id: company.id, name: getCompanyDisplayName(company), razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, cnpj: company.cnpj }));
+  const companies = await fetchQuoteDirectoryCompanies({ term: search, limit: 10 });
+  return companies.map((company) => ({
+    id: company.id,
+    name: company.name,
+    razao_social: company.razao_social,
+    nome_fantasia: company.nome_fantasia,
+    cnpj: company.cnpj,
+  }));
 }
 
-async function contactChannel<T>(table: "contact_emails" | "contact_phones", contactId: string, select: string) {
-  try { return await selectCrm<T>(table, { select, filters: { contact_id: contactId, is_primary: true }, limit: 1 }); }
-  catch { return []; }
-}
-
+/**
+ * Uma única ida ao Edge. A versão anterior fazia 1 + 2N requisições: buscava os
+ * contatos e depois, por contato, o e-mail e o telefone primários em
+ * `contact_emails` e `contact_phones`. O contrato já agrega os dois na resposta.
+ */
 async function findContacts(companyId: string): Promise<ContactOption[]> {
-  const contacts = await selectCrm<CrmContact>("contacts", { select: "id, first_name, last_name, full_name, cargo", filters: { company_id: companyId }, limit: 20 });
-  return Promise.all(contacts.map(async (contact) => {
-    const [emails, phones] = await Promise.all([
-      contactChannel<CrmContactEmail>("contact_emails", contact.id, "email"),
-      contactChannel<CrmContactPhone>("contact_phones", contact.id, "numero, numero_e164"),
-    ]);
-    return { id: contact.id, name: contact.full_name || [contact.first_name, contact.last_name].filter(Boolean).join(" "), cargo: contact.cargo, email: emails[0]?.email ?? null, phone: phones[0]?.numero_e164 ?? phones[0]?.numero ?? null };
+  const contacts = await fetchQuoteDirectoryContacts(companyId, 20);
+  return contacts.map((contact) => ({
+    id: contact.id,
+    name: contact.name,
+    cargo: contact.cargo,
+    email: contact.email,
+    phone: contact.phone,
   }));
 }
 

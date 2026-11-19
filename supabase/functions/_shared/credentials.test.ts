@@ -45,6 +45,9 @@ function clearEnv(...names: string[]) {
   for (const n of names) Deno.env.delete(n);
 }
 
+const VALID_SUPABASE_SECRET = `sb_secret_${"s".repeat(32)}`;
+const VALID_SUPABASE_PUBLISHABLE = `sb_publishable_${"p".repeat(32)}`;
+
 Deno.test("resolveCredential: integration_credentials preenchida → has_value=true, source='db'", async () => {
   invalidateCredentialCache();
   clearEnv("EXTERNAL_PROMOBRIND_URL", "EXTERNAL_SUPABASE_URL");
@@ -66,12 +69,12 @@ Deno.test("resolveCredential: integration_credentials preenchida → has_value=t
 
 Deno.test("resolveCredential: linha ausente + env canônica presente → source='env'", async () => {
   invalidateCredentialCache();
-  Deno.env.set("EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY", "key-from-env-canonical");
+  Deno.env.set("EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY", VALID_SUPABASE_SECRET);
 
   const client = mockServiceClient({}); // DB vazio
   const result = await resolveCredential("EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY", client);
 
-  assertEquals(result.value, "key-from-env-canonical");
+  assertEquals(result.value, VALID_SUPABASE_SECRET);
   assertEquals(result.source, "env");
   assertEquals(result.resolved_name, "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY");
 
@@ -199,7 +202,12 @@ function clearAll(canonical: string, aliases: string[]) {
 }
 
 function testCredentialValue(name: string, label: string): string {
-  return name.endsWith("_URL") ? `https://${label.toLowerCase().replaceAll("_", "-")}.example.com` : label;
+  if (name.endsWith("_URL")) {
+    return `https://${label.toLowerCase().replaceAll("_", "-")}.example.com`;
+  }
+  if (name.endsWith("_ANON_KEY")) return VALID_SUPABASE_PUBLISHABLE;
+  if (name.endsWith("_SERVICE_ROLE_KEY")) return VALID_SUPABASE_SECRET;
+  return label;
 }
 
 // --- Cobertura tabular: cada alias resolve para o nome canônico --------------
@@ -241,12 +249,12 @@ Deno.test(
     const aliases = ["EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", "EXTERNAL_SUPABASE_SERVICE_KEY"];
     clearAll(canonical, aliases);
 
-    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", "from-first-alias");
-    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_KEY", "from-second-alias");
+    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", VALID_SUPABASE_SECRET);
+    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_KEY", `sb_secret_${"t".repeat(32)}`);
 
     const result = await resolveCredential(canonical, mockServiceClient({}));
 
-    assertEquals(result.value, "from-first-alias", "primeiro alias da lista ganha");
+    assertEquals(result.value, VALID_SUPABASE_SECRET, "primeiro alias da lista ganha");
     assertEquals(result.resolved_name, "EXTERNAL_SUPABASE_SERVICE_ROLE_KEY");
     assertEquals(result.source, "env");
 
@@ -290,23 +298,23 @@ Deno.test(
     const aliases = ["EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", "EXTERNAL_SUPABASE_SERVICE_KEY"];
     clearAll(canonical, aliases);
 
-    Deno.env.set(canonical, "env-canonical-value");
-    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", "env-alias1-value");
-    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_KEY", "env-alias2-value");
+    Deno.env.set(canonical, VALID_SUPABASE_SECRET);
+    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY", `sb_secret_${"a".repeat(32)}`);
+    Deno.env.set("EXTERNAL_SUPABASE_SERVICE_KEY", `sb_secret_${"b".repeat(32)}`);
 
     const client = mockServiceClient({
-      [canonical]: "db-wins-everything",
+      [canonical]: `sb_secret_${"d".repeat(32)}`,
     });
 
     const result = await resolveCredential(canonical, client);
 
-    assertEquals(result.value, "db-wins-everything", "DB derrota env canônica + 2 aliases");
+    assertEquals(result.value, `sb_secret_${"d".repeat(32)}`, "DB derrota env canônica + 2 aliases");
     assertEquals(result.source, "db");
     assertEquals(result.resolved_name, canonical);
     assert(
-      result.value !== "env-canonical-value" &&
-        result.value !== "env-alias1-value" &&
-        result.value !== "env-alias2-value",
+      result.value !== VALID_SUPABASE_SECRET &&
+        result.value !== `sb_secret_${"a".repeat(32)}` &&
+        result.value !== `sb_secret_${"b".repeat(32)}`,
       "valor do DB não pode coincidir com nenhuma das envs setadas",
     );
 
@@ -450,8 +458,8 @@ Deno.test("buildCredentialsHealth: tudo presente em DB → health='healthy'", as
 
   const client = mockServiceClient({
     EXTERNAL_CRM_URL: "https://crm.supabase.co",
-    EXTERNAL_CRM_SERVICE_ROLE_KEY: "service-key-12345678",
-    EXTERNAL_CRM_ANON_KEY: "anon-key-12345678",
+    EXTERNAL_CRM_SERVICE_ROLE_KEY: VALID_SUPABASE_SECRET,
+    EXTERNAL_CRM_ANON_KEY: VALID_SUPABASE_PUBLISHABLE,
   });
 
   const summary = await buildCredentialsHealth([
@@ -473,7 +481,7 @@ Deno.test("buildCredentialsHealth: tudo presente em DB → health='healthy'", as
 
   const svc = summary.credentials.find((c) => c.name === "EXTERNAL_CRM_SERVICE_ROLE_KEY")!;
   assertEquals(svc.present, true);
-  assertEquals(svc.suffix4, "5678");
+  assertEquals(svc.suffix4, "ssss");
 });
 
 Deno.test("buildCredentialsHealth: URL ausente → health='missing' (independente das keys)", async () => {
@@ -484,7 +492,7 @@ Deno.test("buildCredentialsHealth: URL ausente → health='missing' (independent
 
   // Mesmo com SERVICE_ROLE presente, sem URL não tem como conectar.
   const client = mockServiceClient({
-    EXTERNAL_CRM_SERVICE_ROLE_KEY: "service-key-only",
+    EXTERNAL_CRM_SERVICE_ROLE_KEY: VALID_SUPABASE_SECRET,
   });
 
   const summary = await buildCredentialsHealth([
@@ -517,6 +525,47 @@ Deno.test("buildCredentialsHealth: URL presente, todas keys ausentes → health=
   ], { serviceClient: client });
 
   assertEquals(summary.health, "degraded");
+});
+
+Deno.test("buildCredentialsHealth: placeholders curtos não contam como chaves saudáveis", async () => {
+  invalidateCredentialCache();
+  clearAll("EXTERNAL_CRM_URL", ["CRM_SUPABASE_URL"]);
+  clearAll("EXTERNAL_CRM_SERVICE_ROLE_KEY", ["CRM_SUPABASE_SERVICE_KEY"]);
+  clearAll("EXTERNAL_CRM_ANON_KEY", ["CRM_SUPABASE_ANON_KEY"]);
+
+  const client = mockServiceClient({
+    EXTERNAL_CRM_URL: "https://crm.supabase.co",
+    EXTERNAL_CRM_SERVICE_ROLE_KEY: "c...",
+    EXTERNAL_CRM_ANON_KEY: "preencher",
+  });
+
+  const summary = await buildCredentialsHealth([
+    "EXTERNAL_CRM_URL",
+    "EXTERNAL_CRM_SERVICE_ROLE_KEY",
+    "EXTERNAL_CRM_ANON_KEY",
+  ], { serviceClient: client });
+
+  assertEquals(summary.health, "degraded");
+  assertEquals(summary.credentials[1].present, false);
+  assertEquals(summary.credentials[1].source, "none");
+  assertEquals(summary.credentials[2].present, false);
+});
+
+Deno.test("resolveCredential: chave inválida no DB permite fallback válido da env", async () => {
+  invalidateCredentialCache();
+  const canonical = "EXTERNAL_CRM_SERVICE_ROLE_KEY";
+  clearAll(canonical, ["CRM_SUPABASE_SERVICE_KEY"]);
+  Deno.env.set(canonical, VALID_SUPABASE_SECRET);
+
+  const result = await resolveCredential(canonical, mockServiceClient({
+    [canonical]: "c...",
+  }));
+
+  assertEquals(result.value, VALID_SUPABASE_SECRET);
+  assertEquals(result.source, "env");
+  assertEquals(result.resolved_name, canonical);
+
+  clearAll(canonical, ["CRM_SUPABASE_SERVICE_KEY"]);
 });
 
 Deno.test("buildCredentialsHealth: alias legado em env → via_alias=true e source='env'", async () => {

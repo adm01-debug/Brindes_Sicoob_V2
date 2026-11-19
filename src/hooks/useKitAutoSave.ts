@@ -8,6 +8,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { KitState } from '@/lib/kit-builder';
+import { buildCustomKitPayload } from '@/lib/kit-builder/custom-kit-payload';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
@@ -38,6 +39,9 @@ function createSnapshot(kitState: KitState, kitQuantity: number): string {
     name: kitState.name,
     kitType: kitState.kitType,
     qty: kitQuantity,
+    // A identidade entra no snapshot porque entrou no payload: sem isso, trocar
+    // cor, ícone, etiqueta, descrição ou favorito não dispararia autosave algum.
+    identity: kitState.identity,
   });
 }
 
@@ -60,31 +64,12 @@ function isCreatedKitAdoption(
   return currentKitId === persistedKitId && currentScope === `${userId}:new`;
 }
 
-function buildAutoSavePayload(userId: string, kitState: KitState, kitQuantity: number) {
-  return {
-    user_id: userId,
-    name: kitState.name || 'Kit sem nome',
-    status: 'draft' as const,
-    kit_type: kitState.kitType || 'montado',
-    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-    items_data: JSON.parse(JSON.stringify(kitState.items)),
-    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-    kit_quantity: kitQuantity,
-    box_price: kitState.boxPrice,
-    items_price: kitState.itemsPrice,
-    personalization_price: kitState.personalizationPrice,
-    total_price: kitState.totalPrice,
-    volume_usage_percent: kitState.volumeUsagePercent,
-    updated_at: new Date().toISOString(),
-  };
-}
-
 function isEmptyKit(kitState: KitState) {
   return !kitState.box && kitState.items.length === 0;
 }
 
 async function persistAutoSave(
-  payload: ReturnType<typeof buildAutoSavePayload>,
+  payload: ReturnType<typeof buildCustomKitPayload>,
   kitId: string | null,
   userId: string,
 ) {
@@ -103,11 +88,23 @@ async function persistAutoSave(
   return requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
 }
 
+/**
+ * @param isReady  false enquanto o kit ainda está sendo carregado do banco.
+ *   Abrir `/montar-kit?kit=ID` monta o hook com o ID já definido e o kit ainda
+ *   vazio, então o baseline nascia vazio; quando a leitura chegava, o estado
+ *   passava a diferir do baseline e o autosave regravava no banco, 5s depois,
+ *   exatamente o que acabara de ler — mexendo em `updated_at` (a lista "Meus
+ *   kits" reordena por ele), acendendo "salvo automaticamente" sem edição e
+ *   abrindo uma janela para sobrescrever o que outra aba tivesse gravado.
+ *   Enquanto `isReady` é false, mudança de estado é chegada de dado lido, não
+ *   edição: vira baseline em vez de gravação.
+ */
 export function useKitAutoSave(
   kitState: KitState,
   kitQuantity: number,
   currentKitId: string | undefined,
   onKitIdCreated?: (id: string) => void,
+  isReady = true,
 ): AutoSaveResult {
   const { user } = useAuth();
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -123,6 +120,12 @@ export function useKitAutoSave(
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
   const pendingSavesRef = useRef(0);
   const isFirstRender = useRef(true);
+  // Vira true no primeiro render em que `isReady` é true. O React 18 agrupa a
+  // chegada do conteúdo lido e a conclusão da hidratação num mesmo render:
+  // nesse render `isReady` já é true e o baseline ainda é o do kit vazio, logo
+  // o teste `!isReady` sozinho não segura a regravação. O baseline é adotado
+  // na transição para pronto, não enquanto não-pronto.
+  const hasReadyBaselineRef = useRef(false);
 
   const adoptCreatedId = useCallback((createdId: string | null) => {
     if (!createdId) return;
@@ -137,7 +140,7 @@ export function useKitAutoSave(
     // Don't auto-save empty kits
     if (isEmptyKit(kitState)) return;
 
-    const payload = buildAutoSavePayload(user.id, kitState, kitQuantity);
+    const payload = buildCustomKitPayload(user.id, kitState, kitQuantity);
 
     const operationGeneration = scopeGenerationRef.current;
     const operationUserId = user.id;
@@ -180,11 +183,25 @@ export function useKitAutoSave(
       const initialSnapshot = createSnapshot(kitState, kitQuantity);
       persistedSnapshotRef.current = initialSnapshot;
       latestSnapshotRef.current = initialSnapshot;
+      hasReadyBaselineRef.current = isReady;
       return;
     }
 
     const newSnapshot = createSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
+
+    if (!isReady) {
+      persistedSnapshotRef.current = newSnapshot;
+      hasReadyBaselineRef.current = false;
+      return;
+    }
+
+    if (!hasReadyBaselineRef.current) {
+      // Primeiro render pronto: o que está na tela é o que foi lido do banco.
+      hasReadyBaselineRef.current = true;
+      persistedSnapshotRef.current = newSnapshot;
+      return;
+    }
 
     if (newSnapshot === persistedSnapshotRef.current) return;
 
@@ -194,7 +211,7 @@ export function useKitAutoSave(
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [kitState, kitQuantity, saveToDb]);
+  }, [kitState, kitQuantity, saveToDb, isReady]);
 
   // Uma troca de usuário/kit invalida timers e respostas pendentes. Gravações
   // já enviadas terminam no registro de origem, mas nunca contaminam o novo

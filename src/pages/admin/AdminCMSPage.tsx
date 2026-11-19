@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AdminDataTable, type Column } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
 import type { Tables } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 // XLSX will be loaded dynamically when needed
 
 export default function AdminCMSPage() {
@@ -103,7 +104,7 @@ function BannersTab() {
   useEffect(() => { fetchBanners(); }, []);
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Excluir banner "${title}"?`)) return;
+    if (!(await askConfirm({ title: 'Excluir banner?', description: `Você está prestes a excluir "${title}". Esta ação não pode ser desfeita.`, variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     const { error } = await supabase.from('cms_banners').delete().eq('id', id);
     if (!error) {
       toast.success("Banner excluído");

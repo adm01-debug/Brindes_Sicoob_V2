@@ -1,7 +1,7 @@
 import { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Target } from "lucide-react";
+import { Users, Search, Plus, Filter, TrendingUp, DollarSign } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useCrmCompanies } from "@/hooks/useCrmCompanies";
+import { useClientsPortfolioKpis } from "@/hooks/useClientsPortfolioKpis";
 import { ClientCard } from "@/components/clients/ClientCard";
 import { getCompanyDisplayName } from "@/types/crm";
 import { 
@@ -27,10 +28,56 @@ import {
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
 
+function formatarTicket(valor: number | null): string {
+  if (valor === null) return "—";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
+type KpisQuery = ReturnType<typeof useClientsPortfolioKpis>;
+
+function montarKpis(totalClientes: number, carregandoLista: boolean, kpisQuery: KpisQuery) {
+  // Indicadores medidos, no escopo de visibilidade do usuário. "Novos no mês" e
+  // "taxa de retenção" saíram da tela: o primeiro exige a data de cadastro da
+  // empresa, que o contrato do CRM não projeta, e o segundo exige uma definição
+  // de negócio que não existe no repositório. Eram os dois números digitados à
+  // mão aqui ("12" e "94%"), lidos por supervisão como se fossem medição.
+  return [
+    {
+      label: "Total Clientes",
+      value: String(totalClientes),
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      carregando: carregandoLista,
+    },
+    {
+      label: "Compraram no mês",
+      value: kpisQuery.data ? String(kpisQuery.data.clientesComPedidoNoMes) : "—",
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      carregando: kpisQuery.isLoading,
+    },
+    {
+      label: `Ticket médio (${kpisQuery.data?.janelaDias ?? 90} dias)`,
+      value: formatarTicket(kpisQuery.data?.ticketMedio ?? null),
+      icon: DollarSign,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+      carregando: kpisQuery.isLoading,
+    },
+  ];
+}
+
 export default function ClientsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { data: clients = [], isLoading } = useCrmCompanies({ is_customer: true });
+  const kpisQuery = useClientsPortfolioKpis();
 
   const filtered = clients.filter((c) => {
     if (!search) return true;
@@ -42,13 +89,7 @@ export default function ClientsPage() {
     );
   });
 
-  // Indicadores mockados para demonstração de excelência visual (KPIs)
-  const kpis = [
-    { label: "Total Clientes", value: clients.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Novos (Mês)", value: "12", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Ticket Médio", value: "R$ 4.2k", icon: DollarSign, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Taxa Retenção", value: "94%", icon: Target, color: "text-purple-500", bg: "bg-purple-500/10" },
-  ];
+  const kpis = montarKpis(clients.length, isLoading, kpisQuery);
 
   return (
     <>
@@ -96,7 +137,7 @@ export default function ClientsPage() {
         </div>
 
         {/* KPIs Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {kpis.map((kpi, idx) => (
             <Card key={idx} className="border-none shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden group hover:shadow-md transition-all duration-300">
               <CardContent className="p-5 flex items-center gap-4">
@@ -105,7 +146,7 @@ export default function ClientsPage() {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
-                  <p className="text-2xl font-bold font-display text-foreground">{isLoading ? "..." : kpi.value}</p>
+                  <p className="text-2xl font-bold font-display text-foreground">{kpi.carregando ? "..." : kpi.value}</p>
                 </div>
               </CardContent>
             </Card>
