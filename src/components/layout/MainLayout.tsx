@@ -137,7 +137,12 @@ function useMainLayoutEffects(
   useEffect(() => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
-    const timer = setTimeout(() => mainRef.current?.focus({ preventScroll: true }), 100);
+    const timer = setTimeout(() => {
+      // Um diálogo modal aberto (tour de onboarding) tem precedência: mover o
+      // foco para o conteúdo principal tiraria o teclado de dentro do modal.
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      mainRef.current?.focus({ preventScroll: true });
+    }, 100);
     return () => clearTimeout(timer);
   }, [pathname, mainRef]);
 }

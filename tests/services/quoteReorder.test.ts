@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 
-import { QuoteService } from '@/services/QuoteService';
+import { ROTA_ATESTADO_DE_PRECO, QuoteService } from '@/services/QuoteService';
 
 describe('QuoteService.reorder', () => {
   beforeEach(() => {
@@ -81,8 +81,8 @@ describe('QuoteService.reorder', () => {
     expect(mocks.rpc).toHaveBeenNthCalledWith(1, 'get_quote_save_idempotent_replay', expect.objectContaining({
       p_idempotency_key: 'chave-idempotente-de-teste',
     }));
-    expect(mocks.invoke).toHaveBeenCalledWith('quote-price-attestation', expect.objectContaining({
-      body: expect.objectContaining({ quoteId: null, expectedRowVersion: null }),
+    expect(mocks.invoke).toHaveBeenCalledWith(ROTA_ATESTADO_DE_PRECO, expect.objectContaining({
+      body: expect.objectContaining({ op: 'price-attestation', quoteId: null, expectedRowVersion: null }),
     }));
     expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_idempotent_attested', expect.objectContaining({
       p_idempotency_key: 'chave-idempotente-de-teste',
@@ -148,8 +148,8 @@ describe('QuoteService.reorder', () => {
       expectedRowVersion: 2,
     });
 
-    expect(mocks.invoke).toHaveBeenCalledWith('quote-price-attestation', expect.objectContaining({
-      body: expect.objectContaining({ quoteId: 'quote-1', expectedRowVersion: 2 }),
+    expect(mocks.invoke).toHaveBeenCalledWith(ROTA_ATESTADO_DE_PRECO, expect.objectContaining({
+      body: expect.objectContaining({ op: 'price-attestation', quoteId: 'quote-1', expectedRowVersion: 2 }),
     }));
     expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_attested', expect.objectContaining({
       p_expected_row_version: 2,

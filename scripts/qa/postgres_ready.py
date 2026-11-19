@@ -79,6 +79,73 @@ if threading.current_thread() is threading.main_thread():
     signal.signal(signal.SIGTERM, _exit_on_sigterm)
 
 
+# ── Imagem Supabase: o pull é o ponto único de falha das simulações ───────────
+# `public.ecr.aws` tem cota por conta. Com a fila de PRs cheia, dezenas de jobs
+# puxam a mesma imagem em minutos e a cota estoura: o `docker run` volta
+# "Data limit exceeded" e a prova obrigatória cai sem nada a ver com o código.
+# Por isso: espera crescente entre tentativas (a cota é por janela de tempo) e,
+# esgotado o ECR, o mesmo build pelo espelho do Docker Hub.
+SUPABASE_PG_IMAGES = (
+    "public.ecr.aws/supabase/postgres:17.6.1.063",
+    "supabase/postgres:17.6.1.063",
+)
+PULL_BACKOFF_SECONDS = (5, 15, 30)
+_RETRYABLE = (
+    "data limit exceeded",
+    "toomanyrequests",
+    "too many requests",
+    "rate limit",
+    "timeout",
+    "temporary failure",
+    "connection reset",
+    "i/o timeout",
+    "eof",
+)
+
+
+def _images_from_env():
+    bruto = os.environ.get("SICOOB_QA_PG_IMAGES", "").strip()
+    if not bruto:
+        return SUPABASE_PG_IMAGES
+    return tuple(parte.strip() for parte in bruto.split(",") if parte.strip())
+
+
+def _vale_retentar(erro: str) -> bool:
+    """Cota e rede voltam; tag inexistente ou daemon morto, não."""
+    minusculo = erro.lower()
+    return any(trecho in minusculo for trecho in _RETRYABLE)
+
+
+def start_supabase_postgres(command, container: str, *, images=None, backoff=None, sleep=time.sleep) -> str:
+    """Sobe o Postgres descartável da Supabase e devolve a imagem que funcionou."""
+    imagens = tuple(images) if images else _images_from_env()
+    esperas = tuple(backoff) if backoff is not None else PULL_BACKOFF_SECONDS
+    falhas = []
+    for imagem in imagens:
+        for indice in range(len(esperas) + 1):
+            resultado = command(
+                [
+                    "docker", "run", "--rm", "-d", "--name", container,
+                    "--network", "none", "-e", "POSTGRES_HOST_AUTH_METHOD=trust",
+                    imagem, "postgres", "-D", "/var/lib/postgresql/data",
+                ],
+                check=False,
+            )
+            if resultado.returncode == 0:
+                return imagem
+            erro = (resultado.stderr or resultado.stdout or "").strip()
+            falhas.append(f"{imagem}: {erro}")
+            # `docker run` que falha pode deixar o nome ocupado: liberar antes de repetir.
+            command(["docker", "rm", "-f", container], check=False)
+            if indice == len(esperas) or not _vale_retentar(erro):
+                break
+            sleep(esperas[indice])
+    raise RuntimeError(
+        "Não foi possível subir o PostgreSQL descartável da Supabase. Tentativas:\n"
+        + "\n".join(falhas)
+    )
+
+
 def _tail(text: str, lines: int = 15) -> str:
     return "\n".join(text.strip().splitlines()[-lines:])
 
