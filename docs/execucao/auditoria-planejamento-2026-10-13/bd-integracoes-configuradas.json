@@ -1,0 +1,26 @@
+[
+  {
+    "secret_name": "EXTERNAL_CRM_ANON_KEY",
+    "preenchida": true
+  },
+  {
+    "secret_name": "EXTERNAL_CRM_SERVICE_ROLE_KEY",
+    "preenchida": true
+  },
+  {
+    "secret_name": "EXTERNAL_CRM_URL",
+    "preenchida": true
+  },
+  {
+    "secret_name": "EXTERNAL_PROMOBRIND_ANON_KEY",
+    "preenchida": true
+  },
+  {
+    "secret_name": "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY",
+    "preenchida": true
+  },
+  {
+    "secret_name": "EXTERNAL_PROMOBRIND_URL",
+    "preenchida": true
+  }
+]

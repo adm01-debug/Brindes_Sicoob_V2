@@ -580,15 +580,19 @@ export function useQuoteBuilderState() {
     discountValue,
     negotiationMarkup,
   };
-  const initialSnapshotRef = useRef<string | null>(null);
+  // Estado, não ref: `hasUnsavedData` é um useMemo sobre os campos do
+  // formulário. Escrever num ref não muda dependência nenhuma, então o valor
+  // memorizado continuaria `true` depois do salvamento e o guarda de saída
+  // seguiria avisando "alterações não salvas" num orçamento recém-salvo.
+  const [baselineSalvo, setBaselineSalvo] = useState<string | null>(null);
   useEffect(() => {
-    if (!loadingQuote && initialSnapshotRef.current === null) {
-      initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
+    if (!loadingQuote && baselineSalvo === null) {
+      setBaselineSalvo(JSON.stringify(formSnapshotRef.current));
     }
-  }, [loadingQuote]);
+  }, [loadingQuote, baselineSalvo]);
 
   const hasUnsavedData = useMemo(() => {
-    if (initialSnapshotRef.current === null) return false;
+    if (baselineSalvo === null) return false;
     const current = JSON.stringify({
       clientId,
       contactId,
@@ -607,8 +611,9 @@ export function useQuoteBuilderState() {
       discountValue,
       negotiationMarkup,
     });
-    return current !== initialSnapshotRef.current;
+    return current !== baselineSalvo;
   }, [
+    baselineSalvo,
     clientId,
     contactId,
     items,
@@ -779,6 +784,8 @@ export function useQuoteBuilderState() {
         shippingType,
         shippingCost,
       });
+      // Fotografa o formulário como ele vai para o servidor, antes da chamada.
+      const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
       const result = await persistQuote({
         isEditMode,
         quoteId,
@@ -791,6 +798,12 @@ export function useQuoteBuilderState() {
       });
       if (!result) return;
 
+      // O servidor confirmou. A referência do guarda de saída passa a ser o que
+      // foi enviado — e não o estado atual, para não marcar como salva uma edição
+      // feita durante a chamada. Sem isto, `hasUnsavedData` ficava true para
+      // sempre depois do primeiro salvamento e o vendedor era avisado de
+      // "alterações não salvas" ao sair de um orçamento que acabara de salvar.
+      setBaselineSalvo(submittedFormSnapshot);
       createIdempotencyKeyRef.current = null;
       const transitionApplied = await applyQuoteTransition({
         quote: result,

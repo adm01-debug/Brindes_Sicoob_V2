@@ -1,0 +1,14 @@
+{
+  "disable_signup": true,
+  "external_email_enabled": true,
+  "jwt_exp": 3600,
+  "mailer_autoconfirm": false,
+  "mfa_totp_enroll_enabled": true,
+  "mfa_totp_verify_enabled": true,
+  "password_hibp_enabled": false,
+  "password_min_length": 8,
+  "saml_enabled": false,
+  "security_captcha_enabled": false,
+  "site_url": "https://vamos-build-awesome.lovable.app",
+  "uri_allow_list": "https://vamos-build-awesome.lovable.app/**,https://id-preview--fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovable.app/**,https://criar-together-now.lovable.app/**,https://brindes-sicoob-v2-juca1.vercel.app/,https://brindes-sicoob-v2-juca1.vercel.app/**,https://brindes-*-sicoob-v2-juca1.vercel.app,https://brindes-*-sicoob-v2-juca1.vercel.app/**"
+}
