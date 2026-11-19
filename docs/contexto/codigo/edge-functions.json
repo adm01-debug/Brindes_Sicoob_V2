@@ -1542,7 +1542,7 @@
    "nome": "get-app-logs",
    "entrada": "supabase/functions/get-app-logs/index.ts",
    "arquivos": 1,
-   "linhas": 69,
+   "linhas": 73,
    "verify_jwt": true,
    "metodos": [
     "OPTIONS"
@@ -1558,6 +1558,7 @@
    "usa_shared": [
     "authorize.ts",
     "cors.ts",
+    "ilike-pattern.ts",
     "request-id.ts",
     "structured-logger.ts"
    ],
@@ -2161,7 +2162,7 @@
    "nome": "mcp-server",
    "entrada": "supabase/functions/mcp-server/index.ts",
    "arquivos": 1,
-   "linhas": 505,
+   "linhas": 508,
    "verify_jwt": true,
    "metodos": [],
    "tabelas": [
@@ -2182,6 +2183,7 @@
    "usa_shared": [
     "audit-log.ts",
     "cors.ts",
+    "ilike-pattern.ts",
     "request-id.ts",
     "supabase-client-adapter.ts"
    ],

@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `25f7ab0158a6fc9f0f139500202b27ca2a084722` (2026-11-18T22:59:53Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b` (2026-11-19T00:22:35Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4348 |
 | arquivos_codigo | 3055 |
-| linhas_codigo | 483084 |
+| linhas_codigo | 483105 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -469,16 +469,16 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28473 nós · 52683 arestas · 2077 comunidades · grafo do commit `25f7ab01`
-- comunidades maiores: ref_hooks (480), ref_components (438), ref_integrations (408), sonner (238), react (189), expert-chat/index.ts (173), getCorsHeaders (164), ref_lib (153), react-router-dom (152), external-db-bridge/index.ts (132), postgres_ready.py (127), ref_stores (125)
+- 28473 nós · 52688 arestas · 2065 comunidades · grafo do commit `3df58f1c`
+- comunidades maiores: ref_hooks (482), ref_components (419), ref_integrations (241), sonner (218), ref_contexts (184), expert-chat/index.ts (173), react-router-dom (172), getCorsHeaders (164), date-fns (159), react (157), ref_lib (146), ref_stores (141)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (83)
-- docs/correcoes-validacao-2026-09-14.md (82)
+- docs/plano-melhorias-50-etapas.md (81)
+- docs/correcoes-validacao-2026-09-14.md (80)
 - package.json (21)
-- scripts/db/apply-sicoob-migrations.mjs (20)
+- scripts/db/apply-sicoob-migrations.mjs (21)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
 - RELATORIO_CI.md (19)
@@ -692,6 +692,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `3df58f1` fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)
+- 2026-11-18 `f30a262` fix(db): aplicador de migrations tolera BOM na leitura (#345)
 - 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
 - 2026-11-18 `1b11bf7` chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)
 - 2026-11-18 `64b8dc8` feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)
@@ -705,8 +707,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `d8d7dcd` fix(bi): caminho de dado real para de devolver categoria fictícia (#316)
 - 2026-11-18 `781ee20` feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)
 - 2026-11-18 `ca76bcd` fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)
-- 2026-11-18 `eeb3c4e` fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)
-- 2026-11-18 `71d515b` fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

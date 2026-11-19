@@ -1752,11 +1752,11 @@
   {
    "arquivo": "supabase/functions/crm-db-bridge/search-pattern.test.ts",
    "tipo": "unit",
-   "linhas": 11,
+   "linhas": 25,
    "testa": [
     "supabase/functions/_shared/ilike-pattern.ts"
    ],
-   "casos": 2
+   "casos": 4
   },
   {
    "arquivo": "supabase/functions/crm-db-bridge/search-query.test.ts",

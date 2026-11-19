@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "25f7ab0158a6fc9f0f139500202b27ca2a084722",
+  "commit": "3df58f1cf13e27b5f2cc93672a6ff6bdc6e77a2b",
   "branch": "main",
-  "data_commit": "2026-11-18T22:59:53Z",
+  "data_commit": "2026-11-19T00:22:35Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "3df58f1",
+    "data": "2026-11-19",
+    "assunto": "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)"
+   },
+   {
+    "sha": "f30a262",
+    "data": "2026-11-18",
+    "assunto": "fix(db): aplicador de migrations tolera BOM na leitura (#345)"
+   },
    {
     "sha": "25f7ab0",
     "data": "2026-11-18",
@@ -121,19 +131,9 @@
     "sha": "c2b0099",
     "data": "2026-11-17",
     "assunto": "fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)"
-   },
-   {
-    "sha": "1b142b4",
-    "data": "2026-11-17",
-    "assunto": "feat: tendencias com snapshot unico e estados de erro reais (recupera PR #119) (#301)"
-   },
-   {
-    "sha": "2a8d38b",
-    "data": "2026-11-17",
-    "assunto": "chore: gate de npm audit libera advisory especifico em vez de pacote (#303)"
    }
   ],
-  "arquivos_mudados_7d": 367,
+  "arquivos_mudados_7d": 368,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -161,7 +161,7 @@
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 14
+    "mudancas": 15
    },
    {
     "pasta": "src/pages/admin",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 83
+    "mudancas": 81
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 82
+    "mudancas": 80
    },
    {
     "arquivo": "package.json",
@@ -211,7 +211,7 @@
    },
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 20
+    "mudancas": 21
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 139
+    "commits": 141
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4348,
   "arquivos_codigo": 3055,
-  "linhas_codigo": 483084,
+  "linhas_codigo": 483105,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -840,7 +840,7 @@
   },
   "supabase/functions": {
    "arquivos": 215,
-   "linhas": 34801
+   "linhas": 34822
   },
   "tailwind.config.ts": {
    "arquivos": 1,

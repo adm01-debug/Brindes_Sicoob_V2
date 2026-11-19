@@ -12524,6 +12524,7 @@
   "supabase/functions/get-app-logs/index.ts": [
    "supabase/functions/_shared/authorize.ts",
    "supabase/functions/_shared/cors.ts",
+   "supabase/functions/_shared/ilike-pattern.ts",
    "supabase/functions/_shared/request-id.ts",
    "supabase/functions/_shared/structured-logger.ts"
   ],
@@ -12625,6 +12626,7 @@
   "supabase/functions/mcp-server/index.ts": [
    "supabase/functions/_shared/audit-log.ts",
    "supabase/functions/_shared/cors.ts",
+   "supabase/functions/_shared/ilike-pattern.ts",
    "supabase/functions/_shared/request-id.ts",
    "supabase/functions/_shared/supabase-client-adapter.ts"
   ],
