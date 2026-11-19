@@ -289,6 +289,44 @@ describe('useKitAutoSave', () => {
     expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Renomeado pelo usuario' });
   });
 
+  it('sair da tela durante o debounce grava o que estava pendente', async () => {
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender, unmount } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+    rerender({ kit: kitCarregado, pronto: false });
+    rerender({ kit: kitCarregado, pronto: true });
+
+    // Edita e sai ANTES dos 5s do debounce — pela "Biblioteca", por exemplo.
+    rerender({ kit: { ...kitCarregado, name: 'Editado e abandonado' }, pronto: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    await act(async () => { unmount(); });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Editado e abandonado' });
+  });
+
+  it('sair com tudo já gravado não dispara gravação nenhuma', async () => {
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender, unmount } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+    rerender({ kit: kitCarregado, pronto: false });
+    rerender({ kit: kitCarregado, pronto: true });
+
+    await act(async () => { unmount(); });
+
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it('kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao', async () => {
     single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 

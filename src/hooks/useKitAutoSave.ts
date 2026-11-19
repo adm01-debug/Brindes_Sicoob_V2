@@ -322,6 +322,22 @@ export function useKitAutoSave(
     };
   }, [kitState, kitQuantity, saveToDb, isReady]);
 
+  // Sair da tela não pode descartar a gravação agendada.
+  //
+  // O debounce espera 5s; o cleanup do efeito acima só cancela o timer, e ele
+  // roda a cada tecla (as dependências mudam a cada edição), então o flush não
+  // cabe lá — salvaria a cada caractere e mataria o debounce. Aqui a lista de
+  // dependências é vazia de propósito: roda só no desmonte, que é quando a
+  // edição pendente seria perdida em silêncio (botão "Biblioteca", voltar,
+  // troca de rota). Fechar a aba é outra história e quem avisa é o
+  // `useUnsavedChangesGuard` da página.
+  useEffect(() => () => {
+    if (!timerRef.current) return;
+    clearTimeout(timerRef.current);
+    timerRef.current = undefined;
+    void saveToDbRef.current?.(latestSnapshotRef.current);
+  }, []);
+
   // Uma troca de usuário/kit invalida timers e respostas pendentes. Gravações
   // já enviadas terminam no registro de origem, mas nunca contaminam o novo
   // contexto; a fila mantém a ordem das alterações dentro do mesmo kit.
