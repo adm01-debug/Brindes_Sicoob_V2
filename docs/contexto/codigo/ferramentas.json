@@ -3,10 +3,10 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2894)",
-   "SQL (682)",
+   "TypeScript (2901)",
+   "SQL (683)",
    "JSON (292)",
-   "Markdown (269)",
+   "Markdown (285)",
    "JavaScript (151)",
    "Python (66)",
    "YAML (23)",
@@ -1202,6 +1202,10 @@
    "arquivos_md": 92
   },
   {
+   "pasta": "docs/plano-implementacao",
+   "arquivos_md": 24
+  },
+  {
    "pasta": "docs/pesquisa",
    "arquivos_md": 11
   },
@@ -1216,10 +1220,6 @@
   {
    "pasta": "docs/audits",
    "arquivos_md": 9
-  },
-  {
-   "pasta": "docs/plano-implementacao",
-   "arquivos_md": 8
   },
   {
    "pasta": "docs/agentes",
@@ -1899,7 +1899,7 @@
    },
    {
     "papel": "user",
-    "ocorrencias": 27
+    "ocorrencias": 29
    },
    {
     "papel": "vendedor",
@@ -1914,11 +1914,11 @@
     "ocorrencias": 16
    },
    {
-    "papel": "button",
-    "ocorrencias": 14
+    "papel": "system",
+    "ocorrencias": 16
    },
    {
-    "papel": "system",
+    "papel": "button",
     "ocorrencias": 14
    },
    {

@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a5b6fcc570` · branch `main` · 2026-11-19 05:47 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `70956c727e` · branch `main` · 2026-11-19 06:10 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -409,6 +409,12 @@ _nenhum item encontrado_
 | tabela | tabela `a` usada no código não existe nas migrations/types do repo | `scripts/ai-context/cenarios.mjs` |
 | tabela | tabela `categories_tree_visual` usada no código não existe nas migrations/types do repo | `supabase/functions/categories-api/index.ts` |
 | tabela | tabela `contacts` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs`<br>`supabase/functions/crm-db-bridge/index.ts` |
+| tabela | tabela `copilot_contacts` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts`<br>`docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts` |
+| tabela | tabela `copilot_conversations` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts`<br>`docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts`<br>`docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts` |
+| tabela | tabela `copilot_events` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts` |
+| tabela | tabela `copilot_insights` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts` |
+| tabela | tabela `copilot_messages` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts`<br>`docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts` |
+| tabela | tabela `copilot_suggestions` usada no código não existe nas migrations/types do repo | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts` |
 | tabela | tabela `customers` usada no código não existe nas migrations/types do repo | `supabase/functions/expert-chat/index.ts` |
 | tabela | tabela `dashboard_table` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |
 | tabela | tabela `emails` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |

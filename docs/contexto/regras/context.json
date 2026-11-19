@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
+  "sha": "70956c727e94f2c44e93c04a9576df7245403690",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 05:47 UTC",
-  "files_total": 4501,
-  "code_files": 3772,
-  "code_lines": 551474
+  "generated_at": "2026-11-19 06:10 UTC",
+  "files_total": 4527,
+  "code_files": 3780,
+  "code_lines": 552705
  },
  "version": "1.3.2",
- "facts_hash": "739b94c26e5e26e1",
+ "facts_hash": "e2b8f439489a2b1b",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,9 +348,9 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1464,
-   ".tsx": 1428,
-   ".sql": 682,
+   ".ts": 1469,
+   ".tsx": 1430,
+   ".sql": 683,
    ".mjs": 139,
    ".py": 66,
    ".cjs": 7,
@@ -61071,8 +61071,12 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1273,
+  "components_count": 1275,
   "hooks": [
+   {
+    "name": "useCopilotQuote",
+    "file": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts"
+   },
    {
     "name": "useContacts",
     "file": "scripts/ai-context/gerar.unit.mjs"
@@ -63378,9 +63382,16 @@
   },
   {
    "module": "docs",
-   "files": 36,
-   "lines": 6013,
-   "tables": [],
+   "files": 41,
+   "lines": 7017,
+   "tables": [
+    "copilot_contacts",
+    "copilot_conversations",
+    "copilot_events",
+    "copilot_insights",
+    "copilot_messages",
+    "copilot_suggestions"
+   ],
    "exports": [
     "coletar.py: run, git, save, tree",
     "validar-evidencias.py: read",
@@ -63395,6 +63406,7 @@
     "sicoob_relatorio_20261013.py: ler, gravar_csv, url, link, cell",
     "sicoob_simular_rls_20261013.py: executar, sql",
     "reproduzir-status-fora-escopo.py: run, sql",
+    "useCopilotQuote.ts: CooperaField, CooperaState, QuoteContext, SuggestedProduct, UseCopilotQuoteReturn, useCopilotQuote",
     "validar-plano.py: carregar, exigir, visitar, ancestrais"
    ],
    "docs": [
@@ -63408,13 +63420,17 @@
    "deps": [
     "child_process",
     "fs",
+    "https:",
     "node:fs",
     "node:path",
     "path",
+    "react",
+    "sonner",
     "vm"
    ],
    "imports_modules": [
-    "home"
+    "home",
+    "src/lib"
    ],
    "file_list": [
     "docs/execucao/auditoria-20260922/auditar-wrappers.cjs",
@@ -63452,6 +63468,11 @@
     "docs/execucao/evidencias/sicoob_rodada_20260916c.sql",
     "docs/execucao/evidencias/sicoob_seguranca_rls_20260916.sql",
     "docs/execucao/revisao-plano-20261001/reproduzir-status-fora-escopo.py",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/queries.sql",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
     "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/validar-plano.py"
    ]
   },
@@ -64449,7 +64470,7 @@
   {
    "module": "src/lib",
    "files": 167,
-   "lines": 22637,
+   "lines": 22643,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64617,7 +64638,7 @@
   {
    "module": "src/pages",
    "files": 195,
-   "lines": 50109,
+   "lines": 50133,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65611,8 +65632,8 @@
   },
   {
    "module": "tests",
-   "files": 634,
-   "lines": 85439,
+   "files": 637,
+   "lines": 85636,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -66197,6 +66218,43 @@
     ],
     "delete": [
      "src/pages/admin/AdminCooperativasPage.tsx"
+    ]
+   },
+   "copilot_contacts": {
+    "select": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   "copilot_conversations": {
+    "select": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ],
+    "update": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts"
+    ]
+   },
+   "copilot_events": {
+    "insert": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts"
+    ]
+   },
+   "copilot_insights": {
+    "insert": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts"
+    ]
+   },
+   "copilot_messages": {
+    "select": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   "copilot_suggestions": {
+    "insert": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
     ]
    },
    "coupons": {
@@ -68315,6 +68373,26 @@
    "cooperativas_parceiras": [
     "id"
    ],
+   "copilot_contacts": [
+    "conversation_id",
+    "name",
+    "org_name",
+    "purchase_history"
+   ],
+   "copilot_conversations": [
+    "ai_risk_level",
+    "analysis_count",
+    "coopera_state",
+    "crm_contact_id",
+    "id",
+    "sentiment"
+   ],
+   "copilot_messages": [
+    "content",
+    "conversation_id",
+    "role",
+    "sent_at"
+   ],
    "coupons": [
     "code",
     "id",
@@ -69711,6 +69789,8 @@
     "supabase/functions/crm-db-bridge/index.ts"
    ],
    "LOVABLE_API_KEY": [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
     "supabase/functions/ai-recommendations/index.ts",
     "supabase/functions/analyze-logo-colors/index.ts",
     "supabase/functions/bi-copilot/index.ts",
@@ -69962,6 +70042,9 @@
     "scripts/supabase_snapshot/snapshot.py"
    ],
    "SUPABASE_SERVICE_ROLE_KEY": [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
     "scripts/check-security-definer-acl.mjs",
     "scripts/db-performance-audit.mjs",
     "scripts/db/check-live-api-inventory.mjs",
@@ -70044,6 +70127,9 @@
     "scripts/supabase_snapshot/snapshot.py"
    ],
    "SUPABASE_URL": [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
     "scripts/ai-context/cenarios.mjs",
     "scripts/check-security-definer-acl.mjs",
     "scripts/healthcheck.mjs",
@@ -71423,6 +71509,12 @@
    "a",
    "categories_tree_visual",
    "contacts",
+   "copilot_contacts",
+   "copilot_conversations",
+   "copilot_events",
+   "copilot_insights",
+   "copilot_messages",
+   "copilot_suggestions",
    "customers",
    "dashboard_table",
    "emails",
@@ -73673,6 +73765,22 @@
    {
     "file": "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
     "msg": "Módulo local ausente: "
+   },
+   {
+    "file": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+    "msg": "Erro ao gerar contexto de orçamento. Tente novamente."
+   },
+   {
+    "file": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+    "msg": "Nenhuma conversa selecionada para gerar orçamento."
+   },
+   {
+    "file": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+    "msg": "Não foi possível obter o contexto de orçamento."
+   },
+   {
+    "file": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+    "msg": "Preencha ao menos parcialmente o escopo (campo E do COOPERA) antes de gerar o orçamento."
    },
    {
     "file": "e2e/fixtures/auth.setup.ts",
@@ -80383,6 +80491,14 @@
     "text": "* Alias legado aceito apenas na normalização de payloads antigos. */"
    },
    {
+    "file": "src/lib/external-db/product-types.ts",
+    "text": "pô-la em `_WITH_SALE` não faria o prazo chegar ao cartão — isso exige mexer"
+   },
+   {
+    "file": "src/lib/external-db/product-types.ts",
+    "text": "`_LEGACY` segue sendo o mínimo seguro do fallback e não ganha colunas."
+   },
+   {
     "file": "src/lib/external-db/products.ts",
     "text": "Cache de referência é apenas uma otimização."
    },
@@ -80757,6 +80873,26 @@
    {
     "file": "src/pages/kit-builder/useKitBuilderQuote.ts",
     "text": "O navegador envia somente identidade, IDs e quantidades; preço, estoque e"
+   },
+   {
+    "file": "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "text": "* Até aqui esta tela passava uma constante vazia, então o prazo de entrega"
+   },
+   {
+    "file": "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "text": "consulta não pediu. `tests/lib/external-db/ficha-prazo-entrega.test.ts`"
+   },
+   {
+    "file": "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "text": "trava essa ligação. É o prazo do produto, medido (2, 3 ou 5 dias úteis)."
+   },
+   {
+    "file": "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "text": "* Prazo zero é prazo não informado, não entrega no mesmo dia: o cartão de preço"
+   },
+   {
+    "file": "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "text": "já escreve \"Consultar prazo\" nesse caso, e o selo tem de concordar com ele."
    },
    {
     "file": "src/pages/quotes-dashboard/useQuotesDashboard.ts",
@@ -118490,6 +118626,18 @@
     "name": "mantém todos os status de curadoria esperados"
    },
    {
+    "file": "tests/components/product-price-card-trust.test.tsx",
+    "name": "ProductPriceCard alimenta os selos com o produto"
+   },
+   {
+    "file": "tests/components/product-price-card-trust.test.tsx",
+    "name": "mostra o prazo do catálogo"
+   },
+   {
+    "file": "tests/components/product-price-card-trust.test.tsx",
+    "name": "com prazo zero diz "
+   },
+   {
     "file": "tests/components/quoteConsolidationHelpers.test.ts",
     "name": "quoteConsolidationHelpers"
    },
@@ -118504,6 +118652,46 @@
    {
     "file": "tests/components/quoteConsolidationHelpers.test.ts",
     "name": "escapa CSV e neutraliza fórmulas em campos textuais"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "DynamicTrustBadges com dado do catálogo"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "mostra o prazo real quando o produto tem lead time"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "não mostra selo nenhum quando o catálogo não tem prazo"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "não inventa fornecedor verificado nem avaliação"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "supplierTrustFromProduct — a ligação que se perdeu"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "leva o prazo do catálogo para o selo"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "trata prazo zero como prazo não informado, igual ao cartão de preço"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "não produz fornecedor verificado nem avaliação, que o catálogo não tem"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "o selo renderizado a partir do produto é o do catálogo, não uma constante vazia"
+   },
+   {
+    "file": "tests/components/supplier-trust-badges.test.tsx",
+    "name": "produto sem prazo no catálogo não ganha selo inventado"
    },
    {
     "file": "tests/components/useStockChartData.real-data.test.tsx",
@@ -133140,6 +133328,22 @@
    {
     "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
     "name": "o percentual do cliente continua sendo mostrado — ele foi medido"
+   },
+   {
+    "file": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+    "name": "prazo de entrega chega à ficha do produto"
+   },
+   {
+    "file": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+    "name": "o select da ficha pede lead_time_days"
+   },
+   {
+    "file": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+    "name": "o prazo sobrevive ao recorte do select, ao mapper e ao cálculo do selo"
+   },
+   {
+    "file": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+    "name": "sem a coluna no select, o selo some — é a regressão que este teste trava"
    },
    {
     "file": "tests/lib/navigation/dirty-registry.test.ts",
@@ -164343,6 +164547,9 @@
    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
    "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
    "docs/execucao/evidencias/sicoob_reconciliacao_restante_20260916.sql",
+   "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+   "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+   "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
    "e2e/helpers/cleanup-client.ts",
    "scripts/ai-context/cenarios.mjs",
    "scripts/ai-context/gerar.unit.mjs",
@@ -173689,6 +173896,52 @@
    },
    {
     "kind": "tabela",
+    "msg": "tabela `copilot_contacts` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
+    "msg": "tabela `copilot_conversations` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
+    "msg": "tabela `copilot_events` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
+    "msg": "tabela `copilot_insights` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
+    "msg": "tabela `copilot_messages` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
+    "msg": "tabela `copilot_suggestions` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
     "msg": "tabela `customers` usada no código não existe nas migrations/types do repo",
     "where": [
      "supabase/functions/expert-chat/index.ts"
@@ -174997,6 +175250,189 @@
     "def run",
     "def sql"
    ]
+  },
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/queries.sql": {
+   "path": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/queries.sql",
+   "lines": 238
+  },
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts": {
+   "path": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+   "lines": 125,
+   "exports": [
+    "interface CooperaField",
+    "interface CooperaState",
+    "interface QuoteContext",
+    "interface SuggestedProduct",
+    "interface UseCopilotQuoteReturn",
+    "function useCopilotQuote"
+   ],
+   "errors": [
+    "Erro ao gerar contexto de orçamento. Tente novamente.",
+    "Nenhuma conversa selecionada para gerar orçamento.",
+    "Não foi possível obter o contexto de orçamento.",
+    "Preencha ao menos parcialmente o escopo (campo E do COOPERA) antes de gerar o orçamento."
+   ],
+   "doc": "useCopilotQuote — Hook React para orçamentos guiados pelo Copilot (F08, E071-E075) Detecta quando o estado COOPERA tem E (Escopo) preenchido e habilita a geração de orçamento pré-preenchido com contexto da conversa.",
+   "hooks": [
+    "useCopilotQuote"
+   ]
+  },
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts": {
+   "path": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+   "lines": 272,
+   "tables": [
+    {
+     "table": "copilot_messages",
+     "op": "select"
+    },
+    {
+     "table": "copilot_conversations",
+     "op": "select"
+    },
+    {
+     "table": "copilot_conversations",
+     "op": "update"
+    },
+    {
+     "table": "copilot_insights",
+     "op": "insert"
+    },
+    {
+     "table": "copilot_events",
+     "op": "insert"
+    }
+   ],
+   "table_cols": {
+    "copilot_messages": [
+     "content",
+     "conversation_id",
+     "role",
+     "sent_at"
+    ],
+    "copilot_conversations": [
+     "ai_risk_level",
+     "analysis_count",
+     "coopera_state",
+     "id"
+    ]
+   },
+   "env": [
+    "LOVABLE_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "params": [
+    {
+     "name": "MODEL",
+     "value": "\"google/gemini-2.5-flash\""
+    }
+   ],
+   "doc": "copilot-analyze — Motor de Análise em Tempo Real (F06, E056-E060) Analisa a conversa de vendas usando o método COOPERA e atualiza: - coopera_state e ai_risk_level na tabela copilot_conversations - insights (buying_signals, risk_flags) em copilot_insights - eventos de auditoria em copilot_events - di …",
+   "calc_fns": [
+    {
+     "name": "calcCooperaCompletionPct",
+     "params": "state: CooperaState",
+     "body": "const fields = Object.values(state); if (fields.length === 0) return 0; const complete = fields.filter((f) => f.status === \"completo\").length; const partial = fields.filter((f) => f.status === \"parcial\").length; return Math.round(((complete + partial * 0.5) / fields.length) * 100);"
+    }
+   ],
+   "percents": [
+    "return Math.round(((complete + partial * 0.5) / fields.length) * 100);"
+   ],
+   "pagination": [
+    "30"
+   ],
+   "uses_service_role": true
+  },
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts": {
+   "path": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+   "lines": 135,
+   "tables": [
+    {
+     "table": "copilot_conversations",
+     "op": "select"
+    },
+    {
+     "table": "copilot_contacts",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "copilot_conversations": [
+     "ai_risk_level",
+     "coopera_state",
+     "id"
+    ],
+    "copilot_contacts": [
+     "conversation_id",
+     "name",
+     "org_name"
+    ]
+   },
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "doc": "copilot-quote-context — Serviço de Contexto de Orçamento (F08, E076-E080) Extrai do estado COOPERA os dados necessários para pré-preencher o sicoob-kit-quote: produto sugerido, quantidade, faixa de verba, data do evento e nome do cliente.",
+   "uses_service_role": true
+  },
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts": {
+   "path": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
+   "lines": 234,
+   "tables": [
+    {
+     "table": "copilot_conversations",
+     "op": "select"
+    },
+    {
+     "table": "copilot_messages",
+     "op": "select"
+    },
+    {
+     "table": "copilot_contacts",
+     "op": "select"
+    },
+    {
+     "table": "copilot_suggestions",
+     "op": "insert"
+    }
+   ],
+   "table_cols": {
+    "copilot_conversations": [
+     "ai_risk_level",
+     "coopera_state",
+     "crm_contact_id",
+     "id",
+     "sentiment"
+    ],
+    "copilot_messages": [
+     "content",
+     "conversation_id",
+     "role",
+     "sent_at"
+    ],
+    "copilot_contacts": [
+     "conversation_id",
+     "name",
+     "org_name",
+     "purchase_history"
+    ]
+   },
+   "env": [
+    "LOVABLE_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "params": [
+    {
+     "name": "MODEL",
+     "value": "\"google/gemini-2.5-flash\""
+    }
+   ],
+   "doc": "copilot-suggest — Gerador de Sugestões de Próxima Mensagem (F07, E061-E065) Lê o estado COOPERA, identifica a próxima letra não preenchida e gera 3 sugestões de resposta para o vendedor, salvas em copilot_suggestions.",
+   "pagination": [
+    "10"
+   ],
+   "uses_service_role": true
   },
   "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/validar-plano.py": {
    "path": "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/validar-plano.py",
@@ -214352,7 +214788,7 @@
   },
   "src/lib/external-db/product-types.ts": {
    "path": "src/lib/external-db/product-types.ts",
-   "lines": 169,
+   "lines": 175,
    "exports": [
     "interface PromobrindProduct",
     "function getProductImageUrl",
@@ -214375,7 +214811,9 @@
    ],
    "rule_comments": [
     "* Alias legado aceito apenas na normalização de payloads antigos. */",
-    "* Alias legado aceito apenas na normalização de payloads antigos. */"
+    "* Alias legado aceito apenas na normalização de payloads antigos. */",
+    "pô-la em `_WITH_SALE` não faria o prazo chegar ao cartão — isso exige mexer",
+    "`_LEGACY` segue sendo o mínimo seguro do fallback e não ganha colunas."
    ],
    "doc": "PromobrindProduct type + helper functions.",
    "calc_fns": [
@@ -221110,8 +221548,9 @@
   },
   "src/pages/product-detail/ProductDetailHeroSections.tsx": {
    "path": "src/pages/product-detail/ProductDetailHeroSections.tsx",
-   "lines": 267,
+   "lines": 291,
    "exports": [
+    "function supplierTrustFromProduct",
     "function ProductHeroHeader",
     "function ProductGalleryPanel",
     "function ProductQuickActionsPanel",
@@ -221120,6 +221559,13 @@
    ],
    "errors": [
     "Limite atingido"
+   ],
+   "rule_comments": [
+    "* Até aqui esta tela passava uma constante vazia, então o prazo de entrega",
+    "consulta não pediu. `tests/lib/external-db/ficha-prazo-entrega.test.ts`",
+    "trava essa ligação. É o prazo do produto, medido (2, 3 ou 5 dias úteis).",
+    "* Prazo zero é prazo não informado, não entrega no mesmo dia: o cartão de preço",
+    "já escreve \"Consultar prazo\" nesse caso, e o selo tem de concordar com ele."
    ],
    "calc_fns": [
     {
@@ -240904,6 +241350,17 @@
     "mantém todos os status de curadoria esperados"
    ]
   },
+  "tests/components/product-price-card-trust.test.tsx": {
+   "path": "tests/components/product-price-card-trust.test.tsx",
+   "lines": 46,
+   "is_test": true,
+   "doc": "Guarda a LIGAÇÃO: o cartão de preço tem de alimentar os selos com o produto. Se alguém voltar a passar uma constante vazia, este teste cai.",
+   "tests": [
+    "ProductPriceCard alimenta os selos com o produto",
+    "mostra o prazo do catálogo",
+    "com prazo zero diz "
+   ]
+  },
   "tests/components/quoteConsolidationHelpers.test.ts": {
    "path": "tests/components/quoteConsolidationHelpers.test.ts",
    "lines": 47,
@@ -240923,6 +241380,28 @@
     "function renderWithProviders"
    ],
    "doc": "Shared render helpers and mocks for component render tests."
+  },
+  "tests/components/supplier-trust-badges.test.tsx": {
+   "path": "tests/components/supplier-trust-badges.test.tsx",
+   "lines": 97,
+   "is_test": true,
+   "rule_comments": [
+    "* O selo de prazo de entrega na ficha do produto tem de sair do catálogo.",
+    "O cartão escreve \"Consultar prazo\" quando leadTimeDays é 0; sem isto o"
+   ],
+   "doc": "O selo de prazo de entrega na ficha do produto tem de sair do catálogo. A tela passava `EMPTY_SUPPLIER_TRUST = { isVerified: false, deliveryDays: null, avgRating: null }` fixo, então a seção de confiança existia e nunca mostrava nada. Sete branches diferentes apontaram essa perda.",
+   "tests": [
+    "DynamicTrustBadges com dado do catálogo",
+    "mostra o prazo real quando o produto tem lead time",
+    "não mostra selo nenhum quando o catálogo não tem prazo",
+    "não inventa fornecedor verificado nem avaliação",
+    "supplierTrustFromProduct — a ligação que se perdeu",
+    "leva o prazo do catálogo para o selo",
+    "trata prazo zero como prazo não informado, igual ao cartão de preço",
+    "não produz fornecedor verificado nem avaliação, que o catálogo não tem",
+    "o selo renderizado a partir do produto é o do catálogo, não uma constante vazia",
+    "produto sem prazo no catálogo não ganha selo inventado"
+   ]
   },
   "tests/components/useStockChartData.real-data.test.tsx": {
    "path": "tests/components/useStockChartData.real-data.test.tsx",
@@ -248000,6 +248479,21 @@
     "o percentual do cliente continua sendo mostrado — ele foi medido"
    ]
   },
+  "tests/lib/external-db/ficha-prazo-entrega.test.ts": {
+   "path": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+   "lines": 54,
+   "is_test": true,
+   "rule_comments": [
+    "* O selo de prazo só aparece se a coluna for PEDIDA."
+   ],
+   "doc": "O selo de prazo só aparece se a coluna for PEDIDA. Os testes de `supplier-trust-badges` alimentam `leadTimeDays` à mão — estado que a ficha real nunca produziu, porque `lead_time_days` não estava em nenhum dos selects. O resultado é que eles passavam em verde com a tela exibindo exatamente o que exi …",
+   "tests": [
+    "prazo de entrega chega à ficha do produto",
+    "o select da ficha pede lead_time_days",
+    "o prazo sobrevive ao recorte do select, ao mapper e ao cálculo do selo",
+    "sem a coluna no select, o selo some — é a regressão que este teste trava"
+   ]
+  },
   "tests/lib/navigation/dirty-registry.test.ts": {
    "path": "tests/lib/navigation/dirty-registry.test.ts",
    "lines": 63,
@@ -251669,10 +252163,54 @@
   }
  },
  "git": {
-  "sha": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
+  "sha": "70956c727e94f2c44e93c04a9576df7245403690",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "70956c7",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)",
+    "files": [
+     "src/lib/external-db/product-types.ts",
+     "src/pages/product-detail/ProductDetailHeroSections.tsx",
+     "tests/components/product-price-card-trust.test.tsx",
+     "tests/components/supplier-trust-badges.test.tsx",
+     "tests/lib/external-db/ficha-prazo-entrega.test.ts"
+    ]
+   },
+   {
+    "sha": "202a19c",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)",
+    "files": [
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/README-PRESERVACAO.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/banco-perguntas.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/biblioteca-objecoes.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/metodo-coopera.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e021-politicas-whatsapp.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e022-lgpd-ripd.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e023-consentimento.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e024-retencao.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e025-aviso-privacidade.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e026-dpa-fornecedores.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e027-fluxo-optout.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e028-auditoria.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e029-seguranca.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e030-checklist-g1.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/baseline-20261016.md",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/queries.sql",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/etapas.csv",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/20261016154200_copilot_engine_tables.sql.txt",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/plano.md"
+    ]
+   },
    {
     "sha": "a5b6fcc",
     "date": "2026-11-19",
@@ -252142,67 +252680,11 @@
     "files": [
      ".github/workflows/automation-local.yml"
     ]
-   },
-   {
-    "sha": "64b8dc8",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)",
-    "files": [
-     ".github/workflows/deploy-sicoob-functions.yml",
-     "docs/execucao/evidencias/salvamento-orcamento-atomico.json",
-     "docs/execucao/p045-integridade-precos-20261030.md",
-     "scripts/ci/verify-supabase-functions-published.mjs",
-     "scripts/db/.check-runtime-refs-allowlist.json",
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "scripts/qa/simular-idempotencia-orcamento.py",
-     "scripts/qa/simular-salvamento-orcamento-atomico.py",
-     "src/components/quotes/DraggableQuoteItems.tsx",
-     "src/hooks/quote/quote-url-prefill.ts",
-     "src/hooks/quote/useQuoteInitialization.ts",
-     "src/hooks/quotes/quoteHelpers.ts",
-     "src/hooks/quotes/quoteVariantIdentity.ts",
-     "src/hooks/useExternalVariantStock.ts",
-     "src/hooks/useQuoteBuilderState.ts",
-     "src/integrations/supabase/types.ts",
-     "src/services/QuoteService.ts",
-     "src/types/product-catalog.ts",
-     "src/utils/product-mapper.ts",
-     "supabase/config.toml",
-     "supabase/functions/_shared/edge-authz-manifest.ts",
-     "supabase/functions/quote-price-attestation/contract.ts",
-     "supabase/functions/quote-price-attestation/index.ts",
-     "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
-     "tests/edge-functions/quote-price-attestation.test.ts",
-     "tests/hooks/quoteHelpers-atomic.test.ts",
-     "tests/hooks/quoteVariantIdentity.test.ts",
-     "tests/scenarios/sql/quote-atomic-save-fixture.sql",
-     "tests/scripts/verify-supabase-functions-published.test.ts",
-     "tests/services/quoteReorder.test.ts"
-    ]
-   },
-   {
-    "sha": "06aa890",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)",
-    "files": [
-     "src/components/sicoob/GestorComprasMetrics.tsx",
-     "src/hooks/sicoob/usePurchasingMetrics.ts",
-     "src/lib/orders/purchasing-sla.ts",
-     "src/services/sicoob/managerStatsService.ts",
-     "tests/lib/purchasing-sla.test.ts",
-     "tests/pages/GestorCompras.metrics.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "supabase/functions/mcp-server/index.ts",
-    2
-   ],
-   [
-    "src/hooks/useQuoteBuilderState.ts",
     2
    ],
    [
@@ -252214,67 +252696,71 @@
     2
    ],
    [
-    "src/services/QuoteService.ts",
-    2
-   ],
-   [
-    "supabase/functions/quote-price-attestation/index.ts",
-    2
-   ],
-   [
-    "tests/services/quoteReorder.test.ts",
-    2
-   ],
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    2
-   ],
-   [
     ".github/workflows/automation-local.yml",
     2
    ],
    [
-    "src/hooks/useTemplateSnapshot.ts",
+    "src/lib/external-db/product-types.ts",
     1
    ],
    [
-    "tests/hooks/useTemplateSnapshot.test.tsx",
+    "src/pages/product-detail/ProductDetailHeroSections.tsx",
     1
    ],
    [
-    "supabase/functions/_shared/cors.ts",
+    "tests/components/product-price-card-trust.test.tsx",
     1
    ],
    [
-    "supabase/functions/external-db-bridge/index.ts",
+    "tests/components/supplier-trust-badges.test.tsx",
     1
    ],
    [
-    "e2e/flows/p0/README.md",
+    "tests/lib/external-db/ficha-prazo-entrega.test.ts",
     1
    ],
    [
-    "scripts/check-critical-test-skip-budget.mjs",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/README-PRESERVACAO.md",
     1
    ],
    [
-    "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/banco-perguntas.md",
     1
    ],
    [
-    "docs/ROUTES.md",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/biblioteca-objecoes.md",
     1
    ],
    [
-    "src/hooks/usePWAInstall.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/metodo-coopera.md",
     1
    ],
    [
-    "src/lib/rbac/route-matrix.ts",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e021-politicas-whatsapp.md",
     1
    ],
    [
-    "src/pages/PWAInstallPage.tsx",
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e022-lgpd-ripd.md",
+    1
+   ],
+   [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e023-consentimento.md",
+    1
+   ],
+   [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e024-retencao.md",
+    1
+   ],
+   [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e025-aviso-privacidade.md",
+    1
+   ],
+   [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e026-dpa-fornecedores.md",
+    1
+   ],
+   [
+    "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e027-fluxo-optout.md",
     1
    ]
   ]

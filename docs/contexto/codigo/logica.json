@@ -1775,7 +1775,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 3,
+   "usado_por": 4,
    "usado_por_modulos": [
     "hooks/quotes",
     "lib",
@@ -2252,7 +2252,7 @@
     "shouldFallbackSelect"
    ],
    "export_default": null,
-   "linhas": 169,
+   "linhas": 175,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -2267,7 +2267,7 @@
     "components/inventory",
     "lib/external-db"
    ],
-   "coberto_por_testes": 1,
+   "coberto_por_testes": 2,
    "orfao": false
   },
   {
@@ -7278,7 +7278,7 @@
     "hooks",
     "hooks/quote"
    ],
-   "coberto_por_testes": 3,
+   "coberto_por_testes": 4,
    "orfao": false
   },
   {

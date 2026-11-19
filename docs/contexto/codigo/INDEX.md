@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `a5b6fcc57063b023ec721012a7e17b70c6ef732a` (2026-11-19T05:46:56Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `70956c727e94f2c44e93c04a9576df7245403690` (2026-11-19T06:10:10Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2894), SQL (682), JSON (292), Markdown (269), JavaScript (151), Python (66), YAML (23), CSS (7)
+- linguagens: TypeScript (2901), SQL (683), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (23), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,31 +34,31 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4498 |
-| arquivos_codigo | 3108 |
-| linhas_codigo | 489133 |
+| arquivos_total | 4524 |
+| arquivos_codigo | 3115 |
+| linhas_codigo | 490126 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 84 |
 | modulos | 145 |
 | componentes | 1170 |
-| hooks | 392 |
+| hooks | 393 |
 | edge_functions | 107 |
 | tabelas | 292 |
 | migrations | 621 |
 | cron_jobs | 27 |
-| testes | 860 |
+| testes | 863 |
 | workflows | 16 |
 | scripts | 121 |
-| docs_md | 269 |
+| docs_md | 285 |
 
 ## Onde ficam as coisas
 - telas: src/pages (116)
 - componentes: src/components (999), src/pages (159), src/contexts (9)
 - hooks: src/hooks (287), src/components (66), src/pages (21)
 - servicos_logica: src/lib (167), src/utils (37), src/services (23)
-- testes: tests/ (613), e2e/ (149), outro (51)
+- testes: tests/ (616), e2e/ (149), outro (51)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -448,7 +448,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - env de integração (só nomes): BITRIX24_WEBHOOK_URL, BI_SHARE_SECRET, CNPJA_API_KEY, DROPBOX_ACCESS_TOKEN, E2E_CLEANUP_TOKEN, ELEVENLABS_API_KEY, LOVABLE_API_KEY, N8N_QUOTE_WEBHOOK_URL, QUOTE_SYNC_API_KEY, RESEND_API_KEY, SALESPRO_WEBHOOK_URL, SICOOB_APPROVAL_WORKER_SECRET, SICOOB_MALWARE_SCANNER_TOKEN, VIRUSTOTAL_API_KEY, VITE_SENTRY_DSN
 
 ## Permissões / papéis
-- papéis no código: alert (59), status (53), dev (43), supervisor (29), user (27), vendedor (24), admin (22), agente (16), button (14), system (14), dialog (12), group (11), list (11), listitem (11), combobox (7), img (7), progressbar (6), tab (6), tablist (6), assistant (5), manager (5), navigation (5), radio (5), radiogroup (5), region (5), switch (5), authenticated (4), listbox (4), public (4), alertdialog (3), gerente_pa (3), gestor_pa (3), gestor_singular (3), main (3), presentation (3), separator (3), agent (2), all (2), anon (2), gestor_compras (2), log (2), option (2), owner (2), string (2), toolbar (2), tooltip (2), article (1), banner (1), complementary (1), comprador_singular (1), contentinfo (1), document (1), editor (1), grid (1), gridcell (1), heading (1), link (1), menu (1), none (1), publico (1), seller (1), service_role (1), sicoob_central (1), sicoob_gestor (1), sicoob_pa (1), sicoob_singular (1), sup (1)
+- papéis no código: alert (59), status (53), dev (43), supervisor (29), user (29), vendedor (24), admin (22), agente (16), system (16), button (14), dialog (12), group (11), list (11), listitem (11), combobox (7), img (7), progressbar (6), tab (6), tablist (6), assistant (5), manager (5), navigation (5), radio (5), radiogroup (5), region (5), switch (5), authenticated (4), listbox (4), public (4), alertdialog (3), gerente_pa (3), gestor_pa (3), gestor_singular (3), main (3), presentation (3), separator (3), agent (2), all (2), anon (2), gestor_compras (2), log (2), option (2), owner (2), string (2), toolbar (2), tooltip (2), article (1), banner (1), complementary (1), comprador_singular (1), contentinfo (1), document (1), editor (1), grid (1), gridcell (1), heading (1), link (1), menu (1), none (1), publico (1), seller (1), service_role (1), sicoob_central (1), sicoob_gestor (1), sicoob_pa (1), sicoob_singular (1), sup (1)
 - enums de papel: app_role: admin|manager|vendedor|supervisor|dev|gestor_compras|gerente_pa|comprador_pac|comprador_singular|comprador_pac|comprador_singular; org_role: owner|admin|member; role_migration_status: pending|running|completed|failed|partial|dry_run; role_migration_item_status: pending|success|failed|skipped|dry_run
 - guards: src/components/admin/telemetry/RegressionGuardrailBanner.tsx, src/components/layout/ProtectedRoute.tsx · rotas protegidas: 108 · públicas: /*, /*, /403, /approve/:token, /colecao-publica/:token, /comparar-publica/:token, /convite/:token, /demonstracao, /dossie/:token, /gestor/delegacoes, /instalar, /kit/:token, /lista-publica/:token, /login, /login, /loja-demo, /proposta/:token, /public/colecao/:token, /public/comparativo/:token, /public/dossie/:token, /public/favoritos/:token, /public/kit/:token, /public/orcamento/:token/aprovacao, /reset-password, /reset-password, /sso/callback, /sso/callback, /verificacao, /verificacao
 - feature flags: ENABLE_DEMO_PAGES, ENABLE_RLS, FEATURE_GROUPS, FEATURE_X, nova-tela, novo-inbox
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29146 nós · 53834 arestas · 2091 comunidades · grafo do commit `a5b6fcc5`
-- comunidades maiores: vitest (372), ref_hooks (209), react (201), ref_node_fs (199), getCorsHeaders (173), ref_components (163), ref_node_assert (158), react-router-dom (153), ai-usage.ts (152), ref_lib (151), ref_npm_supabase (140), ref_contexts (137)
+- 29563 nós · 54268 arestas · 2090 comunidades · grafo do commit `70956c72`
+- comunidades maiores: ref_components (605), ref_integrations (489), ref_lib (304), lucide-react (253), react (210), react-router-dom (195), framer-motion (190), ai-usage.ts (169), date-fns (163), getCorsHeaders (149), external-db-bridge/index.ts (133), ref_stores (124)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (57)
-- docs/correcoes-validacao-2026-09-14.md (56)
+- docs/plano-melhorias-50-etapas.md (55)
+- docs/correcoes-validacao-2026-09-14.md (54)
 - PENDENCIAS.md (21)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -690,10 +690,12 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/execucao (92), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/plano-implementacao (8), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `70956c7` fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)
+- 2026-11-19 `202a19c` docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)
 - 2026-11-19 `a5b6fcc` fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)
 - 2026-11-19 `7ec2508` fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)
 - 2026-11-19 `5bf2e58` ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)
@@ -707,8 +709,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `34095f4` fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)
 - 2026-11-19 `f82acc3` feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)
 - 2026-11-19 `fed7067` chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)
-- 2026-11-19 `c17e905` fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)
-- 2026-11-19 `9830191` fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

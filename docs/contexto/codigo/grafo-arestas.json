@@ -2,6 +2,9 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "arestas": {
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts": [
+   "src/lib/edge-function-client.ts"
+  ],
   "scripts/ai-context/cenarios.mjs": [
    "src/components/ui/index.ts",
    "src/hooks/index.ts",

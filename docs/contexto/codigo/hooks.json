@@ -1,8 +1,28 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 392,
+ "total": 393,
  "hooks": [
+  {
+   "arquivo": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
+   "hooks_exportados": [
+    "useCopilotQuote"
+   ],
+   "linhas": 125,
+   "dominio": null,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [
+    "useCallback",
+    "useMemo",
+    "useState"
+   ],
+   "canais_realtime": [],
+   "usado_por": 0,
+   "usado_por_arquivos": [],
+   "coberto_por_testes": 0
+  },
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
    "hooks_exportados": [

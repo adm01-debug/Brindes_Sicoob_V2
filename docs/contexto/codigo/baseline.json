@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "a5b6fcc57063b023ec721012a7e17b70c6ef732a",
+  "commit": "70956c727e94f2c44e93c04a9576df7245403690",
   "branch": "main",
-  "data_commit": "2026-11-19T05:46:56Z",
+  "data_commit": "2026-11-19T06:10:10Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "70956c7",
+    "data": "2026-11-19",
+    "assunto": "fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)"
+   },
+   {
+    "sha": "202a19c",
+    "data": "2026-11-19",
+    "assunto": "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)"
+   },
    {
     "sha": "a5b6fcc",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "1ad25e3",
     "data": "2026-11-19",
     "assunto": "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)"
-   },
-   {
-    "sha": "d342a59",
-    "data": "2026-11-19",
-    "assunto": "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)"
-   },
-   {
-    "sha": "3df58f1",
-    "data": "2026-11-19",
-    "assunto": "fix(edge): termo de busca para de virar curinga em get-app-logs e mcp-server (#358)"
    }
   ],
-  "arquivos_mudados_7d": 577,
+  "arquivos_mudados_7d": 605,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -146,6 +146,10 @@
    {
     "pasta": "docs/externo/analises-20261007",
     "mudancas": 25
+   },
+   {
+    "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
+    "mudancas": 23
    },
    {
     "pasta": "src/components/admin",
@@ -190,20 +194,16 @@
    {
     "pasta": "src/components/sicoob",
     "mudancas": 10
-   },
-   {
-    "pasta": "src/pages/sicoob",
-    "mudancas": 10
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 57
+    "mudancas": 55
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 56
+    "mudancas": 54
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 165
+    "commits": 167
    },
    {
     "autor": "dependabot[bot]",
@@ -310,24 +310,24 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4498,
-  "arquivos_codigo": 3108,
-  "linhas_codigo": 489133,
+  "arquivos_total": 4524,
+  "arquivos_codigo": 3115,
+  "linhas_codigo": 490126,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
   "componentes": 1170,
-  "hooks": 392,
+  "hooks": 393,
   "edge_functions": 107,
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 860,
+  "testes": 863,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 269
+  "docs_md": 285
  },
  "por_pasta": {
   "docs/execucao": {
@@ -335,8 +335,8 @@
    "linhas": 1734
   },
   "docs/plano-implementacao": {
-   "arquivos": 1,
-   "linhas": 152
+   "arquivos": 5,
+   "linhas": 918
   },
   "e2e/admin-conexoes-credentials-active-products.spec.ts": {
    "arquivos": 1,
@@ -800,7 +800,7 @@
   },
   "src/lib": {
    "arquivos": 167,
-   "linhas": 22637
+   "linhas": 22643
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50109
+   "linhas": 50133
   },
   "src/routes": {
    "arquivos": 9,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 142,
-   "linhas": 27048
+   "arquivos": 144,
+   "linhas": 27191
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -923,8 +923,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 73,
-   "linhas": 8982
+   "arquivos": 74,
+   "linhas": 9036
   },
   "tests/load": {
    "arquivos": 1,
@@ -1142,7 +1142,7 @@
   }
  ],
  "qualidade": {
-  "any": 489,
+  "any": 495,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

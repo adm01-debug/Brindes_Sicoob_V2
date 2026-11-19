@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 860,
+ "total": 863,
  "por_tipo": {
   "contrato": 11,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 632
+  "unit": 635
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 613
+   "arquivos": 616
   },
   {
    "padrao": "e2e/",
@@ -3017,6 +3017,16 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/components/product-price-card-trust.test.tsx",
+   "tipo": "unit",
+   "linhas": 46,
+   "testa": [
+    "src/components/ui/tooltip.tsx",
+    "src/pages/product-detail/ProductDetailHeroSections.tsx"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/components/products/ColumnSelector.test.tsx",
    "tipo": "unit",
    "linhas": 200,
@@ -3368,6 +3378,17 @@
     "src/components/ui/tooltip.tsx"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "tests/components/supplier-trust-badges.test.tsx",
+   "tipo": "unit",
+   "linhas": 97,
+   "testa": [
+    "src/components/common/SocialProof.tsx",
+    "src/components/ui/tooltip.tsx",
+    "src/pages/product-detail/ProductDetailHeroSections.tsx"
+   ],
+   "casos": 8
   },
   {
    "arquivo": "tests/components/TelemetryCharts.test.tsx",
@@ -5417,6 +5438,17 @@
    "linhas": 46,
    "testa": [
     "supabase/functions/_shared/external-db-aliases.ts"
+   ],
+   "casos": 3
+  },
+  {
+   "arquivo": "tests/lib/external-db/ficha-prazo-entrega.test.ts",
+   "tipo": "unit",
+   "linhas": 54,
+   "testa": [
+    "src/lib/external-db/product-types.ts",
+    "src/pages/product-detail/ProductDetailHeroSections.tsx",
+    "src/utils/product-mapper.ts"
    ],
    "casos": 3
   },
@@ -7551,7 +7583,7 @@
   "src/components/common/EnhancedSpotlight.tsx": 1,
   "src/components/common/ErrorBoundary.tsx": 1,
   "src/components/common/GlobalConfirmDialog.tsx": 1,
-  "src/components/common/SocialProof.tsx": 1,
+  "src/components/common/SocialProof.tsx": 2,
   "src/components/dashboard/RecentKitsWidget.tsx": 1,
   "src/components/dev/BridgeMetricsOverlay.tsx": 3,
   "src/components/dev/DevOnlyBridgeOverlay.tsx": 6,
@@ -7647,7 +7679,7 @@
   "src/components/ui/input.tsx": 2,
   "src/components/ui/label.tsx": 1,
   "src/components/ui/popover.tsx": 2,
-  "src/components/ui/tooltip.tsx": 26,
+  "src/components/ui/tooltip.tsx": 28,
   "src/components/workflows/WorkflowEditDialog.tsx": 1,
   "src/constants/filters.ts": 1,
   "src/contexts/AuthContext.tsx": 11,
@@ -7809,7 +7841,7 @@
   "src/lib/external-db/index.ts": 2,
   "src/lib/external-db/invoke.ts": 1,
   "src/lib/external-db/product-record-images.ts": 1,
-  "src/lib/external-db/product-types.ts": 1,
+  "src/lib/external-db/product-types.ts": 2,
   "src/lib/external-db/products-lightweight.ts": 1,
   "src/lib/external-db/tables.ts": 1,
   "src/lib/external-rpc.ts": 5,
@@ -7884,6 +7916,7 @@
   "src/pages/kit-builder/useKitBuilderQuote.ts": 1,
   "src/pages/magic-up/MagicUpResultPanel.tsx": 1,
   "src/pages/magic-up/magicUpStrategy.ts": 4,
+  "src/pages/product-detail/ProductDetailHeroSections.tsx": 3,
   "src/pages/sicoob/SicoobInvitationAcceptPage.tsx": 2,
   "src/pages/sicoob/SicoobInvitationsPage.tsx": 1,
   "src/pages/sicoob/reports/SicoobReportsPage.tsx": 1,
@@ -7938,7 +7971,7 @@
   "src/utils/masks.ts": 2,
   "src/utils/price-freshness.ts": 7,
   "src/utils/product-colors.ts": 1,
-  "src/utils/product-mapper.ts": 3,
+  "src/utils/product-mapper.ts": 4,
   "src/utils/product-sorting.ts": 1,
   "src/utils/sicoob/orderFinancials.ts": 1,
   "src/utils/viacep.ts": 1,
@@ -8093,6 +8126,7 @@
    "src/pages/sicoob/vendedor/SellerDashboardPage.tsx"
   ],
   "hooks": [
+   "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
    "scripts/ai-context/cenarios.mjs",
    "src/components/a11y/AccessibilityProvider.tsx",
    "src/components/a11y/index.ts",

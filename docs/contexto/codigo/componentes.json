@@ -17674,7 +17674,7 @@
     "ProductSpecsCard"
    ],
    "export_default": null,
-   "linhas": 267,
+   "linhas": 291,
    "dominio": "pages/product-detail",
    "hooks_locais": [
     "useComparisonStore",

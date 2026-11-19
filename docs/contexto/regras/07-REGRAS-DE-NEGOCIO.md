@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a5b6fcc570` · branch `main` · 2026-11-19 05:47 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `70956c727e` · branch `main` · 2026-11-19 06:10 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5304,6 +5304,10 @@ _nenhum item encontrado_
 | Mensagem | Arquivo |
 |---|---|
 | Módulo local ausente:  | `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs` |
+| Erro ao gerar contexto de orçamento. Tente novamente. | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts` |
+| Nenhuma conversa selecionada para gerar orçamento. | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts` |
+| Não foi possível obter o contexto de orçamento. | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts` |
+| Preencha ao menos parcialmente o escopo (campo E do COOPERA) antes de gerar o orçamento. | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts` |
 | Não foi possível persistir a conclusão do onboarding E2E (HTTP ${response.status()}). | `e2e/fixtures/auth.setup.ts` |
 | E2E_USER_EMAIL não definido — defina nas envs antes de rodar specs autenticados. | `e2e/fixtures/test-user.ts` |
 | E2E_USER_PASSWORD não definido. | `e2e/fixtures/test-user.ts` |
@@ -5599,11 +5603,7 @@ _nenhum item encontrado_
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| Erro ao atualizar grupo | `src/components/admin/product-groups/useProductGroups.ts` |
-| Erro ao criar grupo | `src/components/admin/product-groups/useProductGroups.ts` |
-| Erro ao remover grupo | `src/components/admin/product-groups/useProductGroups.ts` |
-| Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| … +984 linhas — lista completa em `context.json` | |
+| … +988 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6850 testes em 679 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6867 testes em 682 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5890,6 +5890,7 @@ _nenhum item encontrado_
 | `e2e/editor-permissions.spec.ts` | 10 | Gestor de Compras — permissões e navegação · acessa catálogo, orçamentos e painéis próprios da Singular · carrega os módulos de governança e gestão de compras · bloqueia painéis administrativos reservados ao supervisor … |
 | `tests/a11y/onda5-a11y.test.tsx` | 10 | Onda 5 — auditoria automatizada axe-core (WCAG 2.1 AA) · MagicUpVariationComparator · não viola regras WCAG com 3 variações (button-name, aria-*, nested-interactive) · não viola WCAG quando uma variação está ativa e outra é vencedora (aria-pressed/aria-current) … |
 | `tests/components/AdminConexoesAccess.test.tsx` | 10 | Acesso a /admin/conexoes · redireciona para /login quando não há sessão · exibe bloqueio técnico para vendedor · exibe bloqueio técnico para supervisor … |
+| `tests/components/supplier-trust-badges.test.tsx` | 10 | DynamicTrustBadges com dado do catálogo · mostra o prazo real quando o produto tem lead time · não mostra selo nenhum quando o catálogo não tem prazo · não inventa fornecedor verificado nem avaliação … |
 | `tests/components/admin/SecretField.a11y.test.tsx` | 10 | SecretField — banner de sufixo inválido (a11y) · expõe role= · é programaticamente focável (tabIndex=-1) para que screen readers/ações possam direcionar foco · expõe estilo de foco visível (focus-visible:ring-2 + ring-destructive) para conformidade com WCAG 2.4.7 … |
 | `tests/components/admin/connections/ZoneSection.test.tsx` | 10 | ZoneSection — colapso · renderiza conteúdo visível quando expandido (default) · oculta conteúdo via atributo hidden quando collapsed=true · não renderiza botão de toggle se onToggleCollapse não for fornecido … |
 | `tests/components/replenishments/ReplenishmentCards.test.tsx` | 10 | ReplenishmentGridCard — label changes (PR) · renders  · does NOT render the old  · renders the ProductSparkline for the product … |
@@ -6010,8 +6011,7 @@ _nenhum item encontrado_
 | `tests/scripts/check-migration-immutability.test.ts` | 7 | check-migration-immutability · migration nova passa · editar migration existente reprova · remover migration existente reprova … |
 | `tests/scripts/rules-strip-sql-comments.test.ts` | 7 | rules/lib — stripSqlComments respeita literais · remove comentário de linha e de bloco (inclusive aninhado) · NÃO trata  · entende  … |
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
-| `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
-| … +379 linhas — lista completa em `context.json` | | |
+| … +382 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6492,8 +6492,8 @@ _nenhum item encontrado_
 | ', limit: 500, | `src/lib/external-db/price-tables.ts` |
 | * Alias legado aceito apenas na normalização de payloads antigos. */ | `src/lib/external-db/product-types.ts` |
 | * Alias legado aceito apenas na normalização de payloads antigos. */ | `src/lib/external-db/product-types.ts` |
+| pô-la em `_WITH_SALE` não faria o prazo chegar ao cartão — isso exige mexer | `src/lib/external-db/product-types.ts` |
+| `_LEGACY` segue sendo o mínimo seguro do fallback e não ganha colunas. | `src/lib/external-db/product-types.ts` |
 | Cache de referência é apenas uma otimização. | `src/lib/external-db/products.ts` |
 | Esta lista DEVE espelhar exatamente o que o bridge aceita. | `src/lib/external-db/tables.ts` |
-| Views e Materialized Views (somente leitura) — do bridge | `src/lib/external-db/tables.ts` |
-| Peso máximo suportado em gramas (para validação) | `src/lib/kit-builder/types.ts` |
-| … +268 linhas — lista completa em `context.json` | |
+| … +275 linhas — lista completa em `context.json` | |

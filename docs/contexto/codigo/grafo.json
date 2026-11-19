@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2248,
- "arestas": 9139,
+ "nos": 2252,
+ "arestas": 9140,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -30,7 +30,7 @@
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
-   "importado_por": 180
+   "importado_por": 182
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
@@ -305,6 +305,10 @@
   "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
   "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
   "docs/execucao/revisao-plano-20261001/reproduzir-status-fora-escopo.py",
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
+  "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
   "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/validar-plano.py",
   "public/sw.js",
   "src/components/BridgeStatusBanner.tsx",
