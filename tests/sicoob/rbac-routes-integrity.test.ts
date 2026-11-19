@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { sicoobRoutes } from '../../src/routes/config/sicoob';
+import { toolRoutes } from '../../src/routes/config/tools';
+import { productRoutes } from '../../src/routes/config/products';
+import { RBAC_ROUTES } from '../../src/lib/rbac/route-matrix';
 
 describe('SICOOB RBAC Routes Integrity', () => {
   it('should contain all matrix-mandated routes', () => {
@@ -8,5 +11,28 @@ describe('SICOOB RBAC Routes Integrity', () => {
     expect(paths).toContain('/dashboard-pa');
     expect(paths).toContain('/gestor');
     expect(paths).toContain('/vendedor/dashboard');
+  });
+
+  it('registra a instalação do PWA como rota autenticada', () => {
+    // O item "Instalar App" do menu mobile (Header.tsx:118) navega para
+    // /instalar e a página existe, mas a rota nunca foi registrada: o toque
+    // caía no NotFound. Esta catraca impede a rota de se perder de novo.
+    expect(toolRoutes.map((route) => route.path)).toContain('/instalar');
+
+    const entrada = RBAC_ROUTES.find((route) => route.path === '/instalar');
+    expect(entrada).toMatchObject({ guard: 'ProtectedRoute', role: 'authenticated' });
+  });
+
+  it('todo destino do menu mobile tem rota registrada', () => {
+    // Caso geral: item de menu apontando para caminho sem rota vira NotFound em
+    // produção, como aconteceu com /instalar. Os três destinos do menu mobile
+    // de Header.tsx:118 são /favoritos, /comparar e /instalar.
+    const registradas = new Set<string>([
+      ...toolRoutes.map((route) => route.path as string),
+      ...productRoutes.map((route) => route.path as string),
+      ...sicoobRoutes.map((route) => route.path as string),
+    ]);
+
+    expect(['/favoritos', '/comparar', '/instalar'].filter((d) => !registradas.has(d))).toEqual([]);
   });
 });

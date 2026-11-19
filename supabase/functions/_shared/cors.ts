@@ -64,6 +64,20 @@ export function handleCorsPreflightIfNeeded(req: Request): Response | null {
 }
 
 /**
+ * Valor inicial seguro para quem precisa de um objeto de cabeçalhos antes de
+ * conseguir olhar a requisição (fallback de inicialização, guarda de erro).
+ *
+ * Existe porque alguns handlers começavam com `Access-Control-Allow-Origin: '*'`
+ * nessa posição: se a montagem per-request falhasse, a função passava a aceitar
+ * qualquer origem — o modo de falha abria em vez de fechar. Aqui a falha fecha:
+ * sem `Request`, `getCorsHeaders` devolve a origem de fallback da allowlist.
+ *
+ * Não confundir com `publicCorsHeaders`, que é o curinga deliberado para
+ * endpoint realmente público.
+ */
+export const restrictiveCorsHeaders: Record<string, string> = getCorsHeaders();
+
+/**
  * Legacy wildcard CORS headers for public-facing endpoints
  * (webhooks, public quote views, public kit views).
  * Use sparingly — only for endpoints that MUST be accessible from any origin.

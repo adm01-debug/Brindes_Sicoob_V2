@@ -3,9 +3,8 @@
 from pathlib import Path
 import json
 import subprocess
-import time
 import uuid
-from postgres_ready import wait_for_postgres
+from postgres_ready import start_supabase_postgres, wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = 'sicoob-auditoria-' + uuid.uuid4().hex[:10]
@@ -18,22 +17,9 @@ def sql(value, check=True):
 def actor(role, uid, query, check=True):
     return sql(f"SET ROLE {role}; SET request.jwt.claim.role='{role}'; SET request.jwt.claim.sub='{uid}'; {query}", check)
 
-def start_container():
-    args = ['docker','run','--rm','-d','--name',CONTAINER,'--network','none','-e','POSTGRES_HOST_AUTH_METHOD=trust',
-        'public.ecr.aws/supabase/postgres:17.6.1.063','postgres','-D','/var/lib/postgresql/data']
-    last_error = ''
-    for attempt in range(3):
-        result = command(args, check=False)
-        if result.returncode == 0:
-            return
-        last_error = result.stderr.strip() or result.stdout.strip()
-        command(['docker', 'rm', '-f', CONTAINER], check=False)
-        if attempt < 2:
-            time.sleep(2)
-    raise RuntimeError(f'docker run falhou após 3 tentativas: {last_error}')
 
 try:
-    start_container()
+    start_supabase_postgres(command, CONTAINER)
     wait_for_postgres(command, CONTAINER)
     command(['docker','exec',CONTAINER,'createdb','-U','supabase_admin','--template=template0','sicoob_simulation'])
     sql((ROOT/'tests/scenarios/sql/audit-controls-fixture.sql').read_text())

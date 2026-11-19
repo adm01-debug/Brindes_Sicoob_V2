@@ -26,6 +26,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { findSecretExposure, inspectAuthorization } from './lib/edge-authorization-contract.mjs';
+import { requiredFunctions } from './ci/verify-supabase-functions-published.mjs';
 
 const FN_DIR = 'supabase/functions';
 const MANIFEST_PATH = `${FN_DIR}/_shared/edge-authz-manifest.ts`;
@@ -44,7 +45,8 @@ const entries = new Map();
     const enforcedBy = body.match(/enforcedBy:\s*"([a-z-]+)"/)?.[1] ?? 'shared-authorize';
     const gatewayMatch = body.match(/gatewayVerifyJwt:\s*(true|false)/)?.[1];
     const gatewayVerifyJwt = gatewayMatch === undefined ? undefined : gatewayMatch === 'true';
-    if (cat) entries.set(m[1], { category: cat, enforcedBy, gatewayVerifyJwt });
+    const runtime = body.match(/runtime:\s*"(deployed|source-only)"/)?.[1] ?? 'deployed';
+    if (cat) entries.set(m[1], { category: cat, enforcedBy, gatewayVerifyJwt, runtime });
   }
 }
 
@@ -185,10 +187,36 @@ for (const fn of fns) {
   }
 }
 
+// 4b) Contrato de runtime: `runtime: "source-only"` declara que a função fica
+// como fonte e NÃO sobe. Até aqui o campo era uma declaração sem fiscal — nada
+// impedia uma função marcada como fonte de entrar na allowlist de publicação,
+// nem avisava da contradição. Recupera a ideia do contrato de runtime da
+// PR #119 (fechada sem merge), aplicada ao que a main já declara.
+const publicadas = new Set(requiredFunctions);
+for (const [fn, entry] of entries) {
+  if (entry.runtime === 'source-only' && publicadas.has(fn)) {
+    errors.push(
+      `[runtime] ${fn}: o manifesto declara runtime "source-only" (fonte preservada, não publicada), ` +
+        `mas a função está na allowlist de publicação de verify-supabase-functions-published.mjs. ` +
+        `Decida: ou remove da allowlist, ou tira o "source-only" do manifesto.`,
+    );
+  }
+}
+for (const fn of publicadas) {
+  if (!entries.has(fn)) {
+    errors.push(
+      `[runtime] ${fn}: está na allowlist de publicação mas não existe no manifesto de autorização.`,
+    );
+  }
+}
+
 // 5) Output
 console.log(`\n🔐 Edge Authorization Gate`);
 console.log(`   Edges no FS: ${fns.length}`);
 console.log(`   Edges no manifest: ${entries.size}`);
+const somenteFonte = [...entries].filter(([, e]) => e.runtime === 'source-only').map(([fn]) => fn);
+console.log(`   Publicadas pela allowlist: ${publicadas.size}`);
+console.log(`   Só fonte (não publicadas): ${somenteFonte.length}${somenteFonte.length ? ` — ${somenteFonte.sort().join(', ')}` : ''}`);
 console.log(`   Categorias:`);
 const byCat = new Map();
 for (const [, e] of entries) byCat.set(e.category, (byCat.get(e.category) ?? 0) + 1);
