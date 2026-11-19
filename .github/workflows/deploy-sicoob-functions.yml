@@ -53,7 +53,7 @@ jobs:
             get-visitor-info \
             secure-upload \
             auth-integrity-check \
-            quote-price-attestation
+            crm-db-bridge
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
