@@ -210,3 +210,31 @@ assim que essas PRs estiverem na `main` e os 6 relatórios abaixo tiverem entrad
 
 São evidência de execução de outro agente, sem dependência de código: entram por PR de
 docs quando a fila abrir. Mesma ref de origem.
+
+## Refs liberadas por verificação byte a byte
+
+Esta seção só recebe ref cuja verificação está escrita e é reproduzível. Apagar
+sem isto é o que o ledger existe para impedir.
+
+### `claude/feat-modulos-edge-relatorios-261117-0950` (PR #292, fechada) — **LIBERADA em 19/11/2026**
+
+Comparação feita com `git diff --diff-filter=A origin/main <branch>` e `diff`
+arquivo a arquivo:
+
+| arquivo | resultado |
+|---|---|
+| `supabase/functions/sicoob-document-ingest/registration-state.ts` | **idêntico byte a byte** ao da `main` |
+| `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | **idêntico byte a byte** ao da `main` |
+| `supabase/functions/sicoob-document-ingest/index.ts` | a `main` é **superset**: o único delta é o campo `sha256` em `evidence`, que **só a `main` tem**. A branch é a versão *anterior* à migration `20261118130700`; aplicá-la hoje derrubaria 100% dos uploads de NF, XML e comprovante (a RPC levanta `22023` e a constraint `sicoob_document_registry_scan_evidence_sha256_match` recusa) |
+| `src/components/intelligence/TopCategoriesCard.tsx` | único arquivo ausente da `main`. **Superado** por `TopProductFamiliesCard.tsx`: mesma fonte (`product_views`), mesma heurística (primeiro termo do nome), e melhor — recebe os dados por prop em vez de consultar dentro do cartão, e tem estados de erro e `onRetry` que o antigo não tinha |
+| todos os demais | existem na `main` |
+
+**Conclusão:** zero trabalho a recuperar. A máquina de estado que esta branch
+carregava — `confirmed`/`rejected`/`unknown`, `isDefinitiveRpcRejection`,
+`getDocumentCleanupPlan` e a preservação dos objetos quando o desfecho é
+desconhecido — **está inteira na `main`**, e foi conferida linha a linha em
+`supabase/functions/sicoob-document-ingest/index.ts:137-199`.
+
+A mesma evidência foi publicada como comentário na própria PR #292, para
+sobreviver independentemente deste arquivo. Os commits continuam acessíveis
+pela PR mesmo depois de a branch ser apagada.
