@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "70956c727e94f2c44e93c04a9576df7245403690",
+  "commit": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
   "branch": "main",
-  "data_commit": "2026-11-19T06:10:10Z",
+  "data_commit": "2026-11-19T06:21:03Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "c19e38a",
+    "data": "2026-11-19",
+    "assunto": "docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)"
+   },
    {
     "sha": "70956c7",
     "data": "2026-11-19",
@@ -126,11 +131,6 @@
     "sha": "d53f9e8",
     "data": "2026-11-19",
     "assunto": "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)"
-   },
-   {
-    "sha": "1ad25e3",
-    "data": "2026-11-19",
-    "assunto": "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)"
    }
   ],
   "arquivos_mudados_7d": 605,
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 55
+    "mudancas": 54
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 54
+    "mudancas": 53
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 167
+    "commits": 168
    },
    {
     "autor": "dependabot[bot]",

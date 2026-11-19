@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "70956c727e94f2c44e93c04a9576df7245403690",
+  "sha": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 06:10 UTC",
+  "generated_at": "2026-11-19 06:25 UTC",
   "files_total": 4527,
   "code_files": 3780,
   "code_lines": 552705
@@ -252163,10 +252163,19 @@
   }
  },
  "git": {
-  "sha": "70956c727e94f2c44e93c04a9576df7245403690",
+  "sha": "c19e38ac6abb75be536ebd4913e0c89ce1433374",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "c19e38a",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)",
+    "files": [
+     "docs/RECUPERACAO/cobertura-refs.md"
+    ]
+   },
    {
     "sha": "70956c7",
     "date": "2026-11-19",
@@ -252671,18 +252680,13 @@
     "files": [
      ".github/workflows/automation-local.yml"
     ]
-   },
-   {
-    "sha": "1b11bf7",
-    "date": "2026-11-18",
-    "author": "dependabot[bot]",
-    "subject": "chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)",
-    "files": [
-     ".github/workflows/automation-local.yml"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "docs/RECUPERACAO/cobertura-refs.md",
+    2
+   ],
    [
     "supabase/functions/mcp-server/index.ts",
     2
@@ -252693,10 +252697,6 @@
    ],
    [
     "PENDENCIAS.md",
-    2
-   ],
-   [
-    ".github/workflows/automation-local.yml",
     2
    ],
    [

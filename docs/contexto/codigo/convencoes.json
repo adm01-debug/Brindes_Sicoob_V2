@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)",
    "fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)",
    "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)",
    "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)",
-   "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)",
-   "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)"
+   "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
