@@ -227,5 +227,10 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
 
   // ---------------- Scoped (auth custom) ----------------
   "mcp-server": { category: "scoped", rationale: "Token MCP com escopos read/write/admin", enforcedBy: "custom" },
-  "crm-db-bridge": { category: "scoped", rationale: "JWT + RBAC custom interno", enforcedBy: "custom" },
+  "crm-db-bridge": {
+    category: "scoped",
+    rationale: "JWT + RBAC custom interno; `?op=ping` responde saúde agregada sem sessão",
+    enforcedBy: "custom",
+    gatewayVerifyJwt: false,
+  },
 };
