@@ -133,7 +133,6 @@ function catalogFlagsFor(product: ReturnType<typeof useProduct>["data"]) {
   if (!product) return undefined;
   return {
     featured: product.featured, newArrival: product.newArrival, onSale: product.onSale,
-    lowStock: product.stockStatus === 'low-stock', stock: product.stock,
   };
 }
 
@@ -214,7 +213,7 @@ export default function ProductDetail() {
     [similarItems, product?.category?.name]
   );
   const catalogFlags = useMemo(() => catalogFlagsFor(product), [product]);
-  const { badges: intellBadges, turnoverScore: intellTurnover, isDemo: intellIsDemo } = useProductIntelligenceBadges(id, catalogFlags);
+  const { badges: intellBadges, turnoverScore: intellTurnover } = useProductIntelligenceBadges(id, catalogFlags);
 
   const { data: viewCount = 0 } = useQuery({
     queryKey: ["product-views-count", id],
@@ -255,7 +254,7 @@ export default function ProductDetail() {
 
   return <LoadedProductDetail
     product={product} id={id} isFavorite={isFavorite} onFavorite={handleFavorite}
-    intelligenceBadges={intellBadges} turnoverScore={intellTurnover} intelligenceDemo={intellIsDemo}
+    intelligenceBadges={intellBadges} turnoverScore={intellTurnover}
     selectedVariation={selectedVariation} setSelectedVariation={setSelectedVariation} viewCount={viewCount}
     aiCandidates={aiCandidates} navigate={navigate} supplierCompareOpen={supplierCompareOpen}
     setSupplierCompareOpen={setSupplierCompareOpen} futureStockOpen={futureStockOpen}
@@ -275,7 +274,6 @@ interface LoadedProductDetailProps {
   onFavorite: () => void;
   intelligenceBadges: ReturnType<typeof useProductIntelligenceBadges>["badges"];
   turnoverScore: number | null;
-  intelligenceDemo: boolean;
   selectedVariation: ProductVariation | null;
   setSelectedVariation: Dispatch<SetStateAction<ProductVariation | null>>;
   viewCount: number;
@@ -293,7 +291,7 @@ interface LoadedProductDetailProps {
 }
 
 function LoadedProductDetail({
-  product, id, isFavorite, onFavorite, intelligenceBadges, turnoverScore, intelligenceDemo,
+  product, id, isFavorite, onFavorite, intelligenceBadges, turnoverScore,
   selectedVariation, setSelectedVariation, viewCount, aiCandidates, navigate,
   supplierCompareOpen, setSupplierCompareOpen, futureStockOpen, setFutureStockOpen,
   packagingModalOpen, setPackagingModalOpen, favPickerOpen, setFavPickerOpen, onFavoriteVariant,
@@ -308,7 +306,7 @@ function LoadedProductDetail({
       />
 
       <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6 xl:space-y-8 animate-fade-in pb-20 md:pb-0 min-w-0 overflow-x-hidden xl:px-4 2xl:px-8">
-        <IntelligenceBadges badges={intelligenceBadges} turnoverScore={turnoverScore} isDemo={intelligenceDemo} />
+        <IntelligenceBadges badges={intelligenceBadges} turnoverScore={turnoverScore} />
 
         <ProductDetailHero
           product={product} id={id || ''} selectedVariation={selectedVariation}
