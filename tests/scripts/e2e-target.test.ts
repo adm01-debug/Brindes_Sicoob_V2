@@ -33,17 +33,11 @@ describe("guarda de destino E2E", () => {
     expect(() => validateE2ETarget(config)).toThrow();
   });
 
-  // Os dois casos abaixo vêm de `tests/scripts/validate-e2e-supabase-target.test.ts`,
-  // que ficou em `fix/hermes-bi-share-hardening-20261028` e nunca entrou na `main`.
-  // O script já recusa ambos (`scripts/e2e-target.mjs:34` e `:22`); faltava a catraca.
-  // Em caso próprio, e não na lista acima, para não alargar o tipo inferido do
-  // `url` daquelas entradas (template literal `https://${string}.supabase.co`).
-  it("rejeita endpoint sem HTTPS", () => {
-    expect(() =>
-      validateE2ETarget({ ...validConfig, url: "http://qa-sicoob-123.supabase.co" }),
-    ).toThrow();
-  });
-
+  // Recuperado de `tests/scripts/validate-e2e-supabase-target.test.ts`, que ficou
+  // em `fix/hermes-bi-share-hardening-20261028` e nunca entrou na `main`. O
+  // script já falha fechado (`scripts/e2e-target.mjs:22`); faltava a catraca.
+  // O outro caso daquele arquivo — endpoint sem TLS — a `main` já cobria, na
+  // lista acima; eu o tinha duplicado por procurar "HTTPS" em vez de "TLS".
   it.each([
     ["url", "url"],
     ["projectId", "projectId"],
