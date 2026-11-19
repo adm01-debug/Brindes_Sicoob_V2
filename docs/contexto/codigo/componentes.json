@@ -18033,10 +18033,11 @@
     "QuotesListPage"
    ],
    "export_default": "QuotesListPage",
-   "linhas": 161,
+   "linhas": 688,
    "dominio": "pages",
    "hooks_locais": [
     "useAuth",
+    "useFiltrosNaUrl",
     "useQuoteFunnel",
     "useQuoteViewedMap",
     "useQuotes",

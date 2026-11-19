@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 393,
+ "total": 394,
  "hooks": [
   {
    "arquivo": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
@@ -9772,6 +9772,40 @@
     "src/pages/QuotesDashboardPage.tsx"
    ],
    "coberto_por_testes": 0
+  },
+  {
+   "arquivo": "src/pages/QuotesListPage.tsx",
+   "hooks_exportados": [
+    "useFiltrosNaUrl"
+   ],
+   "linhas": 688,
+   "dominio": "pages",
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [
+    "useAuth",
+    "useEffect",
+    "useMemo",
+    "useNavigate",
+    "useQuoteFunnel",
+    "useQuoteViewedMap",
+    "useQuotes",
+    "useQuotesListState",
+    "useRBAC",
+    "useRef",
+    "useSearchParams",
+    "useState"
+   ],
+   "canais_realtime": [],
+   "usado_por": 4,
+   "usado_por_arquivos": [
+    "src/lib/routePrefetch.ts",
+    "src/pages/GestorOrcamentos.tsx",
+    "src/pages/MeusOrcamentos.tsx",
+    "src/routes/config/quotes.ts"
+   ],
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/pages/seller-carts/useSellerCartsPage.ts",

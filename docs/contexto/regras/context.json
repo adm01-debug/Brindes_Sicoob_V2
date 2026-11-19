@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "9515c401f87fc55c68e504971e2e28d622b35e15",
+  "sha": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 23:12 UTC",
-  "files_total": 4548,
-  "code_files": 3800,
-  "code_lines": 555188
+  "generated_at": "2026-11-19 23:21 UTC",
+  "files_total": 4549,
+  "code_files": 3801,
+  "code_lines": 555846
  },
  "version": "1.3.2",
- "facts_hash": "a0387bbf52c41b4a",
+ "facts_hash": "89ab8b091670a400",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1478,
-   ".tsx": 1440,
+   ".tsx": 1441,
    ".sql": 684,
    ".mjs": 139,
    ".py": 66,
@@ -56740,6 +56740,39 @@
     "deps_count": 1
    },
    {
+    "path": "",
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "component": "quotes-list-filtros-na-url.test",
+    "tables_transitive": [
+     "orders",
+     "organization_members",
+     "organizations",
+     "profiles",
+     "quote_approval_tokens",
+     "quote_item_personalizations",
+     "quote_items",
+     "quotes",
+     "role_permissions",
+     "user_roles"
+    ],
+    "invokes_transitive": [
+     "crm-db-bridge",
+     "log-login-attempt",
+     "sicoob-reorder"
+    ],
+    "rpc_transitive": [
+     "append_quote_history_note",
+     "bulk_update_quote_status_atomic",
+     "consolidate_sicoob_quotes",
+     "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
+     "get_sicoob_access_state",
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
+    ],
+    "deps_count": 81
+   },
+   {
     "path": "/entrar, /login",
     "file": "src/pages/Auth.tsx",
     "component": "Auth",
@@ -60631,6 +60664,13 @@
     "file": "tests/admin/route-no-error-element.test.tsx"
    },
    {
+    "path": "/orcamentos",
+    "component": "Capturar",
+    "guard": "",
+    "roles": [],
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx"
+   },
+   {
     "path": "/orcamentos/:id",
     "component": "lazyWithRetry",
     "guard": "",
@@ -63128,6 +63168,10 @@
     "file": "src/lib/auth/visibility-scope.ts"
    },
    {
+    "name": "useFiltrosNaUrl",
+    "file": "src/pages/QuotesListPage.tsx"
+   },
+   {
     "name": "useAppHealth",
     "file": "src/pages/admin/telemetry/useAppHealth.ts"
    },
@@ -64680,7 +64724,7 @@
   {
    "module": "src/pages",
    "files": 195,
-   "lines": 50133,
+   "lines": 50660,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65674,8 +65718,8 @@
   },
   {
    "module": "tests",
-   "files": 655,
-   "lines": 87979,
+   "files": 656,
+   "lines": 88110,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -94436,7 +94480,7 @@
    {
     "file": "src/pages/QuotesListPage.tsx",
     "name": "DATE_FORMAT",
-    "value": "\"dd/MM/yyyy\""
+    "value": "'dd/MM/yyyy'"
    },
    {
     "file": "src/pages/TrendsPage.tsx",
@@ -108989,13 +109033,13 @@
     "file": "src/pages/QuotesListPage.tsx",
     "name": "formatCurrency",
     "params": "value: number",
-    "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
+    "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);"
    },
    {
     "file": "src/pages/QuotesListPage.tsx",
     "name": "calculateKpis",
     "params": "quotes: Quote[]",
-    "body": "const approvedQuotes = quotes.filter((quote) => quote.status === \"approved\" || quote.status === \"approved_singular\"); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => [\"pending\", \"sent\", \"pending_singular_approval\"].includes(quote.status)).length, pendingSingular: quotes.filter((quote) => quote.status === \"pending_singular_approval\").length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), appro …"
+    "body": "const approvedQuotes = quotes.filter( (quote) => quote.status === 'approved' || quote.status === 'approved_singular', ); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => ['pending', 'sent', 'pending_singular_approval'].includes(quote.status), ).length, pendingSingular: quotes.filter((quote) => quote.status === 'pending_singular_approval').length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), …"
    },
    {
     "file": "src/pages/admin/AdminAiUsagePage.tsx",
@@ -135132,6 +135176,30 @@
    {
     "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
     "name": "para de segurar assim que o estado deixa de ter pendencia"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "filtros da lista de orçamentos na URL"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "lê o estado inicial da querystring"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "ordenação desconhecida na URL volta ao padrão, não quebra a lista"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "escreve na querystring só o que difere do padrão"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "voltar para a mesma rota com outra query ressincroniza os filtros exibidos"
+   },
+   {
+    "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    "name": "limpar o filtro esvazia a query em vez de deixar chave vazia"
    },
    {
     "file": "tests/pages/trends-demo-mode.test.ts",
@@ -218878,8 +218946,9 @@
   },
   "src/pages/QuotesListPage.tsx": {
    "path": "src/pages/QuotesListPage.tsx",
-   "lines": 161,
+   "lines": 688,
    "exports": [
+    "function useFiltrosNaUrl",
     "function QuotesListPage"
    ],
    "navigates": [
@@ -218893,7 +218962,7 @@
    "params": [
     {
      "name": "DATE_FORMAT",
-     "value": "\"dd/MM/yyyy\""
+     "value": "'dd/MM/yyyy'"
     }
    ],
    "status_values": [
@@ -218918,6 +218987,9 @@
      "kind": "compara"
     }
    ],
+   "hooks": [
+    "useFiltrosNaUrl"
+   ],
    "calc_fns": [
     {
      "name": "quoteTotal",
@@ -218927,12 +218999,12 @@
     {
      "name": "formatCurrency",
      "params": "value: number",
-     "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
+     "body": "return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);"
     },
     {
      "name": "calculateKpis",
      "params": "quotes: Quote[]",
-     "body": "const approvedQuotes = quotes.filter((quote) => quote.status === \"approved\" || quote.status === \"approved_singular\"); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => [\"pending\", \"sent\", \"pending_singular_approval\"].includes(quote.status)).length, pendingSingular: quotes.filter((quote) => quote.status === \"pending_singular_approval\").length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), appro …"
+     "body": "const approvedQuotes = quotes.filter( (quote) => quote.status === 'approved' || quote.status === 'approved_singular', ); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => ['pending', 'sent', 'pending_singular_approval'].includes(quote.status), ).length, pendingSingular: quotes.filter((quote) => quote.status === 'pending_singular_approval').length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), …"
     }
    ]
   },
@@ -250119,6 +250191,31 @@
     "para de segurar assim que o estado deixa de ter pendencia"
    ]
   },
+  "tests/pages/quotes-list-filtros-na-url.test.tsx": {
+   "path": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+   "lines": 131,
+   "is_test": true,
+   "routes": [
+    {
+     "path": "/orcamentos",
+     "component": "Capturar",
+     "guard": "",
+     "roles": []
+    }
+   ],
+   "rule_comments": [
+    "URL — e a adoção não pode ser desfeita pelo efeito que escreve de volta."
+   ],
+   "doc": "Filtros da lista de orçamentos persistidos na querystring. Recuperado da PR #100 (`devin/1791190000-ux-onda1`), fechada sem merge: a `main` nunca recebeu esta parte da entrega. Sem ela o vendedor perde o filtro toda vez que entra num orçamento e volta, e refiltra a cada consulta. O caso que mais imp …",
+   "tests": [
+    "filtros da lista de orçamentos na URL",
+    "lê o estado inicial da querystring",
+    "ordenação desconhecida na URL volta ao padrão, não quebra a lista",
+    "escreve na querystring só o que difere do padrão",
+    "voltar para a mesma rota com outra query ressincroniza os filtros exibidos",
+    "limpar o filtro esvazia a query em vez de deixar chave vazia"
+   ]
+  },
   "tests/pages/trends-demo-mode.test.ts": {
    "path": "tests/pages/trends-demo-mode.test.ts",
    "lines": 27,
@@ -253100,10 +253197,20 @@
   }
  },
  "git": {
-  "sha": "9515c401f87fc55c68e504971e2e28d622b35e15",
+  "sha": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "0f4d547",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)",
+    "files": [
+     "src/pages/QuotesListPage.tsx",
+     "tests/pages/quotes-list-filtros-na-url.test.tsx"
+    ]
+   },
    {
     "sha": "9515c40",
     "date": "2026-11-19",
@@ -253513,24 +253620,6 @@
      "docs/execucao/auditoria-planejamento-2026-10-13/validacao-consulta.json",
      "docs/execucao/auditoria-planejamento-2026-10-13/validacao-publicacao.json"
     ]
-   },
-   {
-    "sha": "87b4f99",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)",
-    "files": [
-     "supabase/functions/_shared/expert-chat-contract.ts",
-     "supabase/functions/expert-chat/index.ts",
-     "tests/edge-functions/assistant-context.test.ts",
-     "tests/edge-functions/expert-chat-message-schema.test.ts",
-     "tests/scenarios/access-log-marketing-acl.scenario.mjs",
-     "tests/scenarios/manager-approval-delegation-route.scenario.mjs",
-     "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
-     "tests/scenarios/sql/view-notification-hardening-fixture.sql",
-     "tests/scenarios/view-notification-hardening.scenario.mjs",
-     "tests/unit/process-scheduled-reports-scope.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -253557,6 +253646,14 @@
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
+   ],
+   [
+    "src/pages/QuotesListPage.tsx",
+    1
+   ],
+   [
+    "tests/pages/quotes-list-filtros-na-url.test.tsx",
+    1
    ],
    [
     "tests/scripts/supabase-js-version-spread.test.ts",
@@ -253604,14 +253701,6 @@
    ],
    [
     "supabase/config.toml",
-    1
-   ],
-   [
-    "supabase/functions/_shared/edge-authz-manifest.ts",
-    1
-   ],
-   [
-    "tests/scripts/verify-supabase-functions-published.test.ts",
     1
    ]
   ]

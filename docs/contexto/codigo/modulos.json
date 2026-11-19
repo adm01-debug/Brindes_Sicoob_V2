@@ -3196,6 +3196,7 @@
     "useFilteredTechniques",
     "useFiltersPageState",
     "useFiltersSelectionMode",
+    "useFiltrosNaUrl",
     "useFocusTrap",
     "useGenericFuzzySearch",
     "useGlobalSearch",
@@ -3969,6 +3970,7 @@
     "useFilteredTechniques",
     "useFiltersPageState",
     "useFiltersSelectionMode",
+    "useFiltrosNaUrl",
     "useFocusTrap",
     "useGenericFuzzySearch",
     "useGlobalSearch",
@@ -10331,6 +10333,7 @@
     "useFilteredTechniques",
     "useFiltersPageState",
     "useFiltersSelectionMode",
+    "useFiltrosNaUrl",
     "useFocusTrap",
     "useGenericFuzzySearch",
     "useGlobalSearch",
@@ -11710,7 +11713,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 18467,
+   "linhas": 18994,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",
@@ -11974,6 +11977,7 @@
     "useFilteredTechniques",
     "useFiltersPageState",
     "useFiltersSelectionMode",
+    "useFiltrosNaUrl",
     "useFocusTrap",
     "useFormField",
     "useGenericFuzzySearch",
@@ -12213,7 +12217,9 @@
     "useWizardPricing",
     "useWorkspaceNotifications"
    ],
-   "hooks_definidos": [],
+   "hooks_definidos": [
+    "useFiltrosNaUrl"
+   ],
    "edges": [
     "analyze-logo-colors",
     "bi-copilot",
@@ -14882,6 +14888,7 @@
     "useFilteredTechniques",
     "useFiltersPageState",
     "useFiltersSelectionMode",
+    "useFiltrosNaUrl",
     "useFocusContext",
     "useFocusTrap",
     "useGenericFuzzySearch",

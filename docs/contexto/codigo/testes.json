@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 881,
+ "total": 882,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 652
+  "unit": 653
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 634
+   "arquivos": 635
   },
   {
    "padrao": "e2e/",
@@ -6254,6 +6254,15 @@
    "casos": 15
   },
   {
+   "arquivo": "tests/pages/quotes-list-filtros-na-url.test.tsx",
+   "tipo": "unit",
+   "linhas": 131,
+   "testa": [
+    "src/pages/QuotesListPage.tsx"
+   ],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/pages/RLSAuditPage.summary.test.ts",
    "tipo": "unit",
    "linhas": 18,
@@ -8080,6 +8089,7 @@
   "src/pages/NotFound.tsx": 2,
   "src/pages/PWAInstallPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
+  "src/pages/QuotesListPage.tsx": 1,
   "src/pages/TrendsPage.tsx": 1,
   "src/pages/admin/AdminLoginAttemptsPage.tsx": 1,
   "src/pages/admin/AdminTelemetriaPage.tsx": 1,
@@ -8240,7 +8250,6 @@
    "src/pages/QuoteViewPage.tsx",
    "src/pages/QuotesDashboardPage.tsx",
    "src/pages/QuotesKanbanPage.tsx",
-   "src/pages/QuotesListPage.tsx",
    "src/pages/RateLimitDashboardPage.tsx",
    "src/pages/ReplenishmentsPage.tsx",
    "src/pages/ResetPassword.tsx",

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "9515c401f87fc55c68e504971e2e28d622b35e15",
+  "commit": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
   "branch": "main",
-  "data_commit": "2026-11-19T23:09:05Z",
+  "data_commit": "2026-11-19T23:21:19Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "0f4d547",
+    "data": "2026-11-19",
+    "assunto": "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)"
+   },
    {
     "sha": "9515c40",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "7ec2508",
     "data": "2026-11-19",
     "assunto": "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)"
-   },
-   {
-    "sha": "5bf2e58",
-    "data": "2026-11-19",
-    "assunto": "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)"
    }
   ],
-  "arquivos_mudados_7d": 564,
+  "arquivos_mudados_7d": 566,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 35
+    "mudancas": 34
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 34
+    "mudancas": 33
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 184
+    "commits": 185
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4545,
-  "arquivos_codigo": 3134,
-  "linhas_codigo": 492587,
+  "arquivos_total": 4546,
+  "arquivos_codigo": 3135,
+  "linhas_codigo": 493245,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
   "componentes": 1171,
-  "hooks": 393,
+  "hooks": 394,
   "edge_functions": 107,
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 881,
+  "testes": 882,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 285
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50133
+   "linhas": 50660
   },
   "src/routes": {
    "arquivos": 9,
@@ -939,8 +939,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 26,
-   "linhas": 3070
+   "arquivos": 27,
+   "linhas": 3201
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
@@ -1147,7 +1147,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 70
+  "arquivos_acima_500_linhas": 71
  },
  "todos": [
   {

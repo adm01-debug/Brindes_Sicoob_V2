@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `9515c401f8` · branch `main` · 2026-11-19 23:12 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0f4d547314` · branch `main` · 2026-11-19 23:21 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -3912,11 +3912,11 @@ _nenhum item encontrado_
   ```
 - **formatCurrency(value: number)** — `src/pages/QuotesListPage.tsx`
   ```
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   ```
 - **calculateKpis(quotes: Quote[])** — `src/pages/QuotesListPage.tsx`
   ```
-  const approvedQuotes = quotes.filter((quote) => quote.status === "approved" || quote.status === "approved_singular"); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => ["pending", "sent", "pending_singular_approval"].includes(quote.status)).length, pendingSingular: quotes.filter((quote) => quote.status === "pending_singular_approval").length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), appro …
+  const approvedQuotes = quotes.filter( (quote) => quote.status === 'approved' || quote.status === 'approved_singular', ); const total = quotes.length; const approved = approvedQuotes.length; return { total, approved, pending: quotes.filter((quote) => ['pending', 'sent', 'pending_singular_approval'].includes(quote.status), ).length, pendingSingular: quotes.filter((quote) => quote.status === 'pending_singular_approval').length, totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0), …
   ```
 - **formatCurrency(val: number)** — `src/pages/admin/AdminAiUsagePage.tsx`
   ```
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6975 testes em 700 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6981 testes em 701 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6012,7 +6012,7 @@ _nenhum item encontrado_
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
 | `tests/lib/theme-fonts-preload.test.ts` | 7 | index.html — preload de fontes · carrega Plus Jakarta Sans (default sans) · carrega Outfit (default display) · carrega Inter (skins Opera GX → família Cloudflare Sans) … |
-| … +400 linhas — lista completa em `context.json` | | |
+| … +401 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
