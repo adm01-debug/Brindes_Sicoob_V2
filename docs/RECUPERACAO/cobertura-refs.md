@@ -153,7 +153,6 @@ recuperados, estava errado. Destino deles no fim desta seção.
 |---|---|---|
 | 1 | [#346](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/346) | `ClientOverview360.availability` + `client-vs-industry-origem`. `useClientBI` parava de devolver `MOCK_CLIENT_STATS` para qualquer cliente sem pedido (LTV de outra empresa nos números grandes); `useClientVsIndustry` ganhou `hasClientData`/`isClientDataUnavailable` e `isMock` deixou de ser `true` quando a amostra do ramo não fechava. Absorveu a PR #326 |
 | 2 | [#347](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/347) | `ClientHealthHero.availability`. `useClientSeasonality` parava de devolver `getMockSeasonality()` com menos de 3 meses de histórico (picos fictícios carimbados "Dados reais"); `useClientHealthScore` somava pesos fixos sobre fallbacks inventados (10 pedidos, R$ 2.500, potencial de R$ 30.000) e agora normaliza os pesos entre as fontes confiáveis |
-
 | 3a | [#348](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/348) | `ClientCategoryRadar.industry-error`. Três hooks caíam em mock no caminho real: `useClientAffinity` engolia o erro da RPC e sugeria produto fictício; `useClientCategoryAffinity` transformava RPC negada em "cliente sem produto" e elegia a **mesma** categoria favorita inventada para todo cliente; `useIndustryCategoryTrends` comparava o cliente contra um "setor dele" fabricado. O radar deixa de somar GAP sobre fonte caída |
 | 3b | [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `ComparisonAvailability`. O painel comparador juntava sete fontes por cliente e devolvia uma linha única: falha de qualquer uma virava LTV R$ 0 e score 0 classificado como "risco". Agora oculta só a métrica da fonte caída e refaz só a consulta que falhou. `ClientVsIndustryComparison` ganhou "Comparativo indisponível" (em vez de confundir falha com amostra insuficiente) e "Último cache · atualização falhou" |
 | 4 | [#350](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/350) | `BIAiCopilot.context/sources` + `BIBriefingMode.history/sources`. O copiloto enviava à IA o contexto que tivesse: histórico falhado virava `ltv: 0` e `ordersCount: 0` (a IA respondia "nunca comprou" sobre quem compra), benchmark falhado virava score 0 (diagnóstico de risco) e tendência do setor em cache ia como atual. Agora o contexto declara disponibilidade, preserva zero medido e bloqueia o envio com fonte caída |
@@ -248,8 +247,12 @@ aplicaram em dois pontos: nenhum número inventado, nenhum selo de "dado real" s
 dado ausente. São, portanto, a continuação natural desse trabalho, não refugo.
 
 Ficam recuperáveis porque a origem está escrita: `git show
-origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. **Os 13 entraram** (fatias 1 a 6, PRs #346 a #352). A ref pode ser apagada
-assim que essas PRs estiverem na `main` e os 6 relatórios abaixo tiverem entrado.
+origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. Dos 13, **7 entraram pelas
+fatias 1 a 6** (PRs #346 a #352, hoje consolidadas na **#361** mais a **#352**) e os
+**outros 6 estão na #363** — conforme a tabela "Os 6 restantes" acima; a afirmação
+anterior de que "os 13 entraram" estava errada e está corrigida aqui. A ref só pode ser
+apagada quando **#361**, **#352** e **#363** estiverem na `main` e os 6 relatórios
+abaixo tiverem entrado.
 
 ### 6 relatórios de execução, só nessa ref
 
