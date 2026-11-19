@@ -86,7 +86,16 @@ function useTrackNavigation(location: ReturnType<typeof useLocation>, push: (ite
   }, [location.pathname, location.search, push]);
 }
 
-// Rotas onde sair sem salvar sempre pede confirmação, independente de escopo sujo.
+/**
+ * Rede de segurança para rota que ainda não declara o próprio estado.
+ *
+ * As três rotas abaixo já declaram (`useScreenDirtyState` em
+ * `SimuladorWizard`, `QuoteBuilderPage` e `MockupGenerator`), então na prática
+ * quem decide por elas é o registro, não esta lista. Ela fica como piso: se
+ * alguém criar uma tela que perde trabalho e esquecer de declarar, acrescentar
+ * o caminho aqui volta a proteger — pedir demais é recuperável, perder em
+ * silêncio não.
+ */
 export function isCriticalPathname(pathname: string) {
   return pathname.includes('/simulador') ||
          pathname.includes('/orcamentos/novo') ||

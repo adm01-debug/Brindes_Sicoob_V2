@@ -10,6 +10,7 @@ import type { TechniqueWithLimits } from "@/hooks/useMockupTechniques";
 import { useCallback, Suspense } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
+import { useScreenDirtyState } from "@/hooks/useScreenDirtyState";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, CheckCircle2, Wand2, History } from "lucide-react";
 import { toast } from "sonner";
@@ -61,6 +62,18 @@ export default function MockupGenerator() {
     canDownload: !!mg.generatedMockup,
     isLoading: mg.isLoading,
   });
+
+  /**
+   * O voltar perguntava "Você tem alterações não salvas" em `/mockup-generator`
+   * a cada clique, inclusive com a tela recém-aberta, porque a condição era o
+   * pathname. Aqui o trabalho começa quando produto, técnica ou logo entram; o
+   * mockup gerado e ainda não salvo (`generatedMockup` sem
+   * `lastSavedRecordId`) é o que de fato se perde ao sair.
+   */
+  useScreenDirtyState(Boolean(
+    mg.selectedProduct || mg.selectedTechnique || mg.hasLogo ||
+    (mg.generatedMockup && !mg.lastSavedRecordId),
+  ));
 
   const layoutCaptureRequest = createLayoutCaptureRequest(mg, user?.id, profile);
 
