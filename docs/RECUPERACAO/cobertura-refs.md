@@ -707,3 +707,265 @@ uma em outro lugar, **todas com teste**.
 > da ref não cobre nada que a `main` já não cubra. Apontado pela revisão da #365.
 
 Os outros 18 estão na `main`, conferidos um a um com `git cat-file -e origin/main:<arquivo>`.
+
+## Oitava varredura: as 62 refs restantes, uma a uma (19/11/2026)
+
+A sétima varredura fechou o portão sobre 4 refs. Faltava o mesmo para o resto: **62 refs
+remotas** (fora a `main`). Esta seção mede todas e dá base de certeza para cada uma.
+
+### Classificação por estado de PR
+
+| grupo | quantas | base da certeza |
+|---|---|---|
+| PR **mergeada** | 15 | **não vale como prova** — ver correção abaixo; caem na mesma adjudicação das outras |
+| PR **fechada sem merge** | 44 | **as 44 já tinham veredito escrito** neste ledger — conferido mecanicamente, por número de PR (`#N`, `pull/N`) e por nome de branch, sobre `docs/RECUPERACAO/`. Zero sem cobertura |
+| **sem PR nenhuma** | 3 | nenhum veredito por número de PR as alcançaria; resolvidas abaixo |
+
+> **Correção de 19/11/2026, após revisão — a mais séria desta seção.** Eu havia escrito que
+> para 15 refs o conteúdo estava na `main` "por definição do merge". **É falso.** Medido:
+> `git merge-base origin/main <ref>` devolve **vazio para as 15**. Todas são pré-re-raiz —
+> suas PRs entraram na `main` **antiga**, que a re-raiz descartou. Merge numa árvore que não
+> é mais a atual não prova nada sobre a atual, e é precisamente o que o
+> [`README.md`](./README.md) desta pasta avisa ao exigir comparação por conteúdo.
+>
+> A evidência interna já apontava para isso e eu não liguei os pontos: nesta mesma sessão
+> recuperei trabalho da `fix/sicoob-trust-data-20260924`, uma das 15. Se o merge dela
+> valesse para a `main` de hoje, não haveria o que recuperar.
+>
+> As 15 **não ganham um atalho**: seus arquivos exclusivos fazem parte da união de 243
+> caminhos adjudicada abaixo, como os de qualquer outra ref. A base de certeza delas é essa,
+> não o merge.
+
+
+
+### As 3 sem PR — o buraco que a classificação por PR não cobria
+
+| ref | medida | veredito |
+|---|---|---|
+| `contexto` | 815 arquivos exclusivos, todos sob `docs/contexto/` | **infraestrutura, não se apaga** — regerada a cada 10 min por `contexto.yml`, citada no `AGENTS.md` |
+| `computador_local` | **0 commits** e 0 arquivos fora da `main`; a ponta é um commit da própria `main` (#324) | espelho; nada a recuperar |
+| `claude/feat-kpis-primeira-compra-retencao-261118-1800` | 1 commit órfão `feat(clientes)`, nunca virou PR | **já na `main`, com um bug dele corrigido** (abaixo) |
+
+O commit órfão recuperava "Novos (Mês)" e "Taxa Retenção", removidos pela #314. A `main`
+tem os dois (`primeiraCompraNoMes`, `retencaoPercentual` em
+`src/hooks/useClientsPortfolioKpis.ts`) **e conserta dois defeitos da versão da branch**:
+
+1. a consulta de histórico **não paginava**. Cliente com muitos pedidos ficava fora do teto
+   de resposta do PostgREST e era contado como **primeira compra do mês** — número errado
+   na tela do vendedor. A `main` tem `historicoDoLote` com paginação e parada antecipada;
+2. `applySellerScope` vinha no **fim** da cadeia, onde `scripts/check-seller-scope.mjs` não
+   enxerga que a consulta está sob escopo. Na `main` ele entra logo após o `.from(...)`.
+
+### O que a medição de conteúdo mostrou — e o falso positivo que ela criou
+
+`comm -23` entre cada árvore e a da `main` acusava 6 a 8 arquivos "exclusivos" em **quase
+toda** branch, inclusive nas do dependabot e numa PR aberta minha. Não era trabalho perdido:
+são os **6 arquivos da aprovação pública legada**, que a `main` removeu de propósito na
+[#354](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/354).
+
+Conferido que a remoção não custou funcionalidade: **nenhuma rota apontava** para
+`PublicQuoteApprovalPage` antes da remoção (`git grep` em `fed706761^` sobre `src/routes/`
+volta vazio), e o fluxo público vivo está em `src/routes/config/public.ts:45` —
+`/approve/:token` → `QuoteApprovalPage`.
+
+Descontados esses 6, as branches **pós-re-raiz** deixam só **3 arquivos** distintos fora da
+`main`, todos resolvidos:
+
+| arquivo | veredito |
+|---|---|
+| `src/components/intelligence/TopCategoriesCard.tsx` | removido de propósito em `c3834edc4` ("órfão substituído por `TopProductFamiliesCard`"); `git grep` confirma que **nada na `main` o importa** |
+| `scripts/revisao/pendencias-2026-09-12.cenarios.tsx` | removido em `b391d84ec` ([#263](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/263)) |
+| `20261106135500_fix_cleanup_old_notifications_drop.sql` e `20261117091000_pin_custom_kit_atomically.sql` | na `main` renumeradas, mesmo slug. A da `main` é **superconjunto**: a de `cleanup_old_notifications` acrescenta o `CREATE OR REPLACE` que preserva o hardening de ACL, ausente na da branch |
+
+### Por que contagem de commit não serve para as refs antigas
+
+`git rev-list --count origin/main..<ref>` devolve ~19.400 para 54 refs. Não são 19.400
+commits perdidos: é a **re-raiz da `main`**. Essas refs não compartilham história com ela,
+então toda a árvore conta como ausente — o mesmo motivo pelo qual `git diff origin/main...`
+responde `no merge base`. Para elas, o que mede é conteúdo, e o veredito é o que este ledger
+já registrava.
+
+**Conclusão: 62 de 62 com base de certeza escrita.** Nenhuma ref restante contém trabalho
+que não esteja na `main` ou que não tenha obsolescência justificada aqui.
+
+### Conferência byte a byte: os 243 caminhos ausentes da `main`
+
+A classificação por PR não basta sozinha, e a identidade de blob também não: `computador_local`
+tem **0 commits** fora da `main` e ainda assim 6 blobs "fora", porque a `main` andou depois.
+Hash de blob mede quanto a `main` evoluiu, não trabalho perdido.
+
+O que mede é a **união dos caminhos** que não existem na `main`, sobre as 61 refs (fora
+`contexto`, que é artefato gerado): **249 caminhos**, **243** descontando os 6 que a #354
+removeu de propósito.
+
+> **Correção de 19/11/2026, após revisão.** A primeira versão desta seção dizia "235 com
+> cobertura (citados neste ledger, **ou** presentes na `main` com o mesmo nome ou slug)".
+> Isso somava duas bases muito diferentes e dava a entender equivalência de conteúdo, que
+> não foi o que se mediu. Comparando de fato — blob da ref contra a contraparte de mesmo
+> nome na `main` — o resultado é:
+>
+> | resultado | quantos | o que significa |
+> |---|---|---|
+> | contraparte de mesmo nome, **conteúdo diferente** | 17 | 9 são migrations renumeradas, já conferidas byte a byte aqui: a da `main` é superconjunto. O resto são falsos pares do casamento por nome (`graphify-out/README.md` × `docs/README.md`) |
+> | contraparte de mesmo nome, **conteúdo idêntico** | **0** | nenhuma ref tem arquivo igual ao da `main` — a `main` evoluiu em todos |
+> | **sem contraparte** na `main` | 172 | não há o que comparar; a base é o veredito escrito, não conteúdo |
+> | **sem origem atribuída** pelo meu script | 54 | reconciliados logo abaixo |
+> | **total** | **243** | |
+>
+> **Os 54, reconciliados.** A primeira versão desta tabela somava 189 e a seção anunciava
+> 243: 54 caminhos sumiram **em silêncio**, porque o script que atribui cada caminho à ref de
+> origem falhou neles e eu publiquei assim mesmo. Omissão silenciosa é pior que número
+> errado. Classificados:
+>
+> - **13 PDFs** (`public/AUDIT_ENTERPRISE_FINAL.pdf`, `public/reports/AUDIT_REPORT_*.pdf`) e
+>   **1 script de revisão**: artefato gerado, não código de produto.
+> - **40 migrations.** Com a extração de slug correta, **22 têm par na `main`**. As **18
+>   restantes** são um lote único `20250103_*` — `complete_schema`, `seed_data`,
+>   `test_queries`, `rls_*`, as variantes `_no_gamification` e um `_FIXED` duplicado — que
+>   vive numa **só** ref, `execucao/sicoob-20260911130857`. É o andaime inicial, anterior à
+>   re-raiz; a `main` tem linhagem própria (`001_notification_system.sql` em diante, 621
+>   arquivos) e quem arbitra o estado do banco é o ledger ao vivo, não esses arquivos.
+>
+> **Correção de método, não só de número:** meu primeiro cálculo de slug
+> (`sed 's|^[0-9]*_||'`) cortava apenas o primeiro bloco de dígitos, então
+> `20250103_01_remove_gamification.sql` virava `01_remove_gamification.sql` e ficava "sem
+> par" por construção. O número honesto é **22** com par, não 21.
+>
+> Dos 172 sem contraparte, **100 são arquivos de teste**. Destes, **95 têm veredito citado
+> neste ledger**, escrito pelas ondas de recuperação anteriores, e **5 não tinham** — são
+> exatamente os 5 da tabela abaixo. Dois deles viraram correção
+> ([#369](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/369) e
+> [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370)), o que diz algo sobre a
+> taxa: amostrando 8 arquivos sem veredito, 2 eram buraco real.
+>
+> O que fica provado por conteúdo, portanto, são as 9 migrations. O resto se apoia em
+> veredito escrito — que é o critério do `README.md` desta pasta, mas **não** é a mesma
+> coisa que comparação byte a byte, e este ledger não deve sugerir que seja.
+
+Os **8 caminhos sem veredito algum**, um a um:
+
+| arquivo | onde estava | veredito |
+|---|---|---|
+| `graphify-out/memory/query_*.md` | várias | artefato do graphify, fora do Git por `.gitignore` — não é trabalho |
+| `docs/execucao/auditoria-planejamento-2026-10-13/inventario-repositorio.json` | idem | inventário gerado por script, regerável |
+| `supabase/migrations/20261029102059_block_inactive_quote_status_retries.sql` | `fix/hermes-h247355-ci-dependencies` | **regra na `main`, em posição melhor** (abaixo) |
+| `tests/hooks/useClientBI.no-fallback.test.ts` | `fix/hermes-h015416-dados-reais` | equivalente na `main`: `tests/hooks/bi/useClientBI.test.ts` |
+| `tests/hooks/useClientSeasonality.no-fallback.test.ts` | idem | coberto pelas suítes de disponibilidade de BI (`BIAiCopilot.sources-availability`, `ExecutiveSummaryButton.availability`, `useClientHealthScore.diagnostico`) |
+| `tests/hooks/useProductIntelligenceBadges.no-fallback.test.ts` | idem | equivalente na `main`: `tests/hooks/intelligence-badges.test.ts` |
+| `tests/edge-functions/catalog-readonly-rpc.test.ts` | `fix/quote-price-authority-311333` | **era buraco real — recuperado** na [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370) |
+| `tests/scripts/validate-e2e-supabase-target.test.ts` | `fix/hermes-bi-share-hardening-20261028` | **tinha 2 casos sem equivalente — recuperados** na [#369](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/369) |
+
+**A migration do ator inativo.** A regra ("conta desativada não transiciona orçamento") está
+na `main` em `20261030210000_require_active_actor_for_quote_status_retry.sql`, com o mesmo
+`sicoob_actor_is_active` e o mesmo `ERRCODE 42501`. A diferença é onde a guarda entra: a da
+branch ficava **dentro** do núcleo `..._core_20261013`; a da `main` fica no **invólucro**,
+antes de chamá-lo, porque o núcleo pode retornar cedo quando o status pedido já está
+confirmado. A posição da `main` também cobre quem chama o invólucro direto.
+
+**O teste do catálogo somente leitura — eu havia fechado cedo demais.** Escrevi que
+`tests/scenarios/catalogo-somente-leitura.mjs` era superconjunto, porque recusa `POST`,
+`PUT`, `PATCH` e `DELETE` nas duas formas de chamada e ainda recusa redirecionamento
+(32/32 passando). A revisão da #367 mostrou que isso é a camada de **transporte**, e o
+arquivo perdido exercitava a de cima: `catalog.rpc(..., { get: true })`, a integração com
+o `supabase-js`. Conferido: `grep -E "createClient|\.rpc\(|get: true"` naquele cenário
+volta **vazio**.
+
+Importa porque RPC no PostgREST é **POST por padrão** — só com `{ get: true }` o cliente
+emite `GET`. Sem catraca nessa camada, um `get: true` esquecido faz o transporte barrar com
+`CATALOG_READ_ONLY` e o catálogo parar, com o teste de transporte seguindo verde. E a falha
+chega como **dado**, não como exceção: o `supabase-js` captura o erro do fetch e devolve em
+`error`. Recuperado na [#370](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/370).
+
+**O que a varredura devolveu ao sistema: dois buracos reais**, ambos em catraca de regra
+escrita no `AGENTS.md`, ambos recuperados com prova de que travam.
+
+1. **Destino de E2E** ("E2E/QA nunca aponta para o oficial nem para o catálogo"). A `main`
+   não cobria **falha fechada por configuração ausente**, embora `scripts/e2e-target.mjs:22`
+   recuse. Recuperado na #369 — removendo a checagem, caem os 5 casos.
+   *Correção:* a primeira versão desta seção dizia "dois casos, incluindo endpoint sem
+   HTTPS". O caso de HTTPS **já existia** na `main`, como `"endpoint sem TLS"`; eu procurei
+   por "HTTPS" e não por "TLS" e acrescentei duplicata, removida depois da revisão.
+2. **Catálogo somente leitura** ("NÃO escrever no catálogo externo"). A `main` cobria o
+   transporte, não a integração com o `supabase-js`. Recuperado na #370 — liberando `POST`
+   na guarda de `external-read-only.ts`, o caso cai.
+
+Os dois saíram de uma amostra de 8 arquivos sem veredito. Taxa de 2 em 8 é o argumento
+contra encerrar varredura por contagem.
+
+### Veredito por ref — as 62, uma linha cada
+
+A seção acima adjudica o conjunto: os **243 caminhos** ausentes da `main`, 235 com cobertura
+e os 8 restantes um a um. Como os exclusivos de **toda** ref são subconjunto desses 243, cada
+ref herda veredito da adjudicação — e aqui ela está escrita linha a linha, sem agregado.
+
+A coluna "excl." é a contagem de caminhos daquela ref que não existem na `main`. Ela **não**
+mede trabalho perdido: inclui os 6 que a #354 removeu de propósito e, nas refs pré-re-raiz,
+a árvore anterior inteira. Serve para localizar, não para concluir.
+
+| ref | PR(s) | estado | excl. | base da certeza |
+|---|---|---|---|---|
+| `audit/revisao-plano-20260924` | #31 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `audit/revisao-plano-20261001` | #85 | PR fechada sem merge | 21 | veredito escrito neste ledger |
+| `claude/chore-typecheck-baseline-260929-1157` | #81 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/ci-allowlist-crm-db-bridge-261118-1515` | #311 | PR aberta | 6 | em curso nesta sessão |
+| `claude/feat-kpis-primeira-compra-retencao-261118-1800` | — | sem PR | 6 | veredito individual acima |
+| `claude/fix-a028-migration-replay-261031-1541` | #192 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/fix-a028-migration-replay-261106-1355` | #201 | PR fechada sem merge | 9 | veredito escrito neste ledger |
+| `claude/fix-bi-selo-dado-real-261118-2025` | #326 | PR fechada sem merge | 6 | veredito escrito neste ledger |
+| `claude/fix-drop-allow-all-rls-260929-1342` | #83 | PR fechada sem merge | 21 | veredito escrito neste ledger |
+| `claude/fix-kanban-realtime-260929-0420` | #80 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-pin-kit-atomico-261117-0849` | #289 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/fix-seller-scope-baseline-260929-1300` | #82 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-seller-scope-deno-260929-1445` | #84 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-storage-delete-proposals-261106-2007` | #209 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/hopeful-mccarthy-8rqrqw` | #141, #139, #137, #136, #135, #134, #133, #132, #131, #130, #129, #126 | PR mergeada | 8 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `claude/project-workflows-analysis-5n6hva` | #53 | PR mergeada | 20 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `computador_local` | — | sem PR | 0 | veredito individual acima |
+| `contexto` | — | sem PR | 815 | artefato gerado — **não se apaga** |
+| `dependabot/github_actions/peter-evans/create-pull-request-8.1.3` | #283 | PR aberta | 6 | em curso nesta sessão |
+| `dependabot/npm_and_yarn/development-all-ccf808f959` | #322 | PR aberta | 0 | em curso nesta sessão |
+| `dependabot/npm_and_yarn/production-minor-patch-585bd01e94` | #281 | PR aberta | 6 | em curso nesta sessão |
+| `devin/1791190000-ux-onda1` | #100 | PR fechada sem merge | 15 | veredito escrito neste ledger |
+| `devin/1791201000-ux-onda2` | #101 | PR mergeada | 15 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `docs/ci-status-309799` | #172 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `docs/hermes-1791891351-auditoria-planejamento` | #105 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `docs/hermes-h459513-branch-protection` | #188 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `docs/plano150-20260927` | #44 | PR mergeada | 21 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `execucao/sicoob-20260911130857` | #7, #6, #5 | PR mergeada | 73 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `feat/pdf-playwright-scripts-art-261108-0516` | #226 | PR mergeada | 8 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/ci-only-20261029` | #165 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/ci-workflows-h290325` | #164 | PR fechada sem merge | 10 | veredito escrito neste ledger |
+| `fix/ci-workflows-h369570` | #176 | PR fechada sem merge | 18 | veredito escrito neste ledger |
+| `fix/execucao-plano-20260928` | #74 | PR mergeada | 20 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/execucao-plano-final-20260928` | #75 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `fix/hermes-20261029-undici-cve` | #161 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-272703-ci-audit` | #158 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-61031-plan-lote` | #187 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-bi-share-hardening-20261028` | #150 | PR fechada sem merge | 14 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `fix/hermes-docs-all-20261028` | #148 | PR fechada sem merge | 10 | veredito escrito neste ledger |
+| `fix/hermes-h015416-dados-reais` | #112 | PR fechada sem merge | 55 | veredito escrito neste ledger |
+| `fix/hermes-h097437-ci-workflows` | #145 | PR fechada sem merge | 9 | veredito escrito neste ledger |
+| `fix/hermes-h164991-simulacao-final` | #119 | PR fechada sem merge | 115 | veredito escrito neste ledger |
+| `fix/hermes-h206502-e2e-codeql` | #94 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h237459-sync-audit` | #154 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h247355-ci-dependencies` | #157 | PR fechada sem merge | 25 | veredito escrito neste ledger · contém 4 dos 8 adjudicados |
+| `fix/hermes-h275576-codeql-consistencia` | #160 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h301937-e2e-hosted` | #97 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h393620-docs-audit-20261031` | #179 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h393620-inteligencia-real` | #178 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h423368-logistics-shipment-pagination` | #181 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h425359-undici-security` | #182 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h432507-npm-audit` | #185 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-revisao-scripts-261108-0604` | #228 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-sicoob-deploy-verification-20261028` | #149 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/quote-price-authority-311333` | #175 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `fix/sicoob-aprovacao-legada-20260923` | #26 | PR mergeada | 17 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-conclusao-20260922` | #18 | PR mergeada | 22 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-csp-202635` | #27 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-intelligence-truth-20260924` | #36 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-p0-operacional-20260923` | #24 | PR mergeada | 16 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-p0-seguranca-20260923` | #22 | PR mergeada | 24 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+| `fix/sicoob-trust-data-20260924` | #34 | PR mergeada | 23 | adjudicada na união de 243 (merge pré-re-raiz não prova) |
+
+**62 de 62 com veredito escrito.** As 4 refs apagadas em 19/11 (seção "Sétima varredura")
+não aparecem aqui porque já não existem; o veredito delas está lá.

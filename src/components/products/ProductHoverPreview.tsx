@@ -52,6 +52,17 @@ function MaterialPreview({ product }: { product: Product }) {
   return <div className="flex flex-wrap gap-1">{product.materials.slice(0, 3).map((material) => <Badge key={material} variant="secondary" className="text-xs py-0 h-5">{material}</Badge>)}</div>;
 }
 
+/**
+ * Mesmo texto da ficha do produto (`ProductDetailHeroSections.tsx:267`): prazo
+ * zero ou ausente é prazo NÃO INFORMADO, não entrega no mesmo dia. Enquanto a
+ * coluna não vinha no select da listagem, este lugar escrevia "Consultar prazo"
+ * cravado — dizia o mesmo para todos os 7.938 produtos ativos, que têm prazo.
+ */
+function prazoDeEntrega(product: Pick<Product, 'leadTimeDays'>): string {
+  const dias = product.leadTimeDays;
+  return dias && dias > 0 ? `${dias} dias úteis` : 'Consultar prazo';
+}
+
 function PreviewContent({ product }: { product: Product }) {
   return (
     <div className="p-4 space-y-3">
@@ -64,7 +75,7 @@ function PreviewContent({ product }: { product: Product }) {
         <div className="flex items-center gap-2 text-muted-foreground"><Package className="h-3.5 w-3.5 text-primary" /><span>{product.stock.toLocaleString('pt-BR')} un.</span></div>
         <div className="flex items-center gap-2 text-muted-foreground"><Tag className="h-3.5 w-3.5 text-primary" /><span>Mín. {product.minQuantity || 1} un.</span></div>
         <div className="flex items-center gap-2 text-muted-foreground"><Palette className="h-3.5 w-3.5 text-primary" /><span>{product.colors.length} cores</span></div>
-        <div className="flex items-center gap-2 text-muted-foreground"><Truck className="h-3.5 w-3.5 text-primary" /><span>Consultar prazo</span></div>
+        <div className="flex items-center gap-2 text-muted-foreground"><Truck className="h-3.5 w-3.5 text-primary" /><span>{prazoDeEntrega(product)}</span></div>
       </div>
       <ColorPreview product={product} />
       <MaterialPreview product={product} />
