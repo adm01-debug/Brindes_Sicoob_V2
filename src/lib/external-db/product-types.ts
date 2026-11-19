@@ -157,8 +157,14 @@ export const PRODUCT_SELECT_FIELDS_LEGACY =
   `${PRODUCT_IDENTITY_FIELDS}, ${PRODUCT_COMMON_FIELDS}, ` +
   `${PRODUCT_DIMENSION_FIELDS}, ${PRODUCT_PACKAGING_FIELDS}`;
 
+// `lead_time_days` só entra aqui, na ficha. Consulta por id passa pelo bridge
+// com o select do chamador verbatim (`reason: 'has-id'`), então a coluna chega.
+// Em listagem o bridge troca o select por `PRODUCTS_LIGHTWEIGHT_SELECT`, logo
+// pô-la em `_WITH_SALE` não faria o prazo chegar ao cartão — isso exige mexer
+// no contrato compartilhado da edge, que é outro assunto e outro deploy.
+// `_LEGACY` segue sendo o mínimo seguro do fallback e não ganha colunas.
 export const PRODUCT_SELECT_FIELDS_DETAIL =
-  `${PRODUCT_IDENTITY_FIELDS}, sale_price, ${PRODUCT_COMMON_FIELDS}, tags, ` +
+  `${PRODUCT_IDENTITY_FIELDS}, sale_price, ${PRODUCT_COMMON_FIELDS}, tags, lead_time_days, ` +
   `${PRODUCT_DIMENSION_FIELDS}, ${PRODUCT_PACKAGING_FIELDS}`;
 
 // #2: also trigger fallback when orderBy hits a missing column
