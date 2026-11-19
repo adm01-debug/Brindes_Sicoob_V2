@@ -170,7 +170,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
-    sha256: "103b571803d9893c137d56f78f7b4bbadc360de96e9d2cf1dc63e5cecc4e603e",
+    sha256: "cf3fb76882ae43f91a44fcac5d70b655c7e6e370988c6bea223af23b73b1b8e5",
   },
   {
     file: "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
@@ -327,7 +327,7 @@ function parseTarget(target) {
   if (!filename.endsWith(".sql") || !/^\d{14}$/.test(version) || !/^[a-z0-9_]+$/.test(name)) {
     throw new Error(`Nome de migration inválido: ${filename}`);
   }
-  const sql = readFileSync(join(ROOT, target.file), "utf8");
+  const sql = readFileSync(join(ROOT, target.file), "utf8").replace(/^\uFEFF/, "");
   const actualHash = sha256(sql);
   if (actualHash !== target.sha256) {
     throw new Error(`Hash não autorizado para ${filename}: ${actualHash}`);
