@@ -44,7 +44,7 @@ export const BASELINE_BY_FILE = {
   // A catraca só aperta: ao destravar um cenário, baixe o número aqui.
   "e2e/flows/p0/01-auth-recovery.spec.ts": 3,
   "e2e/flows/p0/02-catalog-degraded.spec.ts": 3,
-  "e2e/flows/p0/03-quote-blocked.spec.ts": 3,
+  "e2e/flows/p0/03-quote-blocked.spec.ts": 2,
   "e2e/flows/p0/04-checkout-blocked.spec.ts": 3,
   "e2e/flows/p0/05-admin-down.spec.ts": 4,
   "e2e/flows/p0/06-auth-lifecycle.spec.ts": 4,
