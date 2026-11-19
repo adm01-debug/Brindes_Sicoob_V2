@@ -20,8 +20,8 @@ no plano.
 - PR de integração ativo: [#112](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/112), cabeça `f844043a70ab0bedfdc332def4f6706297298f00`.
 - Candidato integrado local: branch `fix/hermes-h164991-simulacao-final`, 72
   commits à frente da `origin/main` na coleta final.
-- Matriz vigente: [`matriz-100-etapas.json`](../auditoria-planejamento-2026-10-16/matriz-100-etapas.json).
-- Estratégia de implantação: [`ESTRATEGIA_IMPLEMENTACAO.md`](../auditoria-planejamento-2026-10-16/ESTRATEGIA_IMPLEMENTACAO.md).
+- Matriz vigente: [`matriz-100-etapas.json`](./auditoria-planejamento-2026-10-16/matriz-100-etapas.json).
+- Estratégia de implantação: [`ESTRATEGIA_IMPLEMENTACAO.md`](./auditoria-planejamento-2026-10-16/ESTRATEGIA_IMPLEMENTACAO.md).
 
 ## Resultado dos cinco fluxos especializados
 
