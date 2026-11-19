@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)",
+   "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)",
    "fix(pwa): registra a rota /instalar, hoje um destino quebrado no menu do celular (#330)",
    "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
-   "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)",
-   "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)",
-   "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)"
+   "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

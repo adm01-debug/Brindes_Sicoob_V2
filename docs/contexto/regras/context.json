@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "6aff499fb6d337dfefb5ce2951ae0cf539326a9a",
+  "sha": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 05:18 UTC",
+  "generated_at": "2026-11-19 05:37 UTC",
   "files_total": 4500,
   "code_files": 3771,
-  "code_lines": 551291
+  "code_lines": 551361
  },
  "version": "1.3.2",
- "facts_hash": "a94600e8b6cc62a9",
+ "facts_hash": "9b5e63dd9466d57e",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -63602,7 +63602,7 @@
   {
    "module": "scripts",
    "files": 168,
-   "lines": 38785,
+   "lines": 38800,
    "tables": [
     "a",
     "admin_audit_log",
@@ -65257,7 +65257,7 @@
   {
    "module": "supabase/functions",
    "files": 216,
-   "lines": 34900,
+   "lines": 34909,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65374,7 +65374,7 @@
     "circuit-breaker.ts: getAllBreakerStatuses, getBreaker, circuitOpenResponse",
     "connection-test-runner.ts: TriggeredBy, ErrorKind, RunOptions, TRANSIENT_ERROR_KINDS, isTransientFailure, RunResult",
     "connection-timeouts.ts: ConnectionType, DEFAULT_TIMEOUTS_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS, resolveTimeout",
-    "cors.ts: getCorsHeaders, handleCorsPreflightIfNeeded, publicCorsHeaders",
+    "cors.ts: getCorsHeaders, handleCorsPreflightIfNeeded, restrictiveCorsHeaders, publicCorsHeaders",
     "credentials.ts: CredentialSource, CredentialResolution, CacheMetricsSnapshot, getCredentialCacheMetrics, CredentialHealthEntry, CredentialsHealthSummary",
     "edge-authz-manifest.ts: AuthzCategory, AuthzEntry, EDGE_AUTHZ_MANIFEST",
     "expert-chat-contract.ts: EXPERT_CHAT_CLIENT_MESSAGE_ROLES, EXPERT_CHAT_MESSAGE_MAX_CHARS",
@@ -65612,7 +65612,7 @@
   {
    "module": "tests",
    "files": 633,
-   "lines": 85298,
+   "lines": 85344,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -135270,6 +135270,22 @@
     "name": "fora da raiz do repositório falha (exit 2) em vez de ler zero skips"
    },
    {
+    "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "name": "cobertura das raízes críticas"
+   },
+   {
+    "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "name": "inclui os cenários P0 de E2E, que ficaram fora do gate até 18/11/2026"
+   },
+   {
+    "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "name": "o orçamento cobre todos os specs P0 de E2E que têm skip hoje"
+   },
+   {
+    "file": "tests/scripts/check-critical-test-skip-budget.test.ts",
+    "name": "nenhum spec P0 de E2E está acima do orçamento"
+   },
+   {
     "file": "tests/scripts/check-migration-immutability.test.ts",
     "name": "check-migration-immutability"
    },
@@ -177354,7 +177370,7 @@
   },
   "scripts/check-critical-test-skip-budget.mjs": {
    "path": "scripts/check-critical-test-skip-budget.mjs",
-   "lines": 128,
+   "lines": 143,
    "exports": [
     "const roots",
     "const BASELINE_BY_FILE",
@@ -226534,10 +226550,11 @@
   },
   "supabase/functions/_shared/cors.ts": {
    "path": "supabase/functions/_shared/cors.ts",
-   "lines": 80,
+   "lines": 94,
    "exports": [
     "function getCorsHeaders",
     "function handleCorsPreflightIfNeeded",
+    "const restrictiveCorsHeaders",
     "const publicCorsHeaders"
    ],
    "rule_comments": [
@@ -229847,7 +229864,7 @@
   },
   "supabase/functions/external-db-bridge/index.ts": {
    "path": "supabase/functions/external-db-bridge/index.ts",
-   "lines": 1956,
+   "lines": 1954,
    "exports": [
     "function applyFilters",
     "const LIGHTWEIGHT_LIMIT_THRESHOLD",
@@ -232059,7 +232076,7 @@
   },
   "supabase/functions/mcp-server/index.ts": {
    "path": "supabase/functions/mcp-server/index.ts",
-   "lines": 508,
+   "lines": 505,
    "tables": [
     {
      "table": "admin_audit_log",
@@ -249604,10 +249621,13 @@
   },
   "tests/scripts/check-critical-test-skip-budget.test.ts": {
    "path": "tests/scripts/check-critical-test-skip-budget.test.ts",
-   "lines": 108,
+   "lines": 154,
    "is_test": true,
    "env": [
     "DB"
+   ],
+   "rule_comments": [
+    "Orçamento próprio: o teste mede a regra, não a lista de dívidas do dia."
    ],
    "tests": [
     "findSkips — formas de desligar um teste",
@@ -249619,7 +249639,11 @@
     "execução do gate numa árvore de testes",
     "árvore dentro do orçamento passa",
     "trocar um skip antigo por um novo em P0 reprova",
-    "fora da raiz do repositório falha (exit 2) em vez de ler zero skips"
+    "fora da raiz do repositório falha (exit 2) em vez de ler zero skips",
+    "cobertura das raízes críticas",
+    "inclui os cenários P0 de E2E, que ficaram fora do gate até 18/11/2026",
+    "o orçamento cobre todos os specs P0 de E2E que têm skip hoje",
+    "nenhum spec P0 de E2E está acima do orçamento"
    ]
   },
   "tests/scripts/check-migration-immutability.test.ts": {
@@ -251604,10 +251628,32 @@
   }
  },
  "git": {
-  "sha": "6aff499fb6d337dfefb5ce2951ae0cf539326a9a",
+  "sha": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "7ec2508",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)",
+    "files": [
+     "supabase/functions/_shared/cors.ts",
+     "supabase/functions/external-db-bridge/index.ts",
+     "supabase/functions/mcp-server/index.ts"
+    ]
+   },
+   {
+    "sha": "5bf2e58",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)",
+    "files": [
+     "e2e/flows/p0/README.md",
+     "scripts/check-critical-test-skip-budget.mjs",
+     "tests/scripts/check-critical-test-skip-budget.test.ts"
+    ]
+   },
    {
     "sha": "6aff499",
     "date": "2026-11-19",
@@ -252108,34 +252154,13 @@
      "src/pages/KitBuilderPage.tsx",
      "tests/hooks/useKitAutoSave.test.tsx"
     ]
-   },
-   {
-    "sha": "2b192fb",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
-    "files": [
-     "src/components/command/GlobalCommandBar.tsx",
-     "tests/components/command/GlobalCommandBar.test.tsx"
-    ]
-   },
-   {
-    "sha": "7372a96",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
-    "files": [
-     "src/components/sicoob/GestorComprasMetrics.tsx",
-     "src/hooks/sicoob/useManagerDashboardStats.ts",
-     "src/pages/GestorCompras.tsx",
-     "src/pages/sicoob/GestorDashboardPage.tsx",
-     "src/services/sicoob/managerStatsService.ts",
-     "tests/pages/GestorCompras.metrics.test.tsx",
-     "tests/pages/GestorCompras.test.tsx"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "supabase/functions/mcp-server/index.ts",
+    2
+   ],
    [
     "src/hooks/useQuoteBuilderState.ts",
     2
@@ -252181,16 +252206,24 @@
     2
    ],
    [
-    "src/components/sicoob/GestorComprasMetrics.tsx",
-    2
+    "supabase/functions/_shared/cors.ts",
+    1
    ],
    [
-    "src/services/sicoob/managerStatsService.ts",
-    2
+    "supabase/functions/external-db-bridge/index.ts",
+    1
    ],
    [
-    "tests/pages/GestorCompras.metrics.test.tsx",
-    2
+    "e2e/flows/p0/README.md",
+    1
+   ],
+   [
+    "scripts/check-critical-test-skip-budget.mjs",
+    1
+   ],
+   [
+    "tests/scripts/check-critical-test-skip-budget.test.ts",
+    1
    ],
    [
     "docs/ROUTES.md",
@@ -252202,18 +252235,6 @@
    ],
    [
     "src/lib/rbac/route-matrix.ts",
-    1
-   ],
-   [
-    "src/pages/PWAInstallPage.tsx",
-    1
-   ],
-   [
-    "src/routes/config/tools.ts",
-    1
-   ],
-   [
-    "tests/hooks/usePWAInstall.test.tsx",
     1
    ]
   ]

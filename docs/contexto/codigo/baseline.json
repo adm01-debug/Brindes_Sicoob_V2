@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "6aff499fb6d337dfefb5ce2951ae0cf539326a9a",
+  "commit": "7ec2508e727a29c033d4dfc19f7b09e07c51e716",
   "branch": "main",
-  "data_commit": "2026-11-19T05:17:20Z",
+  "data_commit": "2026-11-19T05:36:41Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "7ec2508",
+    "data": "2026-11-19",
+    "assunto": "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)"
+   },
+   {
+    "sha": "5bf2e58",
+    "data": "2026-11-19",
+    "assunto": "ci(testes): catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E (#329)"
+   },
    {
     "sha": "6aff499",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "f30a262",
     "data": "2026-11-18",
     "assunto": "fix(db): aplicador de migrations tolera BOM na leitura (#345)"
-   },
-   {
-    "sha": "25f7ab0",
-    "data": "2026-11-18",
-    "assunto": "chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)"
-   },
-   {
-    "sha": "1b11bf7",
-    "data": "2026-11-18",
-    "assunto": "chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)"
    }
   ],
-  "arquivos_mudados_7d": 570,
+  "arquivos_mudados_7d": 575,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 36
+    "mudancas": 37
    },
    {
     "pasta": "docs/externo/analises-20261007",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 60
+    "mudancas": 58
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 59
+    "mudancas": 57
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 162
+    "commits": 164
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4497,
   "arquivos_codigo": 3107,
-  "linhas_codigo": 488950,
+  "linhas_codigo": 489020,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -504,7 +504,7 @@
   },
   "scripts/check-critical-test-skip-budget.mjs": {
    "arquivos": 1,
-   "linhas": 128
+   "linhas": 143
   },
   "scripts/check-edge-authorization.mjs": {
    "arquivos": 1,
@@ -840,7 +840,7 @@
   },
   "supabase/functions": {
    "arquivos": 216,
-   "linhas": 34900
+   "linhas": 34909
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 33,
-   "linhas": 3077
+   "linhas": 3123
   },
   "tests/search": {
    "arquivos": 1,
@@ -1050,7 +1050,7 @@
   },
   {
    "arquivo": "supabase/functions/external-db-bridge/index.ts",
-   "linhas": 1956
+   "linhas": 1954
   },
   {
    "arquivo": "scripts/supabase_snapshot/snapshot.py",

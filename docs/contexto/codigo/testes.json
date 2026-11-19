@@ -6504,11 +6504,11 @@
   {
    "arquivo": "tests/scripts/check-critical-test-skip-budget.test.ts",
    "tipo": "unit",
-   "linhas": 108,
+   "linhas": 154,
    "testa": [
     "scripts/check-critical-test-skip-budget.mjs"
    ],
-   "casos": 21
+   "casos": 24
   },
   {
    "arquivo": "tests/scripts/check-migration-immutability.test.ts",

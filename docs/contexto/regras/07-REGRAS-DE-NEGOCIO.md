@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `6aff499fb6` · branch `main` · 2026-11-19 05:18 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7ec2508e72` · branch `main` · 2026-11-19 05:37 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6840 testes em 678 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6844 testes em 678 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5837,6 +5837,7 @@ _nenhum item encontrado_
 | `tests/lib/theme-radius-smoke.test.ts` | 14 | Smoke E2E — boot fresh com defaults pós-bump · boot fresh sem localStorage usa defaults novos (corporate, radius=14) · botões (rounded-md = --radius - 2px) ficam com 12px no estado padrão · cards (rounded-lg = --radius) ficam com 14px no estado padrão … |
 | `tests/pages/trends-queries.test.ts` | 14 | consultas de tendências · alinha as janelas aos dias civis, incluindo o dia atual · alinha o papel %s às capacidades comprovadas pela RLS · filtra cada evento pela coluna de autoria observada no banco … |
 | `tests/scripts/autofix-colors.test.ts` | 14 | autofix colors-map · texto: qualquer tom vira o token · fundo claro vira /10 (ou /5 quando já tinha opacidade) · fundo forte vira sólido … |
+| `tests/scripts/check-critical-test-skip-budget.test.ts` | 14 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/scripts/rules-definer-search-path.test.ts` | 14 | rules/plano-definer-sem-search-path · acusa DEFINER sem SET (atributos antes do corpo) · aceita SET search_path antes ou depois do corpo · reconhece o schema public entre aspas (CREATE, ALTER e DROP) … |
 | `tests/unit/fuzzing.test.ts` | 14 | Fuzz Testing — Input Resilience · String Fields · handles buffer overflows / extreme lengths · handles unicode and emojis … |
 | `e2e/rbac-navigation.spec.ts` | 13 | RBAC e navegação · Perfil vendedor · acessa as áreas comerciais · recebe 403 nas áreas administrativas … |
@@ -5904,7 +5905,6 @@ _nenhum item encontrado_
 | `tests/lib/auth/apply-seller-scope.test.ts` | 10 | applySellerScope · aplica .eq( · permite trocar a coluna do filtro (ex.: user_id) · NÃO aplica filtro quando escopo é all (admin/dev) … |
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
 | `tests/p0/edge-functions-failing.test.ts` | 10 | P0 — Edge Functions críticas · full-op-diagnostics: autentica e produz exatamente os quatro checks declarados · crm-db-bridge: converte ausência do módulo opcional em leitura vazia estável · crm-db-bridge: impede escrita quando o módulo opcional não está disponível … |
-| `tests/scripts/check-critical-test-skip-budget.test.ts` | 10 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
 | `tests/scripts/verifier-arguments.test.ts` | 10 | check-price-freshness-coverage — tolerância · COVERAGE_TOLERANCE_PP=%j é recusado (exit 2) · valor válido passa da validação (falha depois, por falta do coverage-summary) · check-edge-functions-health — --timeout … |
 | `tests/security/portal-access-policy.test.ts` | 10 | política de acesso privilegiado do portal · falha fechado quando o usuário não possui papel · avalia todos os papéis sem permitir que vendedor amplie o acesso · nega CRM e clientId para vendedor … |
 | `tests/utils/price-freshness-timezone.test.ts` | 10 | getPriceFreshness — robustez de timezone · instante 23h atrás escrito em qualquer fuso ainda é  · instante de %i dias atrás produz o mesmo label em todos os fusos · singular  … |

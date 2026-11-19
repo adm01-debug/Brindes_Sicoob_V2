@@ -150,7 +150,7 @@
   {
    "arquivo": "scripts/check-critical-test-skip-budget.mjs",
    "descricao": "* check-critical-test-skip-budget.mjs",
-   "linhas": 128,
+   "linhas": 143,
    "env": [
     "CI"
    ],

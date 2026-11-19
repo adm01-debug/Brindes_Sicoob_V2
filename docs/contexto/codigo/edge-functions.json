@@ -1166,7 +1166,7 @@
    "nome": "external-db-bridge",
    "entrada": "supabase/functions/external-db-bridge/index.ts",
    "arquivos": 1,
-   "linhas": 1956,
+   "linhas": 1954,
    "verify_jwt": false,
    "metodos": [],
    "tabelas": [
@@ -2162,7 +2162,7 @@
    "nome": "mcp-server",
    "entrada": "supabase/functions/mcp-server/index.ts",
    "arquivos": 1,
-   "linhas": 508,
+   "linhas": 505,
    "verify_jwt": true,
    "metodos": [],
    "tabelas": [
