@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "4a462254950de4e3280bc66299f861b55b695d40",
+  "sha": "e7671e8540a059250ec97981df8b23b880101ef2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 11:07 UTC",
-  "files_total": 4542,
-  "code_files": 3795,
-  "code_lines": 554865
+  "generated_at": "2026-11-19 16:16 UTC",
+  "files_total": 4543,
+  "code_files": 3796,
+  "code_lines": 554914
  },
  "version": "1.3.2",
- "facts_hash": "457ef5b584cc55b9",
+ "facts_hash": "1900fa5efe474d91",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,7 +348,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1476,
+   ".ts": 1477,
    ".tsx": 1438,
    ".sql": 683,
    ".mjs": 139,
@@ -63348,7 +63348,7 @@
   {
    "module": "(raiz)",
    "files": 9,
-   "lines": 1243,
+   "lines": 1253,
    "tables": [],
    "exports": [
     "playwright.config.ts: defineConfig",
@@ -65646,8 +65646,8 @@
   },
   {
    "module": "tests",
-   "files": 652,
-   "lines": 87758,
+   "files": 653,
+   "lines": 87797,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -136358,6 +136358,22 @@
     "name": "marcar como "
    },
    {
+    "file": "tests/scripts/fuso-dos-testes.test.ts",
+    "name": "fuso horário da suíte"
+   },
+   {
+    "file": "tests/scripts/fuso-dos-testes.test.ts",
+    "name": "roda no fuso do projeto"
+   },
+   {
+    "file": "tests/scripts/fuso-dos-testes.test.ts",
+    "name": "o fuso é negativo — é isso que faz a leitura de data discriminar"
+   },
+   {
+    "file": "tests/scripts/fuso-dos-testes.test.ts",
+    "name": "data ISO sem hora lida como UTC cai no dia anterior aqui"
+   },
+   {
     "file": "tests/scripts/gates-hardening.test.ts",
     "name": "contrato de autorização das edges: o resultado do authorize precisa ser usado"
    },
@@ -175431,7 +175447,7 @@
   },
   "vitest.config.ts": {
    "path": "vitest.config.ts",
-   "lines": 69,
+   "lines": 79,
    "exports": [
     "default defineConfig"
    ]
@@ -251237,6 +251253,26 @@
     "marcar como "
    ]
   },
+  "tests/scripts/fuso-dos-testes.test.ts": {
+   "path": "tests/scripts/fuso-dos-testes.test.ts",
+   "lines": 39,
+   "is_test": true,
+   "params": [
+    {
+     "name": "FUSO",
+     "value": "'America/Sao_Paulo'"
+    }
+   ],
+   "rule_comments": [
+    "antes de qualquer regra de data passar a mentir em silêncio."
+   ],
+   "tests": [
+    "fuso horário da suíte",
+    "roda no fuso do projeto",
+    "o fuso é negativo — é isso que faz a leitura de data discriminar",
+    "data ISO sem hora lida como UTC cai no dia anterior aqui"
+   ]
+  },
   "tests/scripts/gates-hardening.test.ts": {
    "path": "tests/scripts/gates-hardening.test.ts",
    "lines": 161,
@@ -252918,10 +252954,20 @@
   }
  },
  "git": {
-  "sha": "4a462254950de4e3280bc66299f861b55b695d40",
+  "sha": "e7671e8540a059250ec97981df8b23b880101ef2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e7671e8",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)",
+    "files": [
+     "tests/scripts/fuso-dos-testes.test.ts",
+     "vitest.config.ts"
+    ]
+   },
    {
     "sha": "4a46225",
     "date": "2026-11-19",
@@ -253349,21 +253395,6 @@
     "files": [
      "src/components/inventory/risk/ProductRiskDetail.tsx"
     ]
-   },
-   {
-    "sha": "9830191",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(a11y): tour de onboarding vira diálogo de verdade, e rota sumida passa a dar alarme (#352)",
-    "files": [
-     "src/components/layout/MainLayout.tsx",
-     "src/components/onboarding/OnboardingTour.tsx",
-     "tests/components/onboarding/OnboardingTour.camada-acima.test.tsx",
-     "tests/components/onboarding/OnboardingTour.escape.test.tsx",
-     "tests/components/onboarding/OnboardingTour.foco.test.tsx",
-     "tests/routes/app-router-parity.test.tsx",
-     "vitest.config.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -253382,6 +253413,14 @@
    [
     "scripts/revisao/gerar-revisao-2026-09-12.py",
     2
+   ],
+   [
+    "tests/scripts/fuso-dos-testes.test.ts",
+    1
+   ],
+   [
+    "vitest.config.ts",
+    1
    ],
    [
     ".github/workflows/deploy-sicoob-functions.yml",
@@ -253437,14 +253476,6 @@
    ],
    [
     "tests/hooks/bi-demo-boundary.test.tsx",
-    1
-   ],
-   [
-    "tests/hooks/product-intelligence-real-data.test.tsx",
-    1
-   ],
-   [
-    "tests/hooks/useClientCategoryAffinity.error.test.tsx",
     1
    ]
   ]

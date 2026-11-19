@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (631)",
+   "tests/ (632)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)",
    "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)",
    "chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)",
    "test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)",
-   "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)",
-   "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)"
+   "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

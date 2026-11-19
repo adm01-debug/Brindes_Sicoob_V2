@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 878,
+ "total": 879,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 649
+  "unit": 650
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 631
+   "arquivos": 632
   },
   {
    "padrao": "e2e/",
@@ -6772,6 +6772,13 @@
    "linhas": 106,
    "testa": [],
    "casos": 6
+  },
+  {
+   "arquivo": "tests/scripts/fuso-dos-testes.test.ts",
+   "tipo": "unit",
+   "linhas": 39,
+   "testa": [],
+   "casos": 3
   },
   {
    "arquivo": "tests/scripts/gates-hardening.test.ts",

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "4a462254950de4e3280bc66299f861b55b695d40",
+  "commit": "e7671e8540a059250ec97981df8b23b880101ef2",
   "branch": "main",
-  "data_commit": "2026-11-19T11:06:27Z",
+  "data_commit": "2026-11-19T13:03:05-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e7671e8",
+    "data": "2026-11-19",
+    "assunto": "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)"
+   },
    {
     "sha": "4a46225",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "e520ace",
     "data": "2026-11-19",
     "assunto": "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)"
-   },
-   {
-    "sha": "116bb44",
-    "data": "2026-11-19",
-    "assunto": "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)"
    }
   ],
-  "arquivos_mudados_7d": 626,
+  "arquivos_mudados_7d": 612,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 42
+    "mudancas": 41
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 41
+    "mudancas": 40
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 178
+    "commits": 179
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4539,
-  "arquivos_codigo": 3130,
-  "linhas_codigo": 492286,
+  "arquivos_total": 4540,
+  "arquivos_codigo": 3131,
+  "linhas_codigo": 492335,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 878,
+  "testes": 879,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 285
@@ -959,8 +959,8 @@
    "linhas": 2047
   },
   "tests/scripts": {
-   "arquivos": 33,
-   "linhas": 3184
+   "arquivos": 34,
+   "linhas": 3223
   },
   "tests/search": {
    "arquivos": 1,
@@ -1036,7 +1036,7 @@
   },
   "vitest.config.ts": {
    "arquivos": 1,
-   "linhas": 69
+   "linhas": 79
   }
  },
  "maiores_arquivos": [
