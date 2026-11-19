@@ -135,15 +135,26 @@ function focusablesInside(dialog: HTMLDivElement): HTMLElement[] {
   ));
 }
 
+// Ninguém tem o foco de verdade: ou é o corpo da página, ou nada.
+function focoEmNinguem(): boolean {
+  const atual = document.activeElement;
+  return !atual || atual === document.body || atual === document.documentElement;
+}
+
 // Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho.
 function proximoFocoDoTrap(dialog: HTMLDivElement, shiftKey: boolean): HTMLElement | null {
   const focusable = focusablesInside(dialog);
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
   if (!first || !last) return dialog;
-  // Tab vindo de fora do diálogo volta para dentro: sem isto, o teclado
-  // alcançaria os controles da página atrás do modal.
-  if (!dialog.contains(document.activeElement)) return first;
+  // Tab vindo de fora do diálogo volta para dentro só quando o foco está no
+  // corpo da página (estado inicial): sem isto, o teclado alcançaria os
+  // controles atrás do modal. Se o foco está num elemento de verdade fora do
+  // tour, ele pertence a uma camada aberta ACIMA dele — o Spotlight
+  // (`Ctrl+Shift+P`) renderiza em `z-101`, acima do tour — e roubar o Tab dali
+  // deixaria essa camada inalcançável pelo teclado enquanto o tour estivesse
+  // aberto.
+  if (!dialog.contains(document.activeElement)) return focoEmNinguem() ? first : null;
   if (shiftKey && document.activeElement === first) return last;
   if (!shiftKey && document.activeElement === last) return first;
   return null;
