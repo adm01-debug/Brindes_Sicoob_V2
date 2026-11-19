@@ -707,3 +707,66 @@ uma em outro lugar, **todas com teste**.
 > da ref não cobre nada que a `main` já não cubra. Apontado pela revisão da #365.
 
 Os outros 18 estão na `main`, conferidos um a um com `git cat-file -e origin/main:<arquivo>`.
+
+## Oitava varredura: as 62 refs restantes, uma a uma (19/11/2026)
+
+A sétima varredura fechou o portão sobre 4 refs. Faltava o mesmo para o resto: **62 refs
+remotas** (fora a `main`). Esta seção mede todas e dá base de certeza para cada uma.
+
+### Classificação por estado de PR
+
+| grupo | quantas | base da certeza |
+|---|---|---|
+| PR **mergeada** | 15 | o conteúdo está na `main` por definição do merge |
+| PR **fechada sem merge** | 44 | **as 44 já tinham veredito escrito** neste ledger — conferido mecanicamente, por número de PR (`#N`, `pull/N`) e por nome de branch, sobre `docs/RECUPERACAO/`. Zero sem cobertura |
+| **sem PR nenhuma** | 3 | nenhum veredito por número de PR as alcançaria; resolvidas abaixo |
+
+### As 3 sem PR — o buraco que a classificação por PR não cobria
+
+| ref | medida | veredito |
+|---|---|---|
+| `contexto` | 815 arquivos exclusivos, todos sob `docs/contexto/` | **infraestrutura, não se apaga** — regerada a cada 10 min por `contexto.yml`, citada no `AGENTS.md` |
+| `computador_local` | **0 commits** e 0 arquivos fora da `main`; a ponta é um commit da própria `main` (#324) | espelho; nada a recuperar |
+| `claude/feat-kpis-primeira-compra-retencao-261118-1800` | 1 commit órfão `feat(clientes)`, nunca virou PR | **já na `main`, com um bug dele corrigido** (abaixo) |
+
+O commit órfão recuperava "Novos (Mês)" e "Taxa Retenção", removidos pela #314. A `main`
+tem os dois (`primeiraCompraNoMes`, `retencaoPercentual` em
+`src/hooks/useClientsPortfolioKpis.ts`) **e conserta dois defeitos da versão da branch**:
+
+1. a consulta de histórico **não paginava**. Cliente com muitos pedidos ficava fora do teto
+   de resposta do PostgREST e era contado como **primeira compra do mês** — número errado
+   na tela do vendedor. A `main` tem `historicoDoLote` com paginação e parada antecipada;
+2. `applySellerScope` vinha no **fim** da cadeia, onde `scripts/check-seller-scope.mjs` não
+   enxerga que a consulta está sob escopo. Na `main` ele entra logo após o `.from(...)`.
+
+### O que a medição de conteúdo mostrou — e o falso positivo que ela criou
+
+`comm -23` entre cada árvore e a da `main` acusava 6 a 8 arquivos "exclusivos" em **quase
+toda** branch, inclusive nas do dependabot e numa PR aberta minha. Não era trabalho perdido:
+são os **6 arquivos da aprovação pública legada**, que a `main` removeu de propósito na
+[#354](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/354).
+
+Conferido que a remoção não custou funcionalidade: **nenhuma rota apontava** para
+`PublicQuoteApprovalPage` antes da remoção (`git grep` em `fed706761^` sobre `src/routes/`
+volta vazio), e o fluxo público vivo está em `src/routes/config/public.ts:45` —
+`/approve/:token` → `QuoteApprovalPage`.
+
+Descontados esses 6, as branches **pós-re-raiz** deixam só **3 arquivos** distintos fora da
+`main`, todos resolvidos:
+
+| arquivo | veredito |
+|---|---|
+| `src/components/intelligence/TopCategoriesCard.tsx` | removido de propósito em `c3834edc4` ("órfão substituído por `TopProductFamiliesCard`"); `git grep` confirma que **nada na `main` o importa** |
+| `scripts/revisao/pendencias-2026-09-12.cenarios.tsx` | removido em `b391d84ec` ([#263](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/263)) |
+| `20261106135500_fix_cleanup_old_notifications_drop.sql` e `20261117091000_pin_custom_kit_atomically.sql` | na `main` renumeradas, mesmo slug. A da `main` é **superconjunto**: a de `cleanup_old_notifications` acrescenta o `CREATE OR REPLACE` que preserva o hardening de ACL, ausente na da branch |
+
+### Por que contagem de commit não serve para as refs antigas
+
+`git rev-list --count origin/main..<ref>` devolve ~19.400 para 54 refs. Não são 19.400
+commits perdidos: é a **re-raiz da `main`**. Essas refs não compartilham história com ela,
+então toda a árvore conta como ausente — o mesmo motivo pelo qual `git diff origin/main...`
+responde `no merge base`. Para elas, o que mede é conteúdo, e o veredito é o que este ledger
+já registrava.
+
+**Conclusão: 62 de 62 com base de certeza escrita.** Nenhuma ref restante contém trabalho
+que não esteja na `main` ou que não tenha obsolescência justificada aqui.
