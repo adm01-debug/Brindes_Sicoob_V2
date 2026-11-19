@@ -327,6 +327,32 @@ describe('useKitAutoSave', () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it('sair depois do autosave concluido nao regrava o kit', async () => {
+    // O timer ficava em `timerRef` depois de disparar. O desmonte lia essa
+    // referencia velha como edicao pendente e gravava de novo: outro
+    // `updated_at` sem mudanca de conteudo derrubava a versao conhecida por
+    // outra aba e a proxima edicao dela virava conflito.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T11:00:00.000Z' }, error: null });
+
+    const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
+    const { rerender, unmount } = renderHook(
+      ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+    rerender({ kit: kitCarregado, pronto: false });
+    rerender({ kit: kitCarregado, pronto: true });
+
+    rerender({ kit: { ...kitCarregado, name: 'Renomeado' }, pronto: true });
+    // deixa o autosave concluir de verdade antes de sair
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).toHaveBeenCalledTimes(1);
+
+    await act(async () => { unmount(); });
+
+    // sair sem editar de novo nao pode gerar um segundo UPDATE
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
   it('kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao', async () => {
     single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 

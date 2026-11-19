@@ -315,7 +315,12 @@ export function useKitAutoSave(
     if (newSnapshot === persistedSnapshotRef.current) return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => void saveToDb(newSnapshot), AUTO_SAVE_DELAY_MS);
+    // O timer solta a referência ao disparar: mantê-la faria o desmonte ler
+    // uma gravação JÁ FEITA como edição pendente e regravar o kit.
+    timerRef.current = setTimeout(() => {
+      timerRef.current = undefined;
+      void saveToDb(newSnapshot);
+    }, AUTO_SAVE_DELAY_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -335,6 +340,10 @@ export function useKitAutoSave(
     if (!timerRef.current) return;
     clearTimeout(timerRef.current);
     timerRef.current = undefined;
+    // Grava só o que ainda não está persistido. Um flush redundante geraria
+    // outro `updated_at` sem mudar conteúdo e derrubaria a versão que outra
+    // aba conhece, transformando a próxima edição dela em conflito.
+    if (latestSnapshotRef.current === persistedSnapshotRef.current) return;
     void saveToDbRef.current?.(latestSnapshotRef.current);
   }, []);
 
