@@ -123,43 +123,48 @@ describe('cobertura das raízes críticas', () => {
     expect(roots).toContain('e2e/flows/p0');
   });
 
-  it('todo spec P0 de E2E com skip tem orçamento — skip novo não entra sem declarar', () => {
-    // A direção que importa é esta: skip medido ⊆ orçado. Um arquivo que ganha
-    // skip sem entrada em BASELINE_BY_FILE passa a reprovar aqui.
-    //
-    // A direção inversa (orçado ⊆ medido) NÃO é cobrada, de propósito. Orçamento
-    // é teto, não cota a cumprir: arquivo abaixo do teto está em dia. Exigir
-    // igualdade fazia o CI reprovar quem REMOVE um skip sem baixar o orçamento
-    // no mesmo commit — justamente o conserto que o gate pede. E o script
-    // discordava deste teste: com o skip removido ele sai com EXIT=0 e diz
-    // "reduza o orçamento no próximo lote"
-    // (`scripts/check-critical-test-skip-budget.mjs:116-120`). Medido em
-    // 19/11/2026 removendo `e2e/flows/p0/08-password-recovery.spec.ts:154`:
-    // script EXIT=0, este teste reprovava. Duas vozes, ordens opostas.
-    const orcados = new Set(
-      Object.entries(BASELINE_BY_FILE)
-        .filter(([f, n]) => f.startsWith('e2e/flows/p0/') && (n as number) > 0)
-        .map(([f]) => f),
-    );
-    const medidos = (files('e2e/flows/p0') as string[])
+  // A regra, em UM lugar só. Os dois casos abaixo chamam esta função: o da
+  // árvore real e o sintético. Se alguém voltar a cobrar igualdade, terá de
+  // mexer aqui, e o caso sintético cai — que é o ponto de ele existir.
+  //
+  // A direção cobrada é `medido ⊆ orçado`: arquivo que ganha skip sem entrada
+  // em BASELINE_BY_FILE reprova. A inversa (`orçado ⊆ medido`) NÃO é cobrada,
+  // de propósito. Orçamento é teto, não cota a cumprir: arquivo abaixo do teto
+  // está em dia. Exigir igualdade reprovava quem REMOVE um skip sem baixar o
+  // orçamento no mesmo commit — justamente o conserto que o gate pede. E o
+  // script discordava deste teste: com o skip removido ele sai com EXIT=0 e diz
+  // "reduza o orçamento no próximo lote"
+  // (`scripts/check-critical-test-skip-budget.mjs:116-120`). Medido em
+  // 19/11/2026 removendo `e2e/flows/p0/08-password-recovery.spec.ts:154`:
+  // script EXIT=0, este teste reprovava. Duas vozes, ordens opostas.
+  const skipsNaoDeclarados = (orcados: readonly string[], medidos: readonly string[]) => {
+    const declarados = new Set(orcados);
+    return medidos.filter((f) => !declarados.has(f));
+  };
+
+  const orcamentoP0 = () =>
+    Object.entries(BASELINE_BY_FILE)
+      .filter(([f, n]) => f.startsWith('e2e/flows/p0/') && (n as number) > 0)
+      .map(([f]) => f);
+
+  const specsP0ComSkip = () =>
+    (files('e2e/flows/p0') as string[])
       .map((f: string) => f.split('\\').join('/'))
       .filter((f: string) => findSkips(readFileSync(f, 'utf8')).length > 0);
 
-    expect(medidos.filter((f: string) => !orcados.has(f))).toEqual([]);
+  it('todo spec P0 de E2E com skip tem orçamento — skip novo não entra sem declarar', () => {
+    expect(skipsNaoDeclarados(orcamentoP0(), specsP0ComSkip())).toEqual([]);
   });
 
-  it('a regra aceita o conserto e recusa o skip não declarado', () => {
-    // Trava a regressão acima em dado sintético, porque hoje nenhum spec P0
-    // está nessa situação: sobre a árvore real o caso passaria vazio e não
-    // provaria nada. `naoDeclarados` é a mesma regra usada no caso anterior.
-    const naoDeclarados = (orcados: string[], medidos: string[]) =>
-      medidos.filter((f) => !new Set(orcados).has(f));
+  it('a mesma regra aceita o conserto e recusa o skip não declarado', () => {
+    // Em dado sintético porque hoje nenhum spec P0 está sem skip: sobre a
+    // árvore real este caso passaria vazio e não provaria nada.
 
     // Conserto: arquivo orçado que ficou sem skip. Não pode reprovar.
-    expect(naoDeclarados(['p0/a.spec.ts', 'p0/b.spec.ts'], ['p0/a.spec.ts'])).toEqual([]);
+    expect(skipsNaoDeclarados(['p0/a.spec.ts', 'p0/b.spec.ts'], ['p0/a.spec.ts'])).toEqual([]);
 
     // Skip novo sem entrada no orçamento. Tem de reprovar.
-    expect(naoDeclarados(['p0/a.spec.ts'], ['p0/a.spec.ts', 'p0/novo.spec.ts']))
+    expect(skipsNaoDeclarados(['p0/a.spec.ts'], ['p0/a.spec.ts', 'p0/novo.spec.ts']))
       .toEqual(['p0/novo.spec.ts']);
   });
 
