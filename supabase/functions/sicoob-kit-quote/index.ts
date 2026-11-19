@@ -12,7 +12,8 @@ import {
   type VerifiedKitPersonalization,
 } from './catalog.ts';
 import { hashKitQuoteIntent } from './idempotency.ts';
-import { handleQuotePriceAttestation } from '../quote-price-attestation/index.ts';
+import { handleQuotePriceAttestation } from '../quote-price-attestation/handler.ts';
+import { readBoundedBody } from '../quote-price-attestation/contract.ts';
 import {
   EXTERNAL_ACTIVE_PRODUCT_FILTER,
   EXTERNAL_PRODUCT_CORE_SELECT,
@@ -89,15 +90,17 @@ const LIMITE_CORPO_ATESTADO = 524_288;
  *
  * O desvio acontece antes de qualquer trabalho de kit, e só quando o corpo traz
  * `op: "price-attestation"`. O corpo é lido de um clone, para o handler do
- * atesto poder lê-lo de novo com o próprio limite; o `Content-Length` é
- * conferido antes, para um corpo gigante não ser bufferizado à toa.
+ * atesto poder lê-lo de novo com o próprio limite, e a leitura é LIMITADA por
+ * `readBoundedBody`: conferir só o `Content-Length` deixaria passar requisição
+ * sem esse cabeçalho, que seria bufferizada inteira antes de qualquer
+ * autenticação.
  */
 async function desviarParaAtestadoDePreco(req: Request): Promise<Response | null> {
-  const tamanho = Number(req.headers.get('content-length') ?? '0');
-  if (Number.isFinite(tamanho) && tamanho > LIMITE_CORPO_ATESTADO) return null;
+  const bruto = await readBoundedBody(req.clone(), LIMITE_CORPO_ATESTADO);
+  if (bruto === null || bruto === '') return null;
   let corpo: unknown;
   try {
-    corpo = await req.clone().json();
+    corpo = JSON.parse(bruto);
   } catch {
     return null;
   }

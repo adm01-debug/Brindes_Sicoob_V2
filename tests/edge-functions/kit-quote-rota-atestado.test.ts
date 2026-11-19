@@ -11,7 +11,8 @@ import { ROTA_ATESTADO_DE_PRECO } from '@/services/QuoteService';
 
 const ROOT = resolve(__dirname, '../..');
 const kitQuote = readFileSync(resolve(ROOT, 'supabase/functions/sicoob-kit-quote/index.ts'), 'utf8');
-const atestado = readFileSync(resolve(ROOT, 'supabase/functions/quote-price-attestation/index.ts'), 'utf8');
+const atestadoHandler = readFileSync(resolve(ROOT, 'supabase/functions/quote-price-attestation/handler.ts'), 'utf8');
+const atestadoEntrada = readFileSync(resolve(ROOT, 'supabase/functions/quote-price-attestation/index.ts'), 'utf8');
 const quoteService = readFileSync(resolve(ROOT, 'src/services/QuoteService.ts'), 'utf8');
 
 describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
@@ -21,9 +22,25 @@ describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
   });
 
   it('o handler do atesto é exportado, para poder ser servido dos dois lugares', () => {
-    expect(atestado).toContain('export async function handleQuotePriceAttestation');
+    expect(atestadoHandler).toContain('export async function handleQuotePriceAttestation');
+  });
+
+  it('o módulo importado pela hospedeira NÃO sobe servidor', () => {
+    // Regressão: o handler morava no `index.ts`, que chama `Deno.serve` no topo.
+    // Importá-lo de `sicoob-kit-quote` subia DOIS servidores no mesmo processo,
+    // disputando o listener padrão — nem o atesto nem o kit subiam.
+    expect(atestadoHandler).not.toContain('Deno.serve');
+    expect(kitQuote).toContain("from '../quote-price-attestation/handler.ts'");
+    expect(kitQuote).not.toContain("from '../quote-price-attestation/index.ts'");
+  });
+
+  it('cada ponto de entrada tem exatamente um Deno.serve', () => {
+    const conta = (fonte: string) => fonte.match(/Deno\.serve\(/g)?.length ?? 0;
+    expect(conta(atestadoEntrada)).toBe(1);
+    expect(conta(kitQuote)).toBe(1);
     // A função original segue publicável: quando houver vaga, nada muda nela.
-    expect(atestado).toContain("Deno.serve(withStructuredLogging('quote-price-attestation', handleQuotePriceAttestation))");
+    expect(atestadoEntrada).toContain("Deno.serve(withStructuredLogging('quote-price-attestation', handleQuotePriceAttestation))");
+    expect(atestadoEntrada).toContain("from './handler.ts'");
   });
 
   it('o desvio acontece antes de qualquer trabalho de kit', () => {
@@ -34,13 +51,15 @@ describe('rota do atesto de preço dentro de sicoob-kit-quote', () => {
   });
 
   it('o corpo é lido de um clone, para o handler do atesto poder lê-lo de novo', () => {
-    expect(kitQuote).toContain('req.clone().json()');
+    expect(kitQuote).toContain('req.clone()');
     expect(kitQuote).toContain('return await handleQuotePriceAttestation(req)');
   });
 
-  it('corpo acima do limite não é bufferizado para inspeção', () => {
-    expect(kitQuote).toContain("req.headers.get('content-length')");
-    expect(kitQuote).toContain('LIMITE_CORPO_ATESTADO');
+  it('a inspeção do corpo é limitada, não só conferida pelo Content-Length', () => {
+    // Conferir só o cabeçalho deixaria passar requisição SEM `Content-Length`,
+    // que seria bufferizada inteira antes de qualquer autenticação.
+    expect(kitQuote).toContain('readBoundedBody(req.clone(), LIMITE_CORPO_ATESTADO)');
+    expect(kitQuote).not.toContain('req.clone().json()');
   });
 
   it('hospedeira e hóspede têm a MESMA autorização — hospedar não pode afrouxar o acesso', () => {
