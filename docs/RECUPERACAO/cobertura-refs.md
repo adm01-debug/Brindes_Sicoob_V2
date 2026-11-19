@@ -144,10 +144,23 @@ existem na `main`**. Cruzando os 138 com o ledger inteiro, 119 já estavam citad
 
 ### 13 arquivos de teste — executados contra a `main`, 18/11/2026
 
-**Andamento (19/11/2026):** 7 dos 13 voltaram pelas seis fatias abaixo, **com a regra
-que eles cobram**, não só copiados. Os outros 6 foram conferidos de novo em 19/11 e
-**não estavam na `main` nem em PR alguma** — o registro anterior, que os dava por
-recuperados, estava errado. Destino deles no fim desta seção.
+**Andamento (19/11/2026), medido arquivo a arquivo:** os **13 voltaram** pelas seis
+fatias abaixo, **com a regra que eles cobram**, não só copiados — **11 já estão na
+`main`** (entraram com a [#361](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/361),
+conferido com `git cat-file -e origin/main:<arquivo>`) e **2** —
+`tests/components/onboarding/OnboardingTour.escape.test.tsx` e
+`tests/routes/app-router-parity.test.tsx` — estão na branch da
+[#352](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/352), aguardando merge.
+
+Os **6 arquivos da seção "Os 6 restantes"** no fim desta seção **não são parte dos 13**:
+são um conjunto distinto, achado na re-conferência da ref em 19/11. A interseção entre as
+duas listas é **vazia** (`comm -12` sobre as duas listas ordenadas → 0 linhas), e a ref
+contribui portanto **19 arquivos de teste**, não 13.
+
+> Correção de duas afirmações minhas anteriores neste mesmo documento: primeiro escrevi
+> "os 13 entraram" sem distinguir o que estava na `main` do que estava em PR; depois
+> "corrigi" para "7 dos 13 entraram e os outros 6 estão na #363", o que trocou um erro por
+> outro — somou conjuntos diferentes. A contagem acima é a medida, não a memória.
 
 | fatia | PR | o que entrou |
 |---|---|---|
@@ -247,12 +260,11 @@ aplicaram em dois pontos: nenhum número inventado, nenhum selo de "dado real" s
 dado ausente. São, portanto, a continuação natural desse trabalho, não refugo.
 
 Ficam recuperáveis porque a origem está escrita: `git show
-origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. Dos 13, **7 entraram pelas
-fatias 1 a 6** (PRs #346 a #352, hoje consolidadas na **#361** mais a **#352**) e os
-**outros 6 estão na #363** — conforme a tabela "Os 6 restantes" acima; a afirmação
-anterior de que "os 13 entraram" estava errada e está corrigida aqui. A ref só pode ser
-apagada quando **#361**, **#352** e **#363** estiverem na `main` e os 6 relatórios
-abaixo tiverem entrado.
+origin/claude/fix-prod-cors-audit-261118-1034:<caminho>`. Os **13 entraram** pelas fatias
+1 a 6 (PRs #346 a #352): 11 já na `main` pela **#361**, 2 na **#352**. Os **6 outros**
+arquivos (conjunto distinto, ver "Os 6 restantes") estão na **#363** e na **#357**. A ref
+só pode ser apagada quando **#352**, **#357** e **#363** estiverem na `main` e os 6
+relatórios abaixo tiverem entrado.
 
 ### 6 relatórios de execução, só nessa ref
 
@@ -274,14 +286,18 @@ sem isto é o que o ledger existe para impedir.
 ### `claude/feat-modulos-edge-relatorios-261117-0950` (PR #292, fechada) — **LIBERADA em 19/11/2026**
 
 Comparação feita com `git diff --diff-filter=A origin/main <branch>` e `diff`
-arquivo a arquivo:
+arquivo a arquivo. Para ser reproduzível, os dois lados: branch
+`claude/feat-modulos-edge-relatorios-261117-0950` e a `main` de 19/11/2026 — resolva os
+SHAs com `git rev-parse origin/claude/feat-modulos-edge-relatorios-261117-0950` e
+`git rev-parse origin/main`, porque a `main` avança. O resultado tem **uma exceção
+esperada**, marcada na tabela: `TopCategoriesCard.tsx` aparece como ausente.
 
 | arquivo | resultado |
 |---|---|
 | `supabase/functions/sicoob-document-ingest/registration-state.ts` | **idêntico byte a byte** ao da `main` |
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | **idêntico byte a byte** ao da `main` |
 | `supabase/functions/sicoob-document-ingest/index.ts` | a `main` é **superset**: o único delta é o campo `sha256` em `evidence`, que **só a `main` tem**. A branch é a versão *anterior* à migration `20261118130700`; aplicá-la hoje derrubaria 100% dos uploads de NF, XML e comprovante (a RPC levanta `22023` e a constraint `sicoob_document_registry_scan_evidence_sha256_match` recusa) |
-| `src/components/intelligence/TopCategoriesCard.tsx` | único arquivo ausente da `main`. **Superado** por `TopProductFamiliesCard.tsx`: mesma fonte (`product_views`), mesma heurística (primeiro termo do nome), e melhor — recebe os dados por prop em vez de consultar dentro do cartão, e tem estados de erro e `onRetry` que o antigo não tinha |
+| `src/components/intelligence/TopCategoriesCard.tsx` | único arquivo ausente da `main` — é a **exceção conhecida** desta comparação: quem rodar o `git diff --diff-filter=A` acima verá este arquivo listado (e o seu export ausente), e isso **não** é perda de trabalho. **Superado** por `TopProductFamiliesCard.tsx`: mesma fonte (`product_views`), mesma heurística (primeiro termo do nome), e melhor — recebe os dados por prop em vez de consultar dentro do cartão, e tem estados de erro e `onRetry` que o antigo não tinha |
 | todos os demais | existem na `main` |
 
 **Conclusão:** zero trabalho a recuperar. A máquina de estado que esta branch
@@ -397,7 +413,12 @@ o trabalho recuperado ainda está em PR aberta, não na `main`. O portão é por
 | as 6 da pilha de BI (`fix-bi-*`, `recover-bi-stack`) | **#361** entrar na `main` |
 | `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem |
 | as demais `claude/*` com PR aberta | a PR correspondente entrar |
-| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) |
+| refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) **e** cada item da ref ter veredito escrito aqui — incorporado ou obsoleto justificado |
+
+A última linha não é atalho: a regra central está em
+[`docs/RECUPERACAO/README.md`](./README.md) e exige, para **toda** ref, que cada item
+associado esteja incorporado ou tenha obsolescência justificada. A entrada da #315
+publica os vereditos; ela não os substitui.
 
 ## Quarta varredura: rotas (19/11/2026)
 
