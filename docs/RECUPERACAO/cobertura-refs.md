@@ -811,3 +811,81 @@ só testava `POST`), nas duas formas de chamada (string e `Request`), exige `GET
 **endpoint sem HTTPS** nem para **falha fechada por configuração ausente**, embora
 `scripts/e2e-target.mjs:34` e `:22` recusem os dois. Recuperado na #369, com prova de que
 trava: removendo cada guarda, caem 1 e 5 casos.
+
+### Veredito por ref — as 62, uma linha cada
+
+A seção acima adjudica o conjunto: os **243 caminhos** ausentes da `main`, 235 com cobertura
+e os 8 restantes um a um. Como os exclusivos de **toda** ref são subconjunto desses 243, cada
+ref herda veredito da adjudicação — e aqui ela está escrita linha a linha, sem agregado.
+
+A coluna "excl." é a contagem de caminhos daquela ref que não existem na `main`. Ela **não**
+mede trabalho perdido: inclui os 6 que a #354 removeu de propósito e, nas refs pré-re-raiz,
+a árvore anterior inteira. Serve para localizar, não para concluir.
+
+| ref | PR(s) | estado | excl. | base da certeza |
+|---|---|---|---|---|
+| `audit/revisao-plano-20260924` | #31 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+| `audit/revisao-plano-20261001` | #85 | PR fechada sem merge | 21 | veredito escrito neste ledger |
+| `claude/chore-typecheck-baseline-260929-1157` | #81 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/ci-allowlist-crm-db-bridge-261118-1515` | #311 | PR aberta | 6 | em curso nesta sessão |
+| `claude/feat-kpis-primeira-compra-retencao-261118-1800` | — | sem PR | 6 | veredito individual acima |
+| `claude/fix-a028-migration-replay-261031-1541` | #192 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/fix-a028-migration-replay-261106-1355` | #201 | PR fechada sem merge | 9 | veredito escrito neste ledger |
+| `claude/fix-bi-selo-dado-real-261118-2025` | #326 | PR fechada sem merge | 6 | veredito escrito neste ledger |
+| `claude/fix-drop-allow-all-rls-260929-1342` | #83 | PR fechada sem merge | 21 | veredito escrito neste ledger |
+| `claude/fix-kanban-realtime-260929-0420` | #80 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-pin-kit-atomico-261117-0849` | #289 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/fix-seller-scope-baseline-260929-1300` | #82 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-seller-scope-deno-260929-1445` | #84 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `claude/fix-storage-delete-proposals-261106-2007` | #209 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `claude/hopeful-mccarthy-8rqrqw` | #141, #139, #137, #136, #135, #134, #133, #132, #131, #130, #129, #126 | PR mergeada | 8 | conteúdo na `main` pelo merge |
+| `claude/project-workflows-analysis-5n6hva` | #53 | PR mergeada | 20 | conteúdo na `main` pelo merge |
+| `computador_local` | — | sem PR | 0 | veredito individual acima |
+| `contexto` | — | sem PR | 815 | artefato gerado — **não se apaga** |
+| `dependabot/github_actions/peter-evans/create-pull-request-8.1.3` | #283 | PR aberta | 6 | em curso nesta sessão |
+| `dependabot/npm_and_yarn/development-all-ccf808f959` | #322 | PR aberta | 0 | em curso nesta sessão |
+| `dependabot/npm_and_yarn/production-minor-patch-585bd01e94` | #281 | PR aberta | 6 | em curso nesta sessão |
+| `devin/1791190000-ux-onda1` | #100 | PR fechada sem merge | 15 | veredito escrito neste ledger |
+| `devin/1791201000-ux-onda2` | #101 | PR mergeada | 15 | conteúdo na `main` pelo merge |
+| `docs/ci-status-309799` | #172 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `docs/hermes-1791891351-auditoria-planejamento` | #105 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `docs/hermes-h459513-branch-protection` | #188 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `docs/plano150-20260927` | #44 | PR mergeada | 21 | conteúdo na `main` pelo merge |
+| `execucao/sicoob-20260911130857` | #7, #6, #5 | PR mergeada | 73 | conteúdo na `main` pelo merge |
+| `feat/pdf-playwright-scripts-art-261108-0516` | #226 | PR mergeada | 8 | conteúdo na `main` pelo merge |
+| `fix/ci-only-20261029` | #165 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/ci-workflows-h290325` | #164 | PR fechada sem merge | 10 | veredito escrito neste ledger |
+| `fix/ci-workflows-h369570` | #176 | PR fechada sem merge | 18 | veredito escrito neste ledger |
+| `fix/execucao-plano-20260928` | #74 | PR mergeada | 20 | conteúdo na `main` pelo merge |
+| `fix/execucao-plano-final-20260928` | #75 | PR fechada sem merge | 20 | veredito escrito neste ledger |
+| `fix/hermes-20261029-undici-cve` | #161 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-272703-ci-audit` | #158 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-61031-plan-lote` | #187 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-bi-share-hardening-20261028` | #150 | PR fechada sem merge | 14 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `fix/hermes-docs-all-20261028` | #148 | PR fechada sem merge | 10 | veredito escrito neste ledger |
+| `fix/hermes-h015416-dados-reais` | #112 | PR fechada sem merge | 55 | veredito escrito neste ledger |
+| `fix/hermes-h097437-ci-workflows` | #145 | PR fechada sem merge | 9 | veredito escrito neste ledger |
+| `fix/hermes-h164991-simulacao-final` | #119 | PR fechada sem merge | 115 | veredito escrito neste ledger |
+| `fix/hermes-h206502-e2e-codeql` | #94 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h237459-sync-audit` | #154 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h247355-ci-dependencies` | #157 | PR fechada sem merge | 25 | veredito escrito neste ledger · contém 4 dos 8 adjudicados |
+| `fix/hermes-h275576-codeql-consistencia` | #160 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h301937-e2e-hosted` | #97 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h393620-docs-audit-20261031` | #179 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h393620-inteligencia-real` | #178 | PR fechada sem merge | 11 | veredito escrito neste ledger |
+| `fix/hermes-h423368-logistics-shipment-pagination` | #181 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h425359-undici-security` | #182 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-h432507-npm-audit` | #185 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-revisao-scripts-261108-0604` | #228 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/hermes-sicoob-deploy-verification-20261028` | #149 | PR fechada sem merge | 8 | veredito escrito neste ledger |
+| `fix/quote-price-authority-311333` | #175 | PR fechada sem merge | 11 | veredito escrito neste ledger · contém 1 dos 8 adjudicados |
+| `fix/sicoob-aprovacao-legada-20260923` | #26 | PR mergeada | 17 | conteúdo na `main` pelo merge |
+| `fix/sicoob-conclusao-20260922` | #18 | PR mergeada | 22 | conteúdo na `main` pelo merge |
+| `fix/sicoob-csp-202635` | #27 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+| `fix/sicoob-intelligence-truth-20260924` | #36 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+| `fix/sicoob-p0-operacional-20260923` | #24 | PR mergeada | 16 | conteúdo na `main` pelo merge |
+| `fix/sicoob-p0-seguranca-20260923` | #22 | PR mergeada | 24 | conteúdo na `main` pelo merge |
+| `fix/sicoob-trust-data-20260924` | #34 | PR mergeada | 23 | conteúdo na `main` pelo merge |
+
+**62 de 62 com veredito escrito.** As 4 refs apagadas em 19/11 (seção "Sétima varredura")
+não aparecem aqui porque já não existem; o veredito delas está lá.
