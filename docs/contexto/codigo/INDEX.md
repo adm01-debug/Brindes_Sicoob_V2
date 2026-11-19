@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `f21dbfd5f241a87bb9fd8536dff24516a306f388` (2026-11-19T07:29:56Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ce9014bbfac9664ecc050690fd3128a0067da245` (2026-11-19T07:55:29Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4525 |
 | arquivos_codigo | 3116 |
-| linhas_codigo | 490272 |
+| linhas_codigo | 490291 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29573 nós · 54290 arestas · 2099 comunidades · grafo do commit `f21dbfd5`
-- comunidades maiores: ref_components (619), ref_integrations (472), ref_lib (329), lucide-react (245), react (214), ref_node_path (187), react-router-dom (183), framer-motion (173), date-fns (170), ai-usage.ts (165), getCorsHeaders (161), external-db-bridge/index.ts (153)
+- 29580 nós · 54302 arestas · 2103 comunidades · grafo do commit `ce9014bb`
+- comunidades maiores: ref_hooks (514), ref_lib (268), ref_integrations (241), sonner (222), lucide-react (213), react (206), ref_contexts (196), ref_components (195), getCorsHeaders (195), react-router-dom (191), framer-motion (187), date-fns (181)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (51)
-- docs/correcoes-validacao-2026-09-14.md (50)
+- docs/plano-melhorias-50-etapas.md (49)
+- docs/correcoes-validacao-2026-09-14.md (48)
 - package.json (22)
 - PENDENCIAS.md (21)
 - scripts/db/apply-sicoob-migrations.mjs (21)
@@ -694,6 +694,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `ce9014b` test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)
+- 2026-11-19 `a202373` docs(recuperação): veredito medido para as 62 refs restantes (#367)
 - 2026-11-19 `f21dbfd` fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)
 - 2026-11-19 `138474b` chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)
 - 2026-11-19 `1059478` fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)
@@ -707,8 +709,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `965419b` fix(orçamento): salvar deixa de manter o aviso de "alterações não salvas" (#331)
 - 2026-11-19 `b364a12` ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)
 - 2026-11-19 `95aa5bd` docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)
-- 2026-11-19 `87b4f99` test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)
-- 2026-11-19 `e520ace` docs(email): preserva os modelos da PR #4 sem reintroduzir o "enviado" falso (#337)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

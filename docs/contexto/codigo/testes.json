@@ -6630,11 +6630,11 @@
   {
    "arquivo": "tests/scripts/e2e-target.test.ts",
    "tipo": "unit",
-   "linhas": 36,
+   "linhas": 55,
    "testa": [
     "scripts/e2e-target.mjs"
    ],
-   "casos": 2
+   "casos": 3
   },
   {
    "arquivo": "tests/scripts/edge-runtime-contract.test.ts",

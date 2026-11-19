@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
+  "sha": "ce9014bbfac9664ecc050690fd3128a0067da245",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 07:30 UTC",
+  "generated_at": "2026-11-19 08:19 UTC",
   "files_total": 4528,
   "code_files": 3781,
-  "code_lines": 552851
+  "code_lines": 552870
  },
  "version": "1.3.2",
- "facts_hash": "1bd7b4842f09be4a",
+ "facts_hash": "f8af679e571512b6",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -65633,7 +65633,7 @@
   {
    "module": "tests",
    "files": 638,
-   "lines": 85741,
+   "lines": 85760,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -135992,6 +135992,10 @@
    {
     "file": "tests/scripts/e2e-target.test.ts",
     "name": "aceita somente a URL HTTPS do projeto explicitamente permitido"
+   },
+   {
+    "file": "tests/scripts/e2e-target.test.ts",
+    "name": "falha fechado quando falta %s"
    },
    {
     "file": "tests/scripts/edge-runtime-contract.test.ts",
@@ -250605,11 +250609,12 @@
   },
   "tests/scripts/e2e-target.test.ts": {
    "path": "tests/scripts/e2e-target.test.ts",
-   "lines": 36,
+   "lines": 55,
    "is_test": true,
    "tests": [
     "guarda de destino E2E",
-    "aceita somente a URL HTTPS do projeto explicitamente permitido"
+    "aceita somente a URL HTTPS do projeto explicitamente permitido",
+    "falha fechado quando falta %s"
    ],
    "uses_service_role": true
   },
@@ -252281,10 +252286,28 @@
   }
  },
  "git": {
-  "sha": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
+  "sha": "ce9014bbfac9664ecc050690fd3128a0067da245",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ce9014b",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)",
+    "files": [
+     "tests/scripts/e2e-target.test.ts"
+    ]
+   },
+   {
+    "sha": "a202373",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(recuperação): veredito medido para as 62 refs restantes (#367)",
+    "files": [
+     "docs/RECUPERACAO/cobertura-refs.md"
+    ]
+   },
    {
     "sha": "f21dbfd",
     "date": "2026-11-19",
@@ -252778,38 +252801,15 @@
      "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
      "tests/lib/bi/categoria-sem-comparativo.test.ts"
     ]
-   },
-   {
-    "sha": "1ad25e3",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)",
-    "files": [
-     "scripts/qa/postgres_ready.py",
-     "scripts/qa/simular-acl-efetiva.py",
-     "scripts/qa/simular-controles-auditoria.py",
-     "tests/scripts/qa-registry-fallback.test.ts",
-     "tests/scripts/qa/test_start_supabase_postgres.py"
-    ]
-   },
-   {
-    "sha": "d342a59",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "docs(ci): recupera três causas de falha que só existiam nas PRs #149 e #158 (#340)",
-    "files": [
-     "PENDENCIAS.md",
-     "RELATORIO_CI.md"
-    ]
    }
   ],
   "hot_files": [
    [
-    "tests/scripts/check-critical-test-skip-budget.test.ts",
-    2
+    "docs/RECUPERACAO/cobertura-refs.md",
+    3
    ],
    [
-    "docs/RECUPERACAO/cobertura-refs.md",
+    "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
    ],
    [
@@ -252817,8 +252817,8 @@
     2
    ],
    [
-    "PENDENCIAS.md",
-    2
+    "tests/scripts/e2e-target.test.ts",
+    1
    ],
    [
     "src/components/products/ProductCard.tsx",

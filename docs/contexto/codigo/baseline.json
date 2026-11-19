@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "f21dbfd5f241a87bb9fd8536dff24516a306f388",
+  "commit": "ce9014bbfac9664ecc050690fd3128a0067da245",
   "branch": "main",
-  "data_commit": "2026-11-19T07:29:56Z",
+  "data_commit": "2026-11-19T07:55:29Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ce9014b",
+    "data": "2026-11-19",
+    "assunto": "test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)"
+   },
+   {
+    "sha": "a202373",
+    "data": "2026-11-19",
+    "assunto": "docs(recuperação): veredito medido para as 62 refs restantes (#367)"
+   },
    {
     "sha": "f21dbfd",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "3da8611",
     "data": "2026-11-19",
     "assunto": "test(recuperação): traz 5 suítes que só existiam na branch de produção (#363)"
-   },
-   {
-    "sha": "f9b0686",
-    "data": "2026-11-19",
-    "assunto": "docs(recuperação): ledger com veredito de cada branch e PR fora da main (#315)"
-   },
-   {
-    "sha": "489c13d",
-    "data": "2026-11-19",
-    "assunto": "fix(navegação): voltar deixa de afirmar alteração não salva que não existe (#357)"
    }
   ],
-  "arquivos_mudados_7d": 610,
+  "arquivos_mudados_7d": 611,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 51
+    "mudancas": 49
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 50
+    "mudancas": 48
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 170
+    "commits": 172
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 4525,
   "arquivos_codigo": 3116,
-  "linhas_codigo": 490272,
+  "linhas_codigo": 490291,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 33,
-   "linhas": 3153
+   "linhas": 3172
   },
   "tests/search": {
    "arquivos": 1,
