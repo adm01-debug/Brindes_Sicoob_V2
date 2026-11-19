@@ -10158,7 +10158,7 @@
     "OrderFilters"
    ],
    "export_default": null,
-   "linhas": 217,
+   "linhas": 242,
    "dominio": "components/orders",
    "hooks_locais": [],
    "tabelas": [],
@@ -17605,7 +17605,7 @@
     "OrdersPage"
    ],
    "export_default": null,
-   "linhas": 265,
+   "linhas": 340,
    "dominio": "pages",
    "hooks_locais": [
     "useAuth",

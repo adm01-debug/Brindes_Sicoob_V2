@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0f4d547314` · branch `main` · 2026-11-19 23:21 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `449faf1587` · branch `main` · 2026-11-19 23:36 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6981 testes em 701 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6989 testes em 702 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5972,6 +5972,7 @@ _nenhum item encontrado_
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
 | `tests/pages/AdminLoginAttemptsPage.test.tsx` | 8 | AdminLoginAttemptsPage · renders the page title · renders stats cards · renders stat values … |
 | `tests/pages/GestorCompras.metrics.test.tsx` | 8 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
+| `tests/pages/orders-filtros-na-url.test.ts` | 8 | filtros de pedidos na URL · lê busca, status, empresa e página · sem query, devolve o padrão e a primeira página · data é lida como dia local — fuso negativo não pode andar um dia … |
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
 | `tests/scripts/check-seller-scope.test.ts` | 8 | analyzeSource — consulta SEM escopo precisa ser acusada · em Promise.all cada query é avaliada sozinha (a escopada não  · analyzeSource — consulta COM escopo ou justificada passa · informa a linha e a tabela da violação … |
 | `tests/scripts/classify-migration-backlog.test.ts` | 8 | classificador do backlog de migrations · ignora operações perigosas mencionadas apenas em comentários · bloqueia DDL destrutivo e DML de remoção · prioriza revisão de policy aberta e SECURITY DEFINER sem search_path … |
@@ -6011,8 +6012,7 @@ _nenhum item encontrado_
 | `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
-| `tests/lib/theme-fonts-preload.test.ts` | 7 | index.html — preload de fontes · carrega Plus Jakarta Sans (default sans) · carrega Outfit (default display) · carrega Inter (skins Opera GX → família Cloudflare Sans) … |
-| … +401 linhas — lista completa em `context.json` | | |
+| … +402 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

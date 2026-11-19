@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
+  "commit": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
   "branch": "main",
-  "data_commit": "2026-11-19T23:21:19Z",
+  "data_commit": "2026-11-19T23:35:52Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "449faf1",
+    "data": "2026-11-19",
+    "assunto": "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)"
+   },
    {
     "sha": "0f4d547",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "a5b6fcc",
     "data": "2026-11-19",
     "assunto": "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)"
-   },
-   {
-    "sha": "7ec2508",
-    "data": "2026-11-19",
-    "assunto": "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)"
    }
   ],
-  "arquivos_mudados_7d": 566,
+  "arquivos_mudados_7d": 569,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 34
+    "mudancas": 33
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 33
+    "mudancas": 32
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 185
+    "commits": 186
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4546,
-  "arquivos_codigo": 3135,
-  "linhas_codigo": 493245,
+  "arquivos_total": 4547,
+  "arquivos_codigo": 3136,
+  "linhas_codigo": 493428,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 882,
+  "testes": 883,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 285
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1131,
-   "linhas": 166758
+   "linhas": 166783
   },
   "src/constants": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50660
+   "linhas": 50735
   },
   "src/routes": {
    "arquivos": 9,
@@ -939,8 +939,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 27,
-   "linhas": 3201
+   "arquivos": 28,
+   "linhas": 3284
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

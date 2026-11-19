@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 882,
+ "total": 883,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 653
+  "unit": 654
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 635
+   "arquivos": 636
   },
   {
    "padrao": "e2e/",
@@ -6206,6 +6206,15 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/pages/orders-filtros-na-url.test.ts",
+   "tipo": "unit",
+   "linhas": 83,
+   "testa": [
+    "src/pages/OrdersPage.tsx"
+   ],
+   "casos": 7
+  },
+  {
    "arquivo": "tests/pages/ProductDetail.test.ts",
    "tipo": "unit",
    "linhas": 240,
@@ -8087,6 +8096,7 @@
   "src/pages/MagicUp.tsx": 1,
   "src/pages/MockupHistoryPage.tsx": 1,
   "src/pages/NotFound.tsx": 2,
+  "src/pages/OrdersPage.tsx": 1,
   "src/pages/PWAInstallPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
   "src/pages/QuotesListPage.tsx": 1,
@@ -8235,7 +8245,6 @@
    "src/pages/NoveltiesPage.tsx",
    "src/pages/OrderAuditPage.tsx",
    "src/pages/OrderDetailPage.tsx",
-   "src/pages/OrdersPage.tsx",
    "src/pages/PermissionsPage.tsx",
    "src/pages/PriceSimulatorPage.tsx",
    "src/pages/ProductDetail.tsx",

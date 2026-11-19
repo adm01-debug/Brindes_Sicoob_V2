@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (635)",
+   "tests/ (636)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)",
    "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)",
    "test(edge): catraca para o espalhamento de versões do supabase-js (#377)",
    "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)",
-   "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)",
-   "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)"
+   "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

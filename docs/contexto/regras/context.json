@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
+  "sha": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 23:21 UTC",
-  "files_total": 4549,
-  "code_files": 3801,
-  "code_lines": 555846
+  "generated_at": "2026-11-19 23:36 UTC",
+  "files_total": 4550,
+  "code_files": 3802,
+  "code_lines": 556029
  },
  "version": "1.3.2",
- "facts_hash": "89ab8b091670a400",
+ "facts_hash": "e32adbf9ff2fb0ec",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1478,
+   ".ts": 1479,
    ".tsx": 1441,
    ".sql": 684,
    ".mjs": 139,
@@ -63945,7 +63945,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166758,
+   "lines": 166783,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64724,7 +64724,7 @@
   {
    "module": "src/pages",
    "files": 195,
-   "lines": 50660,
+   "lines": 50735,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -64818,7 +64818,7 @@
     "NoveltiesPage.tsx: NoveltiesPage",
     "OrderAuditPage.tsx: OrderAuditPage",
     "OrderDetailPage.tsx: OrderDetailPage",
-    "OrdersPage.tsx: OrdersPage",
+    "OrdersPage.tsx: filtersFromSearchParams, filtersToSearchParams, OrdersPage",
     "PWAInstallPage.tsx: PWAInstallPage",
     "PermissionsPage.tsx: PermissionsPage",
     "PersonalizationSimulator.tsx: PersonalizationSimulator",
@@ -65718,8 +65718,8 @@
   },
   {
    "module": "tests",
-   "files": 656,
-   "lines": 88110,
+   "files": 657,
+   "lines": 88193,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -97409,12 +97409,6 @@
     "file": "src/components/orders/OrderFilters.tsx",
     "field": "status",
     "value": "all",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/orders/OrderFilters.tsx",
-    "field": "status",
-    "value": "all",
     "kind": "compara"
    },
    {
@@ -101871,14 +101865,14 @@
    },
    {
     "file": "src/pages/OrdersPage.tsx",
-    "field": "status",
-    "value": "all",
-    "kind": "escreve"
+    "field": "type",
+    "value": "excel",
+    "kind": "compara"
    },
    {
     "file": "src/pages/OrdersPage.tsx",
-    "field": "type",
-    "value": "excel",
+    "field": "status",
+    "value": "all",
     "kind": "compara"
    },
    {
@@ -135178,6 +135172,38 @@
     "name": "para de segurar assim que o estado deixa de ter pendencia"
    },
    {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "filtros de pedidos na URL"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "lê busca, status, empresa e página"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "sem query, devolve o padrão e a primeira página"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "data é lida como dia local — fuso negativo não pode andar um dia"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "data inválida é descartada em vez de virar Invalid Date"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "pagina=${pagina || "
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "escreve só o que difere do padrão"
+   },
+   {
+    "file": "tests/pages/orders-filtros-na-url.test.ts",
+    "name": "ida e volta preserva o filtro inteiro"
+   },
+   {
     "file": "tests/pages/quotes-list-filtros-na-url.test.tsx",
     "name": "filtros da lista de orçamentos na URL"
    },
@@ -159872,6 +159898,7 @@
       "compara:src/components/inventory/StockFilterToolbar.tsx",
       "compara:src/components/orders/OrderFilters.tsx",
       "compara:src/hooks/useConnectionsOverviewFilters.ts",
+      "compara:src/pages/OrdersPage.tsx",
       "compara:src/pages/admin/AdminCampanhasPage.tsx",
       "compara:src/services/OrderService.ts",
       "compara:src/services/sicoob/orderService.ts",
@@ -159879,7 +159906,6 @@
       "escreve:src/components/dashboard/widget-filters/WidgetFiltersBar.tsx",
       "escreve:src/components/orders/OrderFilters.tsx",
       "escreve:src/hooks/useConnectionsOverviewFilters.ts",
-      "escreve:src/pages/OrdersPage.tsx",
       "escreve:src/pages/admin/AdminCampanhasPage.tsx",
       "escreve:src/types/stock.ts"
      ],
@@ -195541,17 +195567,12 @@
   },
   "src/components/orders/OrderFilters.tsx": {
    "path": "src/components/orders/OrderFilters.tsx",
-   "lines": 217,
+   "lines": 242,
    "exports": [
     "interface OrderFilterValues",
     "function OrderFilters"
    ],
    "status_values": [
-    {
-     "field": "status",
-     "value": "all",
-     "kind": "escreve"
-    },
     {
      "field": "status",
      "value": "all",
@@ -218417,8 +218438,10 @@
   },
   "src/pages/OrdersPage.tsx": {
    "path": "src/pages/OrdersPage.tsx",
-   "lines": 265,
+   "lines": 340,
    "exports": [
+    "function filtersFromSearchParams",
+    "function filtersToSearchParams",
     "function OrdersPage"
    ],
    "navigates": [
@@ -218432,13 +218455,13 @@
      "kind": "escreve"
     },
     {
-     "field": "status",
-     "value": "all",
-     "kind": "escreve"
-    },
-    {
      "field": "type",
      "value": "excel",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "all",
      "kind": "compara"
     }
    ],
@@ -250191,6 +250214,26 @@
     "para de segurar assim que o estado deixa de ter pendencia"
    ]
   },
+  "tests/pages/orders-filtros-na-url.test.ts": {
+   "path": "tests/pages/orders-filtros-na-url.test.ts",
+   "lines": 83,
+   "is_test": true,
+   "rule_comments": [
+    "* ATENÇÃO, limite conhecido: este caso só discrimina em fuso NEGATIVO.",
+    "implementações coincidem. Ou seja, a CI não protege esta regra hoje; quem"
+   ],
+   "doc": "Leitura e escrita dos filtros de pedidos na querystring. Recuperado da PR #100 (`devin/1791190000-ux-onda1`), fechada sem merge: a `main` nunca recebeu esta parte. Sem ela o vendedor perde busca, status, empresa, período e página toda vez que abre um pedido e volta. Os dois casos que justificam o có …",
+   "tests": [
+    "filtros de pedidos na URL",
+    "lê busca, status, empresa e página",
+    "sem query, devolve o padrão e a primeira página",
+    "data é lida como dia local — fuso negativo não pode andar um dia",
+    "data inválida é descartada em vez de virar Invalid Date",
+    "pagina=${pagina || ",
+    "escreve só o que difere do padrão",
+    "ida e volta preserva o filtro inteiro"
+   ]
+  },
   "tests/pages/quotes-list-filtros-na-url.test.tsx": {
    "path": "tests/pages/quotes-list-filtros-na-url.test.tsx",
    "lines": 131,
@@ -253197,10 +253240,21 @@
   }
  },
  "git": {
-  "sha": "0f4d547314bcacf70868752241fee3b6ebf2bcfa",
+  "sha": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "449faf1",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)",
+    "files": [
+     "src/components/orders/OrderFilters.tsx",
+     "src/pages/OrdersPage.tsx",
+     "tests/pages/orders-filtros-na-url.test.ts"
+    ]
+   },
    {
     "sha": "0f4d547",
     "date": "2026-11-19",
@@ -253528,98 +253582,6 @@
      "tests/scenarios/edge-runtime-contract.scenario.mjs",
      "tests/scripts/edge-runtime-contract.test.ts"
     ]
-   },
-   {
-    "sha": "95aa5bd",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(auditoria): recupera a auditoria de planejamento de 13/10 (PR #105) (#336)",
-    "files": [
-     "docs/execucao/auditoria-planejamento-2026-10-13/.gitattributes",
-     "docs/execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/README.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/RELATORIO.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/achados-consolidados.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/achados-consolidados.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/apply_local_quote_approval_response.sql",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-acl-direta.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-auth.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-buckets.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-canonico-referencias.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-colunas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-constraints.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-falhas-agrupadas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-falhas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron-resumo.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-cron.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-dispatch-resultados.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-edges.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-escopo-helpers.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-evidencia-keys.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-fila-agregada.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-funcoes.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-hmac-pronto.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-integracoes-configuradas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-ledger.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-objetos.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-policies.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-privilegios.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-publication-config.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-realtime.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-segredos.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-triggers.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/bd-vault-nomes.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/checklist-1000-subetapas.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/cobertura-documentos.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/cobertura-repositorio.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/convert_quote_to_sicoob_order.sql",
-     "docs/execucao/auditoria-planejamento-2026-10-13/destinos-candidatos-sem-rota.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/edge-verify-email-paridade.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/erros-extracao.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/generate_quote_number.sql",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-e2e-falha-resumo.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-e2e.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-main-runs.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-protecao.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-prs.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/github-rulesets.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/grafo-importacoes.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/graphify-detect.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/guard_quote_governance_write.sql",
-     "docs/execucao/auditoria-planejamento-2026-10-13/http-publico.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/inventario-documentos.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/ledger-comparado.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/local-AUDITORIA.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/manifesto-entrega.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/manifesto-publicacao.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/marcadores-codigo.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/matriz-100-etapas.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/matriz-100-etapas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/referencias-dos-achados.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/LEIA-ME.md",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_achados_20261013.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_audit_20261013.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_mapeamentos_20261013.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_relatorio_20261013.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_scan_referencias.cjs",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_filtros_20261013.cjs",
-     "docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py",
-     "docs/execucao/auditoria-planejamento-2026-10-13/resumo-auditoria.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/resumo-inventario.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/revisao-682-registros.csv",
-     "docs/execucao/auditoria-planejamento-2026-10-13/revisao-682-registros.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/rotas-registradas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/save_quote_atomic.sql",
-     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-filtros.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-rls-verbas.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/simulacao-status-kit.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/simular-aprovacao-publica.py.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/simular-conversao-pedido-sicoob.py.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/validacao-consulta.json",
-     "docs/execucao/auditoria-planejamento-2026-10-13/validacao-publicacao.json"
-    ]
    }
   ],
   "hot_files": [
@@ -253636,16 +253598,24 @@
     2
    ],
    [
-    "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
-    2
-   ],
-   [
     "scripts/check-critical-test-skip-budget.mjs",
     2
    ],
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
+   ],
+   [
+    "src/components/orders/OrderFilters.tsx",
+    1
+   ],
+   [
+    "src/pages/OrdersPage.tsx",
+    1
+   ],
+   [
+    "tests/pages/orders-filtros-na-url.test.ts",
+    1
    ],
    [
     "src/pages/QuotesListPage.tsx",
@@ -253672,6 +253642,10 @@
     1
    ],
    [
+    "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
+    1
+   ],
+   [
     ".github/workflows/dependency-review.yml",
     1
    ],
@@ -253689,18 +253663,6 @@
    ],
    [
     "vitest.config.ts",
-    1
-   ],
-   [
-    ".github/workflows/deploy-sicoob-functions.yml",
-    1
-   ],
-   [
-    "scripts/ci/verify-supabase-functions-published.mjs",
-    1
-   ],
-   [
-    "supabase/config.toml",
     1
    ]
   ]
