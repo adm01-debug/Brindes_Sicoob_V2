@@ -1,7 +1,7 @@
 /**
  * useClientHealthScore — score 0-100 de saúde do cliente.
  *
- * Pesos:
+ * Pesos-base (normalizados entre os componentes com fonte confiável):
  *  - Recência       30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0)
  *  - Frequência     25% (vs média do setor)
  *  - Ticket vs setor 20%
@@ -27,6 +27,10 @@ export interface HealthScoreBreakdown {
 
 export interface ClientHealthScoreResult {
   isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
+  unavailableReason: "source-error" | "insufficient-data" | null;
   score: number; // 0-100
   tier: HealthTier;
   breakdown: HealthScoreBreakdown;
@@ -40,6 +44,13 @@ export interface ClientHealthScoreResult {
   crossZoneInsight: string;
   ctaLabel: string;
   ctaUrgent: boolean;
+}
+
+/** Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */
+export function getAvailableHealthScore(
+  health: Pick<ClientHealthScoreResult, "score" | "tier">,
+): number | null {
+  return health.tier === "unknown" ? null : health.score;
 }
 
 function recencyScore(days: number | null): number {
@@ -73,9 +84,8 @@ type IndustryComparison = ReturnType<typeof useClientVsIndustry>;
 type ClientSeasonality = ReturnType<typeof useClientSeasonality>;
 type ComparisonMetric = IndustryComparison["metrics"][number];
 
-function comparisonScore(metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number) {
-  if (metric) return ratioScore(metric.clientValue, metric.industryAvg);
-  return ratioScore(fallbackClient, fallbackIndustry);
+function comparisonScore(metric: ComparisonMetric | undefined) {
+  return metric ? ratioScore(metric.clientValue, metric.industryAvg) : 0;
 }
 
 function growthMetrics(seasonality: ClientSeasonality) {
@@ -91,7 +101,7 @@ function growthMetrics(seasonality: ClientSeasonality) {
 }
 
 function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiData) {
-  const industryPotential = ticketMetric ? ticketMetric.industryAvg * 12 : bi.avgTicket * 12 || 30000;
+  const industryPotential = ticketMetric ? ticketMetric.industryAvg * 12 : 0;
   const clientActual = bi.ltv > 0 ? bi.ltv : bi.avgTicket * bi.ordersCount;
   const sharePct = industryPotential > 0
     ? Math.min(100, (clientActual / industryPotential) * 100)
@@ -101,6 +111,68 @@ function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiDa
     score: Math.min(100, sharePct * 1.5),
     potentialUntapped: Math.max(0, industryPotential - clientActual),
   };
+}
+
+function healthRefetch(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): () => Promise<unknown> {
+  return async () => Promise.allSettled([
+    bi.refetch?.(),
+    vs.refetch?.(),
+    seasonality.refetch?.(),
+  ]);
+}
+
+function unavailableHealthResult(
+  isLoading: boolean,
+  sources: [ClientBiData, IndustryComparison, ClientSeasonality],
+  sourceError: unknown = null,
+): ClientHealthScoreResult {
+  const unavailable = { score: 0, weight: 0, label: "Dados insuficientes" };
+  const isError = sourceError !== null && sourceError !== undefined;
+  return {
+    isLoading,
+    isError,
+    error: sourceError,
+    refetch: healthRefetch(...sources),
+    unavailableReason: isLoading ? null : isError ? "source-error" : "insufficient-data",
+    score: 0,
+    tier: "unknown",
+    breakdown: {
+      recency: unavailable,
+      frequency: unavailable,
+      ticket: unavailable,
+      growth: unavailable,
+      shareOfWallet: unavailable,
+    },
+    shareOfWalletPct: 0,
+    potentialUntappedBRL: 0,
+    growthPct: 0,
+    nextActionLabel: "Dados insuficientes",
+    nextActionDetail: "Registre histórico real e uma amostra setorial válida antes de gerar recomendações.",
+    scriptHint: "",
+    windowLabel: "Sem janela sazonal comprovada",
+    crossZoneInsight: "Não há dados suficientes para calcular a saúde deste cliente.",
+    ctaLabel: "Criar orçamento",
+    ctaUrgent: false,
+  };
+}
+
+function isHealthScoreSourceUnavailable(bi: ClientBiData, vs: IndustryComparison): boolean {
+  return bi.isUnavailable || vs.isError || !vs.hasEnoughSample;
+}
+
+function healthSourceError(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): unknown {
+  if (bi.isUnavailable) return bi.error ?? new Error("Histórico do cliente indisponível");
+  if (vs.isError) return vs.error ?? new Error("Benchmark do setor indisponível");
+  if (seasonality.isError) return seasonality.error ?? new Error("Sazonalidade indisponível");
+  return null;
 }
 
 function nextAction(
@@ -164,7 +236,53 @@ function peakNote(seasonality: ClientSeasonality) {
   if (seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30) {
     return `entra em pico em ${seasonality.daysToNextPeak} dias`;
   }
-  return "tem padrão sazonal definido";
+  return seasonality.hasEnoughData ? "tem padrão sazonal definido" : "não tem janela sazonal comprovada";
+}
+
+interface ScoreComponent {
+  score: number;
+  weight: number;
+}
+
+type NormalizedWeights = [number, number, number, number, number];
+
+function reliableMetric(vs: IndustryComparison, label: string): ComparisonMetric | undefined {
+  return vs.hasEnoughSample ? vs.metrics.find((metric) => metric.label === label) : undefined;
+}
+
+function getScoreComponents(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+) {
+  const frequencyMetric = reliableMetric(vs, "Frequência (pedidos)");
+  const ticketMetric = reliableMetric(vs, "Ticket médio");
+  const hasClientOrders = bi.hasData && !bi.isUnavailable;
+  const hasSeasonality = seasonality.hasEnoughData;
+  const recency = recencyScore(bi.daysSinceLastOrder);
+  const frequency = comparisonScore(frequencyMetric);
+  const ticket = comparisonScore(ticketMetric);
+  const growth = growthMetrics(seasonality);
+  const share = ticketMetric
+    ? shareMetrics(ticketMetric, bi)
+    : { sharePct: 0, score: 0, potentialUntapped: 0 };
+  const components: ScoreComponent[] = [
+    { score: recency, weight: hasClientOrders ? 30 : 0 },
+    { score: frequency, weight: frequencyMetric ? 25 : 0 },
+    { score: ticket, weight: ticketMetric ? 20 : 0 },
+    { score: growth.score, weight: hasSeasonality ? 15 : 0 },
+    { score: share.score, weight: ticketMetric ? 10 : 0 },
+  ];
+  return { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight: components.reduce((sum, item) => sum + item.weight, 0) };
+}
+
+function normalizedWeights(components: ScoreComponent[], totalWeight: number): NormalizedWeights {
+  const weights = components.map(({ weight }) => weight === 0 ? 0 : Math.round((weight / totalWeight) * 100));
+  return weights as NormalizedWeights;
+}
+
+function weightedScore(components: ScoreComponent[], totalWeight: number): number {
+  return Math.round(components.reduce((sum, component) => sum + component.score * component.weight, 0) / totalWeight);
 }
 
 function ticketNote(metric: ComparisonMetric | undefined) {
@@ -179,32 +297,40 @@ function growthNote(growthPct: number) {
   return ".";
 }
 
-function buildHealthResult(
+export function buildHealthResult(
   bi: ClientBiData,
   vs: IndustryComparison,
   seasonality: ClientSeasonality,
 ): ClientHealthScoreResult {
+  const sources: [ClientBiData, IndustryComparison, ClientSeasonality] = [bi, vs, seasonality];
   const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
-  const recency = recencyScore(bi.daysSinceLastOrder);
-  const frequencyMetric = vs.metrics.find((metric) => metric.label === "Frequência (pedidos)");
-  const ticketMetric = vs.metrics.find((metric) => metric.label === "Ticket médio");
-  const frequency = comparisonScore(frequencyMetric, bi.ordersCount, 10);
-  const ticket = comparisonScore(ticketMetric, bi.avgTicket, 2500);
-  const growth = growthMetrics(seasonality);
-  const share = shareMetrics(ticketMetric, bi);
-  const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);
+  if (isLoading) return unavailableHealthResult(true, sources);
+  const sourceError = healthSourceError(bi, vs, seasonality);
+  if (sourceError) return unavailableHealthResult(false, sources, sourceError);
+  // A falha do histórico não pode ser interpretada como zero compras/risco.
+  // Sem benchmark não é possível validar o score global: recência e sazonalidade
+  // podem ser reais, mas não substituem a comparação setorial que o score promete.
+  if (isHealthScoreSourceUnavailable(bi, vs)) return unavailableHealthResult(false, sources);
+  const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight } = getScoreComponents(bi, vs, seasonality);
+  if (availableWeight === 0) return unavailableHealthResult(false, sources);
+  const score = weightedScore(components, availableWeight);
+  const [recencyWeight, frequencyWeight, ticketWeight, growthWeight, shareWeight] = normalizedWeights(components, availableWeight);
   const action = nextAction(recency, ticket, growth.growthPct, share.sharePct, share.potentialUntapped, bi, seasonality);
   const hasUpcomingPeak = seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30;
   return {
     isLoading,
-    score: isLoading ? 0 : score,
-    tier: isLoading ? "unknown" : tierFromScore(score),
+    isError: false,
+    error: null,
+    refetch: healthRefetch(...sources),
+    unavailableReason: null,
+    score,
+    tier: tierFromScore(score),
     breakdown: {
-      recency: { score: recency, weight: 30, label: "Recência" },
-      frequency: { score: frequency, weight: 25, label: "Frequência" },
-      ticket: { score: ticket, weight: 20, label: "Ticket vs setor" },
-      growth: { score: growth.score, weight: 15, label: "Crescimento" },
-      shareOfWallet: { score: share.score, weight: 10, label: "Share-of-wallet" },
+      recency: { score: recency, weight: recencyWeight, label: "Recência" },
+      frequency: { score: frequency, weight: frequencyWeight, label: "Frequência" },
+      ticket: { score: ticket, weight: ticketWeight, label: "Ticket vs setor" },
+      growth: { score: growth.score, weight: growthWeight, label: "Crescimento" },
+      shareOfWallet: { score: share.score, weight: shareWeight, label: "Share-of-wallet" },
     },
     shareOfWalletPct: Math.round(share.sharePct * 10) / 10,
     potentialUntappedBRL: Math.round(share.potentialUntapped),
