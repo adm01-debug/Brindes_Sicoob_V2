@@ -1,6 +1,7 @@
 {
   "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
   "migracao": "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+  "migracao_gate": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
   "producao_verificada": false,
   "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
   "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
@@ -8,5 +9,6 @@
   "totais": "subtotal, desconto, frete e custo recalculados no servidor",
   "governanca": "escopo organizacional e edição de orçamento enviado recusados",
   "integracao_gate": "save_quote_atomic preserva SECURITY INVOKER/RLS; toque direto ou GUC forjado não altera updated_at",
+  "atestado_preco": "register somente service_role; fluxo atestado grava e consome; reuso/hash/expiração e save sem atestado recusados; idempotente atestado grava uma vez e replay devolve o mesmo orçamento",
   "resultado": "aprovado"
 }

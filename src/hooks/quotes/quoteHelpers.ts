@@ -1,23 +1,31 @@
 /**
  * quoteHelpers — Cálculos e payloads reutilizáveis de orçamentos
  */
-import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
-import type { Quote, QuoteItem } from "./quoteTypes";
+import type { Json, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import type { Quote, QuoteItem } from './quoteTypes';
 
 const emptyToNull = (value: string | null | undefined): string | null => value || null;
 const numberOr = (value: number | null | undefined, fallback: number): number => value ?? fallback;
 const nullableNumber = (value: number | null | undefined): number | null => value ?? null;
 const arrayOrEmpty = <T>(value: T[] | null | undefined): T[] => value ?? [];
-const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;
+const quoteItemUnitCost = (item: QuoteItem): number =>
+  item.unit_cost || Math.round(item.unit_price * 70) / 100;
 
 function personalizationTotal(item: QuoteItem): number {
-  return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);
+  return arrayOrEmpty(item.personalizations).reduce(
+    (sum, personalization) => sum + numberOr(personalization.total_cost, 0),
+    0,
+  );
 }
 
 function personalizationCost(item: QuoteItem): number {
   return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => {
     const quantity = numberOr(personalization.personalized_quantity, item.quantity);
-    return sum + numberOr(personalization.unit_cost, 0) * quantity + numberOr(personalization.setup_cost, 0);
+    return (
+      sum +
+      numberOr(personalization.unit_cost, 0) * quantity +
+      numberOr(personalization.setup_cost, 0)
+    );
   }, 0);
 }
 
@@ -29,17 +37,29 @@ function presentedSubtotal(realSubtotal: number, markup: number): number {
   return markup > 0 ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100 : realSubtotal;
 }
 
-function discountAmountFor(subtotal: number, discountType: 'percent' | 'amount', discountValue: number): number {
+function discountAmountFor(
+  subtotal: number,
+  discountType: 'percent' | 'amount',
+  discountValue: number,
+): number {
   return discountType === 'percent' ? subtotal * (discountValue / 100) : discountValue;
 }
 
 function quoteShippingCost(quote: Partial<Quote>): number {
-  return quote.shipping_type === "fob" || quote.shipping_type === "fob_pre" ? numberOr(quote.shipping_cost, 0) : 0;
+  return quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre'
+    ? numberOr(quote.shipping_cost, 0)
+    : 0;
 }
 
+// eslint-disable-next-line max-lines-per-function -- formatacao do prettier elevou a contagem; divisao fora do escopo desta recuperacao
 export function calculateQuoteTotals(
   quote: Partial<Quote>,
-  ...options: [items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount', discountValue?: number]
+  ...options: [
+    items: QuoteItem[],
+    negotiationMarkup?: number,
+    discountType?: 'percent' | 'amount',
+    discountValue?: number,
+  ]
 ) {
   const [items, negotiationMarkup, discountType = 'percent', discountValue = 0] = options;
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
@@ -70,19 +90,28 @@ export function calculateQuoteTotals(
 
   // Desconto REAL: comparado ao subtotal real (usado para alçada)
   const finalBeforeShipping = subtotal - discountAmount;
-  const realDiscountPercent = realSubtotal > 0
-    ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
-    : 0;
+  const realDiscountPercent =
+    realSubtotal > 0
+      ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
+      : 0;
 
-  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup, totalCost: realTotalCost };
+  return {
+    subtotal,
+    realSubtotal,
+    discountAmount,
+    total,
+    realDiscountPercent,
+    markup,
+    totalCost: realTotalCost,
+  };
 }
 
 export function buildInsertPayload(
   quote: Partial<Quote>,
   userId: string,
   orgId: string | null,
-  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
-): TablesInsert<"quotes"> {
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number },
+): TablesInsert<'quotes'> {
   return {
     client_id: emptyToNull(quote.client_id),
     client_name: emptyToNull(quote.client_name),
@@ -91,7 +120,7 @@ export function buildInsertPayload(
     client_company: emptyToNull(quote.client_company),
     seller_id: userId,
     organization_id: orgId,
-    status: quote.status ?? "draft",
+    status: quote.status ?? 'draft',
     subtotal: totals.subtotal,
     discount_percent: numberOr(quote.discount_percent, 0),
     discount_amount: totals.discountAmount,
@@ -110,9 +139,9 @@ export function buildInsertPayload(
 
 export function buildUpdatePayload(
   quote: Partial<Quote>,
-  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
-): TablesUpdate<"quotes"> {
-  const payload: TablesUpdate<"quotes"> = {
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number },
+): TablesUpdate<'quotes'> {
+  const payload: TablesUpdate<'quotes'> = {
     client_id: emptyToNull(quote.client_id),
     client_name: emptyToNull(quote.client_name),
     client_email: emptyToNull(quote.client_email),
@@ -144,8 +173,8 @@ export function buildUpdatePayload(
 
 export function buildItemsInsertPayload(
   items: QuoteItem[],
-  quoteId: string
-): TablesInsert<"quote_items">[] {
+  quoteId: string,
+): TablesInsert<'quote_items'>[] {
   return items.map((item, index) => {
     const itemSubtotal = item.quantity * item.unit_price + personalizationTotal(item);
     return {
@@ -175,10 +204,10 @@ export function buildItemsInsertPayload(
 }
 
 export function buildPersonalizationsInsertPayload(
-  personalizations: NonNullable<QuoteItem["personalizations"]>,
-  quoteItemId: string
-): TablesInsert<"quote_item_personalizations">[] {
-  return personalizations.map(p => ({
+  personalizations: NonNullable<QuoteItem['personalizations']>,
+  quoteItemId: string,
+): TablesInsert<'quote_item_personalizations'>[] {
+  return personalizations.map((p) => ({
     quote_item_id: quoteItemId,
     technique_id: p.technique_id || null,
     technique_name: p.technique_name || null,
@@ -239,14 +268,14 @@ export function buildAtomicQuoteItems(items: QuoteItem[]): Json[] {
 }
 
 export const STATUS_LABELS: Record<string, string> = {
-  draft: "Rascunho", 
-  pending: "Enviado", 
-  sent: "Em análise",
-  approved: "Aprovado", 
-  rejected: "Recusado", 
-  expired: "Expirado",
-  pending_approval: "Alçada Admin",
-  pending_singular_approval: "Pendente Singular",
-  approved_singular: "Aprovado Singular",
-  rejected_singular: "Reprovado Singular"
+  draft: 'Rascunho',
+  pending: 'Enviado',
+  sent: 'Em análise',
+  approved: 'Aprovado',
+  rejected: 'Recusado',
+  expired: 'Expirado',
+  pending_approval: 'Alçada Admin',
+  pending_singular_approval: 'Pendente Singular',
+  approved_singular: 'Aprovado Singular',
+  rejected_singular: 'Reprovado Singular',
 };
