@@ -420,9 +420,17 @@ Conferência de todas as 95 refs remotas contra a `main`:
 IDENTICAS A MAIN: 0 / 95
 ```
 
-Nenhuma branch pode ser apagada hoje — e isso **não** é falta de varredura (as três já
-rodaram: arquivos ausentes, símbolos exportados e linhas exclusivas intra-função). É que
-o trabalho recuperado ainda está em PR aberta, não na `main`. O portão é por merge:
+Esse `0 / 95` é a medida **estrita** de identidade byte a byte com a `main`, e ela é severa
+de propósito: qualquer linha que a `main` depois melhorou faz a branch deixar de ser
+idêntica. Não significa "nada foi incorporado" — significa que identidade byte a byte não
+serve sozinha como portão. O que serve é o veredito por item, e é o que a tabela abaixo
+registra.
+
+**Estado em 19/11/2026, 02:40 UTC:** dois grupos já têm a condição de conteúdo cumprida
+(a pilha de BI, pela #361, e a branch da #290, por veredito escrito) e esperam apenas a
+entrada deste ledger; as duas do kit foram apagadas pelo próprio GitHub no merge da #334,
+com a conferência registrada antes; o restante segue pendente de merge da PR
+correspondente. O portão, grupo por grupo:
 
 | grupo | condição | estado em 19/11/2026 02:40 UTC |
 |---|---|---|
