@@ -2,12 +2,12 @@
 
 Plano derivado dos 36 achados de [AUDITORIA.md](./AUDITORIA.md), coletados em 24/09/2026. A contagem se refere às evidências desta auditoria: não significa que os pontos não verificados estejam livres de problemas.
 
-**Status: somente planejado. Nenhuma etapa foi executada nesta missão.** Estimativas de diff são aproximações, não medições. Novos nomes de funções são propostas, não objetos cuja existência foi presumida.
+**Status em 29/10/2026: E-006 já está implementada e validada na `origin/main`; E-001 parcialmente verificada; E-002 bloqueada por configuração do ambiente.** A cópia local usada para a auditoria está 84 commits atrás da `origin/main`; não substituir a implementação remota por um backport. As demais etapas continuam pendentes. Estimativas de diff são aproximações, não medições. Novos nomes de funções são propostas, não objetos cuja existência foi presumida.
 
 As etapas seguem severidade e dependências. Autorização de integrações e contratos de dados precedem refinamentos de UX. E-001 é pré-requisito de toda alteração posterior, mesmo quando a dependência direta foi omitida em favor de uma etapa intermediária.
 
 - Cada etapa só conclui com sua verificação registrada no SHA correspondente.
-- Usar worktree isolado e preservar alterações anteriores; nenhuma instalação, migration ou teste mutante faz parte desta auditoria.
+- Usar worktree isolado e preservar alterações anteriores. As evidências de execução devem indicar claramente se são locais, remotas ou do banco canônico.
 - Não editar o catálogo externo: `doufsxqlfjyuvxuezpln` permanece somente leitura.
 - Antes de qualquer SQL persistente, confirmar projeto `cfmzkthhgliqelozlmwu`, schema, ledger e privilégios efetivos. Migrations propostas não podem substituir essa verificação.
 - Registrar resultado de erro e concorrência, não apenas cenário nominal. Testes de envio usam destinatários fictícios.
@@ -33,7 +33,7 @@ Verificação: Registrar SHA local/remoto, git status, versões instaladas versu
 
 Risco: Perda de alterações durante reconciliação; preservar cópia verificável antes de mudar referências. Não descartar secretNormalizers.ts nem a documentação modificada.
 
-- [ ] Concluída com evidência de execução e verificação anexada ao SHA alvo.
+- [ ] Concluída — parcialmente verificada em `fix/hermes-272703-docs-implementation`, base `6b71bdc09a454d8f8160166d45c9a670aa8b66e5`. Ambiente: Node `v24.19.0`, npm `11.17.0`, `npm ci` concluído pelo lockfile. `npm run typecheck:baseline`: 165 diagnósticos atuais vs. 166 no baseline, sem regressões. `npm run typecheck` ainda falha por diagnósticos existentes; não foi feita a separação completa entre erros persistentes e divergência de compilador/SDK. Build local concluído em 32 s. Falta fechar essa classificação e validar um SHA publicado em PR.
 
 ### E-002 · [P1] · integrações — Autorizar disparo, teste e replay de webhooks
 
@@ -54,7 +54,7 @@ Verificação: Sem token, usuário comum e credencial interna inválida devem se
 
 Risco: Cron antigo pode perder acesso; inventariar o chamador e disponibilizar sua credencial antes do corte. Não aceitar a publishable key como autorização de serviço.
 
-- [ ] Concluída com evidência de execução e verificação anexada ao SHA alvo.
+- [ ] Bloqueada antes de alterar código. Leitura somente leitura do projeto canônico `cfmzkthhgliqelozlmwu` encontrou quatro triggers que chamam `dispatch_quote_webhook_event()` sem credencial, e as configurações verificadas para `app.supabase_service_role_key` estão ausentes. Adicionar validação agora interromperia esses chamadores existentes. Próximo passo: provisionar/configurar um segredo interno e preparar migração versionada compatível; nenhum dado ou schema foi alterado.
 
 ### E-003 · [P1] · integrações — Vincular sincronização Bitrix ao orçamento e usuário persistidos
 
@@ -138,7 +138,7 @@ Verificação: Reexecutar SIM-KIT-2: rejeição da bridge deve produzir estado d
 
 Risco: Consumidor hoje depende de null silencioso; manter layout estável e evitar refetch infinito.
 
-- [ ] Concluída com evidência de execução e verificação anexada ao SHA alvo.
+- [x] Já implementada em `origin/main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`), mais completa que o achado original: previsão por variantes e múltiplas entradas, erro de consulta com retry no card e sem converter falha em déficit. Validado diretamente nessa versão: teste do projeto `tests/hooks/useKitStockForecast.test.ts` passou (5/5), ESLint focal passou, typecheck focal reportou 0 erros e `npm run build` passou (33,92 s). Prettier focal reportou divergência de formatação preexistente; não alterada. A `main` local auditada está 84 commits atrás e não recebeu backport nem publicação.
 
 ### E-007 · [P1] · frontend/contrato — Entregar itens reais à consolidação
 
