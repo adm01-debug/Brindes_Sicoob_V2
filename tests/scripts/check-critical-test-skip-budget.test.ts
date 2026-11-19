@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { BASELINE_BY_FILE, evaluate, findSkips } from '../../scripts/check-critical-test-skip-budget.mjs';
+import { BASELINE_BY_FILE, evaluate, files, findSkips, roots } from '../../scripts/check-critical-test-skip-budget.mjs';
 
 const SCRIPT = resolve(__dirname, '../../scripts/check-critical-test-skip-budget.mjs');
 
@@ -49,14 +49,17 @@ describe('evaluate — orçamento por arquivo', () => {
   });
 
   it('skip novo em arquivo sem orçamento reprova, mesmo com o total igual ao antigo', () => {
-    const [first, ...rest] = Object.keys(BASELINE_BY_FILE);
+    // Orçamento próprio: o teste mede a regra, não a lista de dívidas do dia.
+    const baseline = { 'tests/rls/personas.test.ts': 1, 'tests/security/edge-authz-bypass.test.ts': 1 };
     // Remove um skip antigo e adiciona um novo em P0: o total agregado continua igual.
-    const byFile = Object.fromEntries(rest.map((file) => [file, found(1)]));
-    byFile['tests/p0/novo.test.ts'] = found(1);
-    const result = evaluate(byFile);
-    expect(result.total).toBe(Object.keys(BASELINE_BY_FILE).length);
+    const byFile = {
+      'tests/security/edge-authz-bypass.test.ts': found(1),
+      'tests/p0/novo.test.ts': found(1),
+    };
+    const result = evaluate(byFile, baseline);
+    expect(result.total).toBe(2);
     expect(result.over).toEqual([{ file: 'tests/p0/novo.test.ts', count: 1, allowed: 0 }]);
-    expect(result.under.map((entry: { file: string }) => entry.file)).toEqual([first]);
+    expect(result.under.map((entry: { file: string }) => entry.file)).toEqual(['tests/rls/personas.test.ts']);
   });
 
   it('segundo skip em arquivo que já tinha um reprova', () => {
@@ -68,13 +71,20 @@ describe('evaluate — orçamento por arquivo', () => {
 describe('execução do gate numa árvore de testes', () => {
   function tree(files: Record<string, string>) {
     const dir = mkdtempSync(join(tmpdir(), 'skip-budget-'));
-    for (const root of ['tests/p0', 'tests/rls', 'tests/security']) mkdirSync(join(dir, root), { recursive: true });
+    // Usa as raízes declaradas pelo módulo: acrescentar uma raiz ao gate não
+    // pode fazer estes testes criarem uma árvore incompleta e cair no exit 2.
+    for (const root of roots) mkdirSync(join(dir, root), { recursive: true });
     for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, name), content);
     return dir;
   }
   const run = (cwd: string) => spawnSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8' });
   const baselineFiles = () =>
-    Object.fromEntries(Object.keys(BASELINE_BY_FILE).map((file) => [file, 'const s = enabled ? describe : describe.skip;\n']));
+    Object.fromEntries(
+      Object.entries(BASELINE_BY_FILE).map(([file, n]) => [
+        file,
+        'const s = enabled ? describe : describe.skip;\n'.repeat(n as number),
+      ]),
+    );
 
   it('árvore dentro do orçamento passa', () => {
     const result = run(tree(baselineFiles()));
@@ -103,5 +113,71 @@ describe('execução do gate numa árvore de testes', () => {
     const result = run(mkdtempSync(join(tmpdir(), 'skip-budget-vazio-')));
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('não encontrada');
+  });
+});
+
+describe('cobertura das raízes críticas', () => {
+  it('inclui os cenários P0 de E2E, que ficaram fora do gate até 18/11/2026', () => {
+    // e2e/flows/p0 tem 23 cenários críticos desligados. Enquanto a raiz não era
+    // varrida, dava para trocar ou multiplicar skip ali sem o CI reclamar.
+    expect(roots).toContain('e2e/flows/p0');
+  });
+
+  // A regra, em UM lugar só. Os dois casos abaixo chamam esta função: o da
+  // árvore real e o sintético. Se alguém voltar a cobrar igualdade, terá de
+  // mexer aqui, e o caso sintético cai — que é o ponto de ele existir.
+  //
+  // A direção cobrada é `medido ⊆ orçado`: arquivo que ganha skip sem entrada
+  // em BASELINE_BY_FILE reprova. A inversa (`orçado ⊆ medido`) NÃO é cobrada,
+  // de propósito. Orçamento é teto, não cota a cumprir: arquivo abaixo do teto
+  // está em dia. Exigir igualdade reprovava quem REMOVE um skip sem baixar o
+  // orçamento no mesmo commit — justamente o conserto que o gate pede. E o
+  // script discordava deste teste: com o skip removido ele sai com EXIT=0 e diz
+  // "reduza o orçamento no próximo lote"
+  // (`scripts/check-critical-test-skip-budget.mjs:116-120`). Medido em
+  // 19/11/2026 removendo `e2e/flows/p0/08-password-recovery.spec.ts:154`:
+  // script EXIT=0, este teste reprovava. Duas vozes, ordens opostas.
+  const skipsNaoDeclarados = (orcados: readonly string[], medidos: readonly string[]) => {
+    const declarados = new Set(orcados);
+    return medidos.filter((f) => !declarados.has(f));
+  };
+
+  const orcamentoP0 = () =>
+    Object.entries(BASELINE_BY_FILE)
+      .filter(([f, n]) => f.startsWith('e2e/flows/p0/') && (n as number) > 0)
+      .map(([f]) => f);
+
+  const specsP0ComSkip = () =>
+    (files('e2e/flows/p0') as string[])
+      .map((f: string) => f.split('\\').join('/'))
+      .filter((f: string) => findSkips(readFileSync(f, 'utf8')).length > 0);
+
+  it('todo spec P0 de E2E com skip tem orçamento — skip novo não entra sem declarar', () => {
+    expect(skipsNaoDeclarados(orcamentoP0(), specsP0ComSkip())).toEqual([]);
+  });
+
+  it('a mesma regra aceita o conserto e recusa o skip não declarado', () => {
+    // Em dado sintético porque hoje nenhum spec P0 está sem skip: sobre a
+    // árvore real este caso passaria vazio e não provaria nada.
+
+    // Conserto: arquivo orçado que ficou sem skip. Não pode reprovar.
+    expect(skipsNaoDeclarados(['p0/a.spec.ts', 'p0/b.spec.ts'], ['p0/a.spec.ts'])).toEqual([]);
+
+    // Skip novo sem entrada no orçamento. Tem de reprovar.
+    expect(skipsNaoDeclarados(['p0/a.spec.ts'], ['p0/a.spec.ts', 'p0/novo.spec.ts']))
+      .toEqual(['p0/novo.spec.ts']);
+  });
+
+  it('nenhum spec P0 de E2E está acima do orçamento', () => {
+    const byFile: Record<string, { offset: number; value: string }[]> = {};
+    for (const file of files('e2e/flows/p0') as string[]) {
+      const encontrados = findSkips(readFileSync(file, 'utf8'));
+      if (encontrados.length > 0) byFile[file.split('\\').join('/')] = encontrados;
+    }
+    const soP0 = Object.fromEntries(
+      Object.entries(BASELINE_BY_FILE).filter(([f]) => f.startsWith('e2e/flows/p0/')),
+    );
+
+    expect(evaluate(byFile, soP0).over).toEqual([]);
   });
 });

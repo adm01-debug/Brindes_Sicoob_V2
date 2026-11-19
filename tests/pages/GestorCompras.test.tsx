@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/seo/PageSEO', () => ({ PageSEO: () => null }));
@@ -21,13 +23,21 @@ vi.mock('@/pages/OrdersPage', () => ({
 
 import GestorCompras from '@/pages/GestorCompras';
 
+// A tela passou a ler indicadores reais por react-query (GestorComprasMetrics),
+// então precisa de um QueryClient. O serviço é mockado em
+// tests/pages/GestorCompras.metrics.test.tsx; aqui só não pode quebrar.
+function renderizar(no: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter>{no}</MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
 describe('Gestão de Compras da Singular', () => {
   it('não exibe métricas inventadas nem ação de aprovação fictícia', () => {
-    render(
-      <MemoryRouter>
-        <GestorCompras />
-      </MemoryRouter>,
-    );
+    renderizar(<GestorCompras />);
 
     expect(screen.queryByText('Pedidos pendentes hoje')).toBeNull();
     expect(screen.queryByText('SLA de aprovação (24h)')).toBeNull();
@@ -37,11 +47,7 @@ describe('Gestão de Compras da Singular', () => {
   });
 
   it('direciona o gestor para a fila real e para os indicadores da Singular', () => {
-    render(
-      <MemoryRouter>
-        <GestorCompras />
-      </MemoryRouter>,
-    );
+    renderizar(<GestorCompras />);
 
     expect(
       screen.getByRole('link', { name: 'Abrir fila de aprovações' }).getAttribute('href'),

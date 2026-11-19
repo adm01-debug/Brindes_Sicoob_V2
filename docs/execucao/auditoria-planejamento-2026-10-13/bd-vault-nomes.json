@@ -1,0 +1,11 @@
+[
+  {
+    "name": "sicoob_approval_worker_secret"
+  },
+  {
+    "name": "sicoob_internal_function_secret"
+  },
+  {
+    "name": "sicoob_project_url"
+  }
+]
