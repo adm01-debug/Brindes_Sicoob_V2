@@ -66,7 +66,10 @@ function clampAreaToTechnique(
 }
 
 function draftHasContent(draft: MockupDraftData | null): draft is MockupDraftData {
-  return Boolean(draft && (draft.productId || draft.techniqueId || draft.personalizationAreas.some(area => area.logoPreview)));
+  // A empresa escolhida sozinha já é trabalho do usuário: o rascunho a grava
+  // (`buildDraftData`) e `resolveDraft` sabe remontá-la, então recusá-la aqui
+  // era descartar na volta a única coisa que a tela tinha.
+  return Boolean(draft && (draft.clientId || draft.productId || draft.techniqueId || draft.personalizationAreas.some(area => area.logoPreview)));
 }
 
 function nullable<T>(value: T | null | undefined): T | null {

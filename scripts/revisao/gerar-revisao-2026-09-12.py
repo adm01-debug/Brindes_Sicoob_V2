@@ -55,7 +55,7 @@ GRUPOS = {
     'financeiro': ['src/pages/sicoob/orders/OrderDetailPage.tsx', 'src/hooks/orders/extensions/index.ts', 'src/hooks/orders/extensions/useOrderInvoices.ts', 'src/services/OrderService.ts', 'supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql'],
     'logistica': ['src/components/sicoob/orders/OrderLogisticsTab.tsx', 'src/services/sicoob/fulfillmentService.ts', 'supabase/migrations/20260912090000_sicoob_fulfillment.sql', 'tests/services/sicoobFulfillmentService.test.ts'],
     'organizacao': ['src/contexts/OrganizationContext.tsx', 'src/contexts/AuthContext.tsx'],
-    'rotas': ['src/routes/config/public.ts', 'src/routes/config/products.ts', 'src/routes/config/quotes.ts', 'src/routes/config/admin.ts', 'src/pages/PublicQuoteApprovalPage.tsx', 'src/pages/ResetPassword.tsx'],
+    'rotas': ['src/routes/config/public.ts', 'src/routes/config/products.ts', 'src/routes/config/quotes.ts', 'src/routes/config/admin.ts', 'src/pages/ResetPassword.tsx'],
     'busca': ['src/hooks/useSearch.ts', 'src/components/catalog/CatalogHeader.tsx', 'src/hooks/catalog/useCatalogSearchState.ts', 'tests/hooks/useSearch.test.ts'],
     'armazenamento': ['src/stores/useRecentlyViewedStore.ts', 'src/contexts/AuthContext.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.tsx', ATUAL+'testes-dirigidos.json'],
     'kit': ['src/hooks/useKitAutoSave.ts', 'src/hooks/useKitStockValidation.ts', 'src/components/kit-builder/KitSummary.tsx', 'src/hooks/useKitBuilder.ts', 'tests/hooks/useKitAutoSave.test.tsx', 'tests/hooks/useKitStockValidation.test.tsx', 'scripts/revisao/pendencias-2026-09-12.cenarios.tsx', ATUAL+'testes-dirigidos.json'],
