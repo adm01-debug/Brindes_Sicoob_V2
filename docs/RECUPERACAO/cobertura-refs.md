@@ -683,19 +683,27 @@ das migrations da PR #119: as quatro estão na `main` renumeradas para `20261118
 (mesmo slug), e o ledger as cita pelo nome novo. Não citado ≠ não recuperado — a conferência
 foi por slug, não por nome de arquivo. Com isso, **115/115 contabilizados**.
 
-Um único arquivo da ref **não foi trazido, de propósito**:
-`tests/stores/useNavigationGuardStore.test.ts`, que exercita `useNavigationGuardStore`, um store
-que a `main` **não tem** — e não por esquecimento. As três garantias do teste:
+Um único arquivo da ref **não foi trazido**:
+`tests/stores/useNavigationGuardStore.test.ts`, que exercita `useNavigationGuardStore` — um
+store que a `main` não tem. Não por esquecimento: as três garantias existem na `main`, cada
+uma em outro lugar, **todas com teste**.
 
-1. registrar/remover escopo sujo com mensagem → na `main` em
-   `src/lib/navigation/dirty-registry.ts` (`declararEstadoDaRota`/`esquecerRota`/
-   `mensagemDaRota`), coberta por `tests/lib/navigation/dirty-registry.test.ts`;
-2. `requestId` antigo não pode limpar o pedido atual → **não se aplica**: a `main` confirma
-   com `await askConfirm(...)` dentro de `performBackNavigation`
-   (`src/hooks/useSmartNavigation.ts:33-48`), uma promessa local. Sem estado de pedido
-   compartilhado não existe a corrida que esse guard protege;
-3. `clearAll` no logout → na `main` em `limparRegistroDeRotas()`, chamada de
+1. registrar/remover escopo sujo com mensagem → `src/lib/navigation/dirty-registry.ts`
+   (`declararEstadoDaRota`/`esquecerRota`/`mensagemDaRota`), coberta por
+   `tests/lib/navigation/dirty-registry.test.ts`;
+2. resposta antiga não pode resolver o pedido atual → `src/stores/useConfirmDialogStore.ts`,
+   onde `ask()` numera cada pedido (`id: nextRequestId`) e `resolve(requestId, confirmed)`
+   sai cedo se `pending.id !== requestId`; `ask()` ainda cancela o pedido anterior para não
+   deixar Promise pendurada. Coberta por `tests/stores/useConfirmDialogStore.test.ts:34`
+   ("uma resposta antiga não resolve um pedido concorrente") e `:25`;
+3. `clearAll` no logout → `limparRegistroDeRotas()`, chamada de
    `src/contexts/AuthContext.tsx:289` e `:387`, coberta por
    `tests/hooks/useSmartNavigation.registro-sujo.test.tsx`.
+
+> Correção de uma afirmação minha na primeira versão desta seção. Eu havia escrito que a
+> garantia 2 "não se aplica", porque `performBackNavigation` usa `await askConfirm(...)`,
+> uma chamada local. Errado: `askConfirm` delega ao store global, que tem pedido numerado e
+> a guarda contra resposta obsoleta. A conclusão não muda — ela fica mais forte: o arquivo
+> da ref não cobre nada que a `main` já não cubra. Apontado pela revisão da #365.
 
 Os outros 18 estão na `main`, conferidos um a um com `git cat-file -e origin/main:<arquivo>`.
