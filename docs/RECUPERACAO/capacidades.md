@@ -218,6 +218,16 @@ ERRADO NO DIAGNOSTICO: a conclusao de que "a PR aberta #292 ja os recupera" nao 
 
 ILIKE — a capacidade continua valida, mas o arquivo nao: a main resolveu metade do problema de outra forma. Ja existe `supabase/functions/_shared/pgrest-filter.ts` com `sanitizeIlikeValue`, usado por `external-db-bridge` e `visual-search`, que escapa `%` e `_` E neutraliza `, ( ) *` (injecao de filtro PostgREST em `.or(...)`). Criar `_shared/ilike-pattern.ts` ao lado dele e um segundo helper para o mesmo assunto, com nome parecido e escopo menor — convite ao uso do errado. Os dois nao sao intercambiaveis: `sanitizeIlikeValue` apaga barras invertidas, troca parenteses por espaco e corta em 160 caracteres, o que corromperia uma busca legitima como "Sicoob (Agencia Centro)" em `.ilike()` direto. A decisao de engenharia e manter a funcao da #179 (`escapeIlikeSearchTerm`, 3 linhas) mas dentro de `_shared/pgrest-filter.ts`, com comentario separando os dois usos, em vez de criar modulo novo.
 
+**ATUALIZAÇÃO (19/11/2026, PR #358).** O parágrafo abaixo ficou desatualizado:
+`_shared/ilike-pattern.ts` **existe** na `main` e o `crm-db-bridge` **já o usa**
+(linhas 568 e 858) — a recuperação do helper entrou depois desta análise. A
+varredura refeita achou outros dois pontos sem escape, que ninguém tinha
+olhado: `get-app-logs/index.ts:44` (filtro de telemetria, e esta função **está**
+na allowlist de publicação) e `mcp-server/index.ts:327` (busca por
+`client_name` em `quotes`). Os dois entraram na PR #358, mantendo a decisão
+registrada aqui de não criar um segundo helper. Texto original preservado
+abaixo como registro do que foi medido em 18/11:
+
 A lacuna de ILIKE na main e real e explorável hoje: `crm-db-bridge/index.ts:596,754,778` interpolam `search.term` cru em `.ilike(col, '%${term}%')`. A funcao e `scoped` (JWT + RBAC) no manifesto, mas um termo com `%` ou `_` vira curinga e devolve do CRM externo muito mais linhas do que a busca pediu.
 
 A capacidade tem consumidor real na main — nao e codigo morto: `src/services/sicoob/documentIngestService.ts:19` invoca a edge, consumida por `src/components/sicoob/orders/OrderLogisticsTab.tsx:11` e `src/hooks/orders/extensions/useOrderInvoices.ts:4`.
