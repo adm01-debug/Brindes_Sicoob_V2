@@ -77547,18 +77547,6 @@
     ],
     "lints": [
       {
-        "code": "rls_no_policies",
-        "detail": "RLS ligado sem policies: inacessível via API (só service_role).",
-        "object": "public._backup_custom_kits_pinned_20261118",
-        "severity": "MÉDIA"
-      },
-      {
-        "code": "rls_no_policies",
-        "detail": "RLS ligado sem policies: inacessível via API (só service_role).",
-        "object": "public.webhook_retry_claims",
-        "severity": "MÉDIA"
-      },
-      {
         "code": "policy_auth_fn_not_wrapped",
         "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
         "object": "public.admin_audit_log_y2026_m11.Admins can insert audit logs",
@@ -78763,9 +78751,27 @@
         "statements": 1,
         "statements_sha": "0e02e3e43d7057e8",
         "version": "20261118150000"
+      },
+      {
+        "name": "fix_compliance_rls_scan",
+        "statements": 1,
+        "statements_sha": "2ded60c80af1e9c9",
+        "version": "20261119140000"
       }
     ],
     "policies": [
+      {
+        "cmd": "ALL",
+        "name": "deny_non_service_role",
+        "permissive": "RESTRICTIVE",
+        "roles": [
+          "public"
+        ],
+        "schema": "public",
+        "table": "_backup_custom_kits_pinned_20261118",
+        "using": "false",
+        "with_check": null
+      },
       {
         "cmd": "SELECT",
         "name": "Admins read blocked access logs",
@@ -86281,6 +86287,18 @@
         "schema": "public",
         "table": "webhook_logs",
         "using": "(EXISTS ( SELECT 1\n   FROM user_roles ur\n  WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND ((ur.role)::text = ANY (ARRAY['admin'::text, 'dev'::text])))))",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "name": "deny_non_service_role",
+        "permissive": "RESTRICTIVE",
+        "roles": [
+          "public"
+        ],
+        "schema": "public",
+        "table": "webhook_retry_claims",
+        "using": "false",
         "with_check": null
       },
       {

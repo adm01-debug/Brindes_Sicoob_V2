@@ -8,7 +8,7 @@
 | owner | postgres |
 | RLS habilitado | sim |
 | RLS forçado (owner) | não |
-| policies | 0 |
+| policies | 1 |
 | realtime (publication) | não |
 | replica identity | default |
 | vem de extensão | não |
@@ -47,8 +47,15 @@
 
 ## Policies (RLS)
 
-> ⚠️ RLS habilitado **sem policies**: nenhum acesso via API (anon/authenticated).
+### `deny_non_service_role`
 
+| campo | valor |
+|---|---|
+| comando | ALL |
+| tipo | RESTRICTIVE |
+| roles | public |
+| USING | `false` |
+| WITH CHECK |  |
 
 
 ## Triggers

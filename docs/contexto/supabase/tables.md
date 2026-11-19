@@ -5,7 +5,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | tabela | tipo | RLS | policies | colunas | realtime | comentário |
 |---|---|---|---|---|---|---|
 | [private.quote_price_attestations](tables/private/quote_price_attestations.md) | table | sim | 0 | 9 | não | Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo. |
-| [public._backup_custom_kits_pinned_20261118](tables/public/backup_custom_kits_pinned_20261118.md) | table | sim | 0 | 6 | não | Estado de is_pinned/last_used_at/updated_at dos kits fixados imediatamente antes de 20261118130400_pin_custom_kit_atomically. RLS habilitada sem policy: somente superusuario e o owner da tabela leem. |
+| [public._backup_custom_kits_pinned_20261118](tables/public/backup_custom_kits_pinned_20261118.md) | table | sim | 1 | 6 | não | Estado de is_pinned/last_used_at/updated_at dos kits fixados imediatamente antes de 20261118130400_pin_custom_kit_atomically. RLS habilitada sem policy: somente superusuario e o owner da tabela leem. |
 | [public.access_blocked_log](tables/public/access_blocked_log.md) | table | sim | 2 | 10 | não |  |
 | [public.access_security_settings](tables/public/access_security_settings.md) | table | sim | 1 | 8 | não |  |
 | [public.admin_audit_log](tables/public/admin_audit_log.md) | partitioned | sim | 2 | 18 | não |  |
@@ -243,5 +243,5 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.webhook_deliveries](tables/public/webhook_deliveries.md) | table | sim | 2 | 11 | não |  |
 | [public.webhook_delivery_metrics](tables/public/webhook_delivery_metrics.md) | table | sim | 8 | 15 | não |  |
 | [public.webhook_logs](tables/public/webhook_logs.md) | table | sim | 1 | 9 | não |  |
-| [public.webhook_retry_claims](tables/public/webhook_retry_claims.md) | table | sim | 0 | 7 | não | Reserva durável de tentativas antes do enqueue assíncrono; não representa uma entrega nem participa das métricas de sucesso/falha. |
+| [public.webhook_retry_claims](tables/public/webhook_retry_claims.md) | table | sim | 1 | 7 | não | Reserva durável de tentativas antes do enqueue assíncrono; não representa uma entrega nem participa das métricas de sucesso/falha. |
 | [public.workspace_notifications](tables/public/workspace_notifications.md) | table | sim | 4 | 10 | não |  |

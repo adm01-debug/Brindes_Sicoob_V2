@@ -4,8 +4,6 @@ Verificações objetivas feitas no catálogo. Um agente deve ler isto antes de p
 
 | severidade | código | objeto | detalhe |
 |---|---|---|---|
-| MÉDIA | rls_no_policies | public._backup_custom_kits_pinned_20261118 | RLS ligado sem policies: inacessível via API (só service_role). |
-| MÉDIA | rls_no_policies | public.webhook_retry_claims | RLS ligado sem policies: inacessível via API (só service_role). |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m11.Admins can insert audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m11.Admins can view audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m12.Admins can insert audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |

@@ -5,6 +5,7 @@ Visão consolidada (inclui `storage.objects` e `realtime.messages`); detalhes po
 
 | tabela | policy | cmd | tipo | roles | USING | WITH CHECK |
 |---|---|---|---|---|---|---|
+| public._backup_custom_kits_pinned_20261118 | deny_non_service_role | ALL | RESTRICTIVE | public | `false` |  |
 | public.access_blocked_log | Admins read blocked access logs | SELECT | PERMISSIVE | authenticated | `can_manage(( SELECT auth.uid() AS uid))` |  |
 | public.access_blocked_log | Service role inserts blocked access logs | INSERT | PERMISSIVE | service_role |  | `true` |
 | public.access_security_settings | admin_manage_access_security_settings | ALL | PERMISSIVE | authenticated | `(EXISTS ( SELECT 1    FROM user_roles ur   WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND ((ur.role)::text = ANY (ARRAY['admin'::text, 'dev'::text])))))` | `(EXISTS ( SELECT 1    FROM user_roles ur   WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND ((ur.role)::text = ANY (ARRAY['admin'::text, 'dev'::text])))))` |
@@ -612,6 +613,7 @@ Visão consolidada (inclui `storage.objects` e `realtime.messages`); detalhes po
 | public.webhook_delivery_metrics | deny auth update webhook_metrics | UPDATE | PERMISSIVE | authenticated | `false` |  |
 | public.webhook_delivery_metrics | supervisors view webhook_metrics | SELECT | PERMISSIVE | authenticated | `(has_role(( SELECT auth.uid() AS uid), 'dev'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'supervisor'::app_role))` |  |
 | public.webhook_logs | admin_read_webhook_logs | SELECT | PERMISSIVE | authenticated | `(EXISTS ( SELECT 1    FROM user_roles ur   WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND ((ur.role)::text = ANY (ARRAY['admin'::text, 'dev'::text])))))` |  |
+| public.webhook_retry_claims | deny_non_service_role | ALL | RESTRICTIVE | public | `false` |  |
 | public.workspace_notifications | sicoob_merged_11d7b23a6c3c86be_insert | INSERT | PERMISSIVE | public |  | `(pg_has_role(CURRENT_USER, 'authenticated'::name, 'member'::text) AND (user_id = ( SELECT auth.uid() AS uid)))` |
 | public.workspace_notifications | sicoob_merged_4c8bf96603565bc0_update | UPDATE | PERMISSIVE | public | `((pg_has_role(CURRENT_USER, 'authenticated'::name, 'member'::text) AND (user_id = ( SELECT auth.uid() AS uid))) OR (true AND (( SELECT auth.uid() AS uid) = user_id)))` | `((pg_has_role(CURRENT_USER, 'authenticated'::name, 'member'::text) AND (user_id = ( SELECT auth.uid() AS uid))) OR (true AND (( SELECT auth.uid() AS uid) = user_id)))` |
 | public.workspace_notifications | sicoob_merged_9ef19691265ad966_select | SELECT | PERMISSIVE | public | `((pg_has_role(CURRENT_USER, 'authenticated'::name, 'member'::text) AND (user_id = ( SELECT auth.uid() AS uid))) OR (true AND (( SELECT auth.uid() AS uid) = user_id)))` |  |

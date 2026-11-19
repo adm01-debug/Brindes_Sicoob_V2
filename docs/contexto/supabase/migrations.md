@@ -162,3 +162,4 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261118130600 | [redact_public_quote_approval_costs](migrations/20261118130600_redact_public_quote_approval_costs.sql) | 1 |
 | 20261118130700 | [bind_sicoob_scan_evidence_hash](migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql) | 1 |
 | 20261118150000 | [fix_connections_auto_test_interval_hourly](migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql) | 1 |
+| 20261119140000 | [fix_compliance_rls_scan](migrations/20261119140000_fix_compliance_rls_scan.sql) | 1 |

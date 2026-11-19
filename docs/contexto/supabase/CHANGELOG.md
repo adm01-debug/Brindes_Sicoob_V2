@@ -2,6 +2,12 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-19 22:16 UTC
+
+- **lints** removido (2): `rls_no_policies:public._backup_custom_kits_pinned_20261118`, `rls_no_policies:public.webhook_retry_claims`
+- **migrations** adicionado (1): `20261119140000_fix_compliance_rls_scan`
+- **policies (RLS)** adicionado (2): `public._backup_custom_kits_pinned_20261118.deny_non_service_role`, `public.webhook_retry_claims.deny_non_service_role`
+
 ## 2026-11-19 18:20 UTC
 
 - **functions** alterado (1): `public.audit_empty_rls_policies()`
