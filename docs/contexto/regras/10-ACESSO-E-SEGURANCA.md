@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `116bb440f9` · branch `main` · 2026-11-19 04:17 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `87b4f99b3b` · branch `main` · 2026-11-19 04:34 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -311,7 +311,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 285 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 288 arquivo(s)
 
 - `docs/execucao/evidencias/sicoob_reconciliacao_restante_20260916.sql`
 - `e2e/helpers/cleanup-client.ts`
@@ -463,7 +463,7 @@
 - `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql`
 - `supabase/migrations/20260419024908_0f2085d5-a9a9-4182-b3b0-88377a2749d2.sql`
 - `supabase/migrations/20260419024944_6d1ce273-bd73-47a8-a582-7534cc3ceb32.sql`
-- … +135 (lista completa em `context.json`)
+- … +138 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 

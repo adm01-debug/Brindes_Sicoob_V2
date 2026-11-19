@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `116bb440f9` · branch `main` · 2026-11-19 04:17 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `87b4f99b3b` · branch `main` · 2026-11-19 04:34 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1710,7 +1710,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
   ```
 - **MessageSchema** (`supabase/functions/expert-chat/index.ts`, z.object):
   ```ts
-  { role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(5000), }
+  { role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(EXPERT_CHAT_MESSAGE_MAX_CHARS), }
   ```
 - **TextFilterSchema** (`supabase/functions/expert-chat/index.ts`, z.union, encadeia nullable, optional):
   ```ts
@@ -4869,7 +4869,7 @@ _nenhum item encontrado_
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
 | `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
-| … +160 linhas — lista completa em `context.json` | | |
+| … +161 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5707,7 +5707,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6814 testes em 673 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6827 testes em 676 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6011,7 +6011,7 @@ _nenhum item encontrado_
 | `tests/security/rls-seller-policies.spec.ts` | 7 | RLS — vendedor isolation snapshot · ${exp.table} ${exp.cmd}: ${exp.policyname} contém escopo seller_id · INSERT em quotes/orders sempre exige seller_id = auth.uid() em with_check · UPDATE em quotes/orders aplica check de seller_id (impede transferência) … |
 | `tests/sicoob/consolidation-intent.test.ts` | 7 | intenção idempotente de consolidação · reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos · gera outra chave quando o significado da operação muda · intenção idempotente de recebimento … |
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
-| … +373 linhas — lista completa em `context.json` | | |
+| … +376 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6496,4 +6496,4 @@ _nenhum item encontrado_
 | Peso máximo suportado em gramas (para validação) | `src/lib/kit-builder/types.ts` |
 | Utilitários para cálculo e validação de volume | `src/lib/kit-builder/volume-calculator.ts` |
 | Limite de alerta de volume | `src/lib/kit-builder/volume-calculator.ts` |
-| … +265 linhas — lista completa em `context.json` | |
+| … +266 linhas — lista completa em `context.json` | |

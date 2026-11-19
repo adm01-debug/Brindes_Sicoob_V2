@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "116bb440f9bdea6106d03c856f6777d47d435851",
+  "sha": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 04:17 UTC",
-  "files_total": 4403,
-  "code_files": 3747,
-  "code_lines": 549078
+  "generated_at": "2026-11-19 04:34 UTC",
+  "files_total": 4413,
+  "code_files": 3755,
+  "code_lines": 549384
  },
  "version": "1.3.2",
- "facts_hash": "a7ec290c05a5f176",
+ "facts_hash": "c3a59ab84019f6f6",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,10 +348,10 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1460,
+   ".ts": 1463,
    ".tsx": 1426,
-   ".sql": 675,
-   ".mjs": 135,
+   ".sql": 677,
+   ".mjs": 138,
    ".py": 60,
    ".js": 6,
    ".cjs": 5
@@ -65229,7 +65229,7 @@
   {
    "module": "supabase/functions",
    "files": 216,
-   "lines": 34890,
+   "lines": 34900,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65349,7 +65349,7 @@
     "cors.ts: getCorsHeaders, handleCorsPreflightIfNeeded, publicCorsHeaders",
     "credentials.ts: CredentialSource, CredentialResolution, CacheMetricsSnapshot, getCredentialCacheMetrics, CredentialHealthEntry, CredentialsHealthSummary",
     "edge-authz-manifest.ts: AuthzCategory, AuthzEntry, EDGE_AUTHZ_MANIFEST",
-    "expert-chat-contract.ts: EXPERT_CHAT_CLIENT_MESSAGE_ROLES",
+    "expert-chat-contract.ts: EXPERT_CHAT_CLIENT_MESSAGE_ROLES, EXPERT_CHAT_MESSAGE_MAX_CHARS",
     "external-db-aliases.ts: isTechniqueTableAlias, isTechniqueOptionsAlias, isTechniqueVarianteAlias, isCustomizationPriceTablesAlias, sanitizeExternalWriteData, mapPriceTableFiltersToExternal",
     "external-db-cache.ts: getCached, setCache",
     "external-db-config.ts: ResourceGroup, Operation, ALLOWED_RPCS, PRODUCT_TABLES, PRODUCT_VIEWS, COMPANY_TABLES",
@@ -65583,8 +65583,8 @@
   },
   {
    "module": "tests",
-   "files": 622,
-   "lines": 84753,
+   "files": 630,
+   "lines": 85049,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -71942,7 +71942,7 @@
     "file": "supabase/functions/expert-chat/index.ts",
     "name": "MessageSchema",
     "kind": "object",
-    "body": "{ role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(5000), }",
+    "body": "{ role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(EXPERT_CHAT_MESSAGE_MAX_CHARS), }",
     "refines": [],
     "chain": []
    },
@@ -80929,6 +80929,10 @@
    {
     "file": "supabase/functions/_shared/edge-authz-manifest.ts",
     "text": "\"custom\" = implementação própria legítima (validação inline de"
+   },
+   {
+    "file": "supabase/functions/_shared/expert-chat-contract.ts",
+    "text": "cópias do limite davam um teste que passava enquanto o endpoint recusava."
    },
    {
     "file": "supabase/functions/_shared/external-db-config.ts",
@@ -94334,6 +94338,11 @@
     "file": "supabase/functions/_shared/credentials.ts",
     "name": "MAX_DURATIONS",
     "value": "500"
+   },
+   {
+    "file": "supabase/functions/_shared/expert-chat-contract.ts",
+    "name": "EXPERT_CHAT_MESSAGE_MAX_CHARS",
+    "value": "5000"
    },
    {
     "file": "supabase/functions/_shared/external-db-cache.ts",
@@ -124322,6 +124331,26 @@
     "name": "button shows loader when loading"
    },
    {
+    "file": "tests/edge-functions/assistant-context.test.ts",
+    "name": "assistantContext normalization"
+   },
+   {
+    "file": "tests/edge-functions/assistant-context.test.ts",
+    "name": "preserves context below and exactly at the 500-character limit"
+   },
+   {
+    "file": "tests/edge-functions/assistant-context.test.ts",
+    "name": "truncates only assistantContext before the length validation"
+   },
+   {
+    "file": "tests/edge-functions/assistant-context.test.ts",
+    "name": "sanitizes control characters before measuring the limit"
+   },
+   {
+    "file": "tests/edge-functions/assistant-context.test.ts",
+    "name": "keeps rejecting non-string values and preserves an omitted context"
+   },
+   {
     "file": "tests/edge-functions/authorize-jwt-structure.test.ts",
     "name": "estrutura do JWT antes da validação remota"
    },
@@ -124352,6 +124381,26 @@
    {
     "file": "tests/edge-functions/cors.test.ts",
     "name": "não abre a allowlist para origens externas: %s"
+   },
+   {
+    "file": "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "name": "contrato das mensagens do cliente no expert-chat"
+   },
+   {
+    "file": "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "name": "aceita o papel %s"
+   },
+   {
+    "file": "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "name": "rejeita mensagens de sistema fornecidas pelo cliente"
+   },
+   {
+    "file": "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "name": "aceita mensagem no limite e recusa um caractere acima"
+   },
+   {
+    "file": "tests/edge-functions/expert-chat-message-schema.test.ts",
+    "name": "recusa mensagem vazia"
    },
    {
     "file": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
@@ -137120,6 +137169,18 @@
    {
     "file": "tests/unit/order-financials.test.ts",
     "name": "exclui rascunhos, pendências, rejeições e cancelamentos do volume comprometido"
+   },
+   {
+    "file": "tests/unit/process-scheduled-reports-scope.test.ts",
+    "name": "getScheduledReportOwnerFilter"
+   },
+   {
+    "file": "tests/unit/process-scheduled-reports-scope.test.ts",
+    "name": "restringe consultas de service role ao vendedor dono do relatório"
+   },
+   {
+    "file": "tests/unit/process-scheduled-reports-scope.test.ts",
+    "name": "recusa relatório sem usuário proprietário válido (%s)"
    },
    {
     "file": "tests/unit/sicoob-document-inspection.test.ts",
@@ -164398,9 +164459,11 @@
    "tests/rls/critical-tables-rls.test.ts",
    "tests/rls/e2e-cleanup-rate-limit.test.ts",
    "tests/rls/no-empty-rls-policies.test.ts",
+   "tests/scenarios/access-log-marketing-acl.scenario.mjs",
    "tests/scenarios/core-rls-audit.scenario.mjs",
    "tests/scenarios/notificacoes-aprovacao.mjs",
    "tests/scenarios/operacoes-internas-seguras.mjs",
+   "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
    "tests/scenarios/sql/audit-controls-fixture.sql",
    "tests/scenarios/sql/favorite-reactions-rls-fixture.sql",
    "tests/scenarios/sql/group-personalization-fixture.sql",
@@ -164414,6 +164477,7 @@
    "tests/scenarios/sql/sicoob-notification-outbox-fixture.sql",
    "tests/scenarios/sql/sicoob-reorder-fixture.sql",
    "tests/scenarios/supabase-sql-client.scenario.mjs",
+   "tests/scenarios/view-notification-hardening.scenario.mjs",
    "tests/scenarios/workers-internos-seguros.mjs",
    "tests/scripts/audit-scripts.test.ts",
    "tests/scripts/e2e-cleanup.test.ts",
@@ -226398,15 +226462,25 @@
   },
   "supabase/functions/_shared/expert-chat-contract.ts": {
    "path": "supabase/functions/_shared/expert-chat-contract.ts",
-   "lines": 3,
+   "lines": 10,
    "exports": [
-    "const EXPERT_CHAT_CLIENT_MESSAGE_ROLES"
+    "const EXPERT_CHAT_CLIENT_MESSAGE_ROLES",
+    "const EXPERT_CHAT_MESSAGE_MAX_CHARS"
    ],
    "enums": [
     {
      "name": "EXPERT_CHAT_CLIENT_MESSAGE_ROLES",
      "values": "\"user\", \"assistant\""
     }
+   ],
+   "params": [
+    {
+     "name": "EXPERT_CHAT_MESSAGE_MAX_CHARS",
+     "value": "5000"
+    }
+   ],
+   "rule_comments": [
+    "cópias do limite davam um teste que passava enquanto o endpoint recusava."
    ],
    "doc": "Papéis que um cliente autenticado pode incluir no histórico enviado ao expert-chat."
   },
@@ -229198,7 +229272,7 @@
   },
   "supabase/functions/expert-chat/index.ts": {
    "path": "supabase/functions/expert-chat/index.ts",
-   "lines": 1368,
+   "lines": 1371,
    "tables": [
     {
      "table": "products",
@@ -229352,7 +229426,7 @@
     {
      "name": "MessageSchema",
      "kind": "object",
-     "body": "{ role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(5000), }",
+     "body": "{ role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(EXPERT_CHAT_MESSAGE_MAX_CHARS), }",
      "refines": [],
      "chain": []
     },
@@ -243300,6 +243374,18 @@
     "button shows loader when loading"
    ]
   },
+  "tests/edge-functions/assistant-context.test.ts": {
+   "path": "tests/edge-functions/assistant-context.test.ts",
+   "lines": 36,
+   "is_test": true,
+   "tests": [
+    "assistantContext normalization",
+    "preserves context below and exactly at the 500-character limit",
+    "truncates only assistantContext before the length validation",
+    "sanitizes control characters before measuring the limit",
+    "keeps rejecting non-string values and preserves an omitted context"
+   ]
+  },
   "tests/edge-functions/authorize-jwt-structure.test.ts": {
    "path": "tests/edge-functions/authorize-jwt-structure.test.ts",
    "lines": 29,
@@ -243320,6 +243406,27 @@
     "allowlist CORS das Edge Functions",
     "aceita a origem Vercel do próprio portal: %s",
     "não abre a allowlist para origens externas: %s"
+   ]
+  },
+  "tests/edge-functions/expert-chat-message-schema.test.ts": {
+   "path": "tests/edge-functions/expert-chat-message-schema.test.ts",
+   "lines": 38,
+   "is_test": true,
+   "zod": [
+    {
+     "name": "ClientMessageSchema",
+     "kind": "object",
+     "body": "{ role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES), content: z.string().min(1).max(EXPERT_CHAT_MESSAGE_MAX_CHARS), }",
+     "refines": [],
+     "chain": []
+    }
+   ],
+   "tests": [
+    "contrato das mensagens do cliente no expert-chat",
+    "aceita o papel %s",
+    "rejeita mensagens de sistema fornecidas pelo cliente",
+    "aceita mensagem no limite e recusa um caractere acima",
+    "recusa mensagem vazia"
    ]
   },
   "tests/edge-functions/kit-quote-leitura-corpo.test.ts": {
@@ -248768,6 +248875,11 @@
     "não deixa rota de módulo sem caminho declarado"
    ]
   },
+  "tests/scenarios/access-log-marketing-acl.scenario.mjs": {
+   "path": "tests/scenarios/access-log-marketing-acl.scenario.mjs",
+   "lines": 32,
+   "uses_service_role": true
+  },
   "tests/scenarios/api-inventory.mjs": {
    "path": "tests/scenarios/api-inventory.mjs",
    "lines": 114
@@ -248899,6 +249011,10 @@
     "has_role"
    ]
   },
+  "tests/scenarios/manager-approval-delegation-route.scenario.mjs": {
+   "path": "tests/scenarios/manager-approval-delegation-route.scenario.mjs",
+   "lines": 16
+  },
   "tests/scenarios/migration-immutability-base.mjs": {
    "path": "tests/scenarios/migration-immutability-base.mjs",
    "lines": 65
@@ -249021,9 +249137,19 @@
    "doc": "Executado pelo node:test; fica fora da descoberta do Vitest.",
    "uses_service_role": true
   },
+  "tests/scenarios/view-notification-hardening.scenario.mjs": {
+   "path": "tests/scenarios/view-notification-hardening.scenario.mjs",
+   "lines": 34,
+   "uses_service_role": true
+  },
   "tests/scenarios/workers-internos-seguros.mjs": {
    "path": "tests/scenarios/workers-internos-seguros.mjs",
    "lines": 42,
+   "uses_service_role": true
+  },
+  "tests/scenarios/sql/access-log-marketing-acl-fixture.sql": {
+   "path": "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
+   "lines": 82,
    "uses_service_role": true
   },
   "tests/scenarios/sql/audit-controls-fixture.sql": {
@@ -249133,6 +249259,10 @@
   "tests/scenarios/sql/verba-base.sql": {
    "path": "tests/scenarios/sql/verba-base.sql",
    "lines": 17
+  },
+  "tests/scenarios/sql/view-notification-hardening-fixture.sql": {
+   "path": "tests/scenarios/sql/view-notification-hardening-fixture.sql",
+   "lines": 37
   },
   "tests/scripts/apply-sicoob-migrations-scanner.test.ts": {
    "path": "tests/scripts/apply-sicoob-migrations-scanner.test.ts",
@@ -250515,6 +250645,16 @@
     "exclui rascunhos, pendências, rejeições e cancelamentos do volume comprometido"
    ]
   },
+  "tests/unit/process-scheduled-reports-scope.test.ts": {
+   "path": "tests/unit/process-scheduled-reports-scope.test.ts",
+   "lines": 21,
+   "is_test": true,
+   "tests": [
+    "getScheduledReportOwnerFilter",
+    "restringe consultas de service role ao vendedor dono do relatório",
+    "recusa relatório sem usuário proprietário válido (%s)"
+   ]
+  },
   "tests/unit/sicoob-document-inspection.test.ts": {
    "path": "tests/unit/sicoob-document-inspection.test.ts",
    "lines": 47,
@@ -251201,10 +251341,38 @@
   }
  },
  "git": {
-  "sha": "116bb440f9bdea6106d03c856f6777d47d435851",
+  "sha": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "87b4f99",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)",
+    "files": [
+     "supabase/functions/_shared/expert-chat-contract.ts",
+     "supabase/functions/expert-chat/index.ts",
+     "tests/edge-functions/assistant-context.test.ts",
+     "tests/edge-functions/expert-chat-message-schema.test.ts",
+     "tests/scenarios/access-log-marketing-acl.scenario.mjs",
+     "tests/scenarios/manager-approval-delegation-route.scenario.mjs",
+     "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
+     "tests/scenarios/sql/view-notification-hardening-fixture.sql",
+     "tests/scenarios/view-notification-hardening.scenario.mjs",
+     "tests/unit/process-scheduled-reports-scope.test.ts"
+    ]
+   },
+   {
+    "sha": "e520ace",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)",
+    "files": [
+     "docs/execucao/email-transacional-modelos-pr4/README.md",
+     "docs/execucao/email-transacional-modelos-pr4/buildEmailContent.ts.txt"
+    ]
+   },
    {
     "sha": "116bb44",
     "date": "2026-11-19",
@@ -251623,35 +251791,6 @@
      "src/hooks/bi/useClientsComparison.ts",
      "tests/hooks/bi/useClientBI.test.ts"
     ]
-   },
-   {
-    "sha": "781ee20",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)",
-    "files": [
-     "src/components/catalog/CatalogContent.tsx",
-     "src/components/common/RouteScrollReset.tsx",
-     "src/components/mockup/KeyboardShortcuts.tsx",
-     "src/components/products/VirtualizedProductGrid.tsx",
-     "src/hooks/useScrollRestoration.ts",
-     "src/hooks/useSmartNavigation.ts",
-     "src/lib/overlay.ts",
-     "src/lib/uxMetrics.ts",
-     "tests/hooks/useScrollRestoration.test.tsx",
-     "tests/hooks/useSmartNavigation.test.tsx",
-     "tests/lib/overlay.test.tsx"
-    ]
-   },
-   {
-    "sha": "ca76bcd",
-    "date": "2026-11-18",
-    "author": "adm01-debug",
-    "subject": "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql"
-    ]
    }
   ],
   "hot_files": [
@@ -251664,19 +251803,11 @@
     3
    ],
    [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    3
-   ],
-   [
     "scripts/revisao/gerar-revisao-2026-09-12.py",
     2
    ],
    [
     "PENDENCIAS.md",
-    2
-   ],
-   [
-    "src/hooks/useSmartNavigation.ts",
     2
    ],
    [
@@ -251708,6 +251839,10 @@
     2
    ],
    [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    2
+   ],
+   [
     ".github/workflows/automation-local.yml",
     2
    ],
@@ -251724,15 +251859,19 @@
     2
    ],
    [
-    "docs/execucao/revisao-implementacao-2026-09-12.md",
+    "supabase/functions/_shared/expert-chat-contract.ts",
     1
    ],
    [
-    "e2e/validate-supabase-target.test.mjs",
+    "supabase/functions/expert-chat/index.ts",
     1
    ],
    [
-    "src/services/sicoob/commonService.ts",
+    "tests/edge-functions/assistant-context.test.ts",
+    1
+   ],
+   [
+    "tests/edge-functions/expert-chat-message-schema.test.ts",
     1
    ]
   ]

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 850,
+ "total": 856,
  "por_tipo": {
   "contrato": 9,
   "e2e": 174,
   "pytest": 2,
   "qa": 41,
-  "unit": 624
+  "unit": 630
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 603
+   "arquivos": 609
   },
   {
    "padrao": "e2e/",
@@ -3642,6 +3642,15 @@
    "casos": 17
   },
   {
+   "arquivo": "tests/edge-functions/assistant-context.test.ts",
+   "tipo": "unit",
+   "linhas": 36,
+   "testa": [
+    "supabase/functions/_shared/assistant-context.ts"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/edge-functions/authorize-jwt-structure.test.ts",
    "tipo": "unit",
    "linhas": 29,
@@ -3658,6 +3667,15 @@
     "supabase/functions/_shared/cors.ts"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "tests/edge-functions/expert-chat-message-schema.test.ts",
+   "tipo": "unit",
+   "linhas": 38,
+   "testa": [
+    "supabase/functions/_shared/expert-chat-contract.ts"
+   ],
+   "casos": 4
   },
   {
    "arquivo": "tests/edge-functions/kit-quote-leitura-corpo.test.ts",
@@ -6183,6 +6201,13 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/scenarios/access-log-marketing-acl.scenario.mjs",
+   "tipo": "unit",
+   "linhas": 32,
+   "testa": [],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/scenarios/api-inventory.mjs",
    "tipo": "unit",
    "linhas": 114,
@@ -6318,6 +6343,13 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/scenarios/manager-approval-delegation-route.scenario.mjs",
+   "tipo": "unit",
+   "linhas": 16,
+   "testa": [],
+   "casos": 1
+  },
+  {
    "arquivo": "tests/scenarios/migration-immutability-base.mjs",
    "tipo": "unit",
    "linhas": 65,
@@ -6387,6 +6419,13 @@
     "scripts/db/supabase-sql-client.mjs"
    ],
    "casos": 5
+  },
+  {
+   "arquivo": "tests/scenarios/view-notification-hardening.scenario.mjs",
+   "tipo": "unit",
+   "linhas": 34,
+   "testa": [],
+   "casos": 2
   },
   {
    "arquivo": "tests/scenarios/workers-internos-seguros.mjs",
@@ -7120,6 +7159,15 @@
     "src/utils/sicoob/orderFinancials.ts"
    ],
    "casos": 1
+  },
+  {
+   "arquivo": "tests/unit/process-scheduled-reports-scope.test.ts",
+   "tipo": "unit",
+   "linhas": 21,
+   "testa": [
+    "supabase/functions/process-scheduled-reports/report-scope.ts"
+   ],
+   "casos": 2
   },
   {
    "arquivo": "tests/unit/sicoob-document-inspection.test.ts",
@@ -7856,12 +7904,14 @@
   "src/utils/sicoob/orderFinancials.ts": 1,
   "src/utils/viacep.ts": 1,
   "supabase/functions/_shared/ai-usage.ts": 1,
+  "supabase/functions/_shared/assistant-context.ts": 1,
   "supabase/functions/_shared/background-task.ts": 1,
   "supabase/functions/_shared/catalog-redaction.ts": 2,
   "supabase/functions/_shared/connection-test-runner.ts": 2,
   "supabase/functions/_shared/cors.ts": 1,
   "supabase/functions/_shared/credentials.ts": 1,
   "supabase/functions/_shared/edge-authz-manifest.ts": 1,
+  "supabase/functions/_shared/expert-chat-contract.ts": 1,
   "supabase/functions/_shared/external-db-aliases.ts": 2,
   "supabase/functions/_shared/external-db-config.ts": 2,
   "supabase/functions/_shared/external-db-telemetry.ts": 1,
@@ -7888,6 +7938,7 @@
   "supabase/functions/external-db-bridge/index.ts": 4,
   "supabase/functions/health-check/contract.ts": 1,
   "supabase/functions/migration-health-check/contract.ts": 1,
+  "supabase/functions/process-scheduled-reports/report-scope.ts": 1,
   "supabase/functions/product-webhook/index.ts": 1,
   "supabase/functions/quote-price-attestation/contract.ts": 2,
   "supabase/functions/send-scheduled-reports/report-delivery.ts": 1,

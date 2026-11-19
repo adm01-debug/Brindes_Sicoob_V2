@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "116bb440f9bdea6106d03c856f6777d47d435851",
+  "commit": "87b4f99b3b948857ff05224a5c07aaf66ed37e03",
   "branch": "main",
-  "data_commit": "2026-11-19T04:15:55Z",
+  "data_commit": "2026-11-19T04:34:14Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "87b4f99",
+    "data": "2026-11-19",
+    "assunto": "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)"
+   },
+   {
+    "sha": "e520ace",
+    "data": "2026-11-19",
+    "assunto": "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)"
+   },
    {
     "sha": "116bb44",
     "data": "2026-11-19",
@@ -121,23 +131,13 @@
     "sha": "2b192fb",
     "data": "2026-11-18",
     "assunto": "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)"
-   },
-   {
-    "sha": "7372a96",
-    "data": "2026-11-18",
-    "assunto": "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)"
-   },
-   {
-    "sha": "8b0910c",
-    "data": "2026-11-18",
-    "assunto": "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)"
    }
   ],
-  "arquivos_mudados_7d": 466,
+  "arquivos_mudados_7d": 476,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 35
+    "mudancas": 36
    },
    {
     "pasta": "docs/externo/analises-20261007",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 66
+    "mudancas": 64
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 65
+    "mudancas": 63
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 156
+    "commits": 158
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4401,
-  "arquivos_codigo": 3090,
-  "linhas_codigo": 487637,
+  "arquivos_total": 4411,
+  "arquivos_codigo": 3096,
+  "linhas_codigo": 487824,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,10 +324,10 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 850,
+  "testes": 856,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 262
+  "docs_md": 263
  },
  "por_pasta": {
   "docs/execucao": {
@@ -840,7 +840,7 @@
   },
   "supabase/functions": {
    "arquivos": 216,
-   "linhas": 34890
+   "linhas": 34900
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -899,8 +899,8 @@
    "linhas": 60
   },
   "tests/edge-functions": {
-   "arquivos": 17,
-   "linhas": 1409
+   "arquivos": 19,
+   "linhas": 1483
   },
   "tests/fixtures": {
    "arquivos": 1,
@@ -955,8 +955,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 27,
-   "linhas": 1897
+   "arquivos": 30,
+   "linhas": 1979
   },
   "tests/scripts": {
    "arquivos": 32,
@@ -1019,8 +1019,8 @@
    "linhas": 160
   },
   "tests/unit": {
-   "arquivos": 11,
-   "linhas": 792
+   "arquivos": 12,
+   "linhas": 813
   },
   "tests/utils": {
    "arquivos": 20,
@@ -1062,7 +1062,7 @@
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",
-   "linhas": 1368
+   "linhas": 1371
   },
   {
    "arquivo": "supabase/functions/crm-db-bridge/index.ts",

@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (603)",
+   "tests/ (609)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "test(recuperação): traz da PR #119 os 11 testes que a main já passa hoje (#343)",
+   "docs(email): preserva os modelos da PR #4 sem reintroduzir o \"enviado\" falso (#337)",
    "test(qa): fecha a guarda do catalogo externo e corrige caminho renomeado (#339)",
    "fix(sicoob): canal de realtime dos pedidos passa a ser exclusivo por inscrição (#342)",
-   "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)",
-   "chore(orcamento): remove a aprovacao publica legada que ficou orfa na main (#354)",
-   "fix(estoque): detalhe de risco para de inventar velocidade e inteligencia (#355)"
+   "feat(clientes): recupera os KPIs de primeira compra e retenção da carteira (#344)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

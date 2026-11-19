@@ -1087,7 +1087,7 @@
    "nome": "expert-chat",
    "entrada": "supabase/functions/expert-chat/index.ts",
    "arquivos": 1,
-   "linhas": 1368,
+   "linhas": 1371,
    "verify_jwt": false,
    "metodos": [
     "OPTIONS"
