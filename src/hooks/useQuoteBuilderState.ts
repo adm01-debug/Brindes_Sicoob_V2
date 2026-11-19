@@ -1,4 +1,3 @@
-
 /**
  * useQuoteBuilderState — Estado centralizado do QuoteBuilder (REFATORADO)
  * Extrai toda a lógica de estado, cálculos e ações do QuoteBuilderPage.
@@ -18,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
-import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
+import { findMergeableQuoteItemIndex, getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
 import { buildQuoteDraftScope } from "@/lib/quotes/quote-draft-scope";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
@@ -32,16 +31,22 @@ export function validateBudgetForSubmission<T>(
   error: unknown,
 ): { ok: true; budget: T } | { ok: false; message: string } {
   if (error) {
-    return { ok: false, message: "Não foi possível validar a verba do PA. Tente novamente antes de enviar." };
+    return {
+      ok: false,
+      message: 'Não foi possível validar a verba do PA. Tente novamente antes de enviar.',
+    };
   }
   if (!budget) {
-    return { ok: false, message: "A verba desta competência ainda não foi configurada para o seu PA." };
+    return {
+      ok: false,
+      message: 'A verba desta competência ainda não foi configurada para o seu PA.',
+    };
   }
   return { ok: true, budget };
 }
 
-function truthyOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
-  return value ? value as T : fallback;
+function truthyOr<T>(value: T | null | undefined | false | '' | 0, fallback: T): T {
+  return value ? (value as T) : fallback;
 }
 
 function definedOr<T>(value: T | null | undefined, fallback: T): T {
@@ -57,17 +62,21 @@ function quoteBuilderSteps(
   const [deliveryTime, shippingType] = conditions;
   const steps: QuoteBuilderStep[] = [];
   const hasConditions = [paymentTerms, deliveryTime, shippingType].every(Boolean);
-  if (clientId) steps.push("client");
-  if (itemCount > 0) steps.push("items");
-  if (hasConditions) steps.push("conditions");
-  if ([clientId, itemCount > 0, hasConditions].every(Boolean)) steps.push("review");
+  if (clientId) steps.push('client');
+  if (itemCount > 0) steps.push('items');
+  if (hasConditions) steps.push('conditions');
+  if ([clientId, itemCount > 0, hasConditions].every(Boolean)) steps.push('review');
   return steps;
 }
 
-function preferredProductImage(product: Product, variant: ExternalVariantStock | null): string | undefined {
+function preferredProductImage(
+  product: Product,
+  variant: ExternalVariantStock | null,
+): string | undefined {
   if (variant?.selected_thumbnail) return variant.selected_thumbnail;
   if (variant?.images?.length) return variant.images[0];
-  if (Array.isArray(product.images) && product.images.length > 0) return product.images[0] as string;
+  if (Array.isArray(product.images) && product.images.length > 0)
+    return product.images[0] as string;
   return undefined;
 }
 
@@ -79,7 +88,7 @@ function buildQuoteItem(product: Product, variant: ExternalVariantStock | null):
     product_sku: product.sku,
     product_image_url: preferredProductImage(product, variant),
     quantity: 1,
-    unit_price: product.price,
+    unit_price: definedOr(selected.sale_price, product.price),
     unit_cost: truthyOr(product.costPrice, 0),
     color_name: truthyOr(selected.color_name, undefined),
     color_hex: truthyOr(selected.color_hex, undefined),
@@ -95,7 +104,7 @@ function buildQuoteItem(product: Product, variant: ExternalVariantStock | null):
 
 function mapTemplateItem(item: QuoteTemplateItem): QuoteItem {
   return {
-    product_id: truthyOr(item.productId, ""),
+    product_id: truthyOr(item.productId, ''),
     product_name: item.productName,
     product_sku: item.productSku,
     product_image_url: item.productImageUrl,
@@ -104,7 +113,7 @@ function mapTemplateItem(item: QuoteTemplateItem): QuoteItem {
     color_name: item.colorName,
     color_hex: item.colorHex,
     personalizations: item.personalizations?.map((personalization) => ({
-      technique_id: truthyOr(personalization.techniqueId, ""),
+      technique_id: truthyOr(personalization.techniqueId, ''),
       technique_name: personalization.techniqueName,
       colors_count: personalization.colorsCount,
       positions_count: personalization.positionsCount,
@@ -120,17 +129,17 @@ function applyTemplateDiscount(
   setDiscountValue: (value: number) => void,
 ): void {
   if ((template.discount_percent ?? 0) > 0) {
-    setDiscountType("percent");
+    setDiscountType('percent');
     setDiscountValue(template.discount_percent ?? 0);
     return;
   }
   if ((template.discount_amount ?? 0) > 0) {
-    setDiscountType("amount");
+    setDiscountType('amount');
     setDiscountValue(template.discount_amount ?? 0);
   }
 }
 
-type SaveStatus = "draft" | "pending" | "pending_approval" | "pending_singular_approval";
+type SaveStatus = 'draft' | 'pending' | 'pending_approval' | 'pending_singular_approval';
 
 function validateSaveForm(
   status: SaveStatus,
@@ -138,12 +147,12 @@ function validateSaveForm(
   isFormValid: boolean,
   validationErrors: string[],
 ): boolean {
-  if (status === "draft" && !isDraftValid) {
-    toast.error("Selecione uma empresa para salvar o rascunho.");
+  if (status === 'draft' && !isDraftValid) {
+    toast.error('Selecione uma empresa para salvar o rascunho.');
     return false;
   }
-  if (status !== "draft" && !isFormValid) {
-    const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(", ");
+  if (status !== 'draft' && !isFormValid) {
+    const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(', ');
     toast.error(`Preencha os campos obrigatórios: ${missing}`);
     return false;
   }
@@ -151,18 +160,18 @@ function validateSaveForm(
 }
 
 function validateFreshPrices(status: SaveStatus, items: QuoteItem[]): boolean {
-  if (status === "draft") return true;
+  if (status === 'draft') return true;
   const staleUnconfirmed = items.some((item) => {
     if (item.price_confirmed_at) return false;
     return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale;
   });
   if (!staleUnconfirmed) return true;
-  toast.error("Confirme os preços defasados antes de fechar o orçamento");
+  toast.error('Confirme os preços defasados antes de fechar o orçamento');
   return false;
 }
 
 function isPaPurchaser(isGerentePa: boolean, roles: string[] | undefined): boolean {
-  return isGerentePa || Boolean(roles?.includes("comprador_pac"));
+  return isGerentePa || Boolean(roles?.includes('comprador_pac'));
 }
 
 interface BudgetValidationParams {
@@ -174,16 +183,19 @@ interface BudgetValidationParams {
 
 function validateTransactionLimit(total: number, limit: number): boolean {
   if (limit <= 0 || total <= limit) return true;
-  toast.error("Limite de alçada excedido!", {
+  toast.error('Limite de alçada excedido!', {
     description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`,
   });
   return false;
 }
 
-function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
+function validateMonthlyBudget(
+  total: number,
+  budget: { verba_total: number; verba_consumida: number | null },
+): boolean {
   const remaining = budget.verba_total - (budget.verba_consumida || 0);
   if (budget.verba_total <= 0 || total <= remaining) return true;
-  toast.error("Verba insuficiente!", {
+  toast.error('Verba insuficiente!', {
     description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`,
   });
   return false;
@@ -191,9 +203,9 @@ function validateMonthlyBudget(total: number, budget: { verba_total: number; ver
 
 async function validatePaBudget(params: BudgetValidationParams): Promise<boolean> {
   const { status, isPaUser, paId, total } = params;
-  if (status === "draft" || !isPaUser) return true;
+  if (status === 'draft' || !isPaUser) return true;
   if (!paId) {
-    toast.error("Seu perfil não possui um Ponto de Atendimento vinculado.");
+    toast.error('Seu perfil não possui um Ponto de Atendimento vinculado.');
     return false;
   }
   const { data: budget, error } = await supabase
@@ -213,7 +225,7 @@ async function validatePaBudget(params: BudgetValidationParams): Promise<boolean
 }
 
 function finalQuoteStatus(status: SaveStatus, isPaUser: boolean): SaveStatus {
-  return status === "pending" && isPaUser ? "pending_singular_approval" : status;
+  return status === 'pending' && isPaUser ? 'pending_singular_approval' : status;
 }
 
 interface QuoteDataParams {
@@ -236,8 +248,8 @@ interface QuoteDataParams {
 }
 
 function buildQuoteData(params: QuoteDataParams): Partial<Quote> {
-  const persistedStatus = (params.isEditMode ? params.currentStatus : "draft") as Quote["status"];
-  const paidShipping = ["fob_pre", "fob"].includes(params.shippingType);
+  const persistedStatus = (params.isEditMode ? params.currentStatus : 'draft') as Quote['status'];
+  const paidShipping = ['fob_pre', 'fob'].includes(params.shippingType);
   return {
     client_id: truthyOr(params.clientId, undefined),
     client_name: truthyOr(params.contactInfo?.name, undefined),
@@ -247,8 +259,8 @@ function buildQuoteData(params: QuoteDataParams): Partial<Quote> {
     client_phone: truthyOr(params.contactInfo?.phone, undefined),
     status: persistedStatus,
     tags: params.tags,
-    discount_percent: params.discountType === "percent" ? params.discountValue : 0,
-    discount_amount: params.discountType === "amount" ? params.discountValue : 0,
+    discount_percent: params.discountType === 'percent' ? params.discountValue : 0,
+    discount_amount: params.discountType === 'amount' ? params.discountValue : 0,
     negotiation_markup_percent: params.markup,
     notes: truthyOr(params.notes, undefined),
     internal_notes: truthyOr(params.internalNotes, undefined),
@@ -267,8 +279,17 @@ interface PersistQuoteParams {
   quoteData: Partial<Quote>;
   items: QuoteItem[];
   idempotencyKeyRef: { current: string | null };
-  createQuote: (quote: Partial<Quote>, items: QuoteItem[], idempotencyKey: string) => Promise<Quote | null>;
-  updateQuote: (quoteId: string, quote: Partial<Quote>, items: QuoteItem[], expectedVersion: number) => Promise<Quote | null>;
+  createQuote: (
+    quote: Partial<Quote>,
+    items: QuoteItem[],
+    idempotencyKey: string,
+  ) => Promise<Quote | null>;
+  updateQuote: (
+    quoteId: string,
+    quote: Partial<Quote>,
+    items: QuoteItem[],
+    expectedVersion: number,
+  ) => Promise<Quote | null>;
 }
 
 async function persistQuote(params: PersistQuoteParams): Promise<Quote | null> {
@@ -288,12 +309,17 @@ async function persistQuote(params: PersistQuoteParams): Promise<Quote | null> {
 interface TransitionQuoteParams {
   quote: Quote;
   finalStatus: SaveStatus;
-  persistedStatus: Quote["status"];
+  persistedStatus: Quote['status'];
   maxDiscountPercent: number | null | undefined;
   realDiscountPercent: number;
   sellerNotes?: string;
-  requestApproval: (quoteId: string, requested: number, allowed: number, notes?: string) => Promise<boolean>;
-  updateQuoteStatus: (quoteId: string, status: Quote["status"]) => Promise<boolean>;
+  requestApproval: (
+    quoteId: string,
+    requested: number,
+    allowed: number,
+    notes?: string,
+  ) => Promise<boolean>;
+  updateQuoteStatus: (quoteId: string, status: Quote['status']) => Promise<boolean>;
 }
 
 async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
@@ -301,11 +327,15 @@ async function applyQuoteTransition(params: TransitionQuoteParams): Promise<bool
   if (!quoteId) return false;
   let effectiveStatus = params.persistedStatus;
   if (quoteStatusRequiresDraftReset(effectiveStatus)) {
-    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    const reopened = await params.updateQuoteStatus(quoteId, 'draft');
     if (!reopened) return false;
-    effectiveStatus = "draft";
+    effectiveStatus = 'draft';
   }
-  if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) {
+  if (
+    params.finalStatus === 'pending_approval' &&
+    params.maxDiscountPercent !== null &&
+    params.maxDiscountPercent !== undefined
+  ) {
     return params.requestApproval(
       quoteId,
       params.realDiscountPercent,
@@ -319,13 +349,15 @@ async function applyQuoteTransition(params: TransitionQuoteParams): Promise<bool
   return true;
 }
 
-function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote["status"] {
-  return (isEditMode ? currentStatus : "draft") as Quote["status"];
+function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote['status'] {
+  return (isEditMode ? currentStatus : 'draft') as Quote['status'];
 }
 
 function canPersistQuoteVersion(isEditMode: boolean, expectedRowVersion: number | null): boolean {
   if (!isEditMode || expectedRowVersion !== null) return true;
-  toast.error("Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.");
+  toast.error(
+    'Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.',
+  );
   return false;
 }
 
@@ -345,16 +377,19 @@ function completeQuoteSave(params: CompleteSaveParams): void {
     params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
   }
   if (!transitionApplied) {
-    toast.warning("O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.");
+    toast.warning(
+      'O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.',
+    );
     params.navigate(`/orcamentos/${result.id}`);
     return;
   }
-  if (finalStatus === "pending_singular_approval") {
-    toast.success("Solicitação enviada para aprovação da Singular!");
+  if (finalStatus === 'pending_singular_approval') {
+    toast.success('Solicitação enviada para aprovação da Singular!');
   }
   params.navigate(`/orcamentos/${result.id}`);
 }
 
+// eslint-disable-next-line max-lines-per-function -- hook agregador preexistente; divisao fora do escopo desta recuperacao
 export function useQuoteBuilderState() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -363,34 +398,40 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user, profile, roles: userRoles, isGerentePa } = useAuth();
-  const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
+  const {
+    createQuote,
+    updateQuote,
+    updateQuoteStatus,
+    fetchQuote,
+    isLoading: quotesLoading,
+  } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
   const { requestApproval } = useDiscountApproval();
 
   // ── State ──
-  const [clientId, setClientId] = useState("");
-  const [contactId, setContactId] = useState("");
+  const [clientId, setClientId] = useState('');
+  const [contactId, setContactId] = useState('');
   const [companyInfo, setCompanyInfo] = useState<SelectedCompanyInfo | null>(null);
   const [contactInfo, setContactInfo] = useState<SelectedContactInfo | null>(null);
-  const [validityDays, setValidityDays] = useState("7");
-  const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
-  const [discountType, setDiscountType] = useState<DiscountType>("percent");
+  const [validityDays, setValidityDays] = useState('7');
+  const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
+  const [discountType, setDiscountType] = useState<DiscountType>('percent');
   const [discountValue, setDiscountValue] = useState(0);
   const [negotiationMarkup, setNegotiationMarkup] = useState(0);
-  const [notes, setNotes] = useState("");
-  const [internalNotes, setInternalNotes] = useState("");
+  const [notes, setNotes] = useState('');
+  const [internalNotes, setInternalNotes] = useState('');
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [quoteNumber, setQuoteNumber] = useState("");
-  const [currentStatus, setCurrentStatus] = useState("draft");
+  const [quoteNumber, setQuoteNumber] = useState('');
+  const [currentStatus, setCurrentStatus] = useState('draft');
   const [isLatestVersion, setIsLatestVersion] = useState(true);
   const [expectedRowVersion, setExpectedRowVersion] = useState<number | null>(null);
-  const [paymentTerms, setPaymentTerms] = useState("");
-  const [deliveryTime, setDeliveryTime] = useState("");
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("prazo");
+  const [paymentTerms, setPaymentTerms] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('prazo');
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
-  const [shippingType, setShippingType] = useState("");
+  const [shippingType, setShippingType] = useState('');
   const [shippingCost, setShippingCost] = useState(0);
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
@@ -402,32 +443,58 @@ export function useQuoteBuilderState() {
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
-  const initializationSetters = useMemo(() => ({
-    setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
-    setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
-    setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
-    setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-    setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
-  }), []);
-  
+  const initializationSetters = useMemo(
+    () => ({
+      setClientId,
+      setContactId,
+      setValidUntil,
+      setNotes,
+      setInternalNotes,
+      setQuoteNumber,
+      setCurrentStatus,
+      setIsLatestVersion,
+      setExpectedRowVersion,
+      setContactInfo,
+      setCompanyInfo,
+      setDiscountType,
+      setDiscountValue,
+      setNegotiationMarkup,
+      setPaymentTerms,
+      setShippingType,
+      setShippingCost,
+      setDeliveryMode,
+      setDeliveryDate,
+      setDeliveryTime,
+      setItems,
+      setTags,
+      setLoadingQuote,
+      setActiveItemIndex,
+      setExpandedItems,
+    }),
+    [],
+  );
+
   useQuoteInitialization({
-    isEditMode, quoteId, fetchQuote, 
-    locationState: location.state, 
+    isEditMode,
+    quoteId,
+    fetchQuote,
+    locationState: location.state,
     searchParams,
     setters: initializationSetters,
   });
 
   // ── Computeds ──
-  const totals = useMemo(() => 
-    calculateQuoteTotals({
-      items,
-      negotiationMarkup,
-      discountType,
-      discountValue,
-      shippingCost,
-      shippingType,
-    }),
-    [items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType]
+  const totals = useMemo(
+    () =>
+      calculateQuoteTotals({
+        items,
+        negotiationMarkup,
+        discountType,
+        discountValue,
+        shippingCost,
+        shippingType,
+      }),
+    [items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType],
   );
 
   const completedSteps = useMemo(
@@ -435,18 +502,31 @@ export function useQuoteBuilderState() {
     [clientId, items.length, paymentTerms, deliveryTime, shippingType],
   );
 
-  const validationErrors = useMemo(() => validateQuoteForm({
-    clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, itemsCount: items.length,
-  }), [clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, items.length]);
+  const validationErrors = useMemo(
+    () =>
+      validateQuoteForm({
+        clientId,
+        contactId,
+        paymentTerms,
+        deliveryTime,
+        shippingType,
+        shippingCost,
+        itemsCount: items.length,
+      }),
+    [clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, items.length],
+  );
 
   const isFormValid = validationErrors.length === 0;
   const isDraftValid = !!clientId;
 
   const isDiscountExceeded = useMemo(() => {
     if (maxDiscountPercent === null || maxDiscountPercent === undefined) return false;
-    const effectivePercent = discountType === "percent" 
-      ? discountValue 
-      : (totals.subtotal > 0 ? (discountValue / totals.subtotal) * 100 : 0);
+    const effectivePercent =
+      discountType === 'percent'
+        ? discountValue
+        : totals.subtotal > 0
+          ? (discountValue / totals.subtotal) * 100
+          : 0;
     return effectivePercent > maxDiscountPercent;
   }, [maxDiscountPercent, discountType, discountValue, totals.subtotal]);
 
@@ -455,7 +535,7 @@ export function useQuoteBuilderState() {
     return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
   }, [isEditMode, currentStatus, isLatestVersion]);
 
-  const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
+  const defaultTemplate = useMemo(() => templates.find((t) => t.is_default), [templates]);
 
   // Guarda de "alterações não salvas" (useUnsavedChangesGuard): compara o
   // formulário atual contra um snapshot capturado só depois que o carregamento
@@ -465,14 +545,40 @@ export function useQuoteBuilderState() {
   // efeito) só para o efeito abaixo poder ler o estado "no instante em que
   // loadingQuote virou false" sem precisar listá-los como dependências.
   const formSnapshotRef = useRef({
-    clientId, contactId, items, notes, internalNotes, tags, validUntil,
-    paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
-    discountType, discountValue, negotiationMarkup,
+    clientId,
+    contactId,
+    items,
+    notes,
+    internalNotes,
+    tags,
+    validUntil,
+    paymentTerms,
+    deliveryTime,
+    deliveryMode,
+    deliveryDate,
+    shippingType,
+    shippingCost,
+    discountType,
+    discountValue,
+    negotiationMarkup,
   });
   formSnapshotRef.current = {
-    clientId, contactId, items, notes, internalNotes, tags, validUntil,
-    paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
-    discountType, discountValue, negotiationMarkup,
+    clientId,
+    contactId,
+    items,
+    notes,
+    internalNotes,
+    tags,
+    validUntil,
+    paymentTerms,
+    deliveryTime,
+    deliveryMode,
+    deliveryDate,
+    shippingType,
+    shippingCost,
+    discountType,
+    discountValue,
+    negotiationMarkup,
   };
   const initialSnapshotRef = useRef<string | null>(null);
   useEffect(() => {
@@ -484,16 +590,46 @@ export function useQuoteBuilderState() {
   const hasUnsavedData = useMemo(() => {
     if (initialSnapshotRef.current === null) return false;
     const current = JSON.stringify({
-      clientId, contactId, items, notes, internalNotes, tags, validUntil,
-      paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
-      discountType, discountValue, negotiationMarkup,
+      clientId,
+      contactId,
+      items,
+      notes,
+      internalNotes,
+      tags,
+      validUntil,
+      paymentTerms,
+      deliveryTime,
+      deliveryMode,
+      deliveryDate,
+      shippingType,
+      shippingCost,
+      discountType,
+      discountValue,
+      negotiationMarkup,
     });
     return current !== initialSnapshotRef.current;
-  }, [clientId, contactId, items, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, discountType, discountValue, negotiationMarkup]);
+  }, [
+    clientId,
+    contactId,
+    items,
+    notes,
+    internalNotes,
+    tags,
+    validUntil,
+    paymentTerms,
+    deliveryTime,
+    deliveryMode,
+    deliveryDate,
+    shippingType,
+    shippingCost,
+    discountType,
+    discountValue,
+    negotiationMarkup,
+  ]);
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
       else next.add(index);
@@ -501,46 +637,61 @@ export function useQuoteBuilderState() {
     });
   }, []);
 
-  const handlePersonalizationsChange = useCallback((index: number, personalizations: QuoteItemPersonalization[]) => {
-    setItems(prev => prev.map((item, idx) => idx === index ? { ...item, personalizations } : item));
-  }, []);
+  const handlePersonalizationsChange = useCallback(
+    (index: number, personalizations: QuoteItemPersonalization[]) => {
+      setItems((prev) =>
+        prev.map((item, idx) => (idx === index ? { ...item, personalizations } : item)),
+      );
+    },
+    [],
+  );
 
-  const addProductWithColor = useCallback((product: Product, variant: ExternalVariantStock | null) => {
-    const newItem = buildQuoteItem(product, variant);
-    const { color_name: colorName, size_code: sizeCode } = newItem;
-    
-    const existingIndex = items.findIndex(i => i.product_id === product.id && i.color_name === colorName && i.size_code === sizeCode);
-    
-    if (existingIndex >= 0) {
-      setItems(prev => prev.map((item, idx) => idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item));
-      setActiveItemIndex(existingIndex);
-    } else {
-      setItems(prev => {
-        const newItems = [...prev, newItem];
-        setActiveItemIndex(newItems.length - 1);
-        return newItems;
-      });
-    }
-    setSelectedProductForColor(null); search.setProductSearchOpen(false); search.setProductSearch("");
-  }, [items, search]);
+  const addProductWithColor = useCallback(
+    (product: Product, variant: ExternalVariantStock | null) => {
+      const newItem = buildQuoteItem(product, variant);
+
+      const existingIndex = findMergeableQuoteItemIndex(items, newItem);
+
+      if (existingIndex >= 0) {
+        setItems((prev) =>
+          prev.map((item, idx) =>
+            idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item,
+          ),
+        );
+        setActiveItemIndex(existingIndex);
+      } else {
+        setItems((prev) => {
+          const newItems = [...prev, newItem];
+          setActiveItemIndex(newItems.length - 1);
+          return newItems;
+        });
+      }
+      setSelectedProductForColor(null);
+      search.setProductSearchOpen(false);
+      search.setProductSearch('');
+    },
+    [items, search],
+  );
 
   const updateItemQuantity = useCallback((index: number, quantity: number) => {
     if (quantity < 1) return;
-    setItems(prev => prev.map((item, idx) => idx === index ? { ...item, quantity } : item));
+    setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, quantity } : item)));
   }, []);
 
   const updateItemPrice = useCallback((index: number, price: number) => {
-    setItems(prev => prev.map((item, idx) => idx === index ? { ...item, unit_price: price } : item));
+    setItems((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, unit_price: price } : item)),
+    );
   }, []);
 
   const removeItem = useCallback((index: number) => {
-    setItems(prev => prev.filter((_, idx) => idx !== index));
-    setSelectedItemIndexes(prev => {
+    setItems((prev) => prev.filter((_, idx) => idx !== index));
+    setSelectedItemIndexes((prev) => {
       const n = new Set(prev);
       n.delete(index);
       // Adjust indexes above removed
       const adjusted = new Set<number>();
-      prev.forEach(i => {
+      prev.forEach((i) => {
         if (i < index) adjusted.add(i);
         else if (i > index) adjusted.add(i - 1);
       });
@@ -550,22 +701,26 @@ export function useQuoteBuilderState() {
 
   const groupItemsIntoKit = useCallback((indexes: number[], kitName: string) => {
     const groupId = crypto.randomUUID();
-    setItems(prev => prev.map((item, idx) => 
-      indexes.includes(idx) ? { ...item, kit_group_id: groupId, kit_name: kitName } : item
-    ));
+    setItems((prev) =>
+      prev.map((item, idx) =>
+        indexes.includes(idx) ? { ...item, kit_group_id: groupId, kit_name: kitName } : item,
+      ),
+    );
     setSelectedItemIndexes(new Set());
     toast.success(`Itens agrupados no kit "${kitName}"`);
   }, []);
 
   const ungroupItems = useCallback((groupId: string) => {
-    setItems(prev => prev.map(item => 
-      item.kit_group_id === groupId ? { ...item, kit_group_id: null, kit_name: null } : item
-    ));
-    toast.success("Itens desagrupados do kit");
+    setItems((prev) =>
+      prev.map((item) =>
+        item.kit_group_id === groupId ? { ...item, kit_group_id: null, kit_name: null } : item,
+      ),
+    );
+    toast.success('Itens desagrupados do kit');
   }, []);
 
   const toggleItemSelection = useCallback((index: number) => {
-    setSelectedItemIndexes(prev => {
+    setSelectedItemIndexes((prev) => {
       const n = new Set(prev);
       if (n.has(index)) n.delete(index);
       else n.add(index);
@@ -579,47 +734,119 @@ export function useQuoteBuilderState() {
     applyTemplateDiscount(template, setDiscountType, setDiscountValue);
     if (template.notes) setNotes(template.notes);
     if (template.internal_notes) setInternalNotes(template.internal_notes);
-    if (template.validity_days) setValidUntil(format(addDays(new Date(), template.validity_days), "yyyy-MM-dd"));
+    if (template.validity_days)
+      setValidUntil(format(addDays(new Date(), template.validity_days), 'yyyy-MM-dd'));
     setTemplateApplied(template.name);
     toast.success(`Template "${template.name}" aplicado!`);
   }, []);
 
-  const handleSaveQuote = useCallback(async (status: SaveStatus = "draft", sellerNotes?: string) => {
-    if (!canEdit) {
-      toast.error("Este orçamento está disponível somente para leitura.");
-      return;
-    }
-    if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
-    if (!validateFreshPrices(status, items)) return;
-    const isPaUser = isPaPurchaser(isGerentePa, userRoles);
-    const validBudget = await validatePaBudget({ status, isPaUser, paId: profile?.pa_id, total: totals.total });
-    if (!validBudget) return;
-    const finalStatus = finalQuoteStatus(status, isPaUser);
-    if (!canPersistQuoteVersion(isEditMode, expectedRowVersion)) return;
+  const handleSaveQuote = useCallback(
+    // eslint-disable-next-line max-lines-per-function -- formatacao do prettier elevou a contagem; divisao fora do escopo desta recuperacao
+    async (status: SaveStatus = 'draft', sellerNotes?: string) => {
+      if (!canEdit) {
+        toast.error('Este orçamento está disponível somente para leitura.');
+        return;
+      }
+      if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
+      if (!validateFreshPrices(status, items)) return;
+      const isPaUser = isPaPurchaser(isGerentePa, userRoles);
+      const validBudget = await validatePaBudget({
+        status,
+        isPaUser,
+        paId: profile?.pa_id,
+        total: totals.total,
+      });
+      if (!validBudget) return;
+      const finalStatus = finalQuoteStatus(status, isPaUser);
+      if (!canPersistQuoteVersion(isEditMode, expectedRowVersion)) return;
 
-    const persistedStatus = persistedQuoteStatus(isEditMode, currentStatus);
-    const quoteData = buildQuoteData({
-      isEditMode, currentStatus, clientId, contactInfo, companyInfo, tags,
-      discountType, discountValue, markup: totals.markup, notes, internalNotes,
-      validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
-    });
-    const result = await persistQuote({
-      isEditMode, quoteId, expectedRowVersion, quoteData, items,
-      idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
-    });
-    if (!result) return;
+      const persistedStatus = persistedQuoteStatus(isEditMode, currentStatus);
+      const quoteData = buildQuoteData({
+        isEditMode,
+        currentStatus,
+        clientId,
+        contactInfo,
+        companyInfo,
+        tags,
+        discountType,
+        discountValue,
+        markup: totals.markup,
+        notes,
+        internalNotes,
+        validUntil,
+        paymentTerms,
+        deliveryTime,
+        shippingType,
+        shippingCost,
+      });
+      const result = await persistQuote({
+        isEditMode,
+        quoteId,
+        expectedRowVersion,
+        quoteData,
+        items,
+        idempotencyKeyRef: createIdempotencyKeyRef,
+        createQuote,
+        updateQuote,
+      });
+      if (!result) return;
 
-    createIdempotencyKeyRef.current = null;
-    const transitionApplied = await applyQuoteTransition({
-      quote: result, finalStatus, persistedStatus, maxDiscountPercent,
-      realDiscountPercent: totals.realDiscountPercent, sellerNotes,
-      requestApproval, updateQuoteStatus,
-    });
-    completeQuoteSave({
-      result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
-      setExpectedRowVersion, navigate,
-    });
-  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
+      createIdempotencyKeyRef.current = null;
+      const transitionApplied = await applyQuoteTransition({
+        quote: result,
+        finalStatus,
+        persistedStatus,
+        maxDiscountPercent,
+        realDiscountPercent: totals.realDiscountPercent,
+        sellerNotes,
+        requestApproval,
+        updateQuoteStatus,
+      });
+      completeQuoteSave({
+        result,
+        isEditMode,
+        expectedRowVersion,
+        finalStatus,
+        transitionApplied,
+        setExpectedRowVersion,
+        navigate,
+      });
+    },
+    [
+      canEdit,
+      isDraftValid,
+      isFormValid,
+      validationErrors,
+      clientId,
+      contactInfo,
+      companyInfo,
+      discountType,
+      discountValue,
+      totals,
+      notes,
+      internalNotes,
+      tags,
+      validUntil,
+      paymentTerms,
+      deliveryTime,
+      shippingType,
+      shippingCost,
+      isEditMode,
+      quoteId,
+      items,
+      navigate,
+      updateQuote,
+      createQuote,
+      updateQuoteStatus,
+      currentStatus,
+      expectedRowVersion,
+      maxDiscountPercent,
+      requestApproval,
+      isGerentePa,
+      userRoles,
+      profile?.pa_id,
+    ],
+  );
 
   const draftScopeId = useMemo(
     () => buildQuoteDraftScope(user?.id, profile?.cooperativa_id, profile?.pa_id),
@@ -639,48 +866,79 @@ export function useQuoteBuilderState() {
     deliveryMode, setDeliveryMode, deliveryDate, setDeliveryDate,
     shippingType, setShippingType, shippingCost, setShippingCost,
     ...search,
-    selectedProductForColor, setSelectedProductForColor,
-    templateApplied, setTemplateApplied,
-    expandedItems, setExpandedItems, activeItemIndex, setActiveItemIndex,
-    completedSteps, ...totals,
-    validationErrors, isFormValid, isDraftValid,
-    quotesLoading, templates, defaultTemplate,
-    maxDiscountPercent, isDiscountExceeded,
-    formatCurrency, calculateItemPersonalizationTotal, calculateItemTotal,
-    toggleExpanded, handlePersonalizationsChange,
+    selectedProductForColor,
+    setSelectedProductForColor,
+    templateApplied,
+    setTemplateApplied,
+    expandedItems,
+    setExpandedItems,
+    activeItemIndex,
+    setActiveItemIndex,
+    completedSteps,
+    ...totals,
+    validationErrors,
+    isFormValid,
+    isDraftValid,
+    quotesLoading,
+    templates,
+    defaultTemplate,
+    maxDiscountPercent,
+    isDiscountExceeded,
+    formatCurrency,
+    calculateItemPersonalizationTotal,
+    calculateItemTotal,
+    toggleExpanded,
+    handlePersonalizationsChange,
     handleProductClick: setSelectedProductForColor,
-    addProductWithColor, updateItemQuantity, updateItemPrice, removeItem,
-    groupItemsIntoKit, ungroupItems, selectedItemIndexes, toggleItemSelection,
+    addProductWithColor,
+    updateItemQuantity,
+    updateItemPrice,
+    removeItem,
+    groupItemsIntoKit,
+    ungroupItems,
+    selectedItemIndexes,
+    toggleItemSelection,
     setSelectedItemIndexes,
     confirmItemPrice: (index: number) => {
       const ts = new Date().toISOString();
-      setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
+      setItems((prev) =>
+        prev.map((item, idx) => (idx === index ? { ...item, price_confirmed_at: ts } : item)),
+      );
     },
     confirmAllStalePrices: () => {
       const ts = new Date().toISOString();
-      setItems(prev => prev.map(item => {
-        if (item.price_confirmed_at) return item;
-        const freshness = getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days);
-        return freshness.shouldWarn ? { ...item, price_confirmed_at: ts } : item;
-      }));
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.price_confirmed_at) return item;
+          const freshness = getPriceFreshness(
+            item.price_updated_at,
+            item.price_freshness_threshold_days,
+          );
+          return freshness.shouldWarn ? { ...item, price_confirmed_at: ts } : item;
+        }),
+      );
     },
-    applyTemplate, handleSaveQuote, canEdit, getTemplateItems: () => items.map(i => ({
-      productId: i.product_id,
-      productName: i.product_name,
-      productSku: i.product_sku || "",
-      productImageUrl: i.product_image_url || "",
-      quantity: i.quantity,
-      unitPrice: i.unit_price,
-      colorName: i.color_name,
-      colorHex: i.color_hex,
-      personalizations: i.personalizations?.map(p => ({
-        techniqueId: p.technique_id,
-        techniqueName: p.technique_name || "",
-        colorsCount: p.colors_count,
-        positionsCount: p.positions_count,
-        unitCost: p.unit_cost,
-        setupCost: p.setup_cost,
-      }))
-    })),
+    applyTemplate,
+    handleSaveQuote,
+    canEdit,
+    getTemplateItems: () =>
+      items.map((i) => ({
+        productId: i.product_id,
+        productName: i.product_name,
+        productSku: i.product_sku || '',
+        productImageUrl: i.product_image_url || '',
+        quantity: i.quantity,
+        unitPrice: i.unit_price,
+        colorName: i.color_name,
+        colorHex: i.color_hex,
+        personalizations: i.personalizations?.map((p) => ({
+          techniqueId: p.technique_id,
+          techniqueName: p.technique_name || '',
+          colorsCount: p.colors_count,
+          positionsCount: p.positions_count,
+          unitCost: p.unit_cost,
+          setupCost: p.setup_cost,
+        })),
+      })),
   };
 }
