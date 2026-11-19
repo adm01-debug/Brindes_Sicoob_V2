@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d342a596a8` · branch `main` · 2026-11-19 01:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d53f9e8bcb` · branch `main` · 2026-11-19 01:50 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1345,6 +1345,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `saving` | compara | `src/components/quotes/QuoteAutoSave.tsx` |
 | `status` | `scheduled` | compara, escreve | `src/components/settings/NotificationOmnichannelPanel.tsx`<br>`supabase/functions/send-notification/index.ts` |
 | `status` | `scope_mismatch` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
+| `status` | `sem-comparativo` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `sent` | compara, escreve, filtra | `src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/quotes/QuoteKanbanBoard.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useSalesHistory.ts`<br>… +8 |
 | `status` | `short` | compara, escreve | `src/components/admin/connections/MaskedSuffixBadge.tsx`<br>`src/lib/masked-suffix.ts` |
 | `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/system-healthcheck/index.ts`<br>`tests/scenarios/e2e-smoke-summary.scenario.mjs` |
@@ -1358,8 +1359,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `unknown` | compara, escreve | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/components/simulator/StockAlert.tsx`<br>`src/utils/price-freshness.ts`<br>`supabase/functions/system-healthcheck/index.ts` |
-| `status` | `unverified` | compara | `src/components/security/MfaEnrollmentDialog.tsx` |
-| … +95 linhas — lista completa em `context.json` | | | |
+| … +96 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -2258,13 +2258,17 @@ _nenhum item encontrado_
   ```
   void, setStatus: (value: IntegrityStatus) => void): Promise<void> {
   ```
-- **canSendQuestion(question: string, loading: boolean)** — `src/components/bi/BIAiCopilot.tsx`
+- **canSendQuestion(question: string, loading: boolean, contextReady = true)** — `src/components/bi/BIAiCopilot.tsx`
   ```
-  return question.length > 0 && !loading;
+  return question.length > 0 && !loading && contextReady;
   ```
 - **rowScore(row: MergedRow)** — `src/components/bi/ClientCategoryRadar.tsx`
   ```
   const gapScore = row.status === "gap" ? 1000 : 0; const superScore = row.status === "super" ? 500 : 0; return gapScore + superScore + row.clientShare + row.industryShare;
+  ```
+- **comparisonScore(row: ClientComparisonRow)** — `src/components/bi/ClientComparator.tsx`
+  ```
+  return row.unavailable.health || row.tier === "unknown" ? "—" : row.score;
   ```
 - **formatCurrency(value: number)** — `src/components/cart/CartHeaderButton.tsx`
   ```
@@ -3186,17 +3190,29 @@ _nenhum item encontrado_
   ```
   if (!industry || industry <= 0) return client > 0 ? 60 : 0; const ratio = client / industry; if (ratio >= 1.3) return 100; if (ratio >= 1.1) return 90; if (ratio >= 0.9) return 75; if (ratio >= 0.7) return 55; if (ratio >= 0.5) return 35; return 15;
   ```
-- **comparisonScore(metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number)** — `src/hooks/bi/useClientHealthScore.ts`
+- **comparisonScore(metric: ComparisonMetric | undefined)** — `src/hooks/bi/useClientHealthScore.ts`
   ```
-  if (metric) return ratioScore(metric.clientValue, metric.industryAvg); return ratioScore(fallbackClient, fallbackIndustry);
+  return metric ? ratioScore(metric.clientValue, metric.industryAvg) : 0;
   ```
 - **periodTotal(offsets: number[])** — `src/hooks/bi/useClientHealthScore.ts`
   ```
   offsets.reduce((sum, offset) => {
   ```
+- **weightedScore(components: ScoreComponent[], totalWeight: number)** — `src/hooks/bi/useClientHealthScore.ts`
+  ```
+  return Math.round(components.reduce((sum, component) => sum + component.score * component.weight, 0) / totalWeight);
+  ```
+- **roundedGrowth(growthPct: number | null)** — `src/hooks/bi/useClientHealthScore.ts`
+  ```
+  return growthPct === null ? null : Math.round(growthPct);
+  ```
 - **roundedDelta(metric: MetricComparison | undefined)** — `src/hooks/bi/useClientVsIndustry.ts`
   ```
   return Math.round(metric?.deltaPercent ?? 0);
+  ```
+- **comparisonIsLoading(sources: Array<{ isLoading: boolean }>)** — `src/hooks/bi/useClientsComparison.ts`
+  ```
+  return sources.some((source) => source.isLoading);
   ```
 - **formatPrice(value: number | null | undefined)** — `src/hooks/gravacao/gravacao-constants.ts`
   ```
@@ -4510,7 +4526,6 @@ _nenhum item encontrado_
 | `* - Recência 30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0)` | `src/hooks/bi/useClientHealthScore.ts` |
 | `* - Share-of-wallet 10% (estimativa)` | `src/hooks/bi/useClientHealthScore.ts` |
 | `* - Ticket vs setor 20%` | `src/hooks/bi/useClientHealthScore.ts` |
-| `const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);` | `src/hooks/bi/useClientHealthScore.ts` |
 | `const THRESHOLD = 15; // ±15% = "na média"` | `src/hooks/bi/useClientVsIndustry.ts` |
 | `/** Margem de negociação interna 0–50% (default 0). Infla o subtotal apresentado para criar margem psicológica de desconto. NUNCA exposto ao cliente. */` | `src/hooks/quotes/quoteTypes.ts` |
 | `* Projeta `forecastDays` à frente. Usa intervalo de confiança ~95% (1.96 * residualStd).` | `src/lib/forecast.ts` |
@@ -4520,6 +4535,7 @@ _nenhum item encontrado_
 | `costPriceClose: 4.5 + seededRandom(baseSeed + dayIdx * 5) * 0.3,` | `src/lib/stock-chart-utils.ts` |
 | `total_depleted_90d: Math.round(depletion30d * 90 * 0.9),` | `src/lib/stock-chart-utils.ts` |
 | `velocity_trend: 0.7 + seededRandom(seed + 4) * 0.8,` | `src/lib/stock-chart-utils.ts` |
+| `/** Sem nenhuma categoria do setor não há comparativo: nem 0%, nem "alinhado". */` | `src/lib/bi/executive-summary.ts` |
 | `slide.addText(`${index + 1}.`, { x: 7.15, y: 2.25 + index * 0.85, w: 0.4, h: 0.4, fontSize: 14, color: C.muted, bold: true });` | `src/lib/bi/pptxGenerator.ts` |
 | `slide.addText(`${trend.category} · ${trend.unitsSold.toLocaleString("pt-BR")}u`, { x: 7.6, y: 2.5 + index * 0.85, w: 3.2, h: 0.3, fontSize: 9, color: C.muted }) …` | `src/lib/bi/pptxGenerator.ts` |
 | `slide.addText(fmtBRL(trend.avgPrice), { x: 11.0, y: 2.3 + index * 0.85, w: 1.6, h: 0.4, fontSize: 12, color: C.primary, bold: true, align: "right" });` | `src/lib/bi/pptxGenerator.ts` |
@@ -5442,6 +5458,7 @@ _nenhum item encontrado_
 | A demonstração automatizada só pode usar um servidor local. | `scripts/qa/demo-browser.mjs` |
 | Esta simulação só pode usar servidor local. | `scripts/qa/login-browser.mjs` |
 | A sessão 1 não chegou a segurar a transação (a sobreposição não foi estabelecida):\n | `scripts/qa/postgres_ready.py` |
+| Não foi possível subir o PostgreSQL descartável da Supabase. Tentativas:\n | `scripts/qa/postgres_ready.py` |
 | PostgreSQL descartável encerrou antes de ficar pronto. Últimas linhas do log:\n | `scripts/qa/postgres_ready.py` |
 | PostgreSQL descartável não concluiu a inicialização. Últimas linhas do log:\n | `scripts/qa/postgres_ready.py` |
 | A consulta não retornou valor | `scripts/qa/simular-autoridade-verbas-sicoob.py` |
@@ -5604,8 +5621,7 @@ _nenhum item encontrado_
 | Erro ao remover grupo | `src/components/admin/product-groups/useProductGroups.ts` |
 | Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
 | ${result.failed} produto(s) falharam | `src/components/admin/products/BulkImportDialog.tsx` |
-| Nenhuma linha para importar | `src/components/admin/products/BulkImportDialog.tsx` |
-| … +973 linhas — lista completa em `context.json` | |
+| … +981 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5709,7 +5725,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6659 testes em 639 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6729 testes em 659 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6013,7 +6029,7 @@ _nenhum item encontrado_
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
 | `tests/utils/viacep.test.ts` | 7 | fetchAddressByCep · should return null for invalid CEP length · should strip non-digits · should return address data on success … |
 | `e2e/quote-create.spec.ts` | 6 | Quote Creation Flow · should redirect to login when accessing /orcamentos unauthenticated · should redirect to login when accessing /orcamentos/novo unauthenticated · should redirect to login when accessing quote view unauthenticated … |
-| … +339 linhas — lista completa em `context.json` | | |
+| … +359 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6261,6 +6277,7 @@ _nenhum item encontrado_
 | ultrapassa o limite configurado, mostra um alerta destacado com | `src/components/admin/telemetry/PlatformFailureAlertBanner.tsx` |
 | - obriga justificativa (mínimo 10 caracteres) | `src/components/admin/users/PromotionDialog.tsx` |
 | " value={client.name} onChange={onFieldChange("name")} aria-label="Nome do cliente" required /> | `src/components/ai/AIRecommendationsPanel.tsx` |
+| A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la. | `src/components/bi/ClientHealthHero.tsx` |
 | 50, 0); // estimativa volume mínimo | `src/components/bi/ConfirmQuoteSuggestionsModal.tsx` |
 | `limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa | `src/components/cart/cart-company-options.ts` |
 | usado em contextos onde o componente atua como navegador de seleção (não apenas exibição). | `src/components/categories/CategoryTreeNavigator.tsx` |
@@ -6417,7 +6434,12 @@ _nenhum item encontrado_
 | 1. Request microphone permission first | `src/hooks/useVoiceAgent.ts` |
 | O fluxo antigo comparava somente credential_id e podia declarar um user_id | `src/hooks/useWebAuthn.ts` |
 | Uma resposta da sessão anterior não pode restaurar seus privilégios. | `src/hooks/auth/useUserRoles.ts` |
+| * Falha de consulta nunca deve ser serializada como um cliente sem compras. */ | `src/hooks/bi/useClientBI.ts` |
+| * Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */ | `src/hooks/bi/useClientHealthScore.ts` |
+| A falha do histórico não pode ser interpretada como zero compras/risco. | `src/hooks/bi/useClientHealthScore.ts` |
 | apenas contra a carteira — o contrato não aplica `is_customer` aqui. | `src/hooks/bi/useClientVsIndustry.ts` |
+| (industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o | `src/hooks/bi/useClientsComparison.ts` |
+| A falha do CRM nao pode virar "setor sem tendencia": sem propagar, o | `src/hooks/bi/useIndustryTrends.ts` |
 | (3 é o mínimo válido de ColumnCount — 4 colunas só fica disponível a partir de 768px, ver columnOptions em ColumnSelector.tsx) | `src/hooks/catalog/useCatalogDisplay.ts` |
 | * Calcula riscos usando somente estoque e variantes retornados pelo catálogo. */ | `src/hooks/quote/useQuotesStockStatus.ts` |
 | Desconto APARENTE aplicado sobre subtotal apresentado | `src/hooks/quotes/quoteHelpers.ts` |
@@ -6492,10 +6514,4 @@ _nenhum item encontrado_
 | Se o cliente precisa de mais cores que o máximo da tabela, aplica proporcional | `src/lib/personalization/calculators.ts` |
 | Se a área excede o máximo, aplica proporcional | `src/lib/personalization/calculators.ts` |
 | * Regras de negócio puras, sem dependências de React ou side effects. | `src/lib/personalization/index.ts` |
-| ├── validators/     - Funções de validação | `src/lib/personalization/index.ts` |
-| └── services/       - Orquestração de negócio | `src/lib/personalization/index.ts` |
-| Se só há um valor, criar opções de 1 até o máximo | `src/lib/personalization/selectors.ts` |
-| * Funções puras para validação de parâmetros de personalização. | `src/lib/personalization/validators.ts` |
-| TABLE VALIDATION | `src/lib/personalization/validators.ts` |
-| QUANTITY VALIDATION | `src/lib/personalization/validators.ts` |
-| … +245 linhas — lista completa em `context.json` | |
+| … +251 linhas — lista completa em `context.json` | |

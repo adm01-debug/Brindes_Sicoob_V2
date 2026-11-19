@@ -4224,7 +4224,9 @@
    "canais_realtime": [],
    "flags": [],
    "papeis": [
-    "dialog"
+    "alert",
+    "dialog",
+    "status"
    ],
    "arquivos_puxados": 45
   },
@@ -4712,10 +4714,12 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "assistant",
     "combobox",
     "dialog",
     "manager",
+    "status",
     "user"
    ],
    "arquivos_puxados": 91
@@ -4785,7 +4789,8 @@
    "canais_realtime": [],
    "flags": [],
    "papeis": [
-    "combobox"
+    "combobox",
+    "status"
    ],
    "arquivos_puxados": 34
   },
@@ -9616,7 +9621,9 @@
    "canais_realtime": [],
    "flags": [],
    "papeis": [
-    "dialog"
+    "alert",
+    "dialog",
+    "status"
    ],
    "arquivos_puxados": 45
   },

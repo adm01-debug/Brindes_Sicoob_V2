@@ -4224,7 +4224,7 @@
     "BIAiCopilot"
    ],
    "export_default": null,
-   "linhas": 240,
+   "linhas": 301,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientAffinity",
@@ -4247,13 +4247,15 @@
     "BIBriefingMode"
    ],
    "export_default": null,
-   "linhas": 357,
+   "linhas": 423,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientAffinity",
     "useClientBI",
     "useClientCategoryAffinity",
     "useClientHealthScore",
+    "useClientSeasonality",
+    "useClientVsIndustry",
     "useIndustryCategoryTrends",
     "useIndustryTrends"
    ],
@@ -4366,7 +4368,7 @@
     "ClientCategoryRadar"
    ],
    "export_default": null,
-   "linhas": 379,
+   "linhas": 419,
    "dominio": "components/bi",
    "hooks_locais": [
     "useBICategoryFocus",
@@ -4384,7 +4386,7 @@
     "ClientComparator"
    ],
    "export_default": null,
-   "linhas": 176,
+   "linhas": 206,
    "dominio": "components/bi",
    "hooks_locais": [
     "useSingleClientComparisonRow"
@@ -4400,7 +4402,7 @@
     "ClientHealthHero"
    ],
    "export_default": null,
-   "linhas": 392,
+   "linhas": 484,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientAffinity",
@@ -4420,7 +4422,7 @@
     "ClientLookalikes"
    ],
    "export_default": null,
-   "linhas": 136,
+   "linhas": 175,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientAffinity",
@@ -4439,7 +4441,7 @@
     "ClientOverview360"
    ],
    "export_default": null,
-   "linhas": 84,
+   "linhas": 94,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientBI"
@@ -4455,7 +4457,7 @@
     "ClientSeasonalityHeatmap"
    ],
    "export_default": null,
-   "linhas": 147,
+   "linhas": 155,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientSeasonality"
@@ -4487,7 +4489,7 @@
     "ClientVsIndustryComparison"
    ],
    "export_default": null,
-   "linhas": 211,
+   "linhas": 347,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientVsIndustry"
@@ -4548,7 +4550,7 @@
     "ExecutiveSummaryButton"
    ],
    "export_default": null,
-   "linhas": 108,
+   "linhas": 218,
    "dominio": "components/bi",
    "hooks_locais": [
     "useClientAffinity",
@@ -4571,7 +4573,7 @@
     "ExportDossierButton"
    ],
    "export_default": null,
-   "linhas": 52,
+   "linhas": 77,
    "dominio": "components/bi",
    "hooks_locais": [
     "useBIDossierExport"
@@ -4587,7 +4589,7 @@
     "IndustryTrendingProducts"
    ],
    "export_default": null,
-   "linhas": 193,
+   "linhas": 223,
    "dominio": "components/bi",
    "hooks_locais": [
     "useBICategoryFocus",
@@ -14896,7 +14898,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 627,
+   "usado_por": 631,
    "orfao": false
   },
   {

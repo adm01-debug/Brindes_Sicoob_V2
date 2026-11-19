@@ -3,12 +3,12 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2855)",
+   "TypeScript (2875)",
    "SQL (674)",
    "Markdown (247)",
    "JSON (233)",
    "JavaScript (144)",
-   "Python (59)",
+   "Python (60)",
    "YAML (23)",
    "CSS (7)"
   ],
@@ -1320,6 +1320,7 @@
    "PGDUMP",
    "PGDUMP_SCHEMAS",
    "REPO_ROOT",
+   "SICOOB_QA_PG_IMAGES",
    "SNAPSHOT_DIR",
    "SNAPSHOT_EXCLUDE_SCHEMAS",
    "SNAPSHOT_INCLUDE_SCHEMAS",
@@ -1878,11 +1879,11 @@
   "papeis_no_codigo": [
    {
     "papel": "alert",
-    "ocorrencias": 52
+    "ocorrencias": 59
    },
    {
     "papel": "status",
-    "ocorrencias": 49
+    "ocorrencias": 53
    },
    {
     "papel": "dev",

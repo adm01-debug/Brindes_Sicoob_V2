@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
+  "commit": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
   "branch": "main",
-  "data_commit": "2026-11-19T01:01:29Z",
+  "data_commit": "2026-11-19T01:49:06Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "d53f9e8",
+    "data": "2026-11-19",
+    "assunto": "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)"
+   },
+   {
+    "sha": "1ad25e3",
+    "data": "2026-11-19",
+    "assunto": "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)"
+   },
    {
     "sha": "d342a59",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "4b45855",
     "data": "2026-11-18",
     "assunto": "infra: contar na cota de IA os streams interrompidos com consumo real (#299)"
-   },
-   {
-    "sha": "6e81460",
-    "data": "2026-11-18",
-    "assunto": "fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)"
-   },
-   {
-    "sha": "5ecb93f",
-    "data": "2026-11-18",
-    "assunto": "fix: isola rascunho de orcamento por cooperativa e PA (#304)"
    }
   ],
-  "arquivos_mudados_7d": 368,
+  "arquivos_mudados_7d": 410,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -156,6 +156,10 @@
     "mudancas": 20
    },
    {
+    "pasta": "src/hooks/bi",
+    "mudancas": 16
+   },
+   {
     "pasta": "package.json",
     "mudancas": 15
    },
@@ -164,8 +168,16 @@
     "mudancas": 15
    },
    {
+    "pasta": "tests/components/bi",
+    "mudancas": 15
+   },
+   {
     "pasta": "src/pages/admin",
     "mudancas": 14
+   },
+   {
+    "pasta": "src/components/bi",
+    "mudancas": 13
    },
    {
     "pasta": "package-lock.json",
@@ -182,28 +194,16 @@
    {
     "pasta": "src/components/quotes",
     "mudancas": 9
-   },
-   {
-    "pasta": "scripts/automation.config.json",
-    "mudancas": 8
-   },
-   {
-    "pasta": "scripts/rules/rules",
-    "mudancas": 8
-   },
-   {
-    "pasta": "src/components/intelligence",
-    "mudancas": 8
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 80
+    "mudancas": 78
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 79
+    "mudancas": 77
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 142
+    "commits": 144
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4348,
-  "arquivos_codigo": 3055,
-  "linhas_codigo": 483105,
+  "arquivos_total": 4369,
+  "arquivos_codigo": 3076,
+  "linhas_codigo": 485816,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 621,
   "cron_jobs": 27,
-  "testes": 814,
+  "testes": 835,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 247
@@ -684,7 +684,7 @@
   },
   "scripts/qa": {
    "arquivos": 37,
-   "linhas": 8204
+   "linhas": 8257
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 165891
+   "linhas": 166538
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 313,
-   "linhas": 46410
+   "linhas": 46962
   },
   "src/integrations": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/lib": {
    "arquivos": 166,
-   "linhas": 22550
+   "linhas": 22567
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 124,
-   "linhas": 25818
+   "arquivos": 139,
+   "linhas": 26847
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -915,16 +915,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 127,
-   "linhas": 13563
+   "arquivos": 130,
+   "linhas": 13785
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 68,
-   "linhas": 8669
+   "arquivos": 69,
+   "linhas": 8728
   },
   "tests/load": {
    "arquivos": 1,
@@ -959,8 +959,8 @@
    "linhas": 1842
   },
   "tests/scripts": {
-   "arquivos": 30,
-   "linhas": 2839
+   "arquivos": 32,
+   "linhas": 2971
   },
   "tests/search": {
    "arquivos": 1,

@@ -1317,14 +1317,14 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 4,
+   "usado_por": 11,
    "usado_por_modulos": [
     "components/bi",
     "hooks",
     "hooks/bi",
     "pages"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {
@@ -1337,7 +1337,7 @@
     "generateBIDossierPDF"
    ],
    "export_default": null,
-   "linhas": 519,
+   "linhas": 521,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -1366,7 +1366,7 @@
     "buildCategorySection"
    ],
    "export_default": null,
-   "linhas": 156,
+   "linhas": 164,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -1381,7 +1381,7 @@
     "hooks/bi",
     "lib/bi"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {
@@ -1447,7 +1447,7 @@
     "generateBIPptx"
    ],
    "export_default": null,
-   "linhas": 429,
+   "linhas": 436,
    "tabelas": [],
    "rpcs": [],
    "edges": [],

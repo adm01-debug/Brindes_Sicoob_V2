@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d342a596a8` · branch `main` · 2026-11-19 01:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d53f9e8bcb` · branch `main` · 2026-11-19 01:50 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -326,6 +326,7 @@ _nenhum item encontrado_
 | status | valor `super` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/bi/ClientCategoryRadar.tsx`<br>`escreve:src/components/bi/ClientCategoryRadar.tsx` |
 | status | valor `client-only` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:src/components/bi/ClientCategoryRadar.tsx` |
 | status | valor `gap` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/bi/ClientCategoryRadar.tsx`<br>`escreve:src/components/bi/ClientCategoryRadar.tsx` |
+| status | valor `sem-comparativo` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/bi/ClientCategoryRadar.tsx` |
 | status | valor `underindex` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/bi/ClientCategoryRadar.tsx` |
 | status | valor `in_stock` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/inventory/StockDashboard.tsx`<br>`compara:src/types/stock.ts`<br>`escreve:src/components/simulator/StockAlert.tsx` |
 | status | valor `destructive` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/kit-builder/VolumeIndicator.tsx` |

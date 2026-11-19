@@ -2154,7 +2154,7 @@
    "hooks_exportados": [
     "useBIDossierExport"
    ],
-   "linhas": 117,
+   "linhas": 185,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2169,7 +2169,6 @@
     "useCrmCompany",
     "useIndustryCategoryTrends",
     "useIndustryTrends",
-    "useMemo",
     "useState"
    ],
    "canais_realtime": [],
@@ -2205,7 +2204,7 @@
    "hooks_exportados": [
     "useClientAffinity"
    ],
-   "linhas": 149,
+   "linhas": 163,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2235,7 +2234,7 @@
    "hooks_exportados": [
     "useClientBI"
    ],
-   "linhas": 167,
+   "linhas": 225,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2261,14 +2260,14 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
    "hooks_exportados": [
     "useClientCategoryAffinity"
    ],
-   "linhas": 214,
+   "linhas": 229,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2297,7 +2296,7 @@
    "hooks_exportados": [
     "useClientHealthScore"
    ],
-   "linhas": 232,
+   "linhas": 377,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2318,14 +2317,14 @@
     "src/hooks/bi/useClientsComparison.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useClientsComparison.ts",
    "hooks_exportados": [
     "useSingleClientComparisonRow"
    ],
-   "linhas": 135,
+   "linhas": 290,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2351,7 +2350,7 @@
    "hooks_exportados": [
     "useClientSeasonality"
    ],
-   "linhas": 322,
+   "linhas": 371,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2363,9 +2362,10 @@
     "useQuery"
    ],
    "canais_realtime": [],
-   "usado_por": 8,
+   "usado_por": 9,
    "usado_por_arquivos": [
     "src/components/bi/BIAiCopilot.tsx",
+    "src/components/bi/BIBriefingMode.tsx",
     "src/components/bi/ClientSeasonalityHeatmap.tsx",
     "src/components/bi/ExecutiveSummaryButton.tsx",
     "src/hooks/bi/useClientHealthScore.ts",
@@ -2374,14 +2374,14 @@
     "src/lib/bi/pptxGenerator.ts",
     "src/pages/BusinessIntelligencePage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useClientVsIndustry.ts",
    "hooks_exportados": [
     "useClientVsIndustry"
    ],
-   "linhas": 195,
+   "linhas": 224,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2393,9 +2393,10 @@
     "useQuery"
    ],
    "canais_realtime": [],
-   "usado_por": 7,
+   "usado_por": 8,
    "usado_por_arquivos": [
     "src/components/bi/BIAiCopilot.tsx",
+    "src/components/bi/BIBriefingMode.tsx",
     "src/components/bi/ClientVsIndustryComparison.tsx",
     "src/components/bi/ExecutiveSummaryButton.tsx",
     "src/hooks/bi/useBIDossierExport.ts",
@@ -2403,14 +2404,14 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/bi/useIndustryCategoryTrends.ts",
    "hooks_exportados": [
     "useIndustryCategoryTrends"
    ],
-   "linhas": 181,
+   "linhas": 190,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2432,14 +2433,14 @@
     "src/hooks/bi/useClientsComparison.ts",
     "src/lib/bi/executive-summary.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useIndustryTrends.ts",
    "hooks_exportados": [
     "useIndustryTrends"
    ],
-   "linhas": 121,
+   "linhas": 131,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2459,7 +2460,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useSeasonalPeakNotifications.ts",

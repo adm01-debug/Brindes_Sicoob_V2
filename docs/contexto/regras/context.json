@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
+  "sha": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 01:19 UTC",
-  "files_total": 4350,
-  "code_files": 3711,
-  "code_lines": 544454
+  "generated_at": "2026-11-19 01:50 UTC",
+  "files_total": 4371,
+  "code_files": 3732,
+  "code_lines": 547165
  },
  "version": "1.3.2",
- "facts_hash": "5025413ee642393e",
+ "facts_hash": "d26c734e4f63509a",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,11 +348,11 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1445,
-   ".tsx": 1408,
+   ".ts": 1450,
+   ".tsx": 1423,
    ".sql": 674,
    ".mjs": 134,
-   ".py": 59,
+   ".py": 60,
    ".js": 6,
    ".cjs": 5
   },
@@ -61084,7 +61084,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1255,
+  "components_count": 1270,
   "hooks": [
    {
     "name": "useContacts",
@@ -63594,7 +63594,7 @@
   {
    "module": "scripts",
    "files": 168,
-   "lines": 38704,
+   "lines": 38757,
    "tables": [
     "a",
     "admin_audit_log",
@@ -63652,7 +63652,7 @@
     "playwright-report.mjs: effectiveStatus, runErrors, normalizeSpecPath",
     "lib.mjs: MaintenanceError, fail, digest, exists, safeEnv, stopChildren",
     "run.mjs: parseArgs, networkPrefix, allowedSourceFiles, prettierCandidates, main",
-    "postgres_ready.py: _flag, docker_is_mandatory, _docker_unavailable, _require_docker, _exit_on_sigterm, _tail",
+    "postgres_ready.py: _flag, docker_is_mandatory, _docker_unavailable, _require_docker, _exit_on_sigterm, _images_from_env",
     "simular-acl-efetiva.py: command, sql, count",
     "simular-agendamento-outbox.py: command, sql, scalar",
     "simular-aprovacao-desconto-atomica.py: run, sql, main"
@@ -63830,7 +63830,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 165891,
+   "lines": 166538,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64163,7 +64163,7 @@
   {
    "module": "src/hooks",
    "files": 313,
-   "lines": 46410,
+   "lines": 46962,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64441,7 +64441,7 @@
   {
    "module": "src/lib",
    "files": 166,
-   "lines": 22550,
+   "lines": 22567,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -65603,8 +65603,8 @@
   },
   {
    "module": "tests",
-   "files": 585,
-   "lines": 81356,
+   "files": 606,
+   "lines": 82798,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -65633,6 +65633,7 @@
     "basic-smoke.js: options, function",
     "_contracts.ts: source, expectContract, expectInOrder, filesRecursively",
     "_mocks.ts: SupabaseFnInvokeResult, createSupabaseClientMock, EdgeFnResponseSpec, mockEdgeFunctionFetch, bitrixWebhookOk, bitrixWebhook5xx",
+    "test_start_supabase_postgres.py: resultado, FakeDocker, TestStartSupabasePostgres",
     "deterministicTime.ts: DeterministicClock, installDeterministicClock"
    ],
    "docs": [
@@ -69842,6 +69843,9 @@
    ],
    "SICOOB_MALWARE_SCANNER_URL": [
     "supabase/functions/sicoob-document-ingest/index.ts"
+   ],
+   "SICOOB_QA_PG_IMAGES": [
+    "scripts/qa/postgres_ready.py"
    ],
    "SICOOB_QA_USER_PASSWORD": [
     "supabase/functions/sicoob-seed-qa/index.ts"
@@ -74213,6 +74217,10 @@
    },
    {
     "file": "scripts/qa/postgres_ready.py",
+    "msg": "Não foi possível subir o PostgreSQL descartável da Supabase. Tentativas:\\n"
+   },
+   {
+    "file": "scripts/qa/postgres_ready.py",
     "msg": "PostgreSQL descartável encerrou antes de ficar pronto. Últimas linhas do log:\\n"
    },
    {
@@ -75325,15 +75333,35 @@
    },
    {
     "file": "src/components/bi/BIAiCopilot.tsx",
+    "msg": " className="
+   },
+   {
+    "file": "src/components/bi/BIAiCopilot.tsx",
     "msg": "Erro ao consultar o copiloto. Tente novamente."
+   },
+   {
+    "file": "src/components/bi/BIBriefingMode.tsx",
+    "msg": " className="
    },
    {
     "file": "src/components/bi/BIBriefingMode.tsx",
     "msg": "Não foi possível copiar."
    },
    {
+    "file": "src/components/bi/ClientCategoryRadar.tsx",
+    "msg": ">\n            <p className="
+   },
+   {
+    "file": "src/components/bi/ClientLookalikes.tsx",
+    "msg": "><AlertCircle className="
+   },
+   {
     "file": "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
     "msg": "Selecione ao menos 1 produto."
+   },
+   {
+    "file": "src/components/bi/ExecutiveSummaryButton.tsx",
+    "msg": " className="
    },
    {
     "file": "src/components/bi/ExecutiveSummaryButton.tsx",
@@ -75345,7 +75373,15 @@
    },
    {
     "file": "src/components/bi/ExportDossierButton.tsx",
+    "msg": " className="
+   },
+   {
+    "file": "src/components/bi/ExportDossierButton.tsx",
     "msg": "Falha ao gerar dossiê"
+   },
+   {
+    "file": "src/components/bi/IndustryTrendingProducts.tsx",
+    "msg": "><AlertCircle className="
    },
    {
     "file": "src/components/cart/CouponInput.tsx",
@@ -79400,6 +79436,10 @@
     "text": "\" value={client.name} onChange={onFieldChange(\"name\")} aria-label=\"Nome do cliente\" required />"
    },
    {
+    "file": "src/components/bi/ClientHealthHero.tsx",
+    "text": "A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la."
+   },
+   {
     "file": "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
     "text": "50, 0); // estimativa volume mínimo"
    },
@@ -80024,8 +80064,28 @@
     "text": "Uma resposta da sessão anterior não pode restaurar seus privilégios."
    },
    {
+    "file": "src/hooks/bi/useClientBI.ts",
+    "text": "* Falha de consulta nunca deve ser serializada como um cliente sem compras. */"
+   },
+   {
+    "file": "src/hooks/bi/useClientHealthScore.ts",
+    "text": "* Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */"
+   },
+   {
+    "file": "src/hooks/bi/useClientHealthScore.ts",
+    "text": "A falha do histórico não pode ser interpretada como zero compras/risco."
+   },
+   {
     "file": "src/hooks/bi/useClientVsIndustry.ts",
     "text": "apenas contra a carteira — o contrato não aplica `is_customer` aqui."
+   },
+   {
+    "file": "src/hooks/bi/useClientsComparison.ts",
+    "text": "(industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
+    "text": "A falha do CRM nao pode virar \"setor sem tendencia\": sem propagar, o"
    },
    {
     "file": "src/hooks/catalog/useCatalogDisplay.ts",
@@ -95946,6 +96006,24 @@
    {
     "file": "src/components/bi/ClientCategoryRadar.tsx",
     "field": "status",
+    "value": "sem-comparativo",
+    "kind": "compara"
+   },
+   {
+    "file": "src/components/bi/ClientCategoryRadar.tsx",
+    "field": "status",
+    "value": "sem-comparativo",
+    "kind": "compara"
+   },
+   {
+    "file": "src/components/bi/ClientCategoryRadar.tsx",
+    "field": "status",
+    "value": "sem-comparativo",
+    "kind": "compara"
+   },
+   {
+    "file": "src/components/bi/ClientCategoryRadar.tsx",
+    "field": "status",
     "value": "gap",
     "kind": "compara"
    },
@@ -106088,14 +106166,20 @@
    {
     "file": "src/components/bi/BIAiCopilot.tsx",
     "name": "canSendQuestion",
-    "params": "question: string, loading: boolean",
-    "body": "return question.length > 0 && !loading;"
+    "params": "question: string, loading: boolean, contextReady = true",
+    "body": "return question.length > 0 && !loading && contextReady;"
    },
    {
     "file": "src/components/bi/ClientCategoryRadar.tsx",
     "name": "rowScore",
     "params": "row: MergedRow",
     "body": "const gapScore = row.status === \"gap\" ? 1000 : 0; const superScore = row.status === \"super\" ? 500 : 0; return gapScore + superScore + row.clientShare + row.industryShare;"
+   },
+   {
+    "file": "src/components/bi/ClientComparator.tsx",
+    "name": "comparisonScore",
+    "params": "row: ClientComparisonRow",
+    "body": "return row.unavailable.health || row.tier === \"unknown\" ? \"—\" : row.score;"
    },
    {
     "file": "src/components/cart/CartHeaderButton.tsx",
@@ -107480,8 +107564,8 @@
    {
     "file": "src/hooks/bi/useClientHealthScore.ts",
     "name": "comparisonScore",
-    "params": "metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number",
-    "body": "if (metric) return ratioScore(metric.clientValue, metric.industryAvg); return ratioScore(fallbackClient, fallbackIndustry);"
+    "params": "metric: ComparisonMetric | undefined",
+    "body": "return metric ? ratioScore(metric.clientValue, metric.industryAvg) : 0;"
    },
    {
     "file": "src/hooks/bi/useClientHealthScore.ts",
@@ -107490,10 +107574,28 @@
     "body": "offsets.reduce((sum, offset) => {"
    },
    {
+    "file": "src/hooks/bi/useClientHealthScore.ts",
+    "name": "weightedScore",
+    "params": "components: ScoreComponent[], totalWeight: number",
+    "body": "return Math.round(components.reduce((sum, component) => sum + component.score * component.weight, 0) / totalWeight);"
+   },
+   {
+    "file": "src/hooks/bi/useClientHealthScore.ts",
+    "name": "roundedGrowth",
+    "params": "growthPct: number | null",
+    "body": "return growthPct === null ? null : Math.round(growthPct);"
+   },
+   {
     "file": "src/hooks/bi/useClientVsIndustry.ts",
     "name": "roundedDelta",
     "params": "metric: MetricComparison | undefined",
     "body": "return Math.round(metric?.deltaPercent ?? 0);"
+   },
+   {
+    "file": "src/hooks/bi/useClientsComparison.ts",
+    "name": "comparisonIsLoading",
+    "params": "sources: Array<{ isLoading: boolean }>",
+    "body": "return sources.some((source) => source.isLoading);"
    },
    {
     "file": "src/hooks/gravacao/gravacao-constants.ts",
@@ -111224,10 +111326,6 @@
     "line": "* - Ticket vs setor 20%"
    },
    {
-    "file": "src/hooks/bi/useClientHealthScore.ts",
-    "line": "const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);"
-   },
-   {
     "file": "src/hooks/bi/useClientVsIndustry.ts",
     "line": "const THRESHOLD = 15; // ±15% = \"na média\""
    },
@@ -111262,6 +111360,10 @@
    {
     "file": "src/lib/stock-chart-utils.ts",
     "line": "velocity_trend: 0.7 + seededRandom(seed + 4) * 0.8,"
+   },
+   {
+    "file": "src/lib/bi/executive-summary.ts",
+    "line": "/** Sem nenhuma categoria do setor não há comparativo: nem 0%, nem \"alinhado\". */"
    },
    {
     "file": "src/lib/bi/pptxGenerator.ts",
@@ -118676,6 +118778,210 @@
    {
     "file": "tests/components/admin/connections/connectionStatus.test.ts",
     "name": "simulação real: payload do secrets-manager para Promobrind"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+    "name": "contexto do copiloto com dados indisponíveis"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+    "name": "envia métricas nulas quando o histórico falhou, sem converter falha em zero compras"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+    "name": "preserva zeros quando a consulta confirmou que não existem pedidos"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+    "name": "não envia score ou potencial zerados como diagnóstico quando a amostra é insuficiente"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
+    "name": "BIAiCopilot — disponibilidade de fontes"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
+    "name": "bloqueia envio quando afinidade falha e permite refazer a consulta"
+   },
+   {
+    "file": "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
+    "name": "não envia tendência setorial em cache quando a fonte falha"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.history-availability.test.ts",
+    "name": "histórico apresentado no briefing"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.history-availability.test.ts",
+    "name": "não afirma valores ou ausência de compras quando a consulta falhou"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.history-availability.test.ts",
+    "name": "continua distinguindo histórico confirmado sem pedidos de consulta indisponível"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
+    "name": "BIBriefingMode — disponibilidade de fontes"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
+    "name": "oculta o GAP e bloqueia cópia se categorias do cliente falham"
+   },
+   {
+    "file": "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
+    "name": "bloqueia briefing com tendência setorial em cache após falha do CRM"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
+    "name": "ClientCategoryRadar — falha na consulta do setor"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
+    "name": "oculta classificações exclusivas e badge de dados reais enquanto o setor falha"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
+    "name": "permite tentar novamente a fonte do setor que falhou"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
+    "name": "ClientCategoryRadar — setor sem categorias"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
+    "name": "não afirma exclusividade quando não há comparativo do setor"
+   },
+   {
+    "file": "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
+    "name": "mantém a exclusividade quando o setor respondeu e não tem a categoria"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.availability.test.tsx",
+    "name": "ClientHealthHero — disponibilidade do diagnóstico"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.availability.test.tsx",
+    "name": "mostra falha da fonte com retry antes de qualquer conteúdo derivado"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.availability.test.tsx",
+    "name": "distingue amostra insuficiente de falha e não oferece retry sem erro"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
+    "name": "ClientHealthHero — categorias do cliente indisponíveis"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
+    "name": "não apresenta categoria do setor como oportunidade quando a do cliente falhou"
+   },
+   {
+    "file": "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
+    "name": "volta a apresentar a oportunidade quando a consulta do cliente responde"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
+    "name": "excluirJaComprados"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
+    "name": "exclui por id e por nome, com a afinidade do momento da renderização"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
+    "name": "limita a seis sugestões"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.availability.test.tsx",
+    "name": "ClientLookalikes — disponibilidade da amostra setorial"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.availability.test.tsx",
+    "name": "rejeita CRM e RPC indisponíveis, mas preserva setor legitimamente vazio"
+   },
+   {
+    "file": "tests/components/bi/ClientLookalikes.availability.test.tsx",
+    "name": "não exibe cache antigo após falha e oferece retry"
+   },
+   {
+    "file": "tests/components/bi/ClientOverview360.availability.test.tsx",
+    "name": "disponibilidade do histórico no resumo 360°"
+   },
+   {
+    "file": "tests/components/bi/ClientOverview360.availability.test.tsx",
+    "name": "não apresenta zeros ou “nunca comprou” como se fossem dados reais após falha do histórico"
+   },
+   {
+    "file": "tests/components/bi/ComparisonAvailability.test.tsx",
+    "name": "estados de indisponibilidade em comparativos de BI"
+   },
+   {
+    "file": "tests/components/bi/ComparisonAvailability.test.tsx",
+    "name": "oculta métricas dependentes do histórico e preserva categorias e sazonalidade confiáveis"
+   },
+   {
+    "file": "tests/components/bi/ComparisonAvailability.test.tsx",
+    "name": "não apresenta categorias nem pico em cache após falha das respectivas fontes"
+   },
+   {
+    "file": "tests/components/bi/ComparisonAvailability.test.tsx",
+    "name": "mostra erro consultável com retry antes de classificar a amostra como insuficiente"
+   },
+   {
+    "file": "tests/components/bi/ComparisonAvailability.test.tsx",
+    "name": "preserva métricas em cache e oferece retry quando o refetch falha"
+   },
+   {
+    "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+    "name": "disponibilidade do resumo executivo"
+   },
+   {
+    "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+    "name": "bloqueia copiar e PPTX quando uma fonte usada pelo resumo falha e permite tentar novamente"
+   },
+   {
+    "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+    "name": "mantém a cópia disponível quando falha apenas uma fonte exclusiva do PPTX"
+   },
+   {
+    "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+    "name": "bloqueia exportações quando tendências setoriais falham com cache presente"
+   },
+   {
+    "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+    "name": "não publica zeros sentinela quando o Health Score não possui amostra suficiente"
+   },
+   {
+    "file": "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
+    "name": "IndustryTrendingProducts — afinidade indisponível"
+   },
+   {
+    "file": "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
+    "name": "não marca produtos como GAP/oportunidade quando a afinidade falha e permite retry"
+   },
+   {
+    "file": "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
+    "name": "permanece carregando enquanto consulta afinidade, sem renderizar GAPs"
+   },
+   {
+    "file": "tests/components/bi/client-vs-industry-origem.test.tsx",
+    "name": "ClientVsIndustryComparison — origem do dado"
+   },
+   {
+    "file": "tests/components/bi/client-vs-industry-origem.test.tsx",
+    "name": "cliente de demonstracao: avisa que os números são ilustrativos"
+   },
+   {
+    "file": "tests/components/bi/client-vs-industry-origem.test.tsx",
+    "name": "cliente sem pedido: nao compara, e nao oferece repetir"
+   },
+   {
+    "file": "tests/components/bi/client-vs-industry-origem.test.tsx",
+    "name": "historico indisponivel: avisa a falha e oferece repetir"
+   },
+   {
+    "file": "tests/components/bi/client-vs-industry-origem.test.tsx",
+    "name": "cliente com histórico: mantém o selo de dado real"
    },
    {
     "file": "tests/components/cart/cart-company-options.test.ts",
@@ -128159,7 +128465,59 @@
    },
    {
     "file": "tests/hooks/bi/useClientBI.test.ts",
-    "name": "mantém o conjunto simulado quando o cliente não tem pedido, com a flag ligada"
+    "name": "cliente real sem pedido nao recebe o conjunto simulado, nem com flag"
+   },
+   {
+    "file": "tests/hooks/bi/useClientBI.test.ts",
+    "name": "cliente de demonstracao continua recebendo o conjunto simulado"
+   },
+   {
+    "file": "tests/hooks/bi/useClientBI.test.ts",
+    "name": "falha de consulta e estado proprio, nao cliente sem compras"
+   },
+   {
+    "file": "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+    "name": "buildHealthResult — honestidade do diagnóstico"
+   },
+   {
+    "file": "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+    "name": "cliente sem compra registrada não recebe diagnóstico, mesmo com orçamentos"
+   },
+   {
+    "file": "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+    "name": "sem janela sazonal comprovada a tendência não é medida nem citada"
+   },
+   {
+    "file": "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+    "name": "com janela sazonal comprovada a tendência volta a ser medida"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+    "name": "useIndustryCategoryTrends — falha da fonte"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+    "name": "falha do CRM vira isError, não setor vazio"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+    "name": "falha da RPC do setor também vira isError"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+    "name": "setor que respondeu sem linha medida continua vazio e sem erro"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
+    "name": "useIndustryTrends — falha do CRM"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
+    "name": "falha do CRM vira isError, não setor sem tendência"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
+    "name": "setor que respondeu sem produto continua sem erro"
    },
    {
     "file": "tests/hooks/quote/quote-url-prefill.test.ts",
@@ -132326,6 +132684,22 @@
     "name": "não propaga erro quando o armazenamento está bloqueado"
    },
    {
+    "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
+    "name": "buildCategorySection — setor sem categorias"
+   },
+   {
+    "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
+    "name": "marca o comparativo como indisponível em vez de preencher com zero"
+   },
+   {
+    "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
+    "name": "com o setor respondendo, o percentual volta a ser número"
+   },
+   {
+    "file": "tests/lib/bi/categoria-sem-comparativo.test.ts",
+    "name": "o percentual do cliente continua sendo mostrado — ele foi medido"
+   },
+   {
     "file": "tests/lib/personalization/rpc-contracts.test.ts",
     "name": "PRICE_CONTRACT"
    },
@@ -134984,6 +135358,14 @@
    {
     "file": "tests/scripts/qa-postgres-ready.test.ts",
     "name": "no CI falha em vez de sair 0"
+   },
+   {
+    "file": "tests/scripts/qa-registry-fallback.test.ts",
+    "name": "scripts/qa — queda para o espelho quando o registry estoura a cota"
+   },
+   {
+    "file": "tests/scripts/qa-registry-fallback.test.ts",
+    "name": "a suíte Python de start_supabase_postgres passa"
    },
    {
     "file": "tests/scripts/rules-checkers-detalhe.test.ts",
@@ -158299,6 +158681,9 @@
       "compara:src/components/bi/ClientCategoryRadar.tsx",
       "escreve:src/components/bi/ClientCategoryRadar.tsx"
      ],
+     "sem-comparativo": [
+      "compara:src/components/bi/ClientCategoryRadar.tsx"
+     ],
      "underindex": [
       "compara:src/components/bi/ClientCategoryRadar.tsx"
      ],
@@ -172144,6 +172529,13 @@
    },
    {
     "kind": "status",
+    "msg": "valor `sem-comparativo` para `status` usado no código não existe em nenhum enum do banco/TS",
+    "where": [
+     "compara:src/components/bi/ClientCategoryRadar.tsx"
+    ]
+   },
+   {
+    "kind": "status",
     "msg": "valor `underindex` para `status` usado no código não existe em nenhum enum do banco/TS",
     "where": [
      "compara:src/components/bi/ClientCategoryRadar.tsx"
@@ -178505,21 +178897,31 @@
   },
   "scripts/qa/postgres_ready.py": {
    "path": "scripts/qa/postgres_ready.py",
-   "lines": 190,
+   "lines": 257,
    "exports": [
     "def _flag",
     "def docker_is_mandatory",
     "def _docker_unavailable",
     "def _require_docker",
     "def _exit_on_sigterm",
+    "def _images_from_env",
+    "def _vale_retentar",
+    "def start_supabase_postgres",
     "def _tail",
     "def wait_for_postgres",
     "def run_overlapping"
    ],
+   "env": [
+    "SICOOB_QA_PG_IMAGES"
+   ],
    "errors": [
     "A sessão 1 não chegou a segurar a transação (a sobreposição não foi estabelecida):\\n",
+    "Não foi possível subir o PostgreSQL descartável da Supabase. Tentativas:\\n",
     "PostgreSQL descartável encerrou antes de ficar pronto. Últimas linhas do log:\\n",
     "PostgreSQL descartável não concluiu a inicialização. Últimas linhas do log:\\n"
+   ],
+   "rule_comments": [
+    "\"Data limit exceeded\" e a prova obrigatória cai sem nada a ver com o código."
    ],
    "doc": "Sincronização robusta com o servidor final das imagens oficiais PostgreSQL. Importado por todas as simulações de `scripts/qa/`. Além de esperar o Postgres descartável, este módulo decide o que acontece quando não há Docker: - no CI (`CI`/`GITHUB_ACTIONS`), a simulação é uma prova obrigatória: sem Do …"
   },
@@ -178634,12 +179036,11 @@
   },
   "scripts/qa/simular-controles-auditoria.py": {
    "path": "scripts/qa/simular-controles-auditoria.py",
-   "lines": 110,
+   "lines": 96,
    "exports": [
     "def command",
     "def sql",
-    "def actor",
-    "def start_container"
+    "def actor"
    ],
    "doc": "!/usr/bin/env python3",
    "uses_service_role": true
@@ -187115,14 +187516,18 @@
   },
   "src/components/bi/BIAiCopilot.tsx": {
    "path": "src/components/bi/BIAiCopilot.tsx",
-   "lines": 240,
+   "lines": 301,
    "exports": [
+    "function canSendQuestion",
+    "function buildCopilotHealthContext",
+    "function buildCopilotHistoryContext",
     "function BIAiCopilot"
    ],
    "invokes": [
     "bi-copilot"
    ],
    "errors": [
+    " className=",
     "Erro ao consultar o copiloto. Tente novamente."
    ],
    "status_values": [
@@ -187175,8 +187580,8 @@
    "calc_fns": [
     {
      "name": "canSendQuestion",
-     "params": "question: string, loading: boolean",
-     "body": "return question.length > 0 && !loading;"
+     "params": "question: string, loading: boolean, contextReady = true",
+     "body": "return question.length > 0 && !loading && contextReady;"
     }
    ],
    "side_effects": [
@@ -187185,11 +187590,13 @@
   },
   "src/components/bi/BIBriefingMode.tsx": {
    "path": "src/components/bi/BIBriefingMode.tsx",
-   "lines": 357,
+   "lines": 423,
    "exports": [
+    "function buildBriefingHistoryDetail",
     "function BIBriefingMode"
    ],
    "errors": [
+    " className=",
     "Não foi possível copiar."
    ],
    "doc": "BIBriefingMode — view compacta \"1 página pré-reunião\". Health Score grande + 3 talking points + 5 produtos + script de abertura. Otimizado para leitura mobile; aciona via botão \"Modo briefing\" no header."
@@ -187260,12 +187667,15 @@
   },
   "src/components/bi/ClientCategoryRadar.tsx": {
    "path": "src/components/bi/ClientCategoryRadar.tsx",
-   "lines": 379,
+   "lines": 419,
    "exports": [
     "function ClientCategoryRadar"
    ],
    "navigates": [
     "/orcamentos/novo?"
+   ],
+   "errors": [
+    ">\n            <p className="
    ],
    "status_values": [
     {
@@ -187291,6 +187701,21 @@
     {
      "field": "status",
      "value": "super",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "sem-comparativo",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "sem-comparativo",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "sem-comparativo",
      "kind": "compara"
     },
     {
@@ -187340,17 +187765,27 @@
   },
   "src/components/bi/ClientComparator.tsx": {
    "path": "src/components/bi/ClientComparator.tsx",
-   "lines": 176,
+   "lines": 206,
    "exports": [
     "function ClientComparator"
    ],
-   "doc": "ClientComparator — comparação lado-a-lado de até 3 clientes. Tabela: Health Score, LTV, ticket, frequência, top categoria, próxima janela."
+   "doc": "ClientComparator — comparação lado-a-lado de até 3 clientes. Tabela: Health Score, LTV, ticket, frequência, top categoria, próxima janela.",
+   "calc_fns": [
+    {
+     "name": "comparisonScore",
+     "params": "row: ClientComparisonRow",
+     "body": "return row.unavailable.health || row.tier === \"unknown\" ? \"—\" : row.score;"
+    }
+   ]
   },
   "src/components/bi/ClientHealthHero.tsx": {
    "path": "src/components/bi/ClientHealthHero.tsx",
-   "lines": 392,
+   "lines": 484,
    "exports": [
     "function ClientHealthHero"
+   ],
+   "rule_comments": [
+    "A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la."
    ],
    "doc": "ClientHealthHero — primeiro card no topo do BI. Score 0-100 + tier semântico + insight cross-zona + chips de ação + CTA principal.",
    "percents": [
@@ -187359,12 +187794,16 @@
   },
   "src/components/bi/ClientLookalikes.tsx": {
    "path": "src/components/bi/ClientLookalikes.tsx",
-   "lines": 136,
+   "lines": 175,
    "exports": [
+    "function excluirJaComprados",
     "function ClientLookalikes"
    ],
    "rpc": [
     "get_industry_top_products"
+   ],
+   "errors": [
+    "><AlertCircle className="
    ],
    "doc": "ClientLookalikes — \"Clientes parecidos com este também compram...\" Heurística: empresas do mesmo ramo + (LTV agregado de quotes ±30% do cliente atual) → top produtos comprados por elas que o cliente atual ainda NÃO compra.",
    "temporal": [
@@ -187376,7 +187815,7 @@
   },
   "src/components/bi/ClientOverview360.tsx": {
    "path": "src/components/bi/ClientOverview360.tsx",
-   "lines": 84,
+   "lines": 94,
    "exports": [
     "function ClientOverview360"
    ],
@@ -187384,7 +187823,7 @@
   },
   "src/components/bi/ClientSeasonalityHeatmap.tsx": {
    "path": "src/components/bi/ClientSeasonalityHeatmap.tsx",
-   "lines": 147,
+   "lines": 155,
    "exports": [
     "function ClientSeasonalityHeatmap"
    ],
@@ -187400,7 +187839,7 @@
   },
   "src/components/bi/ClientVsIndustryComparison.tsx": {
    "path": "src/components/bi/ClientVsIndustryComparison.tsx",
-   "lines": 211,
+   "lines": 347,
    "exports": [
     "function ClientVsIndustryComparison"
    ],
@@ -187445,11 +187884,12 @@
   },
   "src/components/bi/ExecutiveSummaryButton.tsx": {
    "path": "src/components/bi/ExecutiveSummaryButton.tsx",
-   "lines": 108,
+   "lines": 218,
    "exports": [
     "function ExecutiveSummaryButton"
    ],
    "errors": [
+    " className=",
     "Erro ao copiar",
     "Falha ao gerar PPTX"
    ],
@@ -187457,20 +187897,24 @@
   },
   "src/components/bi/ExportDossierButton.tsx": {
    "path": "src/components/bi/ExportDossierButton.tsx",
-   "lines": 52,
+   "lines": 77,
    "exports": [
     "function ExportDossierButton"
    ],
    "errors": [
+    " className=",
     "Falha ao gerar dossiê"
    ],
-   "doc": "ExportDossierButton — botão de exportação do Dossiê BI em PDF."
+   "doc": "ExportDossierButton — botão de exportação do Dossiê BI em PDF. Quando uma fonte cai, o hook já sabe qual é e como tentar de novo. Antes isso morria aqui: o botão só lia `isReady` e ficava cinza, sem dizer o motivo nem oferecer saída — o vendedor não tinha o que fazer além de recarregar a página."
   },
   "src/components/bi/IndustryTrendingProducts.tsx": {
    "path": "src/components/bi/IndustryTrendingProducts.tsx",
-   "lines": 193,
+   "lines": 223,
    "exports": [
     "function IndustryTrendingProducts"
+   ],
+   "errors": [
+    "><AlertCircle className="
    ],
    "doc": "IndustryTrendingProducts — Zona 3: tendências do setor (cross-vendedor). Sprint 2: gap analysis (\"cliente já compra?\") + filtro \"só oportunidades\" + top 3 oportunidades como hero cards com projeção de receita."
   },
@@ -208012,7 +208456,7 @@
   },
   "src/hooks/bi/useBIDossierExport.ts": {
    "path": "src/hooks/bi/useBIDossierExport.ts",
-   "lines": 117,
+   "lines": 185,
    "exports": [
     "function useBIDossierExport"
    ],
@@ -208035,7 +208479,7 @@
   },
   "src/hooks/bi/useClientAffinity.ts": {
    "path": "src/hooks/bi/useClientAffinity.ts",
-   "lines": 149,
+   "lines": 163,
    "exports": [
     "interface ClientTopProduct",
     "interface AffinityCategory",
@@ -208045,7 +208489,7 @@
    "rpc": [
     "get_client_top_products"
    ],
-   "doc": "useClientAffinity — produtos reais já orçados pelo cliente + sugestões similares. Estratégia: usa quote_items via RPC get_client_top_products (proxy de \"interesse confirmado\"). Quando vazio → fallback mock determinístico por ramo.",
+   "doc": "useClientAffinity — produtos reais já orçados pelo cliente + sugestões similares. Estratégia: usa quote_items via RPC get_client_top_products (proxy de \"interesse confirmado\"). Quando vazio, mantém estado vazio em vez de sugerir produto fictício: o conjunto simulado é só do cliente de demonstração.",
    "hooks": [
     "useClientAffinity"
    ],
@@ -208058,10 +208502,12 @@
   },
   "src/hooks/bi/useClientBI.ts": {
    "path": "src/hooks/bi/useClientBI.ts",
-   "lines": 167,
+   "lines": 225,
    "exports": [
     "interface PeriodDelta",
     "interface ClientBI",
+    "interface AvailableClientHistory",
+    "function getAvailableClientHistory",
     "function useClientBI"
    ],
    "params": [
@@ -208077,7 +208523,10 @@
      "kind": "compara"
     }
    ],
-   "doc": "useClientBI — orquestra estatísticas 360° do cliente. Tenta dados reais (orders); se vazio, retorna mock com flag `isMock: true`. Sprint 3: também calcula deltas vs período anterior (90d atual vs 90d anteriores).",
+   "rule_comments": [
+    "* Falha de consulta nunca deve ser serializada como um cliente sem compras. */"
+   ],
+   "doc": "useClientBI — orquestra estatísticas 360° do cliente. Usa exclusivamente pedidos persistidos. Ausência de histórico e falha de consulta são estados explícitos; dados fictícios nunca entram nos KPIs. Sprint 3: também calcula deltas vs período anterior (90d atual vs 90d anteriores).",
    "hooks": [
     "useClientBI"
    ],
@@ -208091,7 +208540,7 @@
   },
   "src/hooks/bi/useClientCategoryAffinity.ts": {
    "path": "src/hooks/bi/useClientCategoryAffinity.ts",
-   "lines": 214,
+   "lines": 229,
    "exports": [
     "interface ClientTopProductRow",
     "interface CategoryAggregate",
@@ -208101,7 +208550,7 @@
    "rpc": [
     "get_client_top_products"
    ],
-   "doc": "useClientCategoryAffinity — agrega histórico do cliente por CATEGORIA. Reaproveita o RPC `get_client_top_products` (já usado em useClientAffinity) e dobra o resultado por categoria via `categoryResolver`. Quando vazio, cai para mock determinístico baseado em MOCK_CLIENT_STATS.topCategories.",
+   "doc": "useClientCategoryAffinity — agrega histórico do cliente por CATEGORIA. Reaproveita o RPC `get_client_top_products` (já usado em useClientAffinity) e dobra o resultado por categoria via `categoryResolver`. Quando vazio, preserva a ausência de histórico sem fabricar afinidade: o conjunto simulado é só …",
    "hooks": [
     "useClientCategoryAffinity"
    ],
@@ -208115,11 +208564,13 @@
   },
   "src/hooks/bi/useClientHealthScore.ts": {
    "path": "src/hooks/bi/useClientHealthScore.ts",
-   "lines": 232,
+   "lines": 377,
    "exports": [
     "type HealthTier",
     "interface HealthScoreBreakdown",
     "interface ClientHealthScoreResult",
+    "function getAvailableHealthScore",
+    "function buildHealthResult",
     "function useClientHealthScore"
    ],
    "enums": [
@@ -208128,7 +208579,11 @@
      "values": "healthy | attention | risk | unknown"
     }
    ],
-   "doc": "useClientHealthScore — score 0-100 de saúde do cliente. Pesos: - Recência 30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0) - Frequência 25% (vs média do setor) - Ticket vs setor 20% - Crescimento trim. 15% (compara últimos 3m vs 3m anteriores via sazonalidade) - Share-of-wallet 10% (estimativa) T …",
+   "rule_comments": [
+    "* Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */",
+    "A falha do histórico não pode ser interpretada como zero compras/risco."
+   ],
+   "doc": "useClientHealthScore — score 0-100 de saúde do cliente. Pesos-base (normalizados entre os componentes com fonte confiável): - Recência 30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0) - Frequência 25% (vs média do setor) - Ticket vs setor 20% - Crescimento trim. 15% (compara últimos 3m vs 3m ante …",
    "hooks": [
     "useClientHealthScore"
    ],
@@ -208145,13 +208600,23 @@
     },
     {
      "name": "comparisonScore",
-     "params": "metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number",
-     "body": "if (metric) return ratioScore(metric.clientValue, metric.industryAvg); return ratioScore(fallbackClient, fallbackIndustry);"
+     "params": "metric: ComparisonMetric | undefined",
+     "body": "return metric ? ratioScore(metric.clientValue, metric.industryAvg) : 0;"
     },
     {
      "name": "periodTotal",
      "params": "offsets: number[]",
      "body": "offsets.reduce((sum, offset) => {"
+    },
+    {
+     "name": "weightedScore",
+     "params": "components: ScoreComponent[], totalWeight: number",
+     "body": "return Math.round(components.reduce((sum, component) => sum + component.score * component.weight, 0) / totalWeight);"
+    },
+    {
+     "name": "roundedGrowth",
+     "params": "growthPct: number | null",
+     "body": "return growthPct === null ? null : Math.round(growthPct);"
     }
    ],
    "percents": [
@@ -208159,17 +208624,17 @@
     "* - Frequência 25% (vs média do setor)",
     "* - Recência 30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0)",
     "* - Share-of-wallet 10% (estimativa)",
-    "* - Ticket vs setor 20%",
-    "const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);"
+    "* - Ticket vs setor 20%"
    ]
   },
   "src/hooks/bi/useClientSeasonality.ts": {
    "path": "src/hooks/bi/useClientSeasonality.ts",
-   "lines": 322,
+   "lines": 371,
    "exports": [
     "interface ClientMonthCell",
     "interface IndustryMonthCell",
     "interface SeasonalityResult",
+    "function resolveSeasonalityResult",
     "function useClientSeasonality",
     "const SEASONALITY_MONTH_LABELS",
     "const SEASONALITY_MONTH_LABELS_FULL"
@@ -208187,7 +208652,7 @@
      "value": "24"
     }
    ],
-   "doc": "useClientSeasonality — sazonalidade Cliente × Setor (12 meses). Combina RPC do cliente + RPC do setor (empresas mesmo ramo). Calcula: distribuição mensal, top 3 picos, próximo pico, insight textual. Fallback mock determinístico se < 3 meses com dados.",
+   "doc": "useClientSeasonality — sazonalidade Cliente × Setor (12 meses). Combina RPC do cliente + RPC do setor (empresas mesmo ramo). Calcula: distribuição mensal, top 3 picos, próximo pico, insight textual. Amostra insuficiente permanece vazia e identificada: não há fallback fictício em tela operacional. O …",
    "hooks": [
     "useClientSeasonality"
    ],
@@ -208197,7 +208662,7 @@
   },
   "src/hooks/bi/useClientVsIndustry.ts": {
    "path": "src/hooks/bi/useClientVsIndustry.ts",
-   "lines": 195,
+   "lines": 224,
    "exports": [
     "type ComparisonClassification",
     "interface MetricComparison",
@@ -208250,19 +208715,29 @@
   },
   "src/hooks/bi/useClientsComparison.ts": {
    "path": "src/hooks/bi/useClientsComparison.ts",
-   "lines": 135,
+   "lines": 290,
    "exports": [
     "interface ClientComparisonRow",
     "function useSingleClientComparisonRow"
    ],
+   "rule_comments": [
+    "(industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o"
+   ],
    "doc": "useClientsComparison — paraleliza dados de até 3 clientes para comparação lado-a-lado. Composição de hooks BI existentes (sem novas RPCs).",
    "hooks": [
     "useSingleClientComparisonRow"
+   ],
+   "calc_fns": [
+    {
+     "name": "comparisonIsLoading",
+     "params": "sources: Array<{ isLoading: boolean }>",
+     "body": "return sources.some((source) => source.isLoading);"
+    }
    ]
   },
   "src/hooks/bi/useIndustryCategoryTrends.ts": {
    "path": "src/hooks/bi/useIndustryCategoryTrends.ts",
-   "lines": 181,
+   "lines": 190,
    "exports": [
     "interface IndustryCategoryAggregate",
     "interface IndustryCategoryTrendsResult",
@@ -208271,7 +208746,7 @@
    "rpc": [
     "get_industry_top_products"
    ],
-   "doc": "useIndustryCategoryTrends — agrega top produtos do setor por CATEGORIA. Reaproveita o RPC `get_industry_top_products` (já usado em useIndustryTrends) e dobra o resultado por categoria. Quando vazio, cai para mock derivado de getMockIndustryTrends.",
+   "doc": "useIndustryCategoryTrends — agrega top produtos do setor por CATEGORIA. Reaproveita o RPC `get_industry_top_products` (já usado em useIndustryTrends) e dobra o resultado por categoria. Quando vazio, preserva a ausência de amostra em vez de produzir categoria fictícia do setor: o conjunto simulado é …",
    "hooks": [
     "useIndustryCategoryTrends"
    ],
@@ -208281,7 +208756,7 @@
   },
   "src/hooks/bi/useIndustryTrends.ts": {
    "path": "src/hooks/bi/useIndustryTrends.ts",
-   "lines": 121,
+   "lines": 131,
    "exports": [
     "interface IndustryTopProduct",
     "interface IndustryTrendItem",
@@ -208291,7 +208766,10 @@
    "rpc": [
     "get_industry_top_products"
    ],
-   "doc": "useIndustryTrends — top produtos vendidos para empresas do mesmo ramo. Estratégia: 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade 2) Chama RPC get_industry_top_products(_company_ids, _days) 3) Se RPC vazia → fallback mock determinístico",
+   "rule_comments": [
+    "A falha do CRM nao pode virar \"setor sem tendencia\": sem propagar, o"
+   ],
+   "doc": "useIndustryTrends — top produtos vendidos para empresas do mesmo ramo. Estratégia: 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade 2) Chama RPC get_industry_top_products(_company_ids, _days) 3) Se a amostra estiver vazia, devolve estado vazio explícito: o conjunto simulado é só do c …",
    "hooks": [
     "useIndustryTrends"
    ],
@@ -212686,7 +213164,7 @@
   },
   "src/lib/bi/dossierPdfGenerator.ts": {
    "path": "src/lib/bi/dossierPdfGenerator.ts",
-   "lines": 519,
+   "lines": 521,
    "exports": [
     "interface DossierClient",
     "interface DossierData",
@@ -212704,7 +213182,7 @@
   },
   "src/lib/bi/executive-summary.ts": {
    "path": "src/lib/bi/executive-summary.ts",
-   "lines": 156,
+   "lines": 164,
    "exports": [
     "interface CategoryMapRow",
     "interface CategoryGap",
@@ -212721,7 +213199,10 @@
      "value": "5"
     }
    ],
-   "doc": "executive-summary — helpers de agregação para o dossiê executivo. `buildCategorySection` produz a estrutura \"Mapa de Categorias\" usada no PDF e no PPTX: top categorias do cliente, top do setor, GAPs prioritários (forte no setor / fraco no cliente) e insight textual."
+   "doc": "executive-summary — helpers de agregação para o dossiê executivo. `buildCategorySection` produz a estrutura \"Mapa de Categorias\" usada no PDF e no PPTX: top categorias do cliente, top do setor, GAPs prioritários (forte no setor / fraco no cliente) e insight textual.",
+   "percents": [
+    "/** Sem nenhuma categoria do setor não há comparativo: nem 0%, nem \"alinhado\". */"
+   ]
   },
   "src/lib/bi/industryRecommendations.ts": {
    "path": "src/lib/bi/industryRecommendations.ts",
@@ -212749,7 +213230,7 @@
   },
   "src/lib/bi/pptxGenerator.ts": {
    "path": "src/lib/bi/pptxGenerator.ts",
-   "lines": 429,
+   "lines": 436,
    "exports": [
     "function generateBIPptx"
    ],
@@ -239950,6 +240431,196 @@
    ],
    "uses_service_role": true
   },
+  "tests/components/bi/BIAiCopilot.context-availability.test.ts": {
+   "path": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+   "lines": 51,
+   "is_test": true,
+   "tests": [
+    "contexto do copiloto com dados indisponíveis",
+    "envia métricas nulas quando o histórico falhou, sem converter falha em zero compras",
+    "preserva zeros quando a consulta confirmou que não existem pedidos",
+    "não envia score ou potencial zerados como diagnóstico quando a amostra é insuficiente"
+   ]
+  },
+  "tests/components/bi/BIAiCopilot.sources-availability.test.tsx": {
+   "path": "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
+   "lines": 68,
+   "is_test": true,
+   "errors": [
+    ").textContent ?? ",
+    ").textContent).toContain("
+   ],
+   "tests": [
+    "BIAiCopilot — disponibilidade de fontes",
+    "bloqueia envio quando afinidade falha e permite refazer a consulta",
+    "não envia tendência setorial em cache quando a fonte falha"
+   ]
+  },
+  "tests/components/bi/BIBriefingMode.history-availability.test.ts": {
+   "path": "tests/components/bi/BIBriefingMode.history-availability.test.ts",
+   "lines": 22,
+   "is_test": true,
+   "tests": [
+    "histórico apresentado no briefing",
+    "não afirma valores ou ausência de compras quando a consulta falhou",
+    "continua distinguindo histórico confirmado sem pedidos de consulta indisponível"
+   ]
+  },
+  "tests/components/bi/BIBriefingMode.sources-availability.test.tsx": {
+   "path": "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
+   "lines": 72,
+   "is_test": true,
+   "errors": [
+    ").textContent ?? ",
+    ").textContent).toContain("
+   ],
+   "tests": [
+    "BIBriefingMode — disponibilidade de fontes",
+    "oculta o GAP e bloqueia cópia se categorias do cliente falham",
+    "bloqueia briefing com tendência setorial em cache após falha do CRM"
+   ]
+  },
+  "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx": {
+   "path": "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
+   "lines": 74,
+   "is_test": true,
+   "tests": [
+    "ClientCategoryRadar — falha na consulta do setor",
+    "oculta classificações exclusivas e badge de dados reais enquanto o setor falha",
+    "permite tentar novamente a fonte do setor que falhou"
+   ]
+  },
+  "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx": {
+   "path": "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
+   "lines": 68,
+   "is_test": true,
+   "doc": "Regressão: sem categorias do setor, o radar afirmava exclusividade (\"Exclusivo do cliente\") lendo a ausência de comparativo como setor em 0%.",
+   "tests": [
+    "ClientCategoryRadar — setor sem categorias",
+    "não afirma exclusividade quando não há comparativo do setor",
+    "mantém a exclusividade quando o setor respondeu e não tem a categoria"
+   ]
+  },
+  "tests/components/bi/ClientHealthHero.availability.test.tsx": {
+   "path": "tests/components/bi/ClientHealthHero.availability.test.tsx",
+   "lines": 74,
+   "is_test": true,
+   "errors": [
+    ")).toBeNull();\n    expect(screen.queryByRole(",
+    ").textContent).toContain("
+   ],
+   "tests": [
+    "ClientHealthHero — disponibilidade do diagnóstico",
+    "mostra falha da fonte com retry antes de qualquer conteúdo derivado",
+    "distingue amostra insuficiente de falha e não oferece retry sem erro"
+   ]
+  },
+  "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx": {
+   "path": "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
+   "lines": 64,
+   "is_test": true,
+   "doc": "Regressão: com a consulta de categorias do cliente falhando, a lista vazia fazia toda categoria do setor virar \"oportunidade\" na tela do vendedor.",
+   "tests": [
+    "ClientHealthHero — categorias do cliente indisponíveis",
+    "não apresenta categoria do setor como oportunidade quando a do cliente falhou",
+    "volta a apresentar a oportunidade quando a consulta do cliente responde"
+   ]
+  },
+  "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx": {
+   "path": "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
+   "lines": 30,
+   "is_test": true,
+   "doc": "Regressão: a exclusão do que o cliente já compra estava dentro da consulta, cujo cache (10 min) não inclui a afinidade. Com a afinidade falhando na abertura, o \"Tentar novamente\" devolvia produto já comprado como oportunidade.",
+   "tests": [
+    "excluirJaComprados",
+    "exclui por id e por nome, com a afinidade do momento da renderização",
+    "limita a seis sugestões"
+   ]
+  },
+  "tests/components/bi/ClientLookalikes.availability.test.tsx": {
+   "path": "tests/components/bi/ClientLookalikes.availability.test.tsx",
+   "lines": 85,
+   "is_test": true,
+   "errors": [
+    ")).toHaveTextContent(/clientes semelhantes do setor/i);\n    expect(screen.queryByText("
+   ],
+   "rule_comments": [
+    "vazio de verdade não pode ser confundido com falha."
+   ],
+   "tests": [
+    "ClientLookalikes — disponibilidade da amostra setorial",
+    "rejeita CRM e RPC indisponíveis, mas preserva setor legitimamente vazio",
+    "não exibe cache antigo após falha e oferece retry"
+   ]
+  },
+  "tests/components/bi/ClientOverview360.availability.test.tsx": {
+   "path": "tests/components/bi/ClientOverview360.availability.test.tsx",
+   "lines": 38,
+   "is_test": true,
+   "tests": [
+    "disponibilidade do histórico no resumo 360°",
+    "não apresenta zeros ou “nunca comprou” como se fossem dados reais após falha do histórico"
+   ]
+  },
+  "tests/components/bi/ComparisonAvailability.test.tsx": {
+   "path": "tests/components/bi/ComparisonAvailability.test.tsx",
+   "lines": 110,
+   "is_test": true,
+   "tests": [
+    "estados de indisponibilidade em comparativos de BI",
+    "oculta métricas dependentes do histórico e preserva categorias e sazonalidade confiáveis",
+    "não apresenta categorias nem pico em cache após falha das respectivas fontes",
+    "mostra erro consultável com retry antes de classificar a amostra como insuficiente",
+    "preserva métricas em cache e oferece retry quando o refetch falha"
+   ]
+  },
+  "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx": {
+   "path": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+   "lines": 122,
+   "is_test": true,
+   "errors": [
+    ")).textContent ?? "
+   ],
+   "tests": [
+    "disponibilidade do resumo executivo",
+    "bloqueia copiar e PPTX quando uma fonte usada pelo resumo falha e permite tentar novamente",
+    "mantém a cópia disponível quando falha apenas uma fonte exclusiva do PPTX",
+    "bloqueia exportações quando tendências setoriais falham com cache presente",
+    "não publica zeros sentinela quando o Health Score não possui amostra suficiente"
+   ]
+  },
+  "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx": {
+   "path": "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
+   "lines": 54,
+   "is_test": true,
+   "errors": [
+    ").textContent).toContain("
+   ],
+   "tests": [
+    "IndustryTrendingProducts — afinidade indisponível",
+    "não marca produtos como GAP/oportunidade quando a afinidade falha e permite retry",
+    "permanece carregando enquanto consulta afinidade, sem renderizar GAPs"
+   ]
+  },
+  "tests/components/bi/client-vs-industry-origem.test.tsx": {
+   "path": "tests/components/bi/client-vs-industry-origem.test.tsx",
+   "lines": 97,
+   "is_test": true,
+   "errors": [
+    ").textContent).toMatch(/Histórico do cliente indisponível/);\n    expect(screen.queryByText("
+   ],
+   "rule_comments": [
+    "* O comparativo Cliente × Setor não pode carimbar \"Dados reais\" sobre número"
+   ],
+   "doc": "O comparativo Cliente × Setor não pode carimbar \"Dados reais\" sobre número inventado. Antes, `useClientBI` devolvia `isMock: true` com `MOCK_CLIENT_STATS` para qualquer cliente sem pedidos, `useClientVsIndustry` montava LTV, ticket, frequência e itens/orçamento a partir desses números e o componente …",
+   "tests": [
+    "ClientVsIndustryComparison — origem do dado",
+    "cliente de demonstracao: avisa que os números são ilustrativos",
+    "cliente sem pedido: nao compara, e nao oferece repetir",
+    "historico indisponivel: avisa a falha e oferece repetir",
+    "cliente com histórico: mantém o selo de dado real"
+   ]
+  },
   "tests/components/cart/cart-company-options.test.ts": {
    "path": "tests/components/cart/cart-company-options.test.ts",
    "lines": 61,
@@ -244562,7 +245233,7 @@
   },
   "tests/hooks/bi/useClientBI.test.ts": {
    "path": "tests/hooks/bi/useClientBI.test.ts",
-   "lines": 69,
+   "lines": 113,
    "is_test": true,
    "rule_comments": [
     "* O caminho de dado real do BI de cliente não pode devolver categoria fictícia."
@@ -244571,7 +245242,47 @@
    "tests": [
     "useClientBI",
     "não devolve categoria fictícia quando há pedido real",
-    "mantém o conjunto simulado quando o cliente não tem pedido, com a flag ligada"
+    "cliente real sem pedido nao recebe o conjunto simulado, nem com flag",
+    "cliente de demonstracao continua recebendo o conjunto simulado",
+    "falha de consulta e estado proprio, nao cliente sem compras"
+   ]
+  },
+  "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts": {
+   "path": "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+   "lines": 78,
+   "is_test": true,
+   "rule_comments": [
+    "1. prospect sem compra não pode sair classificado como saudável;"
+   ],
+   "doc": "Regressões do diagnóstico de saúde do cliente: 1. prospect sem compra não pode sair classificado como saudável; 2. tendência de trimestre só entra quando a janela sazonal é comprovada.",
+   "tests": [
+    "buildHealthResult — honestidade do diagnóstico",
+    "cliente sem compra registrada não recebe diagnóstico, mesmo com orçamentos",
+    "sem janela sazonal comprovada a tendência não é medida nem citada",
+    "com janela sazonal comprovada a tendência volta a ser medida"
+   ]
+  },
+  "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx": {
+   "path": "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+   "lines": 56,
+   "is_test": true,
+   "doc": "Regressão: falha do CRM ao buscar pares do ramo virava \"setor sem categorias\" (`isError: false`), o que suprimia o aviso de fonte indisponível e o retry.",
+   "tests": [
+    "useIndustryCategoryTrends — falha da fonte",
+    "falha do CRM vira isError, não setor vazio",
+    "falha da RPC do setor também vira isError",
+    "setor que respondeu sem linha medida continua vazio e sem erro"
+   ]
+  },
+  "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx": {
+   "path": "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
+   "lines": 44,
+   "is_test": true,
+   "doc": "Regressão: falha do CRM virava \"setor sem tendência\" com `isError: false`, cacheada por 10 min — copiloto e briefing respondiam sobre dado não medido.",
+   "tests": [
+    "useIndustryTrends — falha do CRM",
+    "falha do CRM vira isError, não setor sem tendência",
+    "setor que respondeu sem produto continua sem erro"
    ]
   },
   "tests/hooks/quote/quote-url-prefill.test.ts": {
@@ -246331,6 +247042,18 @@
     "apaga o histórico de navegação do armazenamento e do store",
     "apaga todas as chaves por usuário e limpa a sessão",
     "não propaga erro quando o armazenamento está bloqueado"
+   ]
+  },
+  "tests/lib/bi/categoria-sem-comparativo.test.ts": {
+   "path": "tests/lib/bi/categoria-sem-comparativo.test.ts",
+   "lines": 59,
+   "is_test": true,
+   "doc": "Regressão: sem nenhuma categoria do setor, os exportadores recebiam a lista vazia como fonte real — o PDF imprimia \"0.0%\" para o setor e o PPTX afirmava \"cliente alinhado ao mix do setor\". Ausência de comparativo voltava a aparecer como diagnóstico medido.",
+   "tests": [
+    "buildCategorySection — setor sem categorias",
+    "marca o comparativo como indisponível em vez de preencher com zero",
+    "com o setor respondendo, o percentual volta a ser número",
+    "o percentual do cliente continua sendo mostrado — ele foi medido"
    ]
   },
   "tests/lib/personalization/rpc-contracts.test.ts": {
@@ -248347,6 +249070,18 @@
     "no CI falha em vez de sair 0"
    ]
   },
+  "tests/scripts/qa-registry-fallback.test.ts": {
+   "path": "tests/scripts/qa-registry-fallback.test.ts",
+   "lines": 24,
+   "is_test": true,
+   "temporal": [
+    "timeout: 60_000,"
+   ],
+   "tests": [
+    "scripts/qa — queda para o espelho quando o registry estoura a cota",
+    "a suíte Python de start_supabase_postgres passa"
+   ]
+  },
   "tests/scripts/rules-checkers-detalhe.test.ts": {
    "path": "tests/scripts/rules-checkers-detalhe.test.ts",
    "lines": 124,
@@ -248548,6 +249283,16 @@
     "cobre as 7 canônicas e as 7 endurecidas (total 14)",
     "mantém a lista publicada no workflow em paridade com o verificador"
    ]
+  },
+  "tests/scripts/qa/test_start_supabase_postgres.py": {
+   "path": "tests/scripts/qa/test_start_supabase_postgres.py",
+   "lines": 108,
+   "exports": [
+    "def resultado",
+    "class FakeDocker",
+    "class TestStartSupabasePostgres"
+   ],
+   "doc": "Prova a queda para o espelho quando o registry estoura a cota. Roda sem Docker: `command` e `sleep` são substituídos por dublês."
   },
   "tests/search/GlobalSearchHelpers.test.tsx": {
    "path": "tests/search/GlobalSearchHelpers.test.tsx",
@@ -249820,10 +250565,76 @@
   }
  },
  "git": {
-  "sha": "d342a596a8c9f7dfd610d97f7656e81fa0b052fb",
+  "sha": "d53f9e8bcb1c9f91e324d62b1341922921b7937c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "d53f9e8",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(bi): BI do cliente para de apresentar dado indisponível como diagnóstico medido (#361)",
+    "files": [
+     "src/components/bi/BIAiCopilot.tsx",
+     "src/components/bi/BIBriefingMode.tsx",
+     "src/components/bi/ClientCategoryRadar.tsx",
+     "src/components/bi/ClientComparator.tsx",
+     "src/components/bi/ClientHealthHero.tsx",
+     "src/components/bi/ClientLookalikes.tsx",
+     "src/components/bi/ClientOverview360.tsx",
+     "src/components/bi/ClientSeasonalityHeatmap.tsx",
+     "src/components/bi/ClientVsIndustryComparison.tsx",
+     "src/components/bi/ExecutiveSummaryButton.tsx",
+     "src/components/bi/ExportDossierButton.tsx",
+     "src/components/bi/IndustryTrendingProducts.tsx",
+     "src/hooks/bi/useBIDossierExport.ts",
+     "src/hooks/bi/useClientAffinity.ts",
+     "src/hooks/bi/useClientBI.ts",
+     "src/hooks/bi/useClientCategoryAffinity.ts",
+     "src/hooks/bi/useClientHealthScore.ts",
+     "src/hooks/bi/useClientSeasonality.ts",
+     "src/hooks/bi/useClientVsIndustry.ts",
+     "src/hooks/bi/useClientsComparison.ts",
+     "src/hooks/bi/useIndustryCategoryTrends.ts",
+     "src/hooks/bi/useIndustryTrends.ts",
+     "src/lib/bi/dossierPdfGenerator.ts",
+     "src/lib/bi/executive-summary.ts",
+     "src/lib/bi/pptxGenerator.ts",
+     "tests/components/bi/BIAiCopilot.context-availability.test.ts",
+     "tests/components/bi/BIAiCopilot.sources-availability.test.tsx",
+     "tests/components/bi/BIBriefingMode.history-availability.test.ts",
+     "tests/components/bi/BIBriefingMode.sources-availability.test.tsx",
+     "tests/components/bi/ClientCategoryRadar.industry-error.test.tsx",
+     "tests/components/bi/ClientCategoryRadar.sem-comparativo.test.tsx",
+     "tests/components/bi/ClientHealthHero.availability.test.tsx",
+     "tests/components/bi/ClientHealthHero.categorias-indisponiveis.test.tsx",
+     "tests/components/bi/ClientLookalikes.afinidade-tardia.test.tsx",
+     "tests/components/bi/ClientLookalikes.availability.test.tsx",
+     "tests/components/bi/ClientOverview360.availability.test.tsx",
+     "tests/components/bi/ComparisonAvailability.test.tsx",
+     "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
+     "tests/components/bi/IndustryTrendingProducts.affinity-availability.test.tsx",
+     "tests/components/bi/client-vs-industry-origem.test.tsx",
+     "tests/hooks/bi/useClientBI.test.ts",
+     "tests/hooks/bi/useClientHealthScore.diagnostico.test.ts",
+     "tests/hooks/bi/useIndustryCategoryTrends.erro-fonte.test.tsx",
+     "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
+     "tests/lib/bi/categoria-sem-comparativo.test.ts"
+    ]
+   },
+   {
+    "sha": "1ad25e3",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(qa): simulação de Postgres cai para o espelho quando o registry estoura a cota (#362)",
+    "files": [
+     "scripts/qa/postgres_ready.py",
+     "scripts/qa/simular-acl-efetiva.py",
+     "scripts/qa/simular-controles-auditoria.py",
+     "tests/scripts/qa-registry-fallback.test.ts",
+     "tests/scripts/qa/test_start_supabase_postgres.py"
+    ]
+   },
    {
     "sha": "d342a59",
     "date": "2026-11-18",
@@ -250338,32 +251149,44 @@
      "scripts/lib/npm-audit-policy.mjs",
      "tests/scripts/npm-audit-policy.test.ts"
     ]
-   },
-   {
-    "sha": "19e692d",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "fix: historico de itens do pedido Sicoob sem embed irresolvivel (#302)",
-    "files": [
-     "src/services/sicoob/orderService.ts",
-     "tests/services/sicoobOrderService.test.ts"
-    ]
-   },
-   {
-    "sha": "004e313",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "fix: sonda de REST aceita raiz protegida e para de repetir healthcheck negado (#300)",
-    "files": [
-     "src/lib/cloud-status.ts",
-     "tests/lib/cloud-status.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     4
+   ],
+   [
+    "src/components/bi/ClientLookalikes.tsx",
+    2
+   ],
+   [
+    "src/hooks/bi/useClientBI.ts",
+    2
+   ],
+   [
+    "src/hooks/bi/useClientSeasonality.ts",
+    2
+   ],
+   [
+    "src/hooks/bi/useClientVsIndustry.ts",
+    2
+   ],
+   [
+    "src/hooks/bi/useClientsComparison.ts",
+    2
+   ],
+   [
+    "src/hooks/bi/useIndustryCategoryTrends.ts",
+    2
+   ],
+   [
+    "src/hooks/bi/useIndustryTrends.ts",
+    2
+   ],
+   [
+    "tests/hooks/bi/useClientBI.test.ts",
+    2
    ],
    [
     "supabase/functions/crm-db-bridge/search-pattern.test.ts",
@@ -250408,38 +251231,6 @@
    [
     "tests/pages/GestorCompras.metrics.test.tsx",
     2
-   ],
-   [
-    "src/hooks/useKitAutoSave.ts",
-    2
-   ],
-   [
-    "tests/hooks/useKitAutoSave.test.tsx",
-    2
-   ],
-   [
-    "src/hooks/useCustomKitPersistence.ts",
-    2
-   ],
-   [
-    "src/hooks/useMagicUpState.ts",
-    2
-   ],
-   [
-    "supabase/functions/sicoob-document-ingest/index.ts",
-    2
-   ],
-   [
-    "src/components/admin/suppliers-manager/useSuppliersManager.ts",
-    2
-   ],
-   [
-    "src/pages/sicoob/orders/OrderDetailPage.tsx",
-    2
-   ],
-   [
-    "PENDENCIAS.md",
-    1
    ]
   ]
  }

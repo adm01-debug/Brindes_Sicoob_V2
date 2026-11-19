@@ -2555,6 +2555,8 @@
    "src/hooks/bi/useClientBI.ts",
    "src/hooks/bi/useClientCategoryAffinity.ts",
    "src/hooks/bi/useClientHealthScore.ts",
+   "src/hooks/bi/useClientSeasonality.ts",
+   "src/hooks/bi/useClientVsIndustry.ts",
    "src/hooks/bi/useIndustryCategoryTrends.ts",
    "src/hooks/bi/useIndustryTrends.ts",
    "src/lib/utils.ts"
@@ -2614,6 +2616,7 @@
   ],
   "src/components/bi/ClientComparator.tsx": [
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/skeleton.tsx",
    "src/hooks/bi/useClientsComparison.ts",
@@ -2636,6 +2639,7 @@
   ],
   "src/components/bi/ClientLookalikes.tsx": [
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/skeleton.tsx",
    "src/hooks/bi/useClientAffinity.ts",
@@ -2676,6 +2680,7 @@
   "src/components/bi/ClientVsIndustryComparison.tsx": [
    "src/components/bi/BISkeletons.tsx",
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/hooks/bi/useClientVsIndustry.ts",
    "src/lib/format.ts",
@@ -2726,6 +2731,7 @@
   "src/components/bi/IndustryTrendingProducts.tsx": [
    "src/components/bi/BISkeletons.tsx",
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/switch.tsx",
    "src/contexts/BICategoryFocusContext.tsx",
@@ -7969,6 +7975,7 @@
    "src/hooks/bi/useIndustryCategoryTrends.ts",
    "src/hooks/bi/useIndustryTrends.ts",
    "src/hooks/useCrmCompanies.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/dossierPdfGenerator.ts",
    "src/lib/bi/executive-summary.ts",
    "src/lib/bi/industryRecommendations.ts",
@@ -7979,15 +7986,18 @@
   ],
   "src/hooks/bi/useClientAffinity.ts": [
    "src/integrations/supabase/client.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts"
   ],
   "src/hooks/bi/useClientBI.ts": [
    "src/hooks/useClientOrdersHistory.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts"
   ],
   "src/hooks/bi/useClientCategoryAffinity.ts": [
    "src/integrations/supabase/client.ts",
    "src/lib/bi/categoryResolver.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts"
   ],
   "src/hooks/bi/useClientHealthScore.ts": [
@@ -7997,6 +8007,7 @@
   ],
   "src/hooks/bi/useClientSeasonality.ts": [
    "src/integrations/supabase/client.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts",
    "src/lib/crm-db.ts"
   ],
@@ -8019,11 +8030,13 @@
   "src/hooks/bi/useIndustryCategoryTrends.ts": [
    "src/integrations/supabase/client.ts",
    "src/lib/bi/categoryResolver.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts",
    "src/lib/crm-db.ts"
   ],
   "src/hooks/bi/useIndustryTrends.ts": [
    "src/integrations/supabase/client.ts",
+   "src/lib/bi/demoClient.ts",
    "src/lib/bi/mockData.ts",
    "src/lib/crm-db.ts"
   ],
