@@ -35,19 +35,27 @@ pede uma delas:
 | ação pendente | onde está | branches que ela libera |
 |---|---|---|
 | apagar a aprovação pública legada órfã | [PR #354](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/354) | `aprovacao-legada`, `p0-operacional` |
-| religar os selos de confiança do fornecedor com dado real | [PR #323](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/323) | `p0-seguranca`, `p0-operacional`, `execucao/sicoob` |
+| religar os selos de confiança do fornecedor com dado real | [PR #323](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/323) | `p0-seguranca`, `p0-operacional`, `execucao/sicoob`, `audit/revisao-plano`, `backup/local-rascunho` |
+
+Relendo os **seis** vereditos PARCIAL, todos caem nessas duas linhas: as duas
+últimas (`audit/revisao-plano-20260924` e `backup/local-rascunho-20261031`)
+pedem só o item dos selos. Ou seja, **o conjunto PARCIAL inteiro fecha com a
+#354 e a #323** — não há um sétimo trabalho escondido.
 
 **Decisão sobre `isVerified`, que eu tomo e assumo.** Os três vereditos pedem
 "fornecedor verificado/ativo" além do prazo. A PR #323 entrega o prazo
 (`leadTimeDays`, já mapeado do catálogo) e deixa `isVerified` em `false`. Existe
 sim um sinal de atividade — `variant_supplier_sources.is_active` e
 `.is_preferred`, expostos por `useProductSupplierSources`. **Não** o usei como
-"Fornecedor verificado" por dois motivos: (a) linha de fornecimento ativa não é
-homologação de fornecedor, e transformar uma coisa na outra é inventar
-significado — exatamente o que esta recuperação passou a semana desfazendo em
-`useClientBI`, `useClientSeasonality` e no detalhe de risco de estoque; (b) o
-hook consulta a `external-db-bridge` por produto, o que põe uma chamada de rede
-na ficha do produto para render um selo. O selo de homologação fica fora até
+"Fornecedor verificado", e o texto do próprio selo é a prova: o tooltip que a
+`main` renderiza quando `isVerified` é verdadeiro diz **"Fornecedor aprovado e
+com histórico de qualidade comprovada"** (`src/components/common/SocialProof.tsx:243`).
+Não existe processo de aprovação nem histórico de qualidade no dado — derivar
+esse selo de `is_active` ou `is_preferred` seria afirmação falsa ao cliente,
+não aproximação. É exatamente o que esta recuperação passou a semana
+desfazendo em `useClientBI`, `useClientSeasonality` e no detalhe de risco de
+estoque. Soma-se que o hook consulta a `external-db-bridge` por produto, o que
+põe uma chamada de rede na ficha para renderizar um selo. O selo de homologação fica fora até
 existir campo de homologação. Prazo de entrega, que é dado medido, entra.
 
 Legenda: `INCORPORADA` = conteúdo está na `main`; `PARCIAL` = parte está, parte não;
