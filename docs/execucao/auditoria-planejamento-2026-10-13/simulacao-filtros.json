@@ -1,0 +1,76 @@
+{
+  "metodo": "Funções reais transpiladas em memória, inclusive sortProducts; produtos sintéticos, sem rede",
+  "resultados": [
+    {
+      "filtro": "techniques",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "tags",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "gender",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "sizes",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "featured",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "isNew",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "hasPersonalization",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "b",
+        "a"
+      ],
+      "observacao": "Filtro anunciado não altera o conjunto neste cenário"
+    },
+    {
+      "filtro": "search",
+      "contagem_ativos": 1,
+      "produtos_devolvidos": [
+        "a"
+      ],
+      "observacao": "Controle positivo: busca reduz conjunto"
+    }
+  ]
+}

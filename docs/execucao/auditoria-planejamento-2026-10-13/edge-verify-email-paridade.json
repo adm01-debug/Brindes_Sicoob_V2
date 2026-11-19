@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "content_type": "application/octet-stream",
+  "bytes": 898710,
+  "sha256": "7e9097cb3f8dd4068651f3cee7d69ee6ac389298034f2d79a1b04dcdaeeb19bf",
+  "getUserById_presente": true,
+  "email_confirm_presente": true,
+  "fonte_recuperada": true
+}

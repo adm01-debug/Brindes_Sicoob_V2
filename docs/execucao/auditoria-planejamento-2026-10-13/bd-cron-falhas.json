@@ -1,0 +1,37 @@
+[
+  {
+    "status": "failed",
+    "mensagem": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(19416) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.sicoob_approval_worker_dispatches(request_id) VALUES(v_request_id)\"\nPL/pgSQL function dispatch_sicoob_approval_worker() line 19 at SQL statement\n",
+    "total": 1,
+    "primeiro": "2026-10-12 11:01:00.824703+00",
+    "ultimo": "2026-10-12 11:01:00.824703+00"
+  },
+  {
+    "status": "failed",
+    "mensagem": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(19420) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.sicoob_approval_worker_dispatches(request_id) VALUES(v_request_id)\"\nPL/pgSQL function dispatch_sicoob_approval_worker() line 19 at SQL statement\n",
+    "total": 1,
+    "primeiro": "2026-10-12 11:03:00.434294+00",
+    "ultimo": "2026-10-12 11:03:00.434294+00"
+  },
+  {
+    "status": "failed",
+    "mensagem": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(19432) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.sicoob_approval_worker_dispatches(request_id) VALUES(v_request_id)\"\nPL/pgSQL function dispatch_sicoob_approval_worker() line 19 at SQL statement\n",
+    "total": 1,
+    "primeiro": "2026-10-12 11:08:00.623618+00",
+    "ultimo": "2026-10-12 11:08:00.623618+00"
+  },
+  {
+    "status": "failed",
+    "mensagem": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(19436) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.sicoob_approval_worker_dispatches(request_id) VALUES(v_request_id)\"\nPL/pgSQL function dispatch_sicoob_approval_worker() line 19 at SQL statement\n",
+    "total": 1,
+    "primeiro": "2026-10-12 11:10:00.808344+00",
+    "ultimo": "2026-10-12 11:10:00.808344+00"
+  },
+  {
+    "status": "failed",
+    "mensagem": "ERROR:  duplicate key value violates unique constraint \"sicoob_approval_worker_dispatches_request_id_key\"\nDETAIL:  Key (request_id)=(19404) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.sicoob_approval_worker_dispatches(request_id) VALUES(v_request_id)\"\nPL/pgSQL function dispatch_sicoob_approval_worker() line 19 at SQL statement\n",
+    "total": 1,
+    "primeiro": "2026-10-12 10:56:00.612307+00",
+    "ultimo": "2026-10-12 10:56:00.612307+00"
+  }
+]
