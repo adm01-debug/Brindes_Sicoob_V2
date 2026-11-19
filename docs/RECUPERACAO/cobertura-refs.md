@@ -366,3 +366,30 @@ o trabalho recuperado ainda está em PR aberta, não na `main`. O portão é por
 | `fix-prod-cors-audit-261118-1034` / `fix/hermes-h164991-simulacao-final` | **#363** e **#357** entrarem |
 | as demais `claude/*` com PR aberta | a PR correspondente entrar |
 | refs pré-re-raiz sem PR | este ledger entrar na `main` (**#315**) |
+
+## Quarta varredura: rotas (19/11/2026)
+
+As três varreduras anteriores olham arquivos, símbolos exportados e linhas. Nenhuma
+pega uma **rota** sumida, porque rota vive dentro de arquivo: dá para perder
+`/clientes/:id` sem nenhum arquivo sumir e sem nenhum símbolo deixar de ser exportado.
+
+Varredura das 94 refs remotas contra a `main`, extraindo os caminhos de `src/routes/`
+e de `src/App.tsx`:
+
+```
+rotas na main: 133
+rotas presentes em alguma ref e ausentes da main: 0
+```
+
+O único candidato que apareceu, `/clientes/:id` em 4 refs antigas, é **falso positivo
+do extrator**, não regressão: a `main` monta a rota em `src/App.tsx:145` como
+`path={CLIENT_DETAIL_ROUTE}`, e o extrator só enxergava literais. Conferido abrindo o
+arquivo.
+
+O mesmo ponto cego existia no teste de paridade da [#352](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/352),
+só que ao contrário: ele aceitava a constante como prova de publicação, então apagar o
+`<Route>` de `App.tsx` o deixava verde. Corrigido na mesma PR — agora exige rota montada,
+e falha com `expected [ '/clientes/:id' ] to deeply equal []` quando a montagem some.
+
+**Saldo das quatro varreduras:** nenhum arquivo, símbolo exportado ou rota de outro agente
+está fora da `main` sem veredito escrito.
