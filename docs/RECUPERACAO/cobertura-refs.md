@@ -1072,3 +1072,59 @@ desenvolvimento. A medição acima vale para elas também: nenhuma das fechadas 
 pacote atrás.
 
 **Conclusão: 85 de 85 PRs fechadas com veredito. Nada perdido.**
+
+
+## As 12 PRs mergeadas em branch intermediária
+
+**19/11/2026.** Última superfície que faltava auditar, e a mais traiçoeira: PR mergeada
+cujo `base` **não era a `main`**. Ela aparece como "merged" em toda listagem, mas o
+conteúdo só chega à `main` se a branch-base também entrar.
+
+Achei-as testando ancestralidade de todas as **283 PRs mergeadas**:
+`git merge-base --is-ancestor <merge_commit> origin/main`. Doze têm base diferente de
+`main`.
+
+### Antes: a re-raiz não é perda
+
+A raiz da `main` é órfã, de 11/11/2026 (#266), e a história tem só **107 commits** — 160
+PRs mergeadas não têm merge commit aqui. Mas a árvore-raiz carrega o projeto inteiro
+(4249 arquivos, 590 migrations, 106 edge functions): foi truncamento de histórico, não
+reset. Provado, não presumido: das 10 PRs mergeadas na `main` horas antes da re-raiz,
+**61 de 64 arquivos são byte-idênticos** na árvore-raiz, e os 3 que diferem (dois
+editados de novo por PRs seguintes da mesma janela) tiveram **16 de 16 linhas
+adicionadas** preservadas.
+
+### As 6 empilhadas de 19/11
+
+#341, #347, #349, #351, #356 e #359 mergearam em branches `claude/...`. Três delas
+(#347, #349, #351) tinham como base PRs **fechadas sem merge** (#346, #348, #350) — o
+caso de perda clássico. Onze agentes mediram os 11 arquivos que diferem da `main`, com
+refutação adversarial armada para qualquer perda alegada: **11 PRESENTE, 0 AUSENTE.** As
+recuperações anteriores (#360 e a sequência do BI) cobriram tudo.
+
+### #36, e um erro meu que vale registrar
+
+A PR #36 mergeou em `fix/sicoob-trust-data-20260924`. O arquivo
+`tests/hooks/useProductIntelligenceBadges.test.ts` dela **não existe na `main`** — isso é
+fato. Concluí daí que a regra estava descoberta e abri a PR #374 para recuperá-la.
+**Estava errado**, e a revisão da #374 pegou.
+
+O erro foi de método: procurei com
+`git ls-tree -r --name-only origin/main | grep -i ProductIntelligenceBadges`, que casa
+**nome de arquivo**. A cobertura existe em `tests/hooks/intelligence-badges.test.ts`, cujo
+caminho não tem o nome do hook — são **10 casos** em `buildBadgeResult`, mais 2 em
+`tests/hooks/product-intelligence-real-data.test.tsx:254`. Inclusive o segundo caso da
+#36: `intelligence-badges.test.ts:155` é `buildBadgeResult(intelligence, [], undefined,
+false)`. A busca certa era pelo símbolo importado: `git grep -l buildBadgeResult --
+tests/`.
+
+#374 foi fechada como duplicata. **Lição para a próxima varredura: arquivo ausente não é
+regra descoberta.** Teste é renomeado e reagrupado; o que prova cobertura é o símbolo sob
+teste, não o caminho.
+
+### As outras 6
+
+#26, #45, #46, #101 e #251 são pré-re-raiz e mergearam em branches cujas PRs entraram na
+`main`; #101 tinha base na #100 (UX Onda 1, fechada sem merge), já recuperada nesta
+sessão. Nenhum arquivo delas falta na `main`. Os que diferem estão sob a mesma medição
+arquivo a arquivo das 6 empilhadas.
