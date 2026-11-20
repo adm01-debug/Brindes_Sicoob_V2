@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL - filtro por dono IMPLEMENTADO: send-scheduled-reports/index.ts:133,160 filtra `seller_id = user_id`; process-scheduled-reports/index.ts:55,87 aplica getScheduledReportOwnerFilter(report.user_id); _shared/scheduled-report-email.ts:36,77-87 rejeita chave ausente, erro HTTP e recibo invalido antes de confirmar envio. PENDENTE (NAO VERIFICADO): consolidação/remetente Sicoob, ativacao do scheduling real e tipos faltantes.
 
 ## O que falta (auditoria)
 
-manter uma só função, filtrar pelo dono, remetente Sicoob, falhar quando não enviar, implementar tipos faltantes e agendar.
+nao duplicar as funcoes; confirmar remetente Sicoob e ativacao do agendamento (cron) ponta a ponta; implementar tipos faltantes.
 
 ## Camadas afetadas
 

@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL - publicador DEFINIDO: README.md:321-329 e docs/DEPLOYMENT.md:12-23 identificam Vercel como publicador oficial e o papel residual do Lovable. PROPOSTA de condicionar deploy ao CI segue em aberto, mas a definicao de ambiente de producao NAO falta.
 
 ## O que falta (auditoria)
 
-decidir um único publicador, condicionar o build da Vercel ao status do commit e corrigir README e DEPLOYMENT.
+apenas condicionar o build da Vercel ao status do commit (gate CI) - decisao de publicador ja registrada; README/DEPLOYMENT ja corrigidos.
 
 ## Camadas afetadas
 
