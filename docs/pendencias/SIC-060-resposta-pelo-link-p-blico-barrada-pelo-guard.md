@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-CODIGO em main e877d0c58 (aplicacao no banco de producao NAO confirmada). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: wrapper `apply_local_quote_approval_response` seta `app.quote_governance_write=true` com restauracao em erro (l.78-125); nucleo inacessivel a anon/authenticated (REVOKE l.73-76); EXECUTE so para service_role (l.118-125).
+CODIGO em main e877d0c58 (aplicacao confirmada em PRODUCAO via swagger em 2026-11-21: RPC apply_local_quote_approval_response presente). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: wrapper `apply_local_quote_approval_response` seta `app.quote_governance_write=true` com restauracao em erro (l.78-125); nucleo inacessivel a anon/authenticated (REVOKE l.73-76); EXECUTE so para service_role (l.118-125).
 
 ## O que falta (auditoria)
 
-RPC — setar a flag; simulação com toda a cadeia; E2E com token válido.
+RPC — setar a flag; simulação com toda a cadeia; E2E com token válido (RPC presente em produção; E2E com token fica para rodada dedicada).
 
 ## Camadas afetadas
 
@@ -36,4 +36,4 @@ RPC — setar a flag; simulação com toda a cadeia; E2E com token válido.
 
 ## Estado final
 
-- PRONTO (codigo em main); pendente: confirmar aplicacao das migrations no banco de producao
+- PRONTO (codigo em main e aplicacao confirmada em PRODUCAO em 2026-11-21). RPC `apply_local_quote_approval_response` presente no swagger de producao (migracao 20261013120512): seta a flag de governanca e restaura em erro; EXECUTE so para service_role. Resposta pelo link publico desbloqueada.
