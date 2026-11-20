@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. Rotas canonicas ja montam QuoteViewPage em /orcamentos/:id (src/routes/config/quotes.ts:38) e /orcamentos/:id/visualizar (l.46). QuoteViewPage.tsx renderiza QuoteItemsTable + QuoteTotalsSummary (l.132), PdfGenerationDialog (l.93), QuoteHistoryPanel (l.69), QuoteApprovalLinkCard/QuoteVersionHistory/QuoteWhatsAppShare (l.132-136). QuoteDetailPage.tsx (164 linhas) e orf?: zero imports externos; todos os componentes dela (Comments/ConvertToOrder/SingularApproval/History/Versions) existem na canonica.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ decidir uma página canônica. Ou `/orcamentos/:id` passa a montar `QuoteViewPag
 
 ## Camadas afetadas
 
-- 
+- Front (rotas /orcamentos/:id e /orcamentos/:id/visualizar)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ decidir uma página canônica. Ou `/orcamentos/:id` passa a montar `QuoteViewPag
 
 ## Raio de impacto
 
-- 
+- QuoteViewPage, quotes.ts (rota canonica)
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ decidir uma página canônica. Ou `/orcamentos/:id` passa a montar `QuoteViewPag
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main (rota canonica resolvida); residuo: remover QuoteDetailPage.tsx orfa (chore de limpeza, nao funcional)
