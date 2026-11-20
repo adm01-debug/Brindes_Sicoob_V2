@@ -104,9 +104,9 @@ function RejectionDialog({ actions }: { actions: ApprovalActions }) {
 }
 
 export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onActionComplete }: Props) {
-  const { isGestorCompras, isDev } = useAuth();
+  const { isGestorCompras, isCompradorSingular, isDev } = useAuth();
   const actions = useApprovalActions({ quoteId, onActionComplete });
-  if (!(isGestorCompras || isDev) || status !== "pending_singular_approval") return null;
+  if (!(isGestorCompras || isCompradorSingular || isDev) || status !== "pending_singular_approval") return null;
 
   return <><ApprovalToolbar actions={actions} quoteNumber={quoteNumber} />
     <AdjustmentDialog actions={actions} /><RejectionDialog actions={actions} /></>;
