@@ -18,7 +18,7 @@ configurar o DSN no build de produção, liberar o domínio de ingestão na CSP 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

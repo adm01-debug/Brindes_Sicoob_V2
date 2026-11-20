@@ -18,7 +18,7 @@ E2E completo noturno ou por label, um build compartilhado, jobs paralelos, uma c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

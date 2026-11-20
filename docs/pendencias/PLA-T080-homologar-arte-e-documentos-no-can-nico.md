@@ -18,7 +18,7 @@ ensaio de upload, inspeção, prova, aprovação e exportação com 2 cooperativ
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

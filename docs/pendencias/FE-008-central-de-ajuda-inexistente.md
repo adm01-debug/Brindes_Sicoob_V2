@@ -18,7 +18,7 @@ uma página ou drawer de ajuda (FAQ, tutoriais, contato) e o botão (?) prometid
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

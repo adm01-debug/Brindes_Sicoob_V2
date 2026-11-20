@@ -18,7 +18,7 @@ confirmar o DSN no build de produção, criar as regras de alerta e registrar ev
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ contratar/provisionar o scanner, configurar os segredos e documentá-los; teste 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

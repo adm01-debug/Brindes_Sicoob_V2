@@ -18,7 +18,7 @@ decidir (aceitar ou recusar a ADR) e aplicar colunas, trigger e RLS.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

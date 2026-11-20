@@ -18,7 +18,7 @@ cadastro físico de produto e embalagem e estado de "revisão técnica" quando a
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

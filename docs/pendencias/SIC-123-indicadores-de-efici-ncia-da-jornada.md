@@ -18,7 +18,7 @@ eventos com timestamp por etapa e métricas com denominador.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

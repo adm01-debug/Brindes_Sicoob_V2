@@ -18,7 +18,7 @@ uma página de perfil (nome, telefone, avatar, senha, preferências) acessível 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ destino e aceite de cada classe de aviso, com meta de redução.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

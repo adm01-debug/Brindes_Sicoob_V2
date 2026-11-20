@@ -18,7 +18,7 @@ edge ou fluxo de e-mail do convite; o gestor da Singular não cria contas (`/adm
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

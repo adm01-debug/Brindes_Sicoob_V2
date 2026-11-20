@@ -18,7 +18,7 @@ abrir a aba conforme a rota; decidir o que é "Parceiros"; contar PAs por singul
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

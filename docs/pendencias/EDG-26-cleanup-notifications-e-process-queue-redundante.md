@@ -18,7 +18,7 @@ despublicar ambas (liberam vagas, EDG-55) ou dar a `process-queue` um papel real
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

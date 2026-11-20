@@ -18,7 +18,7 @@ filtrar modelos por ocasião institucional, público e faixa de valor; rotear as
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ migrations com `cron.schedule` via wrappers lendo o Vault (padrão de `202609231
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ versionar e configurar os três fluxos, ou trocá-los pela outbox nativa.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

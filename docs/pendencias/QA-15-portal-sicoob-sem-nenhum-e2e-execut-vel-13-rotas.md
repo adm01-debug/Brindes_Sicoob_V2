@@ -18,7 +18,7 @@ specs por papel (PA, gestor, vendedor) para verba, aprovação em lote, consolid
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

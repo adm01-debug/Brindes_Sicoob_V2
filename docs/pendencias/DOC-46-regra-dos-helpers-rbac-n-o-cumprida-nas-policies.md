@@ -18,7 +18,7 @@ refatorar para `is_supervisor_or_above` ou `can_*` e criar o gate.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

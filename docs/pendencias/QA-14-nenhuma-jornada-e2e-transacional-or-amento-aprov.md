@@ -18,7 +18,7 @@ um spec serial com fixture de homologação cobrindo criar → enviar → aprova
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ exportação CSV/XLSX/PDF dos rankings e KPIs; filtro sem truncamento (RPC agreg
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

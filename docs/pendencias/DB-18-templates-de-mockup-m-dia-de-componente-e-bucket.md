@@ -18,7 +18,7 @@ decidir sobre a biblioteca de templates de mockup e remover os objetos órfãos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ medir `src/`, com limite mínimo por módulo crítico (orçamento, verba, pedido
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

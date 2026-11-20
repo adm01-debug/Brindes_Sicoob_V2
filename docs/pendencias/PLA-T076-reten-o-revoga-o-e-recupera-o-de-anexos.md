@@ -18,7 +18,7 @@ política de retenção por tipo, prazos de URL adequados e ensaio de recuperaç
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

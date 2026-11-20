@@ -18,7 +18,7 @@ remover a fonte e a entrada do manifesto/docs, ou marcar `source-only`.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

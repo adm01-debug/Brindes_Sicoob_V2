@@ -18,7 +18,7 @@ aplicar o ruleset documentado, com bypass do Lovable e checks obrigatórios.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

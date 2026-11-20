@@ -18,7 +18,7 @@ rotacionar service role, senha do banco e tokens históricos expostos e registra
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

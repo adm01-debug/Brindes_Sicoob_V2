@@ -18,7 +18,7 @@ decidir e criar as contas de homologação por papel, cadastrar os secrets e com
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

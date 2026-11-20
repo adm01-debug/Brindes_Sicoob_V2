@@ -18,7 +18,7 @@ ligar o briefing a verba e destinos e calcular marcos regressivos (arte, aprova√
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

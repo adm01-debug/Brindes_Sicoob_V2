@@ -22,7 +22,7 @@ tabela de eventos de verba (reserva, compromisso, consumo, estorno, ajuste), est
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

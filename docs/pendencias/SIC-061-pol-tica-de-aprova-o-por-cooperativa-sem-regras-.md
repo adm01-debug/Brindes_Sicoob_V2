@@ -18,7 +18,7 @@ atributos de alçada por valor e categoria, nº mínimo de propostas, janelas e 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

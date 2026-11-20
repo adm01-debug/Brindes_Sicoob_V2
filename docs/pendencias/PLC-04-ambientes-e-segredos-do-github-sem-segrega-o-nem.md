@@ -18,7 +18,7 @@ criar `staging`/`compliance` com reviewers, mover service role e DB URL para ess
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

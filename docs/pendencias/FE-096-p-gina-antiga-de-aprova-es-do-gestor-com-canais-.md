@@ -18,7 +18,7 @@ decidir se a notificação por Slack e e-mail do gestor será feita e remover a 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

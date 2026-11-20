@@ -18,7 +18,7 @@ remover ou reaproveitar (ex.: o seletor de template no construtor).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ primeira compra real até a conciliação, segunda cooperativa e 30 dias de esta
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

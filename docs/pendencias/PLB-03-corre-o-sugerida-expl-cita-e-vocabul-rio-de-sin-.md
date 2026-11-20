@@ -18,7 +18,7 @@ sugestão "Você quis dizer…" que preserve o termo digitado e dicionário de s
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

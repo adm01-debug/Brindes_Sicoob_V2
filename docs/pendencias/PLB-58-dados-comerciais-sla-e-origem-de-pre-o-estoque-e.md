@@ -18,7 +18,7 @@ decisão de negócio sobre quem vende e fatura, a regra fiscal e o SLA do dado c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

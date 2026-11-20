@@ -18,7 +18,7 @@ avaliar e portar para o `SimuladorWizard` (upsell e cenários), depois remover o
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

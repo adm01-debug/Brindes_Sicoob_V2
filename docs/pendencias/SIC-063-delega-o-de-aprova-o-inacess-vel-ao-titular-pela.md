@@ -18,7 +18,7 @@ UI — expor a delegação ao `gestor_compras`/`comprador_singular` no escopo `/
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

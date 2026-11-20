@@ -18,7 +18,7 @@ transporte real por canal, worker das agendadas e dos resumos com fuso America/S
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

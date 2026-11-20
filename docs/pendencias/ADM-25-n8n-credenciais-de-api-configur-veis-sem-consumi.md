@@ -18,7 +18,7 @@ definir o uso da API (disparo de workflows ou status) ou remover os campos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ inverter o padrão (dados reais, demo opcional) e validar as consultas reais.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

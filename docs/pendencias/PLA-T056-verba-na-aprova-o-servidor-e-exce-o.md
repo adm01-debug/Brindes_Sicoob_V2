@@ -18,7 +18,7 @@ validação e reserva no servidor na transição e exceção autorizada.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ cron e credencial do provedor de e-mail.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

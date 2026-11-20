@@ -18,7 +18,7 @@ prova técnica com especificação comercial e revisão humana identificada.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

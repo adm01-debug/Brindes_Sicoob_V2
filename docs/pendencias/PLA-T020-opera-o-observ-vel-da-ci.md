@@ -18,7 +18,7 @@ canal de alerta aprovado, runbook de rerun e reversão, e limpeza de templates e
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

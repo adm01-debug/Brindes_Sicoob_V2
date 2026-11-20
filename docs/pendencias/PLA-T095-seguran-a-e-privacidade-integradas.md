@@ -18,7 +18,7 @@ cobrir `/` com headers, CSP com nonce, rate limit nas funções públicas e revi
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

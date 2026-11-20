@@ -18,7 +18,7 @@ E2E sobre ambiente de homologação com duas cooperativas; Lighthouse nas jornad
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

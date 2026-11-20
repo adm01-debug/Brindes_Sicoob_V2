@@ -18,7 +18,7 @@ UI e hook — saldo da competência no carrinho; normalizar o tipo da categoria.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

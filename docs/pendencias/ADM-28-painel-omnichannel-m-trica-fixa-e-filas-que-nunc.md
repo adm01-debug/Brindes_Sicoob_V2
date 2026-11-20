@@ -18,7 +18,7 @@ calcular a taxa a partir de `notification_logs` e restringir a tela a admin/dev.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

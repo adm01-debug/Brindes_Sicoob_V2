@@ -18,7 +18,7 @@ migrar as funções restantes para o logger padrão, com `request_id`.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

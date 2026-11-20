@@ -18,7 +18,7 @@ publicação versionada (lista derivada do manifesto `runtime: deployed`) com ve
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

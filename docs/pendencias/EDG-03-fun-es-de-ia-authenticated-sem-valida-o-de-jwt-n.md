@@ -18,7 +18,7 @@ validar sessão no handler (como `generate-ad-image` via `authenticateRequest`) 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ credencial de leitura na origem e prova administrativa da ACL.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

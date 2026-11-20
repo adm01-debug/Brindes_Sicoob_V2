@@ -18,7 +18,7 @@ decidir entre ligar (ex.: configurador inline e barra de vistos recentemente) ou
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

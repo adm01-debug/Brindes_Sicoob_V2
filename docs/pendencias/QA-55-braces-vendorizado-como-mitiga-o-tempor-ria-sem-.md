@@ -18,7 +18,7 @@ uma rotina (ou o Dependabot via issue) para detectar o release corrigido e remov
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

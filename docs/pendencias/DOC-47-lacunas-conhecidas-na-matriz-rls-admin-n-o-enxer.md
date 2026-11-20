@@ -18,7 +18,7 @@ decidir e, se for o caso, adicionar policy com `is_admin(auth.uid())`.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

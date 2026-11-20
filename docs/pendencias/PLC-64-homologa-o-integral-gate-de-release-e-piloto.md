@@ -18,7 +18,7 @@ decisão formal do piloto, compra sintética e depois real com duas cooperativas
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

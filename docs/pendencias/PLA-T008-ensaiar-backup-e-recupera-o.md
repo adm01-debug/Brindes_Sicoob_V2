@@ -18,7 +18,7 @@ confirmar se o plano Supabase contratado tem PITR; restaurar em projeto isolado 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

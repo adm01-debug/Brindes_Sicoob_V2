@@ -18,7 +18,7 @@ trilha de exclusão e identidade das personalizações se a arte passar a refere
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

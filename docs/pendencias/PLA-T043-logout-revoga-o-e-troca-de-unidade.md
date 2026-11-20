@@ -18,7 +18,7 @@ limpeza ou expiração seletiva por ator e unidade e revalidação de escopo ant
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

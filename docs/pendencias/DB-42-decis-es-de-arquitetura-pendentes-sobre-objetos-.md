@@ -18,7 +18,7 @@ dono de produto decidir (manter, construir ou remover), limpar a allowlist e fec
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

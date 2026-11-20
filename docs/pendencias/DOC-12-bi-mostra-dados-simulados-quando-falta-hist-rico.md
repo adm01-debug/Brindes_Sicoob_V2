@@ -18,7 +18,7 @@ substituir os mocks por estados vazios explícitos (ou por RPCs sobre `orders`, 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

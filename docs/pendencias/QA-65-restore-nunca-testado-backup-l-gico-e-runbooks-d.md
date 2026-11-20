@@ -18,7 +18,7 @@ o dump versionado fora do repositório com hash, um restore em projeto descartá
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

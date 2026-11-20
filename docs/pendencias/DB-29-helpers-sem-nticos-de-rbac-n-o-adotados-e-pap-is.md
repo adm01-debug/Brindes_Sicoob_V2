@@ -18,7 +18,7 @@ migrar as policies de telemetria, conexões e auditoria para os helpers, executa
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

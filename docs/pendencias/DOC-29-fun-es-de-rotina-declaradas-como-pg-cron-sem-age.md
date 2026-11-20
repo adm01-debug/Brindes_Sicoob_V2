@@ -18,7 +18,7 @@ migrations com `cron.schedule` + `net.http_post` e `x-sicoob-internal-secret` vi
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ ambiente segregado (ou allowlist de `project_ref`), dados sintéticos de 2 coope
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ entidade de campanha por cooperativa (objetivo, público, data do evento e de re
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

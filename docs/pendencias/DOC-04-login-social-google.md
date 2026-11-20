@@ -18,7 +18,7 @@ decidir se o login social entra (a SCOPE_ALIGNMENT fala em "Email/SSO Sicoob") e
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ cards em `src/pages/admin/AuditEvidenceDashboard.tsx` (reconciliação de verba 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

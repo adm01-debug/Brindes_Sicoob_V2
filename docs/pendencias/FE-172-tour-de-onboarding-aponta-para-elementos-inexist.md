@@ -18,7 +18,7 @@ marcar os elementos e corrigir o texto final.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

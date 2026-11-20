@@ -22,7 +22,7 @@ RPC — validar (e, se a política pedir, reservar) a verba em `pending_singular
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

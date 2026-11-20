@@ -18,7 +18,7 @@ conferência por item no pedido avulso (recebido, avariado, faltante) com compro
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

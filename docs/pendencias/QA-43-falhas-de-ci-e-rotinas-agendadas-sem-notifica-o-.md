@@ -18,7 +18,7 @@ um job reutilizável de notificação (issue ou WhatsApp) e um relatório mensal
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

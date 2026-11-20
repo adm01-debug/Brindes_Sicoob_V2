@@ -18,7 +18,7 @@ configurar a credencial e tratar arquivo desconhecido (enviar para análise ou c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

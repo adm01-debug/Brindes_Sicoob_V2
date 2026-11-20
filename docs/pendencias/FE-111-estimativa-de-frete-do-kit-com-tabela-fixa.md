@@ -18,7 +18,7 @@ integração com transportadora ou Correios por CEP (depende de credencial; há 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

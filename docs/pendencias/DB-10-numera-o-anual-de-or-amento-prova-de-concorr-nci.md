@@ -18,7 +18,7 @@ sequência ou contador com trava (a tabela já desenhada) e teste de concorrênc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ formulário estruturado (ocasião, público, quantidade, faixa, data) antes da I
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

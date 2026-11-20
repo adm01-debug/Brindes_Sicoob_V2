@@ -18,7 +18,7 @@ remover ou desabilitar essas telas e ações, ou levar a manutenção do catálo
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

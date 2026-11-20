@@ -18,7 +18,7 @@ ligar o assistente ao `expert-chat` com o contexto de produto e técnica, ou rem
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

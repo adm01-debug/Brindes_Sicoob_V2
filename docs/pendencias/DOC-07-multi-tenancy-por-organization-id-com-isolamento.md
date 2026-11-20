@@ -18,7 +18,7 @@ reescrever o README e os docs 01-04 para o modelo real (cooperativas → PAs →
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

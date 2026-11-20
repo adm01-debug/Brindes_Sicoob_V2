@@ -18,7 +18,7 @@ adicionar ao `ci.yml` (são baratos) e ligar o `healthcheck` ao pós-deploy (QA-
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

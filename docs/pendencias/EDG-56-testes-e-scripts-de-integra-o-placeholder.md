@@ -18,7 +18,7 @@ testes reais de `webhook-inbound`/`webhook-dispatcher` e dos cenários P0.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ integração com a API e o canal na outbox de notificações, ou retirada de esc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ executar periodicamente em homologação, com limites que reprovem.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

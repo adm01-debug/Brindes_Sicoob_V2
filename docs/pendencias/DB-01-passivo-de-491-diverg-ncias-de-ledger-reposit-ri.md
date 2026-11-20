@@ -18,7 +18,7 @@ classificar individualmente os ~460 arquivos; mover para `migrations_archive/` o
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ inventário atual por ambiente e consumidor, script de verificação na CI, cale
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

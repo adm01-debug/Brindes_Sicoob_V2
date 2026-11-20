@@ -18,7 +18,7 @@ mostrar data e hora da última leitura de estoque e o aviso "sujeito a reconfirm
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

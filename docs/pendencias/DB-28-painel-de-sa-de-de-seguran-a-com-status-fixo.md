@@ -18,7 +18,7 @@ agendar a auditoria de RLS, calcular o status em vez de fixá-lo e ligar a uma t
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

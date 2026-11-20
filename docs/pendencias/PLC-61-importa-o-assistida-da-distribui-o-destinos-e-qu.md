@@ -18,7 +18,7 @@ modelo, validação por linha, prévia e confirmação atômica.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

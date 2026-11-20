@@ -18,7 +18,7 @@ despublicar as 3 rotas (libera 3 das 100 vagas, EDG-55) e apagar `PublicQuoteApp
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

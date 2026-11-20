@@ -18,7 +18,7 @@ protocolo com responsável, prazo, decisão, reposição ou crédito e reabertur
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

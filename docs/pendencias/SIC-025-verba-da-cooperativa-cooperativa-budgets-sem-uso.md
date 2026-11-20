@@ -18,7 +18,7 @@ decidir se existe teto por Singular; se sim, consumo, tela e soma das verbas de 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

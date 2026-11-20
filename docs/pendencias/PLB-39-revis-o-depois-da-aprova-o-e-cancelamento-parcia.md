@@ -18,7 +18,7 @@ fluxo formal de revisão (quantidade, destino, arte) que invalide os aceites afe
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

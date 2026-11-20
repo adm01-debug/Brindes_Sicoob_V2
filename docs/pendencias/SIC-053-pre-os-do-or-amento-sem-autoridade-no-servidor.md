@@ -19,7 +19,7 @@ RPC — conferir a parcela da personalização e um piso ou snapshot de preço d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

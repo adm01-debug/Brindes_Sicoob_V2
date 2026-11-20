@@ -18,7 +18,7 @@ adicionar os jobs e as guardas e reduzir a retenção.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

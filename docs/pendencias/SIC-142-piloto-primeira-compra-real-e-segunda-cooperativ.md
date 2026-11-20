@@ -18,7 +18,7 @@ decisão formal da Promo e da cooperativa, com responsáveis e janela de observa
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

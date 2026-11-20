@@ -18,7 +18,7 @@ gravar a métrica nas funções, criar o painel ou o card no App Health e o gate
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

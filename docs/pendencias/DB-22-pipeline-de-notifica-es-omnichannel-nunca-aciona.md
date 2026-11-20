@@ -18,7 +18,7 @@ rotear os eventos de negócio por `send-notification`, criar o worker agendado q
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

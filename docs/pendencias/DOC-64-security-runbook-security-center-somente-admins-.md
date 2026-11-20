@@ -18,7 +18,7 @@ corrigir o runbook (quem aciona bloqueio de IP e logout global num incidente).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

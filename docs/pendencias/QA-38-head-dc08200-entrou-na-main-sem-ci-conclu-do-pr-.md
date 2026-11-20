@@ -18,7 +18,7 @@ reexecutar o CI no HEAD (por dispatch), corrigir as falhas e só então declarar
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

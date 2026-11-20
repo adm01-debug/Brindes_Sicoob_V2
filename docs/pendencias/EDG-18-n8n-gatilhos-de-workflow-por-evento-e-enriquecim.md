@@ -18,7 +18,7 @@ definir eventos e contratos; reutilizar `webhook-dispatcher` (após EDG-15) para
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

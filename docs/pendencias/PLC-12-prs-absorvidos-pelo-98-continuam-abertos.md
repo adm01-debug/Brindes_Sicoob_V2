@@ -18,7 +18,7 @@ fechar #94 e #97 como substituídos e apagar as branches.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

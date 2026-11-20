@@ -18,7 +18,7 @@ registrar a rota, ou remover o botão e manter só o `PromotionDialog`.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

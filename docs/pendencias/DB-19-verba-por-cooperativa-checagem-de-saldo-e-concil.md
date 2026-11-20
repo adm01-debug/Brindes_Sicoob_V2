@@ -18,7 +18,7 @@ usar ou remover a verba de cooperativa (teto agregado dos PAs), consultar saldo 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

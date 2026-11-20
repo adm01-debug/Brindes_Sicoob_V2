@@ -18,7 +18,7 @@ fluxo de solicitação do comprador sem campos comerciais do vendedor, que prese
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

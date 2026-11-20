@@ -18,7 +18,7 @@ chamar `log_quote_action` ao abrir, baixar o PDF e assinar a proposta, e criar u
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

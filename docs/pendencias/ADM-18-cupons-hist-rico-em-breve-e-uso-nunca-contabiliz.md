@@ -18,7 +18,7 @@ tabela ou registro de resgate, incremento atômico de uso e a tela de histórico
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

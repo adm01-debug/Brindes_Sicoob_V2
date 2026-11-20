@@ -18,7 +18,7 @@ ligar (o banner de verba e a previsão de recompra fazem sentido no PA) ou remov
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

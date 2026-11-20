@@ -18,7 +18,7 @@ checagem real de Auth e dos bridges (`external-db-bridge`/`crm-db-bridge` `?op=p
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -19,7 +19,7 @@ RLS â€” limitar ao escopo da cooperativa, proibir o solicitante de alterar a prÃ
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

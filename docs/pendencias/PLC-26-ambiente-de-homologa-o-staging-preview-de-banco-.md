@@ -18,7 +18,7 @@ projeto ou branch Supabase de homologação, pipeline de preview por PR e E2E ap
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

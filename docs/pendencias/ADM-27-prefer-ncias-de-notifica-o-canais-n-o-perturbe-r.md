@@ -18,7 +18,7 @@ rotear todas as notificações por um serviço único que respeite as preferênc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

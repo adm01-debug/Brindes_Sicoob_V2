@@ -18,7 +18,7 @@ mostrar "verba não configurada" em vez de R$ 50.000 e retirar o selo.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

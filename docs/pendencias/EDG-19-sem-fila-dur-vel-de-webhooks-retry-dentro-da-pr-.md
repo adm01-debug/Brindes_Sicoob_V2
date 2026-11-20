@@ -18,7 +18,7 @@ outbox de webhooks com lease e backoff (o padrão já existe em `sicoob_approval
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

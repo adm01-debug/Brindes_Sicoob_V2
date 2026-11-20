@@ -18,7 +18,7 @@ ligar os KPIs aos pedidos e verbas reais e implementar a aprovação em lote por
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

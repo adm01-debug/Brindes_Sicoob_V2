@@ -18,7 +18,7 @@ contas/chaves configuradas e teste real de transcrição e síntese.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

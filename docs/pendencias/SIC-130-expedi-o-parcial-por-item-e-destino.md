@@ -18,7 +18,7 @@ tabela de expedições por item e destino com saldo e chave de intenção.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

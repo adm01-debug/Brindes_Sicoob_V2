@@ -18,7 +18,7 @@ concluir a QA-38 e encerrar os PRs como substituídos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

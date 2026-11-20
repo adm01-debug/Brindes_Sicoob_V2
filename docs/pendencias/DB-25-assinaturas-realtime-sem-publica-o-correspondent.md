@@ -18,7 +18,7 @@ decidir caso a caso entre publicar (com RLS adequada) e trocar por polling, e al
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

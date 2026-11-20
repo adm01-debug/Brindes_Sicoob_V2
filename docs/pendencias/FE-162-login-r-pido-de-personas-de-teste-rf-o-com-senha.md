@@ -18,7 +18,7 @@ remover ou restringir a DEV. Não ligar em produção.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

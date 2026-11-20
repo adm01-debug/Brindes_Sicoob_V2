@@ -18,7 +18,7 @@ as regras, o teste de disparo e o runbook por alerta.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

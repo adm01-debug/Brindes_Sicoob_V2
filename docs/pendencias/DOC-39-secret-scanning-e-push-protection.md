@@ -18,7 +18,7 @@ contratar ou habilitar GHAS, ou aceitar formalmente o risco (o Gitleaks cobre pa
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

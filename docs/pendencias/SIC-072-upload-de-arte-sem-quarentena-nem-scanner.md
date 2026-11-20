@@ -18,7 +18,7 @@ edge — passar a arte pela ingestão com scanner (finalidade `artwork`).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

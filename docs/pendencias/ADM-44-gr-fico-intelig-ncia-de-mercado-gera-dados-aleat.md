@@ -18,7 +18,7 @@ estado vazio em vez de série aleatória, que muda a cada render de período.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

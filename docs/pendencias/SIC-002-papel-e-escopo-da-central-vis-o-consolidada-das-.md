@@ -18,7 +18,7 @@ tabela de vínculo Central↔usuário com autorização explícita, papel, RLS d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

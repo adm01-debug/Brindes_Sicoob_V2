@@ -18,7 +18,7 @@ comprovação administrativa da credencial de leitura, que depende do dono do ca
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

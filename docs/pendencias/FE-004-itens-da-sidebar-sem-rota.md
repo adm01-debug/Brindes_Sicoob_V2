@@ -18,7 +18,7 @@ registrar as rotas (com o guard correto) ou remover os itens do menu.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

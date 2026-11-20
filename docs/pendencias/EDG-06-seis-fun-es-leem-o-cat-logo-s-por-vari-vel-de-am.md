@@ -18,7 +18,7 @@ trocar por `resolveCredential("EXTERNAL_PROMOBRIND_URL"/"_SERVICE_ROLE_KEY")` co
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

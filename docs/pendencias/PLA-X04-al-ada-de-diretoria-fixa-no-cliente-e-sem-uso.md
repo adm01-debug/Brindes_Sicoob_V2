@@ -18,7 +18,7 @@ remover ou levar para a política versionada no servidor (T052).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

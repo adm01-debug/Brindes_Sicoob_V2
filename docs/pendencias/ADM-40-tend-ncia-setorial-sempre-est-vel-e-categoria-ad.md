@@ -18,7 +18,7 @@ comparar janelas (90 dias atuais × 90 anteriores) e usar a categoria real do pr
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ tirar o fallback mock, buscar no servidor e cobrir o catálogo inteiro.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

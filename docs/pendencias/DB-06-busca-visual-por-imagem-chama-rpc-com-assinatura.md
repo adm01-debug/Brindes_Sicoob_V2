@@ -18,7 +18,7 @@ passar os candidatos do catálogo externo em `_products` (como faz `supabase/fun
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

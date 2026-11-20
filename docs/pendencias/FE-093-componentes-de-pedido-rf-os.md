@@ -18,7 +18,7 @@ ligar a solicitação de revisão no pedido ou remover os duplicados.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

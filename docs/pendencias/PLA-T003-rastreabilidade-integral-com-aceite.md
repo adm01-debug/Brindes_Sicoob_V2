@@ -18,7 +18,7 @@ preencher evidência, estado e data por etapa e subitem, incluindo as 8 etapas j
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

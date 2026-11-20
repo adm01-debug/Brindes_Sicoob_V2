@@ -18,7 +18,7 @@ incluir no menu (por exemplo um hub "Segurança"/"Operação") ou remover; alinh
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -19,7 +19,7 @@ filtrar os itens por `SICOOB_ROUTE_ACCESS` e trocar `adminOnly` por `allowedRole
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

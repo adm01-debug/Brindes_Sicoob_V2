@@ -18,7 +18,7 @@ hook — controle entre abas, segmentação por unidade e limpeza no logout ou t
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

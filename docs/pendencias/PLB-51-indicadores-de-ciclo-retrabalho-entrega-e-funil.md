@@ -18,7 +18,7 @@ tempo até aprovar a arte e a despesa, espera versus processamento, devoluções
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

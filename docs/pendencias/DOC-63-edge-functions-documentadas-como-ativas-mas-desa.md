@@ -18,7 +18,7 @@ atualizar os documentos (ou remover as funções e os blocos do `config.toml`).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

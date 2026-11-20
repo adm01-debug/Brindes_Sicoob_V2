@@ -18,7 +18,7 @@ criar despachantes via Vault (padrão `dispatch_sicoob_*`) e jobs para `process-
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

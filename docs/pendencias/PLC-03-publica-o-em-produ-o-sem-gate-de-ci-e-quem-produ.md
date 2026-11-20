@@ -18,7 +18,7 @@ decidir um único publicador, condicionar o build da Vercel ao status do commit 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

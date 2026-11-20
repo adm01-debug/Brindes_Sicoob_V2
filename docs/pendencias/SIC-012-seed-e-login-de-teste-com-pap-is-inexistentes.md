@@ -18,7 +18,7 @@ seed com papéis reais, duas cooperativas e personas PA/Singular; remover o seed
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

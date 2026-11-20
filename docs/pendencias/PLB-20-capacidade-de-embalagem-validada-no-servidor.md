@@ -18,7 +18,7 @@ validar volume e capacidade da caixa no servidor (e múltiplo, PLB-01).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

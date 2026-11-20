@@ -18,7 +18,7 @@ tabela/view — LEFT JOIN; UI — usar `cooperativa_id` para gestores; seed coer
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

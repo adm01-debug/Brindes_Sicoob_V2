@@ -18,7 +18,7 @@ tela de cadastro (gestor) e exibição do card no dashboard do vendedor (`/vende
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

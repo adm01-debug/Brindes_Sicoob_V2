@@ -18,7 +18,7 @@ fechar #94 e #97 com referência ao #98 e confirmar que nada exclusivo deles se 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

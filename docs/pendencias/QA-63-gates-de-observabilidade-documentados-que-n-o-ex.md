@@ -18,7 +18,7 @@ ligar o script de Request-Id, criar o gate do cliente e o cron, e corrigir o doc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

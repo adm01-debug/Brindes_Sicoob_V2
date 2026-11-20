@@ -18,7 +18,7 @@ aplicar o ruleset (decisão sobre o bypass do `lovable-dev[bot]`), permitir só 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ rota e menu; tela para definir a meta mensal; ligar as visualizações ao funil.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

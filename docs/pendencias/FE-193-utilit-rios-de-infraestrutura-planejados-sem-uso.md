@@ -18,7 +18,7 @@ remover ou ligar (ex.: importação de templates e de skins).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

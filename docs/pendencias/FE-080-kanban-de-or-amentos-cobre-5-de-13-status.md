@@ -18,7 +18,7 @@ colunas ou agrupamentos para os fluxos de alçada e singular, rótulos completos
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

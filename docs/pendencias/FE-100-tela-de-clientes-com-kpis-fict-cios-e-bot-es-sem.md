@@ -18,7 +18,7 @@ KPIs reais (já há LTV e ticket por cliente em `ClientDetailPage`), cadastro de
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

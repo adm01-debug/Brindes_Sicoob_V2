@@ -18,7 +18,7 @@ as quatro ferramentas e a guarda nos jobs com secrets.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

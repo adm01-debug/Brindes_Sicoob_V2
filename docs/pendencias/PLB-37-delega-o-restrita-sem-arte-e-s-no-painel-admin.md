@@ -18,7 +18,7 @@ delegar a competência de arte; autoatendimento do gestor dentro da sua autorida
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

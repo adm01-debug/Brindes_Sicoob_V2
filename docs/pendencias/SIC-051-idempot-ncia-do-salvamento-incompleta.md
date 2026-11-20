@@ -18,7 +18,7 @@ persistir a intenção com o rascunho, contrato idempotente para edição e INSE
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

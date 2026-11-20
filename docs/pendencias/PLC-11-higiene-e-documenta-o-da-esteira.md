@@ -18,7 +18,7 @@ unificar o template, atualizar os documentos, ignorar `reports/`, aliviar o pre-
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ tudo o que o documento planeja (dependência, broker, testes de consumer e provi
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

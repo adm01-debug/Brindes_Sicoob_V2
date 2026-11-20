@@ -18,7 +18,7 @@ autorização mista (dev via JWT ou segredo interno) ou um RPC dedicado, além d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

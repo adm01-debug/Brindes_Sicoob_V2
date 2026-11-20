@@ -18,7 +18,7 @@ botão "compartilhar dossiê" no BI, conteúdo do dossiê na página pública e 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

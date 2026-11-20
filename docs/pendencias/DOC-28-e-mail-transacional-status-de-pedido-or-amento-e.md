@@ -18,7 +18,7 @@ implementar o envio (Resend já é usado em `_shared/approval-delivery.ts`) com 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

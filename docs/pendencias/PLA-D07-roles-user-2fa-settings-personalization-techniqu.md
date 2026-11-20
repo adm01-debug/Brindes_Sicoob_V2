@@ -18,7 +18,7 @@ decisão formal por objeto (enum × tabela, MFA nativo × tabela própria, catá
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

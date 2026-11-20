@@ -18,7 +18,7 @@ regra `eslint-comments/require-description` e quebra desses arquivos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

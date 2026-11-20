@@ -18,7 +18,7 @@ decisão sobre o Bitrix e homologação de assinatura, replay e 5xx com recibos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

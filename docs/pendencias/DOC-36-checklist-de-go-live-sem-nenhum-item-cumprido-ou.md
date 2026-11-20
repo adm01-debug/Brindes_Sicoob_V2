@@ -18,7 +18,7 @@ executar o checklist com evidências (link para os runs e consultas) e assinar.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

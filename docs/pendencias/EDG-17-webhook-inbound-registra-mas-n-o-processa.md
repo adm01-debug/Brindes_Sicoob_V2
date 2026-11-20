@@ -18,7 +18,7 @@ roteador por `source_system`/`event_type` com handlers de negócio, fila de proc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

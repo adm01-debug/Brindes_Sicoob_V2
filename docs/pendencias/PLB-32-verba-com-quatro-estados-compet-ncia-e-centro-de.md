@@ -18,7 +18,7 @@ planejado, reservado, comprometido e consumido; histórico por competência; vir
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

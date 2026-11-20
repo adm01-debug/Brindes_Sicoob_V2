@@ -18,7 +18,7 @@ listas ligadas a uma campanha, com dono, colaboradores da mesma cooperativa e pe
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

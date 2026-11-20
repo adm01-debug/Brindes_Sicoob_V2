@@ -18,7 +18,7 @@ drenagem dos logs das Edges para Sentry/alerta, regras de alerta e ligar o gate 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

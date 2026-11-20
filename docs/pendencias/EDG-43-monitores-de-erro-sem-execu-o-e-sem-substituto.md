@@ -18,7 +18,7 @@ um monitor agendado único que persista resultado e notifique (corrigindo a colu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

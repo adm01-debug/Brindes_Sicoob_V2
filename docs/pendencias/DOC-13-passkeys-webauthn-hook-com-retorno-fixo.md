@@ -18,7 +18,7 @@ desafio e verificação no servidor (`@simplewebauthn/server`) e integração co
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

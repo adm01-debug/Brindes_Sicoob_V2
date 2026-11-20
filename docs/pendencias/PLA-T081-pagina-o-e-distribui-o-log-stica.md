@@ -18,7 +18,7 @@ paginar ou particionar remessas e modelar alocações por destino.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

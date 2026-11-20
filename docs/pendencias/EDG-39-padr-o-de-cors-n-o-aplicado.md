@@ -18,7 +18,7 @@ padronizar via `getCorsHeaders`, remover curingas Lovable e incluir o domínio d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

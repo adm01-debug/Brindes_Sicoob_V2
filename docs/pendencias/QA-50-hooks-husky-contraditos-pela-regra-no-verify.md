@@ -18,7 +18,7 @@ um hook leve (`vitest related`) sem orientação de bypass, ou remover o hook.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

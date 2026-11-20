@@ -18,7 +18,7 @@ transformar as decisões em itens rastreáveis com responsável e data.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ implementar o seed real (ou chamar a Edge `sicoob-seed-qa`) ou remover o botão.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

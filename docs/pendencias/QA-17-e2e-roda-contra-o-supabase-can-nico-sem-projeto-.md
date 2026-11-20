@@ -18,7 +18,7 @@ decisão e custo de um projeto de homologação, com secrets próprios.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

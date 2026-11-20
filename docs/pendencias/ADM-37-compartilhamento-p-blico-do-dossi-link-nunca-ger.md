@@ -18,7 +18,7 @@ botão "Compartilhar dossiê" no BI e o segredo configurado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

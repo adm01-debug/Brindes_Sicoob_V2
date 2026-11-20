@@ -18,7 +18,7 @@ ligar os úteis (cores WCAG, saúde das funções, consistência de documentaç�
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

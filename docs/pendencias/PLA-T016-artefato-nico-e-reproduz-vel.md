@@ -18,7 +18,7 @@ publicar o `dist` por SHA com hash e consumi-lo em todos os testes.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

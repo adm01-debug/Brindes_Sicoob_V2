@@ -18,7 +18,7 @@ decidir quais filtros e painéis (estoque em tempo real, alertas de baixo estoqu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ alerta entregue com dono e SLA e visibilidade de todos os domínios.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

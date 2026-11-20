@@ -18,7 +18,7 @@ corrigir os documentos e refazer a auditoria (há duas revisões trimestrais ven
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ abrir o Flow com `clientId`/`clientName` a partir de `ClientDetailPage` e do BI 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

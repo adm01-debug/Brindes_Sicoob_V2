@@ -18,7 +18,7 @@ curadoria configurável (categorias e produtos permitidos ou destacados) por coo
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

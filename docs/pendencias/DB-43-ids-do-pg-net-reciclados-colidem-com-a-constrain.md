@@ -18,7 +18,7 @@ merge da PR, aplicação da migration allowlisted no banco canônico e validaç�
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

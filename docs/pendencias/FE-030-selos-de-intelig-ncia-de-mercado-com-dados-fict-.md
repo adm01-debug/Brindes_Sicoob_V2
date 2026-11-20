@@ -18,7 +18,7 @@ popular e agendar a atualização das MVs e, sem dado real, não exibir selos de
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

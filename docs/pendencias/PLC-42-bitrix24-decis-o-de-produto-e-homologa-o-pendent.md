@@ -18,7 +18,7 @@ decidir manter ou remover; se manter, configurar, homologar volume e paginação
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

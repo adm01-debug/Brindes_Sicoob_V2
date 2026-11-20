@@ -18,7 +18,7 @@ as correções listadas e medição de CWV nas jornadas reais (catálogo, orçam
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

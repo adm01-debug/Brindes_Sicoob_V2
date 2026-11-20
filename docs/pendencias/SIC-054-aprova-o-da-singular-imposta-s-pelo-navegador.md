@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-PRONTO (gate server-side em main e877d0c58).
+PARCIAL (gate de status server-side; aprovacao da Singular NAO e obrigatoria por RPC).
 
 - Convers?o quote?pedido: `convert_quote_to_sicoob_order` (migration `20260922224500` e wrapper `20261013120512`) exige `v_quote.status IN ('approved','approved_singular')` ? "Apenas or?amentos aprovados podem ser convertidos." RPC SECURITY DEFINER; o core ? REVOKE de authenticated (`convert_quote_to_sicoob_order_core_20261013`), s? cham?vel via wrapper com contexto `app.quote_governance_write=true`.
 - Aprova??o server-side: `approve_quote_with_pdf_atomic` valida `p_manager_id IS DISTINCT FROM v_actor_id` (err 42501 ? identidade do aprovador) e `sicoob_actor_can_approve` rejeita self-approval (`NOT policy.forbid_self_approval OR o.created_by IS DISTINCT FROM p_actor_id`).
@@ -14,7 +14,7 @@ PRONTO (gate server-side em main e877d0c58).
 - `freeze_sicoob_order_while_approval_pending` bloqueia alterar valor/itens de pedido em `waiting_approval`/`escalated_to_board`.
 - Escopo: `sicoob_actor_can_approve` resolve a pol?tica `get_sicoob_order_approval_policy(o.id)` com a Singular do ator ? aprova??o ? ligada ? unidade, n?o ao navegador.
 
-Ou seja: um PA n?o converte sem status aprovado, e o status aprovado n?o ? grav?vel direto pelo cliente (exige RPC com autoriza??o server-side). Item da auditoria residido.
+Ou seja: um PA n?o converte sem status aprovado. POREM `approve_quote_with_pdf_atomic` (20260927171216_quote_approval_security_hardening.sql:675-688) usa `can_manage_quote_scope`, que tambem autoriza manager/supervisor do mesmo PA (l.771-792) — aprova??o pela Singular (comprador_singular) NAO e obrigatoria. E `QuoteSingularApprovalActions.tsx:107-109` restringe a isGestorCompras||isDev, sem liberar comprador_singular.
 
 ## O que falta (auditoria)
 
@@ -26,7 +26,7 @@ RPC — obrigar orçamentos de PA a passar pela Singular; UI — liberar a açã
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 
@@ -42,4 +42,4 @@ RPC — obrigar orçamentos de PA a passar pela Singular; UI — liberar a açã
 
 ## Estado final
 
-- NAO INICIADO
+- PARCIAL (status gate pronto; obrigatoriedade da Singular pendente)

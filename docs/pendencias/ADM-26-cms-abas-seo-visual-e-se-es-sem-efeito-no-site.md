@@ -18,7 +18,7 @@ aplicar `seo_global` e `visual_identity` no app (meta tags, GA, tema) e renderiz
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

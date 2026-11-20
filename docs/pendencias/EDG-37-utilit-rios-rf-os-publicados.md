@@ -18,7 +18,7 @@ despublicar os quatro; trocar o provedor de geolocalização de `validate-access
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

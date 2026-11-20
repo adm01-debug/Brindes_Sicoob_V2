@@ -18,7 +18,7 @@ adicionar entradas no menu ou nos alternadores de visão, ou remover as rotas mo
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

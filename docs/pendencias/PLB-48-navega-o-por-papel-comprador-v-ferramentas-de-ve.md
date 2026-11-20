@@ -18,7 +18,7 @@ menu e rotas por tarefa e papel, e ocultar markup e margem para comprador e apro
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

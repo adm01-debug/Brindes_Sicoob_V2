@@ -18,7 +18,7 @@ RPC — cancelamento parcial, bloqueio ou alçada após início da produção, c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

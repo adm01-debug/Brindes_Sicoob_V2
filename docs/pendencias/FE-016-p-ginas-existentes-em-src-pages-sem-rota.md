@@ -18,7 +18,7 @@ escolher uma página de aprovação pública canônica e apagar ou rotear `QAPag
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

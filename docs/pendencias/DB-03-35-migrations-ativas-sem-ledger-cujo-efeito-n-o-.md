@@ -18,7 +18,7 @@ registrar formalmente "superada/abandonada" por arquivo e mover para `migrations
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

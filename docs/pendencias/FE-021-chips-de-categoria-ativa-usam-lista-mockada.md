@@ -18,7 +18,7 @@ usar `useExternalCategoriesQuery` (como `useSearch.ts:41-48` já faz).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

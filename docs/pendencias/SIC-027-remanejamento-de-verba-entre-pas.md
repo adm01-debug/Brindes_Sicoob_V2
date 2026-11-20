@@ -18,7 +18,7 @@ RPC de transferência entre PAs da mesma Singular, com alçada e trilha.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

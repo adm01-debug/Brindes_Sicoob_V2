@@ -18,7 +18,7 @@ revisão semântica objeto a objeto das 462 migrations (arquivar as superadas, r
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

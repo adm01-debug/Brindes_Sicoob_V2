@@ -18,7 +18,7 @@ credenciais do CRM, ou migrar clientes para a tabela `clients` nativa, como prev
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

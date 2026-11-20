@@ -18,7 +18,7 @@ sinalizar `fallback:true` na UI de forma visível e registrar métrica; ou remov
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ uma tela de manutenção da taxonomia, que hoje alimenta o filtro "Ramos/Segment
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

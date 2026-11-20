@@ -18,7 +18,7 @@ consumidor de `notification_digests` com envio por e-mail e agendamento.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

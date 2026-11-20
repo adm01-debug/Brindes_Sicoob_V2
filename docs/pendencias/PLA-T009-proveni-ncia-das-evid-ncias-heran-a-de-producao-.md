@@ -18,7 +18,7 @@ separar campos de execução local, remota e histórica; registrar SHA, data e c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

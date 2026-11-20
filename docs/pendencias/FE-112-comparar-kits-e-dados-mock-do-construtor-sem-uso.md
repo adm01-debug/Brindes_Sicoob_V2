@@ -18,7 +18,7 @@ ligar a comparação na biblioteca de kits e remover o mock.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

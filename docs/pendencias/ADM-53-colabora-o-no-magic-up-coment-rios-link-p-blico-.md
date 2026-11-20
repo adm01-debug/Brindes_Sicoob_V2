@@ -18,7 +18,7 @@ decidir construir ou remover; se construir, UI de comentários, link público ra
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

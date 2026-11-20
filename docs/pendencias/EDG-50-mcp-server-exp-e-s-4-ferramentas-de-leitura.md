@@ -18,7 +18,7 @@ ferramentas de catálogo/estoque e status de pedido, CRM real via bridge, recort
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

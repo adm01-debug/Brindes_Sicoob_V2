@@ -18,7 +18,7 @@ credencial somente leitura auditada e regra de reserva ou compromisso de estoque
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

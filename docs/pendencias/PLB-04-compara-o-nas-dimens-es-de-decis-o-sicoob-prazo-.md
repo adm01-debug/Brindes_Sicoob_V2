@@ -18,7 +18,7 @@ tirar o prazo inventado; usar prazo real de produção e transporte; comparar pr
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

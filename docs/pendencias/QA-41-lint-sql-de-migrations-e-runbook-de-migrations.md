@@ -18,7 +18,7 @@ o lint no CI, as regras (sem `DROP` sem ADR, `CREATE INDEX CONCURRENTLY`, `searc
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

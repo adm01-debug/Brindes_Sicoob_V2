@@ -18,7 +18,7 @@ medição por jornada com rede móvel e metas ratificadas.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ notificar o vendedor (workspace_notifications/e-mail) e agendar.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

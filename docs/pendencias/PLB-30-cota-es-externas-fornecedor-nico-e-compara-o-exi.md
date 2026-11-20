@@ -18,7 +18,7 @@ anexar 2 ou 3 propostas com fornecedor e validade, registrar justificativa de fo
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

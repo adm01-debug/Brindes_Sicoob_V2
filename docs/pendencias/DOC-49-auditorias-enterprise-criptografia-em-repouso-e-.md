@@ -18,7 +18,7 @@ retificar os relatórios ou implementar (cifrar PII de fato e definir retenção
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

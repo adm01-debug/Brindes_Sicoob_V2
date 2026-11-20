@@ -18,7 +18,7 @@ configurar os provedores e ensaiar entrega, falha parcial, retry e reconciliaÃ§Ã
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

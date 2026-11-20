@@ -18,7 +18,7 @@ decidir entre enum e CHECK (e remover o enum morto); avaliar se "pronto para ret
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

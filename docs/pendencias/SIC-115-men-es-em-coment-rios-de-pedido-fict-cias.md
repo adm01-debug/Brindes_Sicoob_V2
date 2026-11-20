@@ -18,7 +18,7 @@ autocomplete de usuários do escopo e notificação ao mencionado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

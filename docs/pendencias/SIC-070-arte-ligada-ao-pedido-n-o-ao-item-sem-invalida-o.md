@@ -18,7 +18,7 @@ tabela e RPC — vínculo arte↔item, variante, especificação; invalidar a ap
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

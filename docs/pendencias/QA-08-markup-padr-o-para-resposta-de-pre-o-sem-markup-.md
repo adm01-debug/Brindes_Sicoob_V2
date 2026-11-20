@@ -18,7 +18,7 @@ implementar o default no adapter e reativar o teste.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

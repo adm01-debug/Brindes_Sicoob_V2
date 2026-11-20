@@ -18,7 +18,7 @@ registrar o setup no `vitest.config.ts`, criar o step no CI ou apagar o document
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

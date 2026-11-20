@@ -18,7 +18,7 @@ decisão sobre o provedor (Google ou SSO Sicoob), botão na tela de login e redi
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

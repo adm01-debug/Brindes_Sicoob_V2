@@ -18,7 +18,7 @@ fechar o popover ou aplicar em lote.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

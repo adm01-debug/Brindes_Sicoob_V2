@@ -18,7 +18,7 @@ teste — suíte SQL com a cadeia completa e `SET ROLE authenticated` com asser�
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

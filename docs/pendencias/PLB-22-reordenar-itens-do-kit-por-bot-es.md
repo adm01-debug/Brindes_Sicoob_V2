@@ -18,7 +18,7 @@ alternativa por botões, exigida pelo critério WCAG 2.2 2.5.7.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

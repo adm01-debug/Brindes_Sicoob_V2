@@ -18,7 +18,7 @@ workflow de migrations com dry-run, publicação de todas as funções com aprov
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

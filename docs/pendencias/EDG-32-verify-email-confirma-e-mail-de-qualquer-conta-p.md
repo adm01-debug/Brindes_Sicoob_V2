@@ -18,7 +18,7 @@ despublicar e remover; a confirmação nativa do Supabase Auth já cobre o caso.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

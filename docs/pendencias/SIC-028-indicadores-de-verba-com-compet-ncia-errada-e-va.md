@@ -18,7 +18,7 @@ UI e hook — competência do pedido, estado "verba não configurada" sem númer
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

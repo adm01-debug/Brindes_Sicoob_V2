@@ -18,7 +18,7 @@ converter a consolidação em pedido único (ou pedidos com destinos) e mudar o 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

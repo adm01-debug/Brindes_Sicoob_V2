@@ -18,7 +18,7 @@ biblioteca por cooperativa com propriedade, autorização de uso, vigência e pr
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

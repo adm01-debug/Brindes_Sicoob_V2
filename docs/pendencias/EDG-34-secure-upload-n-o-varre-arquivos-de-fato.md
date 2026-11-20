@@ -18,7 +18,7 @@ submissão do arquivo ou o mesmo scanner obrigatório de EDG-28, falha fechada s
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ gerar ou reutilizar o token de `quote_approval_tokens` (`useQuoteApproval`) e en
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

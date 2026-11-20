@@ -18,7 +18,7 @@ homologação pelo responsável de marca da cooperativa ou do Sicoob.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

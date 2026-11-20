@@ -18,7 +18,7 @@ regenerar o dicionário a partir do schema vivo, corrigir o ER, arquivar ou rees
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

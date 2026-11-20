@@ -18,7 +18,7 @@ o dossiê deve derivar só de verificações executadas, os artefatos devem ser 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

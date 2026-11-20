@@ -18,7 +18,7 @@ testes reais para BI, notificações, voz e mockup, e E2E para os módulos marca
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

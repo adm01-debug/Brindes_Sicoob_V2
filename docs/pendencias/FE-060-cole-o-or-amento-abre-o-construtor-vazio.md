@@ -18,7 +18,7 @@ um efeito de pré-carga a partir da coleção (itens e cliente).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

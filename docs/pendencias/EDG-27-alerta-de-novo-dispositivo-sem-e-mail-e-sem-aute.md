@@ -18,7 +18,7 @@ validar JWT e usar `auth.user.id`; enviar e-mail de alerta.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

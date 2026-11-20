@@ -18,7 +18,7 @@ despachante SQL que leia o segredo do Vault (padrão de `20260923140000`), atual
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

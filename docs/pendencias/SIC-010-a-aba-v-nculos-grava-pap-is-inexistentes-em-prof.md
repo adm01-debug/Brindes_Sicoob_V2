@@ -18,7 +18,7 @@ UI e RPC — atribuir papéis válidos (`gerente_pa`, `comprador_pac`, `gestor_c
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

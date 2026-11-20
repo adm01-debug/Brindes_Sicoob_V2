@@ -18,7 +18,7 @@ decidir onde proteger PII (no servidor, com pgsodium ou Vault). Não ligar como 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

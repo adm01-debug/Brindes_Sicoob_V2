@@ -18,7 +18,7 @@ estabilizar até ter execução verde reprodutível no HEAD e torná-lo obrigat�
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

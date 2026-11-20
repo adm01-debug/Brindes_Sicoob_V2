@@ -18,7 +18,7 @@ ler o limite do vendedor do orçamento.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

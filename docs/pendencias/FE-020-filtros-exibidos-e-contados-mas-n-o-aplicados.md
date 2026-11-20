@@ -18,7 +18,7 @@ implementar os predicados que faltam nos dois pipelines, de preferência unifica
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

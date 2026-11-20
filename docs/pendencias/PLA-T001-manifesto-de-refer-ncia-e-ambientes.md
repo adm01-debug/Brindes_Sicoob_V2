@@ -18,7 +18,7 @@ manifesto com SHA da `main`, artefato servido, domínio, publicador, banco canô
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

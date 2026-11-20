@@ -18,7 +18,7 @@ catálogo de eventos e destinatários e intenção transacional para os demais e
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

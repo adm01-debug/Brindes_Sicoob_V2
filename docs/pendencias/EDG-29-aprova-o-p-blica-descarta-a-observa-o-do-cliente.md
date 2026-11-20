@@ -18,7 +18,7 @@ parâmetro de observação na RPC assinada e campo no formulário; dados do vend
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

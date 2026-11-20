@@ -18,7 +18,7 @@ RPC ou cron — definir o prazo na entrada em aprovação, recalcular `sla_statu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

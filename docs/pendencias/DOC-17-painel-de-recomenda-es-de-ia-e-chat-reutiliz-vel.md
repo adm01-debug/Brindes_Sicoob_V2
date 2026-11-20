@@ -18,7 +18,7 @@ montar o painel no dashboard ou no orçamento, ou apagar o código.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

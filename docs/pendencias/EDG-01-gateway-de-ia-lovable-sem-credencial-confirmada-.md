@@ -18,7 +18,7 @@ confirmar a chave no projeto `cfmzkthhgliqelozlmwu` (a chave é emitida para pro
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

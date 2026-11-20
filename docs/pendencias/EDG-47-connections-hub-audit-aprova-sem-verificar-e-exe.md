@@ -18,7 +18,7 @@ consultar `cron.job` via RPC de leitura, testar funções por ping e remover efe
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

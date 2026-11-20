@@ -19,7 +19,7 @@ ligar o PDF, o link de aprovação, as versões e o Bitrix à página de detalhe
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

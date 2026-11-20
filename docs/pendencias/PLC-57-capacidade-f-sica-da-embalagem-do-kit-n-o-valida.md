@@ -18,7 +18,7 @@ modelo de capacidade e geometria, regra para dado desconhecido e validação no 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

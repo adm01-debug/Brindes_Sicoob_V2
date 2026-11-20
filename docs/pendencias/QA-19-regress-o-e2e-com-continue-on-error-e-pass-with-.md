@@ -18,7 +18,7 @@ deixar o step falhar naturalmente e remover `--pass-with-no-tests`, porque um sh
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

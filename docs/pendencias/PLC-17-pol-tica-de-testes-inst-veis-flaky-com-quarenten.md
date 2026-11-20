@@ -18,7 +18,7 @@ registro de quarentena com dono e data de expiração.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

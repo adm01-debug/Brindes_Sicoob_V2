@@ -18,7 +18,7 @@ um workflow agendado (environment protegido) que regenere o inventário e abra P
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

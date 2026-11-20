@@ -18,7 +18,7 @@ medir a cobertura global (ou por módulo crítico) e fixar metas reais.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ um modelo próprio de país (ou abandonar a funcionalidade).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

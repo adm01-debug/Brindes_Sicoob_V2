@@ -18,7 +18,7 @@ gerar a tabela a partir do manifesto + mapa de chamadas, no CI.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -4,10 +4,10 @@ Prioridade por dependencia (fundacao antes) e impacto de negocio.
 
 | Ordem | ID | Prioridade | Status | Item |
 |---|---|---|---|---|
-| 1 | ADM-34 | P0 | STUB/MOCK | BI 360 apresenta números fictícios como reais |
-| 2 | DOC-01 | P0 | ORFA | PDF, link público de aprovação e versões do orçamento sem caminho na interface |
+| 1 | ADM-34 | P0 | PRONTO | BI 360 apresenta números fictícios como reais |
+| 2 | DOC-01 | P0 | PRONTO | PDF, link público de aprovação e versões do orçamento sem caminho na interface |
 | 3 | EDG-28 | P0 | BLOQUEADA_EXTERNA | Envio de NF-e e comprovante de entrega bloqueado pelo antivírus ausente |
-| 4 | FE-001 | P0 | PARCIAL | Detalhe do orçamento reduzido; página completa sem acesso |
+| 4 | FE-001 | P0 | PRONTO | Detalhe do orçamento reduzido; página completa sem acesso |
 | 5 | PLA-T075 | P0 | BLOQUEADA_EXTERNA | Scanner antimalware real |
 | 6 | PLA-T098 | P0 | BLOQUEADA_EXTERNA | Preparar operação e autorizar piloto |
 | 7 | PLB-56 | P0 | BLOQUEADA_EXTERNA | Políticas institucionais por cooperativa (alçada, cotação, arte, cancelamento, c |

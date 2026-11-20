@@ -18,7 +18,7 @@ ligar a tela à rota e consumir as views com escopo.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

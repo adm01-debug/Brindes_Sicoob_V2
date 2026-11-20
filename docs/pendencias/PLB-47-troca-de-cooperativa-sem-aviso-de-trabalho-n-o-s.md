@@ -18,7 +18,7 @@ confirmação antes de trocar de contexto com rascunho aberto e distinção visu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

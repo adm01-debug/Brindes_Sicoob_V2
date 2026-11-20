@@ -18,7 +18,7 @@ decidir entre `createSignedUrl` com expiração e bucket público, e ajustar a i
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

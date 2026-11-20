@@ -18,7 +18,7 @@ job agendado que baixe as funções publicadas e falhe quando houver divergênci
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

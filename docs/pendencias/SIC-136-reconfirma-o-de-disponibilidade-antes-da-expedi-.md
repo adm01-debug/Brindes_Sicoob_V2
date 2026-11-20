@@ -18,7 +18,7 @@ processo ou serviço do fornecedor para confirmar atendimento, fora do catálogo
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

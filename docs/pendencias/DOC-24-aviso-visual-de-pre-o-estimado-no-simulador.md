@@ -18,7 +18,7 @@ renderizar o badge em cada opção ou cartão de técnica do simulador e no item
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

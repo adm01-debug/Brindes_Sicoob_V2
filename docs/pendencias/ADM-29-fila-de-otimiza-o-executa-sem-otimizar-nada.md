@@ -18,7 +18,7 @@ implementar as ações (índices, refresh de views, cache) ou rotular como check
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

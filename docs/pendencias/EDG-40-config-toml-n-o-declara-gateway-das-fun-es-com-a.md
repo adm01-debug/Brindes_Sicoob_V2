@@ -18,7 +18,7 @@ declarar `verify_jwt = false` onde a autenticação é própria e conferir o est
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

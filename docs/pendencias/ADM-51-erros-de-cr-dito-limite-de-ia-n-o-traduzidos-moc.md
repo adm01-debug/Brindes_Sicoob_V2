@@ -18,7 +18,7 @@ utilitário comum que mapeie 402/429 para "créditos esgotados" ou "aguarde" e l
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

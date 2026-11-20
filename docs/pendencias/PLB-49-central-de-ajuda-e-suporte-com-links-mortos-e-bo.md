@@ -18,7 +18,7 @@ página de ajuda com respostas sobre quantidade, arte, verba e entrega; canal de
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ definir a fonte (pedido de compra ou fornecedor), criar a tabela ou ler do catá
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

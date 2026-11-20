@@ -18,7 +18,7 @@ nomear responsável e revisor e registrar evidência e aceite por etapa.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

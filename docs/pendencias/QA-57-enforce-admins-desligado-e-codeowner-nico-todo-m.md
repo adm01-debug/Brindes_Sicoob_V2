@@ -18,7 +18,7 @@ decisão de negócio (segundo revisor humano ou troca da revisão por checks obr
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

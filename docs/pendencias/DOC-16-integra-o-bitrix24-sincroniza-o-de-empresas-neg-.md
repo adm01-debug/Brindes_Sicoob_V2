@@ -18,7 +18,7 @@ decisão de escopo; se mantido, interface e agendamento, OAuth2 e `crm.item.get`
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

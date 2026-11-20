@@ -18,7 +18,7 @@ decidir quais permanecem, criar despachantes `dispatch_sicoob_*` como em `202609
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ UI — não há rota nem aba para cadastrar Centrais (CRUD de `sicoob_centrais` 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

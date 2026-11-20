@@ -18,7 +18,7 @@ incluir o gráfico na página de produto e confirmar que `price_history` é popu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

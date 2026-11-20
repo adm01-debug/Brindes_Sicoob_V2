@@ -18,7 +18,7 @@ agendar, enviar por e-mail (Resend) e definir o canal de alerta crítico.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

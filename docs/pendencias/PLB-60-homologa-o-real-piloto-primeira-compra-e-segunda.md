@@ -18,7 +18,7 @@ decisão de piloto, compra real acompanhada até a conciliação e segunda coope
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

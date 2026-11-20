@@ -18,7 +18,7 @@ prefill do Quote Builder por query string e mapear as sugestões para produtos r
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

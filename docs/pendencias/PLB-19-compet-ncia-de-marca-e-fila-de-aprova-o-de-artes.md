@@ -18,7 +18,7 @@ papel e competência de marca por cooperativa; fila de artes pendentes para o ma
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

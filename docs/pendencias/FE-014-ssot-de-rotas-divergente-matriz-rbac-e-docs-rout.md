@@ -18,7 +18,7 @@ gerar a matriz e o ROUTES.md a partir de `routes/config` e decidir o guard de `/
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

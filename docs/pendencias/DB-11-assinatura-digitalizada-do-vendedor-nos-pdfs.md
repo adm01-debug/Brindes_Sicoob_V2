@@ -18,7 +18,7 @@ aplicar coluna e bucket (avaliando se o bucket deve mesmo ser público) e criar 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

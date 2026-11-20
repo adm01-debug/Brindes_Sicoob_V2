@@ -18,7 +18,7 @@ tabela, RLS por carteira, atribuição de PAs a vendedores e painel.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

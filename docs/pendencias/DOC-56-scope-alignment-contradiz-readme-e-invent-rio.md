@@ -18,7 +18,7 @@ o dono decidir o escopo e alinhar todos os documentos e o código (remover ou co
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

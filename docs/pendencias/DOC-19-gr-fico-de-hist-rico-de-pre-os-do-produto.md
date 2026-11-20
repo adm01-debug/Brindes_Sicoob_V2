@@ -18,7 +18,7 @@ montar na página do produto (havendo fonte de histórico no catálogo externo).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

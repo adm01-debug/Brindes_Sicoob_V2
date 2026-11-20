@@ -18,7 +18,7 @@ atualizar o documento, a fonte de verdade do workflow.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

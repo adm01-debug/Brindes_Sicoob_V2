@@ -18,7 +18,7 @@ decidir entre usar o registro (com fonte remota) ou removê-lo; documentar `__EN
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

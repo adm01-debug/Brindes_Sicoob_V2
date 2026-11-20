@@ -18,7 +18,7 @@ assinatura Web Push (VAPID e backend), envio e fila offline de orçamentos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

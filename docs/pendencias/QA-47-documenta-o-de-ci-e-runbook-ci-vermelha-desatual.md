@@ -18,7 +18,7 @@ atualizar os documentos e criar o runbook (quem reexecuta, quando reverter).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

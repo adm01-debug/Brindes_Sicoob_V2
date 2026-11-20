@@ -18,7 +18,7 @@ a função de expurgo em lotes e os jobs por tabela, com a política documentada
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

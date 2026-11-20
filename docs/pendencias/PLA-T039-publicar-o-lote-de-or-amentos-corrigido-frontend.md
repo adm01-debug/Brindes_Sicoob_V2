@@ -18,7 +18,7 @@ amarrar o deploy do frontend ao SHA e registrar no manifesto (T001).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

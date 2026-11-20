@@ -18,7 +18,7 @@ incluir no histórico e no dossiê a proposta e sua versão, arte, verba, NF, pa
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

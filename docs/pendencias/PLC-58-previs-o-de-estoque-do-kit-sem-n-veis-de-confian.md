@@ -18,7 +18,7 @@ nível de confiança por entrada e buffer configurável ou derivado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

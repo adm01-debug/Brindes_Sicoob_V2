@@ -18,7 +18,7 @@ relatório de paridade datado com cron e worker comprovados e smoke autenticado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

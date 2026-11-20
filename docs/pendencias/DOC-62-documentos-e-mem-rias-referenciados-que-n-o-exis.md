@@ -18,7 +18,7 @@ recuperar o conteúdo (exportar do Lovable) ou remover as referências.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

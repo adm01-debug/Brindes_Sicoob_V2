@@ -18,7 +18,7 @@ decidir. Se a sync continua, redesenhar com RLS correta; se nÃ£o, remover a funÃ
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ regra de retenção com responsável, job de coleta de órfãos e teste de resta
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

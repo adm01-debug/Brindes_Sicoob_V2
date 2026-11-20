@@ -18,7 +18,7 @@ decidir o fluxo de cadastro (entidades locais ou edição no sistema de origem) 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

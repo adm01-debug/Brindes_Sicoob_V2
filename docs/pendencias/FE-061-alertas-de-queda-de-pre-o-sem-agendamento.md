@@ -18,7 +18,7 @@ agendar no `pg_cron` ou em outro scheduler e exibir as notificações geradas.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

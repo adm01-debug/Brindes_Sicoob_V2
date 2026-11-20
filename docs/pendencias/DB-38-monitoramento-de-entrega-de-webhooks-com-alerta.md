@@ -18,7 +18,7 @@ job de alerta de 5xx (pg_cron → Edge → Sentry/Slack) ou monitor externo docu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ decisão de plano (GHAS) ou de alternativa (semgrep/eslint-security), além de e
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

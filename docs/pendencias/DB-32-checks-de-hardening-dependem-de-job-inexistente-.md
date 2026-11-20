@@ -18,7 +18,7 @@ alinhar o nome do job (ou consultar pelo comando) e medir MFA de verdade (por ex
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

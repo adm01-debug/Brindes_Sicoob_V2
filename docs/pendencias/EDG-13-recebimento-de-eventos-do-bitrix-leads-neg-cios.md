@@ -18,7 +18,7 @@ endpoint específico (validação por token de aplicação), mapeamento lead/dea
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

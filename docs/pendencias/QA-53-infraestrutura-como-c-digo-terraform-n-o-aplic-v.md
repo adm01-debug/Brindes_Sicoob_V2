@@ -18,7 +18,7 @@ decidir se o IaC vale a pena. Se sim, criar módulos, variáveis, provider e est
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

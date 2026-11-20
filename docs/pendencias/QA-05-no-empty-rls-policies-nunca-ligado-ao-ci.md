@@ -18,7 +18,7 @@ incluir o arquivo no passo "Validar autorização remota e RLS técnico" de `e2e
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

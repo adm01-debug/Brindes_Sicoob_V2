@@ -18,7 +18,7 @@ expedições parciais por item e destino e reconfirmação de disponibilidade.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

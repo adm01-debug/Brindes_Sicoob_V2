@@ -18,7 +18,7 @@ regra explícita para a remoção de item com arte ou pedido vinculado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

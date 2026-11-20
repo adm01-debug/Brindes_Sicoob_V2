@@ -18,7 +18,7 @@ incluir `sicoob` no `testMatch` de `routes-authed`/`routes-guards`, trocar os ID
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

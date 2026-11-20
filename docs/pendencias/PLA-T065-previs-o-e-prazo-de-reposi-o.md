@@ -18,7 +18,7 @@ buffer configurável, descarte de datas vencidas e exibição de incerteza.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

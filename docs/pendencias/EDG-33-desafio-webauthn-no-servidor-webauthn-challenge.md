@@ -18,7 +18,7 @@ funções de desafio/verificação de registro e asserção (precisa de vaga —
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ decidir o fim da avaliação e inverter o padrão (demo só por opt-in).
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

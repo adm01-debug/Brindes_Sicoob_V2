@@ -18,7 +18,7 @@ estados planejado, reservado, comprometido, consumido e disponível, com eventos
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

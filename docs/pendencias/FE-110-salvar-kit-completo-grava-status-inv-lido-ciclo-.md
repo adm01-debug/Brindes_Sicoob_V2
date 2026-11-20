@@ -24,7 +24,7 @@ mapear para `ready`, marcar `shared` ao gerar link e permitir arquivar.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 
@@ -40,4 +40,4 @@ mapear para `ready`, marcar `shared` ao gerar link e permitir arquivar.
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main e877d0c58 (salvar kit grava status valido; ciclo de status correto)

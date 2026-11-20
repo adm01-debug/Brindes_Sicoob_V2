@@ -18,7 +18,7 @@ ensaio com 3 destinos, avaria, crédito e troca de competência.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

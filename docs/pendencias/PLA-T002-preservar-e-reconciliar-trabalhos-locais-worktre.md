@@ -18,7 +18,7 @@ decidir o destino de cada worktree e branch (incorporar, arquivar ou descartar),
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

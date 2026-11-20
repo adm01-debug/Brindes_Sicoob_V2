@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL em main e877d0c58. Rota /admin/cadastros EXISTE (src/routes/config/admin.ts:23 registra AdminCadastrosPage); sidebar dirige Produtos/Fornecedores/Gravacao (src/components/layout/SidebarReorganized.tsx:245-250). Pagina tem ProductsManager com curadoria, SuppliersManager readOnly e personalizacao. NAO ha rota de edicao /admin/cadastros/produto/:id (0 ocorrencias de AdminProductFormPage em src/).
 
 ## O que falta (auditoria)
 
-registrar `AdminCadastrosPage` em `/admin/cadastros` e `AdminProductFormPage` em `/admin/cadastros/produto/:id`; decidir o destino do formulário simples. Mesmo religado, o salvamento esbarra no ADM-02.
+registrar rota de edicao de produto /admin/cadastros/produto/:id (AdminProductFormPage); decidir o destino do formulario simples. Mesmo religado, o salvamento esbarra no ADM-02.
 
 ## Camadas afetadas
 
@@ -18,7 +18,7 @@ registrar `AdminCadastrosPage` em `/admin/cadastros` e `AdminProductFormPage` em
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 
@@ -34,4 +34,4 @@ registrar `AdminCadastrosPage` em `/admin/cadastros` e `AdminProductFormPage` em
 
 ## Estado final
 
-- NAO INICIADO
+- PARCIAL (rota e abas em main; falta rota de edicao de produto)

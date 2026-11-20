@@ -18,7 +18,7 @@ replicar os secrets para o Dependabot ou pular o E2E para o ator `dependabot[bot
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

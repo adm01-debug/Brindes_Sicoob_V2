@@ -18,7 +18,7 @@ finalidades para recebimento por destino, avaria (foto) e anexos de proposta e a
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

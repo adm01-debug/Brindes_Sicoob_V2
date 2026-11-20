@@ -18,7 +18,7 @@ dump com hash, restore em projeto descartável com contagens conferidas e confir
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ comentários com FK para `sicoob_orders` e aposentar ou redirecionar o domínio 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

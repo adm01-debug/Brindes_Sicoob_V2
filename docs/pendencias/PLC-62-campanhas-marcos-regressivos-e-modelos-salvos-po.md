@@ -18,7 +18,7 @@ marcos regressivos com impacto de atraso e modelos institucionais por cooperativ
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ integração com transportadora (os MCPs Melhor Envio e Rodonaves existem fora d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

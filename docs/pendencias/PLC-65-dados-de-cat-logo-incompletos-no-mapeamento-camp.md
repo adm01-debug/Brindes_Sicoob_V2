@@ -18,7 +18,7 @@ selecionar as colunas reais (após confirmar que existem no catálogo) e popular
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

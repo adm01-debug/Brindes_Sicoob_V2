@@ -18,7 +18,7 @@ modelo de vínculos múltiplos, seletor de unidade, cabeçalho com contexto e se
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

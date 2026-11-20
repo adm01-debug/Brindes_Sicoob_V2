@@ -18,7 +18,7 @@ manter uma só função, filtrar pelo dono, remetente Sicoob, falhar quando não
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ usar as RPCs (contagem de não lidas, marcar como lidas) ou removê-las.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

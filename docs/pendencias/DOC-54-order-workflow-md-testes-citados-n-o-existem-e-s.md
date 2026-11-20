@@ -18,7 +18,7 @@ testes das regras de transição e alinhar documento, front e enum.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

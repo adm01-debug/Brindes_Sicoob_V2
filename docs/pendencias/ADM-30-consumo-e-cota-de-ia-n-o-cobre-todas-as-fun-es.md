@@ -18,7 +18,7 @@ passar todas as chamadas de IA e voz pelo wrapper de cota e registro.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

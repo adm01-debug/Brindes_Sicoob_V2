@@ -18,7 +18,7 @@ restabelecer a execução de push e PR (billing/plano), rodar `ci.yml`, `sicoob-
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

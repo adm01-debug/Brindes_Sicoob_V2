@@ -18,7 +18,7 @@ revalidar a arte e a embalagem do pedido original antes de criar o novo compromi
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

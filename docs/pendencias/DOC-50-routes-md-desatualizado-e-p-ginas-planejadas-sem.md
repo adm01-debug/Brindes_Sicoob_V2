@@ -18,7 +18,7 @@ decidir rota a rota (registrar ou apagar), rodar o gerador no CI e falhar quando
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

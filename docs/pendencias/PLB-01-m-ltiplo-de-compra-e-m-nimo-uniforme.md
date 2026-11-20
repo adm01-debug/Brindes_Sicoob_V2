@@ -18,7 +18,7 @@ modelar o múltiplo e o lote de embalagem; exibir mínimo e múltiplo no card e 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

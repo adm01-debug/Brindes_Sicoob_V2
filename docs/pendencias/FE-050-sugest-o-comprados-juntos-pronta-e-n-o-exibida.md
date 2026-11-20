@@ -18,7 +18,7 @@ colocar o card no carrinho, no construtor de orçamento ou na página de produto
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

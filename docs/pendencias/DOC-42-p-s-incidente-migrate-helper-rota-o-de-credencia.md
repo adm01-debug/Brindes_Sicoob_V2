@@ -18,7 +18,7 @@ rotacionar `SUPABASE_SERVICE_ROLE_KEY` e a senha do banco, revisar os logs da fu
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

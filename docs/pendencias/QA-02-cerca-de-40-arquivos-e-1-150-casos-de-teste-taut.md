@@ -18,7 +18,7 @@ substituir as cópias pelo import real (Deno compartilhado via módulos puros, h
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

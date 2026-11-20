@@ -18,7 +18,7 @@ paginar e exportar em lote; recortes por campanha (SIC-031) e categoria; parciai
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

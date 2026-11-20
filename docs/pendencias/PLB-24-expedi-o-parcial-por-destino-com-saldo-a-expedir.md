@@ -18,7 +18,7 @@ várias remessas por pedido e por destino com itens e quantidades, saldo a exped
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

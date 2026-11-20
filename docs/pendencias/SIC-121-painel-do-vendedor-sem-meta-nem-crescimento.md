@@ -18,7 +18,7 @@ cadastro de meta por vendedor e período e cálculo de variação.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

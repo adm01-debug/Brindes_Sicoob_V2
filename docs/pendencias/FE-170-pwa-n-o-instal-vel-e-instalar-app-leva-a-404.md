@@ -18,7 +18,7 @@ link do manifest, ícones PNG 192/512 e apple-touch-icon, e a rota `/instalar`.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

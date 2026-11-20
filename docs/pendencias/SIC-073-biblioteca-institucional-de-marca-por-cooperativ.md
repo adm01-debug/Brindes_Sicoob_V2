@@ -18,7 +18,7 @@ metadados de titularidade e vigência por cooperativa e reutilização homologad
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

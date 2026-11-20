@@ -18,7 +18,7 @@ CAPTCHA no login e na redefinição de senha, e reautenticação para ações se
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

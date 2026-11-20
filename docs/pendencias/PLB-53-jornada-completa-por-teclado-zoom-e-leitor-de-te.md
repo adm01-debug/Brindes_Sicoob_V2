@@ -18,7 +18,7 @@ ensaio manual e automatizado da compra inteira (teclado, zoom 200/400%, leitor d
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

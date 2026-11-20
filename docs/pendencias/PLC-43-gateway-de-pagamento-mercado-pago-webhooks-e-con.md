@@ -18,7 +18,7 @@ decidir se o Sicoob precisa de cobrança online. Se sim, implementar; se não, r
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

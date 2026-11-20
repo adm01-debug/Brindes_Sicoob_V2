@@ -18,7 +18,7 @@ ampliar o plano ou consolidar funções antes de qualquer nova Edge Function.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

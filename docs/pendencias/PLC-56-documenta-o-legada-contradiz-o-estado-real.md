@@ -18,7 +18,7 @@ rebaixar o roadmap a histórico, corrigir os links de `docs/README.md` e marcar 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

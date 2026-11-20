@@ -18,7 +18,7 @@ política, justificativa, aprovação da exceção e reaprovação por mudança 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

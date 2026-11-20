@@ -18,7 +18,7 @@ papel ou vínculo de diretoria por cooperativa, regra automática por valor e me
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

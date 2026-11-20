@@ -18,7 +18,7 @@ versão de arte por item com especificação técnica, ligada desde a proposta, 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

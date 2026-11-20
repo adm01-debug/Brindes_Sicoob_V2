@@ -18,7 +18,7 @@ o token, as ações de arquivo e o vínculo com mockups e pedidos.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -19,7 +19,7 @@ estado vazio honesto ("cliente sem histórico"), propagar `isMock` a todos os pa
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

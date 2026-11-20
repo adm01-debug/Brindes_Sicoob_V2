@@ -18,7 +18,7 @@ ler os flags nos pontos de decisão (carrinho, chat, blog, trava de verba) ou re
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

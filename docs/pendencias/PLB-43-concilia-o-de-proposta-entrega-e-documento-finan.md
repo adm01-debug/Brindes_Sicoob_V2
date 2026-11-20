@@ -18,7 +18,7 @@ conciliação tripla, recebimento parcial sem presumir quitação e bloqueio de 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

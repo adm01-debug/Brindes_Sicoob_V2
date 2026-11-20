@@ -26,7 +26,7 @@ UI — rotas `/gestor/verbas`, `/gestor/delegacoes`, `/gestor/alertas` restritas
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ INSERT só via RPC (`SECURITY DEFINER`), chave persistida entre remontagens e co
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ modelo físico (dimensões e peso), validação no servidor e revisão técnica 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

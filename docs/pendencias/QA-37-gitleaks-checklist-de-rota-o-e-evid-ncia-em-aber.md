@@ -18,7 +18,7 @@ registrar a evidência de rotação, que hoje só tem calendário, e ativar a re
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

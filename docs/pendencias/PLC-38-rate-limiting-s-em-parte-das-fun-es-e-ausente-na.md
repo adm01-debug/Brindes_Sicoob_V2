@@ -18,7 +18,7 @@ aplicar o limitador a todas as funções públicas e proteger as RPCs públicas 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

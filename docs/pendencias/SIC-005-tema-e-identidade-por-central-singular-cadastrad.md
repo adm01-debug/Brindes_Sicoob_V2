@@ -18,7 +18,7 @@ UI e hook — aplicar o tema e o logo da cooperativa do usuário logado.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

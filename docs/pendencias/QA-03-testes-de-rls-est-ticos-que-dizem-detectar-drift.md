@@ -18,7 +18,7 @@ ler `pg_policies` de verdade, seja no PostgreSQL descartável das simulações (
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

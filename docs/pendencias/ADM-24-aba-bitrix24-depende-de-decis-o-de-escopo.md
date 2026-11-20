@@ -18,7 +18,7 @@ decidir manter ou remover; se mantiver, a sincronização com tabelas próprias.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

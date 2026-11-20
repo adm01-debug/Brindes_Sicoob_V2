@@ -18,7 +18,7 @@ criar contas dedicadas de homologação e os secrets, ou migrar os casos para as
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

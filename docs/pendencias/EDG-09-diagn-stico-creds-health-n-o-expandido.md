@@ -18,7 +18,7 @@ expor `?op=creds_health` em `expert-chat` e `external-db-bridge` (as outras duas
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

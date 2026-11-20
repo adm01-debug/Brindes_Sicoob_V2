@@ -18,7 +18,7 @@ decidir se a importação Bitrix→portal continua; se sim, agendar `sync_full`,
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

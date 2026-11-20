@@ -22,7 +22,7 @@ RPC — aplicar escalonamento por valor da cooperativa, alçada por categoria e 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

@@ -18,7 +18,7 @@ fazer os scripts de auditoria falharem quando houver erro; registrar os checks a
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

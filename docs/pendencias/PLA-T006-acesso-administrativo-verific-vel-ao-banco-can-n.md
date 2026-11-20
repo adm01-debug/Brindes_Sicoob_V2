@@ -18,7 +18,7 @@ usuário técnico com escopo mínimo, dono, validade e revogação registrados; 
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

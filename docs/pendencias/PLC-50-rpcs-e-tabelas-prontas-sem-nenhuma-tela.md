@@ -18,7 +18,7 @@ tela de relatório de performance Sicoob, trilha `quote_audit_logs` e gestão de
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 

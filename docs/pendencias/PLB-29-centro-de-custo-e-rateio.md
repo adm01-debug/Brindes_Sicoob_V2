@@ -18,7 +18,7 @@ modelar o centro de custo e fazer o rateio na proposta, no pedido e na verba.
 
 ## Regras de negocio
 
-- ver `_regras-de-negocio.md`
+- ver `docs/agentes/regras-dominio.md`
 
 ## Raio de impacto
 
