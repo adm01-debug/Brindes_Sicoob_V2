@@ -106,7 +106,7 @@ export function MyDiscountRequestsWidget() {
             <Percent className="h-4 w-4 text-primary" />
             Minhas Solicitações de Desconto
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/descontos")} className="text-xs gap-1">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/limites-desconto")} className="text-xs gap-1">
             Ver todas <ArrowRight className="h-3 w-3" />
           </Button>
         </div>
