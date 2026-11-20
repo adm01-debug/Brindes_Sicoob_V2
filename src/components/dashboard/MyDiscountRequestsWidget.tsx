@@ -4,12 +4,10 @@
  */
 import { useMemo, useState, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { Percent, ArrowRight, Clock, Loader2 } from "lucide-react";
+import { Percent, Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -40,7 +38,6 @@ const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ 
 
 export function MyDiscountRequestsWidget() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [filters, setFilters] = useState<WidgetFiltersValue>(EMPTY_FILTERS);
 
   const {
@@ -106,9 +103,6 @@ export function MyDiscountRequestsWidget() {
             <Percent className="h-4 w-4 text-primary" />
             Minhas Solicitações de Desconto
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/descontos")} className="text-xs gap-1">
-            Ver todas <ArrowRight className="h-3 w-3" />
-          </Button>
         </div>
         <WidgetFiltersBar
           value={filters}

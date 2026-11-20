@@ -30,7 +30,7 @@ export function UpcomingDatesWidget({
 
   const handleNavigateToDate = (slug: string) => {
     // Navega para o catálogo com o filtro de data aplicado
-    navigate(`/filtros?data=${slug}`);
+    navigate(`/filtros?datasComemorativas=${slug}`);
   };
 
   if (error) {

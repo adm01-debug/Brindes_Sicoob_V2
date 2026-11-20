@@ -56,7 +56,7 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
     title: 'Caneta Esferográfica Touch',
     description: 'Mais vendido este mês',
     category: 'Escritório',
-    url: '/produtos/1',
+    url: '/filtros?search=caneta+esferografica',
     metadata: { views: 1250, popularity: 95 },
   },
   {
@@ -65,7 +65,7 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
     title: 'Kit Executivo Premium',
     description: 'Baseado nas suas vendas',
     category: 'Kits',
-    url: '/produtos/2',
+    url: '/filtros?search=kit+executivo',
     metadata: { popularity: 88 },
   },
   {
@@ -74,7 +74,7 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
     title: 'Agenda 2025 Personalizada',
     description: '20% OFF até sexta',
     category: 'Papelaria',
-    url: '/produtos/3',
+    url: '/filtros?search=agenda+personalizada',
     metadata: { discount: 20 },
   },
   {
@@ -83,7 +83,7 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
     title: 'Bloco de Notas Sustentável',
     description: 'Combina com sua seleção',
     category: 'Eco',
-    url: '/produtos/4',
+    url: '/filtros?search=bloco+notas',
   },
   {
     id: '5',
@@ -91,7 +91,7 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
     title: 'Garrafa Térmica 500ml',
     description: 'Visualizado há 2h',
     category: 'Drinkware',
-    url: '/produtos/5',
+    url: '/filtros?search=garrafa+termica',
   },
 ];
 
