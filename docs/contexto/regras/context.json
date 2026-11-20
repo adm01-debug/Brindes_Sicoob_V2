@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "ca511cfa40a67d0efa508a0a27575ea6f26f06ce",
+  "sha": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-20 21:04 UTC",
+  "generated_at": "2026-11-20 23:13 UTC",
   "files_total": 5239,
   "code_files": 3806,
   "code_lines": 556398
@@ -253374,10 +253374,22 @@
   }
  },
  "git": {
-  "sha": "ca511cfa40a67d0efa508a0a27575ea6f26f06ce",
+  "sha": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e7e6753",
+    "date": "2026-11-20",
+    "author": "adm01-debug",
+    "subject": "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)",
+    "files": [
+     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
+     "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
+     "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
+     "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md"
+    ]
+   },
    {
     "sha": "ca511cf",
     "date": "2026-11-20",
@@ -254389,22 +254401,28 @@
      "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
      "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/plano.md"
     ]
-   },
-   {
-    "sha": "a5b6fcc",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)",
-    "files": [
-     "src/hooks/useTemplateSnapshot.ts",
-     "tests/hooks/useTemplateSnapshot.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/cobertura-refs.md",
     3
+   ],
+   [
+    "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
+    2
+   ],
+   [
+    "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
+    2
+   ],
+   [
+    "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
+    2
+   ],
+   [
+    "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
+    2
    ],
    [
     "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
@@ -254464,22 +254482,6 @@
    ],
    [
     "docs/pendencias/ADM-07-trilha-de-auditoria-administrativa-sem-tela.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-08-pain-is-auditoria-enterprise-e-evid-ncias-com-n-.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-09-views-sicoob-budget-audit-e-v-full-scope-grants-.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-10-dashboard-executivo-e-metas-de-vendas-desligados.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-11-rotas-administrativas-sem-ponto-de-entrada.md",
     1
    ]
   ]

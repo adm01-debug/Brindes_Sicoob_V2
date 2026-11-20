@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ca511cfa40a67d0efa508a0a27575ea6f26f06ce",
+  "commit": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
   "branch": "main",
-  "data_commit": "2026-11-20T18:03:19-03:00",
+  "data_commit": "2026-11-20T19:19:00-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e7e6753",
+    "data": "2026-11-20",
+    "assunto": "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)"
+   },
    {
     "sha": "ca511cf",
     "data": "2026-11-20",
@@ -126,11 +131,6 @@
     "sha": "f21dbfd",
     "data": "2026-11-19",
     "assunto": "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)"
-   },
-   {
-    "sha": "138474b",
-    "data": "2026-11-19",
-    "assunto": "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)"
    }
   ],
   "arquivos_mudados_7d": 1258,
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 29
+    "mudancas": 28
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 28
+    "mudancas": 27
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 191
+    "commits": 192
    },
    {
     "autor": "dependabot[bot]",
