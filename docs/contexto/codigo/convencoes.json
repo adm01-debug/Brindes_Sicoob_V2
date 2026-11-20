@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (636)",
+   "tests/ (640)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)",
    "chore: padroniza template de PR (recupera trabalho alheio) (#386)",
    "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)",
    "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)",
-   "test(edge): catraca para o espalhamento de versões do supabase-js (#377)",
-   "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)"
+   "test(edge): catraca para o espalhamento de versões do supabase-js (#377)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

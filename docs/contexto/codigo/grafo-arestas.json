@@ -8212,8 +8212,10 @@
   "src/hooks/quote/useQuoteInitialization.ts": [
    "src/components/quotes/CompanyContactSelector.tsx",
    "src/contexts/ProductsContext.tsx",
+   "src/hooks/quote/useQuoteProductSearch.ts",
    "src/hooks/quote/useQuoteUrlPrefill.ts",
-   "src/hooks/quotes/quoteTypes.ts"
+   "src/hooks/quotes/quoteTypes.ts",
+   "src/types/quote-builder.ts"
   ],
   "src/hooks/quote/useQuoteProductSearch.ts": [
    "src/hooks/useDebounce.ts",

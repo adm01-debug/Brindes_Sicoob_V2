@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2922)",
+   "TypeScript (2926)",
    "SQL (684)",
    "JSON (292)",
    "Markdown (285)",
@@ -1638,6 +1638,10 @@
    },
    {
     "host": "catalogo.test",
+    "arquivos": 1
+   },
+   {
+    "host": "cdn.example",
     "arquivos": 1
    },
    {

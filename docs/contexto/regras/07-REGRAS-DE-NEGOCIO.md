@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `67f5a8a640` · branch `main` · 2026-11-20 01:15 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e877d0c589` · branch `main` · 2026-11-20 02:13 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4842,6 +4842,7 @@ _nenhum item encontrado_
 | `SICOOB_FINANCIAL_TIME_ZONE` | `'America/Sao_Paulo'` | `src/hooks/orders/extensions/useOrderPayments.ts` |
 | `ARTWORK_BUCKET` | `'sicoob-order-documents'` | `src/hooks/orders/extensions/useOrderPilotApprovals.ts` |
 | `MAX_ARTWORK_BYTES` | `20` | `src/hooks/orders/extensions/useOrderPilotApprovals.ts` |
+| `MAX_SUGGESTED_PRODUCTS` | `20` | `src/hooks/quote/useQuoteInitialization.ts` |
 | `MAX_HISTORY` | `30` | `src/hooks/simulator/useUndoRedo.ts` |
 | `SESSION_TTL` | `2` | `src/hooks/simulator/useWizardPersistence.ts` |
 | `EXTERNAL_DB_BRIDGE_FUNCTION` | `'external-db-bridge'` | `src/hooks/tecnicas/useTecnicasList.ts` |
@@ -4869,8 +4870,7 @@ _nenhum item encontrado_
 | `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
-| `DEBUG_LOG_THROTTLE_MS` | `1000` | `src/lib/notifications-metrics.ts` |
-| … +162 linhas — lista completa em `context.json` | | |
+| … +163 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5604,7 +5604,7 @@ _nenhum item encontrado_
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| … +988 linhas — lista completa em `context.json` | |
+| … +993 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6989 testes em 702 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7002 testes em 706 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6012,7 +6012,7 @@ _nenhum item encontrado_
 | `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
-| … +402 linhas — lista completa em `context.json` | | |
+| … +406 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 883,
+ "total": 887,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 654
+  "unit": 658
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 636
+   "arquivos": 640
   },
   {
    "padrao": "e2e/",
@@ -2293,6 +2293,15 @@
     "src/components/bi/ClientVsIndustryComparison.tsx"
    ],
    "casos": 4
+  },
+  {
+   "arquivo": "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+   "tipo": "unit",
+   "linhas": 53,
+   "testa": [
+    "src/components/bi/ConfirmQuoteSuggestionsModal.tsx"
+   ],
+   "casos": 2
   },
   {
    "arquivo": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
@@ -4894,6 +4903,34 @@
     "src/hooks/useQuoteHistory.ts"
    ],
    "casos": 4
+  },
+  {
+   "arquivo": "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+   "tipo": "unit",
+   "linhas": 88,
+   "testa": [
+    "src/hooks/quote/useQuoteInitialization.ts"
+   ],
+   "casos": 2
+  },
+  {
+   "arquivo": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+   "tipo": "unit",
+   "linhas": 75,
+   "testa": [
+    "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+    "src/hooks/quote/useQuoteInitialization.ts"
+   ],
+   "casos": 3
+  },
+  {
+   "arquivo": "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+   "tipo": "unit",
+   "linhas": 37,
+   "testa": [
+    "src/hooks/quote/useQuoteProductSearch.ts"
+   ],
+   "casos": 2
   },
   {
    "arquivo": "tests/hooks/useQuotes-helpers.test.ts",
@@ -7757,6 +7794,7 @@
   "src/components/bi/ClientLookalikes.tsx": 2,
   "src/components/bi/ClientOverview360.tsx": 1,
   "src/components/bi/ClientVsIndustryComparison.tsx": 2,
+  "src/components/bi/ConfirmQuoteSuggestionsModal.tsx": 2,
   "src/components/bi/ExecutiveSummaryButton.tsx": 1,
   "src/components/bi/IndustryTrendingProducts.tsx": 1,
   "src/components/cart/cart-company-options.ts": 1,
@@ -7893,7 +7931,8 @@
   "src/hooks/orders/extensions/useOrderInvoices.ts": 1,
   "src/hooks/orders/extensions/useOrderPayments.ts": 1,
   "src/hooks/quote/quote-url-prefill.ts": 1,
-  "src/hooks/quote/useQuoteInitialization.ts": 1,
+  "src/hooks/quote/useQuoteInitialization.ts": 3,
+  "src/hooks/quote/useQuoteProductSearch.ts": 1,
   "src/hooks/quote/useQuotesStockStatus.ts": 1,
   "src/hooks/quotes/quoteHelpers.ts": 2,
   "src/hooks/quotes/quoteStatusMutationGuards.ts": 1,
@@ -8416,7 +8455,6 @@
    "src/hooks/orders/useOrderHistory.ts",
    "src/hooks/orders/useOrderNotifications.ts",
    "src/hooks/orders/useOrders.ts",
-   "src/hooks/quote/useQuoteProductSearch.ts",
    "src/hooks/quote/useQuoteUrlPrefill.ts",
    "src/hooks/quotes/usePendingQuotesCount.ts",
    "src/hooks/sicoob/useAIOrderPredictor.ts",

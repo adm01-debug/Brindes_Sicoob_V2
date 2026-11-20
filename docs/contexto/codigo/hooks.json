@@ -3238,7 +3238,7 @@
    "hooks_exportados": [
     "useQuoteInitialization"
    ],
-   "linhas": 274,
+   "linhas": 360,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
@@ -3254,14 +3254,14 @@
    "usado_por_arquivos": [
     "src/hooks/useQuoteBuilderState.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 3
   },
   {
    "arquivo": "src/hooks/quote/useQuoteProductSearch.ts",
    "hooks_exportados": [
     "useQuoteProductSearch"
    ],
-   "linhas": 82,
+   "linhas": 96,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
@@ -3273,11 +3273,12 @@
     "useState"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
+    "src/hooks/quote/useQuoteInitialization.ts",
     "src/hooks/useQuoteBuilderState.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/quote/useQuotesStockStatus.ts",
@@ -7570,7 +7571,7 @@
    "hooks_exportados": [
     "useQuoteBuilderState"
    ],
-   "linhas": 958,
+   "linhas": 970,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
+  "sha": "e877d0c589a9aacc02fd956479a9e8aedd1e0599",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-20 01:15 UTC",
-  "files_total": 4550,
-  "code_files": 3802,
-  "code_lines": 556029
+  "generated_at": "2026-11-20 02:13 UTC",
+  "files_total": 4554,
+  "code_files": 3806,
+  "code_lines": 556404
  },
  "version": "1.3.2",
- "facts_hash": "e32adbf9ff2fb0ec",
+ "facts_hash": "174594bc84dfd34f",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1479,
-   ".tsx": 1441,
+   ".ts": 1481,
+   ".tsx": 1443,
    ".sql": 684,
    ".mjs": 139,
    ".py": 66,
@@ -61153,7 +61153,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1279,
+  "components_count": 1280,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63945,7 +63945,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166783,
+   "lines": 166793,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64278,7 +64278,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47383,
+   "lines": 47495,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65718,8 +65718,8 @@
   },
   {
    "module": "tests",
-   "files": 657,
-   "lines": 88193,
+   "files": 661,
+   "lines": 88446,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -75560,6 +75560,10 @@
    },
    {
     "file": "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+    "msg": "${unavailable.length} sugestão(ões) ainda não possuem produto vinculado ao catálogo."
+   },
+   {
+    "file": "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
     "msg": "Selecione ao menos 1 produto."
    },
    {
@@ -77113,6 +77117,22 @@
    {
     "file": "src/hooks/orders/extensions/useOrderPilotApprovals.ts",
     "msg": "Pedido não informado."
+   },
+   {
+    "file": "src/hooks/quote/useQuoteInitialization.ts",
+    "msg": "${missing} produto(s) não estão mais disponíveis e foram ignorados."
+   },
+   {
+    "file": "src/hooks/quote/useQuoteInitialization.ts",
+    "msg": "Nenhum produto válido foi recebido das sugestões do BI."
+   },
+   {
+    "file": "src/hooks/quote/useQuoteInitialization.ts",
+    "msg": "Não foi possível carregar os produtos sugeridos."
+   },
+   {
+    "file": "src/hooks/quote/useQuoteInitialization.ts",
+    "msg": "Os produtos sugeridos não estão mais disponíveis no catálogo."
    },
    {
     "file": "src/hooks/quote/useQuoteUrlPrefill.ts",
@@ -93955,6 +93975,11 @@
    {
     "file": "src/hooks/orders/extensions/useOrderPilotApprovals.ts",
     "name": "MAX_ARTWORK_BYTES",
+    "value": "20"
+   },
+   {
+    "file": "src/hooks/quote/useQuoteInitialization.ts",
+    "name": "MAX_SUGGESTED_PRODUCTS",
     "value": "20"
    },
    {
@@ -119380,6 +119405,18 @@
     "name": "preserva métricas em cache e oferece retry quando o refetch falha"
    },
    {
+    "file": "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+    "name": "ConfirmQuoteSuggestionsModal — seleção por quoteSuggestionKey"
+   },
+   {
+    "file": "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+    "name": "desmarcar remove a sugestão do conjunto usado no envio (bug Devin/Codex)"
+   },
+   {
+    "file": "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+    "name": "sugestões homônimas recebem chaves distintas e são independentes"
+   },
+   {
     "file": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
     "name": "disponibilidade do resumo executivo"
    },
@@ -128302,6 +128339,46 @@
    {
     "file": "tests/hooks/useQuoteHistory.test.ts",
     "name": "logStatusChanged usa labels traduzidas e chama a RPC"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+    "name": "inicialização por sugestões do BI"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+    "name": "carrega itens na ordem solicitada, mantém o cliente e informa indisponibilidade parcial"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+    "name": "não sobrescreve cliente ou itens escolhidos enquanto a consulta do BI está pendente"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+    "name": "transferência de sugestões do BI para o orçamento"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+    "name": "aceita apenas a origem esperada, deduplica e limita o payload"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+    "name": "descarta identificadores de controle e preserva dados comerciais do catálogo"
+   },
+   {
+    "file": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+    "name": "não colide sugestões homônimas sem vínculo de catálogo"
+   },
+   {
+    "file": "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+    "name": "carregamento de sugestões por produto"
+   },
+   {
+    "file": "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+    "name": "deduplica a consulta e devolve somente produtos ativos na ordem solicitada"
+   },
+   {
+    "file": "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+    "name": "não consulta a origem quando não recebe identificadores"
    },
    {
     "file": "tests/hooks/useQuoteTemplates.test.tsx",
@@ -189621,15 +189698,17 @@
   },
   "src/components/bi/ConfirmQuoteSuggestionsModal.tsx": {
    "path": "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
-   "lines": 213,
+   "lines": 223,
    "exports": [
     "interface SuggestionItem",
+    "function quoteSuggestionKey",
     "function ConfirmQuoteSuggestionsModal"
    ],
    "navigates": [
     "/orcamentos/novo?"
    ],
    "errors": [
+    "${unavailable.length} sugestão(ões) ainda não possuem produto vinculado ao catálogo.",
     "Selecione ao menos 1 produto."
    ],
    "rule_comments": [
@@ -207762,7 +207841,7 @@
   },
   "src/hooks/useQuoteBuilderState.ts": {
    "path": "src/hooks/useQuoteBuilderState.ts",
-   "lines": 958,
+   "lines": 970,
    "exports": [
     "function validateBudgetForSubmission",
     "function useQuoteBuilderState"
@@ -211603,9 +211682,24 @@
   },
   "src/hooks/quote/useQuoteInitialization.ts": {
    "path": "src/hooks/quote/useQuoteInitialization.ts",
-   "lines": 274,
+   "lines": 360,
    "exports": [
+    "interface QuoteSuggestionParams",
+    "function parseQuoteSuggestionParams",
+    "function mapSuggestedProduct",
     "function useQuoteInitialization"
+   ],
+   "errors": [
+    "${missing} produto(s) não estão mais disponíveis e foram ignorados.",
+    "Nenhum produto válido foi recebido das sugestões do BI.",
+    "Não foi possível carregar os produtos sugeridos.",
+    "Os produtos sugeridos não estão mais disponíveis no catálogo."
+   ],
+   "params": [
+    {
+     "name": "MAX_SUGGESTED_PRODUCTS",
+     "value": "20"
+    }
    ],
    "hooks": [
     "useQuoteInitialization"
@@ -211653,8 +211747,10 @@
   },
   "src/hooks/quote/useQuoteProductSearch.ts": {
    "path": "src/hooks/quote/useQuoteProductSearch.ts",
-   "lines": 82,
+   "lines": 96,
    "exports": [
+    "function mapQuoteSearchProduct",
+    "function loadQuoteProductsByIds",
     "function useQuoteProductSearch"
    ],
    "hooks": [
@@ -242481,6 +242577,16 @@
     "preserva métricas em cache e oferece retry quando o refetch falha"
    ]
   },
+  "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx": {
+   "path": "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+   "lines": 53,
+   "is_test": true,
+   "tests": [
+    "ConfirmQuoteSuggestionsModal — seleção por quoteSuggestionKey",
+    "desmarcar remove a sugestão do conjunto usado no envio (bug Devin/Codex)",
+    "sugestões homônimas recebem chaves distintas e são independentes"
+   ]
+  },
   "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx": {
    "path": "tests/components/bi/ExecutiveSummaryButton.availability.test.tsx",
    "lines": 122,
@@ -246772,6 +246878,37 @@
     "fetchHistory devolve [] em erro sem crashar",
     "addHistoryEntry retorna true em sucesso",
     "logStatusChanged usa labels traduzidas e chama a RPC"
+   ]
+  },
+  "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx": {
+   "path": "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+   "lines": 88,
+   "is_test": true,
+   "tests": [
+    "inicialização por sugestões do BI",
+    "carrega itens na ordem solicitada, mantém o cliente e informa indisponibilidade parcial",
+    "não sobrescreve cliente ou itens escolhidos enquanto a consulta do BI está pendente"
+   ]
+  },
+  "tests/hooks/useQuoteInitialization.suggestions.test.ts": {
+   "path": "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+   "lines": 75,
+   "is_test": true,
+   "tests": [
+    "transferência de sugestões do BI para o orçamento",
+    "aceita apenas a origem esperada, deduplica e limita o payload",
+    "descarta identificadores de controle e preserva dados comerciais do catálogo",
+    "não colide sugestões homônimas sem vínculo de catálogo"
+   ]
+  },
+  "tests/hooks/useQuoteProductSearch.suggestions.test.ts": {
+   "path": "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+   "lines": 37,
+   "is_test": true,
+   "tests": [
+    "carregamento de sugestões por produto",
+    "deduplica a consulta e devolve somente produtos ativos na ordem solicitada",
+    "não consulta a origem quando não recebe identificadores"
    ]
   },
   "tests/hooks/useQuoteTemplates.test.tsx": {
@@ -253240,10 +253377,26 @@
   }
  },
  "git": {
-  "sha": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
+  "sha": "e877d0c589a9aacc02fd956479a9e8aedd1e0599",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e877d0c",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)",
+    "files": [
+     "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+     "src/hooks/quote/useQuoteInitialization.ts",
+     "src/hooks/quote/useQuoteProductSearch.ts",
+     "src/hooks/useQuoteBuilderState.ts",
+     "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+     "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+     "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+     "tests/hooks/useQuoteProductSearch.suggestions.test.ts"
+    ]
+   },
    {
     "sha": "67f5a8a",
     "date": "2026-11-19",
@@ -253571,15 +253724,6 @@
      "tests/hooks/usePWAInstall.test.tsx",
      "tests/sicoob/rbac-routes-integrity.test.ts"
     ]
-   },
-   {
-    "sha": "965419b",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(orçamento): salvar deixa de manter o aviso de \"alterações não salvas\" (#331)",
-    "files": [
-     "src/hooks/useQuoteBuilderState.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -253602,6 +253746,38 @@
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
+   ],
+   [
+    "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+    1
+   ],
+   [
+    "src/hooks/quote/useQuoteInitialization.ts",
+    1
+   ],
+   [
+    "src/hooks/quote/useQuoteProductSearch.ts",
+    1
+   ],
+   [
+    "src/hooks/useQuoteBuilderState.ts",
+    1
+   ],
+   [
+    "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useQuoteInitialization.suggestions.test.ts",
+    1
+   ],
+   [
+    "tests/hooks/useQuoteProductSearch.suggestions.test.ts",
+    1
    ],
    [
     ".github/PULL_REQUEST_TEMPLATE.md",
@@ -253629,38 +253805,6 @@
    ],
    [
     "tests/scripts/supabase-js-version-spread.test.ts",
-    1
-   ],
-   [
-    "src/components/common/NavigationHistoryMenu.tsx",
-    1
-   ],
-   [
-    "src/components/layout/MainLayout.tsx",
-    1
-   ],
-   [
-    "tests/components/NavigationHistoryMenu.test.tsx",
-    1
-   ],
-   [
-    "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md",
-    1
-   ],
-   [
-    ".github/workflows/dependency-review.yml",
-    1
-   ],
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    1
-   ],
-   [
-    "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
-    1
-   ],
-   [
-    "tests/scripts/fuso-dos-testes.test.ts",
     1
    ]
   ]

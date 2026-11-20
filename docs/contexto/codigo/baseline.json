@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
+  "commit": "e877d0c589a9aacc02fd956479a9e8aedd1e0599",
   "branch": "main",
-  "data_commit": "2026-11-19T21:45:44-03:00",
+  "data_commit": "2026-11-19T23:12:46-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e877d0c",
+    "data": "2026-11-19",
+    "assunto": "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)"
+   },
    {
     "sha": "67f5a8a",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "70956c7",
     "data": "2026-11-19",
     "assunto": "fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)"
-   },
-   {
-    "sha": "202a19c",
-    "data": "2026-11-19",
-    "assunto": "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)"
    }
   ],
-  "arquivos_mudados_7d": 570,
+  "arquivos_mudados_7d": 576,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -173,7 +173,11 @@
    },
    {
     "pasta": "tests/components/bi",
-    "mudancas": 15
+    "mudancas": 16
+   },
+   {
+    "pasta": "src/components/bi",
+    "mudancas": 14
    },
    {
     "pasta": "src/pages/admin",
@@ -181,10 +185,6 @@
    },
    {
     "pasta": "package-lock.json",
-    "mudancas": 13
-   },
-   {
-    "pasta": "src/components/bi",
     "mudancas": 13
    },
    {
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 32
+    "mudancas": 31
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 31
+    "mudancas": 30
    },
    {
     "arquivo": "package.json",
@@ -270,6 +270,10 @@
     "mudancas": 11
    },
    {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 11
+   },
+   {
     "arquivo": "supabase/config.toml",
     "mudancas": 11
    },
@@ -286,10 +290,6 @@
     "mudancas": 10
    },
    {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 10
-   },
-   {
     "arquivo": "supabase/functions/_shared/edge-authz-manifest.ts",
     "mudancas": 10
    },
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 187
+    "commits": 188
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4547,
-  "arquivos_codigo": 3136,
-  "linhas_codigo": 493428,
+  "arquivos_total": 4551,
+  "arquivos_codigo": 3140,
+  "linhas_codigo": 493803,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 883,
+  "testes": 887,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 285
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1131,
-   "linhas": 166783
+   "linhas": 166793
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47383
+   "linhas": 47495
   },
   "src/integrations": {
    "arquivos": 3,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 147,
-   "linhas": 27422
+   "arquivos": 148,
+   "linhas": 27475
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 142,
-   "linhas": 15990
+   "arquivos": 145,
+   "linhas": 16190
   },
   "tests/integration": {
    "arquivos": 4,
@@ -1082,7 +1082,7 @@
   },
   {
    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-   "linhas": 958
+   "linhas": 970
   },
   {
    "arquivo": "scripts/ai-context/gerar.mjs",
