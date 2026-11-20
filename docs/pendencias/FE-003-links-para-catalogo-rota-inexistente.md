@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. A rota /catalogo nao existe mais em nenhum lugar do src (0 refs); a placa canonica e /filtros (products.ts:22) e /produtos (l.19), ambas montando FiltersPage. Nao ha link quebrado para /catalogo.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ criar um redirect `/catalogo` → `/filtros` (mapeando `busca` → `search`) ou 
 
 ## Camadas afetadas
 
-- 
+- Front (rotas)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ criar um redirect `/catalogo` → `/filtros` (mapeando `busca` → `search`) ou 
 
 ## Raio de impacto
 
-- 
+- products.ts, FiltersPage
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ criar um redirect `/catalogo` → `/filtros` (mapeando `busca` → `search`) ou 
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main

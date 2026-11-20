@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. SICOOB_ROUTE_ACCESS em src/lib/access/role-policy.ts:29 define roles por rota; rolesForSicoobPath (l.58-61) + canAccessSicoobPath (l.63-66). Todas as rotas sicoob sao envolvidas por SicoobRoute (App.tsx:128-132) que redireciona para /403 sem papel e renderiza skeleton enquanto resolve.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ filtrar os itens por `SICOOB_ROUTE_ACCESS` e trocar `adminOnly` por `allowedRole
 
 ## Camadas afetadas
 
-- 
+- Front (router/RBAC)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ filtrar os itens por `SICOOB_ROUTE_ACCESS` e trocar `adminOnly` por `allowedRole
 
 ## Raio de impacto
 
-- 
+- SicoobRoute, role-policy.ts, App.tsx
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ filtrar os itens por `SICOOB_ROUTE_ACCESS` e trocar `adminOnly` por `allowedRole
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main

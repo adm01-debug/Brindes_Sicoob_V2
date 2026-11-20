@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. Resultado cliente da busca usa clientDetailPath (useGlobalSearch.ts:346) = /clientes/:id (clientRoutes.ts:3). Rota /clientes/:id registrada em App.tsx:145 com ClientDetailPage.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ corrigir o caminho.
 
 ## Camadas afetadas
 
-- 
+- Front (busca/rotas)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ corrigir o caminho.
 
 ## Raio de impacto
 
-- 
+- useGlobalSearch, clientRoutes.ts, App.tsx
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ corrigir o caminho.
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main

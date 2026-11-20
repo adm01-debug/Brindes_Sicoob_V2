@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. useQuoteInitialization (src/hooks/quote/useQuoteInitialization.ts) importa do location.state: fromSimulator+simulationData (l.269-283), fromCart (l.287-299), templateItems (l.350-358); e sugestoes BI via query string (parseQuoteSuggestionParams l.110-118). SimuladorWizard navega com {fromSimulator:true, simulationData} (l.385).
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ padronizar o contrato de importação para o construtor.
 
 ## Camadas afetadas
 
-- 
+- Front (builder/import)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ padronizar o contrato de importação para o construtor.
 
 ## Raio de impacto
 
-- 
+- useQuoteInitialization, useQuoteBuilderState, SimuladorWizard
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ padronizar o contrato de importação para o construtor.
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main

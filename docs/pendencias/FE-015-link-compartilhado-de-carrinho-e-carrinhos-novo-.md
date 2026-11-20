@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. Rotas /carrinhos, /carrinhos/novo e /carrinhos/:cartId declaradas em src/routes/config/quotes.ts:51-59, todas montando SellerCartsPage.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ declarar `/carrinhos/:cartId` e `/carrinhos/novo`.
 
 ## Camadas afetadas
 
-- 
+- Front (rotas)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ declarar `/carrinhos/:cartId` e `/carrinhos/novo`.
 
 ## Raio de impacto
 
-- 
+- quotes.ts, SellerCartsPage
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ declarar `/carrinhos/:cartId` e `/carrinhos/novo`.
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main

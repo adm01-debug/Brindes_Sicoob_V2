@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. A home / e o catalogo (Index.tsx) acessivel a todos os papeis, logo nao ha 403 pos-login. /configuracoes e /perfil redirecionam para /admin/usuarios (App.tsx:93-94). Admin tem 18 rotas proprias (admin.ts). Nao ha landing dedicada por papel, mas nao existe o sintoma de acesso negado.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ uma rota inicial própria para supervisor/admin (ex.: `/admin/usuarios` ou `/ges
 
 ## Camadas afetadas
 
-- 
+- Front (router)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ uma rota inicial própria para supervisor/admin (ex.: `/admin/usuarios` ou `/ges
 
 ## Raio de impacto
 
-- 
+- App.tsx, Index.tsx, admin.ts
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ uma rota inicial própria para supervisor/admin (ex.: `/admin/usuarios` ou `/ges
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main (sem landing por papel, sintoma de 403 inexistente)

@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. Rota /montar-kit registrada em src/routes/config/tools.ts:33 (componente KitBuilderPage). KitBuilderPage le query params ?kit, ?product, ?template (l.148-151). KitLibraryPage navega para /montar-kit?kit= (l.466-471). Sem refs a rota /kit-builder.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ trocar para `/montar-kit?product=`.
 
 ## Camadas afetadas
 
-- 
+- Front (rota e construtor)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ trocar para `/montar-kit?product=`.
 
 ## Raio de impacto
 
-- 
+- KitBuilderPage, tools.ts, KitLibraryPage
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ trocar para `/montar-kit?product=`.
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO em main
