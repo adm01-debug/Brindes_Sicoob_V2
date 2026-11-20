@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. `isMock` propagado com tooltip honesto em `src/components/bi/ClientCategoryRadar.tsx`, `ClientOverview360.tsx`, `ClientVsIndustryComparison.tsx`, `IndustryTrendingProducts.tsx`.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ estado vazio honesto ("cliente sem histórico"), propagar `isMock` a todos os pa
 
 ## Camadas afetadas
 
-- 
+- Front (BI 360)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ estado vazio honesto ("cliente sem histórico"), propagar `isMock` a todos os pa
 
 ## Raio de impacto
 
-- 
+- Componentes BI (4 pain?is)
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ estado vazio honesto ("cliente sem histórico"), propagar `isMock` a todos os pa
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO (em main)

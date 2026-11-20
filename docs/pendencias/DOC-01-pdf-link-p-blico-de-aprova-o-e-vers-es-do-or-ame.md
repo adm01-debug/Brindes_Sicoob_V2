@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. `src/pages/QuoteViewPage.tsx`: PdfGenerationDialog com approvalLink + WhatsApp + sync Bitrix (l.93), trilha QuoteHistoryPanel (l.69), QuoteApprovalLinkCard/QuoteVersionHistory/QuoteWhatsAppShare (l.132-136). Rotas publicas `/approve/:token` e `/proposta/:token` -> QuoteApprovalPage em `src/routes/config/public.ts`.
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ ligar o PDF, o link de aprovação, as versões e o Bitrix à página de detalhe
 
 ## Camadas afetadas
 
-- 
+- Front (QuoteViewPage, rotas publicas)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ ligar o PDF, o link de aprovação, as versões e o Bitrix à página de detalhe
 
 ## Raio de impacto
 
-- 
+- QuoteViewPage, QuoteApprovalPage, public.ts
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ ligar o PDF, o link de aprovação, as versões e o Bitrix à página de detalhe
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO (em main)

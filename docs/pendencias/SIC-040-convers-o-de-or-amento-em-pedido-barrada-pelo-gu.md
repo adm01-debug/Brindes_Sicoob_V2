@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO em main e877d0c58. Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: wrapper `convert_quote_to_sicoob_order` seta `app.quote_governance_write=true` e restaura contexto mesmo em erro (l.10-30); nucleo renomeado fica inacessivel (REVOKE, l.5-8); trigger `aaa_guard_quote_governance_write` em quotes (l.615-618).
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incl
 
 ## Camadas afetadas
 
-- 
+- Banco (RPC wrapper + trigger guard governan?a)
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incl
 
 ## Raio de impacto
 
-- 
+- convert_quote_to_sicoob_order
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incl
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO (codigo em main); pendente: confirmar aplicacao das migrations no banco de producao

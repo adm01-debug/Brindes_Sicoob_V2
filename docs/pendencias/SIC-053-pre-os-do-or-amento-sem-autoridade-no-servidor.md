@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO/DESCARTADO em main e877d0c58. `supabase/functions/quote-price-attestation/contract.ts` (exactMoney, verifyQuoteCatalogItem, isQuoteCatalogSnapshotUnchanged), `handler.ts` l.199-211 valida unit_cost/setup/total contra tabela vigente, l.364-373 revalida snapshot de catalogo, l.384-394 registra atestado via RPC `register_quote_price_attestation`; `index.ts` exposto via sicoob-kit-quote (`op: price-attestation`). Autoridade do preco negociado continua decisao comercial (auditoria dimensao 11).
 
 ## O que falta (auditoria)
 
@@ -14,7 +14,8 @@ RPC — conferir a parcela da personalização e um piso ou snapshot de preço d
 
 ## Camadas afetadas
 
-- 
+- Edge function (quote-price-attestation), RPC
+
 
 ## Regras de negocio
 
@@ -22,7 +23,8 @@ RPC — conferir a parcela da personalização e um piso ou snapshot de preço d
 
 ## Raio de impacto
 
-- 
+- quote-price-attestation, sicoob-kit-quote
+
 
 ## Dependencias
 
@@ -34,4 +36,4 @@ RPC — conferir a parcela da personalização e um piso ou snapshot de preço d
 
 ## Estado final
 
-- NAO INICIADO
+- PRONTO (validacao server-side integrada em main)
