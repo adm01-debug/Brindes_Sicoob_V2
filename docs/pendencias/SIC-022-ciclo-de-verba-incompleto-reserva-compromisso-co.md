@@ -6,7 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL ? n?o h? ciclo reserva/compromisso/consumo nem fechamento/livro de eventos.
+
+- Existe somente consumo: verba_consumida incrementado no confirmar pedido (validate_sicoob_order_budget) e estornado no cancelamento. N?o h? reserva no draft/submiss?o do or?amento, n?o h? compromisso, n?o h? fechamento mensal e n?o h? tabela de eventos (0 ocorr?ncias de budget_events/budget_ledger/reserva/compromisso).
+- auditoria do PA ? audit_remaining_budget (coluna calculada no trigger) e sicoob_order_history ? n?o ? livro de eventos por centavo da verba.
+- Falta: tabela verba_events (reserva/consumo/estorno/fechamento) + fun??o de fechamento mensal.
 
 ## O que falta (auditoria)
 

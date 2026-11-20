@@ -6,7 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO no pedido; na etapa de or?amento ainda ? front (ver SIC-020).
+
+- Server-side (pedido): confirm_sicoob_order (migration 20260911143000_atomicity) l? limite_alcada de pa_budgets do per?odo e, se total_amount > limite_alcada, exige solicita??o formal de aprova??o (err 23514). sicoob_actor_can_approve restringe o aprovador ? cooperativa/PA corretos. Guards RESTRICTIVE de 20261013115605 impedem o PA de alterar a pr?pria al?ada.
+- Front (or?amento): al?ada verificada client-side em useQuoteBuilderState.validateTransactionLimit.
+- Conclus?o: a al?ada configurada N?O ? ignorada pelo servidor ? a regra vale na transi??o para confirmado. Gap remanescente: valida??o server-side na etapa de or?amento.
 
 ## O que falta (auditoria)
 

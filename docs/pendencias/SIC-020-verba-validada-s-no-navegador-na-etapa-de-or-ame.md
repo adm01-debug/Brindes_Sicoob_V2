@@ -6,7 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL real:
+
+- Etapa de OR?AMENTO: verba validada s? no navegador. useQuoteBuilderState.ts validatePaBudget (client-side) l? pa_budgets direto: validateTransactionLimit(total, limite_alcada) + validateMonthlyBudget(total, verba_total - verba_consumida), toast 'Verba insuficiente'. N?o h? RPC server-side na cria??o/edi??o da quote.
+- Etapa de PEDIDO: verba validada server-side. validate_sicoob_order_budget (trigger BEFORE UPDATE, migration 20260911143000) bloqueia confirmar sem saldo (verba_consumida + total > verba_total, err P0001) e incrementa verba_consumida atomicamente; impede alterar PA/valor/compet?ncia ap?s consumida.
+- Conclus?o: o SIC descreve exatamente o fluxo atual ? a Singular pode aprovar or?amentos que somam mais que a verba na fase de or?amento; o bloqueio real s? ocorre no confirmar pedido. Falta RPC/trigger validando verba na etapa de or?amento.
 
 ## O que falta (auditoria)
 

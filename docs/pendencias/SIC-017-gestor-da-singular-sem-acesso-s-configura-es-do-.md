@@ -6,7 +6,15 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL ? delega??es PRONTAS; `/gestor/verbas` e `/gestor/alertas` N?O existem.
+
+PRONTO:
+- `/gestor/delegacoes` ? `src/pages/sicoob/GestorDelegationsPage.tsx` ("GestorDelegationsPage", allowList MANAGERS em `role-policy.ts` SICOOB_ROUTE_ACCESS; rota em `sicoob-rbac.ts`; itens de delegar/revogar com escopo da unidade). Aprova??es tamb?m existem: `/gestor/aprovacoes` (PA_ROLES).
+- `/gestor` (MANAGERS), `/gestor/orcamentos` (MANAGERS), `/gestor/compras` (MANAGERS), `/gestor/convites` (MANAGERS), `/gestor/agregados` (PA_ROLES), `/gestor/auditoria` (MANAGERS).
+
+FALTA:
+- `/gestor/verbas` ? N?O EXISTE. Verbas vivem em `/admin/verbas` (AdminVerbasPage, allowList exclusiva admin; `role-policy.ts` n?o tem `/gestor/verbas`). O GestorDashboardPage linka para `/admin/verbas` (fora do escopo da Singular ? gestor sem `admin` cai em 403). SIC ? o impacto exato: Singular n?o distribui verba entre seus PAs.
+- `/gestor/alertas` ? N?O EXISTE. N?o h? rota girar alertas no escopo gestor (alertas atuais: estoque `/inventario`, incidentes `/admin/conexoes`, telemetria `/admin/telemetria`, notifica??es em settings). Sem rota dedicada de alertas da Singular.
 
 ## O que falta (auditoria)
 
