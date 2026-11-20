@@ -1,20 +1,25 @@
 # ADM-15 — Links internos quebrados nos componentes da fatia
 
 - Origem: Painel admin, navegação e rotas (Admin, BI e IA)
-- Status auditoria: PARCIAL | Prioridade: P1 | Esforco: P
+- Status auditoria: RESOLVIDO | Prioridade: P1 | Esforco: P
 - Impacto no negocio: cliques em "buscas em alta", "demanda não atendida", "ver todas as solicitações" e "datas comemorativas" terminam em 404 ou em catálogo sem filtro.
 
 ## Estado real conferido
 
-CONFIRMADO PARCIAL - (1) UpcomingDatesWidget.tsx:33 navega /filtros?data=<slug> mas deserializeFilters (filters-page-helpers.ts) so l? search/supplier/priceMin/priceMax/minStock/sortBy + ARRAY/BOOLEAN_KEYS; key correta de datas e datasComemorativas (slugs). (2) MyDiscountRequestsWidget.tsx:109 navega /admin/descontos - rota inexistente (admin.ts tem /admin/limites-desconto). (3) SmartSuggestions.tsx usa MOCK_SUGGESTIONS com /produtos/1..5 (produtos inexistentes). (4) UnmetDemandCard.tsx:82 usa /filtros?search=<term> - correto (search ? lido).
+CORRIGIDO na PR #390 (branch claude/fix-adm15-links-261121-1440, commit e614a3aea).
+
+- (1) UpcomingDatesWidget.tsx:33 agora navega `/filtros?datasComemorativas=<slug>` — key lida por `deserializeFilters` via `ARRAY_FILTER_KEYS` (filters-page-helpers.ts:14,63-102).
+- (2) MyDiscountRequestsWidget.tsx:109 agora navega `/admin/limites-desconto` — rota real em src/routes/config/admin.ts:58.
+- (3) SmartSuggestions.tsx:52-104 — MOCK_SUGGESTIONS agora aponta `/filtros?search=<term>` (rota de busca real); `/produtos` é página de filtros e a rota de detalhe é `/produto/:id`, então os antigos `/produtos/1..5` eram destinos inexistentes.
+- (4) UnmetDemandCard.tsx:82 `/filtros?search=<term>` — correto, sem mudança.
 
 ## O que falta (auditoria)
 
-corrigir os destinos e os nomes dos parâmetros.
+nada para este item. Validar deploy após merge (Vercel automático).
 
 ## Camadas afetadas
 
-- 
+- dashboard/widgets (navegação), busca com sugestões
 
 ## Regras de negocio
 
@@ -22,7 +27,7 @@ corrigir os destinos e os nomes dos parâmetros.
 
 ## Raio de impacto
 
-- 
+- Componentes isolados; typecheck e eslint limpos nos arquivos tocados.
 
 ## Dependencias
 
@@ -30,8 +35,8 @@ corrigir os destinos e os nomes dos parâmetros.
 
 ## Criterio de aceite
 
-- 
+- Navegações chegarem a destinos existentes com filtro aplicado.
 
 ## Estado final
 
-- NAO INICIADO
+- RESOLVIDO (PR #390) — aguardando merge/deploy
