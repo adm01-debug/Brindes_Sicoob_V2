@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "8b37b642fd475ac5ea699788426bc1aae38bc5cf",
+  "sha": "ca511cfa40a67d0efa508a0a27575ea6f26f06ce",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-20 20:05 UTC",
+  "generated_at": "2026-11-20 21:04 UTC",
   "files_total": 5239,
   "code_files": 3806,
-  "code_lines": 556404
+  "code_lines": 556398
  },
  "version": "1.3.2",
- "facts_hash": "174594bc84dfd34f",
+ "facts_hash": "83c4eaf12435b9a5",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -63945,7 +63945,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166793,
+   "lines": 166787,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -191422,7 +191422,7 @@
   },
   "src/components/dashboard/MyDiscountRequestsWidget.tsx": {
    "path": "src/components/dashboard/MyDiscountRequestsWidget.tsx",
-   "lines": 169,
+   "lines": 163,
    "exports": [
     "function MyDiscountRequestsWidget"
    ],
@@ -191442,9 +191442,6 @@
      "status"
     ]
    },
-   "navigates": [
-    "/admin/descontos"
-   ],
    "params": [
     {
      "name": "PAGE_SIZE",
@@ -191654,7 +191651,7 @@
    ],
    "navigates": [
     "/filtros",
-    "/filtros?data="
+    "/filtros?datasComemorativas="
    ]
   },
   "src/components/dashboard/index.ts": {
@@ -253377,10 +253374,22 @@
   }
  },
  "git": {
-  "sha": "8b37b642fd475ac5ea699788426bc1aae38bc5cf",
+  "sha": "ca511cfa40a67d0efa508a0a27575ea6f26f06ce",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ca511cf",
+    "date": "2026-11-20",
+    "author": "adm01-debug",
+    "subject": "fix: links internos quebrados (ADM-15) (#390)",
+    "files": [
+     "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
+     "src/components/dashboard/MyDiscountRequestsWidget.tsx",
+     "src/components/dashboard/UpcomingDatesWidget.tsx",
+     "src/components/search/SmartSuggestions.tsx"
+    ]
+   },
    {
     "sha": "8b37b64",
     "date": "2026-11-20",
@@ -254390,17 +254399,6 @@
      "src/hooks/useTemplateSnapshot.ts",
      "tests/hooks/useTemplateSnapshot.test.tsx"
     ]
-   },
-   {
-    "sha": "7ec2508",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(edge): fallback de CORS deixa de abrir para qualquer origem (#328)",
-    "files": [
-     "supabase/functions/_shared/cors.ts",
-     "supabase/functions/external-db-bridge/index.ts",
-     "supabase/functions/mcp-server/index.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -254409,12 +254407,28 @@
     3
    ],
    [
+    "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
+    2
+   ],
+   [
     "package-lock.json",
     2
    ],
    [
     "package.json",
     2
+   ],
+   [
+    "src/components/dashboard/MyDiscountRequestsWidget.tsx",
+    1
+   ],
+   [
+    "src/components/dashboard/UpcomingDatesWidget.tsx",
+    1
+   ],
+   [
+    "src/components/search/SmartSuggestions.tsx",
+    1
    ],
    [
     "src/components/quotes/QuoteSingularApprovalActions.tsx",
@@ -254466,22 +254480,6 @@
    ],
    [
     "docs/pendencias/ADM-11-rotas-administrativas-sem-ponto-de-entrada.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-12-p-gina-dedicada-de-status-de-conex-es-substitu-d.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-13-matriz-rbac-exibida-em-auditoria-rbac-diverge-da.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-14-skins-no-menu-do-usu-rio-bloqueado-para-quem-n-o.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
     1
    ]
   ]

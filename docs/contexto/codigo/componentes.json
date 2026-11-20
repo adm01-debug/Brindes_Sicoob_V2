@@ -6177,7 +6177,7 @@
     "MyDiscountRequestsWidget"
    ],
    "export_default": null,
-   "linhas": 169,
+   "linhas": 163,
    "dominio": "components/dashboard",
    "hooks_locais": [
     "useAuth"
@@ -14910,7 +14910,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 630,
+   "usado_por": 629,
    "orfao": false
   },
   {

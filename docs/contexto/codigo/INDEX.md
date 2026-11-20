@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `8b37b642fd475ac5ea699788426bc1aae38bc5cf` (2026-11-20T17:04:24-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ca511cfa40a67d0efa508a0a27575ea6f26f06ce` (2026-11-20T18:03:19-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5236 |
 | arquivos_codigo | 3140 |
-| linhas_codigo | 493803 |
+| linhas_codigo | 493797 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -471,27 +471,27 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36523 nós · 60706 arestas · 2748 comunidades · grafo do commit `8b37b642`
-- comunidades maiores: ref_components (671), ref_integrations (536), ref_lib (315), lucide-react (258), react-router-dom (244), framer-motion (219), react (208), expert-chat/index.ts (183), ref_stores (173), getCorsHeaders (164), external-db-bridge/index.ts (158), postgres_ready.py (153)
+- 36523 nós · 60706 arestas · 2735 comunidades · grafo do commit `ca511cfa`
+- comunidades maiores: ref_hooks (562), ref_components (409), ref_integrations (379), ref_lib (275), framer-motion (210), getCorsHeaders (197), react-router-dom (190), ref_node_fs (182), sonner (177), date-fns (174), ref_services (166), ref_types (154)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
 - docs/plano-melhorias-50-etapas.md (29)
 - docs/correcoes-validacao-2026-09-14.md (28)
-- package.json (23)
+- package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
-- .github/workflows/sicoob-ci.yml (19)
-- .github/workflows/ci.yml (18)
+- .github/workflows/sicoob-ci.yml (18)
 - package-lock.json (18)
+- .github/workflows/ci.yml (17)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
 - .github/workflows/lighthouse.yml (15)
-- src/integrations/supabase/types.ts (15)
+- src/integrations/supabase/types.ts (14)
 - .github/workflows/deploy-sicoob-functions.yml (13)
-- src/services/QuoteService.ts (13)
+- .github/workflows/bundle-check.yml (12)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-20 `ca511cf` fix: links internos quebrados (ADM-15) (#390)
 - 2026-11-20 `8b37b64` fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)
 - 2026-11-20 `9bcfb62` chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)
 - 2026-11-19 `e877d0c` fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `05af443` fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)
 - 2026-11-19 `e7671e8` ci(testes): fixa o fuso do projeto na suite, com catraca (#380)
 - 2026-11-19 `4a46225` ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)
-- 2026-11-19 `fe8090b` chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

@@ -3375,7 +3375,6 @@
    "src/components/dashboard/widget-filters/WidgetFiltersBar.tsx",
    "src/components/dashboard/widget-filters/useInfiniteScroll.ts",
    "src/components/ui/badge.tsx",
-   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts"
