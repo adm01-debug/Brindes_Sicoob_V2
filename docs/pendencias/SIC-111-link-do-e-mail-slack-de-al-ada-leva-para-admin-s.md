@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+CONFIRMADO - supabase/functions/_shared/approval-delivery.ts monta link fixo new URL("/admin/sicoob", PUBLIC_APP_URL); rota /admin/sicoob nao existe em sicoob-rbac.ts (defineRoute /gestor/aprovacoes na linha 18). Aprovador que clica cai em rota proibida. Correcao: link para /gestor/aprovacoes (ou pedido especifico).
 
 ## O que falta (auditoria)
 

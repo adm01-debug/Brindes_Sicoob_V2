@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+CONFIRMADO - arte de mockup/pedido (src/components/mockup/ArtFileUpload.tsx) usa supabase.storage.from(ART_FILES_BUCKET).upload direto (sem scanner); allowlist de extensao so client-side (ACCEPTED_EXTENSIONS). Edge secure-upload com VirusTotal+quarentena existe e e usado por ImageUploadButton/SecureUploadManager, mas o fluxo de arte nao passa por ele.
 
 ## O que falta (auditoria)
 
