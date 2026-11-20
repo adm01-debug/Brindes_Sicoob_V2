@@ -288,7 +288,7 @@ Deno.serve(async (req) => {
       }
 
       const baseName = item.name || item.product_name || "Produto";
-      const colorSuffix = item.color ? ` - ${item.color}` : "";
+      const colorSuffix = item.color_name ? ` - ${item.color_name}` : "";
       const productName = `${baseName}${colorSuffix}`;
 
       const sku = item.supplier_sku || item.composedCode || item.sku || item.product_sku || "";
