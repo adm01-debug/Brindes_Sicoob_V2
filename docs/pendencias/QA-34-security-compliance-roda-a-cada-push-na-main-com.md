@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL - separacao implementada: .github/workflows/security-compliance.yml:81-99 restringe seller-quote-rls-test a workflow_dispatch na main, environment e2e-qa, destino isolado; scripts/test-rls-compliance.mjs:5-22 chama validateE2ETarget antes de criar clientes (rejeita projeto oficial via FORBIDDEN_PROJECT_IDS). NaO roda a cada merge. Pendencia: auditoria com credenciais canonicas e secrets do e2e-qa ausentes (job skipped).
 
 ## O que falta (auditoria)
 

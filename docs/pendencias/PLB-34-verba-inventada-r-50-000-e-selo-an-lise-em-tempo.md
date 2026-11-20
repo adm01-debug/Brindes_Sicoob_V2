@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+IMPLEMENTADO em main - OrderDetailPage.tsx:294 passa verba_total ?? null (sem presumir R$ 50.000); OrderBudgetIntelligence.tsx:29-55 mostra "Verba nao configurada" sem cadastro e "Dados da competencia" com cadastro; tests/components/data-trust-indicators.test.tsx:60-68 cobre estado sem verba. Validacao em producao ainda NAO executada nesta sessao.
 
 ## O que falta (auditoria)
 

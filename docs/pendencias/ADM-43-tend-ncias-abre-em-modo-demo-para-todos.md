@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+IMPLEMENTADO - src/pages/trends/is-demo-mode.ts:9-11 ativa dados ficticios apenas com ?demo=1 (opt-in); TrendsPage.tsx:143,180-193 usa isDemoMode para escolher mocks vs indicadores reais; tests/pages/trends-demo-mode.test.ts:8-24 cobre padrao real e opt-in. Validacao das consultas reais em producao NAO executada nesta sessao.
 
 ## O que falta (auditoria)
 

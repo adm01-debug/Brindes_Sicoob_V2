@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+IMPLEMENTADO - padrao invertido: dados reais sao o padrao e demo so com ?demo=1 (src/pages/trends/is-demo-mode.ts:9-11; TrendsPage.tsx:143). Ver ADM-43. Validacao das consultas reais em producao NAO executada nesta sessao.
 
 ## O que falta (auditoria)
 

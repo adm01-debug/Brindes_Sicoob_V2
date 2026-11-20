@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PROIBICAO DE BYPASS IMPLEMENTADA - AGENTS.md:65-66 proibe `--no-verify`; .husky/pre-commit:1 roda lint-staged; .husky/pre-push:1 exige typecheck, lint e testes. NAO remover hooks. Pendencia residual: hook leve vitest related (opcional).
 
 ## O que falta (auditoria)
 
