@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO - budgetService.getBudgetByPa(paId, period) usa currentBudgetPeriod() com ano/mes reais (budgetService.ts:41-47); PAWalletPage.tsx:351 remaining = verba_total - verba_consumida (n?meros reais, sem mock).
 
 ## O que falta (auditoria)
 

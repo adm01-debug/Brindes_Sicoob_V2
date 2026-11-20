@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO - useCatalogFiltering.ts (applyCatalogFilters) aplica technique/tag/size/activity/marketing/comemorativa via relationalIdFilter + quickOptionsFilter (isNew/newArrival, featured, isKit, hasPersonalization); FiltersPage via filters-page-helpers.ts linhas 273-298 aplica os mesmos predicados.
 
 ## O que falta (auditoria)
 

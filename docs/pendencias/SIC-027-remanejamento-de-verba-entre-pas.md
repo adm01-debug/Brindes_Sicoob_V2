@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+CONFIRMADO NAO IMPLEMENTADO - sem RPC de transferencia entre PAs (grep transfer_verba/remanejar: 0 ocorr?ncias em migrations/functions); OrderBudgetIntelligence.tsx:46 s? informa "excede saldo; aprova??o da Singular ou remanejamento" sem a??o. Fluxo: pedido trava em PA sem saldo.
 
 ## O que falta (auditoria)
 

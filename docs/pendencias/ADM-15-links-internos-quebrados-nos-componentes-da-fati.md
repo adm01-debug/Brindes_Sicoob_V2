@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+CONFIRMADO PARCIAL - (1) UpcomingDatesWidget.tsx:33 navega /filtros?data=<slug> mas deserializeFilters (filters-page-helpers.ts) so l? search/supplier/priceMin/priceMax/minStock/sortBy + ARRAY/BOOLEAN_KEYS; key correta de datas e datasComemorativas (slugs). (2) MyDiscountRequestsWidget.tsx:109 navega /admin/descontos - rota inexistente (admin.ts tem /admin/limites-desconto). (3) SmartSuggestions.tsx usa MOCK_SUGGESTIONS com /produtos/1..5 (produtos inexistentes). (4) UnmetDemandCard.tsx:82 usa /filtros?search=<term> - correto (search ? lido).
 
 ## O que falta (auditoria)
 

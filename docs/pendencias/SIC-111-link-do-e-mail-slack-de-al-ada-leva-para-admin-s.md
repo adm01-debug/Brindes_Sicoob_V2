@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-CONFIRMADO - supabase/functions/_shared/approval-delivery.ts monta link fixo new URL("/admin/sicoob", PUBLIC_APP_URL); rota /admin/sicoob nao existe em sicoob-rbac.ts (defineRoute /gestor/aprovacoes na linha 18). Aprovador que clica cai em rota proibida. Correcao: link para /gestor/aprovacoes (ou pedido especifico).
+CONFIRMADO - supabase/functions/_shared/approval-delivery.ts monta link fixo new URL("/admin/sicoob", PUBLIC_APP_URL). A rota /admin/sicoob EXISTE (routes/config/admin.ts SicoobManagementPage) mas fica sob AdminRoute (src/components/layout/AdminRoute.tsx) que exige role supervisor/dev/gestor_compras; o aprovador comum (gerente_pa/comprador_pac) cai em 403. Correcao: link para /gestor/aprovacoes (PA_ROLES) ou /sicoob/pedidos/:id.
 
 ## O que falta (auditoria)
 

@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+CONFIRMADO NAO IMPLEMENTADO - sem tabela/views de eventos de verba (budget_events/ledger: 0 ocorr?ncias) e sem tela ligada a rota. Auditoria visual de diverg?ncias verba x pedidos n?o existe.
 
 ## O que falta (auditoria)
 
