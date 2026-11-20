@@ -9,7 +9,7 @@
 CORRIGIDO na PR #390 (branch claude/fix-adm15-links-261121-1440, commit e614a3aea).
 
 - (1) UpcomingDatesWidget.tsx:33 agora navega `/filtros?datasComemorativas=<slug>` — key lida por `deserializeFilters` via `ARRAY_FILTER_KEYS` (filters-page-helpers.ts:14,63-102).
-- (2) MyDiscountRequestsWidget.tsx:109 agora navega `/admin/limites-desconto` — rota real em src/routes/config/admin.ts:58.
+- (2) MyDiscountRequestsWidget.tsx tinha botão "Ver todas" navegando `/admin/descontos` (rota inexistente). Após análise (reviews Devin/Codex na PR #390): o widget já é a listagem completa do próprio vendedor (infinite scroll, filtros, seller_id = auth.uid()), e o destino `/admin/limites-desconto` é admin-only (AdminRoute exige supervisor/dev) → vendedor receberia 403. Decisão: botão removido; o histórico completo continua acessível no próprio widget.
 - (3) SmartSuggestions.tsx:52-104 — MOCK_SUGGESTIONS agora aponta `/filtros?search=<term>` (rota de busca real); `/produtos` é página de filtros e a rota de detalhe é `/produto/:id`, então os antigos `/produtos/1..5` eram destinos inexistentes.
 - (4) UnmetDemandCard.tsx:82 `/filtros?search=<term>` — correto, sem mudança.
 
