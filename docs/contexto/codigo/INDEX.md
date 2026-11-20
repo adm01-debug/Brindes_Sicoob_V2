@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e877d0c589a9aacc02fd956479a9e8aedd1e0599` (2026-11-19T23:12:46-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `8b37b642fd475ac5ea699788426bc1aae38bc5cf` (2026-11-20T17:04:24-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2926), SQL (684), JSON (292), Markdown (285), JavaScript (151), Python (66), YAML (24), CSS (7)
+- linguagens: TypeScript (2926), Markdown (970), SQL (684), JSON (292), JavaScript (151), Python (66), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,7 +34,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 4551 |
+| arquivos_total | 5236 |
 | arquivos_codigo | 3140 |
 | linhas_codigo | 493803 |
 | rotas | 139 |
@@ -51,7 +51,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | testes | 887 |
 | workflows | 17 |
 | scripts | 121 |
-| docs_md | 285 |
+| docs_md | 970 |
 
 ## Onde ficam as coisas
 - telas: src/pages (116)
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29689 nós · 54507 arestas · 2109 comunidades · grafo do commit `e877d0c5`
-- comunidades maiores: ref_hooks (572), ref_integrations (461), ref_components (420), ref_lib (306), ref_node_fs (223), react (182), react-router-dom (180), framer-motion (179), ref_contexts (178), ref_stores (172), date-fns (166), ai-usage.ts (157)
+- 36523 nós · 60706 arestas · 2748 comunidades · grafo do commit `8b37b642`
+- comunidades maiores: ref_components (671), ref_integrations (536), ref_lib (315), lucide-react (258), react-router-dom (244), framer-motion (219), react (208), expert-chat/index.ts (183), ref_stores (173), getCorsHeaders (164), external-db-bridge/index.ts (158), postgres_ready.py (153)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (31)
-- docs/correcoes-validacao-2026-09-14.md (30)
+- docs/plano-melhorias-50-etapas.md (29)
+- docs/correcoes-validacao-2026-09-14.md (28)
 - package.json (23)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -691,10 +691,12 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-20 `8b37b64` fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)
+- 2026-11-20 `9bcfb62` chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)
 - 2026-11-19 `e877d0c` fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)
 - 2026-11-19 `67f5a8a` chore: padroniza template de PR (recupera trabalho alheio) (#386)
 - 2026-11-19 `449faf1` feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)
@@ -708,8 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `e7671e8` ci(testes): fixa o fuso do projeto na suite, com catraca (#380)
 - 2026-11-19 `4a46225` ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)
 - 2026-11-19 `fe8090b` chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)
-- 2026-11-19 `ba02d47` test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)
-- 2026-11-19 `1fc8d0f` docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

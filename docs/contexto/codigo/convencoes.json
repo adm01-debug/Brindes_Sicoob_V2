@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)",
+   "chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)",
    "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)",
    "chore: padroniza template de PR (recupera trabalho alheio) (#386)",
-   "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)",
-   "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)",
-   "test(edge): catraca para o espalhamento de versões do supabase-js (#377)"
+   "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

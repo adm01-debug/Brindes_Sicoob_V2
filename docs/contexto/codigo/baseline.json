@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e877d0c589a9aacc02fd956479a9e8aedd1e0599",
+  "commit": "8b37b642fd475ac5ea699788426bc1aae38bc5cf",
   "branch": "main",
-  "data_commit": "2026-11-19T23:12:46-03:00",
+  "data_commit": "2026-11-20T17:04:24-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "8b37b64",
+    "data": "2026-11-20",
+    "assunto": "fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)"
+   },
+   {
+    "sha": "9bcfb62",
+    "data": "2026-11-20",
+    "assunto": "chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)"
+   },
    {
     "sha": "e877d0c",
     "data": "2026-11-19",
@@ -121,19 +131,9 @@
     "sha": "1059478",
     "data": "2026-11-19",
     "assunto": "fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)"
-   },
-   {
-    "sha": "c19e38a",
-    "data": "2026-11-19",
-    "assunto": "docs(recuperação): fecha o portão de exclusão sobre as 4 últimas refs (#365)"
-   },
-   {
-    "sha": "70956c7",
-    "data": "2026-11-19",
-    "assunto": "fix(produto): selo de prazo de entrega volta a aparecer, com o dado do catálogo (#323)"
    }
   ],
-  "arquivos_mudados_7d": 576,
+  "arquivos_mudados_7d": 1255,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -188,22 +188,22 @@
     "mudancas": 13
    },
    {
-    "pasta": "src/components/sicoob",
+    "pasta": "src/components/quotes",
     "mudancas": 10
    },
    {
-    "pasta": "src/pages/sicoob",
+    "pasta": "src/components/sicoob",
     "mudancas": 10
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 31
+    "mudancas": 29
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 30
+    "mudancas": 28
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 188
+    "commits": 190
    },
    {
     "autor": "dependabot[bot]",
@@ -310,7 +310,7 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4551,
+  "arquivos_total": 5236,
   "arquivos_codigo": 3140,
   "linhas_codigo": 493803,
   "rotas": 139,
@@ -327,7 +327,7 @@
   "testes": 887,
   "workflows": 17,
   "scripts": 121,
-  "docs_md": 285
+  "docs_md": 970
  },
  "por_pasta": {
   "docs/execucao": {
