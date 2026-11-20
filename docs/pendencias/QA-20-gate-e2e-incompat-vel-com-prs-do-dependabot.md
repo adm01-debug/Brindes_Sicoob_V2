@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+SEPARACAO IMPLEMENTADA - o job `e2e` em PR (e2e.yml:34-46) roda SEM secrets, com VITE_SUPABASE_URL placeholder, executando apenas specs publicos (:63-69); secrets reais so no `e2e-authenticated` restrito a workflow_dispatch (:81-84). Gate do Dependabot NAO depende de secrets. NAO replicar secrets para o Dependabot.
 
 ## O que falta (auditoria)
 
-replicar os secrets para o Dependabot ou pular o E2E para o ator `dependabot[bot]` com um gate equivalente.
+NAO ha incompatibilidade comprovada atualmente - manter apenas se uma falha real do Dependabot aparecer; sem necessidade de replicar secrets.
 
 ## Camadas afetadas
 

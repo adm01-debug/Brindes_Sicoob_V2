@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL - CSP e cabecalhos CONFIGURADOS: vercel.json:9-43 aplica headers para `/:path*` (Strict-Transport-Security, Content-Security-Policy com frame-ancestors self), public/_headers:1-12 mantem politica equivalente e tests/scenarios/csp-providers.mjs:13-16 prova a equivalencia Cloudflare/Vercel. PENDENTE: verificar resposta real publicada em producao (nao verificada) e decidir CSP com nonce.
 
 ## O que falta (auditoria)
 
