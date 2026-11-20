@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-CODIGO em main e877d0c58 (aplicacao em producao CONFIRMADA em 2026-11-21 via swagger: RPC `convert_quote_to_sicoob_order` existe com sufixo `_core_20261013`, introduzido somente pela migration 13120512; comportamento (flag + cadeia de triggers) NAO exercitado nesta sessao - sem SQL direto). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: wrapper `convert_quote_to_sicoob_order` seta `app.quote_governance_write=true` e restaura contexto mesmo em erro (l.10-30); nucleo renomeado fica inacessivel (REVOKE, l.5-8); trigger `aaa_guard_quote_governance_write` em quotes (l.615-618).
+CODIGO em main e877d0c58 (aplicacao em producao CONFIRMADA em 2026-11-21 via swagger REST: coexistencia de `convert_quote_to_sicoob_order` (wrapper publico) e `convert_quote_to_sicoob_order_core_20261013` (nucleo renomeado) - o sufixo `_core_20261013` so existe se a migration 13120512 rodou. Comportamento (flag + cadeia de triggers) NAO exercitado nesta sessao - sem SQL direto). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: wrapper `convert_quote_to_sicoob_order` seta `app.quote_governance_write=true` e restaura contexto mesmo em erro (l.10-30); nucleo renomeado fica inacessivel (REVOKE, l.5-8); trigger `aaa_guard_quote_governance_write` em quotes (l.615-618).
 
 ## O que falta (auditoria)
 
@@ -36,4 +36,4 @@ RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incl
 
 ## Estado final
 
-- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: RPC `convert_quote_to_sicoob_order` presente no swagger com sufixo `_core_20261013` (obj. criado somente por essa migracao). COMPORTAMENTO (flag + cadeia de triggers) NAO EXERCITADO - sem SQL direto. Pendente: conversao sintetica no banco.
+- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `convert_quote_to_sicoob_order` e `convert_quote_to_sicoob_order_core_20261013` (nucleo renomeado pela migration - prova de aplicacao). COMPORTAMENTO (flag + cadeia de triggers) NAO EXERCITADO - sem SQL direto. Pendente: conversao sintetica no banco.
