@@ -40,4 +40,4 @@ mapear para `ready`, marcar `shared` ao gerar link e permitir arquivar.
 
 ## Estado final
 
-- PRONTO em main e877d0c58 (salvar kit grava status valido; ciclo de status correto)
+- PARCIAL em main e877d0c58 (salvar kit grava status valido e ciclo de status correto); arquivamento AINDA pendente: KitLibraryPage.tsx:319-321 e useCustomKitPersistence.ts:112-120 excluem fisicamente o registro; sem action de arquivar em src (`archived` so como enum/rotulo/comentario)

@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PARCIAL - despachante SQL implementado e versionado: supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql:162-181 lê `webhook_dispatcher_secret` do Vault e envia `x-sicoob-internal-secret` (compativel com supabase/functions/webhook-dispatcher/index.ts:84-91); retry_failed_webhook_deliveries atualizado na mesma migration; docs/secrets.md:89-91 documenta o segredo. PENDENTE: verificar aplicacao da migration no banco, provisionar o segredo no Vault e homologar entrega ponta a ponta (NAO VERIFICADO).
 
 ## O que falta (auditoria)
 
-despachante SQL que leia o segredo do Vault (padrão de `20260923140000`), atualizar o cron de retry, documentar o segredo, teste ponta a ponta.
+confirmar aplicacao em producao da 20261029213000, provisionar webhook_dispatcher_secret no Vault e homologar disparo ponta a ponta (webhook-dispatcher responde). NAO recriar a migration.
 
 ## Camadas afetadas
 
