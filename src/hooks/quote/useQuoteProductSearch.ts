@@ -9,7 +9,7 @@ import type { Product, RawProductColor } from "@/types/quote-builder";
 import { fetchPromobrindProducts, getProductImageUrl, type PromobrindProduct } from "@/lib/external-db";
 
 // Mapeamento interno para simplificar o hook principal
-function mapQuoteSearchProduct(p: PromobrindProduct): Product {
+export function mapQuoteSearchProduct(p: PromobrindProduct): Product {
   const imgUrl = getProductImageUrl(p);
   const images = (p.images && p.images.length > 0) ? p.images : (imgUrl ? [imgUrl] : []);
 
@@ -32,6 +32,20 @@ function mapQuoteSearchProduct(p: PromobrindProduct): Product {
     ),
     priceUpdatedAt: p.price_updated_at,
   };
+}
+
+export async function loadQuoteProductsByIds(productIds: string[]): Promise<Product[]> {
+  const uniqueIds = [...new Set(productIds)].slice(0, 20);
+  if (uniqueIds.length === 0) return [];
+  const products = await fetchPromobrindProducts({
+    filters: { id: uniqueIds, is_active: true },
+    limit: uniqueIds.length,
+  });
+  const byId = new Map(products.map((product) => [product.id, mapQuoteSearchProduct(product)]));
+  return uniqueIds.flatMap((id) => {
+    const product = byId.get(id);
+    return product ? [product] : [];
+  });
 }
 
 async function loadQuoteSearchProducts(search: string): Promise<Product[]> {

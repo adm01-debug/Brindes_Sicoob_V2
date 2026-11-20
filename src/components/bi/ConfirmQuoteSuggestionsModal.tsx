@@ -42,6 +42,10 @@ interface Props {
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
+export function quoteSuggestionKey(suggestion: SuggestionItem, index: number): string {
+  return `${suggestion.productId ?? "sem-produto"}-${index}`;
+}
+
 export function ConfirmQuoteSuggestionsModal({
   open,
   onOpenChange,
@@ -54,15 +58,15 @@ export function ConfirmQuoteSuggestionsModal({
 
   useEffect(() => {
     if (open) {
-      setSelected(new Set(suggestions.map((s) => s.name)));
+      setSelected(new Set(suggestions.map(quoteSuggestionKey)));
     }
   }, [open, suggestions]);
 
-  const toggle = (name: string) => {
+  const toggle = (key: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -79,8 +83,13 @@ export function ConfirmQuoteSuggestionsModal({
       return;
     }
 
-    const selectedItems = suggestions.filter((s) => selected.has(s.name));
-    const productIds = selectedItems.map((s) => s.productId).filter(Boolean) as string[];
+    const selectedItems = suggestions.filter((s, index) => selected.has(quoteSuggestionKey(s, index)));
+    const unavailable = selectedItems.filter((s) => !s.productId);
+    if (unavailable.length > 0) {
+      toast.error(`${unavailable.length} sugestão(ões) ainda não possuem produto vinculado ao catálogo.`);
+      return;
+    }
+    const productIds = [...new Set(selectedItems.map((s) => s.productId).filter(Boolean) as string[])];
 
     const params = new URLSearchParams();
     params.set("clientId", clientId);
@@ -94,10 +103,10 @@ export function ConfirmQuoteSuggestionsModal({
   };
 
   const totalEstimateMin = suggestions
-    .filter((s) => selected.has(s.name))
+    .filter((s, index) => selected.has(quoteSuggestionKey(s, index)))
     .reduce((acc, s) => acc + s.priceFrom * 50, 0); // estimativa volume mínimo
   const totalEstimateMax = suggestions
-    .filter((s) => selected.has(s.name))
+    .filter((s, index) => selected.has(quoteSuggestionKey(s, index)))
     .reduce((acc, s) => acc + s.priceTo * 100, 0);
 
   return (
