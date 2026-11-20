@@ -6,11 +6,11 @@
 
 ## Estado real conferido
 
-PRONTO em main e877d0c58 (aplicacao confirmada em PRODUCAO via check_migration_status + swagger em 2026-11-21). Migration `supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql`: 4 guardas RESTRICTIVE por tabela em pa_budgets (l.66-? SELECT, UPDATE em 185-) e cooperativa_budgets (l.190-246), postflight auto-verificador (l.331-387). REVOKE INSERT/UPDATE/DELETE de authenticated sobre pa_budgets (l.252) e cooperativa_budgets (l.260); INSERT/UPDATE apenas de colunas autorizadas `pa_id, ano, mes, verba_total, limite_alcada, observacoes` (l.254-257, 262-265). `guard_profile_authority_fields` impede troca de vinculo/al?ada/estado na auto-edicao (l.271-329).
+PRONTO em main e877d0c58 (aplicacao em producao NAO CONFIRMADA nesta sessao - RLS ativo pre-existia na migration 20260503 (cooperativa_budgets/pa_budgets) e o REST nao expoe guards RESTRICTIVE/REVOKE; conferir pg_policies via SQL direto). Migration `supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql`: 4 guardas RESTRICTIVE por tabela em pa_budgets (l.66-? SELECT, UPDATE em 185-) e cooperativa_budgets (l.190-246), postflight auto-verificador (l.331-387). REVOKE INSERT/UPDATE/DELETE de authenticated sobre pa_budgets (l.252) e cooperativa_budgets (l.260); INSERT/UPDATE apenas de colunas autorizadas `pa_id, ano, mes, verba_total, limite_alcada, observacoes` (l.254-257, 262-265). `guard_profile_authority_fields` impede troca de vinculo/al?ada/estado na auto-edicao (l.271-329).
 
 ## O que falta (auditoria)
 
-RLS — limitar ao escopo da cooperativa, proibir o solicitante de alterar a própria verba ou alçada e fazer ajustes só por RPC com trilha. Confirmar em `pg_policies` no banco (executado; prova indireta via RPC check_migration_status e swagger ? acesso direto ao ledger nao disponivel nesta sessao).
+RLS — limitar ao escopo da cooperativa, proibir o solicitante de alterar a própria verba ou alçada e fazer ajustes só por RPC com trilha. Confirmar em `pg_policies` no banco (ABERTO: sem acesso SQL direto nesta sessao; `check_migration_status` so comprova RLS habilitado, pre-existente).
 
 ## Camadas afetadas
 
@@ -36,4 +36,4 @@ RLS — limitar ao escopo da cooperativa, proibir o solicitante de alterar a pr�
 
 ## Estado final
 
-- PRONTO (codigo em main e aplicacao confirmada em PRODUCAO em 2026-11-21). `check_migration_status` (REST) retorna RLS ativo em `pa_budgets`, `cooperativa_budgets`, `cooperativas`, `postos_atendimento`; guardas RESTRICTIVE e REVOKE da migracao 20261013115605 em vigor. Evidencia: Prova indireta de producao (RPC check_migration_status + swagger do projeto). Nao ha mais autoedicao de verba/alcada.
+- CODIGO em main (migracao 20261013115605). APLICACAO DA MIGRACAO NO BANCO DE PRODUCAO: NAO VERIFICADA nesta sessao - RLS ativo pre-existia (20260503) e o REST nao expoe guards RESTRICTIVE/REVOKE/policies. Pendente: conferir `pg_policies`/privs com SQL direto e exercitar comportamento de autoedicao bloqueada.

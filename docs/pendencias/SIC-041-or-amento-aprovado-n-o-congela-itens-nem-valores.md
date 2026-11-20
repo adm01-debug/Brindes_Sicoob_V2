@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-CODIGO em main e877d0c58 (aplicacao confirmada em PRODUCAO via swagger em 2026-11-21: RPC assert_quote_content_editable presente). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: `assert_quote_content_editable` (l.620-655) recusa edicao quando status fora de `draft, revision, rejected, rejected_singular` ou versao nao-latest (erro 42501 'Os itens de um or?amento enviado ou decidido s?o imut?veis'); triggers `guard_quote_item_content_write` em quote_items (l.660-695) e `guard_quote_personalization_content_write` em quote_item_personalizations (l.697-747); guard em has_function_privilege no postflight (l.1028-1030).
+CODIGO em main e877d0c58 (aplicacao em producao CONFIRMADA em 2026-11-21 via swagger: RPC `assert_quote_content_editable` presente com sufixo `_core_20261013` (introduzido pela migration 13120512); comportamento de congelamento NAO exercitado nesta sessao - sem SQL direto). Migration `supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql`: `assert_quote_content_editable` (l.620-655) recusa edicao quando status fora de `draft, revision, rejected, rejected_singular` ou versao nao-latest (erro 42501 'Os itens de um or?amento enviado ou decidido s?o imut?veis'); triggers `guard_quote_item_content_write` em quote_items (l.660-695) e `guard_quote_personalization_content_write` em quote_item_personalizations (l.697-747); guard em has_function_privilege no postflight (l.1028-1030).
 
 ## O que falta (auditoria)
 
@@ -36,4 +36,4 @@ RLS e trigger — negar escrita direta em itens, personalizações e campos come
 
 ## Estado final
 
-- PRONTO (codigo em main e aplicacao confirmada em PRODUCAO em 2026-11-21). RPC `assert_quote_content_editable` presente no swagger de producao (migracao 20261013120512): triggers `guard_quote_item_content_write` e `guard_quote_personalization_content_write` congelam itens/personalizacoes fora de draft/revision. Orcamento aprovado nao tem mais itens/valores alteraveis.
+- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: RPC `assert_quote_content_editable` presente com sufixo `_core_20261013` (obj. criado somente por essa migracao). COMPORTAMENTO de congelamento NAO EXERCITADO - sem SQL direto. Pendente: tentar editar item de orcamento aprovado e observar recusa 42501.
