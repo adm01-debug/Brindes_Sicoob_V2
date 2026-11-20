@@ -6,7 +6,7 @@
 
 ## Estado real conferido
 
-PRONTO - save_quote_atomic_idempotent (20260928173500_harden_quote_save_idempotency.sql) cria orcamento 1x por ator+chave (hash SHA-256/MD5), rejeita chave reusada com conteudo diferente (22023) e reapresenta o salvo; front usa save_quote_atomic_idempotent_attested + replay get_quote_save_idempotent_replay (src/services/QuoteService.ts create).
+PARCIAL - idempotencia cobre apenas CREACAO: save_quote_atomic_idempotent (20260928173500_harden_quote_save_idempotency.sql) cria 1x por ator+chave (hash SHA-256/MD5), rejeita chave reusada com conteudo diferente (22023) e reapresenta o salvo; front usa save_quote_atomic_idempotent_attested + replay get_quote_save_idempotent_replay (src/services/QuoteService.ts create). EDITAR ainda usa QuoteService.update (src/services/QuoteService.ts:411-452) com versao esperada e sem chave idempotente/replay - controle de concorrencia, nao idempotencia.
 
 ## O que falta (auditoria)
 
