@@ -1,50 +1,26 @@
-## 📋 Descrição
+## O que muda
 
-<!-- O que muda e por quê. Seja conciso. -->
+<!-- Descreva em 1-3 linhas o que esta PR modifica e por quê. -->
 
-## 🎯 Tipo de mudança
+## Tipo de mudança
 
-- [ ] 🚀 feat — nova funcionalidade
-- [ ] 🐛 fix — correção de bug
-- [ ] ♻️ refactor — refatoração (sem mudança de comportamento)
-- [ ] 🔧 chore — manutenção, deps, config
-- [ ] 📚 docs — documentação
-- [ ] 🚨 hotfix — correção urgente em produção
+- [ ] Fix (correção de bug)
+- [ ] Feat (nova funcionalidade)
+- [ ] Chore (manutenção, CI, docs)
+- [ ] Infra (banco, deploy, configuração)
 
-## 🌐 Sistemas afetados
+## Evidência verificada
 
-<!-- Marque todos os que se aplicam -->
+<!-- O que você rodou/viu para confirmar que funciona? (log, query, screenshot, URL) -->
 
-- [ ] Bitrix24 (CRM, SPAs, BizProc)
-- [ ] Supabase (DB, Edge Functions, RLS, migrations)
-- [ ] n8n (workflows)
-- [ ] Evolution API / WhatsApp
-- [ ] Bling (NFe, OAuth)
-- [ ] Cloudflare (Workers, Images, Tunnels)
-- [ ] Frontend (UI, dashboards)
-- [ ] Outro: ____
+## Checklist
 
-## 🧪 Como testar
+- [ ] Não quebra nenhuma funcionalidade existente
+- [ ] Migrations são imutáveis (não edita arquivo já mergeado)
+- [ ] Secrets/credenciais não estão hardcoded no código
+- [ ] PRs de banco/migrations deixei **sem** squash-merge automático
 
-<!-- Passo a passo para validar. Inclua dados de teste se necessário. -->
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-1. 
-2. 
-3. 
-
-## ✅ Checklist pré-merge
-
-- [ ] Sem secrets, tokens ou credenciais hardcoded
-- [ ] Variáveis de ambiente novas documentadas
-- [ ] Migrations com backup em `_backup_*_YYYYMMDD` se destrutivas
-- [ ] Testado em ambiente local ou staging quando aplicável
-- [ ] Sem `console.log` com payloads sensíveis
-- [ ] CodeRabbit revisou o PR
-
-## 🔄 Plano de rollback
-
-<!-- Como reverter se algo der errado em produção? -->
-
-## 🔗 Issues relacionadas
-
-<!-- Closes #123, Refs #456 -->
+https://claude.ai/code/session_01AP1isQxX3w6D7nw4D5fgdB
