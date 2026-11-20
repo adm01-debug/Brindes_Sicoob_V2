@@ -6,7 +6,13 @@
 
 ## Estado real conferido
 
-NAO IMPLEMENTADO
+PRONTO (verificado em main e877d0c58).
+
+- `custom-kit-payload.ts` grava um kit v?lido como `status:'ready'` e inv?lido como `draft`; a doc interna do arquivo explica que o banco s? aceita ('draft','ready','shared','archived') e que gravar `complete` fazia o salvamento falhar (`Invalid kit status`).
+- Migration `20260414193435` cria `validate_status_fields()` que, para `custom_kits`, valida `NEW.status IN ('draft','ready','shared','archived')` (banco).
+- `status.ts` define os 4 status can?nicos.
+- `shared` ? derivado de `kit_share_tokens`: `useKitShare.generateShareLink()` cria token `active` (status derivado); `revokeShareLink()` marca `revoked`. `KitTemplatesMetricsPage` conta tokens active/revoked/viewed. Nenhuma UI grava `status:'shared'` direto no kit (derivado via token ? n?o ? gap).
+- Migrations `20260417002650` e `20260414193435` tamb?m validam `quotes` e `orders`.
 
 ## O que falta (auditoria)
 
