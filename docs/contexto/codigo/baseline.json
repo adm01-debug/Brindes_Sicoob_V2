@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
+  "commit": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
   "branch": "main",
-  "data_commit": "2026-11-19T23:35:52Z",
+  "data_commit": "2026-11-19T21:45:44-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "67f5a8a",
+    "data": "2026-11-19",
+    "assunto": "chore: padroniza template de PR (recupera trabalho alheio) (#386)"
+   },
    {
     "sha": "449faf1",
     "data": "2026-11-19",
@@ -126,14 +131,9 @@
     "sha": "202a19c",
     "data": "2026-11-19",
     "assunto": "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)"
-   },
-   {
-    "sha": "a5b6fcc",
-    "data": "2026-11-19",
-    "assunto": "fix(kit): atualizar template deixa de apagar categoria e reativar o desativado (#325)"
    }
   ],
-  "arquivos_mudados_7d": 569,
+  "arquivos_mudados_7d": 570,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 33
+    "mudancas": 32
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 32
+    "mudancas": 31
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 186
+    "commits": 187
    },
    {
     "autor": "dependabot[bot]",

@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `449faf158736227ebb6e7fe4067ba8e4ab6fb7a1` (2026-11-19T23:35:52Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8` (2026-11-19T21:45:44-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 29683 nós · 54485 arestas · 2135 comunidades · grafo do commit `449faf15`
-- comunidades maiores: ref_integrations (488), ref_lib (341), lucide-react (320), ref_hooks (307), ref_components (297), react (275), expert-chat/index.ts (183), react-router-dom (181), framer-motion (179), ref_stores (162), getCorsHeaders (152), postgres_ready.py (142)
+- 29675 nós · 54478 arestas · 2099 comunidades · grafo do commit `67f5a8a6`
+- comunidades maiores: ref_lib (526), ref_integrations (393), ref_components (301), lucide-react (245), getCorsHeaders (222), sonner (183), framer-motion (168), ref_contexts (166), date-fns (158), react-router-dom (158), react (155), ref_stores (153)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (33)
-- docs/correcoes-validacao-2026-09-14.md (32)
+- docs/plano-melhorias-50-etapas.md (32)
+- docs/correcoes-validacao-2026-09-14.md (31)
 - package.json (23)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -612,7 +612,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `automation:uninstall-hooks`: `node scripts/automation.mjs uninstall-hooks`
 
 ## Documentos (raiz e docs/)
-- `.github/PULL_REQUEST_TEMPLATE.md` (51 linhas)
+- `.github/PULL_REQUEST_TEMPLATE.md` (27 linhas)
 - `.github/pull_request_template.md` (27 linhas)
 - `AGENTS.md` — AGENTS.md — Brindes Sicoob V2 (149 linhas)
 - `AUDIT_EXPORT_FILTERED.md` — 📂 EXPORTAÇÃO DE INVENTÁRIO FILTRADA (49 linhas)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-19 `67f5a8a` chore: padroniza template de PR (recupera trabalho alheio) (#386)
 - 2026-11-19 `449faf1` feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)
 - 2026-11-19 `0f4d547` feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)
 - 2026-11-19 `9515c40` test(edge): catraca para o espalhamento de versões do supabase-js (#377)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `ba02d47` test(e2e): remove cenario P0 morto que apontava para rota inexistente (#375)
 - 2026-11-19 `1fc8d0f` docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)
 - 2026-11-19 `fff15ba` test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)
-- 2026-11-19 `e890f24` test(bi): recupera 8 catracas de "não fabricar número para o vendedor" (#371)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

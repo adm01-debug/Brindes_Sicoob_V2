@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
+  "sha": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-19 23:36 UTC",
+  "generated_at": "2026-11-20 01:15 UTC",
   "files_total": 4550,
   "code_files": 3802,
   "code_lines": 556029
@@ -253240,10 +253240,19 @@
   }
  },
  "git": {
-  "sha": "449faf158736227ebb6e7fe4067ba8e4ab6fb7a1",
+  "sha": "67f5a8a640bef1e02a60e51cf0a0b6f7d4860fd8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "67f5a8a",
+    "date": "2026-11-19",
+    "author": "adm01-debug",
+    "subject": "chore: padroniza template de PR (recupera trabalho alheio) (#386)",
+    "files": [
+     ".github/PULL_REQUEST_TEMPLATE.md"
+    ]
+   },
    {
     "sha": "449faf1",
     "date": "2026-11-19",
@@ -253571,17 +253580,6 @@
     "files": [
      "src/hooks/useQuoteBuilderState.ts"
     ]
-   },
-   {
-    "sha": "b364a12",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "ci(edge): o campo `runtime` do manifesto passa a ter fiscal (#335)",
-    "files": [
-     "scripts/check-edge-authorization.mjs",
-     "tests/scenarios/edge-runtime-contract.scenario.mjs",
-     "tests/scripts/edge-runtime-contract.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -253604,6 +253602,10 @@
    [
     "tests/scripts/check-critical-test-skip-budget.test.ts",
     2
+   ],
+   [
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    1
    ],
    [
     "src/components/orders/OrderFilters.tsx",
@@ -253659,10 +253661,6 @@
    ],
    [
     "tests/scripts/fuso-dos-testes.test.ts",
-    1
-   ],
-   [
-    "vitest.config.ts",
     1
    ]
   ]
