@@ -88,10 +88,11 @@ describe('verifyPublishedFunctions', () => {
     expect(requiredFunctions).not.toContain('quote-price-attestation');
   });
 
-  it('cobre as 7 canônicas, as 6 endurecidas e crm-db-bridge (total 14)', () => {
+  it('cobre as 7 canônicas, as 7 endurecidas e crm-db-bridge (total 15)', () => {
     // Eram 8 endurecidas; `quote-price-attestation` saiu (teto do plano, caso
-    // acima) e `crm-db-bridge` entrou nesta PR — 15 - 1 = 14.
-    expect(requiredFunctions).toHaveLength(14);
+    // acima), `crm-db-bridge` entrou e `send-transactional-email` foi publicada
+    // nesta rodada — 16 - 1 = 15.
+    expect(requiredFunctions).toHaveLength(15);
     for (const slug of [
       'bi-copilot',
       'comparison-ai-advisor',
@@ -100,6 +101,7 @@ describe('verifyPublishedFunctions', () => {
       'secure-upload',
       'auth-integrity-check',
       'crm-db-bridge',
+      'send-transactional-email',
     ]) {
       expect(requiredFunctions).toContain(slug);
     }
