@@ -89,6 +89,24 @@ interface TemplateImportItem {
   personalizations?: QuoteItemPersonalization[];
 }
 
+interface CollectionImportItem {
+  product_id?: string;
+  productId?: string;
+  product_name?: string;
+  productName?: string;
+  product_sku?: string;
+  productSku?: string;
+  product_image_url?: string | null;
+  productImageUrl?: string | null;
+  quantity?: number;
+  unit_price?: number;
+  unitPrice?: number;
+  color_name?: string | null;
+  colorName?: string | null;
+  color_hex?: string | null;
+  colorHex?: string | null;
+}
+
 type QuoteSetters = InitParams["setters"];
 
 const MAX_SUGGESTED_PRODUCTS = 20;
@@ -246,6 +264,22 @@ function mapTemplateItem(item: TemplateImportItem, getProductCost?: (id: string)
   };
 }
 
+function mapCollectionItem(item: CollectionImportItem, getProductCost?: (id: string) => number | undefined): QuoteItem {
+  const productId = fallback(item.product_id, fallback(item.productId, ""));
+  return {
+    product_id: productId,
+    product_name: fallback(item.product_name, fallback(item.productName, "Produto")),
+    product_sku: fallback(item.product_sku, fallback(item.productSku, "")),
+    product_image_url: fallback(item.product_image_url, item.productImageUrl) ?? undefined,
+    quantity: fallback(item.quantity, 1),
+    unit_price: fallback(item.unit_price, fallback(item.unitPrice, 0)),
+    unit_cost: getProductCost?.(productId) ?? 0,
+    color_name: fallback(item.color_name, item.colorName) ?? undefined,
+    color_hex: fallback(item.color_hex, item.colorHex) ?? undefined,
+    personalizations: [],
+  };
+}
+
 export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locationState, searchParams, setters }: InitParams) {
   const productsContext = useProductsContextSafe();
   const getProductById = productsContext?.getProductById;
@@ -354,6 +388,23 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     
     setters.setItems(templateItems);
     toast.success(`${templateItems.length} item(ns) importado(s) do template`);
+    window.history.replaceState({}, document.title);
+  }, [locationState, setters, getProductCost]);
+
+  // 7. Pre-fill from collection (passed via state)
+  useEffect(() => {
+    const state = locationState as { fromCollection?: string; clientId?: string; clientName?: string; preloadProducts?: CollectionImportItem[] } | null;
+    if (!state?.fromCollection || !state.preloadProducts?.length) return;
+    const source = state.fromCollection;
+    if (state.clientId) setters.setClientId(state.clientId);
+    if (state.clientName) {
+      setters.setContactInfo({ id: "", name: state.clientName, email: undefined, phone: undefined });
+      setters.setCompanyInfo({ id: state.clientId || "", name: state.clientName, cnpj: undefined });
+    }
+    const collectionItems = state.preloadProducts.map((item) => mapCollectionItem(item, getProductCost));
+    setters.setItems(collectionItems);
+    setters.setActiveItemIndex(0);
+    toast.success(`${collectionItems.length} produto(s) importado(s) da coleção "${source}"`);
     window.history.replaceState({}, document.title);
   }, [locationState, setters, getProductCost]);
 }
