@@ -16984,7 +16984,7 @@
     "BusinessIntelligencePage"
    ],
    "export_default": "BusinessIntelligencePage",
-   "linhas": 485,
+   "linhas": 486,
    "dominio": "pages",
    "hooks_locais": [
     "useBICategoryFocus",

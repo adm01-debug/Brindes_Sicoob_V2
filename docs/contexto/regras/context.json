@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "cf2d42bc08491a8c717f01b50c8cc62adaab276c",
+  "sha": "bb6242f16129d63d1c0cc5625775f44e7a2b8dc7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-21 17:51 UTC",
-  "files_total": 5242,
-  "code_files": 3809,
-  "code_lines": 557191
+  "generated_at": "2026-11-21 19:49 UTC",
+  "files_total": 5244,
+  "code_files": 3811,
+  "code_lines": 557401
  },
  "version": "1.3.2",
- "facts_hash": "c0d8b06ec76dbe35",
+ "facts_hash": "2a7ffda2ee72f819",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1484,
-   ".tsx": 1443,
+   ".tsx": 1445,
    ".sql": 684,
    ".mjs": 139,
    ".py": 66,
@@ -56564,6 +56564,33 @@
    },
    {
     "path": "",
+    "file": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    "component": "BusinessIntelligencePage.seasonal-peak.demo.test",
+    "tables_transitive": [
+     "orders",
+     "seller_cart_items",
+     "seller_carts",
+     "user_onboarding",
+     "workspace_notifications"
+    ],
+    "invokes_transitive": [
+     "bi-copilot",
+     "crm-db-bridge",
+     "log-login-attempt"
+    ],
+    "rpc_transitive": [
+     "get_bundle_suggestions",
+     "get_client_seasonality",
+     "get_client_top_products",
+     "get_industry_benchmark_stats",
+     "get_industry_seasonality",
+     "get_industry_top_products",
+     "get_sicoob_access_state"
+    ],
+    "deps_count": 110
+   },
+   {
+    "path": "",
     "file": "tests/pages/GestorCompras.metrics.test.tsx",
     "component": "GestorCompras.metrics.test",
     "tables_transitive": [
@@ -64292,7 +64319,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47713,
+   "lines": 47717,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64738,7 +64765,7 @@
   {
    "module": "src/pages",
    "files": 195,
-   "lines": 50792,
+   "lines": 50793,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -65732,8 +65759,8 @@
   },
   {
    "module": "tests",
-   "files": 661,
-   "lines": 88548,
+   "files": 663,
+   "lines": 88753,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -129759,6 +129786,22 @@
     "name": "setor que respondeu sem produto continua sem erro"
    },
    {
+    "file": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    "name": "useSeasonalPeakNotifications - demo vs pico real"
+   },
+   {
+    "file": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    "name": "modo demo (isMock) nunca grava notificacao"
+   },
+   {
+    "file": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    "name": "pico real elegivel grava workspace_notification com payload correto"
+   },
+   {
+    "file": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    "name": "monta sem marca, grava a notificacao e a marca, e remontar no mesmo dia deduplica"
+   },
+   {
     "file": "tests/hooks/quote/quote-url-prefill.test.ts",
     "name": "pré-carga de orçamento por URL"
    },
@@ -134897,6 +134940,18 @@
    {
     "file": "tests/pages/Auth.test.ts",
     "name": "rejects password shorter than 8 chars"
+   },
+   {
+    "file": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    "name": "BI -> repasse do modo demo ao alerta de pico"
+   },
+   {
+    "file": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    "name": "sazonalidade simulada passa isMock: true para useSeasonalPeakNotifications"
+   },
+   {
+    "file": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    "name": "sazonalidade real passa isMock: false"
    },
    {
     "file": "tests/pages/GestorCompras.metrics.test.tsx",
@@ -210844,7 +210899,7 @@
   },
   "src/hooks/bi/useSeasonalPeakNotifications.ts": {
    "path": "src/hooks/bi/useSeasonalPeakNotifications.ts",
-   "lines": 106,
+   "lines": 110,
    "exports": [
     "function useSeasonalPeakNotifications"
    ],
@@ -218084,7 +218139,7 @@
   },
   "src/pages/BusinessIntelligencePage.tsx": {
    "path": "src/pages/BusinessIntelligencePage.tsx",
-   "lines": 485,
+   "lines": 486,
    "exports": [
     "function BusinessIntelligencePage"
    ],
@@ -247993,6 +248048,21 @@
     "setor que respondeu sem produto continua sem erro"
    ]
   },
+  "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx": {
+   "path": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+   "lines": 102,
+   "is_test": true,
+   "rule_comments": [
+    "* Regressao: alerta de pico sazonal nao pode gravar notificacao para equipe"
+   ],
+   "doc": "Regressao: alerta de pico sazonal nao pode gravar notificacao para equipe real quando a sazonalidade vem do cliente de demonstracao (isMock). O guard `if (isMock) return;` foi adicionado no ADM-35; sem ele o BI em modo demo gravava aviso de pico na tabela real de toda equipe.",
+   "tests": [
+    "useSeasonalPeakNotifications - demo vs pico real",
+    "modo demo (isMock) nunca grava notificacao",
+    "pico real elegivel grava workspace_notification com payload correto",
+    "monta sem marca, grava a notificacao e a marca, e remontar no mesmo dia deduplica"
+   ]
+  },
   "tests/hooks/quote/quote-url-prefill.test.ts": {
    "path": "tests/hooks/quote/quote-url-prefill.test.ts",
    "lines": 136,
@@ -250315,6 +250385,17 @@
     "rejects password without special char",
     "rejects mismatched passwords",
     "rejects password shorter than 8 chars"
+   ]
+  },
+  "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx": {
+   "path": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+   "lines": 103,
+   "is_test": true,
+   "doc": "Ligacao: BusinessIntelligencePage repassa `seasonality.isMock` para useSeasonalPeakNotifications. Se a pagina mandar `isMock: false` quando a fonte sazonalidade e simulada, o alerta de pico grava na tabela real de toda equipe em modo demo (regressao do ADM-35).",
+   "tests": [
+    "BI -> repasse do modo demo ao alerta de pico",
+    "sazonalidade simulada passa isMock: true para useSeasonalPeakNotifications",
+    "sazonalidade real passa isMock: false"
    ]
   },
   "tests/pages/GestorCompras.metrics.test.tsx": {
@@ -253623,10 +253704,22 @@
   }
  },
  "git": {
-  "sha": "cf2d42bc08491a8c717f01b50c8cc62adaab276c",
+  "sha": "bb6242f16129d63d1c0cc5625775f44e7a2b8dc7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "bb6242f",
+    "date": "2026-11-21",
+    "author": "adm01-debug",
+    "subject": "fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)",
+    "files": [
+     "src/hooks/bi/useSeasonalPeakNotifications.ts",
+     "src/pages/BusinessIntelligencePage.tsx",
+     "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+     "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx"
+    ]
+   },
    {
     "sha": "cf2d42b",
     "date": "2026-11-21",
@@ -254628,16 +254721,6 @@
      "tests/components/products/ProductCard.test.tsx",
      "tests/components/products/prazo-no-cartao.test.tsx"
     ]
-   },
-   {
-    "sha": "138474b",
-    "date": "2026-11-19",
-    "author": "dependabot[bot]",
-    "subject": "chore(deps)(deps-dev): Bump the development-all group across 1 directory with 5 updates (#322)",
-    "files": [
-     "package-lock.json",
-     "package.json"
-    ]
    }
   ],
   "hot_files": [
@@ -254670,16 +254753,24 @@
     2
    ],
    [
-    "package-lock.json",
-    2
-   ],
-   [
-    "package.json",
-    2
-   ],
-   [
     "docs/RECUPERACAO/cobertura-refs.md",
     2
+   ],
+   [
+    "src/hooks/bi/useSeasonalPeakNotifications.ts",
+    1
+   ],
+   [
+    "src/pages/BusinessIntelligencePage.tsx",
+    1
+   ],
+   [
+    "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    1
+   ],
+   [
+    "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    1
    ],
    [
     "src/contexts/ProductsContext.tsx",
@@ -254711,14 +254802,6 @@
    ],
    [
     "src/hooks/useTransactionalEmail.ts",
-    1
-   ],
-   [
-    "src/pages/quote-view/QuoteBitrixSync.ts",
-    1
-   ],
-   [
-    "src/services/OrderService.ts",
     1
    ]
   ]

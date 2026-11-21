@@ -8537,7 +8537,7 @@
    "modulo": "hooks/bi",
    "arquivos": 13,
    "testes": 0,
-   "linhas": 2570,
+   "linhas": 2574,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11722,7 +11722,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19100,
+   "linhas": 19101,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

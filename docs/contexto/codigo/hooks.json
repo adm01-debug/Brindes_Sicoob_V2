@@ -2488,7 +2488,7 @@
    "hooks_exportados": [
     "useSeasonalPeakNotifications"
    ],
-   "linhas": 106,
+   "linhas": 110,
    "dominio": "hooks/bi",
    "tabelas": [
     "workspace_notifications"
@@ -2504,7 +2504,7 @@
    "usado_por_arquivos": [
     "src/pages/BusinessIntelligencePage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useSmartAlerts.ts",

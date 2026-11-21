@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 888,
+ "total": 890,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 659
+  "unit": 661
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 640
+   "arquivos": 642
   },
   {
    "padrao": "e2e/",
@@ -4028,6 +4028,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+   "tipo": "unit",
+   "linhas": 102,
+   "testa": [
+    "src/hooks/bi/useSeasonalPeakNotifications.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/hooks/catalog-comparison-smoke.test.ts",
    "tipo": "unit",
    "linhas": 70,
@@ -6177,6 +6186,15 @@
    "casos": 11
   },
   {
+   "arquivo": "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+   "tipo": "unit",
+   "linhas": 103,
+   "testa": [
+    "src/pages/BusinessIntelligencePage.tsx"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/pages/filters-page-helpers.test.ts",
    "tipo": "unit",
    "linhas": 109,
@@ -7935,6 +7953,7 @@
   "src/hooks/bi/useClientsComparison.ts": 1,
   "src/hooks/bi/useIndustryCategoryTrends.ts": 2,
   "src/hooks/bi/useIndustryTrends.ts": 2,
+  "src/hooks/bi/useSeasonalPeakNotifications.ts": 1,
   "src/hooks/catalog/useCatalogFilters.ts": 1,
   "src/hooks/dev/useBridgeMetrics.ts": 5,
   "src/hooks/orders/extensions/index.ts": 1,
@@ -8138,6 +8157,7 @@
   "src/lib/validations/goalSchema.ts": 1,
   "src/pages/AdvancedPriceSearchPage.tsx": 1,
   "src/pages/Auth.tsx": 2,
+  "src/pages/BusinessIntelligencePage.tsx": 1,
   "src/pages/FiltersPage.tsx": 1,
   "src/pages/GestorCompras.tsx": 1,
   "src/pages/HelpCenterPage.tsx": 1,
@@ -8275,7 +8295,6 @@
  },
  "sem_teste": {
   "telas": [
-   "src/pages/BusinessIntelligencePage.tsx",
    "src/pages/ClientComparatorPage.tsx",
    "src/pages/ClientsPage.tsx",
    "src/pages/CollectionDetailPage.tsx",
@@ -8441,7 +8460,6 @@
    "src/hooks/auth/useUserProfile.ts",
    "src/hooks/bi/useBIDossierExport.ts",
    "src/hooks/bi/useChurnRisk.ts",
-   "src/hooks/bi/useSeasonalPeakNotifications.ts",
    "src/hooks/bi/useSmartAlerts.ts",
    "src/hooks/cart/useCart.ts",
    "src/hooks/cart/useCartTemplates.ts",
