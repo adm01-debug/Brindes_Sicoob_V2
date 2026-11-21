@@ -36,4 +36,4 @@ RLS e trigger — negar escrita direta em itens, personalizações e campos come
 
 ## Estado final
 
-- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `assert_quote_content_editable` (funcao criada pela migration) e a migration esta aplicada pois os nucleos `_core_20261013` (SIC-040/060) existem. COMPORTAMENTO de congelamento NAO EXERCITADO - sem SQL direto. Pendente: tentar editar item de orcamento aprovado e observar recusa 42501.
+- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: `assert_quote_content_editable(uuid)` presente e EXECUTADA em producao — chamada com uuid inexistente retornou 23503 real (cadeia de congelamento ativa, REVOKE de authenticated confirmado no codigo l.657: executa via trigger SECURITY DEFINER). Triggers `aaa_guard_quote_item_content_write`/`zzz_guard_quote_item_price_attestation` instalados em quote_items, `aaa_guard_quote_personalization_content_write` em personalizations. COMPORTAMENTO 42501 (editar item aprovado) NAO exercitado: quotes vazia em producao (0 linhas). Pendente: exercitar 42501 quando existirem orcamentos aprovados.

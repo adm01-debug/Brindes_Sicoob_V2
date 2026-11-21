@@ -36,4 +36,4 @@ RPC — setar a flag; simulação com toda a cadeia; E2E com token válido (ABER
 
 ## Estado final
 
-- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `apply_local_quote_approval_response` e `apply_local_quote_approval_response_core_20261013` (nucleo renomeado pela migration - prova de aplicacao). COMPORTAMENTO (flag + restauracao em erro + link publico) NAO EXERCITADO - sem SQL direto. Pendente: E2E com token valido do link publico.
+- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `apply_local_quote_approval_response` e `apply_local_quote_approval_response_core_20261013`; `pg_proc` confirma o nucleo. COMPORTAMENTO (flag + restauracao em erro + link publico) NAO EXERCITADO: quotes vazia em producao (0 linhas), sem token real de link publico para E2E. Pendente: E2E com token valido quando houver orcamento enviado.
