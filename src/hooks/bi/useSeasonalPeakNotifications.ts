@@ -17,6 +17,8 @@ interface Args {
   clientName: string;
   daysToNextPeak: number | null;
   nextPeakMonth: number | null;
+  /** Sazonalidade simulada (cliente de demonstração): não notifica equipe real. */
+  isMock: boolean;
 }
 
 const MONTHS = [
@@ -83,11 +85,13 @@ export function useSeasonalPeakNotifications({
   clientName,
   daysToNextPeak,
   nextPeakMonth,
+  isMock,
 }: Args) {
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user?.id || !clientId || !clientName) return;
+    if (isMock) return;
     if (daysToNextPeak === null || nextPeakMonth === null) return;
     if (daysToNextPeak > 7) return;
 
@@ -101,5 +105,5 @@ export function useSeasonalPeakNotifications({
       nextPeakMonth,
       key,
     }).catch(() => undefined);
-  }, [user?.id, clientId, clientName, daysToNextPeak, nextPeakMonth]);
+  }, [user?.id, clientId, clientName, daysToNextPeak, nextPeakMonth, isMock]);
 }
