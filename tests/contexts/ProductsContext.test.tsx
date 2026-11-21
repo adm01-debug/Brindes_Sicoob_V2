@@ -59,9 +59,17 @@ describe('ProductsProvider', () => {
     })) as Product[];
     const allRequested = [...firstBatch.map((p) => p.id), id2.id];
     // Mock honesto: retorna somente os produtos cujos ids estão no filtro,
-    // para que uma consulta repetindo/omitindo ids não passe despercebida.
-    fetchPromobrindProducts.mockImplementation((opts: { filters: { id: string[] } }) =>
-      Promise.resolve([...firstBatch, id2].filter((p) => opts.filters.id.includes(p.id))),
+    // respeitando o limite por lote — uma consulta pedindo limit menor que a
+    // quantidade de ids não pode entregar itens de sobra.
+    fetchPromobrindProducts.mockImplementation((opts: {
+      filters: { id: string[] };
+      limit: number;
+    }) =>
+      Promise.resolve(
+        [...firstBatch, id2]
+          .filter((p) => opts.filters.id.includes(p.id))
+          .slice(0, opts.limit),
+      ),
     );
 
     // Espelha o padrão real da FavoritesPage/ComparePage: getProductsByIds
