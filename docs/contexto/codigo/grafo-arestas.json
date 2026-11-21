@@ -6565,7 +6565,9 @@
    "src/components/ui/alert-dialog.tsx",
    "src/components/ui/button.tsx",
    "src/contexts/OrganizationContext.tsx",
-   "src/hooks/orders/useOrders.ts"
+   "src/hooks/orders/useOrders.ts",
+   "src/hooks/useTransactionalEmail.ts",
+   "src/services/QuoteService.ts"
   ],
   "src/components/quotes/QuoteFilters.tsx": [
    "src/components/ui/input.tsx",
@@ -8251,6 +8253,7 @@
    "src/hooks/quotes/quoteTypes.ts",
    "src/hooks/useRBAC.tsx",
    "src/hooks/useRealtimeSync.ts",
+   "src/hooks/useTransactionalEmail.ts",
    "src/integrations/supabase/client.ts",
    "src/lib/auth/visibility-scope.ts",
    "src/lib/edge-function-client.ts",
@@ -9153,6 +9156,7 @@
   ],
   "src/hooks/useSicoobApprovals.ts": [
    "src/contexts/AuthContext.tsx",
+   "src/hooks/useTransactionalEmail.ts",
    "src/integrations/supabase/client.ts",
    "src/services/sicoob/approvalService.ts",
    "src/services/sicoob/orderService.ts",
@@ -11610,6 +11614,7 @@
   "src/pages/quote-view/QuoteBitrixSync.ts": [
    "src/components/pdf/ProposalHtmlTemplate.tsx",
    "src/hooks/quotes/useQuotes.ts",
+   "src/hooks/useTransactionalEmail.ts",
    "src/integrations/supabase/client.ts",
    "src/lib/logger.ts",
    "src/services/quoteStatusTransition.ts",
@@ -12760,7 +12765,9 @@
   ],
   "supabase/functions/send-transactional-email/index.ts": [
    "supabase/functions/_shared/cors.ts",
-   "supabase/functions/_shared/structured-logger.ts"
+   "supabase/functions/_shared/structured-logger.ts",
+   "supabase/functions/send-transactional-email/deliver.ts",
+   "supabase/functions/send-transactional-email/templates.ts"
   ],
   "supabase/functions/sicoob-approval-notifications/index.ts": [
    "supabase/functions/_shared/approval-delivery.ts",

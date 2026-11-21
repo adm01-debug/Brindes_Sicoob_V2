@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
+  "commit": "e324c64e76ad09974481ddc1afaf1cb371734118",
   "branch": "main",
-  "data_commit": "2026-11-20T19:19:00-03:00",
+  "data_commit": "2026-11-21T09:51:50-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e324c64",
+    "data": "2026-11-21",
+    "assunto": "feat: e-mail transacional via Resend na edge send-transactional-email (#393)"
+   },
    {
     "sha": "e7e6753",
     "data": "2026-11-20",
@@ -126,14 +131,9 @@
     "sha": "a202373",
     "data": "2026-11-19",
     "assunto": "docs(recuperação): veredito medido para as 62 refs restantes (#367)"
-   },
-   {
-    "sha": "f21dbfd",
-    "data": "2026-11-19",
-    "assunto": "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)"
    }
   ],
-  "arquivos_mudados_7d": 1258,
+  "arquivos_mudados_7d": 1267,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -153,18 +153,14 @@
    },
    {
     "pasta": "PENDENCIAS.md",
-    "mudancas": 21
+    "mudancas": 18
    },
    {
     "pasta": "RELATORIO_CI.md",
-    "mudancas": 20
-   },
-   {
-    "pasta": "package.json",
     "mudancas": 17
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
+    "pasta": "package.json",
     "mudancas": 16
    },
    {
@@ -176,6 +172,10 @@
     "mudancas": 16
    },
    {
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 15
+   },
+   {
     "pasta": "src/components/bi",
     "mudancas": 14
    },
@@ -185,11 +185,11 @@
    },
    {
     "pasta": "package-lock.json",
-    "mudancas": 13
+    "mudancas": 12
    },
    {
     "pasta": "src/components/quotes",
-    "mudancas": 10
+    "mudancas": 11
    },
    {
     "pasta": "src/components/sicoob",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 28
+    "mudancas": 27
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 27
+    "mudancas": 26
    },
    {
     "arquivo": "package.json",
@@ -266,6 +266,10 @@
     "mudancas": 11
    },
    {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
+    "mudancas": 11
+   },
+   {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 11
    },
@@ -279,10 +283,6 @@
    },
    {
     "arquivo": ".github/workflows/security.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 10
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 192
+    "commits": 189
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5236,
-  "arquivos_codigo": 3140,
-  "linhas_codigo": 493797,
+  "arquivos_total": 5239,
+  "arquivos_codigo": 3143,
+  "linhas_codigo": 494286,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 622,
   "cron_jobs": 27,
-  "testes": 887,
+  "testes": 888,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 970
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1131,
-   "linhas": 166787
+   "linhas": 166803
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47495
+   "linhas": 47563
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50735
+   "linhas": 50748
   },
   "src/routes": {
    "arquivos": 9,
@@ -816,7 +816,7 @@
   },
   "src/services": {
    "arquivos": 23,
-   "linhas": 3389
+   "linhas": 3398
   },
   "src/stores": {
    "arquivos": 6,
@@ -839,8 +839,8 @@
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 216,
-   "linhas": 34920
+   "arquivos": 219,
+   "linhas": 35285
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -956,7 +956,7 @@
   },
   "tests/scenarios": {
    "arquivos": 31,
-   "linhas": 2047
+   "linhas": 2065
   },
   "tests/scripts": {
    "arquivos": 35,

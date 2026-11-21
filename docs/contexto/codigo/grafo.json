@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2253,
- "arestas": 9146,
+ "nos": 2255,
+ "arestas": 9153,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -414,7 +414,6 @@
   "src/hooks/useQuotes.ts",
   "src/hooks/useRecentProducts.ts",
   "src/hooks/useRecentlyViewed.ts",
-  "src/hooks/useTransactionalEmail.ts",
   "src/lib/admin-export-utils.ts",
   "src/lib/audit-logger.ts",
   "src/lib/export-collection-pdf.ts",

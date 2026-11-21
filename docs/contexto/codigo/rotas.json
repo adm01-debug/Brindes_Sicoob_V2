@@ -4071,6 +4071,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -4084,7 +4085,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 109
+   "arquivos_puxados": 110
   },
   {
    "protegida": true,
@@ -5556,6 +5557,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -5581,7 +5583,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 157
+   "arquivos_puxados": 158
   },
   {
    "protegida": true,
@@ -5793,6 +5795,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -5808,7 +5811,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 131
+   "arquivos_puxados": 132
   },
   {
    "protegida": false,
@@ -6617,6 +6620,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -6631,7 +6635,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 118
+   "arquivos_puxados": 119
   },
   {
    "protegida": true,
@@ -7287,6 +7291,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7301,7 +7306,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 112
+   "arquivos_puxados": 113
   },
   {
    "protegida": true,
@@ -7452,6 +7457,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7470,7 +7476,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 154
+   "arquivos_puxados": 155
   },
   {
    "protegida": true,
@@ -7619,6 +7625,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7636,7 +7643,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 159
+   "arquivos_puxados": 160
   },
   {
    "protegida": true,
@@ -7787,6 +7794,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7805,7 +7813,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 154
+   "arquivos_puxados": 155
   },
   {
    "protegida": true,
@@ -7888,6 +7896,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7901,7 +7910,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 86
+   "arquivos_puxados": 87
   },
   {
    "protegida": true,
@@ -7984,6 +7993,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7996,7 +8006,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 94
+   "arquivos_puxados": 95
   },
   {
    "protegida": true,
@@ -8094,6 +8104,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8108,7 +8119,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 112
+   "arquivos_puxados": 113
   },
   {
    "protegida": true,
@@ -8257,6 +8268,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8274,7 +8286,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 159
+   "arquivos_puxados": 160
   },
   {
    "protegida": true,
@@ -8355,6 +8367,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8369,7 +8382,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 102
+   "arquivos_puxados": 103
   },
   {
    "protegida": true,
@@ -8591,6 +8604,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-document-ingest",
     "sicoob-reorder",
     "system-healthcheck"
@@ -8609,7 +8623,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 127
+   "arquivos_puxados": 128
   },
   {
    "protegida": true,
@@ -8781,6 +8795,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -8795,7 +8810,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 133
+   "arquivos_puxados": 134
   },
   {
    "protegida": true,
@@ -10295,6 +10310,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "send-transactional-email",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -10312,7 +10328,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 133
+   "arquivos_puxados": 134
   },
   {
    "protegida": true,

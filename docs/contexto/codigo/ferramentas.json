@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2926)",
+   "TypeScript (2929)",
    "Markdown (970)",
    "SQL (684)",
    "JSON (292)",
@@ -1469,11 +1469,11 @@
     "arquivos": 8
    },
    {
-    "host": "ai.gateway.lovable.dev",
-    "arquivos": 6
+    "host": "api.resend.com",
+    "arquivos": 7
    },
    {
-    "host": "api.resend.com",
+    "host": "ai.gateway.lovable.dev",
     "arquivos": 6
    },
    {
@@ -1614,6 +1614,10 @@
    },
    {
     "host": "api.x.com",
+    "arquivos": 1
+   },
+   {
+    "host": "app.exemplo",
     "arquivos": 1
    },
    {

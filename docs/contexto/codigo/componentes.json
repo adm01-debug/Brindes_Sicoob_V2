@@ -12712,7 +12712,7 @@
     "QuoteConvertToOrder"
    ],
    "export_default": null,
-   "linhas": 76,
+   "linhas": 92,
    "dominio": "components/quotes",
    "hooks_locais": [
     "useConvertQuoteToOrder",

@@ -3007,8 +3007,8 @@
   {
    "nome": "send-transactional-email",
    "entrada": "supabase/functions/send-transactional-email/index.ts",
-   "arquivos": 1,
-   "linhas": 53,
+   "arquivos": 3,
+   "linhas": 318,
    "verify_jwt": true,
    "metodos": [
     "OPTIONS",
@@ -3017,12 +3017,16 @@
    "tabelas": [],
    "rpcs": [],
    "env": [
+    "NOTIFICATION_FROM_EMAIL",
+    "RESEND_API_KEY",
     "SUPABASE_ANON_KEY",
     "SUPABASE_URL"
    ],
    "buckets": [],
    "chama_edges": [],
-   "hosts_externos": [],
+   "hosts_externos": [
+    "api.resend.com"
+   ],
    "usa_shared": [
     "cors.ts",
     "structured-logger.ts"
@@ -3033,7 +3037,7 @@
    "chamada_por_edges": [],
    "chamada_por_sql_ou_cron": false,
    "orfa": false,
-   "testes": 0
+   "testes": 1
   },
   {
    "nome": "sicoob-approval-notifications",

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e7e6753ad4` · branch `main` · 2026-11-20 23:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e324c64e76` · branch `main` · 2026-11-21 12:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1255,7 +1255,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `alert_sent` | escreve | `supabase/functions/error-monitor/index.ts` |
 | `status` | `alinhada` | escreve | `tests/scenarios/migration-ledger.mjs` |
 | `status` | `all` | compara, escreve | `src/components/admin/connections/ConnectionsOverviewFilters.tsx`<br>`src/components/admin/security/keys/useMcpKeys.ts`<br>`src/components/dashboard/MyDiscountRequestsWidget.tsx`<br>`src/components/dashboard/MyPendingOrdersWidget.tsx`<br>`src/components/dashboard/MyRecentQuotesWidget.tsx`<br>… +11 |
-| `status` | `approved` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +23 |
+| `status` | `approved` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +24 |
 | `status` | `approved_singular` | compara, filtra | `src/components/quotes/QuoteConvertToOrder.tsx`<br>`src/pages/QuotesListPage.tsx`<br>`src/services/QuoteService.ts` |
 | `status` | `aprovado_gestor` | escreve | `src/pages/GestorApprovalsPage.tsx` |
 | `status` | `blocked` | compara, escreve | `src/pages/admin/qa/QARunDetailPage.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-delivery.ts` |
@@ -1336,7 +1336,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `received_with_issues` | compara | `src/pages/sicoob/GestorConsolidatedOrdersPage.tsx` |
 | `status` | `refunded` | compara | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
 | `status` | `regression` | compara | `src/components/admin/telemetry/RegressionGuardrailBanner.tsx` |
-| `status` | `rejected` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +14 |
+| `status` | `rejected` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +15 |
 | `status` | `rejected_singular` | compara | `src/components/quotes/QuoteApprovalNotes.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/quotes/QuoteStatusTimeline.tsx` |
 | `status` | `revision` | compara, escreve | `src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>`src/components/sicoob/orders/OrderPilotApprovalsTab.tsx` |
 | `status` | `revoked` | compara, escreve | `src/components/admin/security/keys/McpKeyRow.tsx`<br>`src/components/admin/security/keys/useMcpKeys.ts`<br>`src/components/kit-builder/KitShareLinkDialog.tsx`<br>`src/components/quotes/QuoteApprovalLinkCard.tsx`<br>`src/hooks/useKitShare.ts`<br>… +2 |
@@ -1435,7 +1435,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | StepUpAction | promote_dev \| demote_dev \| mcp_full_issue \| mcp_full_escalate \| mcp_key_revoke \| mcp_key_rotate \| secret_rotation \| secret_revoke | `src/hooks/useStepUpAuth.ts` |
 | IntelligenceFlag | hot-product \| stockout-risk \| stagnant \| negotiation-opportunity \| frequent-restock \| class-a | `src/hooks/useStockHistory.ts` |
 | SortOption | recommended \| price_asc \| price_desc \| time_asc \| time_desc \| popularity | `src/hooks/useTechniqueRecommendations.ts` |
-| EmailEventType | quote_sent \| quote_approved \| quote_rejected \| order_created | `src/hooks/useTransactionalEmail.ts` |
+| EmailEventType | quote_sent \| quote_approved \| quote_rejected \| order_created \| sicoob_order_status_change \| sicoob_order_approval_request | `src/hooks/useTransactionalEmail.ts` |
 | AdminModule | users \| products \| categories \| newsletter \| cms \| telemetry \| security \| campaigns \| budgets | `src/hooks/admin/useAdminPermissions.ts` |
 | AuditAction | INSERT \| UPDATE \| DELETE | `src/hooks/admin/useAuditLog.ts` |
 | AuditEntityType | products \| product_variants \| product_images \| product_videos \| quotes \| quote_items \| orders \| order_items \| suppliers \| categories \| material_types \| color_variations \| companies \| company_contacts | `src/hooks/admin/useAuditLog.ts` |
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7002 testes em 706 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7008 testes em 707 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6012,7 +6012,7 @@ _nenhum item encontrado_
 | `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
 | `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
-| … +406 linhas — lista completa em `context.json` | | |
+| … +407 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6112,6 +6112,7 @@ _nenhum item encontrado_
 | `invoke(` | `src/hooks/useProdutoRamoAtividade.ts` |
 | `invoke(` | `src/hooks/useQuoteApprovalToken.ts` |
 | `invoke(` | `src/hooks/useSecretsManager.ts` |
+| `notifyApprovalRequested` | `src/hooks/useSicoobApprovals.ts` |
 | `invoke(` | `src/hooks/useStepUpAuth.ts` |
 | `invoke(` | `src/hooks/useTechniquePricing.ts` |
 | `invoke(` | `src/hooks/useTechniquePricingOptions.ts` |
@@ -6119,6 +6120,7 @@ _nenhum item encontrado_
 | `invoke(` | `src/hooks/mockup/mockupGenerationService.ts` |
 | `notifyStatusChange` | `src/hooks/orders/useOrders.ts` |
 | `invoke(` | `src/hooks/orders/extensions/useOrderPilotApprovals.ts` |
+| `notifyQuoteDecision` | `src/hooks/quotes/useQuotes.ts` |
 | `invoke(` | `src/hooks/stock/stockFetcher.ts` |
 | `invoke(` | `src/hooks/tecnicas/useTecnicasList.ts` |
 | `invoke(` | `src/hooks/voice/scribeTokenCache.ts` |

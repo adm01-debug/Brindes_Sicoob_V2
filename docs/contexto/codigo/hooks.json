@@ -3349,7 +3349,7 @@
    "hooks_exportados": [
     "useQuotes"
    ],
-   "linhas": 311,
+   "linhas": 337,
    "dominio": "hooks/quotes",
    "tabelas": [
     "quotes"
@@ -8427,10 +8427,12 @@
    "hooks_exportados": [
     "useApprovalRequests"
    ],
-   "linhas": 176,
+   "linhas": 216,
    "dominio": "hooks",
    "tabelas": [
-    "sicoob_approval_requests"
+    "profiles",
+    "sicoob_approval_requests",
+    "sicoob_orders"
    ],
    "rpcs": [],
    "edges": [],
@@ -8994,7 +8996,7 @@
   {
    "arquivo": "src/hooks/useTransactionalEmail.ts",
    "hooks_exportados": [],
-   "linhas": 37,
+   "linhas": 39,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -9003,8 +9005,13 @@
    ],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 0,
-   "usado_por_arquivos": [],
+   "usado_por": 4,
+   "usado_por_arquivos": [
+    "src/components/quotes/QuoteConvertToOrder.tsx",
+    "src/hooks/quotes/useQuotes.ts",
+    "src/hooks/useSicoobApprovals.ts",
+    "src/pages/quote-view/QuoteBitrixSync.ts"
+   ],
    "coberto_por_testes": 1
   },
   {

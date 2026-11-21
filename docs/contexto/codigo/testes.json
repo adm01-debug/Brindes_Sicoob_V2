@@ -5,13 +5,13 @@
   "vitest",
   "playwright"
  ],
- "total": 887,
+ "total": 888,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 41,
-  "unit": 658
+  "unit": 659
  },
  "onde_ficam": [
   {
@@ -28,7 +28,7 @@
   },
   {
    "padrao": "co-localizado (*.test)",
-   "arquivos": 45
+   "arquivos": 46
   },
   {
    "padrao": "co-localizado (__tests__)",
@@ -1862,6 +1862,16 @@
     "supabase/functions/send-scheduled-reports/report-delivery.ts"
    ],
    "casos": 2
+  },
+  {
+   "arquivo": "supabase/functions/send-transactional-email/index.test.ts",
+   "tipo": "unit",
+   "linhas": 100,
+   "testa": [
+    "supabase/functions/send-transactional-email/deliver.ts",
+    "supabase/functions/send-transactional-email/templates.ts"
+   ],
+   "casos": 6
   },
   {
    "arquivo": "supabase/functions/sicoob-document-ingest/registration-state.test.ts",
@@ -6591,9 +6601,9 @@
   {
    "arquivo": "tests/scenarios/email-transacional-legado.mjs",
    "tipo": "unit",
-   "linhas": 42,
+   "linhas": 60,
    "testa": [],
-   "casos": 3
+   "casos": 4
   },
   {
    "arquivo": "tests/scenarios/gate-autorizacao.mjs",
@@ -8250,6 +8260,8 @@
   "supabase/functions/product-webhook/index.ts": 1,
   "supabase/functions/quote-price-attestation/contract.ts": 2,
   "supabase/functions/send-scheduled-reports/report-delivery.ts": 1,
+  "supabase/functions/send-transactional-email/deliver.ts": 1,
+  "supabase/functions/send-transactional-email/templates.ts": 1,
   "supabase/functions/sicoob-artwork-register/identity.ts": 1,
   "supabase/functions/sicoob-document-ingest/inspection.ts": 1,
   "supabase/functions/sicoob-document-ingest/registration-state.ts": 1,
@@ -8685,7 +8697,6 @@
    "semantic-search",
    "send-digest",
    "send-notification",
-   "send-transactional-email",
    "sicoob-approval-notifications",
    "sicoob-approval-reconciliation",
    "sicoob-kit-quote",

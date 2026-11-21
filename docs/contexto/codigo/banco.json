@@ -25683,7 +25683,7 @@
     ],
     "so_no_types": []
    },
-   "usada_no_front": 35,
+   "usada_no_front": 36,
    "usada_em_edges": [
     "crm-db-bridge",
     "e2e-auth-test",
@@ -35574,7 +35574,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 8,
+   "usada_no_front": 9,
    "usada_em_edges": [
     "monthly-health-report",
     "sicoob-reorder",

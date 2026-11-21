@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
+  "sha": "e324c64e76ad09974481ddc1afaf1cb371734118",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-20 23:13 UTC",
-  "files_total": 5239,
-  "code_files": 3806,
-  "code_lines": 556398
+  "generated_at": "2026-11-21 12:52 UTC",
+  "files_total": 5242,
+  "code_files": 3809,
+  "code_lines": 556887
  },
  "version": "1.3.2",
- "facts_hash": "83c4eaf12435b9a5",
+ "facts_hash": "0c9c77e6bf530d06",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1481,
+   ".ts": 1484,
    ".tsx": 1443,
    ".sql": 684,
    ".mjs": 139,
@@ -54882,6 +54882,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -54901,7 +54902,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 96
+    "deps_count": 97
    },
    {
     "path": "",
@@ -55051,6 +55052,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55063,7 +55065,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 115
+    "deps_count": 116
    },
    {
     "path": "",
@@ -55256,6 +55258,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -55279,7 +55282,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 143
+    "deps_count": 144
    },
    {
     "path": "",
@@ -55305,6 +55308,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -55318,7 +55322,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 136
+    "deps_count": 137
    },
    {
     "path": "",
@@ -55481,6 +55485,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55496,7 +55501,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 117
+    "deps_count": 118
    },
    {
     "path": "",
@@ -55681,6 +55686,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-artwork-register",
      "sicoob-document-ingest",
      "sicoob-reorder"
@@ -55704,7 +55710,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 125
+    "deps_count": 126
    },
    {
     "path": "",
@@ -55749,6 +55755,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -55768,7 +55775,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 114
+    "deps_count": 115
    },
    {
     "path": "",
@@ -56015,6 +56022,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56034,7 +56042,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 168
+    "deps_count": 169
    },
    {
     "path": "",
@@ -56067,6 +56075,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56085,7 +56094,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 76
+    "deps_count": 77
    },
    {
     "path": "",
@@ -56152,6 +56161,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56176,7 +56186,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 164
+    "deps_count": 165
    },
    {
     "path": "",
@@ -56197,6 +56207,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56209,7 +56220,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 93
+    "deps_count": 94
    },
    {
     "path": "",
@@ -56231,6 +56242,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56244,7 +56256,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 107
+    "deps_count": 108
    },
    {
     "path": "",
@@ -56266,6 +56278,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -56279,7 +56292,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 90
+    "deps_count": 91
    },
    {
     "path": "",
@@ -56758,6 +56771,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "send-transactional-email",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56770,7 +56784,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 81
+    "deps_count": 82
    },
    {
     "path": "/entrar, /login",
@@ -63945,7 +63959,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166787,
+   "lines": 166803,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64278,7 +64292,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47495,
+   "lines": 47563,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64724,7 +64738,7 @@
   {
    "module": "src/pages",
    "files": 195,
-   "lines": 50735,
+   "lines": 50748,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -64993,7 +65007,7 @@
   {
    "module": "src/services",
    "files": 23,
-   "lines": 3389,
+   "lines": 3398,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -65363,8 +65377,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 216,
-   "lines": 34920,
+   "files": 219,
+   "lines": 35285,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65719,7 +65733,7 @@
   {
    "module": "tests",
    "files": 661,
-   "lines": 88446,
+   "lines": 88464,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67390,6 +67404,7 @@
      "src/hooks/useKitCollaboration.ts",
      "src/hooks/useQuoteComments.ts",
      "src/hooks/useSalesHistory.ts",
+     "src/hooks/useSicoobApprovals.ts",
      "src/hooks/useSimulatorPreferences.ts",
      "src/pages/GestorApprovalsPage.tsx",
      "src/pages/QuotesKanbanPage.tsx",
@@ -67919,6 +67934,7 @@
    "sicoob_orders": {
     "select": [
      "src/hooks/sicoob/useAIOrderPredictor.ts",
+     "src/hooks/useSicoobApprovals.ts",
      "src/pages/sicoob/GestorAuditPage.tsx",
      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
      "src/pages/sicoob/orders/SellerPanelPage.tsx",
@@ -69921,7 +69937,9 @@
    ],
    "NOTIFICATION_FROM_EMAIL": [
     "supabase/functions/_shared/approval-delivery.ts",
-    "supabase/functions/_shared/step-up-otp-delivery.ts"
+    "supabase/functions/_shared/step-up-otp-delivery.ts",
+    "supabase/functions/send-transactional-email/deliver.ts",
+    "supabase/functions/send-transactional-email/index.test.ts"
    ],
    "OWNER": [
     "scripts/validate-lovable-sync-target.mjs"
@@ -69983,7 +70001,9 @@
     "supabase/functions/_shared/approval-delivery.ts",
     "supabase/functions/_shared/step-up-otp-delivery.ts",
     "supabase/functions/process-scheduled-reports/index.ts",
-    "supabase/functions/send-scheduled-reports/index.ts"
+    "supabase/functions/send-scheduled-reports/index.ts",
+    "supabase/functions/send-transactional-email/deliver.ts",
+    "supabase/functions/send-transactional-email/index.test.ts"
    ],
    "ROUTE_REF_ROOT": [
     "scripts/check-route-ref-usage.mjs"
@@ -71261,7 +71281,8 @@
     "src/hooks/usePasswordBreachCheck.tsx"
    ],
    "https://api.resend.com": [
-    "scripts/ai-context/gerar.unit.mjs"
+    "scripts/ai-context/gerar.unit.mjs",
+    "supabase/functions/send-transactional-email/deliver.ts"
    ],
    "https://api.x.com": [
     "scripts/ai-context/cenarios.mjs"
@@ -73301,7 +73322,7 @@
    {
     "file": "src/hooks/useTransactionalEmail.ts",
     "name": "EmailEventType",
-    "values": "quote_sent | quote_approved | quote_rejected | order_created"
+    "values": "quote_sent | quote_approved | quote_rejected | order_created | sicoob_order_status_change | sicoob_order_approval_request"
    },
    {
     "file": "src/hooks/admin/useAdminPermissions.ts",
@@ -100377,6 +100398,24 @@
     "kind": "filtra"
    },
    {
+    "file": "src/hooks/quotes/useQuotes.ts",
+    "field": "status",
+    "value": "approved",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/quotes/useQuotes.ts",
+    "field": "status",
+    "value": "rejected",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/quotes/useQuotes.ts",
+    "field": "status",
+    "value": "approved",
+    "kind": "compara"
+   },
+   {
     "file": "src/hooks/sicoob/useAIOrderPredictor.ts",
     "field": "status",
     "value": "completed",
@@ -105588,6 +105627,12 @@
     "file": "supabase/functions/send-scheduled-reports/report-delivery.ts",
     "field": "status",
     "value": "sent",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.ts",
+    "field": "delivery_status",
+    "value": "accepted",
     "kind": "escreve"
    },
    {
@@ -114123,6 +114168,30 @@
    {
     "file": "supabase/functions/send-scheduled-reports/report-delivery.test.ts",
     "name": "relatório só é persistido depois da confirmação do provedor"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "renderTemplate gera corpo html/subject para os 6 eventos"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "renderTemplate retorna null para evento desconhecido"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "deliverTransactionalEmail degrada sem secrets"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "deliverTransactionalEmail rejeita email inválido"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "deliverTransactionalEmail aceita recibo do provedor com fetch stub"
+   },
+   {
+    "file": "supabase/functions/send-transactional-email/index.test.ts",
+    "name": "deliverTransactionalEmail reporta falha do provedor"
    },
    {
     "file": "supabase/functions/sicoob-document-ingest/registration-state.test.ts",
@@ -140305,6 +140374,10 @@
     "call": "invoke("
    },
    {
+    "file": "src/hooks/useSicoobApprovals.ts",
+    "call": "notifyApprovalRequested"
+   },
+   {
     "file": "src/hooks/useStepUpAuth.ts",
     "call": "invoke("
    },
@@ -140331,6 +140404,10 @@
    {
     "file": "src/hooks/orders/extensions/useOrderPilotApprovals.ts",
     "call": "invoke("
+   },
+   {
+    "file": "src/hooks/quotes/useQuotes.ts",
+    "call": "notifyQuoteDecision"
    },
    {
     "file": "src/hooks/stock/stockFetcher.ts",
@@ -159886,6 +159963,7 @@
       "compara:src/components/quotes/QuoteVersionCompare.tsx",
       "compara:src/components/sicoob/orders/OrderPilotApprovalsTab.tsx",
       "compara:src/components/sicoob/orders/OrderProductionReadiness.tsx",
+      "compara:src/hooks/quotes/useQuotes.ts",
       "compara:src/hooks/usePilotApprovals.ts",
       "compara:src/hooks/useQuoteFunnel.ts",
       "compara:src/pages/QuotesDashboardPage.tsx",
@@ -159913,6 +159991,7 @@
       "compara:src/components/quotes/QuoteRowQuickActions.tsx",
       "compara:src/components/quotes/QuoteStatusTimeline.tsx",
       "compara:src/components/sicoob/orders/OrderPilotApprovalsTab.tsx",
+      "compara:src/hooks/quotes/useQuotes.ts",
       "compara:src/hooks/usePilotApprovals.ts",
       "compara:src/lib/external-db-prewarm.ts",
       "compara:src/lib/sicoob/operationalMetrics.ts",
@@ -160897,6 +160976,7 @@
     "delivery_status": {
      "accepted": [
       "compara:src/hooks/useTransactionalEmail.ts",
+      "escreve:supabase/functions/send-transactional-email/index.ts",
       "escreve:supabase/functions/step-up-verify/index.ts"
      ]
     },
@@ -198565,7 +198645,7 @@
   },
   "src/components/quotes/QuoteConvertToOrder.tsx": {
    "path": "src/components/quotes/QuoteConvertToOrder.tsx",
-   "lines": 76,
+   "lines": 92,
    "exports": [
     "function QuoteConvertToOrder"
    ],
@@ -209161,12 +209241,24 @@
   },
   "src/hooks/useSicoobApprovals.ts": {
    "path": "src/hooks/useSicoobApprovals.ts",
-   "lines": 176,
+   "lines": 216,
    "exports": [
     "interface ApprovalRequest",
     "const useApprovalRequests"
    ],
    "tables": [
+    {
+     "table": "sicoob_approval_requests",
+     "op": "select"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_orders",
+     "op": "select"
+    },
     {
      "table": "sicoob_approval_requests",
      "op": "select"
@@ -209185,6 +209277,15 @@
      "status",
      "threshold_at_request",
      "updated_at"
+    ],
+    "profiles": [
+     "email",
+     "full_name",
+     "user_id"
+    ],
+    "sicoob_orders": [
+     "id",
+     "order_number"
     ]
    },
    "errors": [
@@ -209210,6 +209311,9 @@
    ],
    "hooks": [
     "useApprovalRequests"
+   ],
+   "side_effects": [
+    "notifyApprovalRequested"
    ]
   },
   "src/hooks/useSicoobOrderHistory.ts": {
@@ -209773,7 +209877,7 @@
   },
   "src/hooks/useTransactionalEmail.ts": {
    "path": "src/hooks/useTransactionalEmail.ts",
-   "lines": 37,
+   "lines": 39,
    "exports": [
     "type EmailEventType",
     "function sendTransactionalEmail"
@@ -209784,7 +209888,7 @@
    "enums": [
     {
      "name": "EmailEventType",
-     "values": "quote_sent | quote_approved | quote_rejected | order_created"
+     "values": "quote_sent | quote_approved | quote_rejected | order_created | sicoob_order_status_change | sicoob_order_approval_request"
     }
    ],
    "status_values": [
@@ -211928,7 +212032,7 @@
   },
   "src/hooks/quotes/useQuotes.ts": {
    "path": "src/hooks/quotes/useQuotes.ts",
-   "lines": 311,
+   "lines": 337,
    "exports": [
     "function useQuotes"
    ],
@@ -211944,8 +212048,12 @@
    ],
    "table_cols": {
     "quotes": [
+     "client_email",
+     "client_name",
      "id",
-     "row_version"
+     "quote_number",
+     "row_version",
+     "total"
     ]
    },
    "rpc": [
@@ -211965,12 +212073,32 @@
     "Erro ao sincronizar",
     "Um ou mais orçamentos não foram encontrados ou não estão no seu escopo."
    ],
+   "status_values": [
+    {
+     "field": "status",
+     "value": "approved",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "rejected",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "approved",
+     "kind": "compara"
+    }
+   ],
    "rule_comments": [
     "Permission check"
    ],
    "doc": "useQuotes — Hook de orçamentos (refatorado)",
    "hooks": [
     "useQuotes"
+   ],
+   "side_effects": [
+    "notifyQuoteDecision"
    ]
   },
   "src/hooks/search/usePopularSearchItems.ts": {
@@ -222406,7 +222534,7 @@
   },
   "src/pages/quote-view/QuoteBitrixSync.ts": {
    "path": "src/pages/quote-view/QuoteBitrixSync.ts",
-   "lines": 119,
+   "lines": 132,
    "exports": [
     "function syncQuoteToBitrix"
    ],
@@ -224358,7 +224486,7 @@
   },
   "src/services/OrderService.ts": {
    "path": "src/services/OrderService.ts",
-   "lines": 482,
+   "lines": 491,
    "exports": [
     "interface ConvertQuoteToOrderParams",
     "interface ConvertedOrder",
@@ -224452,10 +224580,16 @@
     {
      "table": "notifications",
      "op": "insert"
+    },
+    {
+     "table": "orders",
+     "op": "select"
     }
    ],
    "table_cols": {
     "orders": [
+     "client_email",
+     "client_name",
      "created_at",
      "id",
      "shipping_type",
@@ -235096,12 +235230,63 @@
     }
    ]
   },
+  "supabase/functions/send-transactional-email/deliver.ts": {
+   "path": "supabase/functions/send-transactional-email/deliver.ts",
+   "lines": 63,
+   "exports": [
+    "interface TransactionalEmailMessage",
+    "interface TransactionalDeliveryResult",
+    "function deliverTransactionalEmail"
+   ],
+   "external_urls": [
+    "https://api.resend.com/emails"
+   ],
+   "env": [
+    "NOTIFICATION_FROM_EMAIL",
+    "RESEND_API_KEY"
+   ]
+  },
+  "supabase/functions/send-transactional-email/index.test.ts": {
+   "path": "supabase/functions/send-transactional-email/index.test.ts",
+   "lines": 100,
+   "is_test": true,
+   "env": [
+    "NOTIFICATION_FROM_EMAIL",
+    "RESEND_API_KEY"
+   ],
+   "errors": [
+    "rate limited"
+   ],
+   "tests": [
+    "renderTemplate gera corpo html/subject para os 6 eventos",
+    "renderTemplate retorna null para evento desconhecido",
+    "deliverTransactionalEmail degrada sem secrets",
+    "deliverTransactionalEmail rejeita email inválido",
+    "deliverTransactionalEmail aceita recibo do provedor com fetch stub",
+    "deliverTransactionalEmail reporta falha do provedor"
+   ]
+  },
   "supabase/functions/send-transactional-email/index.ts": {
    "path": "supabase/functions/send-transactional-email/index.ts",
-   "lines": 53,
+   "lines": 85,
    "env": [
     "SUPABASE_ANON_KEY",
     "SUPABASE_URL"
+   ],
+   "status_values": [
+    {
+     "field": "delivery_status",
+     "value": "accepted",
+     "kind": "escreve"
+    }
+   ]
+  },
+  "supabase/functions/send-transactional-email/templates.ts": {
+   "path": "supabase/functions/send-transactional-email/templates.ts",
+   "lines": 170,
+   "exports": [
+    "interface TemplateContext",
+    "function renderTemplate"
    ]
   },
   "supabase/functions/sicoob-approval-notifications/index.ts": {
@@ -250907,7 +251092,7 @@
   },
   "tests/scenarios/email-transacional-legado.mjs": {
    "path": "tests/scenarios/email-transacional-legado.mjs",
-   "lines": 42
+   "lines": 60
   },
   "tests/scenarios/gate-autorizacao.mjs": {
    "path": "tests/scenarios/gate-autorizacao.mjs",
@@ -253374,10 +253559,29 @@
   }
  },
  "git": {
-  "sha": "e7e6753ad48f4fda1237947efae07dc0dc6fdb03",
+  "sha": "e324c64e76ad09974481ddc1afaf1cb371734118",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e324c64",
+    "date": "2026-11-21",
+    "author": "adm01-debug",
+    "subject": "feat: e-mail transacional via Resend na edge send-transactional-email (#393)",
+    "files": [
+     "src/components/quotes/QuoteConvertToOrder.tsx",
+     "src/hooks/quotes/useQuotes.ts",
+     "src/hooks/useSicoobApprovals.ts",
+     "src/hooks/useTransactionalEmail.ts",
+     "src/pages/quote-view/QuoteBitrixSync.ts",
+     "src/services/OrderService.ts",
+     "supabase/functions/send-transactional-email/deliver.ts",
+     "supabase/functions/send-transactional-email/index.test.ts",
+     "supabase/functions/send-transactional-email/index.ts",
+     "supabase/functions/send-transactional-email/templates.ts",
+     "tests/scenarios/email-transacional-legado.mjs"
+    ]
+   },
    {
     "sha": "e7e6753",
     "date": "2026-11-20",
@@ -254370,37 +254574,6 @@
      "tests/components/supplier-trust-badges.test.tsx",
      "tests/lib/external-db/ficha-prazo-entrega.test.ts"
     ]
-   },
-   {
-    "sha": "202a19c",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(sussurro): preserva o plano e o motor do copiloto antes de apagar as 4 branches (#324)",
-    "files": [
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/README-PRESERVACAO.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/banco-perguntas.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/biblioteca-objecoes.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/cerebro-vendas/metodo-coopera.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e021-politicas-whatsapp.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e022-lgpd-ripd.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e023-consentimento.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e024-retencao.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e025-aviso-privacidade.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e026-dpa-fornecedores.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e027-fluxo-optout.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e028-auditoria.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e029-seguranca.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/compliance/e030-checklist-g1.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/baseline-20261016.md",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/e003-baseline/queries.sql",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/etapas.csv",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/20261016154200_copilot_engine_tables.sql.txt",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-analyze.index.ts",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-quote-context.index.ts",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/edge/copilot-suggest.index.ts",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/useCopilotQuote.ts",
-     "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/plano.md"
-    ]
    }
   ],
   "hot_files": [
@@ -254437,51 +254610,51 @@
     2
    ],
    [
+    "src/components/quotes/QuoteConvertToOrder.tsx",
+    1
+   ],
+   [
+    "src/hooks/quotes/useQuotes.ts",
+    1
+   ],
+   [
+    "src/hooks/useSicoobApprovals.ts",
+    1
+   ],
+   [
+    "src/hooks/useTransactionalEmail.ts",
+    1
+   ],
+   [
+    "src/pages/quote-view/QuoteBitrixSync.ts",
+    1
+   ],
+   [
+    "src/services/OrderService.ts",
+    1
+   ],
+   [
+    "supabase/functions/send-transactional-email/deliver.ts",
+    1
+   ],
+   [
+    "supabase/functions/send-transactional-email/index.test.ts",
+    1
+   ],
+   [
+    "supabase/functions/send-transactional-email/index.ts",
+    1
+   ],
+   [
+    "supabase/functions/send-transactional-email/templates.ts",
+    1
+   ],
+   [
+    "tests/scenarios/email-transacional-legado.mjs",
+    1
+   ],
+   [
     "src/components/dashboard/MyDiscountRequestsWidget.tsx",
-    1
-   ],
-   [
-    "src/components/dashboard/UpcomingDatesWidget.tsx",
-    1
-   ],
-   [
-    "src/components/search/SmartSuggestions.tsx",
-    1
-   ],
-   [
-    "src/components/quotes/QuoteSingularApprovalActions.tsx",
-    1
-   ],
-   [
-    "supabase/functions/sync-quote-bitrix/index.ts",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-01-gest-o-de-cat-logo-admin-produtos-fornecedores-g.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-02-escrita-no-cat-logo-bloqueada-pelo-contrato-some.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-03-marketing-newsletter-e-campanhas-menu-leva-a-404.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-04-qa-evid-ncias-de-release-auditoria-rls-e-detalhe.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-05-estrutura-sicoob-singulares-pas-parceiros-e-cent.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-06-promover-agente-leva-a-404.md",
-    1
-   ],
-   [
-    "docs/pendencias/ADM-07-trilha-de-auditoria-administrativa-sem-tela.md",
     1
    ]
   ]
