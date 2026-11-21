@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e324c64e76ad09974481ddc1afaf1cb371734118` (2026-11-21T09:51:50-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ca1fccc140fb6d4f71ce41af061f4af3bf5c62b8` (2026-11-21T11:31:59-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5239 |
 | arquivos_codigo | 3143 |
-| linhas_codigo | 494286 |
+| linhas_codigo | 494337 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36543 nós · 60748 arestas · 2738 comunidades · grafo do commit `e324c64e`
-- comunidades maiores: ref_hooks (579), ref_components (412), ref_lib (298), ref_integrations (261), sonner (231), ref_contexts (220), framer-motion (208), date-fns (202), react-router-dom (202), ai-usage.ts (187), getCorsHeaders (166), ref_node_fs (163)
+- 36545 nós · 60752 arestas · 2728 comunidades · grafo do commit `ca1fccc1`
+- comunidades maiores: ref_hooks (570), ref_lib (313), lucide-react (267), ref_integrations (248), ref_node_fs (220), sonner (212), react-router-dom (210), framer-motion (208), ref_contexts (208), ref_components (193), getCorsHeaders (182), react (178)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (27)
-- docs/correcoes-validacao-2026-09-14.md (26)
+- docs/plano-melhorias-50-etapas.md (26)
+- docs/correcoes-validacao-2026-09-14.md (25)
 - package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-21 `ca1fccc` fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)
 - 2026-11-21 `e324c64` feat: e-mail transacional via Resend na edge send-transactional-email (#393)
 - 2026-11-20 `e7e6753` docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)
 - 2026-11-20 `ca511cf` fix: links internos quebrados (ADM-15) (#390)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `726efa7` feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)
 - 2026-11-19 `a73abe0` docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)
 - 2026-11-19 `5830e19` feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)
-- 2026-11-19 `05af443` fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

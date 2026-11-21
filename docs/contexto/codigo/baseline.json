@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e324c64e76ad09974481ddc1afaf1cb371734118",
+  "commit": "ca1fccc140fb6d4f71ce41af061f4af3bf5c62b8",
   "branch": "main",
-  "data_commit": "2026-11-21T09:51:50-03:00",
+  "data_commit": "2026-11-21T11:31:59-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ca1fccc",
+    "data": "2026-11-21",
+    "assunto": "fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)"
+   },
    {
     "sha": "e324c64",
     "data": "2026-11-21",
@@ -126,11 +131,6 @@
     "sha": "ce9014b",
     "data": "2026-11-19",
     "assunto": "test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)"
-   },
-   {
-    "sha": "a202373",
-    "data": "2026-11-19",
-    "assunto": "docs(recuperação): veredito medido para as 62 refs restantes (#367)"
    }
   ],
   "arquivos_mudados_7d": 1267,
@@ -150,14 +150,6 @@
    {
     "pasta": "src/components/admin",
     "mudancas": 22
-   },
-   {
-    "pasta": "PENDENCIAS.md",
-    "mudancas": 18
-   },
-   {
-    "pasta": "RELATORIO_CI.md",
-    "mudancas": 17
    },
    {
     "pasta": "package.json",
@@ -184,8 +176,16 @@
     "mudancas": 14
    },
    {
+    "pasta": "PENDENCIAS.md",
+    "mudancas": 13
+   },
+   {
     "pasta": "package-lock.json",
     "mudancas": 12
+   },
+   {
+    "pasta": "RELATORIO_CI.md",
+    "mudancas": 11
    },
    {
     "pasta": "src/components/quotes",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 27
+    "mudancas": 26
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 26
+    "mudancas": 25
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 189
+    "commits": 183
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 5239,
   "arquivos_codigo": 3143,
-  "linhas_codigo": 494286,
+  "linhas_codigo": 494337,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47563
+   "linhas": 47614
   },
   "src/integrations": {
    "arquivos": 3,

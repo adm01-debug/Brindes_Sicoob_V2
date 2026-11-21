@@ -3238,7 +3238,7 @@
    "hooks_exportados": [
     "useQuoteInitialization"
    ],
-   "linhas": 360,
+   "linhas": 411,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
