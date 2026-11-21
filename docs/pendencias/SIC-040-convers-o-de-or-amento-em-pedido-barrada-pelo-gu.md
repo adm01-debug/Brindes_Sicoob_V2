@@ -36,4 +36,4 @@ RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incl
 
 ## Estado final
 
-- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `convert_quote_to_sicoob_order` e `convert_quote_to_sicoob_order_core_20261013` (nucleo renomeado pela migration - prova de aplicacao). COMPORTAMENTO (flag + cadeia de triggers) NAO EXERCITADO - sem SQL direto. Pendente: conversao sintetica no banco.
+- CODIGO em main (migracao 20261013120512). APLICACAO EM PRODUCAO CONFIRMADA em 2026-11-21: swagger REST expoe `convert_quote_to_sicoob_order` e `convert_quote_to_sicoob_order_core_20261013`; `pg_proc` confirma procs `_core_20261013` presentes. Cadeia de triggers instalada em producao: `aaa_guard_quote_governance_write` (quotes), `aaa_guard_quote_item_content_write` (quote_items), `aaa_guard_quote_personalization_content_write` (quote_item_personalizations) + `zzz_guard_quote_price_attestation` (3 tabelas). COMPORTAMENTO: quotes vazia em producao (0 linhas) -> conversao sintetica NAO executavel; chain verificada ativa via assert (23503 real). Pendente: exercitar conversao quando houver dados.

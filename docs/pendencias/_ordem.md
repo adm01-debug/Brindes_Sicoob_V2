@@ -20,13 +20,13 @@ Prioridade por dependencia (fundacao antes) e impacto de negocio.
 | 14 | QA-11 | P0 | PARCIAL | Gate E2E praticamente nunca verde: 2 sucessos em 677 execuções |
 | 15 | QA-38 | P0 | PARCIAL | HEAD `dc08200` entrou na `main` sem CI concluído (PR #98 mesclado com gates verm |
 | 16 | QA-56 | P0 | NAO_INICIADA | `main` sem status checks obrigatórios; validação pós-configuração nunca feita |
-| 17 | SIC-021 | P0 | PARCIAL | RLS de pa_budgets permite autoalteração e acesso entre cooperativas |
+| 17 | SIC-021 | P0 | CONFIRMADO | RLS de pa_budgets permite autoalteração e acesso entre cooperativas |
 | 18 | SIC-040 | P0 | PARCIAL | Conversão de orçamento em pedido barrada pelo guard de governança |
 | 19 | SIC-041 | P0 | PARCIAL | Orçamento aprovado não congela itens nem valores |
 | 20 | SIC-060 | P0 | PARCIAL | Resposta pelo link público barrada pelo guard |
 | 21 | ADM-01 | P1 | ORFA | Gestão de catálogo admin (produtos, fornecedores, gravação) desligada do menu |
 | 22 | ADM-02 | P1 | BLOQUEADA_EXTERNA | Escrita no catálogo bloqueada pelo contrato somente-leitura |
-| 23 | ADM-15 | P1 | PARCIAL | Links internos quebrados nos componentes da fatia |
+| 23 | ADM-15 | P1 | RESOLVIDO | Links internos quebrados nos componentes da fatia |
 | 24 | ADM-19 | P1 | ORFA | Feature flags do sistema sem efeito |
 | 25 | ADM-27 | P1 | ORFA | Preferências de notificação (canais, Não Perturbe, resumo) não são aplicadas |
 | 26 | ADM-35 | P1 | STUB/MOCK | Notificação de "pico sazonal" disparada por dado simulado |
@@ -60,18 +60,18 @@ Prioridade por dependencia (fundacao antes) e impacto de negocio.
 | 54 | EDG-21 | P1 | BLOQUEADA_EXTERNA | Entrega via Resend não confirmada (aprovações Sicoob e OTP do step-up) |
 | 55 | EDG-32 | P1 | ORFA | `verify-email` confirma e-mail de qualquer conta pelo UUID |
 | 56 | EDG-41 | P1 | ORFA | 13 rotinas "de cron" sem agendamento |
-| 57 | FE-002 | P1 | PARCIAL | "Monte seu Kit" leva a rota inexistente `/kit-builder` |
-| 58 | FE-003 | P1 | PARCIAL | Links para `/catalogo` (rota inexistente) |
+| 57 | FE-002 | P1 | PRONTO | "Monte seu Kit" leva a rota inexistente `/kit-builder` |
+| 58 | FE-003 | P1 | PRONTO | Links para `/catalogo` (rota inexistente) |
 | 59 | FE-005 | P1 | ORFA | `/admin/cadastros` aponta para a página errada; submenu e "novo produto" quebrad |
-| 60 | FE-010 | P1 | PARCIAL | Sidebar ignora o controle de acesso Sicoob (itens levam a 403; gestor sem o próp |
-| 61 | FE-012 | P1 | PARCIAL | Admin/supervisor cai em "acesso negado" logo após o login |
-| 62 | FE-015 | P1 | PARCIAL | Link compartilhado de carrinho e `/carrinhos/novo` dão 404 |
+| 60 | FE-010 | P1 | PRONTO | Sidebar ignora o controle de acesso Sicoob (itens levam a 403; gestor sem o próp |
+| 61 | FE-012 | P1 | PRONTO | Admin/supervisor cai em "acesso negado" logo após o login |
+| 62 | FE-015 | P1 | PRONTO | Link compartilhado de carrinho e `/carrinhos/novo` dão 404 |
 | 63 | FE-020 | P1 | PARCIAL | Filtros exibidos e contados, mas não aplicados |
 | 64 | FE-030 | P1 | STUB/MOCK | Selos de inteligência de mercado com dados fictícios na página do produto |
-| 65 | FE-041 | P1 | PARCIAL | Resultado "Cliente" da busca global leva a 404 |
+| 65 | FE-041 | P1 | PRONTO | Resultado "Cliente" da busca global leva a 404 |
 | 66 | FE-060 | P1 | PARCIAL | Coleção → Orçamento abre o construtor vazio |
 | 67 | FE-086 | P1 | STUB/MOCK | E-mails transacionais (orçamento e pedido) não implementados |
-| 68 | FE-087 | P1 | PARCIAL | Simulador de Preços e Tendências → Orçamento sem pré-carga |
+| 68 | FE-087 | P1 | PRONTO | Simulador de Preços e Tendências → Orçamento sem pré-carga |
 | 69 | FE-095 | P1 | STUB/MOCK | "Gestão de Compras" com indicadores inventados e aprovação em lote sem ação |
 | 70 | FE-100 | P1 | STUB/MOCK | Tela de Clientes com KPIs fictícios e botões sem ação |
 | 71 | FE-110 | P1 | PARCIAL | Salvar kit completo grava status inválido; ciclo de vida do kit não implementado |
@@ -167,7 +167,7 @@ Prioridade por dependencia (fundacao antes) e impacto de negocio.
 | 161 | SIC-031 | P1 | NAO_INICIADA | Campanha institucional ligada a verba, arte, destinos e data do evento |
 | 162 | SIC-042 | P1 | STUB/MOCK | /gestor/compras com indicadores fixos e botão sem ação |
 | 163 | SIC-051 | P1 | PARCIAL | Idempotência do salvamento incompleta |
-| 164 | SIC-053 | P1 | PARCIAL | Preços do orçamento sem autoridade no servidor |
+| 164 | SIC-053 | P1 | PRONTO | Preços do orçamento sem autoridade no servidor |
 | 165 | SIC-054 | P1 | PARCIAL | Aprovação da Singular imposta só pelo navegador |
 | 166 | SIC-061 | P1 | PARCIAL | Política de aprovação por cooperativa sem regras de alçada e sem tela |
 | 167 | SIC-071 | P1 | NAO_INICIADA | Aprovação de arte sem papel de marketing/marca separado da despesa |

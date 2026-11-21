@@ -36,4 +36,4 @@ RLS — limitar ao escopo da cooperativa, proibir o solicitante de alterar a pr�
 
 ## Estado final
 
-- CODIGO em main (migracao 20261013115605). APLICACAO DA MIGRACAO NO BANCO DE PRODUCAO: NAO VERIFICADA nesta sessao - RLS ativo pre-existia (20260503) e o REST nao expoe guards RESTRICTIVE/REVOKE/policies. Pendente: conferir `pg_policies`/privs com SQL direto e exercitar comportamento de autoedicao bloqueada.
+- CONFIRMADO em 2026-11-21 via `pg_policies` (SQL direto, Management API): guards RESTRICTIVE aplicados em pa_budgets e cooperativa_budgets — `pa_budgets_anon_deny`/`cooperativa_budgets_anon_deny` (ALL, role anon, qual=false), `pa_budgets_active_scope_{insert,select,update,delete}_guard`, `cooperativa_budgets_active_scope_*_guard`, consolidados `sicoob_merged_*`. Migration 20261013115605 APLICADA no banco de producao. Comportamento de autoedicao bloqueada NAO exercitado (sem dados reais; tabelas de verba preservadas).
