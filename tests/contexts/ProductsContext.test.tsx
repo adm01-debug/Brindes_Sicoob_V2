@@ -57,8 +57,11 @@ describe('ProductsProvider', () => {
       id: `lote-1-${i}`,
       name: `Lote 1 - ${i}`,
     })) as Product[];
+    const allRequested = [...firstBatch.map((p) => p.id), id2.id];
+    // Mock honesto: retorna somente os produtos cujos ids estão no filtro,
+    // para que uma consulta repetindo/omitindo ids não passe despercebida.
     fetchPromobrindProducts.mockImplementation((opts: { filters: { id: string[] } }) =>
-      Promise.resolve(opts.filters.id.includes(id2.id) ? [id2] : firstBatch),
+      Promise.resolve([...firstBatch, id2].filter((p) => opts.filters.id.includes(p.id))),
     );
 
     // Espelha o padrão real da FavoritesPage/ComparePage: getProductsByIds
@@ -66,7 +69,7 @@ describe('ProductsProvider', () => {
     function BatchProbe() {
       const { getProductsByIds, products: cacheSignal } = useProductsContext();
       const loaded = useMemo(
-        () => getProductsByIds([...firstBatch.map((p) => p.id), id2.id]),
+        () => getProductsByIds(allRequested),
         [getProductsByIds, cacheSignal],
       );
       return <output data-testid="batch">{loaded.map((item) => item.id).join(',')}</output>;
@@ -85,6 +88,9 @@ describe('ProductsProvider', () => {
     expect(calls.length).toBe(2);
     expect(calls[0][0].filters.id.length).toBe(50);
     expect(calls[1][0].filters.id.length).toBe(1);
+    // Todos os 51 ids solicitados chegaram ao cache (o mock respeitou o filtro).
+    const renderedIds = screen.getByTestId('batch').textContent?.split(',').filter(Boolean) ?? [];
+    expect(renderedIds).toEqual(allRequested);
   });
 
   it('resposta vazia (falha total) não dispara nova consulta', async () => {
