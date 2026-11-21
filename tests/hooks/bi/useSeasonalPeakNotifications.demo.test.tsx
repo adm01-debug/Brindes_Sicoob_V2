@@ -64,25 +64,36 @@ describe("useSeasonalPeakNotifications - demo vs pico real", () => {
     expect(payload.title).toContain("pico sazonal hoje");
   });
 
-  it("segunda montagem no mesmo dia respeita dedup (sem nova gravacao)", async () => {
-    // Marker de dedup pre-populado com a chave do dia atual: o guard
-    // `hasDedupMarker` eh sincrono, entao o teste independe do relogio e
-    // nao precisa congelar timers (que quebraria o polling do waitFor).
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem(`bi.peak-notif.user-1.c1.4.${today}`, "1");
+  it("monta sem marca, grava a notificacao e a marca, e remontar no mesmo dia deduplica", async () => {
+    // Data fixa sem quebrar o polling do waitFor: `shouldAdvanceTime` avança
+    // os timers fake automaticamente, entao a chave de dedup (data UTC) e
+    // estavel entre as duas montagens.
+    vi.useFakeTimers({ now: new Date("2026-11-21T12:00:00.000Z"), shouldAdvanceTime: true });
+    try {
+      const hook = () =>
+        useSeasonalPeakNotifications({
+          clientId: "c1",
+          clientName: "Cli",
+          daysToNextPeak: 2,
+          nextPeakMonth: 4,
+          isMock: false,
+        });
 
-    renderHook(() =>
-      useSeasonalPeakNotifications({
-        clientId: "c1",
-        clientName: "Cli",
-        daysToNextPeak: 2,
-        nextPeakMonth: 4,
-        isMock: false,
-      })
-    );
+      // 1a montagem: grava a notificacao E a marca de dedup no localStorage.
+      renderHook(hook);
+      await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("workspace_notifications"));
+      await waitFor(() => expect(mocks.from.mock.calls.length).toBe(1));
+      expect(mocks.from.mock.results[0].value.insert).toHaveBeenCalledTimes(1);
+      await waitFor(() =>
+        expect(localStorage.getItem("bi.peak-notif.user-1.c1.4.2026-11-21")).toBe("1")
+      );
 
-    // Dedup sincrono: com o marker presente, `from` nunca eh consultado.
-    await waitFor(() => expect(mocks.from.mock.calls.length).toBe(0));
-    expect(mocks.from).not.toHaveBeenCalled();
+      // 2a montagem no mesmo dia -> dedup sincrono, sem nova consulta nem inserção.
+      renderHook(hook);
+      await waitFor(() => expect(mocks.from.mock.calls.length).toBe(1));
+      expect(mocks.from.mock.results[0].value.insert).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
