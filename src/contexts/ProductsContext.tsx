@@ -7,6 +7,30 @@ import { ProductsContext } from "./ProductsContextDef";
 export { ProductsContext, useProductsContext, useProductsContextSafe } from "./ProductsContextDef";
 
 /**
+ * A ponte external-db-bridge corta a seleção de products (`VERY_HEAVY_TABLES`)
+ * em 100 registros por chamada. IDs além do limite ficariam fora do cache
+ * (validade "unknown" no fechamento), então a busca é dividida em lotes que
+ * respeitam o teto da ponte. Falha num lote preserva o que já foi carregado.
+ */
+async function fetchProductBatches(ids: string[]): Promise<Product[]> {
+  const BRIDGE_LIMIT = 100;
+  const found: Product[] = [];
+  for (let start = 0; start < ids.length; start += BRIDGE_LIMIT) {
+    const chunk = ids.slice(start, start + BRIDGE_LIMIT);
+    try {
+      const raw = await fetchPromobrindProducts({
+        filters: { id: chunk },
+        limit: chunk.length,
+      });
+      found.push(...raw.map(mapPromobrindToProduct));
+    } catch (chunkErr) {
+      logger.warn(`[ProductsContext] Chunk fetch failed (${chunk.length} ids):`, chunkErr);
+    }
+  }
+  return found;
+}
+
+/**
  * Lazy-loading ProductsProvider.
  * Does NOT fetch all 6000+ products on startup.
  * Instead, it fetches products on-demand when requested via getProductById/getProductsByIds.
@@ -54,16 +78,12 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (mountedRef.current) setIsLoading(true);
 
       try {
-        const raw = await fetchPromobrindProducts({
-          filters: { id: idsToFetch },
-          limit: idsToFetch.length,
-        });
-        const mapped = raw.map(mapPromobrindToProduct);
+        const found = await fetchProductBatches(idsToFetch);
 
         if (mountedRef.current) {
           setCache(prev => {
             const next = new Map(prev);
-            mapped.forEach(p => next.set(p.id, p));
+            found.forEach(p => next.set(p.id, p));
             cacheRef.current = next;
             return next;
           });
