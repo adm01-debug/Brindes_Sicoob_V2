@@ -77,6 +77,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Limpar notificações antigas
+-- Idempotente: num banco persistente (preview Lovable) a função pode já existir
+-- com RETURNS VOID (fix A-028); o PostgreSQL proíbe CREATE OR REPLACE trocando
+-- o tipo de retorno (SQLSTATE 42P13), então DROP explícito antes do CREATE.
+DROP FUNCTION IF EXISTS public.cleanup_old_notifications();
 CREATE OR REPLACE FUNCTION cleanup_old_notifications()
 RETURNS INT AS $$
 DECLARE
