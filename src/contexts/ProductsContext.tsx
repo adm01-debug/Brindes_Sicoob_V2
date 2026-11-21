@@ -7,6 +7,31 @@ import { ProductsContext } from "./ProductsContextDef";
 export { ProductsContext, useProductsContext, useProductsContextSafe } from "./ProductsContextDef";
 
 /**
+ * A ponte external-db-bridge corta a seleção de products (`VERY_HEAVY_TABLES`)
+ * em 100 registros por chamada, e reduz a 50 em retry após timeout. IDs além do
+ * limite ficariam fora do cache (validade "unknown" no fechamento), então a
+ * busca usa lotes do tamanho do piso de retry da ponte (50) — assim um retry
+ * nunca trunca um lote. Falha num lote preserva o que já foi carregado.
+ */
+async function fetchProductBatches(ids: string[]): Promise<Product[]> {
+  const BRIDGE_LIMIT = 50;
+  const found: Product[] = [];
+  for (let start = 0; start < ids.length; start += BRIDGE_LIMIT) {
+    const chunk = ids.slice(start, start + BRIDGE_LIMIT);
+    try {
+      const raw = await fetchPromobrindProducts({
+        filters: { id: chunk },
+        limit: chunk.length,
+      });
+      found.push(...raw.map(mapPromobrindToProduct));
+    } catch (chunkErr) {
+      logger.warn(`[ProductsContext] Chunk fetch failed (${chunk.length} ids):`, chunkErr);
+    }
+  }
+  return found;
+}
+
+/**
  * Lazy-loading ProductsProvider.
  * Does NOT fetch all 6000+ products on startup.
  * Instead, it fetches products on-demand when requested via getProductById/getProductsByIds.
@@ -54,16 +79,17 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (mountedRef.current) setIsLoading(true);
 
       try {
-        const raw = await fetchPromobrindProducts({
-          filters: { id: idsToFetch },
-          limit: idsToFetch.length,
-        });
-        const mapped = raw.map(mapPromobrindToProduct);
+        const found = await fetchProductBatches(idsToFetch);
+        // Sem produtos obtidos (falha total): não publica um cache novo. A
+        // página de favoritos reconsultaria os mesmos IDs ausentes a cada mapa
+        // novo publicado → loop de consultas enquanto a falha persistir. O
+        // `finally` libera os IDs e encerra o loading.
+        if (found.length === 0) return;
 
         if (mountedRef.current) {
           setCache(prev => {
             const next = new Map(prev);
-            mapped.forEach(p => next.set(p.id, p));
+            found.forEach(p => next.set(p.id, p));
             cacheRef.current = next;
             return next;
           });

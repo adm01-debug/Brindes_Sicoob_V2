@@ -24,6 +24,7 @@ import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItem
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
+import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
 
 export function validateBudgetForSubmission<T>(
@@ -51,6 +52,20 @@ function truthyOr<T>(value: T | null | undefined | false | '' | 0, fallback: T):
 
 function definedOr<T>(value: T | null | undefined, fallback: T): T {
   return value === undefined || value === null ? fallback : value;
+}
+
+/**
+ * Remove os campos de frescor do catálogo (não persistidos em `quote_items`)
+ * da representação usada no dirty-check: a hidratação tardia preenche esses
+ * campos depois do snapshot inicial e isso não pode contar como "alteração
+ * não salva".
+ */
+function stripCatalogFreshness(items: QuoteItem[]): QuoteItem[] {
+  return items.map((item) => ({
+    ...item,
+    price_updated_at: undefined,
+    price_freshness_threshold_days: undefined,
+  }));
 }
 
 function quoteBuilderSteps(
@@ -495,6 +510,55 @@ export function useQuoteBuilderState() {
     setters: initializationSetters,
   });
 
+  // Hidratação tardia de preço: quote_items não persiste price_updated_at e
+  // price_freshness_threshold_days; getProductById retorna undefined quando o
+  // produto ainda não está no cache (busca lazy). Quando o catálogo termina a
+  // busca e popular o cache, mescla apenas os campos de preço nos itens — sem
+  // reaplicar dados salvos nem sobrescrever edições do usuário.
+  //
+  // Agendamento (uma vez) separado da leitura reativa: getProductById reagenda
+  // a busca em cada chamada, e um produto inativo (fora do cache para sempre)
+  // faria o catálogo publicar um mapa novo a cada resposta vazia → loop infinito.
+  // getProductsByIds faz o mesmo agendamento por conjunto, chamado uma só vez
+  // por itens/cache; a leitura usa `products` (reativo) sem reagendar.
+  const productsCtx = useProductsContextSafe();
+  const catalogProducts = productsCtx?.products;
+  const hydrationQueuedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!productsCtx || items.length === 0) return;
+    const pendingIds = items
+      .filter((item) => !item.price_updated_at || !item.price_freshness_threshold_days)
+      .map((item) => item.product_id)
+      .filter((id) => id && !hydrationQueuedRef.current.has(id));
+    if (pendingIds.length > 0) {
+      pendingIds.forEach((id) => hydrationQueuedRef.current.add(id));
+      productsCtx.getProductsByIds(pendingIds);
+    }
+  }, [items, catalogProducts, productsCtx]);
+  // Leitura reativa: só mescla quando a resposta chegou ao cache. Lê do mapa
+  // mutável sem chamar getProductById (que reagendaria busca para IDs ausentes).
+  useEffect(() => {
+    if (!productsCtx || items.length === 0 || catalogProducts === undefined) return;
+    const byId = new Map(catalogProducts.map((p) => [p.id, p]));
+    const refreshed = items.map((item) => {
+      if (item.price_updated_at && item.price_freshness_threshold_days) return item;
+      const product = byId.get(item.product_id);
+      if (!product) return item;
+      const next = {
+        ...item,
+        price_updated_at: product.priceUpdatedAt ?? item.price_updated_at ?? null,
+        price_freshness_threshold_days:
+          product.priceFreshnessThresholdDays ?? item.price_freshness_threshold_days ?? null,
+      };
+      return next.price_updated_at === item.price_updated_at &&
+        next.price_freshness_threshold_days === item.price_freshness_threshold_days
+        ? item
+        : next;
+    });
+    const changed = refreshed.some((item, idx) => item !== items[idx]);
+    if (changed) setItems(refreshed);
+  }, [items, catalogProducts, productsCtx]);
+
   // ── Computeds ──
   const totals = useMemo(
     () =>
@@ -559,7 +623,7 @@ export function useQuoteBuilderState() {
   const formSnapshotRef = useRef({
     clientId,
     contactId,
-    items,
+    items: stripCatalogFreshness(items),
     notes,
     internalNotes,
     tags,
@@ -577,7 +641,7 @@ export function useQuoteBuilderState() {
   formSnapshotRef.current = {
     clientId,
     contactId,
-    items,
+    items: stripCatalogFreshness(items),
     notes,
     internalNotes,
     tags,
@@ -608,7 +672,7 @@ export function useQuoteBuilderState() {
     const current = JSON.stringify({
       clientId,
       contactId,
-      items,
+      items: stripCatalogFreshness(items),
       notes,
       internalNotes,
       tags,
