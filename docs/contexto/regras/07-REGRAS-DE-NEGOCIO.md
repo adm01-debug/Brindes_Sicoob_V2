@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ca1fccc140` · branch `main` · 2026-11-21 14:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4555801911` · branch `main` · 2026-11-21 15:42 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -3268,7 +3268,7 @@ _nenhum item encontrado_
   ```
 - **applyQuoteIdentity(quote: Quote, setters: QuoteSetters)** — `src/hooks/quote/useQuoteInitialization.ts`
   ```
-  setters.setClientId(fallback(quote.client_id, "")); setters.setContactId(fallback(quote.client_id, "")); setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd"))); setters.setNotes(fallback(quote.notes, "")); setters.setInternalNotes(fallback(quote.internal_notes, "")); setters.setQuoteNumber(fallback(quote.quote_number, "")); setters.setCurrentStatus(quote.status); setters.setIsLatestVersion(quote.is_latest_version !== false); setters.setExpectedRowVersio …
+  setters.setClientId(fallback(quote.client_id, "")); // Contato não é fabricado: quotes não persistia contact_id (a tabela não tem a // coluna). Preencher com client_id criava contato inválido que passava a // validação. O contato fica vazio até seleção real no formulário. setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd"))); setters.setNotes(fallback(quote.notes, "")); setters.setInternalNotes(fallback(quote.internal_notes, "")); setters.setQuoteNumbe …
   ```
 - **applyQuoteClient(quote: Quote, setters: QuoteSetters)** — `src/hooks/quote/useQuoteInitialization.ts`
   ```
@@ -6443,6 +6443,8 @@ _nenhum item encontrado_
 | (industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o | `src/hooks/bi/useClientsComparison.ts` |
 | A falha do CRM nao pode virar "setor sem tendencia": sem propagar, o | `src/hooks/bi/useIndustryTrends.ts` |
 | (3 é o mínimo válido de ColumnCount — 4 colunas só fica disponível a partir de 768px, ver columnOptions em ColumnSelector.tsx) | `src/hooks/catalog/useCatalogDisplay.ts` |
+| validação. O contato fica vazio até seleção real no formulário. | `src/hooks/quote/useQuoteInitialization.ts` |
+| colunas). Rehidrata do catálogo (SSOT) para o badge/validação de | `src/hooks/quote/useQuoteInitialization.ts` |
 | * Calcula riscos usando somente estoque e variantes retornados pelo catálogo. */ | `src/hooks/quote/useQuotesStockStatus.ts` |
 | Desconto APARENTE aplicado sobre subtotal apresentado | `src/hooks/quotes/quoteHelpers.ts` |
 | Desconto REAL: comparado ao subtotal real (usado para alçada) | `src/hooks/quotes/quoteHelpers.ts` |
@@ -6497,6 +6499,4 @@ _nenhum item encontrado_
 | badge "Apenas seus dados". | `src/lib/auth/visibility-scope.ts` |
 | Categoria real existe mas não casou nenhuma regra → usa o próprio nome dela como label | `src/lib/bi/categoryResolver.ts` |
 | * Atalho conveniente — devolve apenas o label (compat com `deriveCategory` antigo) */ | `src/lib/bi/categoryResolver.ts` |
-| Usado pelo ExecutiveSummaryButton no módulo Business Analytic. | `src/lib/bi/pptxGenerator.ts` |
-| Fire-and-forget — falha de telemetria não pode quebrar o app. | `src/lib/external-db/bridge-telemetry-client.ts` |
-| … +286 linhas — lista completa em `context.json` | |
+| … +289 linhas — lista completa em `context.json` | |

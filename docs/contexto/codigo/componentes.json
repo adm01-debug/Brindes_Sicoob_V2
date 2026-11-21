@@ -17052,7 +17052,7 @@
     "CollectionDetailPage"
    ],
    "export_default": "CollectionDetailPage",
-   "linhas": 239,
+   "linhas": 270,
    "dominio": "pages",
    "hooks_locais": [
     "useCollectionsContext",

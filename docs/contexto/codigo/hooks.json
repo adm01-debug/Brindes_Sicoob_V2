@@ -3238,7 +3238,7 @@
    "hooks_exportados": [
     "useQuoteInitialization"
    ],
-   "linhas": 411,
+   "linhas": 446,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
@@ -9587,7 +9587,7 @@
    "hooks_exportados": [
     "useCollectionsPageState"
    ],
-   "linhas": 264,
+   "linhas": 277,
    "dominio": "pages/collections",
    "tabelas": [],
    "rpcs": [],
