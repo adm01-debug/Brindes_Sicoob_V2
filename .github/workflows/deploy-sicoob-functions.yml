@@ -41,6 +41,7 @@ jobs:
           supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json > /tmp/functions-before.json
           for function_name in \
             expert-chat \
+            send-transactional-email \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
