@@ -80,7 +80,7 @@ describe("useSeasonalPeakNotifications - demo vs pico real", () => {
         });
 
       // 1a montagem: grava a notificacao E a marca de dedup no localStorage.
-      renderHook(hook);
+      const first = renderHook(hook);
       await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("workspace_notifications"));
       await waitFor(() => expect(mocks.from.mock.calls.length).toBe(1));
       expect(mocks.from.mock.results[0].value.insert).toHaveBeenCalledTimes(1);
@@ -88,7 +88,9 @@ describe("useSeasonalPeakNotifications - demo vs pico real", () => {
         expect(localStorage.getItem("bi.peak-notif.user-1.c1.4.2026-11-21")).toBe("1")
       );
 
-      // 2a montagem no mesmo dia -> dedup sincrono, sem nova consulta nem inserção.
+      // Reabertura real: desmonta a pagina antes de remontar no mesmo dia. A
+      // marca precisa sobreviver ao fechamento (dedup sincrono no guard).
+      first.unmount();
       renderHook(hook);
       await waitFor(() => expect(mocks.from.mock.calls.length).toBe(1));
       expect(mocks.from.mock.results[0].value.insert).toHaveBeenCalledTimes(1);
