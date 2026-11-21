@@ -9,6 +9,7 @@ import { updateQuoteStatusAtomically } from '@/services/quoteStatusTransition';
 import { generateProposalPDFv2 } from '@/utils/proposalPdfReactGenerator';
 import { bitrixCircuitBreaker } from '@/utils/resilience';
 import { toast } from 'sonner';
+import { sendTransactionalEmail } from '@/hooks/useTransactionalEmail';
 
 interface SyncBitrixParams {
   quote: Quote;
@@ -114,5 +115,17 @@ export async function syncQuoteToBitrix({
   await markQuoteAsSent(quote, quoteId);
   await logSuccessfulSync(quoteId, bitrixQuoteId, logQuoteHistory);
   toast.success(result?.message || 'Orçamento sincronizado com Bitrix24!');
+  if (quote.client_email) {
+    void sendTransactionalEmail({
+      event_type: 'quote_sent',
+      recipient_email: quote.client_email,
+      recipient_name: quote.client_name,
+      data: {
+        quote_number: quote.quote_number,
+        total: quote.total,
+        action_url: window.location.href,
+      },
+    });
+  }
   return { success: true, updatedQuote: updatedQuote(bitrixQuoteId) };
 }

@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useConvertQuoteToOrder } from "@/hooks/orders/useOrders";
+import { sendTransactionalEmail } from "@/hooks/useTransactionalEmail";
+import { QuoteService } from "@/services/QuoteService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +31,20 @@ function useOrderConversion(quoteId: string, onConverted?: () => void) {
     onSuccess: (order) => {
       navigate(`/sicoob/pedidos/${order.id}`);
       onConverted?.();
+      void QuoteService.getById(quoteId).then((quote) => {
+        if (quote?.client_email) {
+          void sendTransactionalEmail({
+            event_type: "order_created",
+            recipient_email: quote.client_email,
+            recipient_name: quote.client_name,
+            data: {
+              order_number: order.order_number,
+              total: order.total,
+              action_url: `${window.location.origin}/sicoob/pedidos/${order.id}`,
+            },
+          });
+        }
+      });
     },
   });
   return { convertQuote, isPending };

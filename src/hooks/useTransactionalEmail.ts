@@ -7,7 +7,9 @@ export type EmailEventType =
   | "quote_sent"
   | "quote_approved"
   | "quote_rejected"
-  | "order_created";
+  | "order_created"
+  | "sicoob_order_status_change"
+  | "sicoob_order_approval_request";
 
 interface SendEmailParams {
   event_type: EmailEventType;

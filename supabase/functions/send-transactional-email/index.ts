@@ -2,6 +2,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { withStructuredLogging } from "../_shared/structured-logger.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
+import { deliverTransactionalEmail } from "./deliver.ts";
+import { renderTemplate } from "./templates.ts";
 
 const supportedEvents = new Set([
   "quote_sent",
@@ -42,11 +44,41 @@ serve(withStructuredLogging("send-transactional-email", async (req) => {
     return json({ error: "payload_invalido" }, 422);
   }
 
-  // Compatibilidade temporária: este endpoint nunca teve transporte durável.
-  // OTP e aprovações Sicoob usam entregadores próprios, com recibo do provedor.
+  const eventType = body.event_type as string;
+  const recipientEmail = body.recipient_email;
+  const recipientName = typeof body.recipient_name === "string" ? body.recipient_name : undefined;
+  const eventData = (body.data && typeof body.data === "object")
+    ? body.data as Record<string, unknown>
+    : {};
+
+  const template = renderTemplate(eventType, { recipientName, data: eventData });
+  if (!template) {
+    return json({ error: "template_indisponivel" }, 422);
+  }
+
+  const result = await deliverTransactionalEmail({
+    eventType,
+    recipientEmail,
+    recipientName,
+    subject: template.subject,
+    html: template.html,
+  });
+
+  if (!result.accepted) {
+    // Sem secrets, o transporte degrada com recibo estruturado em vez de 501:
+    // o cliente continua funcionando e o envio volta a ser tentado quando configurado.
+    return json({
+      success: false,
+      error: result.errorCode ?? "delivery_failed",
+      message: "O envio do e-mail não pôde ser confirmado pelo provedor.",
+      delivered: false,
+    }, result.errorCode === "email_not_configured" ? 503 : 502);
+  }
+
   return json({
-    success: false,
-    error: "email_transacional_sem_entrega",
-    message: "O envio deste email ainda não está implementado.",
-  }, 501);
+    success: true,
+    delivery_status: "accepted",
+    provider_id: result.providerId,
+    event_type: eventType,
+  }, 200);
 }));

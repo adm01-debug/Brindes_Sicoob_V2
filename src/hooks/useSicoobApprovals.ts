@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { sendTransactionalEmail } from "@/hooks/useTransactionalEmail";
 import { canSicoobTransitionTo, type OrderStatus } from "@/types/sicoob/orders";
 
 export interface ApprovalRequest {
@@ -21,6 +22,44 @@ export interface ApprovalRequest {
   requester?: {
     display_name: string;
   };
+}
+
+
+async function notifyApprovalRequested(requestId: string, orderId: string) {
+  if (!requestId) return;
+  try {
+    const { data: request } = await supabase
+      .from("sicoob_approval_requests")
+      .select("approver_id, amount_at_request")
+      .eq("id", requestId)
+      .single();
+    const { data: profile } = request?.approver_id
+      ? await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("user_id", request.approver_id)
+          .maybeSingle()
+      : { data: null };
+    if (!request || !profile?.email) return;
+    const { data: order } = await supabase
+      .from("sicoob_orders")
+      .select("order_number")
+      .eq("id", orderId)
+      .single();
+
+    void sendTransactionalEmail({
+      event_type: "sicoob_order_approval_request",
+      recipient_email: profile.email,
+      recipient_name: profile.full_name ?? undefined,
+      data: {
+        order_number: order?.order_number,
+        amount_at_request: request.amount_at_request,
+        action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`,
+      },
+    });
+  } catch {
+    // silencioso: e-mail de aprovação é best-effort
+  }
 }
 
 export const useApprovalRequests = (orderId?: string) => {
@@ -65,7 +104,7 @@ export const useApprovalRequests = (orderId?: string) => {
       previousStatus: string;
       isEscalated?: boolean;
     }) => {
-      await sicoobApprovalService.requestOrderApproval({
+      return await sicoobApprovalService.requestOrderApproval({
         orderId: payload.orderId,
         expectedStatus: payload.previousStatus,
         reason: payload.reason,
@@ -74,11 +113,12 @@ export const useApprovalRequests = (orderId?: string) => {
       });
     },
 
-    onSuccess: () => {
+    onSuccess: (requestId, variables) => {
       toast.success("Solicitação de aprovação enviada");
       queryClient.invalidateQueries({ queryKey: ["approval_requests"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
+      void notifyApprovalRequested(requestId, variables.orderId);
     },
     onError: (error: unknown) => {
       toast.error("Erro ao enviar solicitação: " + (error instanceof Error ? error.message : String(error)));
