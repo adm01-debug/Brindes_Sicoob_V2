@@ -8,12 +8,13 @@ export { ProductsContext, useProductsContext, useProductsContextSafe } from "./P
 
 /**
  * A ponte external-db-bridge corta a seleção de products (`VERY_HEAVY_TABLES`)
- * em 100 registros por chamada. IDs além do limite ficariam fora do cache
- * (validade "unknown" no fechamento), então a busca é dividida em lotes que
- * respeitam o teto da ponte. Falha num lote preserva o que já foi carregado.
+ * em 100 registros por chamada, e reduz a 50 em retry após timeout. IDs além do
+ * limite ficariam fora do cache (validade "unknown" no fechamento), então a
+ * busca usa lotes do tamanho do piso de retry da ponte (50) — assim um retry
+ * nunca trunca um lote. Falha num lote preserva o que já foi carregado.
  */
 async function fetchProductBatches(ids: string[]): Promise<Product[]> {
-  const BRIDGE_LIMIT = 100;
+  const BRIDGE_LIMIT = 50;
   const found: Product[] = [];
   for (let start = 0; start < ids.length; start += BRIDGE_LIMIT) {
     const chunk = ids.slice(start, start + BRIDGE_LIMIT);
@@ -79,6 +80,11 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
       try {
         const found = await fetchProductBatches(idsToFetch);
+        // Sem produtos obtidos (falha total): não publica um cache novo. A
+        // página de favoritos reconsultaria os mesmos IDs ausentes a cada mapa
+        // novo publicado → loop de consultas enquanto a falha persistir. O
+        // `finally` libera os IDs e encerra o loading.
+        if (found.length === 0) return;
 
         if (mountedRef.current) {
           setCache(prev => {
