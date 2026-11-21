@@ -163,12 +163,15 @@ export function useCollectionsPageState() {
     selectedCollectionIds.forEach(colId => {
       const col = localCollections.find(c => c.id === colId);
       if (!col) return;
-      collectionNames.push(col.name);
-      if (!linkedClientId && col.clientId) {
+      const from = col.productIds?.length ? getCollectionProducts(colId) : [];
+      // Cliente só é vinculado quando a coleção realmente fornece produto ao
+      // orçamento. Coleção vazia não pode "escolher" o cliente das demais.
+      if (from.length > 0 && !linkedClientId && col.clientId) {
         linkedClientId = col.clientId;
         linkedClientName = col.clientName ?? null;
       }
-      getCollectionProducts(colId).forEach(p => {
+      collectionNames.push(col.name);
+      from.forEach(p => {
         if (!allProducts.some(x => x.product_id === p.id)) {
           allProducts.push({
             product_id: p.id,

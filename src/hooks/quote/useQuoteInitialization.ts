@@ -165,7 +165,9 @@ function validRowVersion(value: number | null | undefined): number | null {
 
 function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
   setters.setClientId(fallback(quote.client_id, ""));
-  setters.setContactId(fallback(quote.client_id, ""));
+  // Contato não é fabricado: quotes não persistia contact_id (a tabela não tem a
+  // coluna). Preencher com client_id criava contato inválido que passava a
+  // validação. O contato fica vazio até seleção real no formulário.
   setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd")));
   setters.setNotes(fallback(quote.notes, ""));
   setters.setInternalNotes(fallback(quote.internal_notes, ""));
@@ -268,7 +270,12 @@ function mapTemplateItem(item: TemplateImportItem, getProductCost?: (id: string)
 }
 
 function isCollectionImportItem(value: unknown): boolean {
-  return Boolean(value && typeof value === "object" && "product_id" in value && "product_name" in value);
+  const record = value && typeof value === "object" ? value : null;
+  return Boolean(
+    record &&
+      typeof (record as Record<string, unknown>).product_id === "string" &&
+      typeof (record as Record<string, unknown>).product_name === "string"
+  );
 }
 
 function mapCollectionItem(item: CollectionImportItem, getProductCost?: (id: string) => number | undefined): QuoteItem {
@@ -303,10 +310,28 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     if (!isEditMode || !quoteId) return;
     setters.setLoadingQuote(true);
     fetchQuote(quoteId).then((quote) => {
-      if (quote) applyExistingQuote(quote, setters);
+      if (quote) {
+        applyExistingQuote(quote, setters);
+        // quote_items não persiste price_updated_at/freshness (schema sem as
+        // colunas). Rehidrata do catálogo (SSOT) para o badge/validação de
+        // preço defasado funcionarem ao reabrir um orçamento.
+        const items = quote.items ?? [];
+        if (items.length > 0) {
+          setters.setItems(items.map((item) => {
+            if (item.price_updated_at && item.price_freshness_threshold_days) return item;
+            const product = getProductById?.(item.product_id);
+            return {
+              ...item,
+              price_updated_at: product?.priceUpdatedAt ?? item.price_updated_at ?? null,
+              price_freshness_threshold_days:
+                product?.priceFreshnessThresholdDays ?? item.price_freshness_threshold_days ?? null,
+            };
+          }));
+        }
+      }
       setters.setLoadingQuote(false);
     });
-  }, [fetchQuote, isEditMode, quoteId, setters, getProductCost]);
+  }, [fetchQuote, isEditMode, quoteId, setters, getProductCost, getProductById]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {
