@@ -16,6 +16,7 @@ export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechniq
 import { invokeExternalDb } from "@/lib/external-db";
 import { useRBAC } from "@/hooks/useRBAC";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
+import { sendTransactionalEmail } from "@/hooks/useTransactionalEmail";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 const quotesLogger = createClientLogger("quotes.realtime");
@@ -34,6 +35,30 @@ function statusPermissionError(
     return "Apenas supervisores podem aprovar ou rejeitar orçamentos.";
   }
   return null;
+}
+
+interface QuoteDecisionSender {
+  client_email?: string | null;
+  client_name?: string | null;
+  quote_number?: string | null;
+  total?: number | null;
+}
+
+/** Envia e-mail transacional quando a decisao do cliente finaliza (aprovado/rejeitado). */
+function notifyQuoteDecision(quote: QuoteDecisionSender, status: Quote["status"], notes?: string) {
+  const clientEmail = quote.client_email;
+  if (!clientEmail || (status !== "approved" && status !== "rejected")) return;
+  void sendTransactionalEmail({
+    event_type: status === "approved" ? "quote_approved" : "quote_rejected",
+    recipient_email: clientEmail,
+    recipient_name: quote.client_name ?? undefined,
+    data: {
+      quote_number: quote.quote_number,
+      total: quote.total,
+      reason: notes,
+      action_url: `${window.location.origin}/orcamentos`,
+    },
+  });
 }
 
 export function useQuotes() {
@@ -121,7 +146,7 @@ export function useQuotes() {
       const { data: quote, error: fetchErr } = await supabase
         // rls-allow: lookup pré-RPC por UUID; a RLS valida o escopo e a RPC revalida sob lock.
         .from("quotes")
-        .select("id, row_version")
+        .select("id, row_version, client_email, client_name, quote_number, total")
         .eq("id", quoteId)
         .single();
       if (fetchErr) throw fetchErr;
@@ -142,6 +167,7 @@ export function useQuotes() {
 
       toast.success("Status atualizado");
       fetchQuotes();
+      notifyQuoteDecision(quote, status, notes);
       return true;
     } catch {
       toast.error("Erro ao atualizar status");
@@ -166,7 +192,7 @@ export function useQuotes() {
       const { data: accessibleQuotes, error: accessError } = await supabase
         // rls-allow: lookup pré-RPC por UUIDs; a RLS filtra o escopo e a RPC revalida sob lock.
         .from("quotes")
-        .select("id, row_version")
+        .select("id, row_version, client_email, client_name, quote_number, total")
         .in("id", uniqueQuoteIds);
       if (accessError) throw accessError;
       ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
