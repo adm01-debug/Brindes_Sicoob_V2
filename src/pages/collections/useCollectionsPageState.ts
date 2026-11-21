@@ -153,13 +153,21 @@ export function useCollectionsPageState() {
       product_image_url: string | null;
       unit_price: number;
       quantity: number;
+      price_updated_at: string | null;
+      price_freshness_threshold_days: number | null;
     }> = [];
     const collectionNames: string[] = [];
+    let linkedClientId: string | null = null;
+    let linkedClientName: string | null = null;
 
     selectedCollectionIds.forEach(colId => {
       const col = localCollections.find(c => c.id === colId);
       if (!col) return;
       collectionNames.push(col.name);
+      if (!linkedClientId && col.clientId) {
+        linkedClientId = col.clientId;
+        linkedClientName = col.clientName ?? null;
+      }
       getCollectionProducts(colId).forEach(p => {
         if (!allProducts.some(x => x.product_id === p.id)) {
           allProducts.push({
@@ -169,6 +177,8 @@ export function useCollectionsPageState() {
             product_image_url: p.images?.[0] || null,
             unit_price: p.price || 0,
             quantity: 1,
+            price_updated_at: p.priceUpdatedAt ?? null,
+            price_freshness_threshold_days: p.priceFreshnessThresholdDays ?? null,
           });
         }
       });
@@ -180,7 +190,7 @@ export function useCollectionsPageState() {
     }
 
     navigate("/orcamentos/novo", {
-      state: { fromCollection: collectionNames.join(", "), preloadProducts: allProducts },
+      state: { fromCollection: collectionNames.join(", "), clientId: linkedClientId, clientName: linkedClientName, preloadProducts: allProducts },
     });
   }, [selectedCollectionIds, localCollections, getCollectionProducts, navigate]);
 
