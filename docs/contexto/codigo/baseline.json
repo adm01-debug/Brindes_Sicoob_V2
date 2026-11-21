@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "bb6242f16129d63d1c0cc5625775f44e7a2b8dc7",
+  "commit": "b591559393c2c20686e0a93f2e07c07b910de2a9",
   "branch": "main",
-  "data_commit": "2026-11-21T16:48:17-03:00",
+  "data_commit": "2026-11-21T17:30:46-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "b591559",
+    "data": "2026-11-21",
+    "assunto": "chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)"
+   },
    {
     "sha": "bb6242f",
     "data": "2026-11-21",
@@ -126,11 +131,6 @@
     "sha": "1fc8d0f",
     "data": "2026-11-19",
     "assunto": "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)"
-   },
-   {
-    "sha": "fff15ba",
-    "data": "2026-11-19",
-    "assunto": "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)"
    }
   ],
   "arquivos_mudados_7d": 1274,
@@ -199,10 +199,6 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 23
-   },
-   {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 22
    },
    {
@@ -215,6 +211,10 @@
    },
    {
     "arquivo": "PENDENCIAS.md",
+    "mudancas": 21
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 21
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 185
+    "commits": 186
    },
    {
     "autor": "dependabot[bot]",

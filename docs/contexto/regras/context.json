@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "bb6242f16129d63d1c0cc5625775f44e7a2b8dc7",
+  "sha": "b591559393c2c20686e0a93f2e07c07b910de2a9",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-21 19:49 UTC",
+  "generated_at": "2026-11-21 21:13 UTC",
   "files_total": 5244,
   "code_files": 3811,
   "code_lines": 557401
@@ -253704,10 +253704,23 @@
   }
  },
  "git": {
-  "sha": "bb6242f16129d63d1c0cc5625775f44e7a2b8dc7",
+  "sha": "b591559393c2c20686e0a93f2e07c07b910de2a9",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "b591559",
+    "date": "2026-11-21",
+    "author": "adm01-debug",
+    "subject": "chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)",
+    "files": [
+     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
+     "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
+     "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
+     "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
+     "docs/pendencias/_ordem.md"
+    ]
+   },
    {
     "sha": "bb6242f",
     "date": "2026-11-21",
@@ -254708,44 +254721,35 @@
     "files": [
      "docs/RECUPERACAO/cobertura-refs.md"
     ]
-   },
-   {
-    "sha": "f21dbfd",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(produto): cartão de listagem mostra o prazo real, não texto cravado (#368)",
-    "files": [
-     "src/components/products/ProductCard.tsx",
-     "src/components/products/ProductHoverPreview.tsx",
-     "supabase/functions/_shared/external-product-contract.ts",
-     "tests/components/products/ProductCard.test.tsx",
-     "tests/components/products/prazo-no-cartao.test.tsx"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
+    3
+   ],
+   [
+    "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
+    3
+   ],
+   [
+    "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
+    3
+   ],
+   [
+    "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
+    3
+   ],
    [
     "src/hooks/quote/useQuoteInitialization.ts",
     3
    ],
    [
+    "docs/pendencias/_ordem.md",
+    2
+   ],
+   [
     "src/hooks/useQuoteBuilderState.ts",
-    2
-   ],
-   [
-    "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
-    2
-   ],
-   [
-    "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
-    2
-   ],
-   [
-    "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
-    2
-   ],
-   [
-    "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
     2
    ],
    [
@@ -254798,10 +254802,6 @@
    ],
    [
     "src/hooks/useSicoobApprovals.ts",
-    1
-   ],
-   [
-    "src/hooks/useTransactionalEmail.ts",
     1
    ]
   ]
