@@ -64,21 +64,32 @@ describe("useSeasonalPeakNotifications - demo vs pico real", () => {
     expect(payload.title).toContain("pico sazonal hoje");
   });
 
-  it("segunda renderizacao no mesmo dia respeita dedup (sem nova gravacao)", async () => {
-    mocks.from.mockReturnValueOnce(chainFor({ data: null, error: null }));
-    const hook = () =>
-      useSeasonalPeakNotifications({
-        clientId: "c1",
-        clientName: "Cli",
-        daysToNextPeak: 2,
-        nextPeakMonth: 4,
-        isMock: false,
-      });
-    renderHook(hook);
-    await waitFor(() => expect(mocks.from).toHaveBeenCalled());
-    // nova instancia do hook, mesmo localStorage -> dedup
-    renderHook(hook);
-    await new Promise((r) => setTimeout(r, 100));
-    expect(mocks.from).toHaveBeenCalledTimes(1);
+  it("segunda montagem no mesmo dia respeita dedup (sem nova gravacao)", async () => {
+    // Fixa a data UTC: a chave de dedup inclui `new Date().toISOString().slice(0,10)`
+    // e o teste nao pode depender do relogio real (virada de dia quebra a premissa).
+    const FIXED = new Date("2026-11-21T12:00:00.000Z");
+    vi.setSystemTime(FIXED);
+    try {
+      mocks.from.mockReturnValueOnce(chainFor({ data: null, error: null }));
+      const hook = () =>
+        useSeasonalPeakNotifications({
+          clientId: "c1",
+          clientName: "Cli",
+          daysToNextPeak: 2,
+          nextPeakMonth: 4,
+          isMock: false,
+        });
+
+      // 1a montagem grava e salva o marker no localStorage
+      renderHook(hook);
+      await waitFor(() => expect(mocks.from).toHaveBeenCalled());
+      await waitFor(() => expect(localStorage.getItem("bi.peak-notif.user-1.c1.4.2026-11-21")).toBe("1"));
+
+      // 2a montagem no mesmo dia -> dedup, sem nova gravacao
+      renderHook(hook);
+      await waitFor(() => expect(mocks.from).toHaveBeenCalledTimes(1));
+    } finally {
+      vi.setSystemTime(new Date());
+    }
   });
 });
