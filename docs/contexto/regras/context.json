@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "455580191120daa7cb824e1ef26119a770f5e34f",
+  "sha": "cf2d42bc08491a8c717f01b50c8cc62adaab276c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-21 15:42 UTC",
+  "generated_at": "2026-11-21 17:51 UTC",
   "files_total": 5242,
   "code_files": 3809,
-  "code_lines": 557017
+  "code_lines": 557191
  },
  "version": "1.3.2",
- "facts_hash": "31f64e79c08cc7e3",
+ "facts_hash": "c0d8b06ec76dbe35",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -64217,7 +64217,7 @@
   {
    "module": "src/contexts",
    "files": 10,
-   "lines": 1522,
+   "lines": 1548,
    "tables": [
     "organization_members",
     "organizations"
@@ -64292,7 +64292,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47649,
+   "lines": 47713,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65733,7 +65733,7 @@
   {
    "module": "tests",
    "files": 661,
-   "lines": 88464,
+   "lines": 88548,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -80096,6 +80096,10 @@
     "text": "A organização e sua permissão vêm da mesma leitura de memberships."
    },
    {
+    "file": "src/contexts/ProductsContext.tsx",
+    "text": "limite ficariam fora do cache (validade \"unknown\" no fechamento), então a"
+   },
+   {
     "file": "src/hooks/useAIRecommendations.ts",
     "text": "- Tratamento específico para 429 (rate limit) e 402 (créditos)"
    },
@@ -80294,6 +80298,14 @@
    {
     "file": "src/hooks/useProductImages.ts",
     "text": "* Hook para buscar apenas a imagem principal"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "text": "campos depois do snapshot inicial e isso não pode contar como \"alteração"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "text": "busca e popular o cache, mescla apenas os campos de preço nos itens — sem"
    },
    {
     "file": "src/hooks/useRBAC.tsx",
@@ -93499,6 +93511,11 @@
     "file": "src/contexts/AuthContext.tsx",
     "name": "FETCH_USER_DATA_LOG_CONTEXT",
     "value": "\"AuthContext.fetchUserData\""
+   },
+   {
+    "file": "src/contexts/ProductsContext.tsx",
+    "name": "BRIDGE_LIMIT",
+    "value": "50"
    },
    {
     "file": "src/data/mock-match-products.ts",
@@ -121680,6 +121697,14 @@
    {
     "file": "tests/contexts/ProductsContext.test.tsx",
     "name": "renderiza o produto assim que a busca sob demanda atualiza o cache"
+   },
+   {
+    "file": "tests/contexts/ProductsContext.test.tsx",
+    "name": "carrega 51 ids em dois lotes (limite da ponte de 50)"
+   },
+   {
+    "file": "tests/contexts/ProductsContext.test.tsx",
+    "name": "resposta vazia (falha total) não dispara nova consulta"
    },
    {
     "file": "tests/contract/sicoob-sync.test.ts",
@@ -202411,9 +202436,18 @@
   },
   "src/contexts/ProductsContext.tsx": {
    "path": "src/contexts/ProductsContext.tsx",
-   "lines": 157,
+   "lines": 183,
    "exports": [
     "function ProductsProvider"
+   ],
+   "params": [
+    {
+     "name": "BRIDGE_LIMIT",
+     "value": "50"
+    }
+   ],
+   "rule_comments": [
+    "limite ficariam fora do cache (validade \"unknown\" no fechamento), então a"
    ]
   },
   "src/contexts/ProductsContextDef.ts": {
@@ -207930,7 +207964,7 @@
   },
   "src/hooks/useQuoteBuilderState.ts": {
    "path": "src/hooks/useQuoteBuilderState.ts",
-   "lines": 970,
+   "lines": 1034,
    "exports": [
     "function validateBudgetForSubmission",
     "function useQuoteBuilderState"
@@ -207990,6 +208024,10 @@
    ],
    "role_checks": [
     "comprador_pac"
+   ],
+   "rule_comments": [
+    "campos depois do snapshot inicial e isso não pode contar como \"alteração",
+    "busca e popular o cache, mescla apenas os campos de preço nos itens — sem"
    ],
    "doc": "useQuoteBuilderState — Estado centralizado do QuoteBuilder (REFATORADO) Extrai toda a lógica de estado, cálculos e ações do QuoteBuilderPage.",
    "hooks": [
@@ -243928,11 +243966,18 @@
   },
   "tests/contexts/ProductsContext.test.tsx": {
    "path": "tests/contexts/ProductsContext.test.tsx",
-   "lines": 49,
+   "lines": 133,
    "is_test": true,
+   "rule_comments": [
+    "Mock honesto: retorna somente os produtos cujos ids estão no filtro,",
+    "respeitando o limite por lote — uma consulta pedindo limit menor que a",
+    "quantidade de ids não pode entregar itens de sobra."
+   ],
    "tests": [
     "ProductsProvider",
-    "renderiza o produto assim que a busca sob demanda atualiza o cache"
+    "renderiza o produto assim que a busca sob demanda atualiza o cache",
+    "carrega 51 ids em dois lotes (limite da ponte de 50)",
+    "resposta vazia (falha total) não dispara nova consulta"
    ]
   },
   "tests/contract/sicoob-sync.test.ts": {
@@ -253578,10 +253623,21 @@
   }
  },
  "git": {
-  "sha": "455580191120daa7cb824e1ef26119a770f5e34f",
+  "sha": "cf2d42bc08491a8c717f01b50c8cc62adaab276c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "cf2d42b",
+    "date": "2026-11-21",
+    "author": "adm01-debug",
+    "subject": "fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)",
+    "files": [
+     "src/contexts/ProductsContext.tsx",
+     "src/hooks/useQuoteBuilderState.ts",
+     "tests/contexts/ProductsContext.test.tsx"
+    ]
+   },
    {
     "sha": "4555801",
     "date": "2026-11-21",
@@ -254582,21 +254638,16 @@
      "package-lock.json",
      "package.json"
     ]
-   },
-   {
-    "sha": "1059478",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(testes): catraca de skip P0 deixa de reprovar quem remove um skip (#366)",
-    "files": [
-     "tests/scripts/check-critical-test-skip-budget.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "src/hooks/quote/useQuoteInitialization.ts",
     3
+   ],
+   [
+    "src/hooks/useQuoteBuilderState.ts",
+    2
    ],
    [
     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
@@ -254631,6 +254682,14 @@
     2
    ],
    [
+    "src/contexts/ProductsContext.tsx",
+    1
+   ],
+   [
+    "tests/contexts/ProductsContext.test.tsx",
+    1
+   ],
+   [
     "src/pages/CollectionDetailPage.tsx",
     1
    ],
@@ -254660,18 +254719,6 @@
    ],
    [
     "src/services/OrderService.ts",
-    1
-   ],
-   [
-    "supabase/functions/send-transactional-email/deliver.ts",
-    1
-   ],
-   [
-    "supabase/functions/send-transactional-email/index.test.ts",
-    1
-   ],
-   [
-    "supabase/functions/send-transactional-email/index.ts",
     1
    ]
   ]

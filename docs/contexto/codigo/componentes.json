@@ -15929,12 +15929,12 @@
     "ProductsProvider"
    ],
    "export_default": null,
-   "linhas": 157,
+   "linhas": 183,
    "dominio": "contexts",
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 20,
+   "usado_por": 21,
    "orfao": false
   },
   {

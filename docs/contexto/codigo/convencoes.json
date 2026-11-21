@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)",
    "fix: importação de coleção preserva preço fresco, contato real e cliente no bulk (#395 findings) (#396)",
    "fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)",
    "feat: e-mail transacional via Resend na edge send-transactional-email (#393)",
-   "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)",
-   "fix: links internos quebrados (ADM-15) (#390)"
+   "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

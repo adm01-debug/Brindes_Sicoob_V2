@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "455580191120daa7cb824e1ef26119a770f5e34f",
+  "commit": "cf2d42bc08491a8c717f01b50c8cc62adaab276c",
   "branch": "main",
-  "data_commit": "2026-11-21T12:42:02-03:00",
+  "data_commit": "2026-11-21T14:51:14-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "cf2d42b",
+    "data": "2026-11-21",
+    "assunto": "fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)"
+   },
    {
     "sha": "4555801",
     "data": "2026-11-21",
@@ -126,14 +131,9 @@
     "sha": "e890f24",
     "data": "2026-11-19",
     "assunto": "test(bi): recupera 8 catracas de \"não fabricar número para o vendedor\" (#371)"
-   },
-   {
-    "sha": "f08eb8f",
-    "data": "2026-11-19",
-    "assunto": "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)"
    }
   ],
-  "arquivos_mudados_7d": 1269,
+  "arquivos_mudados_7d": 1270,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 25
+    "mudancas": 24
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 24
+    "mudancas": 23
    },
    {
     "arquivo": "package.json",
@@ -258,6 +258,10 @@
     "mudancas": 12
    },
    {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 12
+   },
+   {
     "arquivo": "src/services/QuoteService.ts",
     "mudancas": 12
    },
@@ -267,10 +271,6 @@
    },
    {
     "arquivo": "src/hooks/quotes/useQuotes.ts",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 11
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 184
+    "commits": 185
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 5239,
   "arquivos_codigo": 3143,
-  "linhas_codigo": 494416,
+  "linhas_codigo": 494590,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -784,7 +784,7 @@
   },
   "src/contexts": {
    "arquivos": 10,
-   "linhas": 1522
+   "linhas": 1548
   },
   "src/data": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47649
+   "linhas": 47713
   },
   "src/integrations": {
    "arquivos": 3,
@@ -880,7 +880,7 @@
   },
   "tests/contexts": {
    "arquivos": 3,
-   "linhas": 356
+   "linhas": 440
   },
   "tests/contract": {
    "arquivos": 1,
@@ -1077,12 +1077,12 @@
    "linhas": 1046
   },
   {
-   "arquivo": "scripts/automation.mjs",
-   "linhas": 992
+   "arquivo": "src/hooks/useQuoteBuilderState.ts",
+   "linhas": 1034
   },
   {
-   "arquivo": "src/hooks/useQuoteBuilderState.ts",
-   "linhas": 970
+   "arquivo": "scripts/automation.mjs",
+   "linhas": 992
   },
   {
    "arquivo": "scripts/ai-context/gerar.mjs",

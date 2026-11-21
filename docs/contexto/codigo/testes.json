@@ -3496,12 +3496,12 @@
   {
    "arquivo": "tests/contexts/ProductsContext.test.tsx",
    "tipo": "unit",
-   "linhas": 49,
+   "linhas": 133,
    "testa": [
     "src/contexts/ProductsContext.tsx",
     "src/hooks/useProducts.ts"
    ],
-   "casos": 1
+   "casos": 3
   },
   {
    "arquivo": "tests/contract/sicoob-sync.test.ts",

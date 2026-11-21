@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4555801911` · branch `main` · 2026-11-21 15:42 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `cf2d42bc08` · branch `main` · 2026-11-21 17:51 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4740,6 +4740,7 @@ _nenhum item encontrado_
 | `SIDEBAR_TOUR_SELECTOR` | `"[data-tour='` | `src/constants/onboarding.ts` |
 | `REFRESH_SESSION_LOG_CONTEXT` | `"AuthContext.refreshSession"` | `src/contexts/AuthContext.tsx` |
 | `FETCH_USER_DATA_LOG_CONTEXT` | `"AuthContext.fetchUserData"` | `src/contexts/AuthContext.tsx` |
+| `BRIDGE_LIMIT` | `50` | `src/contexts/ProductsContext.tsx` |
 | `CHURRASCO_LABEL` | `'Churrasco'` | `src/data/mock-match-products.ts` |
 | `OFFICE_LABEL` | `'Escritório'` | `src/data/mock-match-products.ts` |
 | `FATHERS_DAY` | `'Dia dos Pais'` | `src/data/mock-match-products.ts` |
@@ -4869,8 +4870,7 @@ _nenhum item encontrado_
 | `TRIGGER_TO_FETCH_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
-| `BADGE_RENDER_BUDGET_MS` | `16` | `src/lib/notifications-metrics.ts` |
-| … +163 linhas — lista completa em `context.json` | | |
+| … +164 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7008 testes em 707 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7010 testes em 707 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6364,6 +6364,7 @@ _nenhum item encontrado_
 | * Identificador monotônico para garantir que apenas a última solicitação valide o token. */ | `src/contexts/DevChallengeContext.tsx` |
 | Apenas a solicitação mais recente pode consumir o token. Se uma nova | `src/contexts/DevChallengeContext.tsx` |
 | A organização e sua permissão vêm da mesma leitura de memberships. | `src/contexts/OrganizationContext.tsx` |
+| limite ficariam fora do cache (validade "unknown" no fechamento), então a | `src/contexts/ProductsContext.tsx` |
 | - Tratamento específico para 429 (rate limit) e 402 (créditos) | `src/hooks/useAIRecommendations.ts` |
 | ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob | `src/hooks/useCatalogFiltering.ts` |
 | * Prefetch do catálogo SOMENTE após autenticação (#6). | `src/hooks/useCatalogPrefetch.ts` |
@@ -6414,6 +6415,8 @@ _nenhum item encontrado_
 | Resolucao tolerante por campo: um original removido nao pode descartar as | `src/hooks/useProductImages.ts` |
 | * Busca apenas a imagem principal de um produto | `src/hooks/useProductImages.ts` |
 | * Hook para buscar apenas a imagem principal | `src/hooks/useProductImages.ts` |
+| campos depois do snapshot inicial e isso não pode contar como "alteração | `src/hooks/useQuoteBuilderState.ts` |
+| busca e popular o cache, mescla apenas os campos de preço nos itens — sem | `src/hooks/useQuoteBuilderState.ts` |
 | - 'dev' → apenas dev | `src/hooks/useRBAC.tsx` |
 | Fetch quote items for this product (handle 1000-row limit) | `src/hooks/useSalesHistory.ts` |
 | Fetch order items for this product (handle 1000-row limit) | `src/hooks/useSalesHistory.ts` |
@@ -6496,7 +6499,4 @@ _nenhum item encontrado_
 | * Aceita apenas caminhos internos, inclusive ao restaurar a rota após login. */ | `src/lib/auth/safe-internal-path.ts` |
 | (caller deve abortar fluxo padrão de erro). | `src/lib/auth/step-up-error.ts` |
 | - "self"   → vendedor (vê apenas os próprios dados) | `src/lib/auth/visibility-scope.ts` |
-| badge "Apenas seus dados". | `src/lib/auth/visibility-scope.ts` |
-| Categoria real existe mas não casou nenhuma regra → usa o próprio nome dela como label | `src/lib/bi/categoryResolver.ts` |
-| * Atalho conveniente — devolve apenas o label (compat com `deriveCategory` antigo) */ | `src/lib/bi/categoryResolver.ts` |
-| … +289 linhas — lista completa em `context.json` | |
+| … +292 linhas — lista completa em `context.json` | |

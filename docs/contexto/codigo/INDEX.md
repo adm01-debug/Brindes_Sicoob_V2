@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `455580191120daa7cb824e1ef26119a770f5e34f` (2026-11-21T12:42:02-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `cf2d42bc08491a8c717f01b50c8cc62adaab276c` (2026-11-21T14:51:14-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5239 |
 | arquivos_codigo | 3143 |
-| linhas_codigo | 494416 |
+| linhas_codigo | 494590 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -471,14 +471,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36548 nós · 60757 arestas · 2709 comunidades · grafo do commit `45558019`
-- comunidades maiores: ref_hooks (618), ref_components (424), ref_integrations (411), ref_lib (293), sonner (220), react-router-dom (208), framer-motion (205), date-fns (177), ref_stores (171), ai-usage.ts (168), react (163), ref_types (156)
+- 36552 nós · 60764 arestas · 2709 comunidades · grafo do commit `cf2d42bc`
+- comunidades maiores: ref_hooks (589), ref_components (418), ref_lib (290), ref_integrations (262), sonner (231), ref_node_fs (224), framer-motion (207), ref_contexts (206), react-router-dom (204), date-fns (202), expert-chat/index.ts (194), react (167)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (25)
-- docs/correcoes-validacao-2026-09-14.md (24)
+- docs/plano-melhorias-50-etapas.md (24)
+- docs/correcoes-validacao-2026-09-14.md (23)
 - package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-21 `cf2d42b` fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)
 - 2026-11-21 `4555801` fix: importação de coleção preserva preço fresco, contato real e cliente no bulk (#395 findings) (#396)
 - 2026-11-21 `ca1fccc` fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)
 - 2026-11-21 `e324c64` feat: e-mail transacional via Resend na edge send-transactional-email (#393)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `9515c40` test(edge): catraca para o espalhamento de versões do supabase-js (#377)
 - 2026-11-19 `e1ef799` chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)
 - 2026-11-19 `726efa7` feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)
-- 2026-11-19 `a73abe0` docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

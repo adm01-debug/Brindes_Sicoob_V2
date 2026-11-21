@@ -1885,7 +1885,7 @@
     "useProductsContext",
     "useProductsContextSafe"
    ],
-   "linhas": 157,
+   "linhas": 183,
    "dominio": "contexts",
    "tabelas": [],
    "rpcs": [],
@@ -1898,7 +1898,7 @@
     "useState"
    ],
    "canais_realtime": [],
-   "usado_por": 20,
+   "usado_por": 21,
    "usado_por_arquivos": [
     "src/components/collections/CollectionsEmptyStateSmart.tsx",
     "src/components/collections/CollectionsTrashView.tsx",
@@ -1914,6 +1914,7 @@
     "src/hooks/useCatalogState.ts",
     "src/hooks/useEnrichedFavoriteItems.ts",
     "src/hooks/useMockupGenerator.ts",
+    "src/hooks/useQuoteBuilderState.ts",
     "src/hooks/useSearch.ts",
     "src/pages/CollectionDetailPage.tsx",
     "src/pages/ComparePage.tsx",
@@ -7571,7 +7572,7 @@
    "hooks_exportados": [
     "useQuoteBuilderState"
    ],
-   "linhas": 970,
+   "linhas": 1034,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"
@@ -7587,6 +7588,7 @@
     "useMemo",
     "useNavigate",
     "useParams",
+    "useProductsContextSafe",
     "useQuoteInitialization",
     "useQuoteProductSearch",
     "useQuoteTemplates",
