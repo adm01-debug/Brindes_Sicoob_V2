@@ -370,6 +370,7 @@ function useClientMetadata(clientId: string | null) {
     clientName,
     daysToNextPeak: seasonality.daysToNextPeak,
     nextPeakMonth: seasonality.nextPeakMonth,
+    isMock: seasonality.isMock,
   });
   return { clientName, clientPhone, company, ramoAtividade };
 }
