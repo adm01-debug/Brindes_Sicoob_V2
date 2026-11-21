@@ -24,6 +24,7 @@ import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItem
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
+import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
 
 export function validateBudgetForSubmission<T>(
@@ -494,6 +495,34 @@ export function useQuoteBuilderState() {
     searchParams,
     setters: initializationSetters,
   });
+
+  // Hidratação tardia de preço: quote_items não persiste price_updated_at e
+  // price_freshness_threshold_days; getProductById retorna undefined quando o
+  // produto ainda não está no cache (busca lazy). Quando o catálogo termina a
+  // busca e popular o cache, mescla apenas os campos de preço nos itens — sem
+  // reaplicar dados salvos nem sobrescrever edições do usuário.
+  const productsCtx = useProductsContextSafe();
+  const catalogProducts = productsCtx?.products;
+  useEffect(() => {
+    if (!productsCtx || items.length === 0) return;
+    const refreshed = items.map((item) => {
+      if (item.price_updated_at && item.price_freshness_threshold_days) return item;
+      const product = productsCtx.getProductById(item.product_id);
+      if (!product) return item;
+      const next = {
+        ...item,
+        price_updated_at: product.priceUpdatedAt ?? item.price_updated_at ?? null,
+        price_freshness_threshold_days:
+          product.priceFreshnessThresholdDays ?? item.price_freshness_threshold_days ?? null,
+      };
+      return next.price_updated_at === item.price_updated_at &&
+        next.price_freshness_threshold_days === item.price_freshness_threshold_days
+        ? item
+        : next;
+    });
+    const changed = refreshed.some((item, idx) => item !== items[idx]);
+    if (changed) setItems(refreshed);
+  }, [items, catalogProducts, productsCtx]);
 
   // ── Computeds ──
   const totals = useMemo(
