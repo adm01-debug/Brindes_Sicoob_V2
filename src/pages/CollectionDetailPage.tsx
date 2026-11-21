@@ -33,6 +33,36 @@ import { ptBR } from "date-fns/locale";
 type SortOption = "name" | "sku" | "added";
 type ViewMode = "grid" | "list" | "table";
 
+type CollectionPreloadProduct = {
+  id: string;
+  name: string;
+  sku?: string | null;
+  images?: string[] | null;
+  price?: number | null;
+  priceUpdatedAt?: string | null;
+  priceFreshnessThresholdDays?: number | null;
+};
+
+function buildCollectionPreloadItem(
+  product: CollectionPreloadProduct,
+  variant?: { color_name?: string | null; color_hex?: string | null } | null
+) {
+  const selected = variant ?? {};
+  const basePrice = product.price ?? 0;
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_sku: product.sku || null,
+    product_image_url: product.images?.[0] || null,
+    unit_price: basePrice,
+    quantity: 1,
+    color_name: selected.color_name || null,
+    color_hex: selected.color_hex || null,
+    price_updated_at: product.priceUpdatedAt ?? null,
+    price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
+  };
+}
+
 function useCollectionDetailState() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -101,11 +131,12 @@ function useCollectionDetailState() {
     toast.success(`${selectedIds.size} produto(s) removido(s)`);
     setSelectedIds(new Set());
   }, [id, selectedIds, removeProductFromCollection]);
+  const detailClient = collections.find((item) => item.id === collection?.id);
   const handleBulkQuote = useCallback(() => {
     if (!collection || selectedIds.size === 0) return;
-    const preloadProducts = products.filter((product) => selectedIds.has(product.id)).map((product) => ({ product_id: product.id, product_name: product.name, product_sku: product.sku || null, product_image_url: product.images?.[0] || null, unit_price: product.price || 0, quantity: 1, color_name: variantMap.get(product.id)?.color_name || null, color_hex: variantMap.get(product.id)?.color_hex || null }));
-    navigate("/orcamentos/novo", { state: { fromCollection: collection.name, preloadProducts } });
-  }, [collection, selectedIds, products, variantMap, navigate]);
+    const preloadProducts = products.filter((product) => selectedIds.has(product.id)).map((product) => buildCollectionPreloadItem(product, variantMap.get(product.id)));
+    navigate("/orcamentos/novo", { state: { fromCollection: collection.name, clientId: detailClient?.clientId ?? null, clientName: detailClient?.clientName ?? null, preloadProducts } });
+  }, [collection, selectedIds, products, variantMap, navigate, detailClient]);
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let filtered = query ? products.filter((product) => product.name.toLowerCase().includes(query) || product.sku?.toLowerCase().includes(query) || product.brand?.toLowerCase().includes(query)) : products;
@@ -149,7 +180,7 @@ function useCollectionDetailState() {
   const handleCreateQuote = useCallback(() => {
     if (!collection) return;
     const local = collections.find((item) => item.id === collection.id);
-    const preloadProducts = products.map((product) => ({ product_id: product.id, product_name: product.name, product_sku: product.sku, product_image_url: product.images?.[0] || null, unit_price: product.price || 0, quantity: 1, color_name: variantMap.get(product.id)?.color_name || null, color_hex: variantMap.get(product.id)?.color_hex || null }));
+    const preloadProducts = products.map((product) => buildCollectionPreloadItem(product, variantMap.get(product.id)));
     navigate("/orcamentos/novo", { state: { fromCollection: collection.name, clientId: local?.clientId ?? null, clientName: local?.clientName ?? null, preloadProducts } });
   }, [collection, collections, products, variantMap, navigate]);
   return { id, navigate, collection, localCollection, isExternal, isLoadingExternalProducts, products, filteredProducts, productsWithVariant, variantMap, priceAtSaveMap, addedAtMap, notesMap, updatedAgo, searchQuery, setSearchQuery, sortBy, setSortBy, selectedIds, isSelectionMode, toggleSelect, toggleSelectAll, clearSelection, toggleSelectionMode, handleBulkRemove, handleBulkQuote, viewMode, setViewMode, gridColumns, setGridColumns, manageMode, setManageMode, onlyDrops, setOnlyDrops, priceDropCount, announcement, activeTab, setActiveTab, trashCount, setTrashCount, sensors, handleRemoveFromCollection, handleDragEnd, handleCreateQuote, updateProductNotes, favorites, comparison, showPresentation, setShowPresentation, showShareDialog, setShowShareDialog };

@@ -105,6 +105,9 @@ interface CollectionImportItem {
   colorName?: string | null;
   color_hex?: string | null;
   colorHex?: string | null;
+  size_code?: string | null;
+  price_updated_at?: string | null;
+  price_freshness_threshold_days?: number | null;
 }
 
 type QuoteSetters = InitParams["setters"];
@@ -162,7 +165,9 @@ function validRowVersion(value: number | null | undefined): number | null {
 
 function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
   setters.setClientId(fallback(quote.client_id, ""));
-  setters.setContactId(fallback(quote.client_id, ""));
+  // Contato não é fabricado: quotes não persistia contact_id (a tabela não tem a
+  // coluna). Preencher com client_id criava contato inválido que passava a
+  // validação. O contato fica vazio até seleção real no formulário.
   setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd")));
   setters.setNotes(fallback(quote.notes, ""));
   setters.setInternalNotes(fallback(quote.internal_notes, ""));
@@ -264,6 +269,15 @@ function mapTemplateItem(item: TemplateImportItem, getProductCost?: (id: string)
   };
 }
 
+function isCollectionImportItem(value: unknown): boolean {
+  const record = value && typeof value === "object" ? value : null;
+  return Boolean(
+    record &&
+      typeof (record as Record<string, unknown>).product_id === "string" &&
+      typeof (record as Record<string, unknown>).product_name === "string"
+  );
+}
+
 function mapCollectionItem(item: CollectionImportItem, getProductCost?: (id: string) => number | undefined): QuoteItem {
   const productId = fallback(item.product_id, fallback(item.productId, ""));
   return {
@@ -276,6 +290,9 @@ function mapCollectionItem(item: CollectionImportItem, getProductCost?: (id: str
     unit_cost: getProductCost?.(productId) ?? 0,
     color_name: fallback(item.color_name, item.colorName) ?? undefined,
     color_hex: fallback(item.color_hex, item.colorHex) ?? undefined,
+    size_code: fallback(item.size_code, undefined),
+    price_updated_at: fallback(item.price_updated_at, null),
+    price_freshness_threshold_days: fallback(item.price_freshness_threshold_days, null),
     personalizations: [],
   };
 }
@@ -293,10 +310,28 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     if (!isEditMode || !quoteId) return;
     setters.setLoadingQuote(true);
     fetchQuote(quoteId).then((quote) => {
-      if (quote) applyExistingQuote(quote, setters);
+      if (quote) {
+        applyExistingQuote(quote, setters);
+        // quote_items não persiste price_updated_at/freshness (schema sem as
+        // colunas). Rehidrata do catálogo (SSOT) para o badge/validação de
+        // preço defasado funcionarem ao reabrir um orçamento.
+        const items = quote.items ?? [];
+        if (items.length > 0) {
+          setters.setItems(items.map((item) => {
+            if (item.price_updated_at && item.price_freshness_threshold_days) return item;
+            const product = getProductById?.(item.product_id);
+            return {
+              ...item,
+              price_updated_at: product?.priceUpdatedAt ?? item.price_updated_at ?? null,
+              price_freshness_threshold_days:
+                product?.priceFreshnessThresholdDays ?? item.price_freshness_threshold_days ?? null,
+            };
+          }));
+        }
+      }
       setters.setLoadingQuote(false);
     });
-  }, [fetchQuote, isEditMode, quoteId, setters, getProductCost]);
+  }, [fetchQuote, isEditMode, quoteId, setters, getProductCost, getProductById]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {
@@ -393,15 +428,15 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
 
   // 7. Pre-fill from collection (passed via state)
   useEffect(() => {
-    const state = locationState as { fromCollection?: string; clientId?: string; clientName?: string; preloadProducts?: CollectionImportItem[] } | null;
-    if (!state?.fromCollection || !state.preloadProducts?.length) return;
+    const state = locationState as { fromCollection?: string; clientId?: string | null; clientName?: string | null; preloadProducts?: CollectionImportItem[] } | null;
+    const preloadProducts = Array.isArray(state?.preloadProducts) ? state.preloadProducts.filter(isCollectionImportItem) : [];
+    if (!state?.fromCollection || preloadProducts.length === 0) return;
     const source = state.fromCollection;
     if (state.clientId) setters.setClientId(state.clientId);
     if (state.clientName) {
-      setters.setContactInfo({ id: "", name: state.clientName, email: undefined, phone: undefined });
       setters.setCompanyInfo({ id: state.clientId || "", name: state.clientName, cnpj: undefined });
     }
-    const collectionItems = state.preloadProducts.map((item) => mapCollectionItem(item, getProductCost));
+    const collectionItems = preloadProducts.map((item) => mapCollectionItem(item, getProductCost));
     setters.setItems(collectionItems);
     setters.setActiveItemIndex(0);
     toast.success(`${collectionItems.length} produto(s) importado(s) da coleção "${source}"`);
