@@ -74,31 +74,28 @@ describe("BI -> repasse do modo demo ao alerta de pico", () => {
     mocks.useCrmCompany.mockReset().mockReturnValue({ data: null });
   });
 
-  it("cliente demo passa isMock: true para useSeasonalPeakNotifications", async () => {
-    mocks.useClientSeasonality.mockReset().mockReturnValue({ ...BASE_SEASONALITY, isMock: true });
-
-    render(
-      <MemoryRouter initialEntries={["/ferramentas/bi?clientId=sicoob-demo"]}>
-        <BusinessIntelligencePage />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => expect(mocks.useSeasonalPeakNotifications).toHaveBeenCalled());
-    const [args] = mocks.useSeasonalPeakNotifications.mock.calls[0] as unknown as Array<Record<string, unknown>>;
-    expect(args.isMock).toBe(true);
-    expect(args.daysToNextPeak).toBe(3);
-  });
-
-  it("cliente real com pico real passa isMock: false", async () => {
-    mocks.useClientSeasonality.mockReset().mockReturnValue({ ...BASE_SEASONALITY, isMock: false });
-
+  // Mesmo clientId nos dois cenarios: o que muda e o retorno de
+  // useClientSeasonality. Se a pagina deduzisse o sinal pelo ID (isDemoClient),
+  // ambos cairiam no mesmo valor e um dos cenarios falharia.
+  const renderFor = (seasonality: Record<string, unknown>) => {
+    mocks.useClientSeasonality.mockReset().mockReturnValue(seasonality);
     render(
       <MemoryRouter initialEntries={["/ferramentas/bi?clientId=sicoob-real"]}>
         <BusinessIntelligencePage />
       </MemoryRouter>
     );
+    return waitFor(() => expect(mocks.useSeasonalPeakNotifications).toHaveBeenCalled());
+  };
 
-    await waitFor(() => expect(mocks.useSeasonalPeakNotifications).toHaveBeenCalled());
+  it("sazonalidade simulada passa isMock: true para useSeasonalPeakNotifications", async () => {
+    await renderFor({ ...BASE_SEASONALITY, isMock: true });
+    const [args] = mocks.useSeasonalPeakNotifications.mock.calls[0] as unknown as Array<Record<string, unknown>>;
+    expect(args.isMock).toBe(true);
+    expect(args.daysToNextPeak).toBe(3);
+  });
+
+  it("sazonalidade real passa isMock: false", async () => {
+    await renderFor({ ...BASE_SEASONALITY, isMock: false });
     const [args] = mocks.useSeasonalPeakNotifications.mock.calls[0] as unknown as Array<Record<string, unknown>>;
     expect(args.isMock).toBe(false);
   });

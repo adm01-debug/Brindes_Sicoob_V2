@@ -65,31 +65,24 @@ describe("useSeasonalPeakNotifications - demo vs pico real", () => {
   });
 
   it("segunda montagem no mesmo dia respeita dedup (sem nova gravacao)", async () => {
-    // Fixa a data UTC: a chave de dedup inclui `new Date().toISOString().slice(0,10)`
-    // e o teste nao pode depender do relogio real (virada de dia quebra a premissa).
-    const FIXED = new Date("2026-11-21T12:00:00.000Z");
-    vi.setSystemTime(FIXED);
-    try {
-      mocks.from.mockReturnValueOnce(chainFor({ data: null, error: null }));
-      const hook = () =>
-        useSeasonalPeakNotifications({
-          clientId: "c1",
-          clientName: "Cli",
-          daysToNextPeak: 2,
-          nextPeakMonth: 4,
-          isMock: false,
-        });
+    // Marker de dedup pre-populado com a chave do dia atual: o guard
+    // `hasDedupMarker` eh sincrono, entao o teste independe do relogio e
+    // nao precisa congelar timers (que quebraria o polling do waitFor).
+    const today = new Date().toISOString().slice(0, 10);
+    localStorage.setItem(`bi.peak-notif.user-1.c1.4.${today}`, "1");
 
-      // 1a montagem grava e salva o marker no localStorage
-      renderHook(hook);
-      await waitFor(() => expect(mocks.from).toHaveBeenCalled());
-      await waitFor(() => expect(localStorage.getItem("bi.peak-notif.user-1.c1.4.2026-11-21")).toBe("1"));
+    renderHook(() =>
+      useSeasonalPeakNotifications({
+        clientId: "c1",
+        clientName: "Cli",
+        daysToNextPeak: 2,
+        nextPeakMonth: 4,
+        isMock: false,
+      })
+    );
 
-      // 2a montagem no mesmo dia -> dedup, sem nova gravacao
-      renderHook(hook);
-      await waitFor(() => expect(mocks.from).toHaveBeenCalledTimes(1));
-    } finally {
-      vi.setSystemTime(new Date());
-    }
+    // Dedup sincrono: com o marker presente, `from` nunca eh consultado.
+    await waitFor(() => expect(mocks.from.mock.calls.length).toBe(0));
+    expect(mocks.from).not.toHaveBeenCalled();
   });
 });
