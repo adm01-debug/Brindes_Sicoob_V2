@@ -771,16 +771,40 @@ CREATE POLICY cost_centers_select ON public.cost_centers
   FOR SELECT TO authenticated
   USING (public.user_can_access_cooperativa(cooperativa_id));
 
+-- Quem pode manter centro de custo: admin, Gestor de Compras e Gestor
+-- Singular (`comprador_singular`). O Gestor Singular e a autoridade de verba da
+-- propria cooperativa em `pa_budgets`/`pa_budget_close_competence` e na UI
+-- (`role-policy.ts`), entao negar a ele o cadastro do centro deixaria a tela de
+-- centros de custo inutilizavel para o proprio dono da verba.
+CREATE OR REPLACE FUNCTION public.user_is_comprador_singular(p_user_id UUID DEFAULT auth.uid())
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+      FROM public.user_roles
+     WHERE user_id = p_user_id
+       AND role = 'comprador_singular'::public.app_role
+  );
+$$;
+REVOKE ALL ON FUNCTION public.user_is_comprador_singular(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.user_is_comprador_singular(UUID) TO authenticated, service_role;
+
 DROP POLICY IF EXISTS cost_centers_write ON public.cost_centers;
 CREATE POLICY cost_centers_write ON public.cost_centers
   FOR ALL TO authenticated
   USING (
     public.is_admin((SELECT auth.uid()))
-    OR (public.is_gestor_compras() AND public.user_can_access_cooperativa(cooperativa_id))
+    OR ((public.is_gestor_compras() OR public.user_is_comprador_singular())
+        AND public.user_can_access_cooperativa(cooperativa_id))
   )
   WITH CHECK (
     public.is_admin((SELECT auth.uid()))
-    OR (public.is_gestor_compras() AND public.user_can_access_cooperativa(cooperativa_id))
+    OR ((public.is_gestor_compras() OR public.user_is_comprador_singular())
+        AND public.user_can_access_cooperativa(cooperativa_id))
   );
 
 DROP POLICY IF EXISTS pa_budget_entries_select ON public.pa_budget_entries;
@@ -814,12 +838,38 @@ CREATE POLICY pa_budget_allocations_select ON public.pa_budget_allocations
   FOR SELECT TO authenticated
   USING (public.sicoob_current_actor_can_read_order(order_id));
 
+-- Ler o pedido nao e autoridade para reescrever o rateio: um aprovador
+-- delegado ou um solicitante alcancam o pedido por leitura e, com `FOR ALL`
+-- sobre essa unica condicao, poderiam apagar ou remanejar o rateio de um pedido
+-- ja entregue. A escrita passa a exigir papel de verba (admin, Gestor de
+-- Compras ou Gestor Singular da cooperativa do pedido).
+CREATE OR REPLACE FUNCTION public.pa_budget_allocation_write_ok(p_order_id UUID)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT p_order_id IS NOT NULL AND (
+    public.is_admin((SELECT auth.uid()))
+    OR (
+      (public.is_gestor_compras() OR public.user_is_comprador_singular())
+      AND public.sicoob_current_actor_can_read_order(p_order_id)
+    )
+  );
+$$;
+REVOKE ALL ON FUNCTION public.pa_budget_allocation_write_ok(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pa_budget_allocation_write_ok(UUID) TO authenticated, service_role;
+
 DROP POLICY IF EXISTS pa_budget_allocations_write ON public.pa_budget_allocations;
-CREATE POLICY pa_budget_allocations_write ON public.pa_budget_allocations
-  FOR ALL TO authenticated
-  USING (public.sicoob_current_actor_can_read_order(order_id))
+DROP POLICY IF EXISTS pa_budget_allocations_insert ON public.pa_budget_allocations;
+DROP POLICY IF EXISTS pa_budget_allocations_update ON public.pa_budget_allocations;
+DROP POLICY IF EXISTS pa_budget_allocations_delete ON public.pa_budget_allocations;
+
+CREATE POLICY pa_budget_allocations_insert ON public.pa_budget_allocations
+  FOR INSERT TO authenticated
   WITH CHECK (
-    public.sicoob_current_actor_can_read_order(order_id)
+    public.pa_budget_allocation_write_ok(order_id)
     AND (
       cost_center_id IS NULL
       OR EXISTS (
@@ -832,6 +882,28 @@ CREATE POLICY pa_budget_allocations_write ON public.pa_budget_allocations
       )
     )
   );
+
+CREATE POLICY pa_budget_allocations_update ON public.pa_budget_allocations
+  FOR UPDATE TO authenticated
+  USING (public.pa_budget_allocation_write_ok(order_id))
+  WITH CHECK (
+    public.pa_budget_allocation_write_ok(order_id)
+    AND (
+      cost_center_id IS NULL
+      OR EXISTS (
+        SELECT 1
+          FROM public.cost_centers AS center
+          JOIN public.sicoob_orders AS ord ON ord.id = pa_budget_allocations.order_id
+          JOIN public.postos_atendimento AS service_point ON service_point.id = ord.pa_id
+         WHERE center.id = pa_budget_allocations.cost_center_id
+           AND center.cooperativa_id = service_point.cooperativa_id
+      )
+    )
+  );
+
+CREATE POLICY pa_budget_allocations_delete ON public.pa_budget_allocations
+  FOR DELETE TO authenticated
+  USING (public.pa_budget_allocation_write_ok(order_id));
 
 REVOKE ALL ON FUNCTION public.pa_budget_move_order(UUID, TEXT, TEXT)       FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.pa_budget_close_competence(UUID, INT, INT, BOOLEAN) FROM PUBLIC, anon;
@@ -1094,10 +1166,15 @@ BEGIN
 END;
 $$;
 
+-- `SECURITY DEFINER` + `authenticated` significava que qualquer sessao podia
+-- disparar a validacao de um order_id alheio e ler a mensagem de erro com os
+-- valores do rateio. Nenhum chamador do cliente usa esta funcao (ela e invocada
+-- pelo trigger `tg_validate_order_allocations`, que roda como dono), entao o
+-- grant para `authenticated` e desnecessario.
 REVOKE ALL ON FUNCTION public.pa_budget_validate_allocations(UUID, NUMERIC, TEXT, BOOLEAN)
-  FROM PUBLIC, anon;
+  FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.pa_budget_validate_allocations(UUID, NUMERIC, TEXT, BOOLEAN)
-  TO authenticated, service_role;
+  TO service_role;
 
 CREATE OR REPLACE FUNCTION public.tg_validate_order_allocations()
 RETURNS TRIGGER

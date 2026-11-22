@@ -7,6 +7,53 @@ export function hasConfiguredPaBudget(budget: { verba_total: number } | null | u
   return budget !== null && budget !== undefined;
 }
 
+export interface PaBudgetAmounts {
+  planejada: number;
+  reservada: number;
+  comprometida: number;
+  consumida: number;
+  ocupada: number;
+  disponivel: number;
+  percentualOcupado: number;
+}
+
+type PaBudgetAmountSource =
+  | {
+      verba_total?: number | null;
+      verba_planejada?: number | null;
+      verba_reservada?: number | null;
+      verba_comprometida?: number | null;
+      verba_consumida?: number | null;
+    }
+  | null
+  | undefined;
+
+function toAmount(value: number | null | undefined): number {
+  return Number(value ?? 0);
+}
+
+/**
+ * A verba vive em quatro estados (migration 20261122120000). Reservado e
+ * empenhado ainda nao sao gastos, mas ja estao ocupados: descontar so o
+ * consumido libera a mesma verba duas vezes para novos pedidos.
+ */
+export function readPaBudgetAmounts(budget: PaBudgetAmountSource): PaBudgetAmounts {
+  const planejada = toAmount(budget?.verba_planejada ?? budget?.verba_total);
+  const reservada = toAmount(budget?.verba_reservada);
+  const comprometida = toAmount(budget?.verba_comprometida);
+  const consumida = toAmount(budget?.verba_consumida);
+  const ocupada = reservada + comprometida + consumida;
+  return {
+    planejada,
+    reservada,
+    comprometida,
+    consumida,
+    ocupada,
+    disponivel: planejada - ocupada,
+    percentualOcupado: planejada > 0 ? (ocupada / planejada) * 100 : 0,
+  };
+}
+
 export function resolvePaBudgetState(input: {
   isLoading: boolean;
   hasError: boolean;
