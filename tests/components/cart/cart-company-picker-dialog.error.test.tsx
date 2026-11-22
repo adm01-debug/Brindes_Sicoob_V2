@@ -183,4 +183,46 @@ describe("CartCompanyPickerDialog — cache com falha", () => {
     expect(screen.queryByText(/mostrando dados salvos/i)).toBeNull();
     expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument();
   });
+
+  it("busca sem resultado com cache distingue a lista salva (não diz 'não encontrada' no diretório)", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+    });
+    function Wrapper({ children }: { children: ReactNode }) {
+      return (
+        <HelmetProvider>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter initialEntries={["/"]}>
+              <TooltipProvider>{children}</TooltipProvider>
+            </MemoryRouter>
+          </QueryClientProvider>
+        </HelmetProvider>
+      );
+    }
+
+    fetchMock.mockResolvedValueOnce([
+      { id: "c1", name: "Cooperativa Solar", ramo: "Crédito", logo_url: null },
+    ]);
+
+    const { rerender } = render(
+      <CartCompanyPickerDialog open onOpenChange={vi.fn()} />,
+      { wrapper: Wrapper }
+    );
+    await waitFor(() => expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument());
+
+    rerender(<CartCompanyPickerDialog open={false} onOpenChange={vi.fn()} />);
+    queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
+    fetchMock.mockRejectedValueOnce(new Error("network"));
+    rerender(<CartCompanyPickerDialog open onOpenChange={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/mostrando dados salvos/i)).toBeInTheDocument());
+
+    // Busca por termo sem correspondência na lista salva.
+    await userEvent.type(screen.getByPlaceholderText(/nome, cnpj ou segmento/i), "zzz-inexistente");
+
+    await waitFor(() => {
+      expect(screen.getByText(/nenhuma cooperativa na lista salva/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/nenhuma cooperativa ou unidade encontrada/i)).toBeNull();
+  });
 });
+

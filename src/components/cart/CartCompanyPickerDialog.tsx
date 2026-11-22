@@ -78,7 +78,11 @@ function DirectoryResults({
       ) : filteredCompanies.length > 0 ? (
         <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
       ) : !isLoading ? (
-        <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade encontrada.</p>
+        <p className="text-xs text-muted-foreground text-center py-12">
+          {staleNotice
+            ? "Nenhuma cooperativa na lista salva para a busca atual."
+            : "Nenhuma cooperativa ou unidade encontrada."}
+        </p>
       ) : null}
       {staleNotice && <DirectoryStaleNotice onRetry={onRetry} />}
     </ScrollArea>

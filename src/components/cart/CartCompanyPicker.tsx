@@ -98,7 +98,9 @@ function CompanyDirectoryList({
       ))}
       {companies.length === 0 && !isLoading && (
         <p className="text-xs text-muted-foreground text-center py-4">
-          Nenhuma cooperativa ou unidade encontrada
+          {staleNotice
+            ? "Nenhuma cooperativa na lista salva para a busca atual"
+            : "Nenhuma cooperativa ou unidade encontrada"}
         </p>
       )}
       {staleNotice && <DirectoryStaleNotice onRetry={onRetry} />}
