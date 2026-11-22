@@ -42,8 +42,8 @@
     "centro_de_custo_alheio": null
   },
   "rateio": {
-    "total_antigo": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000204 soma 200.00, mas o pedido vale 300.00.",
-    "reservado": "300.00"
+    "rateio_defasado": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000204 soma 150.00, mas o pedido vale 200.00.",
+    "reservado": "200.00"
   },
   "reconciliacao": "agregado igual ao livro",
   "rls": {
@@ -61,6 +61,14 @@
   },
   "livro_escopo": {
     "competencia_divergente": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\""
+  },
+  "rateio_rls": {
+    "leitor_apaga": "1|100.00",
+    "gestor_substitui": "1"
+  },
+  "centro_custo_singular": {
+    "propria_cooperativa": "criado",
+    "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
   },
   "resultado": "aprovado"
 }

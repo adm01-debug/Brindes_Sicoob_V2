@@ -19,6 +19,7 @@ import {
   type CostCenter,
   type OrderAllocation,
 } from '@/services/sicoob/costCenterService';
+import { buildAllocationPayload } from '@/lib/sicoob/orderCostCenterAllocation';
 
 interface Row {
   cost_center_id: string;
@@ -39,20 +40,7 @@ const toRows = (allocations: OrderAllocation[]): Row[] =>
 
 const totalOf = (rows: Row[]) => rows.reduce((sum, row) => sum + (Number(row.valor) || 0), 0);
 
-const buildPayload = (orderTotal: number, rows: Row[]) => {
-  const selecionados = rows.map((row) => row.cost_center_id).filter(Boolean);
-  if (selecionados.length !== rows.length) {
-    throw new Error('Selecione o centro de custo de cada linha do rateio.');
-  }
-  if (new Set(selecionados).size !== selecionados.length) {
-    throw new Error('Cada centro de custo pode aparecer uma unica vez no rateio.');
-  }
-  return rows.map((row) => {
-    const valor = Number(row.valor) || 0;
-    const percentual = orderTotal > 0 ? Number(((valor / orderTotal) * 100).toFixed(2)) : 0;
-    return { cost_center_id: row.cost_center_id, valor, percentual };
-  });
-};
+const buildPayload = buildAllocationPayload;
 
 // eslint-disable-next-line max-lines-per-function -- linha de rateio com tres campos e acoes; extrair pioraria a leitura
 function AllocationRow({

@@ -18,6 +18,10 @@ COOP_B = "00000000-0000-4000-8000-000000000011"
 GESTOR_A = "00000000-0000-4000-8000-000000000020"
 GESTOR_B = "00000000-0000-4000-8000-000000000021"
 ADMIN = "00000000-0000-4000-8000-000000000022"
+# Le o pedido da Coop A pelo escopo, mas nao tem papel de verba.
+LEITOR = "00000000-0000-4000-8000-000000000023"
+# Gestor Singular (comprador_singular) da Coop A.
+SINGULAR = "00000000-0000-4000-8000-000000000024"
 ORDER = "00000000-0000-4000-8000-000000000101"
 
 
@@ -229,21 +233,23 @@ try:
         f" VALUES ('{rateio}', '{center_a}', 200, 100);"
     )
     move(rateio, "pending")
-    move(rateio, "waiting_approval")
+    # O pedido submetido nao aceita trocar de valor (freeze do fluxo de
+    # aprovacao), entao o ajuste financeiro real acontece no rateio — e a entrada
+    # na verba revalida a soma contra o total do pedido.
+    sql(f"UPDATE pa_budget_allocations SET valor = 150 WHERE order_id = '{rateio}';")
     parcial_motivo = must_fail(
-        f"UPDATE sicoob_orders SET total_amount = 300 WHERE id = '{rateio}';",
+        f"UPDATE sicoob_orders SET status = 'waiting_approval' WHERE id = '{rateio}';",
         "soma",
     )
-    sql(
-        "UPDATE pa_budget_allocations SET valor = 300 WHERE order_id = "
-        f"'{rateio}';"
-    )
-    sql(f"UPDATE sicoob_orders SET total_amount = 300 WHERE id = '{rateio}';")
+    assert scalar(f"SELECT status FROM sicoob_orders WHERE id = '{rateio}';") == "pending"
+    sql(f"UPDATE pa_budget_allocations SET valor = 200 WHERE order_id = '{rateio}';")
+    move(rateio, "waiting_approval")
     reservado_rateio = scalar(
         f"SELECT verba_reservada FROM pa_budgets WHERE pa_id = '{PA_A}'"
         " AND ano = EXTRACT(YEAR FROM now()) AND mes = EXTRACT(MONTH FROM now());"
     )
-    result["rateio"] = {"total_antigo": parcial_motivo, "reservado": reservado_rateio}
+    assert reservado_rateio == "200.00", reservado_rateio
+    result["rateio"] = {"rateio_defasado": parcial_motivo, "reservado": reservado_rateio}
 
     # ---- 12. Reconciliacao fecha com o livro -------------------------------
     divergente = scalar(
@@ -340,6 +346,73 @@ try:
             f" '{GESTOR_A}');",
             "row-level security",
         )
+    }
+
+    # ---- 17. Escrita do rateio exige autoridade, nao apenas leitura ---------
+    somente_leitura = "00000000-0000-4000-8000-000000000207"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{somente_leitura}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 100);"
+    )
+    sql(
+        "INSERT INTO pa_budget_allocations (order_id, cost_center_id, valor, percentual)"
+        f" VALUES ('{somente_leitura}', '{center_a}', 100, 100);"
+    )
+    # O leitor por escopo alcanca o pedido, mas nao e autoridade de verba: a RLS
+    # precisa barrar DELETE/UPDATE do rateio (antes a policy era `FOR ALL` sobre a
+    # leitura do pedido).
+    actor_sql(
+        LEITOR,
+        "SET ROLE authenticated;\n"
+        f"DELETE FROM pa_budget_allocations WHERE order_id = '{somente_leitura}';",
+        check=False,
+    )
+    restou = scalar(
+        "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{somente_leitura}';"
+    )
+    assert restou == "1|100.00", restou
+    resultado_update = actor_sql(
+        LEITOR,
+        "SET ROLE authenticated;\n"
+        "UPDATE pa_budget_allocations SET valor = 1"
+        f" WHERE order_id = '{somente_leitura}';",
+    )
+    assert resultado_update.stdout.strip().endswith("UPDATE 0"), resultado_update.stdout
+    # O Gestor de Compras da mesma cooperativa continua podendo refazer o rateio.
+    api_gestor = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        "SET ROLE authenticated;\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{somente_leitura}', "
+        f"'[{{\"cost_center_id\":\"{center_a}\",\"valor\":100,\"percentual\":100}}]'::jsonb);"
+    ).stdout.strip().splitlines()[-1]
+    assert api_gestor == "1", api_gestor
+    result["rateio_rls"] = {
+        "leitor_apaga": restou,
+        "gestor_substitui": api_gestor,
+    }
+
+    # ---- 18. Gestor Singular mantem centro de custo da propria cooperativa --
+    criado_singular = sql(
+        f"SET request.jwt.claim.sub = '{SINGULAR}';\n"
+        "SET ROLE authenticated;\n"
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_A}', 'CC-03', 'Frota');"
+    )
+    assert criado_singular.returncode == 0, criado_singular.stderr
+    fora_do_escopo = must_fail(
+        f"SET request.jwt.claim.sub = '{SINGULAR}';\n"
+        "SET ROLE authenticated;\n"
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_B}', 'CC-04', 'Alheio');",
+        "row-level security",
+    )
+    assert scalar(
+        "SELECT count(*) FROM cost_centers WHERE codigo IN ('CC-03', 'CC-04');"
+    ) == "1"
+    result["centro_custo_singular"] = {
+        "propria_cooperativa": "criado",
+        "outra_cooperativa": fora_do_escopo,
     }
 
     result["resultado"] = "aprovado"

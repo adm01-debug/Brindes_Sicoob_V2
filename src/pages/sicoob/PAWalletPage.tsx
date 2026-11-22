@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sicoobBudgetService } from '@/services/sicoob/budgetService';
 import { sicoobApprovalService } from '@/services/sicoob/approvalService';
 import { formatCurrency } from '@/lib/format';
+import { readPaBudgetAmounts, type PaBudgetAmounts } from '@/lib/sicoob/paBudgetState';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-type BudgetRecord = NonNullable<Awaited<ReturnType<typeof sicoobBudgetService.getBudgetByPa>>>;
 type LimitIncreaseRequest = Awaited<
   ReturnType<typeof sicoobApprovalService.listLimitIncreaseRequests>
 >[number];
@@ -134,15 +134,8 @@ function RequestHistory({ requests }: { requests?: LimitIncreaseRequest[] }) {
   );
 }
 
-function BudgetKpis({
-  budget,
-  spentPercent,
-  remaining,
-}: {
-  budget?: BudgetRecord | null;
-  spentPercent: number;
-  remaining: number;
-}) {
+function BudgetKpis({ amounts }: { amounts: PaBudgetAmounts }) {
+  const { planejada, reservada, comprometida, consumida, disponivel, percentualOcupado } = amounts;
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <Card className="border-[1.5px] shadow-sm">
@@ -151,9 +144,7 @@ function BudgetKpis({
           <Wallet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {formatCurrency(Number(budget?.verba_total || 0))}
-          </div>
+          <div className="text-2xl font-bold">{formatCurrency(planejada)}</div>
           <p className="mt-1 text-xs text-muted-foreground">Limite total aprovado pela Singular</p>
         </CardContent>
       </Card>
@@ -163,11 +154,12 @@ function BudgetKpis({
           <TrendingUp className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-destructive">
-            {formatCurrency(budget?.verba_consumida || 0)}
-          </div>
+          <div className="text-2xl font-bold text-destructive">{formatCurrency(consumida)}</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {spentPercent.toFixed(1)}% do limite utilizado
+            {percentualOcupado.toFixed(1)}% do limite ocupado
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {formatCurrency(reservada)} reservado · {formatCurrency(comprometida)} empenhado
           </p>
         </CardContent>
       </Card>
@@ -178,7 +170,7 @@ function BudgetKpis({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-sicoob-green-dark">
-            {formatCurrency(remaining)}
+            {formatCurrency(disponivel)}
           </div>
           <p className="mt-1 text-xs font-medium text-muted-foreground text-sicoob-green-dark/80">
             Disponível para novos pedidos
@@ -345,10 +337,7 @@ export default function PAWalletPage() {
     },
   });
 
-  const spentPercent = budget
-    ? (Number(budget.verba_consumida) / Number(budget.verba_total)) * 100
-    : 0;
-  const remaining = budget ? Number(budget.verba_total) - Number(budget.verba_consumida) : 0;
+  const amounts = readPaBudgetAmounts(budget);
   const currentPeriod = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
 
   return (
@@ -369,7 +358,7 @@ export default function PAWalletPage() {
           </div>
         </div>
 
-        <BudgetKpis budget={budget} spentPercent={spentPercent} remaining={remaining} />
+        <BudgetKpis amounts={amounts} />
 
         <Tabs defaultValue="status" className="w-full">
           <TabsList className="mb-4 grid w-full grid-cols-2">
@@ -383,7 +372,7 @@ export default function PAWalletPage() {
 
           <TabsContent value="status">
             <BudgetStatus
-              spentPercent={spentPercent}
+              spentPercent={amounts.percentualOcupado}
               isDialogOpen={isRequestDialogOpen}
               requestedAmount={requestedAmount}
               requestReason={requestReason}

@@ -116,6 +116,10 @@ $$;
 
 GRANT USAGE ON SCHEMA public, auth TO authenticated, anon, service_role;
 GRANT SELECT ON public.profiles, public.user_roles TO authenticated;
+-- Em producao o Supabase concede SELECT de todas as tabelas de `public` ao
+-- papel `authenticated` e e a RLS que recorta as linhas. Sem esse grant a
+-- fixture falha com "permission denied" antes de chegar na policy.
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated, anon, service_role;
 GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.is_gestor_compras(uuid) TO authenticated, service_role;
@@ -150,17 +154,24 @@ SELECT '00000000-0000-4000-8000-000000000001',
 INSERT INTO auth.users (id) VALUES
   ('00000000-0000-4000-8000-000000000020'),
   ('00000000-0000-4000-8000-000000000021'),
-  ('00000000-0000-4000-8000-000000000022');
+  ('00000000-0000-4000-8000-000000000022'),
+  ('00000000-0000-4000-8000-000000000023'),
+  ('00000000-0000-4000-8000-000000000024');
 
+-- 023: enxerga o pedido da Coop A por escopo, mas nao tem papel de verba.
+-- 024: Gestor Singular (comprador_singular) da Coop A.
 INSERT INTO public.profiles (user_id, pa_id, cooperativa_id) VALUES
   ('00000000-0000-4000-8000-000000000020', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000010'),
   ('00000000-0000-4000-8000-000000000021', '00000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000011'),
-  ('00000000-0000-4000-8000-000000000022', NULL, NULL);
+  ('00000000-0000-4000-8000-000000000022', NULL, NULL),
+  ('00000000-0000-4000-8000-000000000023', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000010'),
+  ('00000000-0000-4000-8000-000000000024', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000010');
 
 INSERT INTO public.user_roles (user_id, role) VALUES
   ('00000000-0000-4000-8000-000000000020', 'gestor_compras'),
   ('00000000-0000-4000-8000-000000000021', 'gestor_compras'),
-  ('00000000-0000-4000-8000-000000000022', 'admin');
+  ('00000000-0000-4000-8000-000000000022', 'admin'),
+  ('00000000-0000-4000-8000-000000000024', 'comprador_singular');
 
 INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)
 VALUES ('00000000-0000-4000-8000-000000000101',

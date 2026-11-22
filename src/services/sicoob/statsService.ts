@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { readPaBudgetAmounts } from "@/lib/sicoob/paBudgetState";
 
 function assertQuery(error: { message?: string } | null, label: string): void {
   if (error) throw new Error(`Não foi possível carregar ${label}: ${error.message || 'erro de consulta'}`);
@@ -28,9 +29,11 @@ export const sicoobStatsService = {
     assertQuery(recentResult.error, 'os pedidos recentes do PA');
 
     const budget = budgetResult.data;
+    // Saldo do PA desconta os quatro estados da verba (migration 20261122120000).
+    const amounts = readPaBudgetAmounts(budget);
     return {
-      availableBudget: budget ? Number(budget.verba_total) - Number(budget.verba_consumida) : 0,
-      monthlyLimit: Number(budget?.verba_total || 0),
+      availableBudget: amounts.disponivel,
+      monthlyLimit: amounts.planejada,
       activeOrders: activeResult.count || 0,
       pendingApproval: approvalResult.count || 0,
       deliveredThisMonth: deliveredResult.count || 0,
