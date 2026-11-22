@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
 import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { getCrmHttpStatus } from "@/lib/crm-db";
 
 const RECENT_KEY = "cart-companies-recent";
 const FAV_KEY = "cart-companies-favorites";
@@ -158,9 +159,11 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   }, [createCart, onCreated, onOpenChange, recents]);
 
   const isLoading = loadingLocal;
-  // Falha com cache selecionável mantém a lista; alerta só sem dados aproveitáveis.
+  // 403 (acesso revogado) esconde o cache; falha de rede mantém a lista + aviso.
   const hasCompanyData = localCompanies.length > 0;
-  const showDirectoryError = directoryError && !hasCompanyData;
+  const isForbidden = directoryError && getCrmHttpStatus(directoryError) === 403;
+  const showDirectoryError = directoryError && (!hasCompanyData || Boolean(isForbidden));
+  const staleNotice = directoryError && hasCompanyData && !isForbidden;
 
   const renderRow = (company: CompanyItem) => (
     <div key={company.id} className="group flex items-center rounded-lg transition-colors hover:bg-accent/60">
@@ -253,7 +256,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               filteredCompanies={filteredCompanies}
               isLoading={isLoading}
               showDirectoryError={showDirectoryError}
-              staleNotice={directoryError && hasCompanyData}
+              staleNotice={staleNotice}
               onRetry={() => void refetch()}
               renderRow={renderRow}
             />

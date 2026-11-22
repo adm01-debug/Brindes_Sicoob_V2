@@ -95,6 +95,8 @@ describe("CartCompanyPickerDialog — erro no diretório", () => {
     await waitFor(() => expect(screen.getByText("Cooperativa Aurora")).toBeInTheDocument());
   });
 });
+
+describe("CartCompanyPickerDialog — cache com falha", () => {
   it("mantém lista em cache + aviso discreto quando a atualização falha (não esconde cooperativas)", async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
@@ -134,3 +136,51 @@ describe("CartCompanyPickerDialog — erro no diretório", () => {
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.queryByText(/nenhuma cooperativa ou unidade encontrada/i)).toBeNull();
   });
+
+  it("retry com cache remove o aviso de dados salvos e atualiza a lista", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+    });
+    function Wrapper({ children }: { children: ReactNode }) {
+      return (
+        <HelmetProvider>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter initialEntries={["/"]}>
+              <TooltipProvider>{children}</TooltipProvider>
+            </MemoryRouter>
+          </QueryClientProvider>
+        </HelmetProvider>
+      );
+    }
+
+    fetchMock.mockResolvedValueOnce([
+      { id: "c1", name: "Cooperativa Solar", ramo: "Crédito", logo_url: null },
+    ]);
+
+    const { rerender } = render(
+      <CartCompanyPickerDialog open onOpenChange={vi.fn()} />,
+      { wrapper: Wrapper }
+    );
+    await waitFor(() => expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument());
+
+    // Fecha, invalida (simula stale) e reabre com falha de rede: cache permanece + aviso.
+    rerender(<CartCompanyPickerDialog open={false} onOpenChange={vi.fn()} />);
+    queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
+    fetchMock.mockRejectedValueOnce(new Error("network"));
+    rerender(<CartCompanyPickerDialog open onOpenChange={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText(/mostrando dados salvos/i)).toBeInTheDocument());
+    expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument();
+
+    // Retry com sucesso: remove o aviso e atualiza a lista com o dado novo.
+    fetchMock.mockResolvedValueOnce([
+      { id: "c1", name: "Cooperativa Solar", ramo: "Crédito", logo_url: null },
+      { id: "c2", name: "Cooperativa Aurora", ramo: "Crédito", logo_url: null },
+    ]);
+    await userEvent.click(screen.getByRole("button", { name: /tentar novamente/i }));
+
+    await waitFor(() => expect(screen.getByText("Cooperativa Aurora")).toBeInTheDocument());
+    expect(screen.queryByText(/mostrando dados salvos/i)).toBeNull();
+    expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument();
+  });
+});

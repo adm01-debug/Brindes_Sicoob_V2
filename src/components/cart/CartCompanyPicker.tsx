@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
 import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { getCrmHttpStatus } from "@/lib/crm-db";
 
 interface CartCompanyPickerProps {
   onCreated?: () => void;
@@ -95,7 +96,7 @@ function CompanyDirectoryList({
           </div>
         </button>
       ))}
-      {companies.length === 0 && !isLoading && !staleNotice && (
+      {companies.length === 0 && !isLoading && (
         <p className="text-xs text-muted-foreground text-center py-4">
           Nenhuma cooperativa ou unidade encontrada
         </p>
@@ -153,9 +154,10 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, [createCart, onCreated]);
 
   const isLoading = loadingLocal;
-  // Falha com cache selecionável mantém a lista; alerta só sem dados aproveitáveis.
+  // 403 (acesso revogado) esconde o cache; falha de rede mantém a lista + aviso.
   const hasCompanyData = localCompanies.length > 0;
-  const showDirectoryError = directoryError && !hasCompanyData;
+  const isForbidden = directoryError && getCrmHttpStatus(directoryError) === 403;
+  const showDirectoryError = directoryError && (!hasCompanyData || Boolean(isForbidden));
 
   return (
     <div className="space-y-2">
@@ -188,7 +190,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
             companies={filteredCompanies}
             isLoading={isLoading}
             showDirectoryError={showDirectoryError}
-            staleNotice={directoryError && hasCompanyData}
+            staleNotice={directoryError && hasCompanyData && !isForbidden}
             canCreateCart={canCreateCart}
             onSelect={handleSelect}
             onRetry={() => void refetch()}

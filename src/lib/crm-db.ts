@@ -197,10 +197,19 @@ async function crmAttemptMessage(data: unknown, error: unknown): Promise<string>
   return bridgePayload(data).error || "Unknown CRM error";
 }
 
+export function getCrmHttpStatus(error: unknown): number | null {
+  return (error as { httpStatus?: number } | null)?.httpStatus ?? null;
+}
+
 function throwFinalCrmError(error: unknown, message: string, requestId: string): never {
   if (error) {
     console.error(`[CRM-DB] Edge function error [req_id=${requestId}]:`, message);
-    throw new Error(`CRM DB error: ${message}`);
+    const thrown = new Error(`CRM DB error: ${message}`) as { httpStatus?: number };
+    // 403 do crm-db-bridge chega como FunctionsHttpError com context = Response.
+    // Exportamos o status para o UI distinguir revogacao de acesso de falha de rede.
+    const context = (error as Error & { context?: Response }).context;
+    if (context instanceof Response) thrown.httpStatus = context.status;
+    throw thrown;
   }
   console.error(`[CRM-DB] Query error [req_id=${requestId}]:`, message);
   throw new Error(`CRM query error: ${message}`);
