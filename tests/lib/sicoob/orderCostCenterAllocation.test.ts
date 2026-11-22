@@ -87,6 +87,19 @@ describe('buildAllocationPayload', () => {
     expect(somaPercentual(payload)).toBe(100);
   });
 
+  it('nao envia parcela negativa quando o excesso cai numa linha zerada', () => {
+    // Pedido de 300 com 300,01 na primeira linha e 0,00 na segunda: descontar
+    // o centavo da ultima a deixaria em -0,01 e o banco recusaria o rateio.
+    const payload = buildAllocationPayload(300, [
+      { cost_center_id: 'a', valor: '300.01' },
+      { cost_center_id: 'b', valor: '0' },
+    ]);
+
+    expect(payload.map((item) => item.valor)).toEqual([300, 0]);
+    expect(payload.every((item) => item.valor >= 0)).toBe(true);
+    expect(payload.reduce((soma, item) => soma + item.valor, 0)).toBeCloseTo(300, 2);
+  });
+
   it('rejeita linha sem centro de custo', () => {
     expect(() =>
       buildAllocationPayload(100, [

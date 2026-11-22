@@ -709,7 +709,11 @@ BEGIN
   -- existencia de pedido privado a partir do identificador. A prova de escopo
   -- vem ANTES do FOR UPDATE: bloquear a linha privada de outro escopo revela
   -- que ela existe pelo tempo de espera do lock.
-  IF NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+  -- Ler o pedido nao da autoridade sobre a verba: o criador e o aprovador
+  -- delegado alcancam o pedido, mas quem reposiciona os debitos no livro e
+  -- quem gere verba. A checagem vem antes do FOR UPDATE pelo mesmo motivo da
+  -- prova de escopo (o tempo de espera do lock denuncia a linha privada).
+  IF NOT public.pa_budget_allocation_write_ok(p_order_id) THEN
     RAISE EXCEPTION 'Pedido % nao encontrado ou sem permissao para ratear.', p_order_id;
   END IF;
 
@@ -746,6 +750,9 @@ BEGIN
   -- A funcao roda como proprietaria e nao passa pela policy de INSERT; o
   -- vinculo centro de custo x cooperativa do pedido precisa ser provado aqui,
   -- senao o rateio aceita centro de outra cooperativa.
+  -- A cooperativa de referencia e a ATUAL do PA (nao a gravada no pedido): um
+  -- PA transferido entre Singulares mantem pedidos antigos com a cooperativa de
+  -- origem, e o rateio tem que acompanhar o posto.
   SELECT (row_data->>'cost_center_id')::uuid
     INTO v_centro_alheio
     FROM jsonb_array_elements(COALESCE(p_rows, '[]'::jsonb)) AS row_data
@@ -1005,19 +1012,32 @@ GRANT EXECUTE ON FUNCTION public.pa_budget_id_for_order(UUID)                 TO
 WITH snapshot AS MATERIALIZED (
   -- O recálculo de agregados dispara a cada INSERT no livro; sem o snapshot o
   -- segundo INSERT leria um `verba_consumida` já zerado pelo primeiro e o
-  -- residual histórica desapareceria.
+  -- residual histórica desapareceria. `ja_lancado` é lido no mesmo instante,
+  -- então reaplicar o backfill sobre um livro preservado desconta o que já
+  -- existe em vez de duplicar.
   SELECT b.id AS pa_budget_id, b.pa_id, b.ano, b.mes, b.cost_center_id,
-         b.verba_consumida
+         b.verba_consumida,
+         COALESCE((
+           SELECT sum(e.valor)
+             FROM public.pa_budget_entries e
+            WHERE e.pa_budget_id = b.id
+              AND e.estado = 'consumido'
+         ), 0) AS ja_lancado
     FROM public.pa_budgets b
    WHERE b.verba_consumida > 0
 ),
 legado AS (
   SELECT o.id AS order_id, o.total_amount,
          s.pa_budget_id, s.pa_id, s.ano, s.mes, s.cost_center_id,
-         s.verba_consumida,
-         sum(o.total_amount) OVER (
-           PARTITION BY s.pa_budget_id ORDER BY o.created_at, o.id
-         ) AS acumulado
+         s.verba_consumida, s.ja_lancado,
+         -- O histórico era debitado pela data de confirmação, o backfill
+         -- atribui pela data de criação: a soma dos pedidos pode superar o
+         -- consumo registrado. Por isso o valor de cada pedido é limitado ao
+         -- que ainda sobra depois dos anteriores e do que já está no livro.
+         COALESCE(
+           sum(o.total_amount) OVER (
+             PARTITION BY s.pa_budget_id ORDER BY o.created_at, o.id
+           ) - o.total_amount, 0) AS anterior
     FROM public.sicoob_orders o
     JOIN snapshot s
       ON s.pa_id = o.pa_id
@@ -1030,30 +1050,35 @@ legado AS (
      )
 ),
 atribuivel AS (
-  SELECT * FROM legado
-   WHERE acumulado - total_amount < verba_consumida
+  SELECT l.pa_budget_id, l.pa_id, l.ano, l.mes, l.cost_center_id, l.order_id,
+         LEAST(l.total_amount, l.verba_consumida - l.ja_lancado - l.anterior)
+           AS valor_atribuido
+    FROM legado l
+   WHERE l.verba_consumida - l.ja_lancado - l.anterior > 0
+),
+residual AS (
+  SELECT s.pa_budget_id, s.pa_id, s.ano, s.mes, s.cost_center_id,
+         s.verba_consumida - s.ja_lancado - COALESCE((
+           SELECT sum(a.valor_atribuido) FROM atribuivel a
+            WHERE a.pa_budget_id = s.pa_budget_id
+         ), 0) AS valor
+    FROM snapshot s
 )
 INSERT INTO public.pa_budget_entries
   (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
    tipo, estado, valor, order_id, motivo, actor_id)
 SELECT a.pa_budget_id, a.pa_id, a.ano, a.mes, a.cost_center_id,
-       'ajuste', 'consumido', a.total_amount, a.order_id,
+       'ajuste', 'consumido', a.valor_atribuido, a.order_id,
        'Consumo legado do pedido assumido pelo livro', NULL::uuid
   FROM atribuivel a
+ WHERE a.valor_atribuido > 0
 UNION ALL
-SELECT s.pa_budget_id, s.pa_id, s.ano, s.mes, s.cost_center_id,
-       'ajuste', 'consumido',
-       s.verba_consumida - COALESCE((
-         SELECT sum(a.total_amount) FROM atribuivel a
-          WHERE a.pa_budget_id = s.pa_budget_id
-       ), 0),
+SELECT r.pa_budget_id, r.pa_id, r.ano, r.mes, r.cost_center_id,
+       'ajuste', 'consumido', r.valor,
        NULL::uuid,
        'Saldo de consumo legado sem pedido atribuível', NULL::uuid
-  FROM snapshot s
- WHERE s.verba_consumida - COALESCE((
-         SELECT sum(a.total_amount) FROM atribuivel a
-          WHERE a.pa_budget_id = s.pa_budget_id
-       ), 0) > 0;
+  FROM residual r
+ WHERE r.valor > 0;
 
 -- Converte status do pedido no estado da verba. `NULL` = fora do ciclo.
 CREATE OR REPLACE FUNCTION public.pa_budget_estado_do_status(p_status TEXT)

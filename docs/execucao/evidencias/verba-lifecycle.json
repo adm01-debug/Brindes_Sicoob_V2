@@ -75,7 +75,7 @@
     "propria_cooperativa": "criado",
     "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
   },
-  "rateio_centro_alheio": "ERROR:  Centro de custo 052174b3-3b9f-4da9-b5c2-c27056baf9b3 nao pertence a cooperativa do pedido.",
+  "rateio_centro_alheio": "ERROR:  Centro de custo 55cedfa2-87a1-4d53-af9e-b2caf5b21e6f nao pertence a cooperativa do pedido.",
   "rateio_oraculo": {
     "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
     "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
@@ -101,12 +101,21 @@
     "eventos_do_pedido": "1|60.00"
   },
   "rateio_concorrente": {
-    "linhas": "1|200.00"
+    "linhas": "1|200.00|CC-06",
+    "centro_do_primeiro_envio": "CC-01",
+    "centro_do_ultimo_envio": "CC-06"
   },
   "cota_zero_reserva": {
     "rateio_aceito": "100%+0%",
     "lancamentos": "CC-01=100.00",
     "centro_zero_sem_lancamento": "0"
+  },
+  "backfill_cap_idempotencia": {
+    "pedidos_entregues": "80.00+80.00",
+    "consumo_registrado": "100.00",
+    "lancado_na_primeira": "2|100.00|00000000-0000-4000-8000-000000000281=80.00,00000000-0000-4000-8000-000000000282=20.00",
+    "lancado_na_reaplicacao": "2|100.00|00000000-0000-4000-8000-000000000281=80.00,00000000-0000-4000-8000-000000000282=20.00",
+    "agregado_apos_reaplicar": "100.00"
   },
   "resultado": "aprovado"
 }

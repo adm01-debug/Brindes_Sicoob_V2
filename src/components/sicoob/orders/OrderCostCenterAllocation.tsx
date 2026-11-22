@@ -31,6 +31,7 @@ interface Props {
   orderTotal: number;
   orderStatus?: string | null;
   cooperativeId?: string | null;
+  paId?: string | null;
 }
 
 // Status que ja comprometem verba: o rateio nao pode ficar defasado neles,
@@ -163,19 +164,36 @@ function AllocationFooter({
   );
 }
 
+/**
+ * A cooperativa do pedido e historica: quando o PA e transferido para outra
+ * Singular, o pedido antigo guarda a cooperativa de origem e o servidor (que
+ * valida pela cooperativa atual do PA) recusaria todos esses centros.
+ */
+function useCooperativaDoPa(paId: string | null | undefined, fallback: string | null | undefined) {
+  const { data } = useQuery({
+    queryKey: ['pa_cooperativa', paId ?? 'sem-pa'],
+    queryFn: () => costCenterService.cooperativaDoPa(paId as string),
+    enabled: Boolean(paId),
+  });
+  return data ?? fallback;
+}
+
 // eslint-disable-next-line max-lines-per-function -- componente preexistente de 93 linhas; esta PR acrescenta validacao de linha
 export function OrderCostCenterAllocation({
   orderId,
   orderTotal,
   orderStatus,
   cooperativeId,
+  paId,
 }: Props) {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<Row[]>([]);
 
+  const cooperativaReferencia = useCooperativaDoPa(paId, cooperativeId);
+
   const { data: costCenters } = useQuery({
-    queryKey: ['cost_centers', cooperativeId ?? 'todas'],
-    queryFn: () => costCenterService.list(cooperativeId),
+    queryKey: ['cost_centers', cooperativaReferencia ?? 'todas'],
+    queryFn: () => costCenterService.list(cooperativaReferencia),
   });
 
   const { data: allocations, isLoading } = useQuery({
