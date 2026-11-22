@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { FileText, Upload, FileCode, Download, AlertCircle } from "lucide-react";
 import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { toast } from "sonner";
+import { isAmountValido, parseAmountBR } from "./utils/amount";
 
 interface OrderInvoicesTabProps {
   orderId: string;
@@ -14,47 +15,6 @@ interface OrderInvoicesTabProps {
 }
 
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
-
-/**
- * Interpreta valor digitado em formato brasileiro. Trocar a vírgula por ponto
- * lia "1.250" como 1,25 e gravava a nota mil vezes menor: o ponto só é separador
- * decimal quando é o único separador e tem 1 ou 2 dígitos depois.
- */
-export function parseAmountBR(raw: string): number | undefined {
-  const text = raw.trim().replace(/^R\$\s*/i, "").replace(/\s/g, "");
-  if (!text) return undefined;
-
-  // Só formas reconhecidamente válidas passam. Antes, entrada malformada caía
-  // em `normalized = text` e o descarte silencioso gravava a nota sem valor
-  // (ou inflada): "1.250.50" virava 125050 e "1250,OO" virava undefined.
-  const milharPonto = /^\d{1,3}(\.\d{3})+$/.test(text);
-  const milharPontoComCentavos = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(text);
-  // Formato US com milhar: "1,250.50" e "1,250". O ponto é o decimal aqui.
-  const milharVirgulaComPontoDecimal = /^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(text);
-  const milharVirgula = /^\d{1,3}(,\d{3})+$/.test(text);
-  const simples = /^\d+(,\d{1,2})?$/.test(text);
-  const simplesDecimalPonto = /^\d+(\.\d{1,2})?$/.test(text);
-
-  let normalized: string;
-  if (milharPonto) {
-    normalized = text.replace(/\./g, "");
-  } else if (milharPontoComCentavos) {
-    normalized = text.replace(/\./g, "").replace(",", ".");
-  } else if (milharVirgulaComPontoDecimal) {
-    normalized = text.replace(/,/g, "");
-  } else if (milharVirgula) {
-    normalized = text.replace(/,/g, "");
-  } else if (simples) {
-    normalized = text.replace(",", ".");
-  } else if (simplesDecimalPonto) {
-    normalized = text;
-  } else {
-    return undefined;
-  }
-
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : undefined;
-}
 
 export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
@@ -88,11 +48,8 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
     }
   };
 
-  // Campo vazio continua opcional; preenchido, precisa ser um valor positivo.
-  const amountPreenchido = amount.trim().length > 0;
-  const parsedAmount = parseAmountBR(amount);
-  const amountValido = !amountPreenchido
-    || (parsedAmount !== undefined && Number.isFinite(parsedAmount) && parsedAmount > 0);
+  const amountValido = isAmountValido(amount);
+  const parsedAmount = amountValido ? parseAmountBR(amount) : undefined;
   const podeEnviar = Boolean(invoiceNumber.trim()) && Boolean(issuedAt) && amountValido;
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {

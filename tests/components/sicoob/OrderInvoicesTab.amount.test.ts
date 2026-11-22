@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAmountBR } from "@/components/sicoob/orders/OrderInvoicesTab";
+import { isAmountValido, parseAmountBR } from "@/components/sicoob/orders/utils/amount";
 
 describe("parseAmountBR", () => {
   it("lê milhar sem decimais como milhar", () => {
@@ -46,5 +46,31 @@ describe("parseAmountBR", () => {
   it("devolve undefined para campo vazio", () => {
     expect(parseAmountBR("")).toBeUndefined();
     expect(parseAmountBR("   ")).toBeUndefined();
+  });
+});
+
+describe("isAmountValido", () => {
+  it("libera o envio sem valor, porque o campo é opcional", () => {
+    expect(isAmountValido("")).toBe(true);
+    expect(isAmountValido("   ")).toBe(true);
+  });
+
+  it("libera valor reconhecido e positivo", () => {
+    expect(isAmountValido("1.250,00")).toBe(true);
+    expect(isAmountValido("R$ 99,90")).toBe(true);
+    expect(isAmountValido("0,01")).toBe(true);
+  });
+
+  it("bloqueia valor preenchido que o parser não reconhece", () => {
+    // Sem isso a nota era gravada sem valor e somava zero no relatório.
+    expect(isAmountValido("1250,OO")).toBe(false);
+    expect(isAmountValido("1.250.50")).toBe(false);
+    expect(isAmountValido("abc")).toBe(false);
+    expect(isAmountValido("R$")).toBe(false);
+  });
+
+  it("bloqueia valor zero, que não é nota fiscal", () => {
+    expect(isAmountValido("0")).toBe(false);
+    expect(isAmountValido("0,00")).toBe(false);
   });
 });
