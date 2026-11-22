@@ -64332,11 +64332,15 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/qa/simular-relatorios-agendados-cron.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql",
               "hits": 1
             }
           ],
-          "code_total_files": 1,
+          "code_total_files": 2,
           "cron": [],
           "db": [],
           "triggers": [

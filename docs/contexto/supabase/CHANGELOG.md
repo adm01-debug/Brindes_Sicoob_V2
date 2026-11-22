@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-22 20:16 UTC
+
+- **functions** alterado (1): `public.validate_scheduled_report_email()`
+
 ## 2026-11-22 15:14 UTC
 
 - **realtime** removido (3): `supabase_realtime_messages_publication:realtime.messages_2026_11_16`, `supabase_realtime_messages_publication:realtime.messages_2026_11_17`, `supabase_realtime_messages_publication:realtime.messages_2026_11_18`
