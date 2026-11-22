@@ -218,7 +218,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
-    sha256: "911980d52ed8079ec0469109df864373fce5aad78aefd335bbfcad389a3766d0",
+    sha256: "1aed4f42ffe17885bc61f64cd277d72995fd22f6f96c2675d66170a9e9308967",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

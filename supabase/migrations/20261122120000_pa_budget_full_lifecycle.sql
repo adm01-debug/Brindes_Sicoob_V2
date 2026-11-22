@@ -506,28 +506,54 @@ BEGIN
     END IF;
   END IF;
 
-  -- Fecha a posição anterior devolvendo exatamente o que ela ocupava.
+  -- Fecha a posição anterior devolvendo exatamente o que ela ocupava. Cada
+  -- centro de custo recebe o estorno da sua própria parcela: um unico
+  -- lancamento com o valor total deixaria o rateio sem reflexo no livro.
   IF v_atual IS NOT NULL AND COALESCE(v_atual_valor, 0) <> 0 THEN
     INSERT INTO public.pa_budget_entries
       (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
        tipo, estado, valor, order_id, motivo, actor_id)
-    VALUES (v_budget_id, v_budget.pa_id, v_budget.ano, v_budget.mes, v_cc,
-            CASE WHEN v_atual = 'reservado' THEN 'liberacao' ELSE 'estorno' END,
-            v_atual, -v_atual_valor, p_order_id,
-            COALESCE(p_motivo, 'Transição de ' || v_atual || ' para ' || p_para_estado),
-            (SELECT auth.uid()));
+    SELECT v_budget_id, v_budget.pa_id, v_budget.ano, v_budget.mes, e.cost_center_id,
+           CASE WHEN v_atual = 'reservado' THEN 'liberacao' ELSE 'estorno' END,
+           v_atual, -sum(e.valor), p_order_id,
+           COALESCE(p_motivo, 'Transição de ' || v_atual || ' para ' || p_para_estado),
+           (SELECT auth.uid())
+      FROM public.pa_budget_entries e
+     WHERE e.order_id = p_order_id
+       AND e.pa_budget_id = v_budget_id
+       AND e.estado = v_atual
+     GROUP BY e.cost_center_id
+    HAVING sum(e.valor) <> 0;
   END IF;
 
-  -- Abre a nova posição.
+  -- Abre a nova posição respeitando o rateio por centro de custo. Sem rateio
+  -- (ou com rateio que nao fecha o total do pedido) o pedido inteiro vai para
+  -- o centro herdado. Sem esta divisao o rateio existiria so na tela: o livro
+  -- continuaria debitando tudo em um unico centro.
   IF p_para_estado <> 'liberado' AND v_total <> 0 THEN
     INSERT INTO public.pa_budget_entries
       (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
        tipo, estado, valor, order_id, motivo, actor_id)
-    VALUES (v_budget_id, v_budget.pa_id, v_budget.ano, v_budget.mes, v_cc,
-            CASE p_para_estado WHEN 'reservado' THEN 'reserva'
-                               WHEN 'comprometido' THEN 'compromisso'
-                               ELSE 'consumo' END,
-            p_para_estado, v_total, p_order_id, p_motivo, (SELECT auth.uid()));
+    SELECT v_budget_id, v_budget.pa_id, v_budget.ano, v_budget.mes,
+           COALESCE(a.cost_center_id, v_cc),
+           CASE p_para_estado WHEN 'reservado' THEN 'reserva'
+                              WHEN 'comprometido' THEN 'compromisso'
+                              ELSE 'consumo' END,
+           p_para_estado, a.valor, p_order_id, p_motivo, (SELECT auth.uid())
+      FROM (
+        SELECT rateio.cost_center_id, rateio.valor
+          FROM public.pa_budget_allocations AS rateio
+         WHERE rateio.order_id = p_order_id
+         UNION ALL
+        -- Pedido sem rateio continua lancando o valor inteiro no centro
+        -- herdado (pode ser nulo, como antes da divisao por centro).
+        SELECT v_cc, v_total
+         WHERE NOT EXISTS (
+           SELECT 1 FROM public.pa_budget_allocations AS r2
+            WHERE r2.order_id = p_order_id
+         )
+      ) AS a
+     WHERE a.valor <> 0;
   END IF;
 
   SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget_id;
@@ -671,17 +697,21 @@ DECLARE
   v_status TEXT;
   v_total NUMERIC(14,2);
   v_duplicados INT;
+  v_centro_alheio UUID;
 BEGIN
+  -- FOR UPDATE serializa salvamentos concorrentes do mesmo pedido. Sem o
+  -- bloqueio, dois salvamentos leem o mesmo conjunto, cada DELETE so alcanca
+  -- as linhas visiveis no inicio do seu comando e as duas insercoes passam
+  -- pela unicidade quando os centros diferem: o pedido fica rateado em 200%.
   SELECT COALESCE(total_amount, 0), status
     INTO v_total, v_status
-    FROM public.sicoob_orders WHERE id = p_order_id;
+    FROM public.sicoob_orders WHERE id = p_order_id
+   FOR UPDATE;
 
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Pedido % nao encontrado.', p_order_id;
-  END IF;
-
-  IF NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
-    RAISE EXCEPTION 'Sem permissao para ratear o pedido %.', p_order_id;
+  -- "nao existe" e "sem permissao" respondem igual para nao virar oraculo de
+  -- existencia de pedido privado a partir do identificador.
+  IF NOT FOUND OR NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+    RAISE EXCEPTION 'Pedido % nao encontrado ou sem permissao para ratear.', p_order_id;
   END IF;
 
   SELECT count(*) - count(DISTINCT row_data->>'cost_center_id')
@@ -699,6 +729,24 @@ BEGIN
         OR (row_data->>'valor') IS NULL
   ) THEN
     RAISE EXCEPTION 'Cada linha do rateio precisa de centro de custo e valor.';
+  END IF;
+
+  -- A funcao roda como proprietaria e nao passa pela policy de INSERT; o
+  -- vinculo centro de custo x cooperativa do pedido precisa ser provado aqui,
+  -- senao o rateio aceita centro de outra cooperativa.
+  SELECT (row_data->>'cost_center_id')::uuid
+    INTO v_centro_alheio
+    FROM jsonb_array_elements(COALESCE(p_rows, '[]'::jsonb)) AS row_data
+    LEFT JOIN public.cost_centers AS center
+           ON center.id = (row_data->>'cost_center_id')::uuid
+    LEFT JOIN public.sicoob_orders AS ord ON ord.id = p_order_id
+    LEFT JOIN public.postos_atendimento AS service_point ON service_point.id = ord.pa_id
+   WHERE center.id IS NULL
+      OR service_point.cooperativa_id IS DISTINCT FROM center.cooperativa_id
+   LIMIT 1;
+
+  IF v_centro_alheio IS NOT NULL THEN
+    RAISE EXCEPTION 'Centro de custo % nao pertence a cooperativa do pedido.', v_centro_alheio;
   END IF;
 
   DELETE FROM public.pa_budget_allocations WHERE order_id = p_order_id;

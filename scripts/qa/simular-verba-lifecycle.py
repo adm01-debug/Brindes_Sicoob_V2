@@ -2,6 +2,7 @@
 """Valida o ciclo de verba em quatro estados (PLB-29/32) em PostgreSQL descartável."""
 from pathlib import Path
 import json
+from decimal import Decimal
 import subprocess
 import time
 import uuid
@@ -307,6 +308,24 @@ try:
     assert mantido == "1|120.00", mantido
     result["rateio_atomico"] = {"linhas": criado, "duplicado": duplicado_cc, "preservado": mantido}
 
+    # A duplicata e barrada antes do DELETE; para provar o rollback a falha
+    # precisa acontecer depois dele. Valor nao numerico passa por todas as
+    # checagens previas (centro valido, sem duplicata) e estoura no CAST do
+    # INSERT, ja com o rateio anterior apagado dentro da transacao.
+    falha_apos_delete = must_fail(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT * FROM pa_budget_replace_allocations('{atomico}', "
+        f"'[{{\"cost_center_id\":\"{center_a}\",\"valor\":\"nao-e-numero\",\"percentual\":60}}]'::jsonb);",
+        "numeric",
+    )
+    restaurado = scalar(
+        f"SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{atomico}';"
+    )
+    assert restaurado == "1|120.00", restaurado
+    result["rateio_atomico"]["rollback_apos_delete"] = restaurado
+    result["rateio_atomico"]["erro_insercao"] = falha_apos_delete
+
     # ---- 15. Rascunho com rateio defasado ainda edita itens (regressao) ----
     defasado = "00000000-0000-4000-8000-000000000206"
     sql(
@@ -336,8 +355,10 @@ try:
         "SELECT id FROM pa_budgets WHERE pa_id = "
         f"'{PA_A}' AND ano = EXTRACT(YEAR FROM now()) AND mes = EXTRACT(MONTH FROM now());"
     ).strip()
+    # Manter o PA autorizado e variar so o mes: trocar o PA ja era barrado pela
+    # policy de escopo e nao provava a checagem de competencia.
     result["livro_escopo"] = {
-        "competencia_divergente": must_fail(
+        "pa_de_outro_gestor": must_fail(
             f"SET request.jwt.claim.sub = '{GESTOR_A}';\nSET ROLE authenticated;\n"
             "INSERT INTO pa_budget_entries (pa_budget_id, pa_id, competencia_ano,"
             " competencia_mes, tipo, estado, valor, actor_id)"
@@ -345,8 +366,27 @@ try:
             " EXTRACT(MONTH FROM now())::int, 'ajuste', 'consumido', 10,"
             f" '{GESTOR_A}');",
             "row-level security",
-        )
+        ),
+        "competencia_divergente": must_fail(
+            f"SET request.jwt.claim.sub = '{GESTOR_A}';\nSET ROLE authenticated;\n"
+            "INSERT INTO pa_budget_entries (pa_budget_id, pa_id, competencia_ano,"
+            " competencia_mes, tipo, estado, valor, actor_id)"
+            f" VALUES ('{verba_b}', '{PA_A}', EXTRACT(YEAR FROM now())::int,"
+            " (EXTRACT(MONTH FROM now())::int % 12) + 1, 'ajuste', 'consumido', 10,"
+            f" '{GESTOR_A}');",
+            "row-level security",
+        ),
+        "competencia_correta": "gravado",
     }
+    gravou = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\nSET ROLE authenticated;\n"
+        "INSERT INTO pa_budget_entries (pa_budget_id, pa_id, competencia_ano,"
+        " competencia_mes, tipo, estado, valor, actor_id)"
+        f" VALUES ('{verba_b}', '{PA_A}', EXTRACT(YEAR FROM now())::int,"
+        " EXTRACT(MONTH FROM now())::int, 'ajuste', 'consumido', 10,"
+        f" '{GESTOR_A}');"
+    )
+    assert gravou.returncode == 0, gravou.stderr
 
     # ---- 17. Escrita do rateio exige autoridade, nao apenas leitura ---------
     somente_leitura = "00000000-0000-4000-8000-000000000207"
@@ -413,6 +453,113 @@ try:
     result["centro_custo_singular"] = {
         "propria_cooperativa": "criado",
         "outra_cooperativa": fora_do_escopo,
+    }
+
+    # ---- 19. Rateio nao aceita centro de custo de outra cooperativa --------
+    # A RPC roda como proprietaria e nao passa pela policy de INSERT: o vinculo
+    # centro x cooperativa do pedido precisa ser provado dentro dela.
+    center_b = scalar(
+        "SELECT id FROM cost_centers"
+        f" WHERE cooperativa_id = '{COOP_B}' AND codigo = 'CC-02';"
+    )
+    alheio = "00000000-0000-4000-8000-000000000208"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{alheio}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 100);"
+    )
+    centro_alheio = must_fail(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT * FROM pa_budget_replace_allocations('{alheio}', "
+        f"'[{{\"cost_center_id\":\"{center_b}\",\"valor\":100,\"percentual\":100}}]'::jsonb);",
+        "nao pertence a cooperativa do pedido",
+    )
+    assert scalar(
+        f"SELECT count(*) FROM pa_budget_allocations WHERE order_id = '{alheio}';"
+    ) == "0", "rateio de centro alheio nao pode gravar linha"
+    result["rateio_centro_alheio"] = centro_alheio
+
+    # ---- 20. Pedido de outro escopo responde igual a pedido inexistente ----
+    # Antes a RPC separava "nao encontrado" de "sem permissao", o que confirmava
+    # a existencia de um pedido privado a partir do identificador.
+    inexistente = must_fail(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT * FROM pa_budget_replace_allocations('00000000-0000-4000-8000-0000000002ff', '[]'::jsonb);",
+        "nao encontrado ou sem permissao",
+    )
+    fora_escopo = must_fail(
+        f"SET request.jwt.claim.sub = '{GESTOR_B}';\n"
+        f"SELECT * FROM pa_budget_replace_allocations('{alheio}', '[]'::jsonb);",
+        "nao encontrado ou sem permissao",
+    )
+    assert "nao encontrado," not in inexistente, inexistente
+    assert "nao encontrado," not in fora_escopo, fora_escopo
+    result["rateio_oraculo"] = {
+        "inexistente": inexistente,
+        "fora_do_escopo": fora_escopo,
+    }
+
+    # ---- 21. O livro divide o pedido pelos centros do rateio ---------------
+    # Sem isso o rateio viveria so na tela: o livro debitaria o pedido inteiro
+    # em um unico centro e o custo por unidade ficaria errado.
+    dividido = "00000000-0000-4000-8000-000000000209"
+    sql(
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_A}', 'CC-05', 'Frota');"
+    )
+    center_c = scalar(
+        "SELECT id FROM cost_centers"
+        f" WHERE cooperativa_id = '{COOP_A}' AND codigo = 'CC-05';"
+    )
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{dividido}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    rateio = json.dumps([
+        {"cost_center_id": center_a, "valor": 120, "percentual": 60},
+        {"cost_center_id": center_c, "valor": 80, "percentual": 40},
+    ])
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{dividido}', '{rateio}'::jsonb);"
+    )
+    reservado_antes = Decimal(estados()["reservado"])
+    move(dividido, "waiting_approval")
+    por_centro = scalar(
+        "SELECT string_agg(codigo || '=' || valor, ',' ORDER BY codigo)"
+        "  FROM ("
+        "    SELECT COALESCE(c.codigo, 'sem-centro') AS codigo, sum(e.valor) AS valor"
+        "      FROM pa_budget_entries e"
+        "      LEFT JOIN cost_centers c ON c.id = e.cost_center_id"
+        f"     WHERE e.order_id = '{dividido}' AND e.estado = 'reservado'"
+        "     GROUP BY 1"
+        "  ) AS posicao;"
+    )
+    assert por_centro == "CC-01=120.00,CC-05=80.00", por_centro
+    # O total sobe exatamente o valor do pedido, nem mais nem menos.
+    esperado = reservado_antes + Decimal("200.00")
+    assert Decimal(estados()["reservado"]) == esperado, estados()
+    # Confirmar move os dois centros juntos, sem deixar residuo no anterior.
+    move(dividido, "confirmed")
+    comprometido = scalar(
+        "SELECT string_agg(codigo || '=' || valor, ',' ORDER BY codigo)"
+        "  FROM ("
+        "    SELECT COALESCE(c.codigo, 'sem-centro') AS codigo, sum(e.valor) AS valor"
+        "      FROM pa_budget_entries e"
+        "      LEFT JOIN cost_centers c ON c.id = e.cost_center_id"
+        f"     WHERE e.order_id = '{dividido}' AND e.estado = 'comprometido'"
+        "     GROUP BY 1"
+        "  ) AS posicao;"
+    )
+    assert comprometido == "CC-01=120.00,CC-05=80.00", comprometido
+    zerado = scalar(
+        "SELECT COALESCE(sum(valor), 0) FROM pa_budget_entries"
+        f" WHERE order_id = '{dividido}' AND estado = 'reservado';"
+    )
+    assert zerado == "0.00", zerado
+    result["livro_por_centro"] = {
+        "reservado_por_centro": por_centro,
+        "reservado_apos_comprometer": zerado,
+        "comprometido_por_centro": comprometido,
     }
 
     result["resultado"] = "aprovado"
