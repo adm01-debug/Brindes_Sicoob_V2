@@ -2,10 +2,10 @@
  * CartCompanyPickerDialog - Modal de seleção de empresa com Recentes/Favoritas/Buscar.
  * Substitui o picker inline que empurrava conteúdo. Usa localStorage para persistência leve.
  */
-import { type MouseEvent, useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { type MouseEvent, type ReactNode, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Building2, Search, Loader2, Star, Clock, Globe } from "lucide-react";
+import { AlertCircle, Building2, Search, Loader2, Star, Clock, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
 import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { getCrmHttpStatus } from "@/lib/crm-db";
 
 const RECENT_KEY = "cart-companies-recent";
 const FAV_KEY = "cart-companies-favorites";
@@ -30,6 +31,62 @@ interface CartCompanyPickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
+}
+
+function DirectoryErrorNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex flex-col items-center gap-2 px-4 py-6 text-center">
+      <AlertCircle className="h-5 w-5 text-destructive" />
+      <p className="text-xs text-muted-foreground">
+        {"Não foi possível carregar o diretório. Seu perfil pode não ter acesso ou o serviço pode estar indisponível."}
+      </p>
+      <Button variant="ghost" size="sm" onClick={onRetry}>Tentar novamente</Button>
+    </div>
+  );
+}
+
+function DirectoryStaleNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-2 pt-2">
+      <p className="text-[11px] text-muted-foreground">Não foi possível atualizar o diretório. Mostrando dados salvos.</p>
+      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={onRetry}>Tentar novamente</Button>
+    </div>
+  );
+}
+
+interface DirectoryResultsProps {
+  filteredCompanies: CompanyItem[];
+  isLoading: boolean;
+  showDirectoryError: boolean;
+  staleNotice: boolean;
+  onRetry: () => void;
+  renderRow: (company: CompanyItem) => ReactNode;
+}
+
+function DirectoryResults({
+  filteredCompanies,
+  isLoading,
+  showDirectoryError,
+  staleNotice,
+  onRetry,
+  renderRow,
+}: DirectoryResultsProps) {
+  return (
+    <ScrollArea className="h-[290px] pr-2">
+      {showDirectoryError ? (
+        <DirectoryErrorNotice onRetry={onRetry} />
+      ) : filteredCompanies.length > 0 ? (
+        <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
+      ) : !isLoading ? (
+        <p className="text-xs text-muted-foreground text-center py-12">
+          {staleNotice
+            ? "Nenhuma cooperativa na lista salva para a busca atual."
+            : "Nenhuma cooperativa ou unidade encontrada."}
+        </p>
+      ) : null}
+      {staleNotice && <DirectoryStaleNotice onRetry={onRetry} />}
+    </ScrollArea>
+  );
 }
 
 export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartCompanyPickerDialogProps) {
@@ -54,7 +111,12 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     return () => clearTimeout(t);
   }, [open]);
 
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
+  const {
+    data: localCompanies = [],
+    isLoading: loadingLocal,
+    isError: directoryError,
+    refetch,
+  } = useQuery<CompanyItem[]>({
     queryKey: ["cart-sicoob-company-options"],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
@@ -101,6 +163,11 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   }, [createCart, onCreated, onOpenChange, recents]);
 
   const isLoading = loadingLocal;
+  // 403 (acesso revogado) esconde o cache; falha de rede mantém a lista + aviso.
+  const hasCompanyData = localCompanies.length > 0;
+  const isForbidden = directoryError && getCrmHttpStatus(directoryError) === 403;
+  const showDirectoryError = directoryError && (!hasCompanyData || Boolean(isForbidden));
+  const staleNotice = directoryError && hasCompanyData && !isForbidden;
 
   const renderRow = (company: CompanyItem) => (
     <div key={company.id} className="group flex items-center rounded-lg transition-colors hover:bg-accent/60">
@@ -189,13 +256,14 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               />
               {isLoading && <Loader2 className="absolute right-4.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
             </div>
-            <ScrollArea className="h-[290px] pr-2">
-              {filteredCompanies.length > 0 ? (
-                <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
-              ) : !isLoading ? (
-                <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade encontrada.</p>
-              ) : null}
-            </ScrollArea>
+            <DirectoryResults
+              filteredCompanies={filteredCompanies}
+              isLoading={isLoading}
+              showDirectoryError={showDirectoryError}
+              staleNotice={staleNotice}
+              onRetry={() => void refetch()}
+              renderRow={renderRow}
+            />
           </TabsContent>
         </Tabs>
 
