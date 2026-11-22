@@ -20,6 +20,7 @@ import {
   type OrderAllocation,
 } from '@/services/sicoob/costCenterService';
 import { buildAllocationPayload } from '@/lib/sicoob/orderCostCenterAllocation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Row {
   cost_center_id: string;
@@ -65,12 +66,14 @@ function AllocationRow({
   costCenters,
   onChange,
   onRemove,
+  readOnly,
 }: {
   row: Row;
   index: number;
   costCenters: CostCenter[];
   onChange: (index: number, patch: Partial<Row>) => void;
   onRemove: (index: number) => void;
+  readOnly: boolean;
 }) {
   return (
     <div className="flex items-end gap-2">
@@ -78,6 +81,7 @@ function AllocationRow({
         <Label className="text-xs">Centro de custo</Label>
         <Select
           value={row.cost_center_id}
+          disabled={readOnly}
           onValueChange={(value) => onChange(index, { cost_center_id: value })}
         >
           <SelectTrigger>
@@ -99,18 +103,49 @@ function AllocationRow({
           min={0}
           step="0.01"
           value={row.valor}
+          disabled={readOnly}
           onChange={(e) => onChange(index, { valor: e.target.value })}
         />
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(index)}
-        aria-label="Remover linha de rateio"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(index)}
+          aria-label="Remover linha de rateio"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
     </div>
+  );
+}
+
+function AllocationSumWarning() {
+  return (
+    <p className="text-[11px] text-destructive">
+      Ajuste os valores para somar o total do pedido antes de salvar.
+    </p>
+  );
+}
+
+function AllocationTotalBadge({
+  visible,
+  fecha100,
+  totalAlocado,
+  orderTotal,
+}: {
+  visible: boolean;
+  fecha100: boolean;
+  totalAlocado: number;
+  orderTotal: number;
+}) {
+  if (!visible) return null;
+  return (
+    <Badge variant={fecha100 ? 'default' : 'destructive'} className="gap-1">
+      {fecha100 ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+      R$ {totalAlocado.toLocaleString('pt-BR')} de R$ {orderTotal.toLocaleString('pt-BR')}
+    </Badge>
   );
 }
 
@@ -121,6 +156,7 @@ function AllocationFooter({
   fecha100,
   canSave,
   isSaving,
+  readOnly,
   onAdd,
   onSave,
 }: {
@@ -130,6 +166,7 @@ function AllocationFooter({
   fecha100: boolean;
   canSave: boolean;
   isSaving: boolean;
+  readOnly: boolean;
   onAdd: () => void;
   onSave: () => void;
 }) {
@@ -137,29 +174,25 @@ function AllocationFooter({
     <>
       <div className="flex items-center justify-between border-t pt-2 text-xs">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onAdd}>
-            <Plus className="mr-1 h-3 w-3" /> Adicionar
-          </Button>
-          {rows.length > 0 && (
-            <Badge variant={fecha100 ? 'default' : 'destructive'} className="gap-1">
-              {fecha100 ? (
-                <CheckCircle2 className="h-3 w-3" />
-              ) : (
-                <AlertCircle className="h-3 w-3" />
-              )}
-              R$ {totalAlocado.toLocaleString('pt-BR')} de R$ {orderTotal.toLocaleString('pt-BR')}
-            </Badge>
+          {!readOnly && (
+            <Button variant="outline" size="sm" onClick={onAdd}>
+              <Plus className="mr-1 h-3 w-3" /> Adicionar
+            </Button>
           )}
+          <AllocationTotalBadge
+            visible={rows.length > 0}
+            fecha100={fecha100}
+            totalAlocado={totalAlocado}
+            orderTotal={orderTotal}
+          />
         </div>
-        <Button size="sm" onClick={onSave} disabled={isSaving || !canSave}>
-          {isSaving ? 'Salvando…' : 'Salvar rateio'}
-        </Button>
+        {!readOnly && (
+          <Button size="sm" onClick={onSave} disabled={isSaving || !canSave}>
+            {isSaving ? 'Salvando…' : 'Salvar rateio'}
+          </Button>
+        )}
       </div>
-      {rows.length > 0 && !fecha100 && (
-        <p className="text-[11px] text-destructive">
-          Ajuste os valores para somar o total do pedido antes de salvar.
-        </p>
-      )}
+      {rows.length > 0 && !fecha100 && <AllocationSumWarning />}
     </>
   );
 }
@@ -178,7 +211,33 @@ function useCooperativaDoPa(paId: string | null | undefined, fallback: string | 
   return data ?? fallback;
 }
 
-// eslint-disable-next-line max-lines-per-function -- componente preexistente de 93 linhas; esta PR acrescenta validacao de linha
+function AllocationNotices({
+  readOnly,
+  hasRows,
+  orderConfirmed,
+}: {
+  readOnly: boolean;
+  hasRows: boolean;
+  orderConfirmed: boolean;
+}) {
+  return (
+    <>
+      {readOnly && hasRows && (
+        <p className="text-[11px] text-muted-foreground">
+          Somente leitura: alterar o rateio exige papel de verba (Admin, Gestor de Compras ou
+          Gestor Singular).
+        </p>
+      )}
+      {orderConfirmed && (
+        <p className="text-[11px] text-muted-foreground">
+          Pedido já confirmado: alterar o rateio revalida a soma no servidor.
+        </p>
+      )}
+    </>
+  );
+}
+
+// eslint-disable-next-line max-lines-per-function -- componente preexistente com o editor de rateio; extrair pioraria a leitura
 export function OrderCostCenterAllocation({
   orderId,
   orderTotal,
@@ -187,6 +246,11 @@ export function OrderCostCenterAllocation({
   paId,
 }: Props) {
   const queryClient = useQueryClient();
+  const { isSupervisorOrAbove, isGestorCompras, isCompradorSingular } = useAuth();
+  // A escrita do rateio e decidida por `pa_budget_allocation_write_ok` no
+  // servidor (admin ou Gestor de Compras/Singular). O editor antes aparecia
+  // para todo mundo que le o pedido e a gravacao era recusada na RPC.
+  const canWrite = isSupervisorOrAbove || isGestorCompras || isCompradorSingular;
   const [rows, setRows] = useState<Row[]>([]);
 
   const cooperativaReferencia = useCooperativaDoPa(paId, cooperativeId);
@@ -258,6 +322,7 @@ export function OrderCostCenterAllocation({
                 costCenters={centrosAtivos}
                 onChange={atualizar}
                 onRemove={(i) => setRows((prev) => prev.filter((_, idx) => idx !== i))}
+                readOnly={!canWrite}
               />
             ))}
             <AllocationFooter
@@ -269,14 +334,15 @@ export function OrderCostCenterAllocation({
                 rows.length === 0 || (fecha100 && rows.every((row) => Boolean(row.cost_center_id)))
               }
               isSaving={saveMutation.isPending}
+              readOnly={!canWrite}
               onAdd={() => setRows((prev) => [...prev, { cost_center_id: '', valor: '' }])}
               onSave={() => saveMutation.mutate()}
             />
-            {pedidoConfirmado && (
-              <p className="text-[11px] text-muted-foreground">
-                Pedido já confirmado: alterar o rateio revalida a soma no servidor.
-              </p>
-            )}
+            <AllocationNotices
+              readOnly={!canWrite}
+              hasRows={rows.length > 0}
+              orderConfirmed={pedidoConfirmado}
+            />
           </>
         )}
       </CardContent>
