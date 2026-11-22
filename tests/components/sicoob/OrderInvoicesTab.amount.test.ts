@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAmountBR } from "@/components/sicoob/orders/OrderInvoicesTab";
+import { parseAmountBR } from "@/components/sicoob/orders/utils/amount";
 
 describe("parseAmountBR", () => {
   it("lê milhar sem decimais como milhar", () => {

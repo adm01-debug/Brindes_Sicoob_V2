@@ -92,18 +92,22 @@ for (const worker of [
 }
 
 test('a UI de anexo rejeita valor fora do padrão em vez de adivinhar', () => {
+  // O parser saiu do componente para manter a complexidade ciclomática do
+  // formulário sob o limite do gate de lint; as regras continuam as mesmas.
+  const parser = readFileSync('src/components/sicoob/orders/utils/amount.ts', 'utf8');
   const source = readFileSync('src/components/sicoob/orders/OrderInvoicesTab.tsx', 'utf8');
   // Reativar/gravar valor malformado inflava ou zerava o faturamento: o parser
   // precisa recusar o que não é forma reconhecida, e o campo preenchido precisa
   // ser exigido válido.
-  assert.match(source, /milharPontoComCentavos/, 'sem validar milhar com centavos');
-  assert.match(source, /return undefined;/, 'parser precisa recusar formato inválido');
-  assert.match(source, /amountPreenchido/, 'valor preenchido precisa ser exigido válido');
+  assert.match(parser, /milharPontoComCentavos/, 'sem validar milhar com centavos');
+  assert.match(parser, /return undefined;/, 'parser precisa recusar formato inválido');
+  assert.match(parser, /export function isAmountValido/, 'valor preenchido precisa ser exigido válido');
+  assert.match(parser, /if \(raw\.trim\(\)\.length === 0\) return true;/, 'campo vazio segue opcional');
   // Campo vazio segue opcional; preenchido e inválido precisa bloquear o envio,
   // senão a nota é gravada sem valor e soma zero no relatório.
   assert.match(
     source,
-    /const amountValido = !amountPreenchido\s*\n\s*\|\| \(parsedAmount !== undefined/,
+    /const amountValido = isAmountValido\(amount\);/,
     'valor preenchido inválido precisa bloquear o envio',
   );
 });
