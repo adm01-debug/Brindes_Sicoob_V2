@@ -3,7 +3,7 @@
 > **Referência:** `main` em `dc08200` (merge do PR #98, 08/10/2026). É o mesmo commit publicado em produção na Vercel (`brindes-sicoob-v2`, deploy `dpl_HyKTMmPS6FNk3A1swWBWnWYzQW6q`, estado `READY`).
 > **Escopo:** todo o repositório (4.026 arquivos versionados): código (`src/`, `supabase/functions/`, `supabase/migrations/`), testes, CI, scripts, infraestrutura, os ~450 documentos de `docs/` e as memórias `.lovable/`. Também foram consultados o GitHub e a produção, apenas para leitura.
 > **Pergunta respondida:** o que foi **planejado** para o sistema — em planos, roadmaps, README, ADRs, inventários, memórias, rotas, menus, tipos, flags, TODOs e schemas — e **não foi executado**: nem iniciado, executado só em parte, simulado ou pronto mas desligado.
-> **Anexos:** 10 relatórios detalhados (um por frente de auditoria) em [`lacunas-funcionalidades-2026-10-11/`](lacunas-funcionalidades-2026-10-11/) e o índice completo em planilha [`indice-lacunas.csv`](lacunas-funcionalidades-2026-10-11/indice-lacunas.csv) (682 registros; separador `;`, abre direto no Excel).
+> **Anexos:** 10 relatórios detalhados (um por frente de auditoria) em [`lacunas-funcionalidades-2026-10-11/`](lacunas-funcionalidades-2026-10-11/) e o índice completo em planilha [`indice-lacunas.csv`](lacunas-funcionalidades-2026-10-11/indice-lacunas.csv) (683 registros; separador `;`, abre direto no Excel).
 
 ---
 
@@ -53,9 +53,9 @@ O que isso significa para o negócio, em ordem de gravidade:
 
 | Medida | Valor |
 |---|---:|
-| Registros de lacuna levantados (10 frentes) | **682** |
+| Registros de lacuna levantados (10 frentes) | **683** |
 | Lacunas críticas consolidadas (P0) | **9** temas, 20 registros |
-| Lacunas graves (P1) | 152 registros, consolidados em **17** temas |
+| Lacunas graves (P1) | 153 registros, consolidados em **17** temas |
 | Lacunas médias e baixas (P2/P3) | 314 + 196 registros |
 | Planos formais auditados | 9 planos/roteiros + 6 revisões |
 | Etapas do plano mais recente (encerramento, 100 etapas) concluídas tecnicamente | **8 de 100**, nenhuma com aceite formal |
@@ -66,11 +66,11 @@ O que isso significa para o negócio, em ordem de gravidade:
 | Tabelas/views do banco sem nenhum uso no código | **33** (mais 36 funções SQL sem chamador) |
 | Migrations no repositório que nunca chegaram ao banco | **35** com efeito ausente (31 tabelas); 491 divergências de ledger no total |
 
-**Por status (682 registros):**
+**Por status (683 registros):**
 
 | Status | Registros | O que significa |
 |---|---:|---|
-| PARCIAL | 266 | Parte existe; falta uma camada (tela, servidor, regra, teste ou ligação) |
+| PARCIAL | 267 | Parte existe; falta uma camada (tela, servidor, regra, teste ou ligação) |
 | NAO_INICIADA | 124 | Planejado sem nenhum código correspondente |
 | ORFA | 115 | Código pronto, mas desligado: sem rota, sem import, sem chamador ou com flag sem efeito |
 | BLOQUEADA_EXTERNA | 81 | Depende de credencial, contrato, decisão de negócio ou operação real |
@@ -81,13 +81,33 @@ O que isso significa para o negócio, em ordem de gravidade:
 
 | | P0 | P1 | P2 | P3 | Total |
 |---|---:|---:|---:|---:|---:|
-| Registros | 20 | 152 | 314 | 196 | 682 |
+| Registros | 20 | 153 | 314 | 196 | 683 |
 
 | Esforço | P (< 1 dia) | M (1–5 dias) | G (> 5 dias) |
 |---|---:|---:|---:|
-| Registros | 339 | 277 | 66 |
+| Registros | 339 | 278 | 66 |
 
-> **Leitura correta dos números:** 682 é o número de **registros**, não de problemas distintos. Cada frente auditou uma fatia do repositório, e o mesmo problema pode aparecer em mais de uma frente. O cadastro de catálogo que não salva, por exemplo, aparece em 6 anexos. As seções 4 e 5 consolidam os registros em temas únicos. Metade dos registros (339) tem esforço pequeno: muita coisa é ligação, link ou rota que falta, não funcionalidade a construir do zero.
+> **Leitura correta dos números:** 683 é o número de **registros**, não de problemas distintos. Cada frente auditou uma fatia do repositório, e o mesmo problema pode aparecer em mais de uma frente. O cadastro de catálogo que não salva, por exemplo, aparece em 6 anexos. As seções 4 e 5 consolidam os registros em temas únicos. Metade dos registros (339) tem esforço pequeno: muita coisa é ligação, link ou rota que falta, não funcionalidade a construir do zero.
+
+### Reauditoria de 22/11/2026 (vereditos por evidência)
+
+O CSV ganhou as colunas `veredito_20261122` e `evidencia_20261122`, com cada um dos 683 registros conferido contra o repositório real (`git ls-files`, rotas de `src/routes/config/`, tabelas/colunas/funções de `supabase/migrations/`, diretórios de `supabase/functions/` e busca pelo nome da funcionalidade em `src/`, `scripts/` e `.github/workflows/`).
+
+| Veredito | Registros | O que significa |
+|---|---:|---|
+| ABERTO | 238 | Nenhum artefato correspondente encontrado no repositório — lacuna confirmada |
+| INDICIO | 288 | Só evidência fraca (vocabulário compartilhado), não prova implementação — exige conferência manual |
+| BLOQUEADA_EXTERNA | 81 | Depende de terceiro, credencial ou decisão de negócio |
+| ARTEFATO_EXISTE | 58 | Existe tabela/coluna/função/rota/edge/arquivo com o nome citado; não prova que a funcionalidade opera |
+| RESOLVIDO | 11 | Resolvido e comprovado nesta data |
+| DOC_DIVERGENTE | 3 | O documento está desatualizado — o código já faz o que a lacuna diz faltar |
+| PARCIAL | 2 | Existe, porém incompleto, com evidência |
+| NAO_VERIFICADO | 2 | Depende de simulação dinâmica no banco |
+
+Resolvidos ou comprovadamente desatualizados nesta data: **PLB-29** e **PLB-32** (centro de custo, rateio e verba em quatro estados — PR #401), **FE-030**, **FE-005**, **ADM-01**, **DOC-02**, **FE-001**, **PLC-02**, **QA-56**, **SIC-021**, **SIC-041**, **ADM-34**, **FE-140** e **ADM-43** (dados reais por padrão; demonstração só com `?demo=1`).
+
+Continuam abertos com causa confirmada: **EDG-24** (relatórios agendados sem `cron.schedule`), **EDG-30** (allowlist de deploy cobre 13 de 109 funções) e **QA-11** (o E2E da `main` falha por secrets `E2E_*` ausentes, não por instabilidade).
+
 
 ---
 
@@ -115,6 +135,7 @@ O orquestrador conferiu pessoalmente os achados P0 e os de maior risco, marcados
 ### Legenda
 
 - **Status:** `NAO_INICIADA` · `PARCIAL` · `STUB/MOCK` · `ORFA` · `BLOQUEADA_EXTERNA` · `DOC_DIVERGENTE` (definições na tabela da §1).
+- **Veredito (coluna do CSV):** `ABERTO` · `INDICIO` · `ARTEFATO_EXISTE` · `RESOLVIDO` · `PARCIAL` · `NAO_VERIFICADO` · `BLOQUEADA_EXTERNA` · `DOC_DIVERGENTE` — classificação por evidência conferida no repositório em 22/11/2026 (definições na tabela da §1).
 - **Prioridade:**
   - **P0:** bloqueia venda, operação ou segurança.
   - **P1:** compromete uma jornada principal ou a confiança no dado.
