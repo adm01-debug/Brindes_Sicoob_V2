@@ -135,7 +135,8 @@ function RequestHistory({ requests }: { requests?: LimitIncreaseRequest[] }) {
 }
 
 function BudgetKpis({ amounts }: { amounts: PaBudgetAmounts }) {
-  const { planejada, reservada, comprometida, consumida, disponivel, percentualOcupado } = amounts;
+  const { planejada, reservada, comprometida, consumida, disponivel, percentualConsumido } =
+    amounts;
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <Card className="border-[1.5px] shadow-sm">
@@ -156,7 +157,7 @@ function BudgetKpis({ amounts }: { amounts: PaBudgetAmounts }) {
         <CardContent>
           <div className="text-2xl font-bold text-destructive">{formatCurrency(consumida)}</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {percentualOcupado.toFixed(1)}% do limite ocupado
+            {percentualConsumido.toFixed(1)}% do limite consumido
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {formatCurrency(reservada)} reservado · {formatCurrency(comprometida)} empenhado
