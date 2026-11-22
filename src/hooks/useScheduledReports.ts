@@ -44,6 +44,24 @@ const REPORT_TYPE_LABELS: Record<ReportType, string> = {
   orders: 'Pedidos',
 };
 
+/**
+ * Payload do toggle de agendamento. Ao reativar, o destinatário volta a ser o
+ * e-mail atual do dono — o worker pula agendamento com `email_to` divergente do
+ * perfil, então sem isso o relatório ficaria ativo e mudo.
+ */
+export function buildTogglePatch(
+  active: boolean,
+  currentEmail: string | undefined,
+  now: string,
+): { is_active: boolean; updated_at: string; email_to?: string } {
+  const patch: { is_active: boolean; updated_at: string; email_to?: string } = {
+    is_active: active,
+    updated_at: now,
+  };
+  if (active && currentEmail) patch.email_to = currentEmail;
+  return patch;
+}
+
 export function useScheduledReports() {
   const { user } = useAuth();
   const [reports, setReports] = useState<ScheduledReport[]>([]);
@@ -103,18 +121,34 @@ export function useScheduledReports() {
 
   const toggleActive = useCallback(async (reportId: string, active: boolean) => {
     try {
+      // Reativar com `email_to` antigo deixava o relatório ativo mas mudo: o
+      // worker compara com o perfil e pula por `email_desatualizado`.
+      let currentEmail: string | undefined;
+      if (active && user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        currentEmail = String(profile?.email ?? '').trim() || undefined;
+      }
+      const patch = buildTogglePatch(active, currentEmail, new Date().toISOString());
+
       const { error } = await supabase
         .from('scheduled_reports')
-        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .update(patch)
         .eq('id', reportId);
 
       if (error) throw error;
-      setReports(prev => prev.map(r => r.id === reportId ? { ...r, is_active: active } : r));
+      setReports(prev => prev.map(r => r.id === reportId
+        ? { ...r, is_active: active, ...(patch.email_to ? { email_to: patch.email_to } : {}) }
+        : r));
       toast.success(active ? 'Relatório ativado' : 'Relatório pausado');
     } catch {
       toast.error('Erro ao atualizar relatório');
     }
-  }, []);
+  }, [user]);
 
   const deleteReport = useCallback(async (reportId: string) => {
     try {
@@ -155,8 +189,14 @@ function calculateNextRun(frequency: ReportFrequency): Date {
     case 'weekly':
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     case 'monthly': {
+      // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia
+      // 1 e limitar ao último dia do mês destino mantém o agendamento mensal.
       const next = new Date(now);
+      const day = next.getDate();
+      next.setDate(1);
       next.setMonth(next.getMonth() + 1);
+      const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(day, lastDay));
       return next;
     }
   }

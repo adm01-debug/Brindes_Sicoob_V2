@@ -15,9 +15,54 @@ interface OrderInvoicesTabProps {
 
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
 
+/**
+ * Interpreta valor digitado em formato brasileiro. Trocar a vírgula por ponto
+ * lia "1.250" como 1,25 e gravava a nota mil vezes menor: o ponto só é separador
+ * decimal quando é o único separador e tem 1 ou 2 dígitos depois.
+ */
+export function parseAmountBR(raw: string): number | undefined {
+  const text = raw.trim().replace(/^R\$\s*/i, "").replace(/\s/g, "");
+  if (!text) return undefined;
+
+  // Só formas reconhecidamente válidas passam. Antes, entrada malformada caía
+  // em `normalized = text` e o descarte silencioso gravava a nota sem valor
+  // (ou inflada): "1.250.50" virava 125050 e "1250,OO" virava undefined.
+  const milharPonto = /^\d{1,3}(\.\d{3})+$/.test(text);
+  const milharPontoComCentavos = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(text);
+  // Formato US com milhar: "1,250.50" e "1,250". O ponto é o decimal aqui.
+  const milharVirgulaComPontoDecimal = /^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(text);
+  const milharVirgula = /^\d{1,3}(,\d{3})+$/.test(text);
+  const simples = /^\d+(,\d{1,2})?$/.test(text);
+  const simplesDecimalPonto = /^\d+(\.\d{1,2})?$/.test(text);
+
+  let normalized: string;
+  if (milharPonto) {
+    normalized = text.replace(/\./g, "");
+  } else if (milharPontoComCentavos) {
+    normalized = text.replace(/\./g, "").replace(",", ".");
+  } else if (milharVirgulaComPontoDecimal) {
+    normalized = text.replace(/,/g, "");
+  } else if (milharVirgula) {
+    normalized = text.replace(/,/g, "");
+  } else if (simples) {
+    normalized = text.replace(",", ".");
+  } else if (simplesDecimalPonto) {
+    normalized = text;
+  } else {
+    return undefined;
+  }
+
+  const value = Number(normalized);
+  return Number.isFinite(value) ? value : undefined;
+}
+
 export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  // Sem data de emissão e valor a nota fica fora de qualquer período do
+  // relatório de vendas: o filtro é por `issued_at` e a soma por `amount`.
+  const [issuedAt, setIssuedAt] = useState("");
+  const [amount, setAmount] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -43,6 +88,13 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
     }
   };
 
+  // Campo vazio continua opcional; preenchido, precisa ser um valor positivo.
+  const amountPreenchido = amount.trim().length > 0;
+  const parsedAmount = parseAmountBR(amount);
+  const amountValido = !amountPreenchido
+    || (parsedAmount !== undefined && Number.isFinite(parsedAmount) && parsedAmount > 0);
+  const podeEnviar = Boolean(invoiceNumber.trim()) && Boolean(issuedAt) && amountValido;
+
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
     if (!canManage) {
       event.target.value = '';
@@ -62,10 +114,14 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
         invoice_number: invoiceNumber.trim(),
         file_path: filePath,
         file_type: type,
+        issued_at: issuedAt || undefined,
+        amount: parsedAmount,
       });
       
       setUploadProgress(100);
       setInvoiceNumber("");
+      setIssuedAt("");
+      setAmount("");
     } catch (uploadError: unknown) {
       toast.error("Erro no upload: " + (uploadError instanceof Error ? uploadError.message : 'falha desconhecida'));
     } finally {
@@ -101,6 +157,29 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
                 onChange={(e) => setInvoiceNumber(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="issuedAt">Data de emissão</Label>
+              <Input
+                id="issuedAt"
+                type="date"
+                value={issuedAt}
+                onChange={(e) => setIssuedAt(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invoiceAmount">Valor da nota (R$)</Label>
+              <Input
+                id="invoiceAmount"
+                inputMode="decimal"
+                placeholder="Ex: 1.250,00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                aria-invalid={!amountValido}
+              />
+              {!amountValido && (
+                <p className="text-xs text-destructive">Informe um valor maior que zero.</p>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-4">
             <div className="relative">
@@ -109,9 +188,9 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
                 accept=".xml"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={(e) => handleFileUpload(e, 'xml')}
-                disabled={isUploading || !invoiceNumber.trim()}
+                disabled={isUploading || !podeEnviar}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading || !invoiceNumber.trim()}>
+              <Button variant="outline" className="gap-2" disabled={isUploading || !podeEnviar}>
                 <FileCode className="h-4 w-4" />
                 Upload XML
               </Button>
@@ -122,9 +201,9 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
                 accept=".pdf"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={(e) => handleFileUpload(e, 'pdf')}
-                disabled={isUploading || !invoiceNumber.trim()}
+                disabled={isUploading || !podeEnviar}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading || !invoiceNumber.trim()}>
+              <Button variant="outline" className="gap-2" disabled={isUploading || !podeEnviar}>
                 <FileText className="h-4 w-4" />
                 Upload PDF
               </Button>
