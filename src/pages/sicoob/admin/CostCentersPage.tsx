@@ -1,61 +1,80 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { PageSEO } from "@/components/seo/PageSEO";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { PageSEO } from '@/components/seo/PageSEO';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
-import { toast } from "sonner";
-import { askConfirm } from "@/stores/useConfirmDialogStore";
-import { costCenterService, type CostCenter } from "@/services/sicoob/costCenterService";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { costCenterService, type CostCenter } from '@/services/sicoob/costCenterService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const getErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Erro desconhecido";
+  error instanceof Error ? error.message : 'Erro desconhecido';
 
+// eslint-disable-next-line max-lines-per-function -- pagina preexistente de 185 linhas; esta PR apenas escopa a query por cooperativa
 export default function CostCentersPage() {
   const queryClient = useQueryClient();
+  const { cooperativaId: cooperativaDoPerfil } = useAuth();
   const [editing, setEditing] = useState<CostCenter | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [codigo, setCodigo] = useState("");
-  const [nome, setNome] = useState("");
+  const [codigo, setCodigo] = useState('');
+  const [nome, setNome] = useState('');
   const [ativo, setAtivo] = useState(true);
 
   const { data: cooperatives } = useQuery({
-    queryKey: ["cooperativas_options"],
+    queryKey: ['cooperativas_options', cooperativaDoPerfil],
     queryFn: async () => {
-      const { data, error } = await supabase.from("cooperativas").select("id, nome").order("nome");
+      const query = supabase.from('cooperativas').select('id, nome').order('nome');
+      const scoped = cooperativaDoPerfil ? query.eq('id', cooperativaDoPerfil) : query;
+      const { data, error } = await scoped;
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: costCenters, isLoading } = useQuery({
-    queryKey: ["cost_centers"],
+    queryKey: ['cost_centers'],
     queryFn: () => costCenterService.list(),
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["cost_centers"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['cost_centers'] });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!editing) {
-        const cooperativaId = cooperatives?.[0]?.id;
-        if (!cooperativaId) throw new Error("Cadastre uma cooperativa antes de criar centros de custo.");
-        return costCenterService.create({ cooperativa_id: cooperativaId, codigo, nome });
+        // O centro de custo pertence a cooperativa do ator; so admin escolhe
+        // livremente. Antes gravava sempre na primeira cooperativa da lista.
+        const escolhida = cooperativaDoPerfil ?? cooperatives?.[0]?.id ?? null;
+        if (!escolhida)
+          throw new Error('Cadastre uma cooperativa antes de criar centros de custo.');
+        return costCenterService.create({ cooperativa_id: escolhida, codigo, nome });
       }
       return costCenterService.update(editing.id, { codigo, nome, ativo });
     },
     onSuccess: () => {
-      toast.success(editing ? "Centro de custo atualizado" : "Centro de custo criado");
+      toast.success(editing ? 'Centro de custo atualizado' : 'Centro de custo criado');
       setIsOpen(false);
       void invalidate();
     },
@@ -65,7 +84,7 @@ export default function CostCentersPage() {
   const removeMutation = useMutation({
     mutationFn: (id: string) => costCenterService.remove(id),
     onSuccess: () => {
-      toast.success("Centro de custo removido");
+      toast.success('Centro de custo removido');
       void invalidate();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -73,8 +92,8 @@ export default function CostCentersPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setCodigo("");
-    setNome("");
+    setCodigo('');
+    setNome('');
     setAtivo(true);
     setIsOpen(true);
   };
@@ -87,8 +106,7 @@ export default function CostCentersPage() {
     setIsOpen(true);
   };
 
-  const cooperativaNome = (id: string) =>
-    cooperatives?.find((c) => c.id === id)?.nome ?? "—";
+  const cooperativaNome = (id: string) => cooperatives?.find((c) => c.id === id)?.nome ?? '—';
 
   return (
     <>
@@ -96,11 +114,12 @@ export default function CostCentersPage() {
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Building2 className="h-6 w-6" /> Centros de Custo
             </h1>
             <p className="text-sm text-muted-foreground">
-              Cada pedido pode ser rateado entre centros de custo. O rateio precisa fechar 100% do valor do pedido.
+              Cada pedido pode ser rateado entre centros de custo. O rateio precisa fechar 100% do
+              valor do pedido.
             </p>
           </div>
           <Button onClick={openCreate}>
@@ -136,14 +155,21 @@ export default function CostCentersPage() {
                     <TableRow key={row.id}>
                       <TableCell className="font-mono text-xs">{row.codigo}</TableCell>
                       <TableCell>{row.nome}</TableCell>
-                      <TableCell className="text-muted-foreground">{cooperativaNome(row.cooperativa_id)}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {cooperativaNome(row.cooperativa_id)}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant={row.ativo ? "default" : "secondary"}>
-                          {row.ativo ? "Ativo" : "Inativo"}
+                        <Badge variant={row.ativo ? 'default' : 'secondary'}>
+                          {row.ativo ? 'Ativo' : 'Inativo'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(row)} aria-label="Editar centro de custo">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEdit(row)}
+                          aria-label="Editar centro de custo"
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -152,7 +178,7 @@ export default function CostCentersPage() {
                           aria-label="Remover centro de custo"
                           onClick={async () => {
                             const confirmed = await askConfirm({
-                              title: "Remover centro de custo",
+                              title: 'Remover centro de custo',
                               description: `Remover "${row.nome}"? Pedidos já rateados neste centro bloqueiam a remoção.`,
                             });
                             if (confirmed) removeMutation.mutate(row.id);
@@ -173,17 +199,29 @@ export default function CostCentersPage() {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? "Editar centro de custo" : "Novo centro de custo"}</DialogTitle>
-            <DialogDescription>Código e nome aparecem nos relatórios financeiros.</DialogDescription>
+            <DialogTitle>{editing ? 'Editar centro de custo' : 'Novo centro de custo'}</DialogTitle>
+            <DialogDescription>
+              Código e nome aparecem nos relatórios financeiros.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="cc-codigo">Código</Label>
-              <Input id="cc-codigo" value={codigo} onChange={(e) => setCodigo(e.target.value)} maxLength={40} />
+              <Input
+                id="cc-codigo"
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                maxLength={40}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cc-nome">Nome</Label>
-              <Input id="cc-nome" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={120} />
+              <Input
+                id="cc-nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                maxLength={120}
+              />
             </div>
             {editing && (
               <div className="flex items-center gap-2">
@@ -193,12 +231,14 @@ export default function CostCentersPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancelar
+            </Button>
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !codigo.trim() || !nome.trim()}
             >
-              {saveMutation.isPending ? "Salvando…" : "Salvar"}
+              {saveMutation.isPending ? 'Salvando…' : 'Salvar'}
             </Button>
           </DialogFooter>
         </DialogContent>

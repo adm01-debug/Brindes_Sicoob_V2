@@ -1,0 +1,281 @@
+#!/usr/bin/env python3
+"""Valida o ciclo de verba em quatro estados (PLB-29/32) em PostgreSQL descartável."""
+from pathlib import Path
+import json
+import subprocess
+import time
+import uuid
+from postgres_ready import wait_for_postgres
+
+CONTAINER = "sicoob-verba-life-" + uuid.uuid4().hex[:10]
+ROOT = Path(__file__).resolve().parents[2]
+MIGRATION = ROOT / "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql"
+FIXTURE = ROOT / "tests/scenarios/sql/verba-lifecycle-fixture.sql"
+PA_A = "00000000-0000-4000-8000-000000000001"
+PA_B = "00000000-0000-4000-8000-000000000002"
+COOP_A = "00000000-0000-4000-8000-000000000010"
+COOP_B = "00000000-0000-4000-8000-000000000011"
+GESTOR_A = "00000000-0000-4000-8000-000000000020"
+GESTOR_B = "00000000-0000-4000-8000-000000000021"
+ADMIN = "00000000-0000-4000-8000-000000000022"
+ORDER = "00000000-0000-4000-8000-000000000101"
+
+
+def command(args, *, stdin=None, check=True):
+    return subprocess.run(args, input=stdin, text=True, capture_output=True, check=check)
+
+
+def sql(statement, *, check=True):
+    response = None
+    for _ in range(20):
+        response = command(
+            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres",
+             "-v", "ON_ERROR_STOP=1", "-At"],
+            stdin=statement,
+            check=False,
+        )
+        if response.returncode != 2:
+            break
+        time.sleep(0.5)
+    if check and response.returncode != 0:
+        raise RuntimeError(f"psql falhou ({response.returncode}): {response.stderr.strip()}")
+    return response
+
+
+def scalar(statement):
+    return sql(statement).stdout.strip()
+
+
+def actor_sql(actor, statement, *, check=True):
+    return sql(f"SET request.jwt.claim.sub = '{actor}';\n{statement}", check=check)
+
+
+def estados():
+    row = scalar(
+        "SELECT verba_planejada || '|' || verba_reservada || '|' || verba_comprometida"
+        " || '|' || verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{PA_A}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    planejado, reservado, comprometido, consumido = row.split("|")
+    return {
+        "planejado": planejado,
+        "reservado": reservado,
+        "comprometido": comprometido,
+        "consumido": consumido,
+    }
+
+
+def move(order, status):
+    return sql(f"UPDATE sicoob_orders SET status = '{status}' WHERE id = '{order}';")
+
+
+def must_fail(statement, needle):
+    response = sql(statement, check=False)
+    assert response.returncode != 0, ("deveria falhar", statement)
+    assert needle.lower() in response.stderr.lower(), (needle, response.stderr)
+    return response.stderr.strip().splitlines()[0]
+
+
+result = {
+    "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
+    "migracao": str(MIGRATION.relative_to(ROOT)),
+    "producao_verificada": False,
+}
+
+try:
+    command([
+        "docker", "run", "--rm", "-d", "--name", CONTAINER,
+        "--network", "none", "-e", "POSTGRES_HOST_AUTH_METHOD=trust",
+        "postgres:17.6-alpine",
+    ])
+    wait_for_postgres(command, CONTAINER)
+
+    sql(FIXTURE.read_text())
+    sql(MIGRATION.read_text())
+
+    # ---- 1. Backfill do consumo legado -------------------------------------
+    inicial = estados()
+    assert inicial == {"planejado": "1000.00", "reservado": "0.00",
+                       "comprometido": "0.00", "consumido": "150.00"}, inicial
+    livro_legado = scalar(
+        "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_entries"
+        " WHERE tipo = 'ajuste' AND order_id IS NULL;"
+    )
+    assert livro_legado == "1|150.00", livro_legado
+    result["backfill"] = {"agregado": inicial["consumido"], "livro": livro_legado}
+
+    # ---- 2. Rascunho não reserva -------------------------------------------
+    assert estados()["reservado"] == "0.00"
+    move(ORDER, "pending")
+    assert estados()["reservado"] == "0.00"
+
+    # ---- 3. waiting_approval reserva ---------------------------------------
+    move(ORDER, "waiting_approval")
+    reservado = estados()
+    assert reservado["reservado"] == "100.00", reservado
+    assert reservado["consumido"] == "150.00", reservado
+    restante = scalar(f"SELECT audit_remaining_budget FROM sicoob_orders WHERE id = '{ORDER}';")
+    assert restante == "750.00", restante
+
+    # Idempotência: repetir a mesma posição não duplica o evento.
+    move(ORDER, "waiting_approval")
+    assert estados()["reservado"] == "100.00", estados()
+
+    # ---- 4. confirmed compromete -------------------------------------------
+    move(ORDER, "confirmed")
+    comprometido = estados()
+    assert comprometido["reservado"] == "0.00", comprometido
+    assert comprometido["comprometido"] == "100.00", comprometido
+
+    # ---- 5. delivered consome ----------------------------------------------
+    move(ORDER, "logistic")
+    move(ORDER, "completed")
+    final = estados()
+    assert final["comprometido"] == "0.00", final
+    assert final["consumido"] == "250.00", final
+    result["ciclo"] = {"apos_reservar": reservado, "comprometido": comprometido, "consumido": final}
+
+    # ---- 6. Imutabilidade do pedido consumido ------------------------------
+    result["pedido_consumido"] = {
+        "alterar_valor": must_fail(
+            f"UPDATE sicoob_orders SET total_amount = 999 WHERE id = '{ORDER}';",
+            "não permite alterar",
+        ),
+        "alterar_pa": must_fail(
+            f"UPDATE sicoob_orders SET pa_id = '{PA_B}' WHERE id = '{ORDER}';",
+            "não permite alterar",
+        ),
+    }
+
+    # ---- 7. Livro imutável -------------------------------------------------
+    result["livro_imutavel"] = must_fail(
+        "UPDATE pa_budget_entries SET valor = 1;", "imutável"
+    )
+
+    # ---- 8. Saldo insuficiente --------------------------------------------
+    insuficiente = "00000000-0000-4000-8000-000000000201"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{insuficiente}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 900);"
+    )
+    result["saldo_insuficiente"] = must_fail(
+        f"UPDATE sicoob_orders SET status = 'waiting_approval' WHERE id = '{insuficiente}';",
+        "saldo insuficiente",
+    )
+    assert scalar(f"SELECT status FROM sicoob_orders WHERE id = '{insuficiente}';") == "draft"
+    assert estados()["reservado"] == "0.00", estados()
+
+    # ---- 9. Competência fechada -------------------------------------------
+    fechavel = "00000000-0000-4000-8000-000000000202"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{fechavel}', '{PA_B}', '{COOP_B}', '{GESTOR_B}', 'draft', 100);"
+    )
+    actor_sql(
+        ADMIN,
+        "SELECT pa_budget_close_competence("
+        f"'{PA_B}', EXTRACT(YEAR FROM now())::int, EXTRACT(MONTH FROM now())::int, true);",
+    )
+    result["competencia_fechada"] = {
+        "motivo": must_fail(
+            f"UPDATE sicoob_orders SET status = 'waiting_approval' WHERE id = '{fechavel}';",
+            "fechada",
+        )
+    }
+    reaberta = actor_sql(
+        ADMIN,
+        "SELECT pa_budget_close_competence("
+        f"'{PA_B}', EXTRACT(YEAR FROM now())::int, EXTRACT(MONTH FROM now())::int, false);",
+    )
+    assert reaberta.returncode == 0, reaberta.stderr
+    move(fechavel, "waiting_approval")
+    result["competencia_fechada"]["apos_reabrir"] = "reservado"
+
+    # ---- 10. Isolamento entre cooperativas ---------------------------------
+    alheio = "00000000-0000-4000-8000-000000000203"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{alheio}', '{PA_B}', '{COOP_B}', '{GESTOR_B}', 'draft', 50);"
+    )
+    result["isolamento"] = {
+        "verba_de_outra_cooperativa": must_fail(
+            f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+            f"SELECT pa_budget_id_for_order('{alheio}');",
+            "sem permissao",
+        ),
+        "conciliar_pa_alheio": must_fail(
+            f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+            f"SELECT * FROM pa_budget_reconcile('{PA_B}', EXTRACT(YEAR FROM now())::int,"
+            " EXTRACT(MONTH FROM now())::int);",
+            "sem permissao",
+        ),
+        "centro_de_custo_alheio": None,
+    }
+
+    # ---- 11. Rateio: fecha em 100% e revalida quando o total muda ----------
+    center_a = sql(
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_A}', 'CC-01', 'Marketing');\nSELECT id FROM cost_centers"
+        " WHERE cooperativa_id = '" + COOP_A + "' AND codigo = 'CC-01';"
+    ).stdout.split()[-1]
+    rateio = "00000000-0000-4000-8000-000000000204"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{rateio}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    sql(
+        "INSERT INTO pa_budget_allocations (order_id, cost_center_id, valor, percentual)"
+        f" VALUES ('{rateio}', '{center_a}', 200, 100);"
+    )
+    move(rateio, "pending")
+    move(rateio, "waiting_approval")
+    parcial_motivo = must_fail(
+        f"UPDATE sicoob_orders SET total_amount = 300 WHERE id = '{rateio}';",
+        "soma",
+    )
+    sql(
+        "UPDATE pa_budget_allocations SET valor = 300 WHERE order_id = "
+        f"'{rateio}';"
+    )
+    sql(f"UPDATE sicoob_orders SET total_amount = 300 WHERE id = '{rateio}';")
+    reservado_rateio = scalar(
+        f"SELECT verba_reservada FROM pa_budgets WHERE pa_id = '{PA_A}'"
+        " AND ano = EXTRACT(YEAR FROM now()) AND mes = EXTRACT(MONTH FROM now());"
+    )
+    result["rateio"] = {"total_antigo": parcial_motivo, "reservado": reservado_rateio}
+
+    # ---- 12. Reconciliacao fecha com o livro -------------------------------
+    divergente = scalar(
+        "SELECT bool_or(divergente) FROM pa_budget_reconcile("
+        f"'{PA_A}', EXTRACT(YEAR FROM now())::int, EXTRACT(MONTH FROM now())::int);"
+    )
+    assert divergente == "f", divergente
+    result["reconciliacao"] = "agregado igual ao livro"
+
+    # ---- 13. RLS: centro de custo e livro so no escopo do ator -------------
+    sql(
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_B}', 'CC-02', 'Operacoes');"
+    )
+    actor_sql(ADMIN, "SET ROLE authenticated;\nSELECT 1;")
+    via_gestor_a = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\nSET ROLE authenticated;\n"
+        "SELECT COALESCE(string_agg(codigo, ',' ORDER BY codigo), '') FROM cost_centers;"
+    ).stdout.strip().splitlines()[-1]
+    via_gestor_b = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_B}';\nSET ROLE authenticated;\n"
+        "SELECT COALESCE(string_agg(codigo, ',' ORDER BY codigo), '') FROM cost_centers;"
+    ).stdout.strip().splitlines()[-1]
+    assert via_gestor_a == "CC-01", via_gestor_a
+    assert via_gestor_b == "CC-02", via_gestor_b
+    result["rls"] = {"centros_visiveis_gestor_a": via_gestor_a,
+                     "centros_visiveis_gestor_b": via_gestor_b}
+
+    result["resultado"] = "aprovado"
+    evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+finally:
+    command(["docker", "rm", "-f", CONTAINER], check=False)
