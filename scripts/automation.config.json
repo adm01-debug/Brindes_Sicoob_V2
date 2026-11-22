@@ -932,6 +932,14 @@
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
+      "id": "legacy-9c995025fe4f4292",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-verba-lifecycle.py"],
+      "manual": ["python3", "scripts/qa/simular-verba-lifecycle.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
+    },
+    {
       "id": "legacy-c0138cc079404c75",
       "kind": "legacy",
       "files": ["scripts/qa/simular-versionamento-orcamento-atomico.py"],

@@ -26,6 +26,7 @@
         "save_quote_atomic_attested": "migration 20261117092000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
         "register_quote_price_attestation": "migration 20261117092000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
     "cost_centers": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
-    "pa_budget_allocations": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário"
+    "pa_budget_allocations": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "pa_budget_replace_allocations": "RPC criada na migration 20261122120000_pa_budget_full_lifecycle.sql (PR #401) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário"
     }
 }
