@@ -126,7 +126,7 @@ describe("CartCompanyPickerDialog — cache com falha", () => {
     // Fecha o diálogo (desabilita a query), invalida (força stale — simula tempo passado)
     // e reabre com falha de rede: o refetch falha, mas o cache permanece.
     rerender(<CartCompanyPickerDialog open={false} onOpenChange={vi.fn()} />);
-    queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
+    await queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
     fetchMock.mockRejectedValueOnce(new Error("network"));
     rerender(<CartCompanyPickerDialog open onOpenChange={vi.fn()} />);
 
@@ -165,7 +165,7 @@ describe("CartCompanyPickerDialog — cache com falha", () => {
 
     // Fecha, invalida (simula stale) e reabre com falha de rede: cache permanece + aviso.
     rerender(<CartCompanyPickerDialog open={false} onOpenChange={vi.fn()} />);
-    queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
+    await queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
     fetchMock.mockRejectedValueOnce(new Error("network"));
     rerender(<CartCompanyPickerDialog open onOpenChange={vi.fn()} />);
 
@@ -211,7 +211,7 @@ describe("CartCompanyPickerDialog — cache com falha", () => {
     await waitFor(() => expect(screen.getByText("Cooperativa Solar")).toBeInTheDocument());
 
     rerender(<CartCompanyPickerDialog open={false} onOpenChange={vi.fn()} />);
-    queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
+    await queryClient.invalidateQueries({ queryKey: ["cart-sicoob-company-options"] });
     fetchMock.mockRejectedValueOnce(new Error("network"));
     rerender(<CartCompanyPickerDialog open onOpenChange={vi.fn()} />);
     await waitFor(() => expect(screen.getByText(/mostrando dados salvos/i)).toBeInTheDocument());
