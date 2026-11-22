@@ -268,7 +268,7 @@ Deno.test("vendas conta aprovação pela data do evento, não da criação", asy
     sicoob_order_invoices: { data: [] },
     quotes: {
       data: [
-        { quote_number: "ORC-1", client_name: "ACME", client_company: null, total: 300, approved_at: "2026-11-20T10:00:00.000Z", created_at: "2026-10-01T10:00:00.000Z" },
+        { quote_number: "ORC-1", client_name: "ACME", client_company: null, total: 300, approved_at: "2026-11-20T10:00:00.000Z", created_at: "2026-10-01T10:00:00.000Z", status: "approved" },
       ],
     },
   });
@@ -451,6 +451,7 @@ Deno.test("vendas contam aprovação feita pelo link público", async () => {
           total: 100,
           approved_at: "2026-11-20T10:00:00.000Z",
           client_response_at: null,
+          status: "approved",
         },
         {
           // Aprovada pelo cliente no link público: só `client_response_at`.
@@ -498,4 +499,68 @@ Deno.test("proposta aprovada no painel e no link público conta uma vez", async 
   assertEquals(html.includes("Aprovadas:</strong> 1"), true);
   assertEquals(html.includes("500,00"), true);
   assertEquals(html.includes("1.000,00"), false);
+});
+
+Deno.test("conta a aprovação que depois virou pedido", async () => {
+  // Converter em pedido troca `status` para `converted`. Filtrar só pelos
+  // status aprovados fazia a proposta sair do relatório no dia seguinte.
+  const convertida = {
+    id: "q-conv",
+    quote_number: "ORC-CONV",
+    client_name: "ACME",
+    client_company: null,
+    total: 700,
+    approved_at: "2026-11-20T09:00:00.000Z",
+    client_response_at: null,
+    status: "converted",
+  };
+  const { client, calls } = fakeSupabase({
+    sicoob_order_invoices: { data: [] },
+    quotes: { data: [convertida] },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  assertEquals(html.includes("Aprovadas:</strong> 1"), true);
+  assertEquals(html.includes("700,00"), true);
+  const approvedCall = calls.find((c) => c.filters.some(([col]) => col === "gte:approved_at"));
+  const statuses = approvedCall?.filters.find(([col]) => col === "in:status")?.[1];
+  assertEquals(Array.isArray(statuses) && statuses.includes("converted"), true);
+});
+
+Deno.test("ignora resposta recusada do link público", async () => {
+  // `client_response_at` é gravado também na recusa: sem olhar o desfecho a
+  // proposta recusada entrava como aprovada.
+  const recusada = {
+    id: "q-rec",
+    quote_number: "ORC-REC",
+    client_name: "ACME",
+    client_company: null,
+    total: 900,
+    approved_at: null,
+    client_response_at: "2026-11-19T10:00:00.000Z",
+    client_response: "rejected",
+    status: "sent",
+  };
+  const { client } = fakeSupabase({
+    sicoob_order_invoices: { data: [] },
+    quotes: { data: [recusada] },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  assertEquals(html.includes("Aprovadas:</strong> 0"), true);
+  assertEquals(html.includes("900,00"), false);
+});
+
+Deno.test("desativar agendamento não depende de email_to igual ao perfil", async () => {
+  // O trigger só tem o que validar quando `email_to` muda; sem esse
+  // curto-circuito o UPDATE que desativa o agendamento levantava exceção
+  // quando o usuário tinha trocado de e-mail.
+  const sql = await Deno.readTextFile(
+    new URL("../../migrations/20261122210000_allow_worker_deactivate_revoked_report.sql", import.meta.url),
+  );
+
+  assertEquals(sql.includes("NEW.email_to IS NOT DISTINCT FROM OLD.email_to"), true);
+  assertEquals(sql.includes("RETURN NEW;"), true);
 });

@@ -370,16 +370,18 @@ async function salesSection(
       .eq("seller_id", sellerId)
       .gte("approved_at", since)
       .lt("approved_at", until)
+      // Converter em pedido troca o status para `converted`: exigir só os
+      // status aprovados omitia a proposta justamente depois da conversão.
+      .in("status", [...APPROVED_QUOTE_STATUSES, "converted"])
       .order("approved_at", { ascending: false })
       .limit(SCAN_LIMIT),
     // O link público de aprovação grava `client_response_at`, não `approved_at`.
     // Consultar só `approved_at` deixava essas propostas fora da contagem.
     supabase.from("quotes")
-      .select("id, quote_number, client_name, client_company, total, client_response_at")
+      .select("id, quote_number, client_name, client_company, total, client_response_at, client_response")
       .eq("seller_id", sellerId)
       .gte("client_response_at", since)
       .lt("client_response_at", until)
-      .in("status", APPROVED_QUOTE_STATUSES)
       .order("client_response_at", { ascending: false })
       .limit(SCAN_LIMIT),
   ]);
@@ -413,6 +415,7 @@ async function salesSection(
     approvals.set(String(q.id), { quote: q, at: q.approved_at });
   }
   for (const q of publicApprovalsRes.data ?? []) {
+    if (q.client_response === "rejected") continue;
     const key = String(q.id);
     if (approvals.has(key)) continue;
     approvals.set(key, { quote: q, at: q.client_response_at });

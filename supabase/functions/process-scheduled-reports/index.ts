@@ -56,6 +56,24 @@ Deno.serve(async (req) => {
 
     for (const report of dueReports) {
       try {
+        // Agendamento de usuário revogado ficaria vencido encabeçando o lote
+        // para sempre. Desativar tira ele da fila sem travar os demais.
+        const { data: roles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", report.user_id)
+          .limit(1);
+        if (rolesError) throw rolesError;
+        if (!Array.isArray(roles) || roles.length === 0) {
+          const { error: deactivateError } = await supabase
+            .from("scheduled_reports")
+            .update({ is_active: false, updated_at: now.toISOString() })
+            .eq("id", report.id);
+          if (deactivateError) throw deactivateError;
+          results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
+          continue;
+        }
+
         if (!resendKey) {
           // Sem provedor não há envio: marca bloqueado e NÃO avança
           // `next_run_at`, para o relatório sair assim que a chave existir.
@@ -75,24 +93,6 @@ Deno.serve(async (req) => {
         const currentEmail = String(profile?.email ?? "").trim().toLowerCase();
         if (!currentEmail || currentEmail !== String(report.email_to).trim().toLowerCase()) {
           results.push({ id: report.id, status: "skipped", error: "email_desatualizado" });
-          continue;
-        }
-
-        // Agendamento de usuário revogado ficaria vencido encabeçando o lote
-        // para sempre. Desativar tira ele da fila sem travar os demais.
-        const { data: roles, error: rolesError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", report.user_id)
-          .limit(1);
-        if (rolesError) throw rolesError;
-        if (!Array.isArray(roles) || roles.length === 0) {
-          const { error: deactivateError } = await supabase
-            .from("scheduled_reports")
-            .update({ is_active: false, updated_at: now.toISOString() })
-            .eq("id", report.id);
-          if (deactivateError) throw deactivateError;
-          results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
           continue;
         }
 

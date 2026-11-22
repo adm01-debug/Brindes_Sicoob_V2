@@ -57,26 +57,8 @@ Deno.serve(async (req: Request) => {
 
     for (const report of dueReports) {
       try {
-        // O trigger `trg_validate_report_email` compara `email_to` com o perfil
-        // no INSERT/UPDATE. Se o usuário trocou de e-mail depois de agendar, o
-        // endereço gravado é o antigo — e a caixa pode ter outro dono. Revalidar
-        // aqui impede entregar dados comerciais a terceiros.
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("user_id", report.user_id)
-          .maybeSingle();
-        if (profileError) throw profileError;
-        const currentEmail = String(profile?.email ?? "").trim().toLowerCase();
-        if (!currentEmail || currentEmail !== String(report.email_to).trim().toLowerCase()) {
-          results.push({ id: report.id, status: "skipped", error: "email_desatualizado" });
-          continue;
-        }
-
-        // A checagem fica aqui, e não só em `generateScheduledReportHtml`: um
-        // agendamento de usuário revogado continuaria vencido e ocuparia uma
-        // vaga do lote em toda execução, travando os posteriores. Desativar o
-        // agendamento tira ele da fila de vez.
+        // Agendamento de usuário revogado ficaria vencido encabeçando o lote
+        // para sempre. Desativar tira ele da fila sem travar os demais.
         const { data: roles, error: rolesError } = await supabase
           .from("user_roles")
           .select("role")
@@ -90,6 +72,22 @@ Deno.serve(async (req: Request) => {
             .eq("id", report.id);
           if (deactivateError) throw deactivateError;
           results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
+          continue;
+        }
+
+        // O trigger `trg_validate_report_email` compara `email_to` com o perfil
+        // no INSERT/UPDATE. Se o usuário trocou de e-mail depois de agendar, o
+        // endereço gravado é o antigo — e a caixa pode ter outro dono. Revalidar
+        // aqui impede entregar dados comerciais a terceiros.
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("user_id", report.user_id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        const currentEmail = String(profile?.email ?? "").trim().toLowerCase();
+        if (!currentEmail || currentEmail !== String(report.email_to).trim().toLowerCase()) {
+          results.push({ id: report.id, status: "skipped", error: "email_desatualizado" });
           continue;
         }
 

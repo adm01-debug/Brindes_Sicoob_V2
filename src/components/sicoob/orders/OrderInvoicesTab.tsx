@@ -15,6 +15,41 @@ interface OrderInvoicesTabProps {
 
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
 
+/**
+ * Interpreta valor digitado em formato brasileiro. Trocar a vírgula por ponto
+ * lia "1.250" como 1,25 e gravava a nota mil vezes menor: o ponto só é separador
+ * decimal quando é o único separador e tem 1 ou 2 dígitos depois.
+ */
+export function parseAmountBR(raw: string): number | undefined {
+  const text = raw.trim().replace(/^R\$\s*/i, "").replace(/\s/g, "");
+  if (!text) return undefined;
+
+  const lastComma = text.lastIndexOf(",");
+  const lastDot = text.lastIndexOf(".");
+  let normalized: string;
+
+  if (lastComma >= 0 && lastDot >= 0) {
+    // O separador que aparece por último é o decimal.
+    normalized = lastComma > lastDot
+      ? text.replace(/\./g, "").replace(",", ".")
+      : text.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    normalized = text.replace(/\./g, "").replace(",", ".");
+  } else if (lastDot >= 0) {
+    const decimals = text.length - lastDot - 1;
+    const dots = text.split(".").length - 1;
+    // "1.250" e "1.250.000" são milhar; "1250.5" e "1250.50" são decimais.
+    normalized = dots > 1 || decimals === 3
+      ? text.replace(/\./g, "")
+      : text;
+  } else {
+    normalized = text;
+  }
+
+  const value = Number(normalized);
+  return Number.isFinite(value) ? value : undefined;
+}
+
 export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -47,9 +82,7 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
     }
   };
 
-  const parsedAmount = amount.trim()
-    ? Number(amount.replace(",", "."))
-    : undefined;
+  const parsedAmount = parseAmountBR(amount);
   const amountValido = parsedAmount === undefined
     || (Number.isFinite(parsedAmount) && parsedAmount > 0);
   const podeEnviar = Boolean(invoiceNumber.trim()) && Boolean(issuedAt) && amountValido;
@@ -130,7 +163,7 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
               <Input
                 id="invoiceAmount"
                 inputMode="decimal"
-                placeholder="Ex: 1250.00"
+                placeholder="Ex: 1.250,00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 aria-invalid={!amountValido}
