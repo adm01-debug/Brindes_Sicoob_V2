@@ -74,7 +74,7 @@
     "propria_cooperativa": "criado",
     "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
   },
-  "rateio_centro_alheio": "ERROR:  Centro de custo 2e142513-366f-4686-88a7-3c807a5a72ec nao pertence a cooperativa do pedido.",
+  "rateio_centro_alheio": "ERROR:  Centro de custo aa9234b5-2b33-439b-b91f-d7468b554a1d nao pertence a cooperativa do pedido.",
   "rateio_oraculo": {
     "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
     "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
@@ -83,6 +83,10 @@
     "reservado_por_centro": "CC-01=120.00,CC-05=80.00",
     "reservado_apos_comprometer": "0.00",
     "comprometido_por_centro": "CC-01=120.00,CC-05=80.00"
+  },
+  "cota_arredondada": {
+    "percentual_100": "100.00",
+    "percentual_0_aceito": "0.00"
   },
   "resultado": "aprovado"
 }

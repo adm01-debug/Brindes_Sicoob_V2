@@ -182,7 +182,7 @@ function BudgetKpis({ amounts }: { amounts: PaBudgetAmounts }) {
 }
 
 function BudgetStatus({
-  spentPercent,
+  amounts,
   isDialogOpen,
   requestedAmount,
   requestReason,
@@ -192,7 +192,7 @@ function BudgetStatus({
   onReasonChange,
   onSubmit,
 }: {
-  spentPercent: number;
+  amounts: PaBudgetAmounts;
   isDialogOpen: boolean;
   requestedAmount: string;
   requestReason: string;
@@ -202,13 +202,18 @@ function BudgetStatus({
   onReasonChange: (value: string) => void;
   onSubmit: () => void;
 }) {
-  const isCritical = spentPercent > 90;
+  // A barra mede ocupacao (reservado + empenhado + consumido), nao consumo:
+  // rotular como consumo fazia o gestor achar que a verba ja tinha sido gasta.
+  const ocupacaoPercent = amounts.percentualOcupado;
+  const isCritical = ocupacaoPercent > 90;
   return (
     <Card className="border-[1.5px]">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Status da Utilização</CardTitle>
-          <CardDescription>Visualização gráfica do consumo de verba em tempo real.</CardDescription>
+          <CardDescription>
+            Ocupação da verba: reservado, empenhado e consumido sobre o limite do mês.
+          </CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={onDialogChange}>
           <DialogTrigger asChild>
@@ -259,16 +264,20 @@ function BudgetStatus({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm font-medium">
-            <span>Progresso de Consumo</span>
+            <span>Progresso de Ocupação</span>
             <span className={cn(isCritical ? 'text-destructive' : 'text-sicoob-green')}>
-              {spentPercent.toFixed(1)}%
+              {ocupacaoPercent.toFixed(1)}%
             </span>
           </div>
           <Progress
-            value={spentPercent}
+            value={ocupacaoPercent}
             className="h-3"
             indicatorClassName={isCritical ? 'bg-destructive' : 'bg-sicoob-green'}
           />
+          <p className="text-xs text-muted-foreground">
+            {formatCurrency(amounts.reservada)} reservado · {formatCurrency(amounts.comprometida)}{' '}
+            empenhado · {formatCurrency(amounts.consumida)} consumido
+          </p>
         </div>
         {isCritical && (
           <Alert
@@ -372,7 +381,7 @@ export default function PAWalletPage() {
 
           <TabsContent value="status">
             <BudgetStatus
-              spentPercent={amounts.percentualOcupado}
+              amounts={amounts}
               isDialogOpen={isRequestDialogOpen}
               requestedAmount={requestedAmount}
               requestReason={requestReason}
