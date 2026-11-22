@@ -62,6 +62,31 @@ describe('buildAllocationPayload', () => {
     expect(payload.map((item) => item.percentual)).toEqual([75, 25]);
   });
 
+  it('fecha o valor do pedido mesmo quando o centavo sobra na ultima linha', () => {
+    // O banco cobra a soma exata no caminho estrito: 66,67 + 66,67 + 66,66.
+    const payload = buildAllocationPayload(200, [
+      { cost_center_id: 'a', valor: '66.67' },
+      { cost_center_id: 'b', valor: '66.67' },
+      { cost_center_id: 'c', valor: '66.66' },
+    ]);
+
+    expect(payload.map((item) => item.valor)).toEqual([66.67, 66.67, 66.66]);
+    expect(payload.reduce((soma, item) => soma + item.valor, 0)).toBe(200);
+    expect(somaPercentual(payload)).toBe(100);
+  });
+
+  it('absorve no valor da ultima linha o centavo que faltava', () => {
+    // 199,99 digitado em um pedido de 200,00: o banco recusaria a soma.
+    const payload = buildAllocationPayload(200, [
+      { cost_center_id: 'a', valor: '99.99' },
+      { cost_center_id: 'b', valor: '99.99' },
+    ]);
+
+    expect(payload.map((item) => item.valor)).toEqual([99.99, 100.01]);
+    expect(payload.reduce((soma, item) => soma + item.valor, 0)).toBe(200);
+    expect(somaPercentual(payload)).toBe(100);
+  });
+
   it('rejeita linha sem centro de custo', () => {
     expect(() =>
       buildAllocationPayload(100, [

@@ -4,7 +4,8 @@
   "producao_verificada": false,
   "backfill": {
     "agregado": "150.00",
-    "livro": "1|150.00"
+    "livro_sem_pedido": "1|90.00",
+    "livro_do_pedido_legado": "consumido|60.00"
   },
   "ciclo": {
     "apos_reservar": {
@@ -74,7 +75,7 @@
     "propria_cooperativa": "criado",
     "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
   },
-  "rateio_centro_alheio": "ERROR:  Centro de custo aa9234b5-2b33-439b-b91f-d7468b554a1d nao pertence a cooperativa do pedido.",
+  "rateio_centro_alheio": "ERROR:  Centro de custo bf5f1707-3db0-4a1a-b399-8867ae06993f nao pertence a cooperativa do pedido.",
   "rateio_oraculo": {
     "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
     "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
@@ -87,6 +88,20 @@
   "cota_arredondada": {
     "percentual_100": "100.00",
     "percentual_0_aceito": "0.00"
+  },
+  "rateio_reemitido": {
+    "antes": "CC-01=200.00",
+    "depois": "CC-01=50.00,CC-06=150.00",
+    "total": "200.00"
+  },
+  "rateio_estrito": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000212 soma 199.99, mas o pedido vale 200.00.",
+  "legado_sem_debito_duplo": {
+    "agregado_antes": "260.00",
+    "agregado_depois": "260.00",
+    "eventos_do_pedido": "1|60.00"
+  },
+  "rateio_concorrente": {
+    "linhas": "1|200.00"
   },
   "resultado": "aprovado"
 }

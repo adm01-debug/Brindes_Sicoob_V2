@@ -107,8 +107,19 @@ try:
         "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_entries"
         " WHERE tipo = 'ajuste' AND order_id IS NULL;"
     )
-    assert livro_legado == "1|150.00", livro_legado
-    result["backfill"] = {"agregado": inicial["consumido"], "livro": livro_legado}
+    # O pedido 102 (delivered, 60) ja estava consumido antes do livro: o
+    # backfill atribui os 60 a ele e o resto do agregado (90) fica sem pedido.
+    assert livro_legado == "1|90.00", livro_legado
+    atribuido = scalar(
+        "SELECT estado || '|' || valor FROM pa_budget_entries"
+        " WHERE order_id = '00000000-0000-4000-8000-000000000102';"
+    )
+    assert atribuido == "consumido|60.00", atribuido
+    result["backfill"] = {
+        "agregado": inicial["consumido"],
+        "livro_sem_pedido": livro_legado,
+        "livro_do_pedido_legado": atribuido,
+    }
 
     # ---- 2. Rascunho não reserva -------------------------------------------
     assert estados()["reservado"] == "0.00"
@@ -596,6 +607,152 @@ try:
         "percentual_100": percentual_zero,
         "percentual_0_aceito": cota_zerada,
     }
+
+    # ---- 23. Rateio defasado em pedido ja comprometido ----------------------
+    # Trocar o rateio tem que reemitir a posicao no livro; sem isso o pedido
+    # continuaria debitando os centros antigos.
+    def centro_do_pedido(order_id):
+        return scalar(
+            "SELECT string_agg(codigo || '=' || valor, ',' ORDER BY codigo)"
+            "  FROM ("
+            "    SELECT COALESCE(c.codigo, 'sem-centro') AS codigo, sum(e.valor) AS valor"
+            "      FROM pa_budget_entries e"
+            "      LEFT JOIN cost_centers c ON c.id = e.cost_center_id"
+            f"     WHERE e.order_id = '{order_id}' AND e.estado = 'comprometido'"
+            "     GROUP BY 1"
+            "  ) AS posicao;"
+        )
+
+    reemitido = "00000000-0000-4000-8000-000000000211"
+    sql(
+        "INSERT INTO cost_centers (cooperativa_id, codigo, nome)"
+        f" VALUES ('{COOP_A}', 'CC-06', 'Marketing');"
+    )
+    center_d = scalar(
+        "SELECT id FROM cost_centers"
+        f" WHERE cooperativa_id = '{COOP_A}' AND codigo = 'CC-06';"
+    )
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{reemitido}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    rateio_a = json.dumps([{"cost_center_id": center_a, "valor": 200, "percentual": 100}])
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{reemitido}', '{rateio_a}'::jsonb);"
+    )
+    move(reemitido, "confirmed")
+    assert centro_do_pedido(reemitido) == "CC-01=200.00", centro_do_pedido(reemitido)
+
+    rateio_b = json.dumps([
+        {"cost_center_id": center_a, "valor": 50, "percentual": 25},
+        {"cost_center_id": center_d, "valor": 150, "percentual": 75},
+    ])
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{reemitido}', '{rateio_b}'::jsonb);"
+    )
+    reemitido_centros = centro_do_pedido(reemitido)
+    assert reemitido_centros == "CC-01=50.00,CC-06=150.00", reemitido_centros
+    total_reemitido = scalar(
+        "SELECT COALESCE(sum(valor), 0) FROM pa_budget_entries"
+        f" WHERE order_id = '{reemitido}' AND estado = 'comprometido';"
+    )
+    assert total_reemitido == "200.00", total_reemitido
+    result["rateio_reemitido"] = {
+        "antes": "CC-01=200.00",
+        "depois": reemitido_centros,
+        "total": total_reemitido,
+    }
+
+    # ---- 24. Soma fora do centavo e recusada no caminho estrito -------------
+    # 199,99 para um pedido de 200,00 passava pela tolerancia de R$ 0,01 e a
+    # verba consumida divergia do pedido. No caminho estrito tem que falhar.
+    estrito = "00000000-0000-4000-8000-000000000212"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{estrito}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    rateio_curto = json.dumps([{"cost_center_id": center_a, "valor": 199.99, "percentual": 100}])
+    # Em rascunho a soma parcial e aceita (o rateio e montado linha a linha).
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{estrito}', "
+        f"'{rateio_curto}'::jsonb);"
+    )
+    result["rateio_estrito"] = must_fail(
+        f"UPDATE sicoob_orders SET status = 'waiting_approval' WHERE id = '{estrito}';",
+        "soma 199.99",
+    )
+    assert scalar(f"SELECT status FROM sicoob_orders WHERE id = '{estrito}';") == "draft"
+
+    # ---- 25. Pedido legado consumido nao debita duas vezes ------------------
+    # O pedido 102 nasceu `delivered` antes do livro existir: os 60 dele estao
+    # no agregado e o backfill os atribuiu ao proprio pedido. A transicao para
+    # `completed` precisa encontrar essa posicao, nao lancar consumo de novo.
+    legado = "00000000-0000-4000-8000-000000000102"
+    consumido_legado = scalar(
+        "SELECT verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{PA_A}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    move(legado, "completed")
+    consumido_apos = scalar(
+        "SELECT verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{PA_A}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    assert consumido_apos == consumido_legado, (consumido_legado, consumido_apos)
+    eventos_legado = scalar(
+        "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_entries"
+        f" WHERE order_id = '{legado}';"
+    )
+    assert eventos_legado == "1|60.00", eventos_legado
+    result["legado_sem_debito_duplo"] = {
+        "agregado_antes": consumido_legado,
+        "agregado_depois": consumido_apos,
+        "eventos_do_pedido": eventos_legado,
+    }
+
+    # ---- 26. Concorrencia: dois salvamentos nao somam 200% ------------------
+    # O segundo salvamento espera o FOR UPDATE, entao o DELETE dele enxerga as
+    # linhas do primeiro e o rateio final e o ultimo enviado, nao a soma.
+    concorrente = "00000000-0000-4000-8000-000000000214"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{concorrente}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    rateio_1 = json.dumps([{"cost_center_id": center_a, "valor": 200, "percentual": 100}])
+    rateio_2 = json.dumps([{"cost_center_id": center_d, "valor": 200, "percentual": 100}])
+    primeira = subprocess.Popen(
+        ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres",
+         "-v", "ON_ERROR_STOP=1", "-At"],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    primeira.stdin.write(
+        "BEGIN;\n"
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{concorrente}', "
+        f"'{rateio_1}'::jsonb);\n"
+        "SELECT pg_sleep(2);\n"
+        "COMMIT;\n"
+    )
+    primeira.stdin.flush()
+    time.sleep(0.5)
+    segunda = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{concorrente}', "
+        f"'{rateio_2}'::jsonb);"
+    )
+    primeira.communicate(timeout=30)
+    assert primeira.returncode == 0, primeira.stderr.read() if primeira.stderr else "falha"
+    assert segunda.returncode == 0, segunda.stderr
+    linhas_concorrente = scalar(
+        "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{concorrente}';"
+    )
+    assert linhas_concorrente == "1|200.00", linhas_concorrente
+    result["rateio_concorrente"] = {"linhas": linhas_concorrente}
 
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
