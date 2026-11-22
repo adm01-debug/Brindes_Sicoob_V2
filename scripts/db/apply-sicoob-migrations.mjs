@@ -218,7 +218,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
-    sha256: "4c6e872b0673309232ee6343efcf9f0bb35b0a407b7033f6d522d1857200d68b",
+    sha256: "1341ce2139e2333a89ccd8c53e50c4c04df61f27a563db5de63fbd5e5f4a5389",
   },
   {
     file: "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",

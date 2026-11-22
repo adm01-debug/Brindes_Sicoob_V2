@@ -199,12 +199,12 @@ VALUES ('00000000-0000-4000-8000-000000000281',
         '00000000-0000-4000-8000-000000000003',
         '00000000-0000-4000-8000-000000000010',
         '00000000-0000-4000-8000-000000000020', 'delivered', 80,
-        now() - interval '3 minutes'),
+        date_trunc('month', now()) + interval '1 hour'),
        ('00000000-0000-4000-8000-000000000282',
         '00000000-0000-4000-8000-000000000003',
         '00000000-0000-4000-8000-000000000010',
         '00000000-0000-4000-8000-000000000020', 'delivered', 80,
-        now() - interval '1 minutes');
+        date_trunc('month', now()) + interval '2 hours');
 
 INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)
 VALUES ('00000000-0000-4000-8000-000000000102',

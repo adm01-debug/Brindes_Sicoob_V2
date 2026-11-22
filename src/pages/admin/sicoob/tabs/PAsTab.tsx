@@ -355,6 +355,10 @@ export const PAsTab = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['postos_atendimento'] });
+      // A cooperativa do PA e a referencia do rateio: transferir o PA para
+      // outra Singular sem descartar esta chave deixaria o editor carregando
+      // os centros de custo da Singular anterior.
+      queryClient.invalidateQueries({ queryKey: ['pa_cooperativa'] });
       toast.success('PA atualizado com sucesso');
       setEditingPA(null);
     },

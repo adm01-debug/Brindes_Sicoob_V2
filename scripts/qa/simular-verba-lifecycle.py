@@ -863,6 +863,31 @@ try:
         "agregado_apos_reaplicar": scalar(agregado_pa_c),
     }
 
+    # ---- 29. Concluir pedido legado nao consome de novo -------------------
+    # O backfill limitou o lancamento ao consumo registrado: o pedido 282 vale
+    # 80 no pedido e apenas 20 no livro. `delivered` -> `completed` nao e gasto
+    # novo; antes o estorno da posicao parcial e o relancamento do total
+    # elevavam o consumo a 160 e o pedido ainda passava no saldo.
+    consumido_pa_c = (
+        "SELECT verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{pa_c}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    move("00000000-0000-4000-8000-000000000282", "completed")
+    apos_concluir = scalar(agregado_pa_c)
+    move("00000000-0000-4000-8000-000000000281", "completed")
+    apos_concluir_dois = scalar(agregado_pa_c)
+    assert apos_concluir == "100.00", apos_concluir
+    assert apos_concluir_dois == "100.00", apos_concluir_dois
+    assert scalar(do_pa_c) == primeira_passada, scalar(do_pa_c)
+    result["conclusao_legado_sem_consumo"] = {
+        "pedido_concluido": "valor 80, livro 20",
+        "consumo_apos_concluir": apos_concluir,
+        "consumo_apos_concluir_dois": apos_concluir_dois,
+        "lancamentos_preservados": scalar(do_pa_c),
+        "consumido_no_agregado": scalar(consumido_pa_c),
+    }
+
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)

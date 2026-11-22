@@ -493,6 +493,16 @@ BEGIN
     RETURN v_budget;
   END IF;
 
+  -- Consumo legado com cap: o backfill limitou o lançamento ao histórico
+  -- registrado, então o livro pode guardar menos que `total_amount`. Concluir
+  -- um pedido já entregue não é gasto novo, e o gatilho bloqueia mudança de
+  -- valor em pedido consumido: posição e destino iguais não movimentam nada,
+  -- mesmo com valores diferentes. Sem isto, `delivered` -> `completed`
+  -- estornava a posição parcial e relançava o total como consumo novo.
+  IF p_para_estado = 'consumido' AND v_atual = 'consumido' THEN
+    RETURN v_budget;
+  END IF;
+
   -- Entrar no ciclo (ou consumir direto) exige saldo livre na competência.
   -- A posição atual é liberada no mesmo movimento, então ela volta ao saldo.
   IF p_para_estado <> 'liberado' THEN
