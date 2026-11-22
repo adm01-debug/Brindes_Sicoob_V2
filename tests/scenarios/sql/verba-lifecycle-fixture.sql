@@ -183,6 +183,29 @@ VALUES ('00000000-0000-4000-8000-000000000101',
 -- `pa_budgets.verba_consumida` (150 = 60 deste pedido + 90 sem pedido) e nao
 -- existe nenhuma linha em `pa_budget_entries`. O backfill precisa atribuir os
 -- 60 ao pedido, senao a proxima transicao debita de novo.
+-- PA C: consumo legado que SUPERA a soma dos pedidos entregues. O gatilho
+-- antigo debitava pela data de confirmacao; o backfill atribui pela data de
+-- criacao. Sem cap, o livro lancaria 160 contra 100 registrados e inflaria o
+-- agregado.
+INSERT INTO public.postos_atendimento (id, cooperativa_id, nome) VALUES
+  ('00000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000010', 'PA C');
+
+INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_consumida, limite_alcada)
+SELECT '00000000-0000-4000-8000-000000000003',
+       EXTRACT(YEAR FROM now())::int, EXTRACT(MONTH FROM now())::int, 900, 100, 500;
+
+INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount, created_at)
+VALUES ('00000000-0000-4000-8000-000000000281',
+        '00000000-0000-4000-8000-000000000003',
+        '00000000-0000-4000-8000-000000000010',
+        '00000000-0000-4000-8000-000000000020', 'delivered', 80,
+        now() - interval '3 minutes'),
+       ('00000000-0000-4000-8000-000000000282',
+        '00000000-0000-4000-8000-000000000003',
+        '00000000-0000-4000-8000-000000000010',
+        '00000000-0000-4000-8000-000000000020', 'delivered', 80,
+        now() - interval '1 minutes');
+
 INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)
 VALUES ('00000000-0000-4000-8000-000000000102',
         '00000000-0000-4000-8000-000000000001',

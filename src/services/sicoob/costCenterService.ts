@@ -29,6 +29,17 @@ export const costCenterService = {
     return (data ?? []) as CostCenter[];
   },
 
+  /** Cooperativa ATUAL do posto: muda quando o PA e transferido de Singular. */
+  async cooperativaDoPa(paId: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('postos_atendimento')
+      .select('cooperativa_id')
+      .eq('id', paId)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.cooperativa_id ?? null;
+  },
+
   async create(input: { cooperativa_id: string; codigo: string; nome: string }) {
     const { data, error } = await supabase
       .from('cost_centers')

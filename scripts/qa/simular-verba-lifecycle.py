@@ -26,6 +26,14 @@ SINGULAR = "00000000-0000-4000-8000-000000000024"
 ORDER = "00000000-0000-4000-8000-000000000101"
 
 
+def carregar_backfill():
+    """Extrai o statement do backfill da propria migration, sem copia divergente."""
+    texto = MIGRATION.read_text()
+    inicio = texto.index("WITH snapshot AS MATERIALIZED")
+    fim = texto.index("\n\n-- Converte status do pedido no estado da verba", inicio)
+    return texto[inicio:fim].rstrip()
+
+
 def command(args, *, stdin=None, check=True):
     return subprocess.run(args, input=stdin, text=True, capture_output=True, check=check)
 
@@ -747,12 +755,24 @@ try:
     primeira.communicate(timeout=30)
     assert primeira.returncode == 0, primeira.stderr.read() if primeira.stderr else "falha"
     assert segunda.returncode == 0, segunda.stderr
+    # Os dois rateios valem 200 num unico centro, entao o valor nao diz quem
+    # venceu: a prova e o centro gravado, que so pode ser o do ultimo envio.
     linhas_concorrente = scalar(
-        "SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_allocations"
-        f" WHERE order_id = '{concorrente}';"
+        "SELECT count(*) || '|' || COALESCE(sum(a.valor), 0) || '|' ||"
+        " COALESCE(string_agg(c.codigo, ',' ORDER BY c.codigo), 'sem-centro')"
+        "  FROM pa_budget_allocations a"
+        "  JOIN cost_centers c ON c.id = a.cost_center_id"
+        f" WHERE a.order_id = '{concorrente}';"
     )
-    assert linhas_concorrente == "1|200.00", linhas_concorrente
-    result["rateio_concorrente"] = {"linhas": linhas_concorrente}
+    codigo_vencedor = scalar(f"SELECT codigo FROM cost_centers WHERE id = '{center_d}';")
+    assert linhas_concorrente == f"1|200.00|{codigo_vencedor}", linhas_concorrente
+    result["rateio_concorrente"] = {
+        "linhas": linhas_concorrente,
+        "centro_do_primeiro_envio": scalar(
+            f"SELECT codigo FROM cost_centers WHERE id = '{center_a}';"
+        ),
+        "centro_do_ultimo_envio": codigo_vencedor,
+    }
 
     # ---- 27. Cota arredondada para 0% no caminho real de reserva -----------
     # Duas cotas de 33,33% fecham 100% sem sobra, mas o rateio pode chegar com
@@ -794,6 +814,45 @@ try:
         "rateio_aceito": "100%+0%",
         "lancamentos": lancamentos_cota,
         "centro_zero_sem_lancamento": centro_zero_lancado,
+    }
+
+    # ---- 28. Cap do backfill e reaplicacao idempotente ---------------------
+    # O gatilho antigo debitava pela data de confirmacao e o backfill atribui
+    # pela data de criacao: a soma dos pedidos entregues pode superar o consumo
+    # registrado. Nenhum pedido pode lancar mais do que ainda sobra, e reaplicar
+    # o backfill sobre um livro preservado nao pode duplicar linhas.
+    pa_c = "00000000-0000-4000-8000-000000000003"
+    do_pa_c = (
+        "SELECT count(*) || '|' || COALESCE(sum(e.valor), 0) || '|' ||"
+        " COALESCE(string_agg(e.order_id::text || '=' || e.valor, ','"
+        " ORDER BY e.order_id), 'sem-pedido')"
+        "  FROM pa_budget_entries e"
+        "  JOIN pa_budgets b ON b.id = e.pa_budget_id"
+        f" WHERE b.pa_id = '{pa_c}'"
+    )
+    agregado_pa_c = (
+        "SELECT verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{pa_c}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    # Pedidos entregues somam 160 contra 100 de consumo registrado.
+    primeira_passada = scalar(do_pa_c)
+    assert primeira_passada == (
+        "2|100.00|00000000-0000-4000-8000-000000000281=80.00,"
+        "00000000-0000-4000-8000-000000000282=20.00"
+    ), primeira_passada
+    assert scalar(agregado_pa_c) == "100.00", scalar(agregado_pa_c)
+
+    sql(carregar_backfill())
+    segunda_passada = scalar(do_pa_c)
+    assert segunda_passada == primeira_passada, segunda_passada
+    assert scalar(agregado_pa_c) == "100.00", "reaplicacao nao pode inflar o agregado"
+    result["backfill_cap_idempotencia"] = {
+        "pedidos_entregues": "80.00+80.00",
+        "consumo_registrado": "100.00",
+        "lancado_na_primeira": primeira_passada,
+        "lancado_na_reaplicacao": segunda_passada,
+        "agregado_apos_reaplicar": scalar(agregado_pa_c),
     }
 
     result["resultado"] = "aprovado"
