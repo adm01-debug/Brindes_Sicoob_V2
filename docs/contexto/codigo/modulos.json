@@ -926,7 +926,7 @@
    "modulo": "components/cart",
    "arquivos": 16,
    "testes": 0,
-   "linhas": 2200,
+   "linhas": 2338,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -4726,6 +4726,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "list",
     "listitem",
@@ -5440,6 +5441,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "button",
     "dialog",
     "grid",
@@ -10206,7 +10208,7 @@
    "modulo": "lib",
    "arquivos": 60,
    "testes": 0,
-   "linhas": 8346,
+   "linhas": 8355,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -13930,6 +13932,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "button",
     "dialog",
     "manager",

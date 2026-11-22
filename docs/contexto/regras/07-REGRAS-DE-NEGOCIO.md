@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `b591559393` · branch `main` · 2026-11-21 21:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `88dc17b037` · branch `main` · 2026-11-22 01:41 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5604,7 +5604,7 @@ _nenhum item encontrado_
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| … +993 linhas — lista completa em `context.json` | |
+| … +994 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5708,7 +5708,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7017 testes em 709 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7026 testes em 710 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5922,6 +5922,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.thresholdMatrix.test.tsx` | 9 | PriceFreshnessBadge × thresholdDays — matriz parametrizada · getPriceFreshness (util) classifica corretamente cada (threshold × dias) · threshold=$threshold, daysSince=$daysSince → status=$expected · variant=%s (catálogo: card / lista / tabela) … |
 | `tests/components/admin/connections/ZoneRefreshButton.collapsed.test.tsx` | 9 | ZoneRefreshButton — interação com zona colapsada · o botão de refresh permanece visível e clicável quando a zona está colapsada · invalida queryKeys mesmo com a zona colapsada · exibe estado de loading (texto + spinner) durante o refresh com zona colapsada … |
 | `tests/components/admin/connections/connectionStatus.test.ts` | 9 | resolveSupabaseConnectionStatus · readOnly cards são sempre active (gerenciados) · retorna  · retorna  … |
+| `tests/components/cart/cart-company-picker-dialog.error.test.tsx` | 9 | CartCompanyPickerDialog — erro no diretório · mostra erro + Tentar novamente quando o fetch falha, e recupera no retry · não inventa vazio no erro (a mensagem de vazio é exclusiva do sucesso) · picker inline: erro mostra Tentar novamente em vez de vazio … |
 | `tests/components/products/ProductSparkline.labels.test.tsx` | 9 | ProductSparkline — origem dos dados · renders the sparkline SVG when real data is available · does NOT show old  · identifica as saídas de estoque na grade de métricas … |
 | `tests/components/quotes/QuoteShareDialog.test.tsx` | 9 | QuoteShareDialog · reutiliza o token ativo e compartilha somente a rota pública · gera um novo token pelo fluxo canônico quando não há link · oferece novo link quando o token está %s … |
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
@@ -6011,8 +6012,7 @@ _nenhum item encontrado_
 | `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 7 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
 | `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
 | `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
-| `tests/lib/image-converter.test.ts` | 7 | needsConversion · returns false for PNG · returns false for JPEG · returns true for SVG … |
-| … +409 linhas — lista completa em `context.json` | | |
+| … +410 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

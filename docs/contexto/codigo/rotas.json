@@ -2976,6 +2976,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "manager",
     "tab"
@@ -3065,6 +3066,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "manager",
     "tab"
@@ -3154,6 +3156,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "manager",
     "tab"
@@ -3763,6 +3766,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "grid",
     "gridcell",
@@ -4602,6 +4606,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "article",
     "dialog",
     "group",
@@ -7185,6 +7190,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "list",
     "listitem",
@@ -9101,6 +9107,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "button",
     "dialog",
     "group",

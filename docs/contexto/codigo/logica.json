@@ -1645,6 +1645,7 @@
     "fetchIndustryPeerIds",
     "fetchQuoteDirectoryCompanies",
     "fetchQuoteDirectoryContacts",
+    "getCrmHttpStatus",
     "insertCrm",
     "invokeCrmBatch",
     "invokeCrmDb",
@@ -1655,7 +1656,7 @@
     "updateCrmByFilter"
    ],
    "export_default": null,
-   "linhas": 526,
+   "linhas": 535,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -1664,7 +1665,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 21,
+   "usado_por": 23,
    "usado_por_modulos": [
     "components/admin",
     "components/bi",

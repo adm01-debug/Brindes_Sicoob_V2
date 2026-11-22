@@ -2760,6 +2760,7 @@
    "src/components/ui/input.tsx",
    "src/components/ui/scroll-area.tsx",
    "src/contexts/SellerCartContext.tsx",
+   "src/lib/crm-db.ts",
    "src/lib/utils.ts"
   ],
   "src/components/cart/CartCompanyPickerDialog.tsx": [
@@ -2770,6 +2771,7 @@
    "src/components/ui/scroll-area.tsx",
    "src/components/ui/tabs.tsx",
    "src/contexts/SellerCartContext.tsx",
+   "src/lib/crm-db.ts",
    "src/lib/utils.ts"
   ],
   "src/components/cart/CartEmptyStateSmart.tsx": [

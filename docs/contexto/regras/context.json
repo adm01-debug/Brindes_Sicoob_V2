@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "b591559393c2c20686e0a93f2e07c07b910de2a9",
+  "sha": "88dc17b03725504c81c0ef9dd36bdc6dcce92644",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-21 21:13 UTC",
-  "files_total": 5244,
-  "code_files": 3811,
-  "code_lines": 557401
+  "generated_at": "2026-11-22 01:41 UTC",
+  "files_total": 5245,
+  "code_files": 3812,
+  "code_lines": 557777
  },
  "version": "1.3.2",
- "facts_hash": "2a7ffda2ee72f819",
+ "facts_hash": "332be1a488a38177",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1484,
-   ".tsx": 1445,
+   ".tsx": 1446,
    ".sql": 684,
    ".mjs": 139,
    ".py": 66,
@@ -55595,7 +55595,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 128
+    "deps_count": 129
    },
    {
     "path": "",
@@ -55860,7 +55860,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 176
+    "deps_count": 177
    },
    {
     "path": "",
@@ -56328,7 +56328,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 107
+    "deps_count": 108
    },
    {
     "path": "",
@@ -56367,7 +56367,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 105
+    "deps_count": 106
    },
    {
     "path": "",
@@ -61194,7 +61194,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1280,
+  "components_count": 1281,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63986,7 +63986,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166803,
+   "lines": 166941,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64597,7 +64597,7 @@
   {
    "module": "src/lib",
    "files": 167,
-   "lines": 22643,
+   "lines": 22652,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -64614,7 +64614,7 @@
     "cloud-status.ts: CloudStatus, CloudStatusSnapshot, CloudNotReadyError, probeCloudStatus, getCachedCloudStatus, onCloudStatusChange",
     "connection-error-copy.ts: ErrorTone, ErrorCopy, getErrorCopy, getKindBadgeClass, getKindLabel",
     "connections-config.ts: CONSECUTIVE_FAILURE_THRESHOLD",
-    "crm-db.ts: CrmQuery, CrmResponse, CrmBatchQuery, invokeCrmBatch, invokeCrmDb, selectCrm",
+    "crm-db.ts: CrmQuery, CrmResponse, CrmBatchQuery, invokeCrmBatch, getCrmHttpStatus, invokeCrmDb",
     "date-utils.ts: formatDate, formatDateTime, formatTime, formatDateRelative, formatDateRelativeFull, formatDateCompact",
     "diagnostics.ts: DiagnosticLog, AppHealthStatus, DiagnosticsManager, diagnostics",
     "edge-function-client.ts: invokeEdgeFunction",
@@ -65759,8 +65759,8 @@
   },
   {
    "module": "tests",
-   "files": 663,
-   "lines": 88753,
+   "files": 664,
+   "lines": 88982,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -75639,6 +75639,14 @@
     "msg": "><AlertCircle className="
    },
    {
+    "file": "src/components/cart/CartCompanyPicker.tsx",
+    "msg": " className="
+   },
+   {
+    "file": "src/components/cart/CartCompanyPickerDialog.tsx",
+    "msg": " className="
+   },
+   {
     "file": "src/components/cart/CouponInput.tsx",
     "msg": "Cupom inválido ou expirado"
    },
@@ -77349,10 +77357,6 @@
    {
     "file": "src/lib/circuit-breaker.ts",
     "msg": "Circuit breaker "
-   },
-   {
-    "file": "src/lib/crm-db.ts",
-    "msg": "CRM DB error: ${message}"
    },
    {
     "file": "src/lib/crm-db.ts",
@@ -119604,6 +119608,42 @@
    {
     "file": "tests/components/cart/cart-company-options.test.ts",
     "name": "para de paginar quando a página vem incompleta"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "CartCompanyPickerDialog — erro no diretório"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "mostra erro + Tentar novamente quando o fetch falha, e recupera no retry"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "não inventa vazio no erro (a mensagem de vazio é exclusiva do sucesso)"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "picker inline: erro mostra Tentar novamente em vez de vazio"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "picker inline: retry recupera e lista aparece"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "CartCompanyPickerDialog — cache com falha"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "mantém lista em cache + aviso discreto quando a atualização falha (não esconde cooperativas)"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "retry com cache remove o aviso de dados salvos e atualiza a lista"
+   },
+   {
+    "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "name": "busca sem resultado com cache distingue a lista salva (não diz "
    },
    {
     "file": "tests/components/catalog/CatalogStorefrontExperience.test.tsx",
@@ -189958,9 +189998,12 @@
   },
   "src/components/cart/CartCompanyPicker.tsx": {
    "path": "src/components/cart/CartCompanyPicker.tsx",
-   "lines": 135,
+   "lines": 205,
    "exports": [
     "function CartCompanyPicker"
+   ],
+   "errors": [
+    " className="
    ],
    "doc": "CartCompanyPicker - Seletor compacto de empresa para criação de carrinho",
    "temporal": [
@@ -189969,9 +190012,12 @@
   },
   "src/components/cart/CartCompanyPickerDialog.tsx": {
    "path": "src/components/cart/CartCompanyPickerDialog.tsx",
-   "lines": 209,
+   "lines": 277,
    "exports": [
     "function CartCompanyPickerDialog"
+   ],
+   "errors": [
+    " className="
    ],
    "params": [
     {
@@ -213540,12 +213586,13 @@
   },
   "src/lib/crm-db.ts": {
    "path": "src/lib/crm-db.ts",
-   "lines": 526,
+   "lines": 535,
    "exports": [
     "interface CrmQuery",
     "interface CrmResponse",
     "interface CrmBatchQuery",
     "function invokeCrmBatch",
+    "function getCrmHttpStatus",
     "function invokeCrmDb",
     "function selectCrm",
     "interface QuoteDirectoryCompany",
@@ -213563,7 +213610,6 @@
     "function deleteCrmByFilter"
    ],
    "errors": [
-    "CRM DB error: ${message}",
     "CRM DB: max retries exceeded",
     "CRM batch error: ${error.message}",
     "CRM query error: ${message}"
@@ -242941,6 +242987,28 @@
     "para de paginar quando a página vem incompleta"
    ]
   },
+  "tests/components/cart/cart-company-picker-dialog.error.test.tsx": {
+   "path": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+   "lines": 229,
+   "is_test": true,
+   "errors": [
+    ")).toBeInTheDocument());\n    await userEvent.click(screen.getByRole(",
+    ")).toBeInTheDocument();\n    });\n    expect(screen.queryByText(/nenhuma cooperativa ou unidade encontrada/i)).toBeNull();\n  });\n\n  it(",
+    ")).toBeNull();\n    expect(screen.queryByText(/nenhuma cooperativa ou unidade encontrada/i)).toBeNull();\n  });\n\n  it("
+   ],
+   "doc": "Regressão: o diálogo de vincular cooperativa/unidade precisa diferenciar \"erro ao carregar o diretório\" de \"nenhuma cooperativa encontrada\". Sem o estado de erro, uma falha (ex.: RLS negando o perfil) era exibida como vazio — o usuário não via motivo nem como repetir.",
+   "tests": [
+    "CartCompanyPickerDialog — erro no diretório",
+    "mostra erro + Tentar novamente quando o fetch falha, e recupera no retry",
+    "não inventa vazio no erro (a mensagem de vazio é exclusiva do sucesso)",
+    "picker inline: erro mostra Tentar novamente em vez de vazio",
+    "picker inline: retry recupera e lista aparece",
+    "CartCompanyPickerDialog — cache com falha",
+    "mantém lista em cache + aviso discreto quando a atualização falha (não esconde cooperativas)",
+    "retry com cache remove o aviso de dados salvos e atualiza a lista",
+    "busca sem resultado com cache distingue a lista salva (não diz "
+   ]
+  },
   "tests/components/catalog/CatalogStorefrontExperience.test.tsx": {
    "path": "tests/components/catalog/CatalogStorefrontExperience.test.tsx",
    "lines": 81,
@@ -253704,10 +253772,22 @@
   }
  },
  "git": {
-  "sha": "b591559393c2c20686e0a93f2e07c07b910de2a9",
+  "sha": "88dc17b03725504c81c0ef9dd36bdc6dcce92644",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "88dc17b",
+    "date": "2026-11-21",
+    "author": "adm01-debug",
+    "subject": "fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)",
+    "files": [
+     "src/components/cart/CartCompanyPicker.tsx",
+     "src/components/cart/CartCompanyPickerDialog.tsx",
+     "src/lib/crm-db.ts",
+     "tests/components/cart/cart-company-picker-dialog.error.test.tsx"
+    ]
+   },
    {
     "sha": "b591559",
     "date": "2026-11-21",
@@ -254712,15 +254792,6 @@
     "files": [
      "tests/scripts/e2e-target.test.ts"
     ]
-   },
-   {
-    "sha": "a202373",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(recuperação): veredito medido para as 62 refs restantes (#367)",
-    "files": [
-     "docs/RECUPERACAO/cobertura-refs.md"
-    ]
    }
   ],
   "hot_files": [
@@ -254757,8 +254828,20 @@
     2
    ],
    [
-    "docs/RECUPERACAO/cobertura-refs.md",
-    2
+    "src/components/cart/CartCompanyPicker.tsx",
+    1
+   ],
+   [
+    "src/components/cart/CartCompanyPickerDialog.tsx",
+    1
+   ],
+   [
+    "src/lib/crm-db.ts",
+    1
+   ],
+   [
+    "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    1
    ],
    [
     "src/hooks/bi/useSeasonalPeakNotifications.ts",
@@ -254790,18 +254873,6 @@
    ],
    [
     "src/pages/collections/useCollectionsPageState.ts",
-    1
-   ],
-   [
-    "src/components/quotes/QuoteConvertToOrder.tsx",
-    1
-   ],
-   [
-    "src/hooks/quotes/useQuotes.ts",
-    1
-   ],
-   [
-    "src/hooks/useSicoobApprovals.ts",
     1
    ]
   ]

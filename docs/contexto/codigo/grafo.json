@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2255,
- "arestas": 9154,
+ "arestas": 9156,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -30,7 +30,7 @@
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
-   "importado_por": 182
+   "importado_por": 183
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
@@ -153,15 +153,15 @@
    "importado_por": 27
   },
   {
+   "arquivo": "src/lib/crm-db.ts",
+   "importado_por": 27
+  },
+  {
    "arquivo": "src/components/products/PriceFreshnessBadge.tsx",
    "importado_por": 26
   },
   {
    "arquivo": "src/components/ui/progress.tsx",
-   "importado_por": 26
-  },
-  {
-   "arquivo": "src/types/product-catalog.ts",
    "importado_por": 26
   }
  ],

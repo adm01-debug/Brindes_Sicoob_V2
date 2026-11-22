@@ -4661,7 +4661,7 @@
     "CartCompanyPicker"
    ],
    "export_default": null,
-   "linhas": 135,
+   "linhas": 205,
    "dominio": "components/cart",
    "hooks_locais": [
     "useSellerCartContext"
@@ -4677,7 +4677,7 @@
     "CartCompanyPickerDialog"
    ],
    "export_default": null,
-   "linhas": 209,
+   "linhas": 277,
    "dominio": "components/cart",
    "hooks_locais": [
     "useSellerCartContext"
