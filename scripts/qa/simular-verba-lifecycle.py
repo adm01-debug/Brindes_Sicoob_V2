@@ -754,6 +754,48 @@ try:
     assert linhas_concorrente == "1|200.00", linhas_concorrente
     result["rateio_concorrente"] = {"linhas": linhas_concorrente}
 
+    # ---- 27. Cota arredondada para 0% no caminho real de reserva -----------
+    # Duas cotas de 33,33% fecham 100% sem sobra, mas o rateio pode chegar com
+    # a ultima cota em 0% (arredondamento do editor). A reserva tem que lancar
+    # os dois centros (um deles com zero) e nao rejeitar o rateio inteiro.
+    cota = "00000000-0000-4000-8000-000000000215"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{cota}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 100);"
+    )
+    rateio_cota = json.dumps([
+        {"cost_center_id": center_a, "valor": 100, "percentual": 100},
+        {"cost_center_id": center_d, "valor": 0, "percentual": 0},
+    ])
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{cota}', "
+        f"'{rateio_cota}'::jsonb);"
+    )
+    move(cota, "waiting_approval")
+    lancamentos_cota = scalar(
+        "SELECT string_agg(codigo || '=' || valor, ',' ORDER BY codigo)"
+        "  FROM ("
+        "    SELECT COALESCE(c.codigo, 'sem-centro') AS codigo, sum(e.valor) AS valor"
+        "      FROM pa_budget_entries e"
+        "      LEFT JOIN cost_centers c ON c.id = e.cost_center_id"
+        f"     WHERE e.order_id = '{cota}' AND e.estado = 'reservado'"
+        "     GROUP BY 1"
+        "  ) AS posicao;"
+    )
+    assert lancamentos_cota == "CC-01=100.00", lancamentos_cota
+    centro_zero_lancado = scalar(
+        "SELECT count(*) FROM pa_budget_entries e"
+        "  JOIN cost_centers c ON c.id = e.cost_center_id"
+        f" WHERE e.order_id = '{cota}' AND c.codigo = 'CC-06';"
+    )
+    assert centro_zero_lancado == "0", centro_zero_lancado
+    result["cota_zero_reserva"] = {
+        "rateio_aceito": "100%+0%",
+        "lancamentos": lancamentos_cota,
+        "centro_zero_sem_lancamento": centro_zero_lancado,
+    }
+
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)

@@ -20,6 +20,8 @@ describe('readPaBudgetAmounts', () => {
     expect(amounts.ocupada).toBe(600);
     expect(amounts.disponivel).toBe(600);
     expect(amounts.percentualOcupado).toBe(50);
+    // O card "Consumido" mostra 250 de 1200: 20,8%, nao os 50% de ocupacao.
+    expect(amounts.percentualConsumido).toBeCloseTo(20.83, 2);
   });
 
   it('trata 100% ocupado como saldo zero, sem liberar verba', () => {

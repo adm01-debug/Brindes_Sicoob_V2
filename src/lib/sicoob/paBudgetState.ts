@@ -15,6 +15,7 @@ export interface PaBudgetAmounts {
   ocupada: number;
   disponivel: number;
   percentualOcupado: number;
+  percentualConsumido: number;
 }
 
 type PaBudgetAmountSource =
@@ -51,6 +52,7 @@ export function readPaBudgetAmounts(budget: PaBudgetAmountSource): PaBudgetAmoun
     ocupada,
     disponivel: planejada - ocupada,
     percentualOcupado: planejada > 0 ? (ocupada / planejada) * 100 : 0,
+    percentualConsumido: planejada > 0 ? (consumida / planejada) * 100 : 0,
   };
 }
 
