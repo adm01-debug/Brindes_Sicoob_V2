@@ -18,6 +18,93 @@ interface CartCompanyPickerProps {
   onCancel?: () => void;
 }
 
+function DirectoryErrorNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex flex-col items-center gap-2 px-4 py-6 text-center">
+      <AlertCircle className="h-5 w-5 text-destructive" />
+      <p className="text-xs text-muted-foreground">
+        {"Não foi possível carregar o diretório. Seu perfil pode não ter acesso ou o serviço pode estar indisponível."}
+      </p>
+      <Button variant="ghost" size="sm" onClick={onRetry}>Tentar novamente</Button>
+    </div>
+  );
+}
+
+function DirectoryStaleNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-2 pt-1">
+      <p className="text-[11px] text-muted-foreground">Não foi possível atualizar o diretório. Mostrando dados salvos.</p>
+      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={onRetry}>Tentar novamente</Button>
+    </div>
+  );
+}
+
+interface CompanyDirectoryListProps {
+  companies: CompanyItem[];
+  isLoading: boolean;
+  showDirectoryError: boolean;
+  staleNotice: boolean;
+  canCreateCart: boolean;
+  onSelect: (company: CompanyItem) => void;
+  onRetry: () => void;
+}
+
+function CompanyDirectoryList({
+  companies,
+  isLoading,
+  showDirectoryError,
+  staleNotice,
+  canCreateCart,
+  onSelect,
+  onRetry,
+}: CompanyDirectoryListProps) {
+  if (showDirectoryError) return <DirectoryErrorNotice onRetry={onRetry} />;
+
+  return (
+    <>
+      {companies.map((company) => (
+        <button
+          key={company.id}
+          type="button"
+          data-testid="cart-company-picker-select"
+          data-company-id={company.id}
+          className={cn(
+            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left",
+            "hover:bg-accent/50 transition-colors text-sm"
+          )}
+          onClick={() => onSelect(company)}
+          disabled={!canCreateCart}
+        >
+          {company.logo_url ? (
+            <img
+              src={company.logo_url}
+              alt="Logo da cooperativa ou unidade"
+              className="w-6 h-6 rounded object-contain bg-background border border-border flex-shrink-0" loading="lazy" />
+          ) : (
+            <div className="w-6 h-6 rounded bg-muted flex items-center justify-center flex-shrink-0">
+              <Building2 className="h-3 w-3 text-muted-foreground" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm truncate font-medium">{company.name}</p>
+            {company.ramo && (
+              <p className="text-[10px] text-muted-foreground truncate">
+                {company.ramo}
+              </p>
+            )}
+          </div>
+        </button>
+      ))}
+      {companies.length === 0 && !isLoading && !staleNotice && (
+        <p className="text-xs text-muted-foreground text-center py-4">
+          Nenhuma cooperativa ou unidade encontrada
+        </p>
+      )}
+      {staleNotice && <DirectoryStaleNotice onRetry={onRetry} />}
+    </>
+  );
+}
+
 export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +116,12 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, []);
 
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
+  const {
+    data: localCompanies = [],
+    isLoading: loadingLocal,
+    isError: directoryError,
+    refetch,
+  } = useQuery<CompanyItem[]>({
     queryKey: ["cart-sicoob-company-options"],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
@@ -61,6 +153,9 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, [createCart, onCreated]);
 
   const isLoading = loadingLocal;
+  // Falha com cache selecionável mantém a lista; alerta só sem dados aproveitáveis.
+  const hasCompanyData = localCompanies.length > 0;
+  const showDirectoryError = directoryError && !hasCompanyData;
 
   return (
     <div className="space-y-2">
@@ -89,52 +184,15 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
       <ScrollArea className="h-[200px]">
         <div className="space-y-0.5">
-          {directoryError ? (
-            <div role="alert" className="flex flex-col items-center gap-2 px-3 py-5 text-center">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              <p className="text-xs text-muted-foreground">
-                {"Não foi possível carregar o diretório. Seu perfil pode não ter acesso ou o serviço pode estar indisponível."}
-              </p>
-              <Button variant="ghost" size="sm" onClick={() => void refetch()}>Tentar novamente</Button>
-            </div>
-          ) : filteredCompanies.map((company) => (
-            <button
-              key={company.id}
-              type="button"
-              data-testid="cart-company-picker-select"
-              data-company-id={company.id}
-              className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left",
-                "hover:bg-accent/50 transition-colors text-sm"
-              )}
-              onClick={() => handleSelect(company)}
-              disabled={!canCreateCart}
-            >
-              {company.logo_url ? (
-                <img
-                  src={company.logo_url}
-                  alt="Logo da cooperativa ou unidade"
-                  className="w-6 h-6 rounded object-contain bg-background border border-border flex-shrink-0" loading="lazy" />
-              ) : (
-                <div className="w-6 h-6 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                  <Building2 className="h-3 w-3 text-muted-foreground" />
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="text-sm truncate font-medium">{company.name}</p>
-                {company.ramo && (
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {company.ramo}
-                  </p>
-                )}
-              </div>
-            </button>
-          ))}
-          {filteredCompanies.length === 0 && !isLoading && !directoryError && (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              Nenhuma cooperativa ou unidade encontrada
-            </p>
-          )}
+          <CompanyDirectoryList
+            companies={filteredCompanies}
+            isLoading={isLoading}
+            showDirectoryError={showDirectoryError}
+            staleNotice={directoryError && hasCompanyData}
+            canCreateCart={canCreateCart}
+            onSelect={handleSelect}
+            onRetry={() => void refetch()}
+          />
         </div>
       </ScrollArea>
     </div>
