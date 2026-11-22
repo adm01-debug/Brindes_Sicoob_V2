@@ -23,9 +23,6 @@
 | supabase_realtime | public.quotes | full |
 | supabase_realtime | public.search_analytics | default |
 | supabase_realtime | public.sicoob_orders | full |
-| supabase_realtime_messages_publication | realtime.messages_2026_11_16 |  |
-| supabase_realtime_messages_publication | realtime.messages_2026_11_17 |  |
-| supabase_realtime_messages_publication | realtime.messages_2026_11_18 |  |
 | supabase_realtime_messages_publication | realtime.messages_2026_11_19 |  |
 | supabase_realtime_messages_publication | realtime.messages_2026_11_20 |  |
 | supabase_realtime_messages_publication | realtime.messages_2026_11_21 |  |
