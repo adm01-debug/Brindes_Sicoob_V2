@@ -53,14 +53,18 @@
   "rateio_atomico": {
     "linhas": "1",
     "duplicado": "ERROR:  Cada centro de custo pode aparecer uma unica vez no rateio.",
-    "preservado": "1|120.00"
+    "preservado": "1|120.00",
+    "rollback_apos_delete": "1|120.00",
+    "erro_insercao": "ERROR:  invalid input syntax for type numeric: \"nao-e-numero\""
   },
   "rascunho_defasado": {
     "edita_item": "permitido",
     "motivo_entrada_na_verba": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000206 soma 200.00, mas o pedido vale 350.00."
   },
   "livro_escopo": {
-    "competencia_divergente": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\""
+    "pa_de_outro_gestor": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\"",
+    "competencia_divergente": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\"",
+    "competencia_correta": "gravado"
   },
   "rateio_rls": {
     "leitor_apaga": "1|100.00",
@@ -69,6 +73,16 @@
   "centro_custo_singular": {
     "propria_cooperativa": "criado",
     "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
+  },
+  "rateio_centro_alheio": "ERROR:  Centro de custo 2e142513-366f-4686-88a7-3c807a5a72ec nao pertence a cooperativa do pedido.",
+  "rateio_oraculo": {
+    "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
+    "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
+  },
+  "livro_por_centro": {
+    "reservado_por_centro": "CC-01=120.00,CC-05=80.00",
+    "reservado_apos_comprometer": "0.00",
+    "comprometido_por_centro": "CC-01=120.00,CC-05=80.00"
   },
   "resultado": "aprovado"
 }
