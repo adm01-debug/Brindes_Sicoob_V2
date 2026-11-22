@@ -787,11 +787,18 @@ try:
         {"cost_center_id": center_a, "valor": 100, "percentual": 100},
         {"cost_center_id": center_d, "valor": 0, "percentual": 0},
     ])
-    sql(
-        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
-        f"SELECT count(*) FROM pa_budget_replace_allocations('{cota}', "
-        f"'{rateio_cota}'::jsonb);"
-    )
+    # A RPC precisa ter gravado as DUAS cotas: provar so o lancamento do centro
+    # de 100% passaria mesmo se a cota de 0% tivesse sido descartada no salvamento.
+    cotas_gravadas = actor_sql(
+        GESTOR_A,
+        f"SELECT count(*) || '|' || COALESCE(string_agg("
+        "  c.codigo || '=' || a.percentual::text || '%/' || a.valor, ','"
+        "  ORDER BY c.codigo), 'vazio')"
+        "  FROM pa_budget_replace_allocations("
+        f"'{cota}', '{rateio_cota}'::jsonb) a"
+        "  JOIN cost_centers c ON c.id = a.cost_center_id;"
+    ).stdout.strip().splitlines()[-1]
+    assert cotas_gravadas == "2|CC-01=100.00%/100.00,CC-06=0.00%/0.00", cotas_gravadas
     move(cota, "waiting_approval")
     lancamentos_cota = scalar(
         "SELECT string_agg(codigo || '=' || valor, ',' ORDER BY codigo)"
@@ -812,6 +819,7 @@ try:
     assert centro_zero_lancado == "0", centro_zero_lancado
     result["cota_zero_reserva"] = {
         "rateio_aceito": "100%+0%",
+        "cotas_gravadas": cotas_gravadas,
         "lancamentos": lancamentos_cota,
         "centro_zero_sem_lancamento": centro_zero_lancado,
     }
