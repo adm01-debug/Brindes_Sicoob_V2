@@ -44,6 +44,24 @@ const REPORT_TYPE_LABELS: Record<ReportType, string> = {
   orders: 'Pedidos',
 };
 
+/**
+ * Payload do toggle de agendamento. Ao reativar, o destinatário volta a ser o
+ * e-mail atual do dono — o worker pula agendamento com `email_to` divergente do
+ * perfil, então sem isso o relatório ficaria ativo e mudo.
+ */
+export function buildTogglePatch(
+  active: boolean,
+  currentEmail: string | undefined,
+  now: string,
+): { is_active: boolean; updated_at: string; email_to?: string } {
+  const patch: { is_active: boolean; updated_at: string; email_to?: string } = {
+    is_active: active,
+    updated_at: now,
+  };
+  if (active && currentEmail) patch.email_to = currentEmail;
+  return patch;
+}
+
 export function useScheduledReports() {
   const { user } = useAuth();
   const [reports, setReports] = useState<ScheduledReport[]>([]);
@@ -104,12 +122,8 @@ export function useScheduledReports() {
   const toggleActive = useCallback(async (reportId: string, active: boolean) => {
     try {
       // Reativar com `email_to` antigo deixava o relatório ativo mas mudo: o
-      // worker compara com o perfil e pula por `email_desatualizado`. Ao
-      // reativar, o destinatário volta a ser o e-mail atual do dono.
-      const patch: { is_active: boolean; updated_at: string; email_to?: string } = {
-        is_active: active,
-        updated_at: new Date().toISOString(),
-      };
+      // worker compara com o perfil e pula por `email_desatualizado`.
+      let currentEmail: string | undefined;
       if (active && user) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -117,10 +131,9 @@ export function useScheduledReports() {
           .eq('user_id', user.id)
           .maybeSingle();
         if (profileError) throw profileError;
-        const currentEmail = String(profile?.email ?? '').trim();
-        if (currentEmail) patch.email_to = currentEmail;
-
+        currentEmail = String(profile?.email ?? '').trim() || undefined;
       }
+      const patch = buildTogglePatch(active, currentEmail, new Date().toISOString());
 
       const { error } = await supabase
         .from('scheduled_reports')

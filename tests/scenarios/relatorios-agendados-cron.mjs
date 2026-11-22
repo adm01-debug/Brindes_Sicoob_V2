@@ -111,9 +111,15 @@ test('a UI de anexo rejeita valor fora do padrão em vez de adivinhar', () => {
 test('reativar relatório atualiza o destinatário para o e-mail atual', () => {
   const source = readFileSync('src/hooks/useScheduledReports.ts', 'utf8');
   // O worker pula agendamento com `email_to` divergente do perfil; reativar sem
-  // atualizar o endereço deixava o relatório ativo e mudo.
-  assert.match(source, /patch\.email_to = currentEmail/, 'reativação precisa gravar o e-mail atual');
+  // atualizar o endereço deixava o relatório ativo e mudo. O payload em si é
+  // verificado em tests/hooks/scheduled-reports/toggle-patch.test.ts.
+  assert.match(source, /buildTogglePatch\(active, currentEmail,/, 'toggle precisa montar o payload');
   assert.match(source, /from\('profiles'\)/, 'precisa ler o e-mail do perfil');
+  assert.match(
+    source,
+    /if \(active && currentEmail\) patch\.email_to = currentEmail;/,
+    'reativação precisa gravar o e-mail atual',
+  );
 });
 
 test('a UI de anexo coleta emissão e valor da nota', () => {

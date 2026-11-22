@@ -15,6 +15,14 @@ describe("parseAmountBR", () => {
     expect(parseAmountBR("1250")).toBe(1250);
   });
 
+  it("lê milhar no formato US com centavos", () => {
+    // "1,250.50" casava a regra de milhar com vírgula e o ponto decimal era
+    // removido junto: a nota era gravada por 125050 em vez de 1250,50.
+    expect(parseAmountBR("1,250.50")).toBe(1250.5);
+    expect(parseAmountBR("1,250")).toBe(1250);
+    expect(parseAmountBR("12,345.67")).toBe(12345.67);
+  });
+
   it("aceita prefixo de moeda e espaços", () => {
     expect(parseAmountBR("R$ 1.250,00")).toBe(1250);
     expect(parseAmountBR(" R$ 99,90 ")).toBe(99.9);

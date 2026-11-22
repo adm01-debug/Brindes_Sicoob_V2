@@ -29,15 +29,21 @@ export function parseAmountBR(raw: string): number | undefined {
   // (ou inflada): "1.250.50" virava 125050 e "1250,OO" virava undefined.
   const milharPonto = /^\d{1,3}(\.\d{3})+$/.test(text);
   const milharPontoComCentavos = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(text);
-  const milharVirgulaComCentavos = /^\d{1,3}(,\d{3})+(\.\d{1,2})?$/.test(text);
+  // Formato US com milhar: "1,250.50" e "1,250". O ponto é o decimal aqui.
+  const milharVirgulaComPontoDecimal = /^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(text);
+  const milharVirgula = /^\d{1,3}(,\d{3})+$/.test(text);
   const simples = /^\d+(,\d{1,2})?$/.test(text);
   const simplesDecimalPonto = /^\d+(\.\d{1,2})?$/.test(text);
 
   let normalized: string;
-  if (milharPonto || milharVirgulaComCentavos) {
-    normalized = text.replace(/\./g, "").replace(/,/g, "");
+  if (milharPonto) {
+    normalized = text.replace(/\./g, "");
   } else if (milharPontoComCentavos) {
     normalized = text.replace(/\./g, "").replace(",", ".");
+  } else if (milharVirgulaComPontoDecimal) {
+    normalized = text.replace(/,/g, "");
+  } else if (milharVirgula) {
+    normalized = text.replace(/,/g, "");
   } else if (simples) {
     normalized = text.replace(",", ".");
   } else if (simplesDecimalPonto) {
