@@ -562,6 +562,41 @@ try:
         "comprometido_por_centro": comprometido,
     }
 
+    # ---- 22. Cota que arredonda para 0,00 nao trava o rateio ---------------
+    # Pedido de 1,00 dividido em tres centros: 0,01 + 0,01 + 0,98. Uma cota
+    # cheia de centavo nenhum (0,00) pode aparecer quando a ultima linha
+    # absorve o resto; a constraint antiga (percentual > 0) recusava e o
+    # rateio ficava irrecuperavel pela tela.
+    centavos = "00000000-0000-4000-8000-000000000210"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{centavos}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 0.01);"
+    )
+    centro_zero = json.dumps([{"cost_center_id": center_a, "valor": 0.01, "percentual": 100}])
+    sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{centavos}', '{centro_zero}'::jsonb);"
+    )
+    percentual_zero = scalar(
+        "SELECT COALESCE(percentual, 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{centavos}';"
+    )
+    sql(f"DELETE FROM pa_budget_allocations WHERE order_id = '{centavos}';")
+    sql(
+        "INSERT INTO pa_budget_allocations (order_id, cost_center_id, valor, percentual)"
+        f" VALUES ('{centavos}', '{center_a}', 0.01, 0);"
+    )
+    cota_zerada = scalar(
+        "SELECT COALESCE(percentual, 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{centavos}';"
+    )
+    assert cota_zerada == "0.00", cota_zerada
+    sql(f"DELETE FROM pa_budget_allocations WHERE order_id = '{centavos}';")
+    result["cota_arredondada"] = {
+        "percentual_100": percentual_zero,
+        "percentual_0_aceito": cota_zerada,
+    }
+
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)

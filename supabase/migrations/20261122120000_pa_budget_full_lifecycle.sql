@@ -191,7 +191,9 @@ CREATE TABLE IF NOT EXISTS public.pa_budget_allocations (
   order_id       UUID NOT NULL REFERENCES public.sicoob_orders(id) ON DELETE CASCADE,
   cost_center_id UUID REFERENCES public.cost_centers(id) ON DELETE RESTRICT,
   valor          NUMERIC(14,2) NOT NULL CHECK (valor >= 0),
-  percentual     NUMERIC(5,2) NOT NULL CHECK (percentual > 0 AND percentual <= 100),
+  -- Uma cota pode arredondar para 0,00 (rateio de centavos entre muitos centros)
+  -- ou a ultima linha absorve o resto e zera; a soma em 100 e provada pelo trigger.
+  percentual     NUMERIC(5,2) NOT NULL CHECK (percentual >= 0 AND percentual <= 100),
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT pa_budget_allocations_order_cc_uk UNIQUE (order_id, cost_center_id)
 );

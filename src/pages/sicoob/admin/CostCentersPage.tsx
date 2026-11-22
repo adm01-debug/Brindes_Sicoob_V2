@@ -27,6 +27,7 @@ import {
 import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { costCenterService, type CostCenter } from '@/services/sicoob/costCenterService';
 import {
   Select,
   SelectContent,
@@ -34,23 +35,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { costCenterService, type CostCenter } from '@/services/sicoob/costCenterService';
 import { useAuth } from '@/contexts/AuthContext';
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Erro desconhecido';
 
-// Admin sem cooperativa no perfil precisa escolher onde o centro nasce; os
-// demais herdam a cooperativa do proprio perfil.
-function precisaSelector(
+interface CooperativaOption {
+  id: string;
+  nome: string;
+}
+
+/**
+ * O centro de custo nasce na cooperativa do proprio ator. Antes gravava sempre
+ * na primeira cooperativa da lista, e o admin de uma Singular criava centro em
+ * outra. So admin sem cooperativa no perfil precisa escolher na tela.
+ */
+function resolverCooperativa(
+  doPerfil: string | null,
+  escolhidaNaTela: string,
+  options?: CooperativaOption[],
+): string {
+  const escolhida = doPerfil || escolhidaNaTela || options?.[0]?.id || '';
+  if (!escolhida) {
+    throw new Error('Cadastre uma cooperativa antes de criar centros de custo.');
+  }
+  return escolhida;
+}
+
+function precisaEscolherCooperativa(
   editing: CostCenter | null,
-  isAdmin: boolean,
   doPerfil: string | null,
   options?: CooperativaOption[],
 ): boolean {
   if (editing) return false;
-  if (!isAdmin || doPerfil) return false;
+  if (doPerfil) return false;
   return (options?.length ?? 0) > 1;
+}
+
+function cooperativaInicial(doPerfil: string | null, options?: CooperativaOption[]): string {
+  return doPerfil || options?.[0]?.id || '';
+}
+
+async function listarCooperativas(escopo: string | null): Promise<CooperativaOption[]> {
+  const query = supabase.from('cooperativas').select('id, nome').order('nome');
+  const { data, error } = await (escopo ? query.eq('id', escopo) : query);
+  if (error) throw error;
+  return data ?? [];
 }
 
 async function salvarCentroDeCusto(input: {
@@ -59,7 +89,6 @@ async function salvarCentroDeCusto(input: {
   nome: string;
   ativo: boolean;
   cooperativaDoPerfil: string | null;
-  isAdmin: boolean;
   cooperativaEscolhida: string;
   cooperatives?: CooperativaOption[];
 }) {
@@ -70,52 +99,33 @@ async function salvarCentroDeCusto(input: {
       ativo: input.ativo,
     });
   }
-  // O centro de custo pertence a cooperativa do ator; so admin escolhe
-  // livremente. Antes gravava sempre na primeira cooperativa da lista.
-  const escolhida = resolverCooperativa(
-    input.cooperativaDoPerfil,
-    input.isAdmin,
-    input.cooperativaEscolhida,
-    input.cooperatives,
-  );
   return costCenterService.create({
-    cooperativa_id: escolhida,
+    cooperativa_id: resolverCooperativa(
+      input.cooperativaDoPerfil,
+      input.cooperativaEscolhida,
+      input.cooperatives,
+    ),
     codigo: input.codigo,
     nome: input.nome,
   });
 }
 
-function cooperativaInicial(doPerfil: string | null, options?: CooperativaOption[]): string {
-  return doPerfil ?? options?.[0]?.id ?? '';
-}
-
-function resolverCooperativa(
-  doPerfil: string | null,
-  isAdmin: boolean,
-  escolhidaNaTela: string,
-  options?: CooperativaOption[],
-): string {
-  const escolhida = doPerfil || (isAdmin ? escolhidaNaTela : '') || options?.[0]?.id || '';
-  if (!escolhida) {
-    throw new Error('Cadastre uma cooperativa antes de criar centros de custo.');
-  }
-  return escolhida;
-}
-
-interface CooperativaOption {
-  id: string;
-  nome: string;
+function nomeDaCooperativa(options: CooperativaOption[] | undefined, id: string): string {
+  return options?.find((coop) => coop.id === id)?.nome ?? '—';
 }
 
 function CooperativaField({
+  visivel,
   value,
   onChange,
   options,
 }: {
+  visivel: boolean;
   value: string;
   onChange: (value: string) => void;
   options: CooperativaOption[];
 }) {
+  if (!visivel) return null;
   return (
     <div className="space-y-2">
       <Label htmlFor="cc-cooperativa">Cooperativa</Label>
@@ -135,10 +145,21 @@ function CooperativaField({
   );
 }
 
-// eslint-disable-next-line max-lines-per-function, complexity -- pagina preexistente; esta PR so escopa a query e deixa o admin escolher a cooperativa
+function varianteStatus(ativo: boolean): 'default' | 'secondary' {
+  return ativo ? 'default' : 'secondary';
+}
+
+function rotuloStatus(ativo: boolean): string {
+  return ativo ? 'Ativo' : 'Inativo';
+}
+
+function tituloFormulario(editing: CostCenter | null): string {
+  return editing ? 'Editar centro de custo' : 'Novo centro de custo';
+}
+
 export default function CostCentersPage() {
   const queryClient = useQueryClient();
-  const { cooperativaId: cooperativaDoPerfil, isAdmin } = useAuth();
+  const { cooperativaId: cooperativaDoPerfil } = useAuth();
   const [editing, setEditing] = useState<CostCenter | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [codigo, setCodigo] = useState('');
@@ -148,13 +169,7 @@ export default function CostCentersPage() {
 
   const { data: cooperatives } = useQuery({
     queryKey: ['cooperativas_options', cooperativaDoPerfil],
-    queryFn: async () => {
-      const query = supabase.from('cooperativas').select('id, nome').order('nome');
-      const scoped = cooperativaDoPerfil ? query.eq('id', cooperativaDoPerfil) : query;
-      const { data, error } = await scoped;
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listarCooperativas(cooperativaDoPerfil),
   });
 
   const { data: costCenters, isLoading } = useQuery({
@@ -172,7 +187,6 @@ export default function CostCentersPage() {
         nome,
         ativo,
         cooperativaDoPerfil,
-        isAdmin,
         cooperativaEscolhida,
         cooperatives,
       }),
@@ -211,14 +225,7 @@ export default function CostCentersPage() {
     setIsOpen(true);
   };
 
-  const cooperativaNome = (id: string) => cooperatives?.find((c) => c.id === id)?.nome ?? '—';
-
-  const precisaEscolherCooperativa = precisaSelector(
-    editing,
-    isAdmin,
-    cooperativaDoPerfil,
-    cooperatives,
-  );
+  const cooperativaNome = (id: string) => nomeDaCooperativa(cooperatives, id);
 
   return (
     <>
@@ -271,9 +278,7 @@ export default function CostCentersPage() {
                         {cooperativaNome(row.cooperativa_id)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={row.ativo ? 'default' : 'secondary'}>
-                          {row.ativo ? 'Ativo' : 'Inativo'}
-                        </Badge>
+                        <Badge variant={varianteStatus(row.ativo)}>{rotuloStatus(row.ativo)}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
@@ -311,19 +316,18 @@ export default function CostCentersPage() {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Editar centro de custo' : 'Novo centro de custo'}</DialogTitle>
+            <DialogTitle>{tituloFormulario(editing)}</DialogTitle>
             <DialogDescription>
               Código e nome aparecem nos relatórios financeiros.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {precisaEscolherCooperativa && (
-              <CooperativaField
-                value={cooperativaEscolhida}
-                onChange={setCooperativaEscolhida}
-                options={cooperatives ?? []}
-              />
-            )}
+            <CooperativaField
+              visivel={precisaEscolherCooperativa(editing, cooperativaDoPerfil, cooperatives)}
+              value={cooperativaEscolhida}
+              onChange={setCooperativaEscolhida}
+              options={cooperatives ?? []}
+            />
             <div className="space-y-2">
               <Label htmlFor="cc-codigo">Código</Label>
               <Input
