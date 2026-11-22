@@ -1,15 +1,18 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
-import { getScheduledReportOwnerFilter } from "./report-scope.ts";
 import {
   buildScheduledReportIdempotencyKey,
   sendScheduledReportEmail,
 } from "../_shared/scheduled-report-email.ts";
+import { generateScheduledReportHtml } from "../_shared/scheduled-report-data.ts";
+import { calculateNextRun } from "../send-scheduled-reports/report-types.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const BATCH_LIMIT = 50;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,7 +20,8 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
-      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
   const denied = await requireInternalService(req);
@@ -26,14 +30,19 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const now = new Date();
 
-    // Find reports that are due
+    // `limit` evita que a rodada do cron cresça sem teto quando muitos
+    // agendamentos vencem no mesmo minuto; o que sobrar cai na próxima rodada.
     const { data: dueReports, error: fetchError } = await supabase
       .from("scheduled_reports")
       .select("*")
       .eq("is_active", true)
-      .lte("next_run_at", new Date().toISOString());
+      .lte("next_run_at", now.toISOString())
+      .order("next_run_at", { ascending: true })
+      .limit(BATCH_LIMIT);
 
     if (fetchError) throw fetchError;
 
@@ -43,92 +52,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    const results = [];
+    const results: Array<{ id: string; status: string; error?: string }> = [];
 
     for (const report of dueReports) {
       try {
-        // Generate report data based on type
-        let reportData: any = {};
-        const filters = report.filters || {};
-
-        if (report.report_type === "sales" || report.report_type === "quotes") {
-          const ownerFilter = getScheduledReportOwnerFilter(report.user_id);
-          const { data: quotes, error: quotesError } = await supabase
-            .from("quotes")
-            .select("id, quote_number, status, total, created_at, client_name, client_company")
-            .eq(ownerFilter.column, ownerFilter.value)
-            .gte("created_at", getStartDate(report.frequency))
-            .order("created_at", { ascending: false })
-            .limit(100);
-          if (quotesError) throw quotesError;
-
-          if (quotesError) throw quotesError;
-
-          const total = (quotes || []).reduce((sum, q) => sum + (q.total || 0), 0);
-          const approved = (quotes || []).filter(q => q.status === "approved").length;
-
-          reportData = {
-            type: "Relatório de Orçamentos",
-            period: getPeriodLabel(report.frequency),
-            summary: {
-              total_quotes: quotes?.length || 0,
-              approved_quotes: approved,
-              conversion_rate: quotes?.length ? ((approved / quotes.length) * 100).toFixed(1) + "%" : "0%",
-              total_value: formatCurrency(total),
-            },
-            top_quotes: (quotes || []).slice(0, 10).map(q => ({
-              number: q.quote_number,
-              client: q.client_company || q.client_name || "N/A",
-              value: formatCurrency(q.total || 0),
-              status: q.status,
-            })),
-          };
-        } else if (report.report_type === "orders") {
-          const ownerFilter = getScheduledReportOwnerFilter(report.user_id);
-          const { data: orders, error: ordersError } = await supabase
-            .from("orders")
-            .select("id, order_number, status, total, created_at, client_name")
-            .eq(ownerFilter.column, ownerFilter.value)
-            .gte("created_at", getStartDate(report.frequency))
-            .order("created_at", { ascending: false })
-            .limit(100);
-          if (ordersError) throw ordersError;
-
-          if (ordersError) throw ordersError;
-
-          const total = (orders || []).reduce((sum, o) => sum + (o.total || 0), 0);
-
-          reportData = {
-            type: "Relatório de Pedidos",
-            period: getPeriodLabel(report.frequency),
-            summary: {
-              total_orders: orders?.length || 0,
-              total_value: formatCurrency(total),
-            },
-          };
+        if (!resendKey) {
+          // Sem provedor não há envio: marca bloqueado e NÃO avança
+          // `next_run_at`, para o relatório sair assim que a chave existir.
+          results.push({ id: report.id, status: "blocked", error: "provedor_email_nao_configurado" });
+          continue;
         }
 
-        const resendKey = Deno.env.get("RESEND_API_KEY");
-        const now = new Date().toISOString();
-        const emailPayload = {
-          to: report.email_to,
-          subject: `📊 ${report.report_name} — ${reportData.period}`,
-          html: generateEmailHtml(report.report_name, reportData),
-        };
+        const html = await generateScheduledReportHtml(supabase, report, now);
         await sendScheduledReportEmail({
           apiKey: resendKey,
-          ...emailPayload,
+          to: report.email_to,
+          subject: `Relatório — ${report.report_name}`,
+          html,
           idempotencyKey: buildScheduledReportIdempotencyKey(
             `scheduled-report:${report.id}:${report.next_run_at}`,
           ),
         }, async () => {
-          const nextRun = calculateNextRun(report.frequency);
+          const nextRun = calculateNextRun(report.frequency, now);
           const { data: updatedReport, error: updateError } = await supabase
             .from("scheduled_reports")
             .update({
-              last_sent_at: now,
+              last_sent_at: now.toISOString(),
               next_run_at: nextRun.toISOString(),
-              updated_at: now,
+              updated_at: now.toISOString(),
             })
             .eq("id", report.id)
             .select("id")
@@ -138,16 +89,21 @@ Deno.serve(async (req) => {
           if (!updatedReport) throw new Error("Agendamento não encontrado para confirmar o envio.");
         });
 
-        results.push({ id: report.id, status: "sent", email: report.email_to });
+        results.push({ id: report.id, status: "sent" });
       } catch (err) {
         console.error("process-scheduled-reports report error:", err);
         results.push({ id: report.id, status: "error", error: "erro_interno" });
       }
     }
 
-    return new Response(JSON.stringify({ processed: results.length, results }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const blocked = results.filter((result) => result.status === "blocked").length;
+    return new Response(
+      JSON.stringify({ processed: results.length, results }),
+      {
+        status: blocked > 0 && blocked === results.length ? 503 : 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.error("process-scheduled-reports error:", err);
     return new Response(JSON.stringify({ error: "erro_interno" }), {
@@ -156,58 +112,3 @@ Deno.serve(async (req) => {
     });
   }
 });
-
-function getStartDate(frequency: string): string {
-  const now = new Date();
-  switch (frequency) {
-    case "daily": now.setDate(now.getDate() - 1); break;
-    case "weekly": now.setDate(now.getDate() - 7); break;
-    case "monthly": now.setMonth(now.getMonth() - 1); break;
-    default: now.setDate(now.getDate() - 7);
-  }
-  return now.toISOString();
-}
-
-function getPeriodLabel(frequency: string): string {
-  switch (frequency) {
-    case "daily": return "Diário";
-    case "weekly": return "Semanal";
-    case "monthly": return "Mensal";
-    default: return frequency;
-  }
-}
-
-function calculateNextRun(frequency: string): Date {
-  const next = new Date();
-  switch (frequency) {
-    case "daily": next.setDate(next.getDate() + 1); break;
-    case "weekly": next.setDate(next.getDate() + 7); break;
-    case "monthly": next.setMonth(next.getMonth() + 1); break;
-    default: next.setDate(next.getDate() + 7);
-  }
-  next.setHours(8, 0, 0, 0); // Always at 8am
-  return next;
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-}
-
-function generateEmailHtml(reportName: string, data: any): string {
-  const summaryRows = Object.entries(data.summary || {})
-    .map(([key, val]) => `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">${key.replace(/_/g, " ")}</td><td style="padding:8px;border-bottom:1px solid #eee">${val}</td></tr>`)
-    .join("");
-
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-      <h2 style="color:#7c3aed">📊 ${reportName}</h2>
-      <p style="color:#666">Período: ${data.period} | Tipo: ${data.type}</p>
-      <table style="width:100%;border-collapse:collapse;margin:20px 0">
-        ${summaryRows}
-      </table>
-      <p style="color:#999;font-size:12px;margin-top:30px">
-        Relatório gerado automaticamente pelo Promo Gifts em ${new Date().toLocaleDateString("pt-BR")}.
-      </p>
-    </div>
-  `;
-}
