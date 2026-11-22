@@ -88,8 +88,11 @@ describe('integridade dos indicadores comerciais', () => {
     // Pedido de R$ 600 já confirmado: o saldo de R$ 400 já inclui o débito.
     expect(isOrderOverPaBudget(configured, 600, 400, 'confirmed')).toBe(false);
     expect(isOrderOverPaBudget(configured, 600, 400, 'delivered')).toBe(false);
-    // Ainda pendente: o débito não ocorreu, o pedido não cabe no saldo.
-    expect(isOrderOverPaBudget(configured, 600, 400, 'waiting_approval')).toBe(true);
+    // Aguardando aprovação já está reservado no livro de verba, então também
+    // não pode ser debitado duas vezes contra o saldo.
+    expect(isOrderOverPaBudget(configured, 600, 400, 'waiting_approval')).toBe(false);
+    // Rascunho ainda não entrou no livro: o débito não ocorreu e o pedido não cabe.
+    expect(isOrderOverPaBudget(configured, 600, 400, 'draft')).toBe(true);
     // Cancelado não consome verba nem projeta consumo.
     expect(isOrderOverPaBudget(configured, 600, 400, 'cancelled')).toBe(false);
   });
@@ -133,7 +136,7 @@ describe('integridade dos indicadores comerciais', () => {
     expect(screen.getByText('R$ 800')).toBeTruthy();
   });
 
-  it('projeta o consumo para pedido aguardando aprovação', () => {
+  it('não desconta duas vezes o pedido aguardando aprovação, que o livro já reserva', () => {
     render(
       <OrderBudgetIntelligence
         orderTotal={250}
@@ -145,7 +148,7 @@ describe('integridade dos indicadores comerciais', () => {
     );
 
     expect(screen.getByText('Viabilidade Confirmada')).toBeTruthy();
-    expect(screen.getByText('45.0%')).toBeTruthy();
+    expect(screen.getByText('20.0%')).toBeTruthy();
     expect(screen.getByText('R$ 800')).toBeTruthy();
   });
 
