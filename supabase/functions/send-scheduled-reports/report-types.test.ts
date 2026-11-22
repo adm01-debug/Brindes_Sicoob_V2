@@ -1,8 +1,9 @@
 // deno-lint-ignore-file no-import-prefix
-import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertRejects, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { generateScheduledReportHtml } from "../_shared/scheduled-report-data.ts";
 import {
   calculateNextRun,
+  getAnchorDay,
   getPeriodStart,
   isScheduledReportType,
 } from "./report-types.ts";
@@ -43,7 +44,8 @@ function fakeSupabase(responses: Record<string, { data?: unknown[]; error?: unkn
           return builder;
         },
         then(resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) {
-          const response: any = responses[table] ?? { data: [] };
+          const response: any = responses[table]
+            ?? (table === "user_roles" ? { data: [{ role: "vendedor" }] } : { data: [] });
           // O fake precisa honrar `.in()`: sem isso o filtro de status aprovado
           // não teria efeito e o teste passaria por acidente.
           let data = response?.data;
@@ -110,7 +112,8 @@ Deno.test("relatório de orçamentos filtra pelo dono do agendamento", async () 
     email_to: "gestor@exemplo.com",
   }, NOW);
 
-  assertEquals(calls[0].filters.some(([column, value]) =>
+  const quotesCall = calls.find((c) => c.table === "quotes")!;
+  assertEquals(quotesCall.filters.some(([column, value]) =>
     column === "seller_id" && value === "vendedor-1"
   ), true);
   assertEquals(html.includes("ORC-1"), true);
@@ -217,14 +220,36 @@ function report(type: string, extra: Record<string, unknown> = {}) {
   };
 }
 
-Deno.test("vendas não contam propostas rejeitadas", async () => {
+Deno.test("vendas fatura pela nota emitida e não dobra PDF com XML", async () => {
   const { client, calls } = fakeSupabase({
-    orders: { data: [] },
-    sicoob_orders: { data: [] },
+    sicoob_order_invoices: {
+      data: [
+        { order_id: "o1", invoice_number: "NF-1", file_type: "pdf", amount: 100, issued_at: "2026-11-20" },
+        { order_id: "o1", invoice_number: "NF-1", file_type: "xml", amount: 100, issued_at: "2026-11-20" },
+        { order_id: "o2", invoice_number: "NF-2", file_type: "pdf", amount: 50, issued_at: "2026-11-19" },
+      ],
+    },
+    quotes: { data: [] },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  const invoicesCall = calls.find((c) => c.table === "sicoob_order_invoices")!;
+  assertEquals(invoicesCall.filters.some(([col, value]) =>
+    col === "sicoob_orders.created_by" && value === "vendedor-1"
+  ), true, "faturamento sem filtro de vendedor vazaria nota de outro vendedor");
+  assertEquals(html.includes("Notas emitidas:</strong> 2"), true);
+  assertEquals(html.includes("150,00"), true);
+  // Sem a deduplicação o PDF e o XML da NF-1 entram os dois e o total vira 250.
+  assertEquals(html.includes("250,00"), false);
+});
+
+Deno.test("vendas conta aprovação pela data do evento, não da criação", async () => {
+  const { client, calls } = fakeSupabase({
+    sicoob_order_invoices: { data: [] },
     quotes: {
       data: [
-        { quote_number: "ORC-OK", client_name: "ACME", client_company: null, status: "approved", total: 100, created_at: "2026-11-20T10:00:00.000Z" },
-        { quote_number: "ORC-NO", client_name: "ACME", client_company: null, status: "rejected", total: 900, created_at: "2026-11-20T10:00:00.000Z" },
+        { quote_number: "ORC-1", client_name: "ACME", client_company: null, total: 300, approved_at: "2026-11-20T10:00:00.000Z", created_at: "2026-10-01T10:00:00.000Z" },
       ],
     },
   });
@@ -232,12 +257,10 @@ Deno.test("vendas não contam propostas rejeitadas", async () => {
   const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
 
   const quotesCall = calls.find((c) => c.table === "quotes")!;
-  assertEquals(quotesCall.filters.some(([col, value]) =>
-    col === "in:status" && Array.isArray(value) && (value as string[]).includes("approved_singular")
-  ), true);
-  assertEquals(html.includes("ORC-OK"), true);
-  assertEquals(html.includes("ORC-NO"), false);
-  assertEquals(html.includes("900,00"), false);
+  assertEquals(quotesCall.filters.some(([col]) => col === "gte:approved_at"), true);
+  assertEquals(quotesCall.filters.some(([col]) => col === "gte:created_at"), false);
+  assertEquals(html.includes("ORC-1"), true);
+  assertEquals(html.includes("300,00"), true);
 });
 
 Deno.test("pedidos consolidam as duas origens sem perder sicoob_orders", async () => {
@@ -338,4 +361,60 @@ Deno.test("total não é truncado quando passa do limite de exibição", async (
   assertEquals(html.includes("Pedidos no período:</strong> 150"), true);
   assertEquals(html.includes("1.500,00"), true);
   assertEquals(html.includes("Exibindo os 100 mais recentes de 150"), true);
+});
+
+Deno.test("agendamento de usuário sem papel é barrado antes de gerar dados", async () => {
+  const { client, calls } = fakeSupabase({
+    user_roles: { data: [] },
+    orders: { data: [{ order_number: "PED-1", status: "paid", total: 10, created_at: "2026-11-20T10:00:00.000Z" }] },
+  });
+
+  await assertRejects(
+    () => generateScheduledReportHtml(client as any, report("orders"), NOW),
+    Error,
+    "scheduled_report_owner_without_access",
+  );
+  assertEquals(calls.some((c) => c.table === "orders"), false, "gerou dados para quem perdeu acesso");
+});
+
+Deno.test("pedidos usam o número oficial de sicoob_orders", async () => {
+  const { client } = fakeSupabase({
+    orders: { data: [] },
+    sicoob_orders: {
+      data: [{
+        id: "9f1c2b3a-0000-0000-0000-000000000000",
+        order_number: "SIC-2026-0042",
+        status: "paid",
+        total_amount: 80,
+        created_at: "2026-11-20T10:00:00.000Z",
+        source_quote_snapshot: { client_name: "ACME" },
+      }],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("orders"), NOW);
+
+  assertEquals(html.includes("SIC-2026-0042"), true);
+  assertEquals(html.includes("SICOOB-9f1c2b3a"), false);
+});
+
+Deno.test("mensal mantém o dia-âncora depois de passar por fevereiro", () => {
+  // Agendamento do dia 31: 28/02 é só o representante de fevereiro.
+  const feb28 = new Date("2026-02-28T08:00:00.000Z");
+  assertEquals(
+    calculateNextRun("monthly", feb28, 31).toISOString(),
+    "2026-03-31T08:00:00.000Z",
+  );
+
+  const feb28Leap = new Date("2028-02-29T08:00:00.000Z");
+  assertEquals(
+    calculateNextRun("monthly", feb28Leap, 31).toISOString(),
+    "2028-03-31T08:00:00.000Z",
+  );
+
+  // Sem âncora o comportamento antigo é preservado para os chamadores legados.
+  assertEquals(calculateNextRun("monthly", feb28).toISOString(), "2026-03-28T08:00:00.000Z");
+  assertEquals(getAnchorDay("2026-01-31T08:00:00.000Z"), 31);
+  assertEquals(getAnchorDay(null, "2026-01-15T08:00:00.000Z"), 15);
+  assertEquals(getAnchorDay("lixo"), null);
 });

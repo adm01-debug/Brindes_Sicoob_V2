@@ -12,6 +12,8 @@ export interface ScheduledReportRow {
   report_name: string;
   email_to: string;
   filters?: Record<string, unknown> | null;
+  next_run_at?: string | null;
+  created_at?: string | null;
 }
 
 const ROW_LIMIT = 100;
@@ -65,6 +67,19 @@ export async function generateScheduledReportHtml(
 ): Promise<string> {
   if (typeof report.user_id !== "string" || report.user_id.trim() === "") {
     throw new Error("scheduled_report_owner_missing");
+  }
+
+  // O worker roda com service_role, então a RLS não barra nada: sem esta
+  // checagem um usuário sem papel (acesso revogado) continuaria recebendo
+  // pedidos por e-mail enquanto o agendamento estivesse ativo.
+  const { data: roles, error: rolesError } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", report.user_id)
+    .limit(1);
+  if (rolesError) throw rolesError;
+  if (!Array.isArray(roles) || roles.length === 0) {
+    throw new Error("scheduled_report_owner_without_access");
   }
 
   const since = getPeriodStart(report.frequency, reference, previousRun);
@@ -140,7 +155,7 @@ async function ordersSection(
       .eq("seller_id", sellerId).gte("created_at", since).lt("created_at", until)
       .order("created_at", { ascending: false }).limit(SCAN_LIMIT),
     supabase.from("sicoob_orders")
-      .select("id, status, total_amount, created_at, source_quote_snapshot")
+      .select("id, order_number, status, total_amount, created_at, source_quote_snapshot")
       .eq("created_by", sellerId).gte("created_at", since).lt("created_at", until)
       .order("created_at", { ascending: false }).limit(SCAN_LIMIT),
   ]);
@@ -159,7 +174,9 @@ async function ordersSection(
       createdAt: o.created_at,
     })),
     ...(sicoobRes.data ?? []).map((o: any) => ({
-      number: `SICOOB-${String(o.id).slice(0, 8)}`,
+      // `order_number` é o número oficial; o trecho do UUID não é encontrável
+      // pela busca de pedidos da aplicação.
+      number: o.order_number || `SICOOB-${String(o.id).slice(0, 8)}`,
       client: o.source_quote_snapshot?.client_company
         || o.source_quote_snapshot?.client_name,
       status: o.status,
@@ -323,9 +340,10 @@ async function productsSection(
 }
 
 /**
- * "Vendas" não é "Orçamentos": o gestor espera o que virou pedido. Somar todas
- * as propostas do período — inclusive rejeitadas — devolvia o relatório errado
- * para quem agendava Vendas.
+ * "Vendas" não é "Orçamentos": o gestor espera o que virou faturamento. Somar
+ * todas as propostas do período — inclusive rejeitadas — devolvia o relatório
+ * errado, e somar pedidos pela data de criação contava pedido sem nota fiscal.
+ * O faturamento vem das notas emitidas; a aprovação vem de `approved_at`.
  */
 async function salesSection(
   supabase: SupabaseLike,
@@ -333,35 +351,71 @@ async function salesSection(
   since: string,
   until: string,
 ): Promise<string> {
-  const ordersHtml = await ordersSection(supabase, sellerId, since, until);
+  const [invoicesRes, approvalsRes] = await Promise.all([
+    // Faturamento: nota fiscal emitida na janela. `pdf` e `xml` da mesma nota
+    // são documentos distintos do mesmo valor — contar os dois dobraria o
+    // faturamento, daí a deduplicação por (order_id, invoice_number). O filtro
+    // pelo vendedor precisa ser explícito: o worker roda com service_role e a
+    // RLS de `sicoob_order_invoices` não seria aplicada.
+    supabase.from("sicoob_order_invoices")
+      .select("order_id, invoice_number, amount, issued_at, sicoob_orders!inner(created_by)")
+      .eq("sicoob_orders.created_by", sellerId)
+      .gte("issued_at", since.slice(0, 10))
+      .lt("issued_at", until.slice(0, 10))
+      .limit(SCAN_LIMIT),
+    // Aprovações: pela data do evento, não pela criação da proposta. Proposta
+    // criada antes da janela e aprovada dentro dela é aprovação do período.
+    supabase.from("quotes")
+      .select("quote_number, client_name, client_company, total, approved_at")
+      .eq("seller_id", sellerId)
+      .gte("approved_at", since)
+      .lt("approved_at", until)
+      .order("approved_at", { ascending: false })
+      .limit(SCAN_LIMIT),
+  ]);
+  if (invoicesRes.error) throw invoicesRes.error;
+  if (approvalsRes.error) throw approvalsRes.error;
 
-  const { data, error } = await supabase
-    .from("quotes")
-    .select("quote_number, client_name, client_company, total, created_at")
-    .eq("seller_id", sellerId)
-    .gte("created_at", since)
-    .lt("created_at", until)
-    .in("status", APPROVED_QUOTE_STATUSES)
-    .order("created_at", { ascending: false })
-    .limit(SCAN_LIMIT);
-  if (error) throw error;
-
-  const rows = data ?? [];
-  const approvedTotal = rows.reduce((sum: number, q: any) => sum + Number(q.total ?? 0), 0);
-  const bodies = rows.map((q: any) => [
-    escapeHtml(q.quote_number),
-    escapeHtml(q.client_company || q.client_name),
-    escapeHtml(money(q.total)),
-    escapeHtml(new Date(q.created_at).toLocaleDateString("pt-BR")),
+  const invoices = new Map<string, { number: string; amount: number; issuedAt: string }>();
+  for (const inv of invoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    if (invoices.has(key)) continue;
+    invoices.set(key, {
+      number: String(inv.invoice_number ?? ""),
+      amount: Number(inv.amount ?? 0),
+      issuedAt: String(inv.issued_at ?? ""),
+    });
+  }
+  const invoiceRows = [...invoices.values()]
+    .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+  const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + inv.amount, 0);
+  const invoiceBodies = invoiceRows.map((inv) => [
+    escapeHtml(inv.number),
+    escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "—"),
+    escapeHtml(money(inv.amount)),
   ]);
 
-  return "<h3>Pedidos faturados no período</h3>"
-    + ordersHtml
+  const approvals = approvalsRes.data ?? [];
+  const approvedTotal = approvals.reduce((sum: number, q: any) => sum + Number(q.total ?? 0), 0);
+  const approvalBodies = approvals.map((q: any) => [
+    escapeHtml(q.quote_number),
+    escapeHtml(q.client_company || q.client_name),
+    escapeHtml(new Date(q.approved_at).toLocaleDateString("pt-BR")),
+    escapeHtml(money(q.total)),
+  ]);
+
+  return "<h3>Faturamento por nota fiscal emitida</h3>"
+    + `<p><strong>Notas emitidas:</strong> ${invoiceRows.length} — `
+    + `<strong>valor:</strong> ${escapeHtml(money(invoicedTotal))}</p>`
+    + table(["Nota", "Emissão", "Valor"], invoiceBodies.slice(0, ROW_LIMIT))
+    + (invoiceBodies.length > ROW_LIMIT
+      ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${invoiceBodies.length}.</p>`
+      : "")
     + "<h3>Propostas aprovadas no período</h3>"
-    + `<p><strong>Aprovadas:</strong> ${rows.length} — `
+    + `<p><strong>Aprovadas:</strong> ${approvals.length} — `
     + `<strong>valor:</strong> ${escapeHtml(money(approvedTotal))}</p>`
-    + table(["Nº", "Cliente", "Total", "Data"], bodies.slice(0, ROW_LIMIT))
-    + (bodies.length > ROW_LIMIT
-      ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${bodies.length}.</p>`
+    + table(["Nº", "Cliente", "Data da aprovação", "Total"], approvalBodies.slice(0, ROW_LIMIT))
+    + (approvalBodies.length > ROW_LIMIT
+      ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${approvalBodies.length}.</p>`
       : "");
 }

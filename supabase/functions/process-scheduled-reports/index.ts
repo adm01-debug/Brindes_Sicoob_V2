@@ -5,7 +5,7 @@ import {
   sendScheduledReportEmail,
 } from "../_shared/scheduled-report-email.ts";
 import { generateScheduledReportHtml } from "../_shared/scheduled-report-data.ts";
-import { calculateNextRun } from "../send-scheduled-reports/report-types.ts";
+import { calculateNextRun, getAnchorDay } from "../send-scheduled-reports/report-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,7 +91,11 @@ Deno.serve(async (req) => {
             `scheduled-report:${report.id}:${report.next_run_at}`,
           ),
         }, async () => {
-          const nextRun = calculateNextRun(report.frequency, now);
+          const nextRun = calculateNextRun(
+            report.frequency,
+            now,
+            getAnchorDay(report.next_run_at, report.created_at),
+          );
           const { data: updatedReport, error: updateError } = await supabase
             .from("scheduled_reports")
             .update({

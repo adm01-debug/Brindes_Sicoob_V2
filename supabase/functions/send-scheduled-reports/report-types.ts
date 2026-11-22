@@ -73,14 +73,23 @@ function lastDayOfMonth(year: number, month: number): number {
  * O mensal limita o dia ao último dia válido do mês de destino: avançar de 31
  * de janeiro com `setUTCMonth` caía em 3 de março e pulava fevereiro inteiro.
  */
-export function calculateNextRun(frequency: unknown, reference: Date): Date {
+export function calculateNextRun(
+  frequency: unknown,
+  reference: Date,
+  anchorDay: number | null = null,
+): Date {
   const next = new Date(reference.getTime());
   switch (frequency) {
     case "daily":
       next.setUTCDate(next.getUTCDate() + 1);
       break;
     case "monthly": {
-      const day = next.getUTCDate();
+      // O dia-âncora é o dia original do agendamento, não o dia da última
+      // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava
+      // preso no 28 em todos os meses seguintes.
+      const day = anchorDay && anchorDay >= 1 && anchorDay <= 31
+        ? anchorDay
+        : next.getUTCDate();
       next.setUTCDate(1);
       next.setUTCMonth(next.getUTCMonth() + 1);
       next.setUTCDate(Math.min(day, lastDayOfMonth(next.getUTCFullYear(), next.getUTCMonth())));
@@ -93,4 +102,13 @@ export function calculateNextRun(frequency: unknown, reference: Date): Date {
   }
   next.setUTCHours(8, 0, 0, 0);
   return next;
+}
+
+/** Dia do mês que o agendamento deve manter como âncora quando for mensal. */
+export function getAnchorDay(nextRunAt: unknown, createdAt: unknown = null): number | null {
+  const candidate = new Date(String(nextRunAt ?? ""));
+  if (!Number.isNaN(candidate.getTime())) return candidate.getUTCDate();
+  const fallback = new Date(String(createdAt ?? ""));
+  if (!Number.isNaN(fallback.getTime())) return fallback.getUTCDate();
+  return null;
 }
