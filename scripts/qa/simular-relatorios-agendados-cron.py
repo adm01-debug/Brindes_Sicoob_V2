@@ -16,6 +16,7 @@ import uuid
 IMAGE = "public.ecr.aws/supabase/postgres:17.6.1.063"
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
+EMAIL_GUARD = ROOT / "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql"
 CONTAINER = "sicoob-reports-" + uuid.uuid4().hex[:10]
 
 
@@ -231,6 +232,53 @@ try:
         "'SELECT 1');")
     checks["reagendamento_idempotente"] = scalar(
         "SELECT count(*) FROM cron.job WHERE jobname = 'scheduled-reports-worker';") == "1"
+
+    # GUARDA DE E-MAIL: desativar o agendamento de um usuario que trocou de
+    # e-mail tem que passar, e escrever um email_to divergente tem que falhar.
+    sql("""
+        CREATE TABLE IF NOT EXISTS public.profiles (
+          user_id uuid PRIMARY KEY,
+          email text NOT NULL
+        );
+        ALTER TABLE public.scheduled_reports
+          ADD COLUMN IF NOT EXISTS user_id uuid,
+          ADD COLUMN IF NOT EXISTS email_to text,
+          ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true;
+        INSERT INTO public.profiles (user_id, email)
+          VALUES ('00000000-0000-0000-0000-0000000000aa', 'novo@exemplo.com')
+          ON CONFLICT (user_id) DO UPDATE SET email = EXCLUDED.email;
+        INSERT INTO public.scheduled_reports (id, user_id, email_to, is_active)
+          VALUES ('00000000-0000-0000-0000-0000000000bb',
+                  '00000000-0000-0000-0000-0000000000aa', 'antigo@exemplo.com', true)
+          ON CONFLICT (id) DO NOTHING;
+    """)
+    # Funcao antes do trigger: a migration so cria a funcao; o trigger ja existe
+    # em producao e aqui precisa ser recriado depois dela.
+    sql(EMAIL_GUARD.read_text())
+    sql("""
+        CREATE TRIGGER trg_validate_report_email
+          BEFORE INSERT OR UPDATE ON public.scheduled_reports
+          FOR EACH ROW EXECUTE FUNCTION public.validate_scheduled_report_email();
+    """)
+
+    desativou = sql("""
+        UPDATE public.scheduled_reports SET is_active = false
+        WHERE id = '00000000-0000-0000-0000-0000000000bb';
+    """, check=False)
+    checks["desativa_com_email_desatualizado"] = desativou.returncode == 0
+    checks["desativacao_persistiu"] = scalar(
+        """SELECT is_active FROM public.scheduled_reports
+           WHERE id = '00000000-0000-0000-0000-0000000000bb';""") == "f"
+
+    # Escrever email_to divergente continua barrado: a guarda de negocio segue de pe.
+    trocou = sql("""
+        UPDATE public.scheduled_reports SET email_to = 'terceiro@exemplo.com'
+        WHERE id = '00000000-0000-0000-0000-0000000000bb';
+    """, check=False)
+    checks["email_divergente_ainda_barrado"] = (
+        trocou.returncode != 0
+        and "must match your registered email" in (trocou.stderr or "")
+    )
 
     resultado = "aprovado" if all(checks.values()) else "reprovado"
     print(json.dumps({"resultado": resultado, "checks": checks}, ensure_ascii=False, indent=2))

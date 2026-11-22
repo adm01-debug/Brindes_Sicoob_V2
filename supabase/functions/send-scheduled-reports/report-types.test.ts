@@ -552,15 +552,3 @@ Deno.test("ignora resposta recusada do link público", async () => {
   assertEquals(html.includes("Aprovadas:</strong> 0"), true);
   assertEquals(html.includes("900,00"), false);
 });
-
-Deno.test("desativar agendamento não depende de email_to igual ao perfil", async () => {
-  // O trigger só tem o que validar quando `email_to` muda; sem esse
-  // curto-circuito o UPDATE que desativa o agendamento levantava exceção
-  // quando o usuário tinha trocado de e-mail.
-  const sql = await Deno.readTextFile(
-    new URL("../../migrations/20261122210000_allow_worker_deactivate_revoked_report.sql", import.meta.url),
-  );
-
-  assertEquals(sql.includes("NEW.email_to IS NOT DISTINCT FROM OLD.email_to"), true);
-  assertEquals(sql.includes("RETURN NEW;"), true);
-});

@@ -1,10 +1,12 @@
--- EDG-24: o worker desativa o agendamento quando o dono perdeu o papel. O
--- trigger `trg_validate_report_email` compara `email_to` com o perfil em todo
--- UPDATE e barrava essa desativação quando o e-mail também tinha mudado — o
--- agendamento ficava ativo, vencido e travando o lote.
+-- EDG-24: o worker desativa o agendamento quando o dono perdeu o papel.
+-- O trigger `trg_validate_report_email` compara `email_to` com o perfil em todo
+-- UPDATE e barrava essa desativação quando o e-mail também tinha mudado: o
+-- agendamento ficava ativo, vencido, e ocupava uma vaga do lote em toda
+-- execução, travando os posteriores (o worker o desativa justamente para sair
+-- da fila).
 --
--- A validação de e-mail só faz sentido quando o e-mail é escrito: em um UPDATE
--- que não toca `email_to` ela não tem o que verificar.
+-- A validação de e-mail só tem o que verificar quando `email_to` é escrito; em
+-- um UPDATE que não toca a coluna ela não deve disparar.
 
 CREATE OR REPLACE FUNCTION public.validate_scheduled_report_email()
 RETURNS TRIGGER
@@ -31,24 +33,25 @@ BEGIN
 END;
 $$;
 
--- Rollback: restaura a versão de 20260404171222 (sem o curto-circuito).
-CREATE OR REPLACE FUNCTION public.validate_scheduled_report_email()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  user_email TEXT;
-BEGIN
-  SELECT email INTO user_email
-  FROM public.profiles
-  WHERE user_id = NEW.user_id;
-
-  IF user_email IS NULL OR NEW.email_to != user_email THEN
-    RAISE EXCEPTION 'email_to must match your registered email address';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
+-- Rollback (executar manualmente para reverter):
+--
+-- CREATE OR REPLACE FUNCTION public.validate_scheduled_report_email()
+-- RETURNS TRIGGER
+-- LANGUAGE plpgsql
+-- SECURITY DEFINER
+-- SET search_path = public
+-- AS $$
+-- DECLARE
+--   user_email TEXT;
+-- BEGIN
+--   SELECT email INTO user_email
+--   FROM public.profiles
+--   WHERE user_id = NEW.user_id;
+--
+--   IF user_email IS NULL OR NEW.email_to != user_email THEN
+--     RAISE EXCEPTION 'email_to must match your registered email address';
+--   END IF;
+--
+--   RETURN NEW;
+-- END;
+-- $$;
