@@ -8,6 +8,7 @@ O container roda com `--network none`: a fila prova a intenção, a rede não ex
 """
 from pathlib import Path
 import json
+import re
 import subprocess
 import sys
 import time
@@ -278,6 +279,30 @@ try:
     checks["email_divergente_ainda_barrado"] = (
         trocou.returncode != 0
         and "must match your registered email" in (trocou.stderr or "")
+    )
+
+    # REVERSAO da guarda de e-mail: restaurar a versao original de
+    # 20260404171222 tem que voltar a barrar a desativacao com e-mail antigo,
+    # provando que o rollback documentado na migration funciona de fato.
+    original = re.search(
+        r"-- Rollback \(executar manualmente para reverter\):\n((?:--.*\n)+)", 
+        EMAIL_GUARD.read_text())
+    assert original, "bloco de rollback ausente na migration"
+    rollback_sql = "\n".join(
+        line[3:] if line.startswith("-- ") else line.lstrip("-")
+        for line in original.group(1).splitlines())
+    sql(rollback_sql)
+    sql("""
+        UPDATE public.scheduled_reports SET is_active = true
+        WHERE id = '00000000-0000-0000-0000-0000000000bb';
+    """, check=False)
+    reverter = sql("""
+        UPDATE public.scheduled_reports SET is_active = false
+        WHERE id = '00000000-0000-0000-0000-0000000000bb';
+    """, check=False)
+    checks["rollback_volta_a_barrar"] = (
+        reverter.returncode != 0
+        and "must match your registered email" in (reverter.stderr or "")
     )
 
     resultado = "aprovado" if all(checks.values()) else "reprovado"

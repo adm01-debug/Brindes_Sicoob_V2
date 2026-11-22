@@ -24,26 +24,26 @@ export function parseAmountBR(raw: string): number | undefined {
   const text = raw.trim().replace(/^R\$\s*/i, "").replace(/\s/g, "");
   if (!text) return undefined;
 
-  const lastComma = text.lastIndexOf(",");
-  const lastDot = text.lastIndexOf(".");
-  let normalized: string;
+  // Só formas reconhecidamente válidas passam. Antes, entrada malformada caía
+  // em `normalized = text` e o descarte silencioso gravava a nota sem valor
+  // (ou inflada): "1.250.50" virava 125050 e "1250,OO" virava undefined.
+  const milharPonto = /^\d{1,3}(\.\d{3})+$/.test(text);
+  const milharPontoComCentavos = /^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(text);
+  const milharVirgulaComCentavos = /^\d{1,3}(,\d{3})+(\.\d{1,2})?$/.test(text);
+  const simples = /^\d+(,\d{1,2})?$/.test(text);
+  const simplesDecimalPonto = /^\d+(\.\d{1,2})?$/.test(text);
 
-  if (lastComma >= 0 && lastDot >= 0) {
-    // O separador que aparece por último é o decimal.
-    normalized = lastComma > lastDot
-      ? text.replace(/\./g, "").replace(",", ".")
-      : text.replace(/,/g, "");
-  } else if (lastComma >= 0) {
+  let normalized: string;
+  if (milharPonto || milharVirgulaComCentavos) {
+    normalized = text.replace(/\./g, "").replace(/,/g, "");
+  } else if (milharPontoComCentavos) {
     normalized = text.replace(/\./g, "").replace(",", ".");
-  } else if (lastDot >= 0) {
-    const decimals = text.length - lastDot - 1;
-    const dots = text.split(".").length - 1;
-    // "1.250" e "1.250.000" são milhar; "1250.5" e "1250.50" são decimais.
-    normalized = dots > 1 || decimals === 3
-      ? text.replace(/\./g, "")
-      : text;
-  } else {
+  } else if (simples) {
+    normalized = text.replace(",", ".");
+  } else if (simplesDecimalPonto) {
     normalized = text;
+  } else {
+    return undefined;
   }
 
   const value = Number(normalized);
@@ -82,9 +82,11 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
     }
   };
 
+  // Campo vazio continua opcional; preenchido, precisa ser um valor positivo.
+  const amountPreenchido = amount.trim().length > 0;
   const parsedAmount = parseAmountBR(amount);
-  const amountValido = parsedAmount === undefined
-    || (Number.isFinite(parsedAmount) && parsedAmount > 0);
+  const amountValido = !amountPreenchido
+    || (parsedAmount !== undefined && Number.isFinite(parsedAmount) && parsedAmount > 0);
   const podeEnviar = Boolean(invoiceNumber.trim()) && Boolean(issuedAt) && amountValido;
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {

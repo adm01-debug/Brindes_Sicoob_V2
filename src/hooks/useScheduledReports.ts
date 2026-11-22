@@ -103,18 +103,39 @@ export function useScheduledReports() {
 
   const toggleActive = useCallback(async (reportId: string, active: boolean) => {
     try {
+      // Reativar com `email_to` antigo deixava o relatório ativo mas mudo: o
+      // worker compara com o perfil e pula por `email_desatualizado`. Ao
+      // reativar, o destinatário volta a ser o e-mail atual do dono.
+      const patch: { is_active: boolean; updated_at: string; email_to?: string } = {
+        is_active: active,
+        updated_at: new Date().toISOString(),
+      };
+      if (active && user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        const currentEmail = String(profile?.email ?? '').trim();
+        if (currentEmail) patch.email_to = currentEmail;
+
+      }
+
       const { error } = await supabase
         .from('scheduled_reports')
-        .update({ is_active: active, updated_at: new Date().toISOString() })
+        .update(patch)
         .eq('id', reportId);
 
       if (error) throw error;
-      setReports(prev => prev.map(r => r.id === reportId ? { ...r, is_active: active } : r));
+      setReports(prev => prev.map(r => r.id === reportId
+        ? { ...r, is_active: active, ...(patch.email_to ? { email_to: patch.email_to } : {}) }
+        : r));
       toast.success(active ? 'Relatório ativado' : 'Relatório pausado');
     } catch {
       toast.error('Erro ao atualizar relatório');
     }
-  }, []);
+  }, [user]);
 
   const deleteReport = useCallback(async (reportId: string) => {
     try {
