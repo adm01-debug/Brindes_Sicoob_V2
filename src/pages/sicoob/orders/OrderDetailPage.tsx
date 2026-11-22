@@ -14,7 +14,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
 import { getSlaCycleStartedAt } from "@/lib/sicoob/sla-cycle";
 import { hasConfiguredPaBudget, isOrderOverPaBudget, resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
-import { projectOrderAgainstBudget } from "@/lib/sicoob/orderBudgetProjection";
 import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
 import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
@@ -28,6 +27,7 @@ import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory"
 import { SLABadge } from "@/components/sicoob/orders/SLABadge";
 import { OrderHistoryTimeline } from "@/components/orders/OrderHistoryTimeline";
 import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
+import { OrderCostCenterAllocation } from "@/components/sicoob/orders/OrderCostCenterAllocation";
 import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
@@ -265,27 +265,50 @@ function BudgetProgress({ controller }: { controller: DetailController }) {
   return <ConfiguredBudgetProgress controller={controller} />;
 }
 
-/** Em status que ja consomem verba, remainingBudget ja contem o debito do pedido. */
-function projectControllerBudget(controller: DetailController) {
-  return projectOrderAgainstBudget({
-    allocatedBudget: controller.resources.budget.budget?.verba_total ?? null,
-    remainingBudget: controller.resources.budget.remainingBudget,
-    orderTotal: controller.orderTotal,
-    orderStatus: controller.order?.status,
-  });
-}
-
 function ConfiguredBudgetProgress({ controller }: { controller: DetailController }) {
-  const totalBudget = Math.max(controller.resources.budget.budget?.verba_total ?? 1, 1);
-  const orderWidth = Math.min((controller.orderTotal / totalBudget) * 100, 100);
-  const remainingLeft = Math.min((projectControllerBudget(controller).projectedRemainingBudget / totalBudget) * 100, 100);
-  return <div className="space-y-3"><div className="flex justify-between text-xs items-center"><span>Verba PA Disponível</span><span className={controller.isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-success font-bold"}>{controller.isOverBudget && <AlertTriangle className="h-3 w-3" />}R$ {controller.resources.budget.remainingBudget.toLocaleString("pt-BR")}</span></div><div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative"><div className={cn("h-full transition-all duration-500", controller.isOverBudget ? "bg-destructive" : "bg-success")} style={{ width: `${orderWidth}%` }} /><div className="absolute top-0 h-full bg-primary/30 animate-pulse" style={{ left: `${remainingLeft}%`, width: `${orderWidth}%` }} /></div><p className="text-[10px] text-muted-foreground flex justify-between"><span>Impacto do Pedido: R$ {controller.orderTotal.toLocaleString("pt-BR")}</span><span>Total Verba: R$ {(controller.resources.budget.budget?.verba_total ?? 0).toLocaleString("pt-BR")}</span></p></div>;
+  const budget = controller.resources.budget;
+  const totalBudget = Math.max(budget.plannedBudget || budget.budget?.verba_total || 1, 1);
+  const consumed = budget.consumedBudget;
+  const committed = budget.committedBudget;
+  const reserved = budget.reservedBudget;
+  const pct = (value: number) => Math.min(Math.max((value / totalBudget) * 100, 0), 100);
+  const orderWidth = pct(controller.orderTotal);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between text-xs items-center">
+        <span>Verba PA Disponível</span>
+        <span className={controller.isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-success font-bold"}>
+          {controller.isOverBudget && <AlertTriangle className="h-3 w-3" />}
+          R$ {budget.remainingBudget.toLocaleString("pt-BR")}
+        </span>
+      </div>
+      <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden flex">
+        <div className="h-full bg-success" style={{ width: `${pct(consumed)}%` }} />
+        <div className="h-full bg-warning" style={{ width: `${pct(committed)}%` }} />
+        <div className="h-full bg-info" style={{ width: `${pct(reserved)}%` }} />
+        <div className="h-full bg-primary/25 animate-pulse" style={{ width: `${orderWidth}%` }} />
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success" />Consumido R$ {consumed.toLocaleString("pt-BR")}</div>
+        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-warning" />Comprometido R$ {committed.toLocaleString("pt-BR")}</div>
+        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-info" />Reservado R$ {reserved.toLocaleString("pt-BR")}</div>
+      </div>
+      <p className="text-[10px] text-muted-foreground flex justify-between">
+        <span>Impacto do Pedido: R$ {controller.orderTotal.toLocaleString("pt-BR")}</span>
+        <span>
+          {budget.isCompetenceClosed ? "Competência fechada · " : ""}
+          Total Verba: R$ {totalBudget.toLocaleString("pt-BR")}
+        </span>
+      </p>
+    </div>
+  );
 }
 
 function ProductionCard({ controller }: { controller: DetailController }) {
   const order = controller.order;
   if (!order) return null;
-  return <Card><CardHeader><CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle></CardHeader><CardContent className="space-y-4">{controller.canManageFulfillment && <div className="space-y-2"><Label className="text-xs">Status do Workflow</Label><Select value={order.status} onValueChange={value => controller.actions.updateStatus(value as OrderStatus)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => <SelectItem key={value} value={value} disabled={!canTransitionTo(order.status, value as OrderStatus)}>{config.label}</SelectItem>)}</SelectContent></Select></div>}<div className="flex items-center justify-between text-sm pt-2 border-t"><span className="text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4" />Limite de Alçada</span><span className="font-bold">R$ {controller.resources.threshold.threshold.toLocaleString("pt-BR")}</span></div><BudgetProgress controller={controller} />{controller.isOverBudget === true ? <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20"><AlertCircle className="h-4 w-4" /><AlertDescription className="text-xs font-medium">Overbudget detectado.</AlertDescription></Alert> : controller.isOverBudget === false ? <div className="p-3 bg-success/10 border border-success/20 rounded-lg"><p className="text-xs text-success font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" />Dentro da alçada e verba disponível.</p></div> : null}</CardContent></Card>;
+  return <Card><CardHeader><CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle></CardHeader><CardContent className="space-y-4">{controller.canManageFulfillment && <div className="space-y-2"><Label className="text-xs">Status do Workflow</Label><Select value={order.status} onValueChange={value => controller.actions.updateStatus(value as OrderStatus)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => <SelectItem key={value} value={value} disabled={!canTransitionTo(order.status, value as OrderStatus)}>{config.label}</SelectItem>)}</SelectContent></Select></div>}<div className="flex items-center justify-between text-sm pt-2 border-t"><span className="text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4" />Limite de Alçada</span><span className="font-bold">R$ {controller.resources.threshold.threshold.toLocaleString("pt-BR")}</span></div><BudgetProgress controller={controller} /><OrderCostCenterAllocation orderId={controller.orderId} orderTotal={controller.orderTotal} orderStatus={order.status} />{controller.isOverBudget === true ? <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20"><AlertCircle className="h-4 w-4" /><AlertDescription className="text-xs font-medium">Overbudget detectado.</AlertDescription></Alert> : controller.isOverBudget === false ? <div className="p-3 bg-success/10 border border-success/20 rounded-lg"><p className="text-xs text-success font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" />Dentro da alçada e verba disponível.</p></div> : null}</CardContent></Card>;
 }
 
 function IntelligenceSidebar({ controller }: { controller: DetailController }) {
