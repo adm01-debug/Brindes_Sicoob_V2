@@ -26,8 +26,23 @@ const FREQUENCY_DAYS: Record<string, number> = {
   monthly: 30,
 };
 
-/** Início da janela coberta pelo relatório, em ISO, a partir de `reference`. */
-export function getPeriodStart(frequency: unknown, reference: Date): string {
+/**
+ * Início da janela coberta pelo relatório, em ISO.
+ *
+ * A janela fecha em `reference` e abre onde o ciclo anterior fechou: com uma
+ * janela móvel de 30 dias num agendamento mensal, os meses de 31 dias deixavam
+ * um dia sem cobertura e os mais curtos se sobrepunham. Sem `previousRun`
+ * (primeira execução) a janela volta a ser a distância nominal da frequência.
+ */
+export function getPeriodStart(
+  frequency: unknown,
+  reference: Date,
+  previousRun: Date | null = null,
+): string {
+  if (previousRun && !Number.isNaN(previousRun.getTime())
+    && previousRun.getTime() < reference.getTime()) {
+    return previousRun.toISOString();
+  }
   const days = FREQUENCY_DAYS[String(frequency)] ?? 7;
   return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
@@ -45,10 +60,18 @@ export function getPeriodLabel(frequency: unknown): string {
   }
 }
 
+/** Último dia do mês de `year`/`month` (0-indexado), em UTC. */
+function lastDayOfMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
 /**
  * Próxima execução, ancorada no relógio de 8h. `setDate`/`setMonth` sobre `now`
  * preservava a hora em que o job rodou, então a cada rodada o horário do
  * relatório andava alguns minutos; ancorar em 8h mantém o agendamento estável.
+ *
+ * O mensal limita o dia ao último dia válido do mês de destino: avançar de 31
+ * de janeiro com `setUTCMonth` caía em 3 de março e pulava fevereiro inteiro.
  */
 export function calculateNextRun(frequency: unknown, reference: Date): Date {
   const next = new Date(reference.getTime());
@@ -56,9 +79,13 @@ export function calculateNextRun(frequency: unknown, reference: Date): Date {
     case "daily":
       next.setUTCDate(next.getUTCDate() + 1);
       break;
-    case "monthly":
+    case "monthly": {
+      const day = next.getUTCDate();
+      next.setUTCDate(1);
       next.setUTCMonth(next.getUTCMonth() + 1);
+      next.setUTCDate(Math.min(day, lastDayOfMonth(next.getUTCFullYear(), next.getUTCMonth())));
       break;
+    }
     case "weekly":
     default:
       next.setUTCDate(next.getUTCDate() + 7);

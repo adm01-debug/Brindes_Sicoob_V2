@@ -205,6 +205,33 @@ try:
     checks["authenticated_bloqueado"] = denied.returncode != 0
     checks["authenticated_bloqueado_acl"] = "permission denied" in (denied.stderr or "").lower()
 
+    # REVERSAO: os comandos documentados no fim da migration precisam funcionar
+    # de fato — rollback testado, não apenas citado no PR.
+    sql("SELECT cron.unschedule('scheduled-reports-worker');")
+    checks["reversao_remove_job"] = scalar(
+        "SELECT count(*) FROM cron.job WHERE jobname = 'scheduled-reports-worker';") == "0"
+    sql("DROP FUNCTION IF EXISTS public.dispatch_scheduled_reports();")
+    # `::regprocedure` levanta erro quando a função já não existe; `to_regprocedure`
+    # devolve NULL, que é exatamente o estado esperado após o rollback.
+    checks["reversao_remove_funcao"] = scalar(
+        "SELECT to_regprocedure('public.dispatch_scheduled_reports()') IS NULL;"
+    ) == "t"
+    # O rollback nao pode tocar nos agendamentos do gestor: a migration so mexe
+    # em cron/funcao, nunca em dado de negocio. Fixture minima para provar.
+    sql("""
+        CREATE TABLE IF NOT EXISTS public.scheduled_reports (id uuid PRIMARY KEY);
+        INSERT INTO public.scheduled_reports (id)
+          VALUES ('00000000-0000-0000-0000-000000000001')
+          ON CONFLICT DO NOTHING;
+    """)
+    checks["reversao_preserva_agendamentos"] = scalar(
+        "SELECT count(*) FROM public.scheduled_reports;") == "1"
+    # Reagendar após o rollback tem que voltar a funcionar (idempotência real).
+    sql("SELECT cron.schedule('scheduled-reports-worker', '*/10 * * * *', "
+        "'SELECT 1');")
+    checks["reagendamento_idempotente"] = scalar(
+        "SELECT count(*) FROM cron.job WHERE jobname = 'scheduled-reports-worker';") == "1"
+
     resultado = "aprovado" if all(checks.values()) else "reprovado"
     print(json.dumps({"resultado": resultado, "checks": checks}, ensure_ascii=False, indent=2))
     sys.exit(0 if resultado == "aprovado" else 1)

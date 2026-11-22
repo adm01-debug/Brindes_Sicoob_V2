@@ -155,8 +155,14 @@ function calculateNextRun(frequency: ReportFrequency): Date {
     case 'weekly':
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     case 'monthly': {
+      // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia
+      // 1 e limitar ao último dia do mês destino mantém o agendamento mensal.
       const next = new Date(now);
+      const day = next.getDate();
+      next.setDate(1);
       next.setMonth(next.getMonth() + 1);
+      const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(day, lastDay));
       return next;
     }
   }

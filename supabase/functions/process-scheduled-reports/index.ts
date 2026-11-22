@@ -63,7 +63,25 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const html = await generateScheduledReportHtml(supabase, report, now);
+        // O trigger `trg_validate_report_email` só valida no INSERT/UPDATE: se o
+        // usuário trocou de e-mail depois de agendar, `email_to` está velho e a
+        // caixa pode pertencer a outra pessoa. Revalidar contra o perfil atual.
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("user_id", report.user_id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        const currentEmail = String(profile?.email ?? "").trim().toLowerCase();
+        if (!currentEmail || currentEmail !== String(report.email_to).trim().toLowerCase()) {
+          results.push({ id: report.id, status: "skipped", error: "email_desatualizado" });
+          continue;
+        }
+
+        // A janela fecha onde o ciclo anterior fechou: uma janela móvel deixava
+        // um dia descoberto nos meses de 31 dias.
+        const previousRun = report.last_sent_at ? new Date(report.last_sent_at) : null;
+        const html = await generateScheduledReportHtml(supabase, report, now, previousRun);
         await sendScheduledReportEmail({
           apiKey: resendKey,
           to: report.email_to,

@@ -28,6 +28,10 @@ function fakeSupabase(responses: Record<string, { data?: unknown[]; error?: unkn
           call.filters.push([`gte:${column}`, value]);
           return builder;
         },
+        lt(column: string, value: unknown) {
+          call.filters.push([`lt:${column}`, value]);
+          return builder;
+        },
         in(column: string, value: unknown) {
           call.filters.push([`in:${column}`, value]);
           return builder;
@@ -39,8 +43,18 @@ function fakeSupabase(responses: Record<string, { data?: unknown[]; error?: unkn
           return builder;
         },
         then(resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) {
-          const response = responses[table] ?? { data: [] };
-          return Promise.resolve(response).then(resolve, reject);
+          const response: any = responses[table] ?? { data: [] };
+          // O fake precisa honrar `.in()`: sem isso o filtro de status aprovado
+          // não teria efeito e o teste passaria por acidente.
+          let data = response?.data;
+          if (Array.isArray(data)) {
+            for (const [column, value] of call.filters) {
+              if (!column.startsWith("in:") || !Array.isArray(value)) continue;
+              const field = column.slice(3);
+              data = data.filter((row: any) => value.includes(row?.[field]));
+            }
+          }
+          return Promise.resolve({ ...response, data }).then(resolve, reject);
         },
       };
       return builder;
@@ -166,4 +180,162 @@ Deno.test("HTML do relatório escapa nome de cliente", async () => {
 
   assertEquals(html.includes("<script>"), false);
   assertEquals(html.includes("&lt;script&gt;"), true);
+});
+
+Deno.test("janela fecha onde o ciclo anterior fechou", () => {
+  const previous = new Date("2026-10-22T12:00:00.000Z");
+  assertEquals(getPeriodStart("monthly", NOW, previous), previous.toISOString());
+  // Sem ciclo anterior cai nos dias nominais da frequência.
+  assertEquals(getPeriodStart("monthly", NOW), "2026-10-23T12:00:00.000Z");
+  // Ciclo no futuro (relógio adiantado) é ignorado.
+  assertEquals(
+    getPeriodStart("daily", NOW, new Date("2027-01-01T00:00:00.000Z")),
+    "2026-11-21T12:00:00.000Z",
+  );
+});
+
+Deno.test("mensal em 31/01 cai no fim de fevereiro, não em março", () => {
+  const jan31 = new Date("2026-01-31T12:00:00.000Z");
+  assertEquals(calculateNextRun("monthly", jan31).toISOString(), "2026-02-28T08:00:00.000Z");
+
+  const leap = new Date("2028-01-31T12:00:00.000Z");
+  assertEquals(calculateNextRun("monthly", leap).toISOString(), "2028-02-29T08:00:00.000Z");
+
+  const mar31 = new Date("2026-03-31T12:00:00.000Z");
+  assertEquals(calculateNextRun("monthly", mar31).toISOString(), "2026-04-30T08:00:00.000Z");
+});
+
+function report(type: string, extra: Record<string, unknown> = {}) {
+  return {
+    id: "r1",
+    user_id: "vendedor-1",
+    report_type: type,
+    frequency: "weekly",
+    report_name: "Semanal",
+    email_to: "gestor@exemplo.com",
+    ...extra,
+  };
+}
+
+Deno.test("vendas não contam propostas rejeitadas", async () => {
+  const { client, calls } = fakeSupabase({
+    orders: { data: [] },
+    sicoob_orders: { data: [] },
+    quotes: {
+      data: [
+        { quote_number: "ORC-OK", client_name: "ACME", client_company: null, status: "approved", total: 100, created_at: "2026-11-20T10:00:00.000Z" },
+        { quote_number: "ORC-NO", client_name: "ACME", client_company: null, status: "rejected", total: 900, created_at: "2026-11-20T10:00:00.000Z" },
+      ],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  const quotesCall = calls.find((c) => c.table === "quotes")!;
+  assertEquals(quotesCall.filters.some(([col, value]) =>
+    col === "in:status" && Array.isArray(value) && (value as string[]).includes("approved_singular")
+  ), true);
+  assertEquals(html.includes("ORC-OK"), true);
+  assertEquals(html.includes("ORC-NO"), false);
+  assertEquals(html.includes("900,00"), false);
+});
+
+Deno.test("pedidos consolidam as duas origens sem perder sicoob_orders", async () => {
+  const { client } = fakeSupabase({
+    orders: {
+      data: [{ order_number: "PED-1", client_name: "Ana", client_company: "Alfa", status: "paid", total: 10, created_at: "2026-11-20T10:00:00.000Z" }],
+    },
+    sicoob_orders: {
+      data: [{
+        id: "11111111-2222-3333-4444-555555555555",
+        status: "pending",
+        total_amount: 25.5,
+        created_at: "2026-11-21T10:00:00.000Z",
+        source_quote_snapshot: { client_name: "Bruno", client_company: "Beta" },
+      }],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("orders"), NOW);
+
+  assertEquals(html.includes("PED-1"), true);
+  assertEquals(html.includes("SICOOB-11111111"), true);
+  assertEquals(html.includes("Beta"), true);
+  assertEquals(html.includes("Pedidos no período:</strong> 2"), true);
+  assertEquals(html.includes("35,50"), true);
+});
+
+Deno.test("clientes não duplicam empresa e contato do mesmo cliente", async () => {
+  const { client } = fakeSupabase({
+    quotes: {
+      data: [{ client_name: "Ana", client_company: "Alfa", total: 10 }],
+    },
+    orders: {
+      data: [{ client_name: "Ana", client_company: "Alfa", total: 20 }],
+    },
+    sicoob_orders: {
+      data: [{ total_amount: 30, source_quote_snapshot: { client_name: "Ana", client_company: "Alfa" } }],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("clients"), NOW);
+
+  assertEquals(html.includes("Clientes no período:</strong> 1"), true);
+  assertEquals(html.includes("60,00"), true);
+});
+
+Deno.test("produtos separam variantes com SKUs diferentes", async () => {
+  const { client } = fakeSupabase({
+    quotes: { data: [{ id: "q1" }] },
+    quote_items: {
+      data: [
+        { quote_id: "q1", product_name: "Caneca", product_sku: "CAN-A", quantity: 2, subtotal: 20 },
+        { quote_id: "q1", product_name: "Caneca", product_sku: "CAN-B", quantity: 3, subtotal: 45 },
+      ],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("products"), NOW);
+
+  assertEquals(html.includes("Produtos no período:</strong> 2"), true);
+  assertEquals(html.includes("CAN-A") && html.includes("CAN-B"), true);
+});
+
+Deno.test("cada tipo abre a sua própria seção", async () => {
+  const empty = {
+    orders: { data: [] },
+    sicoob_orders: { data: [] },
+    quotes: { data: [] },
+    quote_items: { data: [] },
+  };
+  const expectations: Array<[string, string, string]> = [
+    ["quotes", "Orçamentos no período", "Pedidos no período"],
+    ["orders", "Pedidos no período", "Orçamentos no período"],
+    ["clients", "Clientes no período", "Produtos no período"],
+    ["products", "Produtos no período", "Clientes no período"],
+    ["sales", "Propostas aprovadas", "Orçamentos no período"],
+  ];
+  for (const [type, must, mustNot] of expectations) {
+    const { client } = fakeSupabase(empty);
+    const html = await generateScheduledReportHtml(client as any, report(type), NOW);
+    assertEquals(html.includes(must), true, `${type} sem "${must}"`);
+    assertEquals(html.includes(mustNot), false, `${type} vazou "${mustNot}"`);
+  }
+});
+
+Deno.test("total não é truncado quando passa do limite de exibição", async () => {
+  const rows = Array.from({ length: 150 }, (_, i) => ({
+    order_number: `PED-${i}`,
+    client_name: "ACME",
+    status: "paid",
+    total: 10,
+    created_at: "2026-11-20T10:00:00.000Z",
+  }));
+  const { client } = fakeSupabase({ orders: { data: rows }, sicoob_orders: { data: [] } });
+
+  const html = await generateScheduledReportHtml(client as any, report("orders"), NOW);
+
+  assertEquals(html.includes("Pedidos no período:</strong> 150"), true);
+  assertEquals(html.includes("1.500,00"), true);
+  assertEquals(html.includes("Exibindo os 100 mais recentes de 150"), true);
 });

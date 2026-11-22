@@ -86,3 +86,14 @@ BEGIN
   END IF;
 END
 $assert$;
+
+-- Rollback (documentado por exigência de CONTRIBUTING.md)
+--
+-- SELECT cron.unschedule('scheduled-reports-worker');
+-- DROP FUNCTION IF EXISTS public.dispatch_scheduled_reports();
+--
+-- Reverter é seguro e não destrutivo: a função só enfileira chamadas HTTP para
+-- a edge function; nenhuma tabela ou dado é criado por ela. Os agendamentos em
+-- `scheduled_reports` permanecem intactos e voltam a ser processados quando o
+-- job for reagendado. O harness `scripts/qa/simular-relatorios-agendados-cron.py`
+-- cobre o caminho de reversão (bloco `REVERSAO`).
