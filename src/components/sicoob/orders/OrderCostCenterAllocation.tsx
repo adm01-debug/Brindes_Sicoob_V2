@@ -1,0 +1,226 @@
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Building2, Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { costCenterService, type CostCenter, type OrderAllocation } from "@/services/sicoob/costCenterService";
+
+interface Row {
+  cost_center_id: string;
+  valor: string;
+}
+
+interface Props {
+  orderId: string;
+  orderTotal: number;
+  orderStatus?: string | null;
+}
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
+
+const toRows = (allocations: OrderAllocation[]): Row[] =>
+  allocations.map((a) => ({ cost_center_id: a.cost_center_id ?? "", valor: String(a.valor) }));
+
+const totalOf = (rows: Row[]) => rows.reduce((sum, row) => sum + (Number(row.valor) || 0), 0);
+
+const buildPayload = (orderTotal: number, rows: Row[]) =>
+  rows
+    .filter((row) => row.cost_center_id)
+    .map((row) => {
+      const valor = Number(row.valor) || 0;
+      const percentual = orderTotal > 0 ? Number(((valor / orderTotal) * 100).toFixed(2)) : 0;
+      return { cost_center_id: row.cost_center_id, valor, percentual };
+    });
+
+function AllocationRow({
+  row,
+  index,
+  costCenters,
+  onChange,
+  onRemove,
+}: {
+  row: Row;
+  index: number;
+  costCenters: CostCenter[];
+  onChange: (index: number, patch: Partial<Row>) => void;
+  onRemove: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1 space-y-1">
+        <Label className="text-xs">Centro de custo</Label>
+        <Select value={row.cost_center_id} onValueChange={(value) => onChange(index, { cost_center_id: value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione" />
+          </SelectTrigger>
+          <SelectContent>
+            {costCenters.map((cc) => (
+              <SelectItem key={cc.id} value={cc.id}>
+                {cc.codigo} — {cc.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="w-32 space-y-1">
+        <Label className="text-xs">Valor (R$)</Label>
+        <Input
+          type="number"
+          min={0}
+          step="0.01"
+          value={row.valor}
+          onChange={(e) => onChange(index, { valor: e.target.value })}
+        />
+      </div>
+      <Button variant="ghost" size="icon" onClick={() => onRemove(index)} aria-label="Remover linha de rateio">
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function AllocationFooter({
+  rows,
+  orderTotal,
+  totalAlocado,
+  fecha100,
+  canSave,
+  isSaving,
+  onAdd,
+  onSave,
+}: {
+  rows: Row[];
+  orderTotal: number;
+  totalAlocado: number;
+  fecha100: boolean;
+  canSave: boolean;
+  isSaving: boolean;
+  onAdd: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <>
+      <div className="flex items-center justify-between pt-2 border-t text-xs">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={onAdd}>
+            <Plus className="mr-1 h-3 w-3" /> Adicionar
+          </Button>
+          {rows.length > 0 && (
+            <Badge variant={fecha100 ? "default" : "destructive"} className="gap-1">
+              {fecha100 ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+              R$ {totalAlocado.toLocaleString("pt-BR")} de R$ {orderTotal.toLocaleString("pt-BR")}
+            </Badge>
+          )}
+        </div>
+        <Button size="sm" onClick={onSave} disabled={isSaving || !canSave}>
+          {isSaving ? "Salvando…" : "Salvar rateio"}
+        </Button>
+      </div>
+      {rows.length > 0 && !fecha100 && (
+        <p className="text-[11px] text-destructive">
+          Ajuste os valores para somar o total do pedido antes de salvar.
+        </p>
+      )}
+    </>
+  );
+}
+
+export function OrderCostCenterAllocation({ orderId, orderTotal, orderStatus }: Props) {
+  const queryClient = useQueryClient();
+  const [rows, setRows] = useState<Row[]>([]);
+
+  const { data: costCenters } = useQuery({
+    queryKey: ["cost_centers"],
+    queryFn: () => costCenterService.list(),
+  });
+
+  const { data: allocations, isLoading } = useQuery({
+    queryKey: ["pa_budget_allocations", orderId],
+    queryFn: () => costCenterService.listAllocations(orderId),
+  });
+
+  useEffect(() => {
+    if (allocations) setRows(toRows(allocations));
+  }, [allocations]);
+
+  const totalAlocado = totalOf(rows);
+  const fecha100 = Math.abs(totalAlocado - orderTotal) <= 0.01;
+  const centrosAtivos = (costCenters ?? []).filter((cc) => cc.ativo);
+  const pedidoConfirmado = Boolean(orderStatus && ["confirmed", "delivered", "completed"].includes(orderStatus));
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!fecha100) {
+        throw new Error(
+          `O rateio soma R$ ${totalAlocado.toLocaleString("pt-BR")}, mas o pedido vale R$ ${orderTotal.toLocaleString("pt-BR")}.`,
+        );
+      }
+      return costCenterService.replaceAllocations(orderId, buildPayload(orderTotal, rows));
+    },
+    onSuccess: () => {
+      toast.success("Rateio salvo");
+      void queryClient.invalidateQueries({ queryKey: ["pa_budget_allocations", orderId] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const atualizar = (index: number, patch: Partial<Row>) =>
+    setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <Building2 className="h-4 w-4" /> Rateio por Centro de Custo
+        </CardTitle>
+        <CardDescription>
+          A verba consumida por este pedido é alocada entre centros de custo. O rateio precisa fechar o valor total.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Carregando rateio…</p>
+        ) : (
+          <>
+            {rows.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Sem rateio: o pedido fica integralmente no centro de custo do PA.
+              </p>
+            )}
+            {rows.map((row, index) => (
+              <AllocationRow
+                key={index}
+                row={row}
+                index={index}
+                costCenters={centrosAtivos}
+                onChange={atualizar}
+                onRemove={(i) => setRows((prev) => prev.filter((_, idx) => idx !== i))}
+              />
+            ))}
+            <AllocationFooter
+              rows={rows}
+              orderTotal={orderTotal}
+              totalAlocado={totalAlocado}
+              fecha100={fecha100}
+              canSave={rows.length === 0 || fecha100}
+              isSaving={saveMutation.isPending}
+              onAdd={() => setRows((prev) => [...prev, { cost_center_id: "", valor: "" }])}
+              onSave={() => saveMutation.mutate()}
+            />
+            {pedidoConfirmado && (
+              <p className="text-[11px] text-muted-foreground">
+                Pedido já confirmado: alterar o rateio revalida a soma no servidor.
+              </p>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

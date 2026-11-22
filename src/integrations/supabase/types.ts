@@ -6265,41 +6265,195 @@ export type Database = {
           },
         ]
       }
+      cost_centers: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          cooperativa_id: string
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          cooperativa_id: string
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          cooperativa_id?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_centers_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pa_budget_allocations: {
+        Row: {
+          cost_center_id: string | null
+          created_at: string
+          id: string
+          order_id: string
+          percentual: number
+          valor: number
+        }
+        Insert: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          percentual: number
+          valor: number
+        }
+        Update: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          percentual?: number
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_budget_allocations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pa_budget_allocations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pa_budget_entries: {
+        Row: {
+          actor_id: string | null
+          competencia_ano: number
+          competencia_mes: number
+          cost_center_id: string | null
+          created_at: string
+          estado: string
+          id: string
+          motivo: string | null
+          order_id: string | null
+          pa_budget_id: string
+          pa_id: string
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          actor_id?: string | null
+          competencia_ano: number
+          competencia_mes: number
+          cost_center_id?: string | null
+          created_at?: string
+          estado: string
+          id?: string
+          motivo?: string | null
+          order_id?: string | null
+          pa_budget_id: string
+          pa_id: string
+          tipo: string
+          valor: number
+        }
+        Update: {
+          actor_id?: string | null
+          competencia_ano?: number
+          competencia_mes?: number
+          cost_center_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          motivo?: string | null
+          order_id?: string | null
+          pa_budget_id?: string
+          pa_id?: string
+          tipo?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_budget_entries_pa_budget_id_fkey"
+            columns: ["pa_budget_id"]
+            isOneToOne: false
+            referencedRelation: "pa_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pa_budgets: {
         Row: {
           ano: number
+          cost_center_id: string | null
           created_at: string
+          fechada_em: string | null
+          fechada_por: string | null
           id: string
           limite_alcada: number | null
           mes: number
           observacoes: string | null
           pa_id: string
           updated_at: string
+          verba_comprometida: number
           verba_consumida: number
+          verba_planejada: number
+          verba_reservada: number
           verba_total: number
         }
         Insert: {
           ano: number
+          cost_center_id?: string | null
           created_at?: string
+          fechada_em?: string | null
+          fechada_por?: string | null
           id?: string
           limite_alcada?: number | null
           mes: number
           observacoes?: string | null
           pa_id: string
           updated_at?: string
+          verba_comprometida?: number
           verba_consumida?: number
+          verba_planejada?: number
+          verba_reservada?: number
           verba_total?: number
         }
         Update: {
           ano?: number
+          cost_center_id?: string | null
           created_at?: string
+          fechada_em?: string | null
+          fechada_por?: string | null
           id?: string
           limite_alcada?: number | null
           mes?: number
           observacoes?: string | null
           pa_id?: string
           updated_at?: string
+          verba_comprometida?: number
           verba_consumida?: number
+          verba_planejada?: number
+          verba_reservada?: number
           verba_total?: number
         }
         Relationships: [
@@ -10314,6 +10468,7 @@ export type Database = {
           commercial_subtotal_amount: number
           consolidation_id: string | null
           cooperative_id: string | null
+          cost_center_id: string | null
           created_at: string
           created_by: string | null
           delivery_address: string | null
@@ -10348,6 +10503,7 @@ export type Database = {
           commercial_subtotal_amount?: number
           consolidation_id?: string | null
           cooperative_id?: string | null
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null
@@ -10382,6 +10538,7 @@ export type Database = {
           commercial_subtotal_amount?: number
           consolidation_id?: string | null
           cooperative_id?: string | null
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null

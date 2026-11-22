@@ -146,6 +146,12 @@ export const navGroups: NavGroup[] = [
         allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
       },
       {
+        icon: Building,
+        label: 'Centros de Custo',
+        href: '/gestor/centros-custo',
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
+      {
         icon: ClipboardCheck,
         label: 'Aprovações',
         href: '/gestor/aprovacoes',
