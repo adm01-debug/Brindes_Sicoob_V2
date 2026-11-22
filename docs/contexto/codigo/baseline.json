@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "51dc1ef94128988d28e25175c97d9c57d6a29134",
+  "commit": "0a70249054c8c9f4c7600c99c974d6dba56370f8",
   "branch": "main",
-  "data_commit": "2026-11-22T14:01:35-03:00",
+  "data_commit": "2026-11-22T16:26:24-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "0a70249",
+    "data": "2026-11-22",
+    "assunto": "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)"
+   },
    {
     "sha": "51dc1ef",
     "data": "2026-11-22",
@@ -126,14 +131,9 @@
     "sha": "4a46225",
     "data": "2026-11-19",
     "assunto": "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)"
-   },
-   {
-    "sha": "fe8090b",
-    "data": "2026-11-19",
-    "assunto": "chore(ci): Bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 (#283)"
    }
   ],
-  "arquivos_mudados_7d": 1279,
+  "arquivos_mudados_7d": 1291,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 39
+    "mudancas": 40
    },
    {
     "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
@@ -184,15 +184,15 @@
     "mudancas": 11
    },
    {
+    "pasta": "src/components/sicoob",
+    "mudancas": 11
+   },
+   {
     "pasta": "RELATORIO_CI.md",
     "mudancas": 10
    },
    {
     "pasta": "package-lock.json",
-    "mudancas": 10
-   },
-   {
-    "pasta": "src/components/sicoob",
     "mudancas": 10
    }
   ],
@@ -215,23 +215,23 @@
    },
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 20
+    "mudancas": 19
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 19
+    "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 18
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 18
    },
    {
-    "arquivo": "package-lock.json",
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 18
    },
    {
-    "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 17
+    "arquivo": "package-lock.json",
+    "mudancas": 18
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 187
+    "commits": 188
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5242,
-  "arquivos_codigo": 3146,
-  "linhas_codigo": 495176,
+  "arquivos_total": 5251,
+  "arquivos_codigo": 3153,
+  "linhas_codigo": 496824,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -322,9 +322,9 @@
   "hooks": 394,
   "edge_functions": 107,
   "tabelas": 292,
-  "migrations": 622,
-  "cron_jobs": 27,
-  "testes": 891,
+  "migrations": 624,
+  "cron_jobs": 28,
+  "testes": 896,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 970
@@ -683,8 +683,8 @@
    "linhas": 161
   },
   "scripts/qa": {
-   "arquivos": 37,
-   "linhas": 8257
+   "arquivos": 38,
+   "linhas": 8570
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1131,
-   "linhas": 166941
+   "linhas": 167020
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47717
+   "linhas": 47757
   },
   "src/integrations": {
    "arquivos": 3,
@@ -839,8 +839,8 @@
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 219,
-   "linhas": 35285
+   "arquivos": 222,
+   "linhas": 36278
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -875,8 +875,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 149,
-   "linhas": 27704
+   "arquivos": 150,
+   "linhas": 27755
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 146,
-   "linhas": 16292
+   "arquivos": 147,
+   "linhas": 16330
   },
   "tests/integration": {
    "arquivos": 4,
@@ -955,8 +955,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 31,
-   "linhas": 2065
+   "arquivos": 32,
+   "linhas": 2199
   },
   "tests/scripts": {
    "arquivos": 35,
@@ -1142,7 +1142,7 @@
   }
  ],
  "qualidade": {
-  "any": 497,
+  "any": 522,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

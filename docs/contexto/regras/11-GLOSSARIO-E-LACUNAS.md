@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `51dc1ef941` · branch `main` · 2026-11-22 17:12 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0a70249054` · branch `main` · 2026-11-22 19:26 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -307,7 +307,7 @@
 | `step_up_action` (enum) | promote_dev, demote_dev, mcp_full_issue, mcp_full_escalate, secret_rotation, secret_revoke, mcp_key_revoke, mcp_key_rotate |  | banco |
 | `role_migration_item_status` (enum) | pending, success, failed, skipped, dry_run |  | banco |
 | `role_migration_status` (enum) | pending, running, completed, failed, partial, dry_run |  | banco |
-| … +172 linhas — lista completa em `context.json` | | | |
+| … +173 linhas — lista completa em `context.json` | | | |
 
 ## Dados de referência (seed — planos, categorias, perfis fixos)
 
@@ -350,6 +350,7 @@ _nenhum item encontrado_
 | status | valor `in_progress` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/bitrix-sync/index.ts` |
 | status | valor `scope_mismatch` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/e2e-cleanup/index.ts` |
 | status | valor `alert_sent` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/error-monitor/index.ts` |
+| status | valor `deactivated` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/process-scheduled-reports/index.ts`<br>`escreve:supabase/functions/send-scheduled-reports/index.ts` |
 | status | valor `digested` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/send-notification/index.ts` |
 | status | valor `local_sem_ledger` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:tests/scenarios/migration-ledger.mjs` |
 | status | valor `nome_divergente` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:tests/scenarios/migration-ledger.mjs` |

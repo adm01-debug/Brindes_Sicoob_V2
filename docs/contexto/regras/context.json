@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "51dc1ef94128988d28e25175c97d9c57d6a29134",
+  "sha": "0a70249054c8c9f4c7600c99c974d6dba56370f8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-22 17:12 UTC",
-  "files_total": 5245,
-  "code_files": 3812,
-  "code_lines": 557777
+  "generated_at": "2026-11-22 19:26 UTC",
+  "files_total": 5254,
+  "code_files": 3821,
+  "code_lines": 559583
  },
  "version": "1.3.2",
- "facts_hash": "332be1a488a38177",
+ "facts_hash": "2cf9455aa4aa2ec7",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,11 +355,11 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1484,
+   ".ts": 1489,
    ".tsx": 1446,
-   ".sql": 684,
-   ".mjs": 139,
-   ".py": 66,
+   ".sql": 686,
+   ".mjs": 140,
+   ".py": 67,
    ".cjs": 7,
    ".js": 6
   },
@@ -36555,14 +36555,15 @@
     "args": "",
     "returns": "TRIGGER",
     "lang": "plpgsql",
-    "src": "supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql",
+    "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
     "security_definer": true,
     "search_path": true,
-    "body": "DECLARE user_email TEXT; BEGIN SELECT email INTO user_email FROM public.profiles WHERE user_id = NEW.user_id; IF user_email IS NULL OR NEW.email_to != user_email THEN RAISE EXCEPTION 'email_to must match your registered email address'; END IF; RETURN NEW; END;",
+    "body": "DECLARE user_email TEXT; BEGIN IF TG_OP = 'UPDATE' AND NEW.email_to IS NOT DISTINCT FROM OLD.email_to THEN RETURN NEW; END IF; SELECT email INTO user_email FROM public.profiles WHERE user_id = NEW.user_id; IF user_email IS NULL OR NEW.email_to != user_email THEN RAISE EXCEPTION 'email_to must match your registered email address'; END IF; RETURN NEW; END;",
     "raises": [
      "email_to must match your registered email address"
     ],
     "tables": [
+     "OLD",
      "profiles",
      "user_email"
     ]
@@ -41593,6 +41594,22 @@
     "body": "DECLARE v_minute text; v_hour text; BEGIN IF p_schedule IS NULL OR btrim(p_schedule) = '' THEN RETURN NULL; END IF; v_minute := split_part(p_schedule, ' ', 1); v_hour := split_part(p_schedule, ' ', 2); IF v_minute LIKE '*/%' THEN IF v_hour IS DISTINCT FROM '*' THEN RETURN NULL; END IF; RETURN NULLIF(substring(v_minute FROM 3), '')::int; END IF; IF v_minute ~ '^[0-9]+$' THEN IF v_hour = '*' THEN RETURN 60; END IF; IF v_hour LIKE '*/%' THEN RETURN NULLIF(substring(v_hour FROM 3), '')::int * 60; END IF; END IF; RETURN NULL; END",
     "raises": [],
     "tables": []
+   },
+   "dispatch_scheduled_reports": {
+    "args": "",
+    "returns": "bigint",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_project_url text; v_internal_secret text; v_request_id bigint; BEGIN SELECT decrypted_secret INTO v_project_url FROM vault.decrypted_secrets WHERE name = 'sicoob_project_url' ORDER BY updated_at DESC LIMIT 1; SELECT decrypted_secret INTO v_internal_secret FROM vault.decrypted_secrets WHERE name = 'sicoob_internal_function_secret' ORDER BY updated_at DESC LIMIT 1; v_project_url := rtrim(COALESCE(v_project_url, ''), '/'); IF v_project_url !~ '^https://[a-z0-9-]+[.]supabase[.]co$' OR length(COALESCE(v_internal_secret, '')) NOT BETWEEN 32 AND 512 THEN RAISE WARNING 'Relatórios agendados não configurados no Vault'; RETURN NULL; END IF; SELECT net.http_post( url := v_project_url || '/fun …",
+    "raises": [],
+    "tables": [
+     "v_internal_secret",
+     "v_project_url",
+     "v_request_id",
+     "vault"
+    ]
    },
    "check_migration_status": {
     "args": "",
@@ -47692,6 +47709,8 @@
    "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql",
    "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
    "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
+   "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+   "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -54061,6 +54080,22 @@
     "objkind": "function",
     "roles": "authenticated, service_role",
     "src": "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "dispatch_scheduled_reports",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "dispatch_scheduled_reports",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
    }
   ],
   "raises": [
@@ -54093,11 +54128,6 @@
     "function": "prevent_profile_role_change",
     "msg": "Only admins can change the role field on profiles",
     "src": "supabase/migrations/20260326193116_2c55f931-6722-4778-bff4-71f5b4c39752.sql"
-   },
-   {
-    "function": "validate_scheduled_report_email",
-    "msg": "email_to must match your registered email address",
-    "src": "supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql"
    },
    {
     "function": "validate_discount_approval_status",
@@ -54678,6 +54708,11 @@
     "function": "register_sicoob_clean_document",
     "msg": "Os objetos de quarentena e promoção não correspondem à evidência.",
     "src": "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql"
+   },
+   {
+    "function": "validate_scheduled_report_email",
+    "msg": "email_to must match your registered email address",
+    "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql"
    }
   ],
   "seed": [],
@@ -58552,8 +58587,13 @@
     "auth": "PÚBLICA (verify_jwt=false em config.toml)",
     "tables": [
      "orders",
+     "profiles",
+     "quote_items",
      "quotes",
-     "scheduled_reports"
+     "scheduled_reports",
+     "sicoob_order_invoices",
+     "sicoob_orders",
+     "user_roles"
     ],
     "env": [
      "RESEND_API_KEY",
@@ -58958,8 +58998,13 @@
     "auth": "PÚBLICA (verify_jwt=false em config.toml)",
     "tables": [
      "orders",
+     "profiles",
+     "quote_items",
      "quotes",
-     "scheduled_reports"
+     "scheduled_reports",
+     "sicoob_order_invoices",
+     "sicoob_orders",
+     "user_roles"
     ],
     "env": [
      "RESEND_API_KEY",
@@ -61155,6 +61200,11 @@
    },
    {
     "kind": "cron (código)",
+    "detail": "scheduled-reports-worker */10 * * * *",
+    "file": "scripts/qa/simular-relatorios-agendados-cron.py"
+   },
+   {
+    "kind": "cron (código)",
     "detail": "daily_orders 0 0 * * *",
     "file": "scripts/regras_negocio/test_generate.py"
    },
@@ -61194,7 +61244,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1281,
+  "components_count": 1282,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63749,8 +63799,8 @@
   },
   {
    "module": "scripts",
-   "files": 168,
-   "lines": 38804,
+   "files": 169,
+   "lines": 39117,
    "tables": [
     "a",
     "admin_audit_log",
@@ -63986,7 +64036,7 @@
   {
    "module": "src/components",
    "files": 1131,
-   "lines": 166941,
+   "lines": 167020,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -64319,7 +64369,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47717,
+   "lines": 47757,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65404,8 +65454,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 219,
-   "lines": 35285,
+   "files": 222,
+   "lines": 36278,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65492,6 +65542,7 @@
     "sicoob_approval_requests",
     "sicoob_centrais",
     "sicoob_document_registry",
+    "sicoob_order_invoices",
     "sicoob_order_items",
     "sicoob_orders",
     "step_up_audit_log",
@@ -65546,9 +65597,9 @@
     "read-limited-body.ts: LimitedBody, readLimitedBody, decodeLimitedBody",
     "request-id.ts: REQUEST_ID_HEADER, TRACEPARENT_HEADER, getOrCreateRequestId, makeRequestLogger, withRequestIdBody, withRequestIdHeader",
     "retry-backoff.ts: RetryOptions, RetryResult, isTransientError, nextDelayMs, retryWithBackoff, retrySupabaseCall",
+    "scheduled-report-data.ts: ScheduledReportRow, generateScheduledReportHtml",
     "scheduled-report-email.ts: buildScheduledReportIdempotencyKey, DUPLICATE_RECEIPT, sendScheduledReportEmail",
-    "step-up-otp-delivery.ts: StepUpOtpDelivery, StepUpOtpDeliveryResult, deliverStepUpOtp",
-    "structured-logger.ts: LogLevel, StructuredLoggerInit, StructuredLogger, createStructuredLogger, withStructuredLogging"
+    "step-up-otp-delivery.ts: StepUpOtpDelivery, StepUpOtpDeliveryResult, deliverStepUpOtp"
    ],
    "docs": [
     "ai-usage.ts: AI Usage Tracking Helper Tracks AI consumption per user with quota checking and cost estimation.",
@@ -65620,6 +65671,7 @@
     "supabase/functions/_shared/request-id.ts",
     "supabase/functions/_shared/retry-backoff.test.ts",
     "supabase/functions/_shared/retry-backoff.ts",
+    "supabase/functions/_shared/scheduled-report-data.ts",
     "supabase/functions/_shared/scheduled-report-email.test.ts",
     "supabase/functions/_shared/scheduled-report-email.ts",
     "supabase/functions/_shared/step-up-otp-delivery.ts",
@@ -65648,14 +65700,13 @@
     "supabase/functions/comparison-ai-advisor/index.ts",
     "supabase/functions/comparison-price-watcher/index.ts",
     "supabase/functions/comparisons-public-react/index.ts",
-    "supabase/functions/connection-tester/index.ts",
-    "supabase/functions/connections-auto-test/assertServiceClient.test.ts"
+    "supabase/functions/connection-tester/index.ts"
    ]
   },
   {
    "module": "supabase/migrations",
-   "files": 622,
-   "lines": 54966,
+   "files": 624,
+   "lines": 55124,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -65759,8 +65810,8 @@
   },
   {
    "module": "tests",
-   "files": 664,
-   "lines": 88982,
+   "files": 667,
+   "lines": 89205,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67091,11 +67142,10 @@
      "src/pages/GestorApprovalsPage.tsx",
      "src/services/OrderService.ts",
      "src/utils/orderExportUtils.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
      "supabase/functions/expert-chat/index.ts",
      "supabase/functions/market-intelligence-insights/index.ts",
      "supabase/functions/mcp-server/index.ts",
-     "supabase/functions/process-scheduled-reports/index.ts",
-     "supabase/functions/send-scheduled-reports/index.ts",
      "tests/scripts/check-seller-scope.test.ts"
     ],
     "update": [
@@ -67431,6 +67481,7 @@
      "src/hooks/useKitCollaboration.ts",
      "src/hooks/useQuoteComments.ts",
      "src/hooks/useSalesHistory.ts",
+     "src/hooks/useScheduledReports.ts",
      "src/hooks/useSicoobApprovals.ts",
      "src/hooks/useSimulatorPreferences.ts",
      "src/pages/GestorApprovalsPage.tsx",
@@ -67450,8 +67501,10 @@
      "supabase/functions/e2e-auth-test/index.ts",
      "supabase/functions/expert-chat/index.ts",
      "supabase/functions/kit-public-view/index.ts",
+     "supabase/functions/process-scheduled-reports/index.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/rls-audit/index.ts",
+     "supabase/functions/send-scheduled-reports/index.ts",
      "supabase/functions/system-healthcheck/index.ts",
      "supabase/functions/trends-insights/index.ts"
     ],
@@ -67596,6 +67649,7 @@
      "src/hooks/useSalesHistoryMacro.ts",
      "src/services/QuoteService.ts",
      "src/utils/quotePdfUtils.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
      "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/sicoob-reorder/index.ts",
@@ -67643,18 +67697,17 @@
      "src/services/quoteStatusTransition.ts",
      "src/utils/quoteExportUtils.ts",
      "src/utils/quotePdfUtils.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
      "supabase/functions/crm-db-bridge/index.ts",
      "supabase/functions/e2e-cleanup/index.ts",
      "supabase/functions/expert-chat/index.ts",
      "supabase/functions/market-intelligence-insights/index.ts",
      "supabase/functions/mcp-server/index.ts",
      "supabase/functions/process-batch-export/index.ts",
-     "supabase/functions/process-scheduled-reports/index.ts",
      "supabase/functions/quote-followup-reminders/index.ts",
      "supabase/functions/quote-price-attestation/handler.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/rls-audit/index.ts",
-     "supabase/functions/send-scheduled-reports/index.ts",
      "supabase/functions/sicoob-reorder/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts",
      "tests/integration/discountApprovalFlow.test.ts",
@@ -67932,7 +67985,8 @@
    },
    "sicoob_order_invoices": {
     "select": [
-     "src/hooks/orders/extensions/useOrderInvoices.ts"
+     "src/hooks/orders/extensions/useOrderInvoices.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts"
     ]
    },
    "sicoob_order_item_logs": {
@@ -67969,6 +68023,7 @@
      "src/services/sicoob/managerStatsService.ts",
      "src/services/sicoob/orderService.ts",
      "src/services/sicoob/statsService.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
      "supabase/functions/monthly-health-report/index.ts",
      "supabase/functions/sicoob-reorder/index.ts"
     ],
@@ -68152,6 +68207,7 @@
      "src/services/authService.ts",
      "supabase/functions/_shared/auth.ts",
      "supabase/functions/_shared/authorize.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
      "supabase/functions/block-ip-temporarily/index.ts",
      "supabase/functions/connection-tester/index.ts",
      "supabase/functions/connections-health-check/index.ts",
@@ -68161,8 +68217,10 @@
      "supabase/functions/github-credentials-test/index.ts",
      "supabase/functions/manage-users/index.ts",
      "supabase/functions/ownership-repair/index.ts",
+     "supabase/functions/process-scheduled-reports/index.ts",
      "supabase/functions/rls-integration-tests/index.ts",
      "supabase/functions/secrets-manager/index.ts",
+     "supabase/functions/send-scheduled-reports/index.ts",
      "tests/rls/personas.test.ts"
     ],
     "update": [
@@ -69193,6 +69251,7 @@
     "client_name",
     "client_phone",
     "client_response",
+    "client_response_at",
     "consolidation_id",
     "created_at",
     "delivery_time",
@@ -69342,8 +69401,11 @@
     "user_id"
    ],
    "sicoob_order_invoices": [
+    "amount",
     "file_path",
     "id",
+    "invoice_number",
+    "issued_at",
     "order_id"
    ],
    "sicoob_order_item_logs": [
@@ -69400,6 +69462,7 @@
     "order_number",
     "pa_id",
     "sla_status",
+    "source_quote_snapshot",
     "status",
     "total_amount",
     "updated_at"
@@ -72835,6 +72898,11 @@
     "rules": "accept=image/*, disabled=controller.isLoading"
    },
    {
+    "file": "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+    "field": "issuedAt",
+    "rules": "type=date"
+   },
+   {
     "file": "src/components/sicoob/orders/OrderPaymentsTab.tsx",
     "field": "payment-installment",
     "rules": "type=number, min=1, step=1, readOnly, readonly=true"
@@ -73877,6 +73945,11 @@
     "values": "rows | empty-array | null | generic-string-error | single-object | primitive | unknown"
    },
    {
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "name": "SCHEDULED_REPORT_TYPES",
+    "values": "\"sales\", \"quotes\", \"clients\", \"products\", \"orders\","
+   },
+   {
     "file": "supabase/functions/sicoob-document-ingest/inspection.ts",
     "name": "DocumentPurpose",
     "values": "invoice_pdf | invoice_xml | delivery_proof"
@@ -74533,6 +74606,14 @@
    {
     "file": "scripts/qa/simular-recompra-sicoob.py",
     "msg": "A consulta não retornou o valor esperado"
+   },
+   {
+    "file": "scripts/qa/simular-relatorios-agendados-cron.py",
+    "msg": "initdb não concluiu"
+   },
+   {
+    "file": "scripts/qa/simular-relatorios-agendados-cron.py",
+    "msg": "postgres não ficou pronto"
    },
    {
     "file": "scripts/qa/simular-rls-cruzada-sicoob.py",
@@ -78323,6 +78404,14 @@
     "msg": "maxBytes precisa ser um inteiro seguro não negativo"
    },
    {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "msg": "scheduled_report_owner_missing"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "msg": "scheduled_report_owner_without_access"
+   },
+   {
     "file": "supabase/functions/_shared/scheduled-report-email.ts",
     "msg": "Chave de idempotência do relatório inválida."
    },
@@ -81391,6 +81480,10 @@
     "text": "slow query must not block the whole response."
    },
    {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "text": "o período inteiro: com um limite baixo eles somavam só a amostra mais recente"
+   },
+   {
     "file": "supabase/functions/_shared/validate.ts",
     "text": "Shared input validation utilities for edge functions"
    },
@@ -81679,6 +81772,10 @@
     "text": "pelo último relatório de `ownership-audit`. Apenas admins/devs."
    },
    {
+    "file": "supabase/functions/process-scheduled-reports/index.ts",
+    "text": "`limit` evita que a rodada do cron cresça sem teto quando muitos"
+   },
+   {
     "file": "supabase/functions/product-webhook/index.ts",
     "text": "O catálogo canônico é externo e somente de leitura neste portal."
    },
@@ -81713,6 +81810,10 @@
    {
     "file": "supabase/functions/semantic-search/index.ts",
     "text": "Rate limit: 100 req/min por usuário (busca pode ser intensa)"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "text": "* Dia do mês que o agendamento deve manter como âncora quando for mensal. */"
    },
    {
     "file": "supabase/functions/sicoob-kit-quote/index.ts",
@@ -94804,6 +94905,16 @@
     "value": "\"traceparent\""
    },
    {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "name": "ROW_LIMIT",
+    "value": "100"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "name": "SCAN_LIMIT",
+    "value": "5000"
+   },
+   {
     "file": "supabase/functions/_shared/scheduled-report-email.ts",
     "name": "DUPLICATE_RECEIPT",
     "value": "\"duplicate\""
@@ -94944,6 +95055,11 @@
     "value": "\"mcp-server\""
    },
    {
+    "file": "supabase/functions/process-scheduled-reports/index.ts",
+    "name": "BATCH_LIMIT",
+    "value": "50"
+   },
+   {
     "file": "supabase/functions/secrets-manager/index.ts",
     "name": "SOURCE",
     "value": "\"secrets-manager\""
@@ -94952,6 +95068,11 @@
     "file": "supabase/functions/semantic-search/index.ts",
     "name": "CLEANUP_INTERVAL",
     "value": "60"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/index.ts",
+    "name": "BATCH_LIMIT",
+    "value": "20"
    },
    {
     "file": "supabase/functions/sicoob-artwork-register/identity.ts",
@@ -105386,6 +105507,24 @@
    {
     "file": "supabase/functions/process-scheduled-reports/index.ts",
     "field": "status",
+    "value": "deactivated",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/process-scheduled-reports/index.ts",
+    "field": "status",
+    "value": "blocked",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/process-scheduled-reports/index.ts",
+    "field": "status",
+    "value": "skipped",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/process-scheduled-reports/index.ts",
+    "field": "status",
     "value": "sent",
     "kind": "escreve"
    },
@@ -105398,7 +105537,7 @@
    {
     "file": "supabase/functions/process-scheduled-reports/index.ts",
     "field": "status",
-    "value": "approved",
+    "value": "blocked",
     "kind": "compara"
    },
    {
@@ -105658,6 +105797,18 @@
     "field": "status",
     "value": "pending",
     "kind": "filtra"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/index.ts",
+    "field": "status",
+    "value": "deactivated",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/index.ts",
+    "field": "status",
+    "value": "skipped",
+    "kind": "escreve"
    },
    {
     "file": "supabase/functions/send-scheduled-reports/index.ts",
@@ -108005,7 +108156,7 @@
     "file": "src/hooks/useScheduledReports.ts",
     "name": "calculateNextRun",
     "params": "frequency: ReportFrequency",
-    "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } }"
+    "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …"
    },
    {
     "file": "src/hooks/useSecretsManager.ts",
@@ -109832,24 +109983,6 @@
     "body": "const bytes = new Uint8Array(32); crypto.getRandomValues(bytes); const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, \"0\")).join(\"\"); const plain = `mcp_${hex}`; const hashBuf = await crypto.subtle.digest(\"SHA-256\", new TextEncoder().encode(plain)); const hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, \"0\")).join(\"\"); return { plain, hash, prefix: plain.slice(0, 12) };"
    },
    {
-    "file": "supabase/functions/process-scheduled-reports/index.ts",
-    "name": "calculateNextRun",
-    "params": "frequency: string",
-    "body": "const next = new Date(); switch (frequency) { case \"daily\": next.setDate(next.getDate() + 1); break; case \"weekly\": next.setDate(next.getDate() + 7); break; case \"monthly\": next.setMonth(next.getMonth() + 1); break; default: next.setDate(next.getDate() + 7); } next.setHours(8, 0, 0, 0); // Always at 8am return next;"
-   },
-   {
-    "file": "supabase/functions/process-scheduled-reports/index.ts",
-    "name": "formatCurrency",
-    "params": "value: number",
-    "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
-   },
-   {
-    "file": "supabase/functions/process-scheduled-reports/index.ts",
-    "name": "generateEmailHtml",
-    "params": "reportName: string, data: any",
-    "body": "const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style=\"padding:8px;border-bottom:1px solid #eee;font-weight:600\">${key.replace(/_/g, \" \")}</td><td style=\"padding:8px;border-bottom:1px solid #eee\">${val}</td></tr>`) .join(\"\"); return ` <div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px\"> <h2 style=\"color:#7c3aed\">📊 ${reportName}</h2> <p style=\"color:#666\">Período: ${data.period} | Tipo: ${data.type}</p> <table style=\"width:100% …"
-   },
-   {
     "file": "supabase/functions/quote-price-attestation/handler.ts",
     "name": "validatePersonalizations",
     "params": "external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,",
@@ -109874,16 +110007,10 @@
     "body": "const normalized = query.toLowerCase().trim(); const encoder = new TextEncoder(); const data = encoder.encode(normalized); let hash = 0; for (let i = 0; i < data.length; i++) { const char = data[i]; hash = ((hash << 5) - hash) + char; hash = hash & hash; } return `search:${hash.toString(16)}`;"
    },
    {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "name": "generateReportData",
-    "params": "supabase: any, report: any",
-    "body": "const { report_type, user_id } = report; let html = `<h2>${report.report_name}</h2><p>Gerado em ${ new Date().toLocaleDateString(\"pt-BR\") }</p>`; switch (report_type) { case \"quotes\": { const { data, count } = await supabase .from(\"quotes\") .select(\"id, quote_number, client_name, status, total, created_at\", { count: \"exact\", }) .eq(\"seller_id\", user_id) .order(\"created_at\", { ascending: false }) .limit(20); html += `<p><strong>Total de orçamentos:</strong> ${count || 0}</p>`; html += \"<table bor …"
-   },
-   {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
     "name": "calculateNextRun",
-    "params": "frequency: string",
-    "body": "const now = new Date(); switch (frequency) { case \"daily\": return new Date(now.getTime() + 24 * 60 * 60 * 1000); case \"weekly\": return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case \"monthly\": { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } default: return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); }"
+    "params": "frequency: unknown, reference: Date, anchorDay: number | null = null,",
+    "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …"
    },
    {
     "file": "supabase/functions/sicoob-kit-quote/index.ts",
@@ -111086,12 +111213,8 @@
     "line": "constructor(ttlMs: number = 5 * 60 * 1000, maxEntries: number = 1000) {"
    },
    {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "line": "return new Date(now.getTime() + 24 * 60 * 60 * 1000);"
-   },
-   {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "line": "return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);"
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "line": "return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();"
    },
    {
     "file": "supabase/functions/sicoob-reorder/catalog.ts",
@@ -114228,6 +114351,98 @@
    {
     "file": "supabase/functions/send-scheduled-reports/report-delivery.test.ts",
     "name": "relatório só é persistido depois da confirmação do provedor"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "todo tipo aceito pelo CHECK do banco tem gerador"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "próxima execução fica ancorada em 8h e avança o período"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "janela do período segue a frequência"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "relatório de orçamentos filtra pelo dono do agendamento"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "agendamento sem dono é rejeitado antes de consultar"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "erro da consulta sobe em vez de enviar relatório vazio"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "HTML do relatório escapa nome de cliente"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "janela fecha onde o ciclo anterior fechou"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "mensal em 31/01 cai no fim de fevereiro, não em março"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "vendas fatura pela nota emitida e não dobra PDF com XML"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "vendas conta aprovação pela data do evento, não da criação"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "pedidos consolidam as duas origens sem perder sicoob_orders"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "clientes não duplicam empresa e contato do mesmo cliente"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "produtos separam variantes com SKUs diferentes"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "cada tipo abre a sua própria seção"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "total não é truncado quando passa do limite de exibição"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "agendamento de usuário sem papel é barrado antes de gerar dados"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "pedidos usam o número oficial de sicoob_orders"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "mensal mantém o dia-âncora depois de passar por fevereiro"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "vendas contam aprovação feita pelo link público"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "proposta aprovada no painel e no link público conta uma vez"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "conta a aprovação que depois virou pedido"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "ignora resposta recusada do link público"
    },
    {
     "file": "supabase/functions/send-transactional-email/index.test.ts",
@@ -121588,6 +121803,38 @@
    {
     "file": "tests/components/security/SecurityDashboard.test.tsx",
     "name": "exports SecurityDashboard component"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "parseAmountBR"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "lê milhar sem decimais como milhar"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "lê o separador decimal correto"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "lê milhar no formato US com centavos"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "aceita prefixo de moeda e espaços"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "rejeita separadores fora do padrão em vez de adivinhar"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "rejeita texto que não representa número"
+   },
+   {
+    "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+    "name": "devolve undefined para campo vazio"
    },
    {
     "file": "tests/components/sicoob/OrderOperationalTabs.test.tsx",
@@ -129888,6 +130135,22 @@
    {
     "file": "tests/hooks/quote/useQuoteInitialization.url.test.tsx",
     "name": "não consulta o catálogo quando o construtor está editando orçamento existente"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+    "name": "buildTogglePatch"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+    "name": "reativar envia o e-mail atual no payload"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+    "name": "pausar não mexe no destinatário"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+    "name": "sem e-mail conhecido reativa sem enviar a coluna"
    },
    {
     "file": "tests/hooks/simulation/simulationPriceFetcher.test.ts",
@@ -151984,14 +152247,15 @@
     "args": "",
     "returns": "TRIGGER",
     "lang": "plpgsql",
-    "src": "supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql",
+    "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
     "security_definer": true,
     "search_path": true,
-    "body": "DECLARE user_email TEXT; BEGIN SELECT email INTO user_email FROM public.profiles WHERE user_id = NEW.user_id; IF user_email IS NULL OR NEW.email_to != user_email THEN RAISE EXCEPTION 'email_to must match your registered email address'; END IF; RETURN NEW; END;",
+    "body": "DECLARE user_email TEXT; BEGIN IF TG_OP = 'UPDATE' AND NEW.email_to IS NOT DISTINCT FROM OLD.email_to THEN RETURN NEW; END IF; SELECT email INTO user_email FROM public.profiles WHERE user_id = NEW.user_id; IF user_email IS NULL OR NEW.email_to != user_email THEN RAISE EXCEPTION 'email_to must match your registered email address'; END IF; RETURN NEW; END;",
     "raises": [
      "email_to must match your registered email address"
     ],
     "tables": [
+     "OLD",
      "profiles",
      "user_email"
     ]
@@ -157023,6 +157287,22 @@
     "raises": [],
     "tables": []
    },
+   "dispatch_scheduled_reports": {
+    "args": "",
+    "returns": "bigint",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_project_url text; v_internal_secret text; v_request_id bigint; BEGIN SELECT decrypted_secret INTO v_project_url FROM vault.decrypted_secrets WHERE name = 'sicoob_project_url' ORDER BY updated_at DESC LIMIT 1; SELECT decrypted_secret INTO v_internal_secret FROM vault.decrypted_secrets WHERE name = 'sicoob_internal_function_secret' ORDER BY updated_at DESC LIMIT 1; v_project_url := rtrim(COALESCE(v_project_url, ''), '/'); IF v_project_url !~ '^https://[a-z0-9-]+[.]supabase[.]co$' OR length(COALESCE(v_internal_secret, '')) NOT BETWEEN 32 AND 512 THEN RAISE WARNING 'Relatórios agendados não configurados no Vault'; RETURN NULL; END IF; SELECT net.http_post( url := v_project_url || '/fun …",
+    "raises": [],
+    "tables": [
+     "v_internal_secret",
+     "v_project_url",
+     "v_request_id",
+     "vault"
+    ]
+   },
    "check_migration_status": {
     "args": "",
     "returns": "?",
@@ -157139,11 +157419,6 @@
     "function": "prevent_profile_role_change",
     "msg": "Only admins can change the role field on profiles",
     "src": "supabase/migrations/20260326193116_2c55f931-6722-4778-bff4-71f5b4c39752.sql"
-   },
-   {
-    "function": "validate_scheduled_report_email",
-    "msg": "email_to must match your registered email address",
-    "src": "supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql"
    },
    {
     "function": "validate_discount_approval_status",
@@ -157724,6 +157999,11 @@
     "function": "register_sicoob_clean_document",
     "msg": "Os objetos de quarentena e promoção não correspondem à evidência.",
     "src": "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql"
+   },
+   {
+    "function": "validate_scheduled_report_email",
+    "msg": "email_to must match your registered email address",
+    "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql"
    }
   ],
   "db_generated": [],
@@ -158099,6 +158379,14 @@
     "limit": "5"
    },
    {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "limit": "1"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "limit": "2000"
+   },
+   {
     "file": "supabase/functions/admin-audit-hook/index.ts",
     "limit": "1"
    },
@@ -158184,7 +158472,7 @@
    },
    {
     "file": "supabase/functions/process-scheduled-reports/index.ts",
-    "limit": "100"
+    "limit": "1"
    },
    {
     "file": "supabase/functions/qa-block-monitor/index.ts",
@@ -158208,7 +158496,7 @@
    },
    {
     "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "limit": "20"
+    "limit": "1"
    },
    {
     "file": "supabase/functions/sicoob-approval-reconciliation/index.ts",
@@ -160105,7 +160393,6 @@
       "compara:src/pages/quotes/QuoteApprovalHistoryPage.tsx",
       "compara:src/pages/sicoob/PAWalletPage.tsx",
       "compara:supabase/functions/expert-chat/index.ts",
-      "compara:supabase/functions/process-scheduled-reports/index.ts",
       "escreve:src/components/orders/OrderPilotWorkflow.tsx",
       "escreve:src/components/orders/PilotApprovalPanel.tsx",
       "escreve:src/components/sicoob/orders/OrderPilotApprovalsTab.tsx",
@@ -160325,6 +160612,8 @@
       "escreve:src/components/admin/connections/SmokeTestChecklist.tsx",
       "escreve:src/pages/admin/telemetry/useOptimizationQueue.ts",
       "escreve:supabase/functions/full-op-diagnostics/index.ts",
+      "escreve:supabase/functions/process-scheduled-reports/index.ts",
+      "escreve:supabase/functions/send-scheduled-reports/index.ts",
       "escreve:tests/scenarios/e2e-smoke-summary.scenario.mjs"
      ],
      "passed": [
@@ -160735,7 +161024,9 @@
      "blocked": [
       "compara:src/pages/admin/qa/QARunDetailPage.tsx",
       "compara:src/pages/admin/telemetry/useOptimizationQueue.ts",
+      "compara:supabase/functions/process-scheduled-reports/index.ts",
       "compara:supabase/functions/send-scheduled-reports/index.ts",
+      "escreve:supabase/functions/process-scheduled-reports/index.ts",
       "escreve:supabase/functions/send-scheduled-reports/report-delivery.ts"
      ],
      "done": [
@@ -160799,6 +161090,10 @@
      ],
      "alert_sent": [
       "escreve:supabase/functions/error-monitor/index.ts"
+     ],
+     "deactivated": [
+      "escreve:supabase/functions/process-scheduled-reports/index.ts",
+      "escreve:supabase/functions/send-scheduled-reports/index.ts"
      ],
      "digested": [
       "escreve:supabase/functions/send-notification/index.ts"
@@ -165524,6 +165819,7 @@
    "scripts/qa/simular-outbox-aprovacao.py",
    "scripts/qa/simular-reacoes-favoritos-rls.py",
    "scripts/qa/simular-recompra-sicoob.py",
+   "scripts/qa/simular-relatorios-agendados-cron.py",
    "scripts/qa/simular-salvamento-orcamento-atomico.py",
    "scripts/qa/simular-taxonomia-marketing.py",
    "scripts/qa/simular-webhook-internal-auth.py",
@@ -165560,6 +165856,7 @@
    "supabase/functions/_shared/edge-authz-manifest.ts",
    "supabase/functions/_shared/external-db-telemetry.ts",
    "supabase/functions/_shared/internal-service-auth.ts",
+   "supabase/functions/_shared/scheduled-report-data.ts",
    "supabase/functions/admin-audit-hook/index.ts",
    "supabase/functions/auth-integrity-check/index.ts",
    "supabase/functions/bi-share-dossier/contract.ts",
@@ -165748,6 +166045,7 @@
    "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql",
    "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql",
    "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
+   "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
    "tests/e2e/cleanup-name-filter-guard.test.ts",
@@ -165760,6 +166058,7 @@
    "tests/scenarios/core-rls-audit.scenario.mjs",
    "tests/scenarios/notificacoes-aprovacao.mjs",
    "tests/scenarios/operacoes-internas-seguras.mjs",
+   "tests/scenarios/relatorios-agendados-cron.mjs",
    "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
    "tests/scenarios/sql/audit-controls-fixture.sql",
    "tests/scenarios/sql/favorite-reactions-rls-fixture.sql",
@@ -165868,6 +166167,7 @@
    "current_user_pa_id",
    "decide_sicoob_order_artwork",
    "dispatch_quote_webhook_event",
+   "dispatch_scheduled_reports",
    "dispatch_sicoob_approval_worker",
    "dispatch_sicoob_connections_auto_test",
    "dispatch_sicoob_connections_health_check",
@@ -172222,6 +172522,22 @@
     "objkind": "function",
     "roles": "authenticated, service_role",
     "src": "supabase/migrations/20261118150000_fix_connections_auto_test_interval_hourly.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "dispatch_scheduled_reports",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "dispatch_scheduled_reports",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
    }
   ],
   "guards": [
@@ -174449,6 +174765,14 @@
     "msg": "valor `alert_sent` para `status` usado no código não existe em nenhum enum do banco/TS",
     "where": [
      "escreve:supabase/functions/error-monitor/index.ts"
+    ]
+   },
+   {
+    "kind": "status",
+    "msg": "valor `deactivated` para `status` usado no código não existe em nenhum enum do banco/TS",
+    "where": [
+     "escreve:supabase/functions/process-scheduled-reports/index.ts",
+     "escreve:supabase/functions/send-scheduled-reports/index.ts"
     ]
    },
    {
@@ -181432,6 +181756,30 @@
     "catalog_valid_until=now()-interval '5 minutes'",
     "retried_payload = payload(name=\"Caneca atualizada\", price=26, checked=\"now() + interval '1 second'\")",
     "stale_payload = payload(checked=\"now() - interval '10 minutes'\")"
+   ],
+   "uses_service_role": true
+  },
+  "scripts/qa/simular-relatorios-agendados-cron.py": {
+   "path": "scripts/qa/simular-relatorios-agendados-cron.py",
+   "lines": 313,
+   "exports": [
+    "def command",
+    "def sql",
+    "def scalar"
+   ],
+   "errors": [
+    "initdb não concluiu",
+    "postgres não ficou pronto"
+   ],
+   "rule_comments": [
+    "de fato — rollback testado, não apenas citado no PR.",
+    "O rollback nao pode tocar nos agendamentos do gestor: a migration so mexe",
+    "em cron/funcao, nunca em dado de negocio. Fixture minima para provar.",
+    "Escrever email_to divergente continua barrado: a guarda de negocio segue de pe."
+   ],
+   "doc": "!/usr/bin/env python3",
+   "cron": [
+    "scheduled-reports-worker */10 * * * *"
    ],
    "uses_service_role": true
   },
@@ -201151,13 +201499,20 @@
   },
   "src/components/sicoob/orders/OrderInvoicesTab.tsx": {
    "path": "src/components/sicoob/orders/OrderInvoicesTab.tsx",
-   "lines": 205,
+   "lines": 284,
    "exports": [
+    "function parseAmountBR",
     "function OrderInvoicesTab"
    ],
    "errors": [
     "Erro no upload: ",
     "Não foi possível preparar o download."
+   ],
+   "html_constraints": [
+    {
+     "field": "issuedAt",
+     "rules": "type=date"
+    }
    ],
    "status_values": [
     {
@@ -209006,12 +209361,13 @@
   },
   "src/hooks/useScheduledReports.ts": {
    "path": "src/hooks/useScheduledReports.ts",
-   "lines": 164,
+   "lines": 204,
    "exports": [
     "type ReportFrequency",
     "type ReportType",
     "interface ScheduledReport",
     "interface CreateReportInput",
+    "function buildTogglePatch",
     "function useScheduledReports"
    ],
    "tables": [
@@ -209022,6 +209378,10 @@
     {
      "table": "scheduled_reports",
      "op": "insert"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
     },
     {
      "table": "scheduled_reports",
@@ -209035,6 +209395,10 @@
    "table_cols": {
     "scheduled_reports": [
      "id",
+     "user_id"
+    ],
+    "profiles": [
+     "email",
      "user_id"
     ]
    },
@@ -209061,7 +209425,7 @@
     {
      "name": "calculateNextRun",
      "params": "frequency: ReportFrequency",
-     "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } }"
+     "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …"
     }
    ],
    "temporal": [
@@ -228851,6 +229215,136 @@
    ],
    "doc": "supabase/functions/_shared/retry-backoff.ts Centralized retry policy with exponential backoff + decorrelated jitter. Why decorrelated jitter: - Pure exponential backoff causes \"thundering herd\" when many parallel callers (catalog fan-out, dashboards) retry on the same beat. - Decorrelated jitter spr …"
   },
+  "supabase/functions/_shared/scheduled-report-data.ts": {
+   "path": "supabase/functions/_shared/scheduled-report-data.ts",
+   "lines": 448,
+   "exports": [
+    "interface ScheduledReportRow",
+    "function generateScheduledReportHtml"
+   ],
+   "tables": [
+    {
+     "table": "user_roles",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    },
+    {
+     "table": "orders",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_orders",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    },
+    {
+     "table": "orders",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_orders",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    },
+    {
+     "table": "quote_items",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_order_invoices",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "user_roles": [
+     "role",
+     "user_id"
+    ],
+    "quotes": [
+     "approved_at",
+     "client_company",
+     "client_name",
+     "client_response",
+     "client_response_at",
+     "created_at",
+     "id",
+     "quote_number",
+     "seller_id",
+     "status",
+     "total"
+    ],
+    "orders": [
+     "client_company",
+     "client_name",
+     "created_at",
+     "order_number",
+     "seller_id",
+     "status",
+     "total"
+    ],
+    "sicoob_orders": [
+     "created_at",
+     "created_by",
+     "id",
+     "order_number",
+     "source_quote_snapshot",
+     "status",
+     "total_amount"
+    ],
+    "quote_items": [
+     "product_name",
+     "product_sku",
+     "quantity",
+     "quote_id",
+     "subtotal"
+    ],
+    "sicoob_order_invoices": [
+     "amount",
+     "invoice_number",
+     "issued_at",
+     "order_id"
+    ]
+   },
+   "errors": [
+    "scheduled_report_owner_missing",
+    "scheduled_report_owner_without_access"
+   ],
+   "params": [
+    {
+     "name": "ROW_LIMIT",
+     "value": "100"
+    },
+    {
+     "name": "SCAN_LIMIT",
+     "value": "5000"
+    }
+   ],
+   "rule_comments": [
+    "o período inteiro: com um limite baixo eles somavam só a amostra mais recente"
+   ],
+   "pagination": [
+    "1",
+    "2000"
+   ],
+   "uses_service_role": true
+  },
   "supabase/functions/_shared/scheduled-report-email.test.ts": {
    "path": "supabase/functions/_shared/scheduled-report-email.test.ts",
    "lines": 22,
@@ -234094,18 +234588,22 @@
   },
   "supabase/functions/process-scheduled-reports/index.ts": {
    "path": "supabase/functions/process-scheduled-reports/index.ts",
-   "lines": 214,
+   "lines": 155,
    "tables": [
     {
      "table": "scheduled_reports",
      "op": "select"
     },
     {
-     "table": "quotes",
+     "table": "user_roles",
      "op": "select"
     },
     {
-     "table": "orders",
+     "table": "scheduled_reports",
+     "op": "update"
+    },
+    {
+     "table": "profiles",
      "op": "select"
     },
     {
@@ -234119,22 +234617,13 @@
      "is_active",
      "next_run_at"
     ],
-    "quotes": [
-     "client_company",
-     "client_name",
-     "created_at",
-     "id",
-     "quote_number",
-     "status",
-     "total"
+    "user_roles": [
+     "role",
+     "user_id"
     ],
-    "orders": [
-     "client_name",
-     "created_at",
-     "id",
-     "order_number",
-     "status",
-     "total"
+    "profiles": [
+     "email",
+     "user_id"
     ]
    },
    "env": [
@@ -234145,7 +234634,28 @@
    "errors": [
     "Agendamento não encontrado para confirmar o envio."
    ],
+   "params": [
+    {
+     "name": "BATCH_LIMIT",
+     "value": "50"
+    }
+   ],
    "status_values": [
+    {
+     "field": "status",
+     "value": "deactivated",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "blocked",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "skipped",
+     "kind": "escreve"
+    },
     {
      "field": "status",
      "value": "sent",
@@ -234158,29 +234668,15 @@
     },
     {
      "field": "status",
-     "value": "approved",
+     "value": "blocked",
      "kind": "compara"
     }
    ],
-   "calc_fns": [
-    {
-     "name": "calculateNextRun",
-     "params": "frequency: string",
-     "body": "const next = new Date(); switch (frequency) { case \"daily\": next.setDate(next.getDate() + 1); break; case \"weekly\": next.setDate(next.getDate() + 7); break; case \"monthly\": next.setMonth(next.getMonth() + 1); break; default: next.setDate(next.getDate() + 7); } next.setHours(8, 0, 0, 0); // Always at 8am return next;"
-    },
-    {
-     "name": "formatCurrency",
-     "params": "value: number",
-     "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
-    },
-    {
-     "name": "generateEmailHtml",
-     "params": "reportName: string, data: any",
-     "body": "const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style=\"padding:8px;border-bottom:1px solid #eee;font-weight:600\">${key.replace(/_/g, \" \")}</td><td style=\"padding:8px;border-bottom:1px solid #eee\">${val}</td></tr>`) .join(\"\"); return ` <div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px\"> <h2 style=\"color:#7c3aed\">📊 ${reportName}</h2> <p style=\"color:#666\">Período: ${data.period} | Tipo: ${data.type}</p> <table style=\"width:100% …"
-    }
+   "rule_comments": [
+    "`limit` evita que a rodada do cron cresça sem teto quando muitos"
    ],
    "pagination": [
-    "100"
+    "1"
    ],
    "uses_service_role": true
   },
@@ -235257,31 +235753,27 @@
   },
   "supabase/functions/send-scheduled-reports/index.ts": {
    "path": "supabase/functions/send-scheduled-reports/index.ts",
-   "lines": 222,
+   "lines": 156,
    "tables": [
     {
      "table": "scheduled_reports",
      "op": "select"
     },
     {
+     "table": "user_roles",
+     "op": "select"
+    },
+    {
+     "table": "scheduled_reports",
+     "op": "update"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
+    },
+    {
      "table": "scheduled_reports",
      "op": "select,update"
-    },
-    {
-     "table": "quotes",
-     "op": "select"
-    },
-    {
-     "table": "orders",
-     "op": "select"
-    },
-    {
-     "table": "quotes",
-     "op": "select"
-    },
-    {
-     "table": "orders",
-     "op": "select"
     }
    ],
    "table_cols": {
@@ -235290,23 +235782,13 @@
      "is_active",
      "next_run_at"
     ],
-    "quotes": [
-     "client_name",
-     "created_at",
-     "id",
-     "quote_number",
-     "seller_id",
-     "status",
-     "total"
+    "user_roles": [
+     "role",
+     "user_id"
     ],
-    "orders": [
-     "client_name",
-     "created_at",
-     "id",
-     "order_number",
-     "seller_id",
-     "status",
-     "total"
+    "profiles": [
+     "email",
+     "user_id"
     ]
    },
    "env": [
@@ -235317,7 +235799,23 @@
    "errors": [
     "Agendamento nao encontrado para confirmar o envio."
    ],
+   "params": [
+    {
+     "name": "BATCH_LIMIT",
+     "value": "20"
+    }
+   ],
    "status_values": [
+    {
+     "field": "status",
+     "value": "deactivated",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "skipped",
+     "kind": "escreve"
+    },
     {
      "field": "status",
      "value": "error",
@@ -235329,24 +235827,8 @@
      "kind": "compara"
     }
    ],
-   "calc_fns": [
-    {
-     "name": "generateReportData",
-     "params": "supabase: any, report: any",
-     "body": "const { report_type, user_id } = report; let html = `<h2>${report.report_name}</h2><p>Gerado em ${ new Date().toLocaleDateString(\"pt-BR\") }</p>`; switch (report_type) { case \"quotes\": { const { data, count } = await supabase .from(\"quotes\") .select(\"id, quote_number, client_name, status, total, created_at\", { count: \"exact\", }) .eq(\"seller_id\", user_id) .order(\"created_at\", { ascending: false }) .limit(20); html += `<p><strong>Total de orçamentos:</strong> ${count || 0}</p>`; html += \"<table bor …"
-    },
-    {
-     "name": "calculateNextRun",
-     "params": "frequency: string",
-     "body": "const now = new Date(); switch (frequency) { case \"daily\": return new Date(now.getTime() + 24 * 60 * 60 * 1000); case \"weekly\": return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case \"monthly\": { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } default: return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); }"
-    }
-   ],
-   "temporal": [
-    "return new Date(now.getTime() + 24 * 60 * 60 * 1000);",
-    "return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);"
-   ],
    "pagination": [
-    "20"
+    "1"
    ],
    "uses_service_role": true
   },
@@ -235386,6 +235868,73 @@
      "value": "sent",
      "kind": "escreve"
     }
+   ]
+  },
+  "supabase/functions/send-scheduled-reports/report-types.test.ts": {
+   "path": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+   "lines": 555,
+   "is_test": true,
+   "errors": [
+    "sem erro"
+   ],
+   "doc": "deno-lint-ignore-file no-import-prefix",
+   "tests": [
+    "todo tipo aceito pelo CHECK do banco tem gerador",
+    "próxima execução fica ancorada em 8h e avança o período",
+    "janela do período segue a frequência",
+    "relatório de orçamentos filtra pelo dono do agendamento",
+    "agendamento sem dono é rejeitado antes de consultar",
+    "erro da consulta sobe em vez de enviar relatório vazio",
+    "HTML do relatório escapa nome de cliente",
+    "janela fecha onde o ciclo anterior fechou",
+    "mensal em 31/01 cai no fim de fevereiro, não em março",
+    "vendas fatura pela nota emitida e não dobra PDF com XML",
+    "vendas conta aprovação pela data do evento, não da criação",
+    "pedidos consolidam as duas origens sem perder sicoob_orders",
+    "clientes não duplicam empresa e contato do mesmo cliente",
+    "produtos separam variantes com SKUs diferentes",
+    "cada tipo abre a sua própria seção",
+    "total não é truncado quando passa do limite de exibição",
+    "agendamento de usuário sem papel é barrado antes de gerar dados",
+    "pedidos usam o número oficial de sicoob_orders",
+    "mensal mantém o dia-âncora depois de passar por fevereiro",
+    "vendas contam aprovação feita pelo link público",
+    "proposta aprovada no painel e no link público conta uma vez",
+    "conta a aprovação que depois virou pedido",
+    "ignora resposta recusada do link público"
+   ]
+  },
+  "supabase/functions/send-scheduled-reports/report-types.ts": {
+   "path": "supabase/functions/send-scheduled-reports/report-types.ts",
+   "lines": 115,
+   "exports": [
+    "const SCHEDULED_REPORT_TYPES",
+    "type ScheduledReportType",
+    "function isScheduledReportType",
+    "function getPeriodStart",
+    "function getPeriodLabel",
+    "function calculateNextRun",
+    "function getAnchorDay"
+   ],
+   "enums": [
+    {
+     "name": "SCHEDULED_REPORT_TYPES",
+     "values": "\"sales\", \"quotes\", \"clients\", \"products\", \"orders\","
+    }
+   ],
+   "rule_comments": [
+    "* Dia do mês que o agendamento deve manter como âncora quando for mensal. */"
+   ],
+   "doc": "Catálogo único dos tipos de relatório agendado. Precisa coincidir com o CHECK de `scheduled_reports.report_type` (20260402110748) e com `ReportType` do frontend (`src/hooks/useScheduledReports.ts`): um tipo existir aqui e não ser tratado fazia o agendamento sair com o entregável genérico, sem os dad …",
+   "calc_fns": [
+    {
+     "name": "calculateNextRun",
+     "params": "frequency: unknown, reference: Date, anchorDay: number | null = null,",
+     "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …"
+    }
+   ],
+   "temporal": [
+    "return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();"
    ]
   },
   "supabase/functions/send-transactional-email/deliver.ts": {
@@ -239989,6 +240538,15 @@
    "lines": 22,
    "uses_service_role": true
   },
+  "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql": {
+   "path": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+   "lines": 100,
+   "uses_service_role": true
+  },
+  "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql": {
+   "path": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
+   "lines": 58
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -243973,6 +244531,24 @@
    "tests": [
     "SecurityDashboard",
     "exports SecurityDashboard component"
+   ]
+  },
+  "tests/components/sicoob/OrderInvoicesTab.amount.test.ts": {
+   "path": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+   "lines": 51,
+   "is_test": true,
+   "rule_comments": [
+    "\"1,250.50\" casava a regra de milhar com vírgula e o ponto decimal era"
+   ],
+   "tests": [
+    "parseAmountBR",
+    "lê milhar sem decimais como milhar",
+    "lê o separador decimal correto",
+    "lê milhar no formato US com centavos",
+    "aceita prefixo de moeda e espaços",
+    "rejeita separadores fora do padrão em vez de adivinhar",
+    "rejeita texto que não representa número",
+    "devolve undefined para campo vazio"
    ]
   },
   "tests/components/sicoob/OrderOperationalTabs.test.tsx": {
@@ -248157,6 +248733,26 @@
     "não consulta o catálogo quando o construtor está editando orçamento existente"
    ]
   },
+  "tests/hooks/scheduled-reports/toggle-patch.test.ts": {
+   "path": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+   "lines": 38,
+   "is_test": true,
+   "params": [
+    {
+     "name": "NOW",
+     "value": "'2026-11-22T18:00:00.000Z'"
+    }
+   ],
+   "rule_comments": [
+    "Pausar não deve tocar `email_to`: o trigger exige que ele case com o"
+   ],
+   "tests": [
+    "buildTogglePatch",
+    "reativar envia o e-mail atual no payload",
+    "pausar não mexe no destinatário",
+    "sem e-mail conhecido reativa sem enviar a coluna"
+   ]
+  },
   "tests/hooks/simulation/simulationPriceFetcher.test.ts": {
    "path": "tests/hooks/simulation/simulationPriceFetcher.test.ts",
    "lines": 233,
@@ -251417,6 +252013,11 @@
    "path": "tests/scenarios/reconciliacao-aprovacao.mjs",
    "lines": 37
   },
+  "tests/scenarios/relatorios-agendados-cron.mjs": {
+   "path": "tests/scenarios/relatorios-agendados-cron.mjs",
+   "lines": 134,
+   "uses_service_role": true
+  },
   "tests/scenarios/runtime-references.mjs": {
    "path": "tests/scenarios/runtime-references.mjs",
    "lines": 58
@@ -253772,10 +254373,33 @@
   }
  },
  "git": {
-  "sha": "51dc1ef94128988d28e25175c97d9c57d6a29134",
+  "sha": "0a70249054c8c9f4c7600c99c974d6dba56370f8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "0a70249",
+    "date": "2026-11-22",
+    "author": "adm01-debug",
+    "subject": "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)",
+    "files": [
+     ".github/workflows/ci.yml",
+     "scripts/automation.config.json",
+     "scripts/qa/simular-relatorios-agendados-cron.py",
+     "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+     "src/hooks/useScheduledReports.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
+     "supabase/functions/process-scheduled-reports/index.ts",
+     "supabase/functions/send-scheduled-reports/index.ts",
+     "supabase/functions/send-scheduled-reports/report-types.test.ts",
+     "supabase/functions/send-scheduled-reports/report-types.ts",
+     "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+     "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
+     "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
+     "tests/hooks/scheduled-reports/toggle-patch.test.ts",
+     "tests/scenarios/relatorios-agendados-cron.mjs"
+    ]
+   },
    {
     "sha": "51dc1ef",
     "date": "2026-11-22",
@@ -254784,15 +255408,6 @@
      "tests/hooks/useClientVsIndustry.reliable-data.test.tsx",
      "tests/hooks/useClientsComparison.availability.test.tsx"
     ]
-   },
-   {
-    "sha": "f08eb8f",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(catálogo): recupera a catraca do RPC por GET no catálogo externo (#370)",
-    "files": [
-     "tests/edge-functions/catalogo-rpc-get.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -254829,51 +255444,51 @@
     2
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    ".github/workflows/ci.yml",
     1
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    "scripts/automation.config.json",
     1
    ],
    [
-    "src/components/cart/CartCompanyPicker.tsx",
+    "scripts/qa/simular-relatorios-agendados-cron.py",
     1
    ],
    [
-    "src/components/cart/CartCompanyPickerDialog.tsx",
+    "src/components/sicoob/orders/OrderInvoicesTab.tsx",
     1
    ],
    [
-    "src/lib/crm-db.ts",
+    "src/hooks/useScheduledReports.ts",
     1
    ],
    [
-    "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
+    "supabase/functions/_shared/scheduled-report-data.ts",
     1
    ],
    [
-    "src/hooks/bi/useSeasonalPeakNotifications.ts",
+    "supabase/functions/process-scheduled-reports/index.ts",
     1
    ],
    [
-    "src/pages/BusinessIntelligencePage.tsx",
+    "supabase/functions/send-scheduled-reports/index.ts",
     1
    ],
    [
-    "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
+    "supabase/functions/send-scheduled-reports/report-types.test.ts",
     1
    ],
    [
-    "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx",
+    "supabase/functions/send-scheduled-reports/report-types.ts",
     1
    ],
    [
-    "src/contexts/ProductsContext.tsx",
+    "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
     1
    ],
    [
-    "tests/contexts/ProductsContext.test.tsx",
+    "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
     1
    ]
   ]

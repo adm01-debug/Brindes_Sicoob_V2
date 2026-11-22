@@ -8168,9 +8168,10 @@
    "hooks_exportados": [
     "useScheduledReports"
    ],
-   "linhas": 164,
+   "linhas": 204,
    "dominio": "hooks",
    "tabelas": [
+    "profiles",
     "scheduled_reports"
    ],
    "rpcs": [],
@@ -8186,7 +8187,7 @@
    "usado_por_arquivos": [
     "src/components/reports/ScheduledReportsManager.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useScreenDirtyState.ts",

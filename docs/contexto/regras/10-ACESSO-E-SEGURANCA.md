@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `51dc1ef941` · branch `main` · 2026-11-22 17:12 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0a70249054` · branch `main` · 2026-11-22 19:26 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -311,7 +311,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 295 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 299 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -350,6 +350,7 @@
 - `scripts/qa/simular-outbox-aprovacao.py`
 - `scripts/qa/simular-reacoes-favoritos-rls.py`
 - `scripts/qa/simular-recompra-sicoob.py`
+- `scripts/qa/simular-relatorios-agendados-cron.py`
 - `scripts/qa/simular-salvamento-orcamento-atomico.py`
 - `scripts/qa/simular-taxonomia-marketing.py`
 - `scripts/qa/simular-webhook-internal-auth.py`
@@ -386,6 +387,7 @@
 - `supabase/functions/_shared/edge-authz-manifest.ts`
 - `supabase/functions/_shared/external-db-telemetry.ts`
 - `supabase/functions/_shared/internal-service-auth.ts`
+- `supabase/functions/_shared/scheduled-report-data.ts`
 - `supabase/functions/admin-audit-hook/index.ts`
 - `supabase/functions/auth-integrity-check/index.ts`
 - `supabase/functions/bi-share-dossier/contract.ts`
@@ -461,9 +463,7 @@
 - `supabase/migrations/20260323164400_3d7928d1-f21a-4599-b4a4-0af60c245542.sql`
 - `supabase/migrations/20260406202212_20735579-941a-46d2-b872-abe769fe774a.sql`
 - `supabase/migrations/20260407014300_2724b8ff-1566-4bf2-b056-833e45cf0b85.sql`
-- `supabase/migrations/20260416183342_786cf75e-5ec6-4c53-a314-9b622e8b7027.sql`
-- `supabase/migrations/20260416183415_d7c7a7a0-725a-471b-8c3d-424230285729.sql`
-- … +145 (lista completa em `context.json`)
+- … +149 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 
@@ -551,6 +551,7 @@
 - `current_user_pa_id`
 - `decide_sicoob_order_artwork`
 - `dispatch_quote_webhook_event`
+- `dispatch_scheduled_reports`
 - `dispatch_sicoob_approval_worker`
 - `dispatch_sicoob_connections_auto_test`
 - `dispatch_sicoob_connections_health_check`
@@ -845,7 +846,7 @@ Middleware matcher (Next.js): nenhum
 | grant | authenticated, service_role | select, insert, update, delete | `personalization_simulations` |
 | grant | postgres, service_role | execute | `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `auto_revoke_orphan_full_keys`, `cleanup_webhook_logs`, `retry_failed_webhook_deliveries` |
 | grant | service_role | all | `telemetry_events`, `telemetry_logs`, `test_suites_runs`, `notification_preferences`, `search_analytics`, `search_analytics` |
-| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +61 |
+| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +62 |
 | grant | service_role | insert | `access_blocked_log` |
 | grant | service_role | select | `quote_approval_evidence_keys`, `sicoob_approval_delivery_archive` |
 | grant | service_role | select, insert, update, delete | `sicoob_approval_deliveries` |
@@ -856,7 +857,7 @@ Middleware matcher (Next.js): nenhum
 | revoke | PUBLIC | execute | `check_sicoob_access_matrix`, `public`, `can_manage`, `can_view_all_sales`, `get_user_org_ids`, `has_role`, `is_admin`, `is_dev`, `is_kit_collaborator`, `is_kit_owner`, `is_supervisor_or_above`, `can_manage`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +11 |
 | revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +60 |
 | revoke | PUBLIC, anon | execute | `is_order_owner_or_admin`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial`, `audit_security_definer_acl`, `audit_security_definer_acl`, `can_manage`, `get_user_pa_id`, `get_user_cooperative_id`, `get_user_singular_id`, `is_kit_owner`, `is_kit_collaborator`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +8 |
-| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +87 |
+| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +88 |
 | revoke | PUBLIC, anon, authenticated | execute | `validate_order_status`, `log_order_status_change`, `record_public_token_failure`, `search_products_semantic`, `check_rate_limit`, `increment_webhook_endpoint_metrics` |
 | revoke | PUBLIC, anon, authenticated, service_role | all | `guard_profile_authority_fields`, `convert_quote_to_sicoob_order_core_20261013`, `create_quote_version_atomic_core_20261013`, `apply_local_quote_approval_response_core_20261013`, `bulk_update_quote_status_atomic_core_20261013`, `approve_quote_with_pdf_atomic_core_20261013`, `request_discount_approval_atomic_core_20261013`, `respond_discount_approval_atomic_core_20261013`, `handle_row_version`, `guard_quote_governance_write`, `assert_quote_content_editable`, `guard_quote_item_content_write`, `guard_quote_personalization_content_write`, `assert_quote_transition`, `webhook_retry_claims` … +6 |
 | revoke | PUBLIC,anon,authenticated | all | `enqueue_sicoob_approval_event`, `claim_sicoob_approval_delivery`, `validate_sicoob_order_document`, `preserve_sicoob_artwork_requirement`, `sicoob_approval_worker_dispatches`, `dispatch_sicoob_approval_worker`, `monitor_sicoob_approval_worker`, `register_sicoob_clean_document`, `validate_sicoob_order_document`, `register_sicoob_clean_document` |

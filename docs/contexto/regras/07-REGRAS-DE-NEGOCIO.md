@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `51dc1ef941` · branch `main` · 2026-11-22 17:12 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0a70249054` · branch `main` · 2026-11-22 19:26 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -830,7 +830,6 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `check_seller_cart_limit` | Limite de 3 carrinhos simultâneos atingido | `supabase/migrations/20260214152115_900b7a1c-3aa4-48e7-afc1-5e44ea411a12.sql` |
 | `prevent_role_self_update` | Only admins can change roles | `supabase/migrations/20260326193116_2c55f931-6722-4778-bff4-71f5b4c39752.sql` |
 | `prevent_profile_role_change` | Only admins can change the role field on profiles | `supabase/migrations/20260326193116_2c55f931-6722-4778-bff4-71f5b4c39752.sql` |
-| `validate_scheduled_report_email` | email_to must match your registered email address | `supabase/migrations/20260404171222_ce98e80f-4714-4121-9a56-4dedf6e4349a.sql` |
 | `validate_discount_approval_status` | Invalid discount approval status: % | `supabase/migrations/20260414193435_871210cd-f0d8-40ee-ae9f-401b4887727f.sql` |
 | `validate_commission_status` | Invalid commission status: % | `supabase/migrations/20260416153503_5163f0f9-e6f0-4664-9f53-8cdb24d9150e.sql` |
 | `validate_ip_access_control` | Invalid list_type: must be allow or block | `supabase/migrations/20260416184056_e28ea309-c50d-46b1-85e5-9e283352d97d.sql` |
@@ -947,6 +946,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `register_sicoob_clean_document` | Evidência de inspeção inválida. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
 | `register_sicoob_clean_document` | Tipo detectado, finalidade e caminho final divergem. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
 | `register_sicoob_clean_document` | Os objetos de quarentena e promoção não correspondem à evidência. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
+| `validate_scheduled_report_email` | email_to must match your registered email address | `supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql` |
 
 ## E. Estados, máquinas de estado e transições
 
@@ -1255,10 +1255,10 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `alert_sent` | escreve | `supabase/functions/error-monitor/index.ts` |
 | `status` | `alinhada` | escreve | `tests/scenarios/migration-ledger.mjs` |
 | `status` | `all` | compara, escreve | `src/components/admin/connections/ConnectionsOverviewFilters.tsx`<br>`src/components/admin/security/keys/useMcpKeys.ts`<br>`src/components/dashboard/MyDiscountRequestsWidget.tsx`<br>`src/components/dashboard/MyPendingOrdersWidget.tsx`<br>`src/components/dashboard/MyRecentQuotesWidget.tsx`<br>… +11 |
-| `status` | `approved` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +24 |
+| `status` | `approved` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +23 |
 | `status` | `approved_singular` | compara, filtra | `src/components/quotes/QuoteConvertToOrder.tsx`<br>`src/pages/QuotesListPage.tsx`<br>`src/services/QuoteService.ts` |
 | `status` | `aprovado_gestor` | escreve | `src/pages/GestorApprovalsPage.tsx` |
-| `status` | `blocked` | compara, escreve | `src/pages/admin/qa/QARunDetailPage.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-delivery.ts` |
+| `status` | `blocked` | compara, escreve | `src/pages/admin/qa/QARunDetailPage.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-delivery.ts` |
 | `status` | `cancelado` | compara, escreve, filtra | `src/components/orders/OrderCard.tsx`<br>`src/hooks/bi/useClientBI.ts`<br>`src/hooks/useClientOrdersHistory.ts`<br>`src/hooks/useClientsPortfolioKpis.ts`<br>`src/pages/GestorApprovalsPage.tsx` |
 | `status` | `cancelled` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/components/common/StatusTimeline.tsx`<br>`src/components/orders/OrderStatusTimeline.tsx`<br>… +6 |
 | `status` | `clean` | compara | `supabase/functions/sicoob-document-ingest/registration-state.ts` |
@@ -1272,6 +1272,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `crit` | compara | `src/components/admin/telemetry/PlatformFailureCards.tsx` |
 | `status` | `critical` | compara | `src/components/inventory/StockDashboard.tsx`<br>`src/components/sicoob/orders/SLABadge.tsx`<br>`src/pages/sicoob/orders/OrdersKanbanPage.tsx`<br>`src/types/stock.ts` |
 | `status` | `current` | compara | `src/components/mockup/GeneratingOverlay.tsx`<br>`src/components/orders/MultiLevelTracker.tsx`<br>`src/components/sicoob/orders/LogisticsCommandCenter.tsx` |
+| `status` | `deactivated` | escreve | `supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/index.ts` |
 | `status` | `degraded` | compara | `src/components/admin/telemetry/AppHealthDashboard.tsx`<br>`src/lib/external-db/invoke.ts` |
 | `status` | `delivered` | compara, escreve | `src/components/common/StatusTimeline.tsx`<br>`src/pages/sicoob/LogisticsReportPage.tsx`<br>`src/services/sicoob/logisticsReportService.ts`<br>`supabase/functions/semantic-search/index.ts` |
 | `status` | `denied` | compara, escreve, filtra | `src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/admin/security/keys/audit/useStepUpAttempts.ts`<br>`supabase/functions/mcp-keys-issue/index.ts`<br>`supabase/functions/mcp-keys-revoke/index.ts`<br>`supabase/functions/mcp-keys-rotate/index.ts`<br>… +3 |
@@ -1348,7 +1349,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `sem-comparativo` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `sent` | compara, escreve, filtra | `src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/quotes/QuoteKanbanBoard.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useSalesHistory.ts`<br>… +8 |
 | `status` | `short` | compara, escreve | `src/components/admin/connections/MaskedSuffixBadge.tsx`<br>`src/lib/masked-suffix.ts` |
-| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/system-healthcheck/index.ts`<br>`tests/scenarios/e2e-smoke-summary.scenario.mjs` |
+| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>… +2 |
 | `status` | `slow` | compara | `supabase/functions/_shared/external-db-telemetry.ts` |
 | `status` | `stale` | compara | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/utils/price-freshness.ts` |
 | `status` | `step_up_error` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/lib/auth/invoke-full-scope.ts`<br>`src/pages/admin/DevChallengeExamplesPage.tsx` |
@@ -1358,8 +1359,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
-| `status` | `unknown` | compara, escreve | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/components/simulator/StockAlert.tsx`<br>`src/utils/price-freshness.ts`<br>`supabase/functions/system-healthcheck/index.ts` |
-| … +96 linhas — lista completa em `context.json` | | | |
+| … +97 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -1541,6 +1541,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | LogLevel | debug \| info \| warn \| error | `supabase/functions/_shared/structured-logger.ts` |
 | AUTO_TESTABLE_CONNECTION_STATUSES | "active", "degraded", "error", | `supabase/functions/connections-auto-test/index.ts` |
 | InsertResultShape | rows \| empty-array \| null \| generic-string-error \| single-object \| primitive \| unknown | `supabase/functions/crm-db-bridge/index.ts` |
+| SCHEDULED_REPORT_TYPES | "sales", "quotes", "clients", "products", "orders", | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | DocumentPurpose | invoice_pdf \| invoice_xml \| delivery_proof | `supabase/functions/sicoob-document-ingest/inspection.ts` |
 | RegistrationState | not_attempted \| confirmed \| rejected \| unknown | `supabase/functions/sicoob-document-ingest/registration-state.ts` |
 | KitLineKind | box \| item | `supabase/functions/sicoob-kit-quote/catalog.ts` |
@@ -1961,6 +1962,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `discount_percent` | type=number, min=0, max=100, step=0.1 | `src/components/quotes/QuoteTemplateForm.tsx` |
 | `discount_amount` | type=number, min=0, step=0.01 | `src/components/quotes/QuoteTemplateForm.tsx` |
 | `visual-search-input` | accept=image/*, disabled=controller.isLoading | `src/components/search/VisualSearchButton.tsx` |
+| `issuedAt` | type=date | `src/components/sicoob/orders/OrderInvoicesTab.tsx` |
 | `payment-installment` | type=number, min=1, step=1, readOnly, readonly=true | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
 | `payment-due-date` | type=date | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
 | `login-email` | type=email | `src/pages/Auth.tsx` |
@@ -3144,7 +3146,7 @@ _nenhum item encontrado_
   ```
 - **calculateNextRun(frequency: ReportFrequency)** — `src/hooks/useScheduledReports.ts`
   ```
-  const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } }
+  const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …
   ```
 - **shouldClearSecrets(error: SecretError)** — `src/hooks/useSecretsManager.ts`
   ```
@@ -4362,18 +4364,6 @@ _nenhum item encontrado_
   ```
   const bytes = new Uint8Array(32); crypto.getRandomValues(bytes); const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join(""); const plain = `mcp_${hex}`; const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(plain)); const hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join(""); return { plain, hash, prefix: plain.slice(0, 12) };
   ```
-- **calculateNextRun(frequency: string)** — `supabase/functions/process-scheduled-reports/index.ts`
-  ```
-  const next = new Date(); switch (frequency) { case "daily": next.setDate(next.getDate() + 1); break; case "weekly": next.setDate(next.getDate() + 7); break; case "monthly": next.setMonth(next.getMonth() + 1); break; default: next.setDate(next.getDate() + 7); } next.setHours(8, 0, 0, 0); // Always at 8am return next;
-  ```
-- **formatCurrency(value: number)** — `supabase/functions/process-scheduled-reports/index.ts`
-  ```
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  ```
-- **generateEmailHtml(reportName: string, data: any)** — `supabase/functions/process-scheduled-reports/index.ts`
-  ```
-  const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">${key.replace(/_/g, " ")}</td><td style="padding:8px;border-bottom:1px solid #eee">${val}</td></tr>`) .join(""); return ` <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px"> <h2 style="color:#7c3aed">📊 ${reportName}</h2> <p style="color:#666">Período: ${data.period} | Tipo: ${data.type}</p> <table style="width:100% …
-  ```
 - **validatePersonalizations(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,)** — `supabase/functions/quote-price-attestation/handler.ts`
   ```
   const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …
@@ -4390,13 +4380,9 @@ _nenhum item encontrado_
   ```
   const normalized = query.toLowerCase().trim(); const encoder = new TextEncoder(); const data = encoder.encode(normalized); let hash = 0; for (let i = 0; i < data.length; i++) { const char = data[i]; hash = ((hash << 5) - hash) + char; hash = hash & hash; } return `search:${hash.toString(16)}`;
   ```
-- **generateReportData(supabase: any, report: any)** — `supabase/functions/send-scheduled-reports/index.ts`
+- **calculateNextRun(frequency: unknown, reference: Date, anchorDay: number | null = null,)** — `supabase/functions/send-scheduled-reports/report-types.ts`
   ```
-  const { report_type, user_id } = report; let html = `<h2>${report.report_name}</h2><p>Gerado em ${ new Date().toLocaleDateString("pt-BR") }</p>`; switch (report_type) { case "quotes": { const { data, count } = await supabase .from("quotes") .select("id, quote_number, client_name, status, total, created_at", { count: "exact", }) .eq("seller_id", user_id) .order("created_at", { ascending: false }) .limit(20); html += `<p><strong>Total de orçamentos:</strong> ${count || 0}</p>`; html += "<table bor …
-  ```
-- **calculateNextRun(frequency: string)** — `supabase/functions/send-scheduled-reports/index.ts`
-  ```
-  const now = new Date(); switch (frequency) { case "daily": return new Date(now.getTime() + 24 * 60 * 60 * 1000); case "weekly": return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case "monthly": { const next = new Date(now); next.setMonth(next.getMonth() + 1); return next; } default: return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); }
+  const next = new Date(reference.getTime()); switch (frequency) { case "daily": next.setUTCDate(next.getUTCDate() + 1); break; case "monthly": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …
   ```
 - **validLine(value: unknown)** — `supabase/functions/sicoob-kit-quote/index.ts`
   ```
@@ -4870,7 +4856,7 @@ _nenhum item encontrado_
 | `TRIGGER_TO_FETCH_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
 | `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
-| … +164 linhas — lista completa em `context.json` | | |
+| … +168 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5171,12 +5157,12 @@ _nenhum item encontrado_
 | `const timeoutId = setTimeout(() => controller.abort(), 10000);` | `supabase/functions/secure-upload/index.ts` |
 | `const searchCache = new TTLCache<SearchIntent>(5 * 60 * 1000, 1000);` | `supabase/functions/semantic-search/index.ts` |
 | `constructor(ttlMs: number = 5 * 60 * 1000, maxEntries: number = 1000) {` | `supabase/functions/semantic-search/index.ts` |
-| `return new Date(now.getTime() + 24 * 60 * 60 * 1000);` | `supabase/functions/send-scheduled-reports/index.ts` |
-| `return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);` | `supabase/functions/send-scheduled-reports/index.ts` |
+| `return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `const CATALOG_QUERY_VALIDITY_MS = 5 * 60 * 1000;` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +85 linhas — lista completa em `context.json` | |
+| `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
+| … +84 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5267,6 +5253,8 @@ _nenhum item encontrado_
 | 5 | `src/services/sicoob/managerStatsService.ts` |
 | 1 | `src/services/sicoob/statsService.ts` |
 | 5 | `src/services/sicoob/statsService.ts` |
+| 1 | `supabase/functions/_shared/scheduled-report-data.ts` |
+| 2000 | `supabase/functions/_shared/scheduled-report-data.ts` |
 | 1 | `supabase/functions/admin-audit-hook/index.ts` |
 | 1 | `supabase/functions/collections-watcher/index.ts` |
 | 500 | `supabase/functions/comparison-price-watcher/index.ts` |
@@ -5288,13 +5276,13 @@ _nenhum item encontrado_
 | 2000 | `supabase/functions/market-intelligence-insights/index.ts` |
 | 0 | `supabase/functions/migration-health-check/index.ts` |
 | 500 | `supabase/functions/process-queue/index.ts` |
-| 100 | `supabase/functions/process-scheduled-reports/index.ts` |
+| 1 | `supabase/functions/process-scheduled-reports/index.ts` |
 | 1 | `supabase/functions/qa-block-monitor/index.ts` |
 | 500 | `supabase/functions/quote-followup-reminders/index.ts` |
 | 1 | `supabase/functions/rls-integration-tests/index.ts` |
 | 100 | `supabase/functions/secrets-manager/index.ts` |
 | 500 | `supabase/functions/send-digest/index.ts` |
-| 20 | `supabase/functions/send-scheduled-reports/index.ts` |
+| 1 | `supabase/functions/send-scheduled-reports/index.ts` |
 | 100 | `supabase/functions/sicoob-approval-reconciliation/index.ts` |
 | 1 | `supabase/functions/system-healthcheck/index.ts` |
 | 1 | `supabase/functions/validate-access/index.ts` |
@@ -5463,6 +5451,8 @@ _nenhum item encontrado_
 | A consulta não retornou o valor esperado | `scripts/qa/simular-politica-aprovacao-sicoob.py` |
 | A consulta não retornou valor | `scripts/qa/simular-reacoes-favoritos-rls.py` |
 | A consulta não retornou o valor esperado | `scripts/qa/simular-recompra-sicoob.py` |
+| initdb não concluiu | `scripts/qa/simular-relatorios-agendados-cron.py` |
+| postgres não ficou pronto | `scripts/qa/simular-relatorios-agendados-cron.py` |
 | A consulta não retornou valor | `scripts/qa/simular-rls-cruzada-sicoob.py` |
 | A consulta não retornou valor | `scripts/qa/simular-salvamento-orcamento-atomico.py` |
 | A consulta não retornou o valor esperado | `scripts/qa/simular-versionamento-orcamento-atomico.py` |
@@ -5602,9 +5592,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao remover técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao adicionar produto | `src/components/admin/product-groups/useProductGroups.ts` |
-| … +994 linhas — lista completa em `context.json` | |
+| … +998 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5708,7 +5696,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7026 testes em 710 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7061 testes em 713 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5767,6 +5755,7 @@ _nenhum item encontrado_
 | `tests/hooks/useKitAutoSave.test.tsx` | 24 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/lib/query-config-extended.test.ts` | 24 | CACHE_TIMES constants · VERY_STABLE is 1 hour · STABLE is 30 min · TECNICAS is 15 min … |
 | `supabase/functions/external-db-bridge/callerSelectIsHeavy.test.ts` | 23 | extractBaseColumn: nome simples · extractBaseColumn: alias PostgREST  · extractBaseColumn: operadores JSON  · extractBaseColumn: alias + JSON op combinados … |
+| `supabase/functions/send-scheduled-reports/report-types.test.ts` | 23 | todo tipo aceito pelo CHECK do banco tem gerador · próxima execução fica ancorada em 8h e avança o período · janela do período segue a frequência · relatório de orçamentos filtra pelo dono do agendamento … |
 | `tests/components/PriceFreshnessBadge.catalog-visibility.test.tsx` | 23 | PriceFreshnessBadge — visibilidade nos componentes do catálogo · ProductCard / EnhancedProductCard / ProductTableView (variant= · NÃO renderiza quando fresh (preço atualizado dentro de 50% do threshold) · NÃO renderiza quando o status é unknown (data ausente) … |
 | `tests/scripts/e2e-summaries.test.ts` | 23 | lib/playwright-report · status efetivo respeita test.fail() e flaky · runErrors lê a primeira linha de cada erro do run · normaliza o caminho relativo ao testDir com o prefixo e2e/ … |
 | `tests/scripts/rules-rls-estatico.test.ts` | 23 | rules/rls-estatico · tabela criada sem RLS aparece como rls=false · ENABLE em migration posterior liga; DISABLE desliga (último vence) · conta policies e ignora SQL comentado … |
@@ -5956,6 +5945,7 @@ _nenhum item encontrado_
 | `tests/components/admin/connections/ZoneCommandPalette.test.tsx` | 8 | useZoneCommandPalette · não captura Ctrl+K, reservado à barra global de comandos · ignora o atalho quando o foco está num <input> · ZoneCommandPalette — interação … |
 | `tests/components/novelties/NoveltyCards.test.tsx` | 8 | NoveltyGridCard — label changes (PR) · renders  · does NOT render the old  · renders the ProductSparkline for the product … |
 | `tests/components/products/ProductCardImage.private-storage.test.tsx` | 8 | imagem privada do catálogo · assina a referência durável e não gera srcSet sem autorização · mantém uma imagem pública sem pedir assinatura · não trata rota de storage de outro domínio como imagem privada … |
+| `tests/components/sicoob/OrderInvoicesTab.amount.test.ts` | 8 | parseAmountBR · lê milhar sem decimais como milhar · lê o separador decimal correto · lê milhar no formato US com centavos … |
 | `tests/hooks/useAutoSave.test.tsx` | 8 | useAutoSave · persiste apenas no namespace informado, preservando rascunhos simultâneos · expõe falha de persistência para a interface e permite nova tentativa · detecta edição concorrente em outra aba e não sobrescreve o rascunho mais recente … |
 | `tests/hooks/useClientHealthScore.reliable-data.test.ts` | 8 | score de saúde com fonte comprovada · não trata o score sentinela desconhecido como um zero real · não fabrica score, potencial ou recomendação quando a amostra é insuficiente · não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente … |
 | `tests/hooks/useClientsComparison.availability.test.tsx` | 8 | useSingleClientComparisonRow — disponibilidade por fonte · descarta afinidade em cache após falha e usa histórico confiável como fallback · isola falhas de categoria e usa a afinidade confiável como fallback do topo · propaga CRM indisponível para métricas dependentes do ramo e permite retry … |
@@ -6010,9 +6000,7 @@ _nenhum item encontrado_
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
 | `tests/hooks/useSellerDiscountLimits.test.ts` | 7 | useSellerDiscountLimits · fetchMyLimit popula myLimit com max_discount_percent · myLimit fica null quando não há registro · fetchAllLimits popula limits … |
 | `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 7 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
-| `tests/hooks/simulation/simulationPriceFetcher.test.ts` | 7 | fetchAllOptions · returns empty when no productId · happy path → SimulationOption with priceSource=rpc · marks technique as unavailable when no print area matches … |
-| `tests/integration/sicoob-security.test.ts` | 7 | Sicoob Role-based Tab Access · supervisor can access all tabs · gerente_pa cannot access payments · vendedor only accesses audit … |
-| … +410 linhas — lista completa em `context.json` | | |
+| … +413 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6499,4 +6487,4 @@ _nenhum item encontrado_
 | * Aceita apenas caminhos internos, inclusive ao restaurar a rota após login. */ | `src/lib/auth/safe-internal-path.ts` |
 | (caller deve abortar fluxo padrão de erro). | `src/lib/auth/step-up-error.ts` |
 | - "self"   → vendedor (vê apenas os próprios dados) | `src/lib/auth/visibility-scope.ts` |
-| … +292 linhas — lista completa em `context.json` | |
+| … +295 linhas — lista completa em `context.json` | |

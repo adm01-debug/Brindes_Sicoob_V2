@@ -21,9 +21,9 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (643)",
+   "tests/ (646)",
    "e2e/ (149)",
-   "outro (51)"
+   "outro (52)"
   ],
   "edge_functions": "supabase/functions",
   "migrations": "supabase/migrations",
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)",
    "docs: classificar os 683 registros de lacunas por evidencia real (#402)",
    "fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)",
    "chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)",
-   "fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)",
-   "fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)"
+   "fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 622,
+ "migrations": 624,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -199,6 +199,7 @@
   "decide_sicoob_order_artwork",
   "determine_sicoob_order_flow_status",
   "dispatch_quote_webhook_event",
+  "dispatch_scheduled_reports",
   "dispatch_sicoob_approval_worker",
   "dispatch_sicoob_connections_auto_test",
   "dispatch_sicoob_connections_health_check",
@@ -1905,6 +1906,11 @@
    "agenda": "* * * * *",
    "migration": "20260503155739_dc1cd5cb-7912-499a-847e-9c792abb6777.sql",
    "chama_edge": "process-batch-export"
+  },
+  {
+   "nome": "scheduled-reports-worker",
+   "agenda": "*/10 * * * *",
+   "migration": "20261122180000_schedule_scheduled_reports_worker.sql"
   },
   {
    "nome": "sicoob-approval-outbox-monitor",
@@ -20727,11 +20733,10 @@
    },
    "usada_no_front": 17,
    "usada_em_edges": [
+    "_shared",
     "expert-chat",
     "market-intelligence-insights",
-    "mcp-server",
-    "process-scheduled-reports",
-    "send-scheduled-reports"
+    "mcp-server"
    ],
    "triggers": [
     "audit_orders",
@@ -25683,15 +25688,17 @@
     ],
     "so_no_types": []
    },
-   "usada_no_front": 36,
+   "usada_no_front": 37,
    "usada_em_edges": [
     "crm-db-bridge",
     "e2e-auth-test",
     "expert-chat",
     "kit-public-view",
     "manage-users",
+    "process-scheduled-reports",
     "quote-sync",
     "rls-audit",
+    "send-scheduled-reports",
     "sicoob-seed",
     "sicoob-seed-qa",
     "system-healthcheck",
@@ -28305,6 +28312,7 @@
    },
    "usada_no_front": 11,
    "usada_em_edges": [
+    "_shared",
     "quote-price-attestation",
     "quote-sync",
     "sicoob-reorder",
@@ -29406,18 +29414,17 @@
    },
    "usada_no_front": 23,
    "usada_em_edges": [
+    "_shared",
     "crm-db-bridge",
     "e2e-cleanup",
     "expert-chat",
     "market-intelligence-insights",
     "mcp-server",
     "process-batch-export",
-    "process-scheduled-reports",
     "quote-followup-reminders",
     "quote-price-attestation",
     "quote-sync",
     "rls-audit",
-    "send-scheduled-reports",
     "sicoob-reorder",
     "sync-quote-bitrix"
    ],
@@ -34556,7 +34563,9 @@
     "so_no_types": []
    },
    "usada_no_front": 1,
-   "usada_em_edges": [],
+   "usada_em_edges": [
+    "_shared"
+   ],
    "triggers": [],
    "sem_rls": false,
    "nao_usada": false
@@ -35576,6 +35585,7 @@
    },
    "usada_no_front": 9,
    "usada_em_edges": [
+    "_shared",
     "monthly-health-report",
     "sicoob-reorder",
     "sicoob-seed-qa"
@@ -39223,8 +39233,10 @@
     "github-credentials-test",
     "manage-users",
     "ownership-repair",
+    "process-scheduled-reports",
     "rls-integration-tests",
     "secrets-manager",
+    "send-scheduled-reports",
     "sicoob-seed",
     "sicoob-seed-qa"
    ],

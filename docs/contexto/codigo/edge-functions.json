@@ -78,6 +78,7 @@
   "supabase/functions/_shared/request-id.ts",
   "supabase/functions/_shared/retry-backoff.test.ts",
   "supabase/functions/_shared/retry-backoff.ts",
+  "supabase/functions/_shared/scheduled-report-data.ts",
   "supabase/functions/_shared/scheduled-report-email.test.ts",
   "supabase/functions/_shared/scheduled-report-email.ts",
   "supabase/functions/_shared/step-up-otp-delivery.ts",
@@ -2421,16 +2422,16 @@
    "nome": "process-scheduled-reports",
    "entrada": "supabase/functions/process-scheduled-reports/index.ts",
    "arquivos": 2,
-   "linhas": 226,
+   "linhas": 167,
    "verify_jwt": false,
    "metodos": [
     "OPTIONS",
     "POST"
    ],
    "tabelas": [
-    "orders",
-    "quotes",
-    "scheduled_reports"
+    "profiles",
+    "scheduled_reports",
+    "user_roles"
    ],
    "rpcs": [],
    "env": [
@@ -2443,6 +2444,7 @@
    "hosts_externos": [],
    "usa_shared": [
     "internal-service-auth.ts",
+    "scheduled-report-data.ts",
     "scheduled-report-email.ts"
    ],
    "chamada_pelo_front": [],
@@ -2973,17 +2975,17 @@
   {
    "nome": "send-scheduled-reports",
    "entrada": "supabase/functions/send-scheduled-reports/index.ts",
-   "arquivos": 2,
-   "linhas": 258,
+   "arquivos": 3,
+   "linhas": 307,
    "verify_jwt": false,
    "metodos": [
     "OPTIONS",
     "POST"
    ],
    "tabelas": [
-    "orders",
-    "quotes",
-    "scheduled_reports"
+    "profiles",
+    "scheduled_reports",
+    "user_roles"
    ],
    "rpcs": [],
    "env": [
@@ -2996,13 +2998,14 @@
    "hosts_externos": [],
    "usa_shared": [
     "internal-service-auth.ts",
+    "scheduled-report-data.ts",
     "scheduled-report-email.ts"
    ],
    "chamada_pelo_front": [],
    "chamada_por_edges": [],
-   "chamada_por_sql_ou_cron": false,
+   "chamada_por_sql_ou_cron": true,
    "orfa": false,
-   "testes": 1
+   "testes": 2
   },
   {
    "nome": "send-transactional-email",

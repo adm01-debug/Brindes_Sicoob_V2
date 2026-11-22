@@ -3,12 +3,12 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2932)",
+   "TypeScript (2937)",
    "Markdown (970)",
-   "SQL (684)",
+   "SQL (686)",
    "JSON (292)",
-   "JavaScript (151)",
-   "Python (66)",
+   "JavaScript (152)",
+   "Python (67)",
    "YAML (24)",
    "CSS (7)"
   ],
@@ -347,6 +347,7 @@
     "scripts/qa/simular-logistica-canonica.py",
     "scripts/qa/simular-outbox-aprovacao.py",
     "scripts/qa/simular-reacoes-favoritos-rls.py",
+    "scripts/qa/simular-relatorios-agendados-cron.py",
     "scripts/qa/simular-verba-atomica.py",
     "scripts/qa/simular-webhook-internal-auth.py"
    ],
@@ -1940,7 +1941,7 @@
    },
    {
     "papel": "vendedor",
-    "ocorrencias": 24
+    "ocorrencias": 25
    },
    {
     "papel": "admin",

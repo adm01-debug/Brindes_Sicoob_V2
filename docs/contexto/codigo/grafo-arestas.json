@@ -12315,6 +12315,9 @@
   "supabase/functions/_shared/internal-service-auth.ts": [
    "supabase/functions/_shared/cors.ts"
   ],
+  "supabase/functions/_shared/scheduled-report-data.ts": [
+   "supabase/functions/send-scheduled-reports/report-types.ts"
+  ],
   "supabase/functions/_shared/structured-logger.ts": [
    "supabase/functions/_shared/request-id.ts"
   ],
@@ -12678,8 +12681,9 @@
   ],
   "supabase/functions/process-scheduled-reports/index.ts": [
    "supabase/functions/_shared/internal-service-auth.ts",
+   "supabase/functions/_shared/scheduled-report-data.ts",
    "supabase/functions/_shared/scheduled-report-email.ts",
-   "supabase/functions/process-scheduled-reports/report-scope.ts"
+   "supabase/functions/send-scheduled-reports/report-types.ts"
   ],
   "supabase/functions/qa-block-monitor/index.ts": [
    "supabase/functions/_shared/authorize.ts",
@@ -12763,8 +12767,10 @@
   ],
   "supabase/functions/send-scheduled-reports/index.ts": [
    "supabase/functions/_shared/internal-service-auth.ts",
+   "supabase/functions/_shared/scheduled-report-data.ts",
    "supabase/functions/_shared/scheduled-report-email.ts",
-   "supabase/functions/send-scheduled-reports/report-delivery.ts"
+   "supabase/functions/send-scheduled-reports/report-delivery.ts",
+   "supabase/functions/send-scheduled-reports/report-types.ts"
   ],
   "supabase/functions/send-transactional-email/index.ts": [
    "supabase/functions/_shared/cors.ts",
