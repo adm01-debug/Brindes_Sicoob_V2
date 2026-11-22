@@ -178,3 +178,13 @@ VALUES ('00000000-0000-4000-8000-000000000101',
         '00000000-0000-4000-8000-000000000001',
         '00000000-0000-4000-8000-000000000010',
         '00000000-0000-4000-8000-000000000020', 'draft', 100);
+
+-- Pedido ja consumido ANTES do livro existir: o valor dele esta somado em
+-- `pa_budgets.verba_consumida` (150 = 60 deste pedido + 90 sem pedido) e nao
+-- existe nenhuma linha em `pa_budget_entries`. O backfill precisa atribuir os
+-- 60 ao pedido, senao a proxima transicao debita de novo.
+INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)
+VALUES ('00000000-0000-4000-8000-000000000102',
+        '00000000-0000-4000-8000-000000000001',
+        '00000000-0000-4000-8000-000000000010',
+        '00000000-0000-4000-8000-000000000020', 'delivered', 60);

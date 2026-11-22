@@ -698,21 +698,31 @@ AS $$
 DECLARE
   v_status TEXT;
   v_total NUMERIC(14,2);
+  v_centro UUID;
+  v_pa_id UUID;
+  v_created TIMESTAMPTZ;
   v_duplicados INT;
   v_centro_alheio UUID;
+  v_estado TEXT;
 BEGIN
+  -- "nao existe" e "sem permissao" respondem igual para nao virar oraculo de
+  -- existencia de pedido privado a partir do identificador. A prova de escopo
+  -- vem ANTES do FOR UPDATE: bloquear a linha privada de outro escopo revela
+  -- que ela existe pelo tempo de espera do lock.
+  IF NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+    RAISE EXCEPTION 'Pedido % nao encontrado ou sem permissao para ratear.', p_order_id;
+  END IF;
+
   -- FOR UPDATE serializa salvamentos concorrentes do mesmo pedido. Sem o
   -- bloqueio, dois salvamentos leem o mesmo conjunto, cada DELETE so alcanca
   -- as linhas visiveis no inicio do seu comando e as duas insercoes passam
   -- pela unicidade quando os centros diferem: o pedido fica rateado em 200%.
-  SELECT COALESCE(total_amount, 0), status
-    INTO v_total, v_status
+  SELECT COALESCE(total_amount, 0), status, cost_center_id, pa_id, created_at
+    INTO v_total, v_status, v_centro, v_pa_id, v_created
     FROM public.sicoob_orders WHERE id = p_order_id
    FOR UPDATE;
 
-  -- "nao existe" e "sem permissao" respondem igual para nao virar oraculo de
-  -- existencia de pedido privado a partir do identificador.
-  IF NOT FOUND OR NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+  IF NOT FOUND THEN
     RAISE EXCEPTION 'Pedido % nao encontrado ou sem permissao para ratear.', p_order_id;
   END IF;
 
@@ -763,6 +773,21 @@ BEGIN
   END IF;
 
   PERFORM public.pa_budget_validate_allocations(p_order_id, v_total, v_status);
+
+  -- Pedido já dentro do ciclo: o rateio vive no livro de verba, não só nesta
+  -- tabela. Sem reemitir a posição, salvar rateio novo deixaria o livro
+  -- debitando os centros antigos. Liberar e reaplicar o mesmo estado gera o
+  -- estorno por centro e a nova posição pelo rateio atual, sem mexer no saldo
+  -- total do pedido.
+  v_estado := public.pa_budget_estado_do_status(v_status);
+  IF v_estado <> 'liberado' THEN
+    PERFORM public.pa_budget_apply_state(
+      p_order_id, v_total, v_centro, 'liberado',
+      'Rateio do pedido atualizado', v_pa_id, v_created);
+    PERFORM public.pa_budget_apply_state(
+      p_order_id, v_total, v_centro, v_estado,
+      'Rateio do pedido atualizado', v_pa_id, v_created);
+  END IF;
 
   RETURN QUERY
     SELECT * FROM public.pa_budget_allocations
@@ -970,17 +995,65 @@ GRANT EXECUTE ON FUNCTION public.pa_budget_id_for_order(UUID)                 TO
 -- ============================================================================
 -- O consumo histórico vivia só no agregado `pa_budgets.verba_consumida`. Sem
 -- backfill o primeiro recálculo zeraria o histórico (o livro nasce vazio).
+--
+-- O backfill é POR PEDIDO: um lançamento único sem `order_id` faria todo pedido
+-- legado ainda em status de consumo (ex.: `delivered` → `completed`) debitar a
+-- verba outra vez, porque a posição dele no livro apareceria zerada. Atribuindo
+-- por pedido, a reconciliação encontra a posição atual e a transição é
+-- idempotente. O que sobra do agregado (pedidos apagados, ajustes manuais) vira
+-- um lançamento sem pedido, que nunca é reaberto.
+WITH snapshot AS MATERIALIZED (
+  -- O recálculo de agregados dispara a cada INSERT no livro; sem o snapshot o
+  -- segundo INSERT leria um `verba_consumida` já zerado pelo primeiro e o
+  -- residual histórica desapareceria.
+  SELECT b.id AS pa_budget_id, b.pa_id, b.ano, b.mes, b.cost_center_id,
+         b.verba_consumida
+    FROM public.pa_budgets b
+   WHERE b.verba_consumida > 0
+),
+legado AS (
+  SELECT o.id AS order_id, o.total_amount,
+         s.pa_budget_id, s.pa_id, s.ano, s.mes, s.cost_center_id,
+         s.verba_consumida,
+         sum(o.total_amount) OVER (
+           PARTITION BY s.pa_budget_id ORDER BY o.created_at, o.id
+         ) AS acumulado
+    FROM public.sicoob_orders o
+    JOIN snapshot s
+      ON s.pa_id = o.pa_id
+     AND s.ano = EXTRACT(YEAR FROM o.created_at)::INT
+     AND s.mes = EXTRACT(MONTH FROM o.created_at)::INT
+   WHERE COALESCE(o.total_amount, 0) > 0
+     AND o.status IN ('delivered', 'completed')
+     AND NOT EXISTS (
+       SELECT 1 FROM public.pa_budget_entries e WHERE e.order_id = o.id
+     )
+),
+atribuivel AS (
+  SELECT * FROM legado
+   WHERE acumulado - total_amount < verba_consumida
+)
 INSERT INTO public.pa_budget_entries
   (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
    tipo, estado, valor, order_id, motivo, actor_id)
-SELECT b.id, b.pa_id, b.ano, b.mes, b.cost_center_id,
-       'ajuste', 'consumido', b.verba_consumida, NULL,
-       'Saldo de consumo legado anterior ao livro de verba', NULL
-  FROM public.pa_budgets b
- WHERE b.verba_consumida > 0
-   AND NOT EXISTS (
-     SELECT 1 FROM public.pa_budget_entries e WHERE e.pa_budget_id = b.id
-   );
+SELECT a.pa_budget_id, a.pa_id, a.ano, a.mes, a.cost_center_id,
+       'ajuste', 'consumido', a.total_amount, a.order_id,
+       'Consumo legado do pedido assumido pelo livro', NULL::uuid
+  FROM atribuivel a
+UNION ALL
+SELECT s.pa_budget_id, s.pa_id, s.ano, s.mes, s.cost_center_id,
+       'ajuste', 'consumido',
+       s.verba_consumida - COALESCE((
+         SELECT sum(a.total_amount) FROM atribuivel a
+          WHERE a.pa_budget_id = s.pa_budget_id
+       ), 0),
+       NULL::uuid,
+       'Saldo de consumo legado sem pedido atribuível', NULL::uuid
+  FROM snapshot s
+ WHERE s.verba_consumida - COALESCE((
+         SELECT sum(a.total_amount) FROM atribuivel a
+          WHERE a.pa_budget_id = s.pa_budget_id
+       ), 0) > 0;
 
 -- Converte status do pedido no estado da verba. `NULL` = fora do ciclo.
 CREATE OR REPLACE FUNCTION public.pa_budget_estado_do_status(p_status TEXT)
@@ -1185,6 +1258,7 @@ AS $$
 DECLARE
   v_soma NUMERIC(14,2);
   v_perc NUMERIC(5,2);
+  v_tolerancia NUMERIC(14,2);
 BEGIN
   SELECT COALESCE(sum(valor), 0), COALESCE(sum(percentual), 0)
     INTO v_soma, v_perc
@@ -1204,12 +1278,17 @@ BEGIN
     RETURN;
   END IF;
 
-  IF abs(v_soma - COALESCE(p_total, 0)) > 0.01 THEN
+  -- Tolerancia zero no caminho estrito: R$ 0,01 de sobra deixava a verba
+  -- consumida divergir do pedido centavo a centavo, e o erro so aparecia
+  -- meses depois na conciliacao.
+  v_tolerancia := CASE WHEN p_estrito THEN 0 ELSE 0.01 END;
+
+  IF abs(v_soma - COALESCE(p_total, 0)) > v_tolerancia THEN
     RAISE EXCEPTION 'Rateio do pedido % soma %, mas o pedido vale %.',
       p_order_id, v_soma, p_total;
   END IF;
 
-  IF abs(v_perc - 100) > 0.01 THEN
+  IF abs(v_perc - 100) > v_tolerancia THEN
     RAISE EXCEPTION 'Rateio do pedido % esta em % por cento; precisa fechar em 100.',
       p_order_id, v_perc;
   END IF;

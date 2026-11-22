@@ -30,7 +30,22 @@ interface Props {
   orderId: string;
   orderTotal: number;
   orderStatus?: string | null;
+  cooperativeId?: string | null;
 }
+
+// Status que ja comprometem verba: o rateio nao pode ficar defasado neles,
+// senao o livro aponta para um centro e o pedido consome em outro.
+const STATUS_EM_VERBA = [
+  'waiting_approval',
+  'escalated_to_board',
+  'confirmed',
+  'logistic',
+  'in_production',
+  'in_separation',
+  'in_transit',
+  'delivered',
+  'completed',
+];
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Erro desconhecido';
@@ -149,13 +164,18 @@ function AllocationFooter({
 }
 
 // eslint-disable-next-line max-lines-per-function -- componente preexistente de 93 linhas; esta PR acrescenta validacao de linha
-export function OrderCostCenterAllocation({ orderId, orderTotal, orderStatus }: Props) {
+export function OrderCostCenterAllocation({
+  orderId,
+  orderTotal,
+  orderStatus,
+  cooperativeId,
+}: Props) {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<Row[]>([]);
 
   const { data: costCenters } = useQuery({
-    queryKey: ['cost_centers'],
-    queryFn: () => costCenterService.list(),
+    queryKey: ['cost_centers', cooperativeId ?? 'todas'],
+    queryFn: () => costCenterService.list(cooperativeId),
   });
 
   const { data: allocations, isLoading } = useQuery({
@@ -170,12 +190,7 @@ export function OrderCostCenterAllocation({ orderId, orderTotal, orderStatus }: 
   const totalAlocado = totalOf(rows);
   const fecha100 = Math.abs(totalAlocado - orderTotal) <= 0.01;
   const centrosAtivos = (costCenters ?? []).filter((cc) => cc.ativo);
-  const pedidoConfirmado = Boolean(
-    orderStatus &&
-    ['waiting_approval', 'escalated_to_board', 'confirmed', 'delivered', 'completed'].includes(
-      orderStatus,
-    ),
-  );
+  const pedidoConfirmado = Boolean(orderStatus && STATUS_EM_VERBA.includes(orderStatus));
 
   const saveMutation = useMutation({
     mutationFn: async () => {
