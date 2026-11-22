@@ -5,7 +5,7 @@
 import { type MouseEvent, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Building2, Search, Loader2, Star, Clock, Globe } from "lucide-react";
+import { AlertCircle, Building2, Search, Loader2, Star, Clock, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -54,7 +54,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     return () => clearTimeout(t);
   }, [open]);
 
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
+  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
     queryKey: ["cart-sicoob-company-options"],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
@@ -190,7 +190,15 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               {isLoading && <Loader2 className="absolute right-4.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
             </div>
             <ScrollArea className="h-[290px] pr-2">
-              {filteredCompanies.length > 0 ? (
+              {directoryError ? (
+                <div role="alert" className="flex flex-col items-center gap-2 px-4 py-6 text-center">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <p className="text-xs text-muted-foreground">
+                    {"Não foi possível carregar o diretório. Seu perfil pode não ter acesso ou o serviço pode estar indisponível."}
+                  </p>
+                  <Button variant="ghost" size="sm" onClick={() => void refetch()}>Tentar novamente</Button>
+                </div>
+              ) : filteredCompanies.length > 0 ? (
                 <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
               ) : !isLoading ? (
                 <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade encontrada.</p>

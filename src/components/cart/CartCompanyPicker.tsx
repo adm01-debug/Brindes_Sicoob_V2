@@ -5,7 +5,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Building2, Search, Loader2 } from "lucide-react";
+import { AlertCircle, Building2, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +29,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, []);
 
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
+  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
     queryKey: ["cart-sicoob-company-options"],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
@@ -89,7 +89,15 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
       <ScrollArea className="h-[200px]">
         <div className="space-y-0.5">
-          {filteredCompanies.map((company) => (
+          {directoryError ? (
+            <div role="alert" className="flex flex-col items-center gap-2 px-3 py-5 text-center">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <p className="text-xs text-muted-foreground">
+                {"Não foi possível carregar o diretório. Seu perfil pode não ter acesso ou o serviço pode estar indisponível."}
+              </p>
+              <Button variant="ghost" size="sm" onClick={() => void refetch()}>Tentar novamente</Button>
+            </div>
+          ) : filteredCompanies.map((company) => (
             <button
               key={company.id}
               type="button"
@@ -122,7 +130,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
               </div>
             </button>
           ))}
-          {filteredCompanies.length === 0 && !isLoading && (
+          {filteredCompanies.length === 0 && !isLoading && !directoryError && (
             <p className="text-xs text-muted-foreground text-center py-4">
               Nenhuma cooperativa ou unidade encontrada
             </p>
