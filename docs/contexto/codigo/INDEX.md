@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `88dc17b03725504c81c0ef9dd36bdc6dcce92644` (2026-11-21T22:40:18-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `51dc1ef94128988d28e25175c97d9c57d6a29134` (2026-11-22T14:01:35-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -471,7 +471,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36570 nós · 60804 arestas · 2760 comunidades · grafo do commit `88dc17b0`
+- 36570 nós · 60804 arestas · 2760 comunidades · grafo do commit `51dc1ef9`
 - comunidades maiores: ref_components (695), ref_integrations (500), react (381), ref_lib (312), lucide-react (256), react-router-dom (201), framer-motion (199), ref_stores (178), date-fns (168), ai-usage.ts (162), getCorsHeaders (155), ref_node_fs (145)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -480,9 +480,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - package.json (22)
 - scripts/db/apply-sicoob-migrations.mjs (22)
 - PENDENCIAS.md (21)
-- docs/plano-melhorias-50-etapas.md (21)
 - RELATORIO_CI.md (20)
-- docs/correcoes-validacao-2026-09-14.md (20)
+- docs/plano-melhorias-50-etapas.md (20)
+- docs/correcoes-validacao-2026-09-14.md (19)
 - .github/workflows/sicoob-ci.yml (18)
 - package-lock.json (18)
 - .github/workflows/ci.yml (17)
@@ -695,6 +695,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-22 `51dc1ef` docs: classificar os 683 registros de lacunas por evidencia real (#402)
 - 2026-11-21 `88dc17b` fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)
 - 2026-11-21 `b591559` chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)
 - 2026-11-21 `bb6242f` fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)
@@ -709,7 +710,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-19 `e877d0c` fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)
 - 2026-11-19 `67f5a8a` chore: padroniza template de PR (recupera trabalho alheio) (#386)
 - 2026-11-19 `449faf1` feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)
-- 2026-11-19 `0f4d547` feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

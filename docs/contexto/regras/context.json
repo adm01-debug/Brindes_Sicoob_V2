@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "88dc17b03725504c81c0ef9dd36bdc6dcce92644",
+  "sha": "51dc1ef94128988d28e25175c97d9c57d6a29134",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-22 01:41 UTC",
+  "generated_at": "2026-11-22 17:12 UTC",
   "files_total": 5245,
   "code_files": 3812,
   "code_lines": 557777
@@ -253772,10 +253772,20 @@
   }
  },
  "git": {
-  "sha": "88dc17b03725504c81c0ef9dd36bdc6dcce92644",
+  "sha": "51dc1ef94128988d28e25175c97d9c57d6a29134",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "51dc1ef",
+    "date": "2026-11-22",
+    "author": "adm01-debug",
+    "subject": "docs: classificar os 683 registros de lacunas por evidencia real (#402)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
+    ]
+   },
    {
     "sha": "88dc17b",
     "date": "2026-11-21",
@@ -254783,15 +254793,6 @@
     "files": [
      "tests/edge-functions/catalogo-rpc-get.test.ts"
     ]
-   },
-   {
-    "sha": "ce9014b",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(e2e): recupera a catraca de configuração ausente do destino E2E (#369)",
-    "files": [
-     "tests/scripts/e2e-target.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -254826,6 +254827,14 @@
    [
     "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
     2
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    1
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    1
    ],
    [
     "src/components/cart/CartCompanyPicker.tsx",
@@ -254865,14 +254874,6 @@
    ],
    [
     "tests/contexts/ProductsContext.test.tsx",
-    1
-   ],
-   [
-    "src/pages/CollectionDetailPage.tsx",
-    1
-   ],
-   [
-    "src/pages/collections/useCollectionsPageState.ts",
     1
    ]
   ]
