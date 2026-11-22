@@ -71,3 +71,32 @@ test('os dois workers de relatório validam o segredo interno antes do service_r
     assert.ok(secretGuard >= 0 && secretGuard < serviceClient, `${name}: segredo antes do service_role`);
   }
 });
+
+// Um agendamento de usuário com papel revogado ficaria vencido encabeçando a
+// fila em toda execução: o lote é ordenado por `next_run_at` e limitado, então
+// ele bloqueava os relatórios seguintes. Desativar tira ele da fila de vez.
+for (const worker of [
+  'supabase/functions/send-scheduled-reports/index.ts',
+  'supabase/functions/process-scheduled-reports/index.ts',
+]) {
+  test(`${worker} desativa agendamento de usuário sem papel`, () => {
+    const source = readFileSync(worker, 'utf8');
+    assert.match(source, /from\("user_roles"\)/, 'precisa checar o papel do dono');
+    assert.match(
+      source,
+      /is_active: false/,
+      'sem desativar, o relatório vencido volta a ocupar vaga do lote',
+    );
+    assert.match(source, /acesso_revogado/);
+  });
+}
+
+test('a UI de anexo coleta emissão e valor da nota', () => {
+  const source = readFileSync('src/components/sicoob/orders/OrderInvoicesTab.tsx', 'utf8');
+  // Sem esses dois campos a nota fica fora de qualquer período do relatório de
+  // vendas: o filtro é por `issued_at` e a soma por `amount`.
+  assert.match(source, /issued_at: issuedAt/);
+  assert.match(source, /amount: parsedAmount/);
+  assert.match(source, /id="issuedAt"/);
+  assert.match(source, /id="invoiceAmount"/);
+});

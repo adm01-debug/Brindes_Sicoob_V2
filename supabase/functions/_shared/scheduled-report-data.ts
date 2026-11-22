@@ -351,7 +351,7 @@ async function salesSection(
   since: string,
   until: string,
 ): Promise<string> {
-  const [invoicesRes, approvalsRes] = await Promise.all([
+  const [invoicesRes, approvalsRes, publicApprovalsRes] = await Promise.all([
     // Faturamento: nota fiscal emitida na janela. `pdf` e `xml` da mesma nota
     // são documentos distintos do mesmo valor — contar os dois dobraria o
     // faturamento, daí a deduplicação por (order_id, invoice_number). O filtro
@@ -366,15 +366,26 @@ async function salesSection(
     // Aprovações: pela data do evento, não pela criação da proposta. Proposta
     // criada antes da janela e aprovada dentro dela é aprovação do período.
     supabase.from("quotes")
-      .select("quote_number, client_name, client_company, total, approved_at")
+      .select("id, quote_number, client_name, client_company, total, approved_at")
       .eq("seller_id", sellerId)
       .gte("approved_at", since)
       .lt("approved_at", until)
       .order("approved_at", { ascending: false })
       .limit(SCAN_LIMIT),
+    // O link público de aprovação grava `client_response_at`, não `approved_at`.
+    // Consultar só `approved_at` deixava essas propostas fora da contagem.
+    supabase.from("quotes")
+      .select("id, quote_number, client_name, client_company, total, client_response_at")
+      .eq("seller_id", sellerId)
+      .gte("client_response_at", since)
+      .lt("client_response_at", until)
+      .in("status", APPROVED_QUOTE_STATUSES)
+      .order("client_response_at", { ascending: false })
+      .limit(SCAN_LIMIT),
   ]);
   if (invoicesRes.error) throw invoicesRes.error;
   if (approvalsRes.error) throw approvalsRes.error;
+  if (publicApprovalsRes.error) throw publicApprovalsRes.error;
 
   const invoices = new Map<string, { number: string; amount: number; issuedAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
@@ -395,12 +406,24 @@ async function salesSection(
     escapeHtml(money(inv.amount)),
   ]);
 
-  const approvals = approvalsRes.data ?? [];
-  const approvedTotal = approvals.reduce((sum: number, q: any) => sum + Number(q.total ?? 0), 0);
-  const approvalBodies = approvals.map((q: any) => [
+  // A mesma proposta pode ter `approved_at` do painel e `client_response_at` do
+  // link público; contar as duas dobraria o valor aprovado.
+  const approvals = new Map<string, { quote: any; at: string }>();
+  for (const q of approvalsRes.data ?? []) {
+    approvals.set(String(q.id), { quote: q, at: q.approved_at });
+  }
+  for (const q of publicApprovalsRes.data ?? []) {
+    const key = String(q.id);
+    if (approvals.has(key)) continue;
+    approvals.set(key, { quote: q, at: q.client_response_at });
+  }
+  const approvalRows = [...approvals.values()]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  const approvedTotal = approvalRows.reduce((sum, row) => sum + Number(row.quote.total ?? 0), 0);
+  const approvalBodies = approvalRows.map(({ quote: q, at }) => [
     escapeHtml(q.quote_number),
     escapeHtml(q.client_company || q.client_name),
-    escapeHtml(new Date(q.approved_at).toLocaleDateString("pt-BR")),
+    escapeHtml(at ? new Date(at).toLocaleDateString("pt-BR") : "—"),
     escapeHtml(money(q.total)),
   ]);
 
@@ -412,7 +435,7 @@ async function salesSection(
       ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${invoiceBodies.length}.</p>`
       : "")
     + "<h3>Propostas aprovadas no período</h3>"
-    + `<p><strong>Aprovadas:</strong> ${approvals.length} — `
+    + `<p><strong>Aprovadas:</strong> ${approvalRows.length} — `
     + `<strong>valor:</strong> ${escapeHtml(money(approvedTotal))}</p>`
     + table(["Nº", "Cliente", "Data da aprovação", "Total"], approvalBodies.slice(0, ROW_LIMIT))
     + (approvalBodies.length > ROW_LIMIT

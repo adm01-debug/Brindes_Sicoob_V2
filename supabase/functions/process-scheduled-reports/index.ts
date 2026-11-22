@@ -78,6 +78,24 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        // Agendamento de usuário revogado ficaria vencido encabeçando o lote
+        // para sempre. Desativar tira ele da fila sem travar os demais.
+        const { data: roles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", report.user_id)
+          .limit(1);
+        if (rolesError) throw rolesError;
+        if (!Array.isArray(roles) || roles.length === 0) {
+          const { error: deactivateError } = await supabase
+            .from("scheduled_reports")
+            .update({ is_active: false, updated_at: now.toISOString() })
+            .eq("id", report.id);
+          if (deactivateError) throw deactivateError;
+          results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
+          continue;
+        }
+
         // A janela fecha onde o ciclo anterior fechou: uma janela móvel deixava
         // um dia descoberto nos meses de 31 dias.
         const previousRun = report.last_sent_at ? new Date(report.last_sent_at) : null;

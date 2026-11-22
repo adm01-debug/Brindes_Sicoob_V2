@@ -44,6 +44,8 @@ function fakeSupabase(responses: Record<string, { data?: unknown[]; error?: unkn
           return builder;
         },
         then(resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) {
+          // Duas consultas à mesma tabela (aprovado no painel x no link
+          // público) devolvem o mesmo fixture; o teste distingue pelo filtro.
           const response: any = responses[table]
             ?? (table === "user_roles" ? { data: [{ role: "vendedor" }] } : { data: [] });
           // O fake precisa honrar `.in()`: sem isso o filtro de status aprovado
@@ -51,9 +53,26 @@ function fakeSupabase(responses: Record<string, { data?: unknown[]; error?: unkn
           let data = response?.data;
           if (Array.isArray(data)) {
             for (const [column, value] of call.filters) {
-              if (!column.startsWith("in:") || !Array.isArray(value)) continue;
-              const field = column.slice(3);
-              data = data.filter((row: any) => value.includes(row?.[field]));
+              if (column.startsWith("in:")) {
+                if (!Array.isArray(value)) continue;
+                const field = column.slice(3);
+                data = data.filter((row: any) => value.includes(row?.[field]));
+                continue;
+              }
+              if (column.startsWith("gte:")) {
+                const field = column.slice(4);
+                data = data.filter((row: any) =>
+                  row?.[field] != null && String(row[field]) >= String(value)
+                );
+                continue;
+              }
+              if (column.startsWith("lt:")) {
+                const field = column.slice(3);
+                data = data.filter((row: any) =>
+                  row?.[field] != null && String(row[field]) < String(value)
+                );
+                continue;
+              }
             }
           }
           return Promise.resolve({ ...response, data }).then(resolve, reject);
@@ -291,13 +310,13 @@ Deno.test("pedidos consolidam as duas origens sem perder sicoob_orders", async (
 Deno.test("clientes não duplicam empresa e contato do mesmo cliente", async () => {
   const { client } = fakeSupabase({
     quotes: {
-      data: [{ client_name: "Ana", client_company: "Alfa", total: 10 }],
+      data: [{ client_name: "Ana", client_company: "Alfa", total: 10, created_at: "2026-11-20T10:00:00.000Z" }],
     },
     orders: {
-      data: [{ client_name: "Ana", client_company: "Alfa", total: 20 }],
+      data: [{ client_name: "Ana", client_company: "Alfa", total: 20, created_at: "2026-11-20T10:00:00.000Z" }],
     },
     sicoob_orders: {
-      data: [{ total_amount: 30, source_quote_snapshot: { client_name: "Ana", client_company: "Alfa" } }],
+      data: [{ total_amount: 30, created_at: "2026-11-20T10:00:00.000Z", source_quote_snapshot: { client_name: "Ana", client_company: "Alfa" } }],
     },
   });
 
@@ -309,7 +328,7 @@ Deno.test("clientes não duplicam empresa e contato do mesmo cliente", async () 
 
 Deno.test("produtos separam variantes com SKUs diferentes", async () => {
   const { client } = fakeSupabase({
-    quotes: { data: [{ id: "q1" }] },
+    quotes: { data: [{ id: "q1", created_at: "2026-11-20T10:00:00.000Z" }] },
     quote_items: {
       data: [
         { quote_id: "q1", product_name: "Caneca", product_sku: "CAN-A", quantity: 2, subtotal: 20 },
@@ -417,4 +436,66 @@ Deno.test("mensal mantém o dia-âncora depois de passar por fevereiro", () => {
   assertEquals(getAnchorDay("2026-01-31T08:00:00.000Z"), 31);
   assertEquals(getAnchorDay(null, "2026-01-15T08:00:00.000Z"), 15);
   assertEquals(getAnchorDay("lixo"), null);
+});
+
+Deno.test("vendas contam aprovação feita pelo link público", async () => {
+  const { client, calls } = fakeSupabase({
+    sicoob_order_invoices: { data: [] },
+    quotes: {
+      data: [
+        {
+          id: "q-painel",
+          quote_number: "ORC-PAINEL",
+          client_name: "ACME",
+          client_company: null,
+          total: 100,
+          approved_at: "2026-11-20T10:00:00.000Z",
+          client_response_at: null,
+        },
+        {
+          // Aprovada pelo cliente no link público: só `client_response_at`.
+          id: "q-publico",
+          quote_number: "ORC-PUBLICO",
+          client_name: "BETA",
+          client_company: null,
+          total: 200,
+          approved_at: null,
+          client_response_at: "2026-11-19T10:00:00.000Z",
+          status: "approved",
+        },
+      ],
+    },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  const publicCall = calls.filter((c) => c.table === "quotes")
+    .find((c) => c.filters.some(([col]) => col === "gte:client_response_at"));
+  assertEquals(Boolean(publicCall), true, "não consultou client_response_at");
+  assertEquals(html.includes("ORC-PUBLICO"), true);
+  assertEquals(html.includes("Aprovadas:</strong> 2"), true);
+  assertEquals(html.includes("300,00"), true);
+});
+
+Deno.test("proposta aprovada no painel e no link público conta uma vez", async () => {
+  const mesma = {
+    id: "q-1",
+    quote_number: "ORC-DUP",
+    client_name: "ACME",
+    client_company: null,
+    total: 500,
+    approved_at: "2026-11-20T09:00:00.000Z",
+    client_response_at: "2026-11-20T11:00:00.000Z",
+    status: "approved",
+  };
+  const { client } = fakeSupabase({
+    sicoob_order_invoices: { data: [] },
+    quotes: { data: [mesma] },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  assertEquals(html.includes("Aprovadas:</strong> 1"), true);
+  assertEquals(html.includes("500,00"), true);
+  assertEquals(html.includes("1.000,00"), false);
 });

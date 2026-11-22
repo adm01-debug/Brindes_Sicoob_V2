@@ -73,6 +73,26 @@ Deno.serve(async (req: Request) => {
           continue;
         }
 
+        // A checagem fica aqui, e não só em `generateScheduledReportHtml`: um
+        // agendamento de usuário revogado continuaria vencido e ocuparia uma
+        // vaga do lote em toda execução, travando os posteriores. Desativar o
+        // agendamento tira ele da fila de vez.
+        const { data: roles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", report.user_id)
+          .limit(1);
+        if (rolesError) throw rolesError;
+        if (!Array.isArray(roles) || roles.length === 0) {
+          const { error: deactivateError } = await supabase
+            .from("scheduled_reports")
+            .update({ is_active: false, updated_at: nowIso })
+            .eq("id", report.id);
+          if (deactivateError) throw deactivateError;
+          results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
+          continue;
+        }
+
         const previousRun = report.last_sent_at ? new Date(report.last_sent_at) : null;
         const emailProvider = resendKey
           ? async (html: string) => {
