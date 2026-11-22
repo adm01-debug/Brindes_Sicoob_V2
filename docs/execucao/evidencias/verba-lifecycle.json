@@ -1,0 +1,54 @@
+{
+  "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+  "producao_verificada": false,
+  "backfill": {
+    "agregado": "150.00",
+    "livro": "1|150.00"
+  },
+  "ciclo": {
+    "apos_reservar": {
+      "planejado": "1000.00",
+      "reservado": "100.00",
+      "comprometido": "0.00",
+      "consumido": "150.00"
+    },
+    "comprometido": {
+      "planejado": "1000.00",
+      "reservado": "0.00",
+      "comprometido": "100.00",
+      "consumido": "150.00"
+    },
+    "consumido": {
+      "planejado": "1000.00",
+      "reservado": "0.00",
+      "comprometido": "0.00",
+      "consumido": "250.00"
+    }
+  },
+  "pedido_consumido": {
+    "alterar_valor": "ERROR:  Pedido com verba consumida não permite alterar PA, valor ou período.",
+    "alterar_pa": "ERROR:  Pedido com verba consumida não permite alterar PA, valor ou período."
+  },
+  "livro_imutavel": "ERROR:  O livro de verba é imutável; registre um evento de estorno ou ajuste.",
+  "saldo_insuficiente": "ERROR:  Saldo insuficiente na competência 11/2026: disponível 750.00, solicitado 900.00.",
+  "competencia_fechada": {
+    "motivo": "ERROR:  Competência 11/2026 fechada; não é possível movimentar verba.",
+    "apos_reabrir": "reservado"
+  },
+  "isolamento": {
+    "verba_de_outra_cooperativa": "ERROR:  Sem permissao para consultar a verba do pedido 00000000-0000-4000-8000-000000000203.",
+    "conciliar_pa_alheio": "ERROR:  Sem permissao para conciliar a verba do PA 00000000-0000-4000-8000-000000000002.",
+    "centro_de_custo_alheio": null
+  },
+  "rateio": {
+    "total_antigo": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000204 soma 200.00, mas o pedido vale 300.00.",
+    "reservado": "300.00"
+  },
+  "reconciliacao": "agregado igual ao livro",
+  "rls": {
+    "centros_visiveis_gestor_a": "CC-01",
+    "centros_visiveis_gestor_b": "CC-02"
+  },
+  "resultado": "aprovado"
+}

@@ -30,6 +30,58 @@ CREATE TABLE IF NOT EXISTS public.cost_centers (
 CREATE INDEX IF NOT EXISTS idx_cost_centers_coop ON public.cost_centers(cooperativa_id) WHERE ativo;
 
 -- ============================================================================
+-- 1b. Escopo institucional das tabelas novas
+-- ============================================================================
+-- is_gestor_compras() sozinho apenas prova o papel; não prova vínculo com a
+-- cooperativa/PA. Os helpers abaixo exigem vínculo real (perfil ativo) ou
+-- privilégio administrativo.
+
+CREATE OR REPLACE FUNCTION public.user_can_access_cooperativa(p_cooperativa_id UUID)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT p_cooperativa_id IS NOT NULL AND (
+    public.is_admin((SELECT auth.uid()))
+    OR p_cooperativa_id = public.current_user_cooperativa_id()
+    OR EXISTS (
+      SELECT 1
+        FROM public.postos_atendimento AS service_point
+       WHERE service_point.cooperativa_id = p_cooperativa_id
+         AND service_point.is_active IS TRUE
+         AND service_point.id = public.current_user_pa_id()
+    )
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.user_can_access_pa(p_pa_id UUID)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT p_pa_id IS NOT NULL AND (
+    public.is_admin((SELECT auth.uid()))
+    OR p_pa_id = public.current_user_pa_id()
+    OR EXISTS (
+      SELECT 1
+        FROM public.postos_atendimento AS service_point
+       WHERE service_point.id = p_pa_id
+         AND service_point.is_active IS TRUE
+         AND service_point.cooperativa_id = public.current_user_cooperativa_id()
+    )
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.user_can_access_cooperativa(UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.user_can_access_pa(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.user_can_access_cooperativa(UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.user_can_access_pa(UUID) TO authenticated, service_role;
+
+-- ============================================================================
 -- 2. Quatro estados da verba
 -- ============================================================================
 -- verba_planejada  — o que foi aprovado para a competência (verba_total legado)
@@ -328,6 +380,12 @@ BEGIN
     RETURN NULL;
   END IF;
 
+  -- Chamadas de usuário só resolvem a verba de pedido que ele pode ler.
+  IF (SELECT auth.uid()) IS NOT NULL
+     AND NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+    RAISE EXCEPTION 'Sem permissao para consultar a verba do pedido %.', p_order_id;
+  END IF;
+
   SELECT id INTO v_budget
     FROM public.pa_budgets
    WHERE pa_id = v_pa_id
@@ -339,12 +397,17 @@ BEGIN
 END;
 $$;
 
--- Move o pedido no ciclo da verba. Idempotente: repetir o estado atual não
--- gera evento; transição lança o delta no livro (nenhum valor é reescrito).
-CREATE OR REPLACE FUNCTION public.pa_budget_move_order(
+-- Núcleo do ciclo: recebe o total já resolvido (o trigger BEFORE UPDATE vê o
+-- valor antigo, por isso o total e o centro vêm por parâmetro).
+-- Idempotente por (estado, valor): repetir a posição atual não gera evento.
+CREATE OR REPLACE FUNCTION public.pa_budget_apply_state(
   p_order_id UUID,
+  p_total NUMERIC,
+  p_cost_center_id UUID,
   p_para_estado TEXT,
-  p_motivo TEXT DEFAULT NULL
+  p_motivo TEXT DEFAULT NULL,
+  p_pa_id UUID DEFAULT NULL,
+  p_created_at TIMESTAMPTZ DEFAULT NULL
 )
 RETURNS public.pa_budgets
 LANGUAGE plpgsql
@@ -356,6 +419,8 @@ DECLARE
   v_budget public.pa_budgets%ROWTYPE;
   v_total NUMERIC(14,2);
   v_cc UUID;
+  v_pa_id UUID;
+  v_created TIMESTAMPTZ;
   v_atual TEXT;
   v_atual_valor NUMERIC(14,2);
   v_pendente NUMERIC(14,2);
@@ -364,22 +429,38 @@ BEGIN
     RAISE EXCEPTION 'Estado de verba inválido: %', p_para_estado;
   END IF;
 
-  v_budget_id := public.pa_budget_id_for_order(p_order_id);
+  v_pa_id := p_pa_id;
+  v_created := p_created_at;
+
+  IF v_pa_id IS NULL OR v_created IS NULL THEN
+    SELECT pa_id, created_at INTO v_pa_id, v_created
+      FROM public.sicoob_orders WHERE id = p_order_id;
+  END IF;
+
+  IF v_pa_id IS NULL OR v_created IS NULL THEN
+    RAISE EXCEPTION 'Pedido % inexistente ou sem PA.', p_order_id;
+  END IF;
+
+  SELECT id INTO v_budget_id
+    FROM public.pa_budgets
+   WHERE pa_id = v_pa_id
+     AND ano = EXTRACT(YEAR FROM v_created)::INT
+     AND mes = EXTRACT(MONTH FROM v_created)::INT
+   LIMIT 1;
   IF v_budget_id IS NULL THEN
     RAISE EXCEPTION 'Pedido % não possui verba configurada para a competência.', p_order_id;
   END IF;
 
-  SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget_id;
+  SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget_id FOR UPDATE;
   IF v_budget.fechada_em IS NOT NULL THEN
     RAISE EXCEPTION 'Competência %/% fechada; não é possível movimentar verba.',
       v_budget.mes, v_budget.ano;
   END IF;
 
-  SELECT COALESCE(total_amount, 0), cost_center_id
-    INTO v_total, v_cc
-    FROM public.sicoob_orders WHERE id = p_order_id;
+  v_total := COALESCE(p_total, 0);
+  v_cc := p_cost_center_id;
 
-  -- Posição atual do pedido = soma dos eventos por estado.
+  -- Posição atual do pedido: estado do último evento + saldo líquido do livro.
   SELECT COALESCE(sum(valor), 0) INTO v_atual_valor
     FROM public.pa_budget_entries
    WHERE order_id = p_order_id AND pa_budget_id = v_budget_id;
@@ -390,44 +471,46 @@ BEGIN
    ORDER BY created_at DESC, id DESC
    LIMIT 1;
 
+  -- Livro líquido zerado significa pedido fora do ciclo.
   IF COALESCE(v_atual_valor, 0) = 0 THEN
     v_atual := NULL;
   END IF;
 
-  -- Idempotência: já está no estado pedido, nada a lançar.
-  IF v_atual IS NOT DISTINCT FROM NULLIF(p_para_estado, 'liberado') THEN
+  -- Idempotência: mesma posição e mesmo valor não gera evento.
+  IF v_atual IS NOT DISTINCT FROM NULLIF(p_para_estado, 'liberado')
+     AND COALESCE(v_atual_valor, 0) = (CASE WHEN p_para_estado = 'liberado' THEN 0 ELSE v_total END) THEN
     RETURN v_budget;
   END IF;
 
-  -- Só entrada em reserva/compromisso consome saldo livre.
-  IF p_para_estado IN ('reservado', 'comprometido') THEN
+  -- Entrar no ciclo (ou consumir direto) exige saldo livre na competência.
+  -- A posição atual é liberada no mesmo movimento, então ela volta ao saldo.
+  IF p_para_estado <> 'liberado' THEN
     v_pendente := v_budget.verba_planejada
                   - v_budget.verba_reservada
                   - v_budget.verba_comprometida
-                  - v_budget.verba_consumida;
-    IF v_total - COALESCE(v_atual_valor, 0) > v_pendente THEN
+                  - v_budget.verba_consumida
+                  + COALESCE(v_atual_valor, 0);
+    IF v_total > v_pendente THEN
       RAISE EXCEPTION
         'Saldo insuficiente na competência %/%: disponível %, solicitado %.',
         v_budget.mes, v_budget.ano, v_pendente, v_total;
     END IF;
   END IF;
 
-  -- Fecha a posição anterior (devolve o que ela ocupava).
+  -- Fecha a posição anterior devolvendo exatamente o que ela ocupava.
   IF v_atual IS NOT NULL AND COALESCE(v_atual_valor, 0) <> 0 THEN
     INSERT INTO public.pa_budget_entries
       (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
        tipo, estado, valor, order_id, motivo, actor_id)
     VALUES (v_budget_id, v_budget.pa_id, v_budget.ano, v_budget.mes, v_cc,
-            CASE WHEN v_atual = 'reservado' THEN 'liberacao'
-                 WHEN v_atual = 'consumido' THEN 'estorno'
-                 ELSE 'estorno' END,
+            CASE WHEN v_atual = 'reservado' THEN 'liberacao' ELSE 'estorno' END,
             v_atual, -v_atual_valor, p_order_id,
             COALESCE(p_motivo, 'Transição de ' || v_atual || ' para ' || p_para_estado),
-            auth.uid());
+            (SELECT auth.uid()));
   END IF;
 
   -- Abre a nova posição.
-  IF p_para_estado <> 'liberado' THEN
+  IF p_para_estado <> 'liberado' AND v_total <> 0 THEN
     INSERT INTO public.pa_budget_entries
       (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
        tipo, estado, valor, order_id, motivo, actor_id)
@@ -435,11 +518,49 @@ BEGIN
             CASE p_para_estado WHEN 'reservado' THEN 'reserva'
                                WHEN 'comprometido' THEN 'compromisso'
                                ELSE 'consumo' END,
-            p_para_estado, v_total, p_order_id, p_motivo, auth.uid());
+            p_para_estado, v_total, p_order_id, p_motivo, (SELECT auth.uid()));
   END IF;
 
   SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget_id;
   RETURN v_budget;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.pa_budget_apply_state(UUID, NUMERIC, UUID, TEXT, TEXT, UUID, TIMESTAMPTZ)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.pa_budget_apply_state(UUID, NUMERIC, UUID, TEXT, TEXT, UUID, TIMESTAMPTZ)
+  TO service_role;
+
+-- Wrapper de aplicação: resolve o total atual do pedido e exige escopo de
+-- leitura do pedido quando chamado por um usuário autenticado.
+CREATE OR REPLACE FUNCTION public.pa_budget_move_order(
+  p_order_id UUID,
+  p_para_estado TEXT,
+  p_motivo TEXT DEFAULT NULL
+)
+RETURNS public.pa_budgets
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_total NUMERIC(14,2);
+  v_cc UUID;
+BEGIN
+  IF (SELECT auth.uid()) IS NOT NULL
+     AND NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+    RAISE EXCEPTION 'Sem permissao para movimentar a verba do pedido %.', p_order_id;
+  END IF;
+
+  SELECT COALESCE(total_amount, 0), cost_center_id
+    INTO v_total, v_cc
+    FROM public.sicoob_orders WHERE id = p_order_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Pedido % inexistente.', p_order_id;
+  END IF;
+
+  RETURN public.pa_budget_apply_state(p_order_id, v_total, v_cc, p_para_estado, p_motivo);
 END;
 $$;
 
@@ -458,8 +579,10 @@ AS $$
 DECLARE
   v_budget public.pa_budgets%ROWTYPE;
 BEGIN
-  IF NOT (public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras()) THEN
-    RAISE EXCEPTION 'Apenas admin ou gestor de compras pode fechar competência.';
+  IF NOT public.is_admin((SELECT auth.uid())) THEN
+    IF NOT (public.is_gestor_compras() AND public.user_can_access_pa(p_pa_id)) THEN
+      RAISE EXCEPTION 'Apenas admin ou gestor de compras do PA pode fechar competência.';
+    END IF;
   END IF;
 
   UPDATE public.pa_budgets
@@ -495,6 +618,10 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  IF NOT public.user_can_access_pa(p_pa_id) THEN
+    RAISE EXCEPTION 'Sem permissao para conciliar a verba do PA %.', p_pa_id;
+  END IF;
+
   RETURN QUERY
   SELECT b.id,
          b.verba_planejada,
@@ -537,67 +664,59 @@ GRANT ALL ON public.cost_centers, public.pa_budget_entries, public.pa_budget_all
 DROP POLICY IF EXISTS cost_centers_select ON public.cost_centers;
 CREATE POLICY cost_centers_select ON public.cost_centers
   FOR SELECT TO authenticated
-  USING (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR cooperativa_id = public.current_user_cooperativa_id()
-  );
+  USING (public.user_can_access_cooperativa(cooperativa_id));
 
 DROP POLICY IF EXISTS cost_centers_write ON public.cost_centers;
 CREATE POLICY cost_centers_write ON public.cost_centers
   FOR ALL TO authenticated
   USING (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR cooperativa_id = public.current_user_cooperativa_id()
+    public.is_admin((SELECT auth.uid()))
+    OR (public.is_gestor_compras() AND public.user_can_access_cooperativa(cooperativa_id))
   )
   WITH CHECK (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR cooperativa_id = public.current_user_cooperativa_id()
+    public.is_admin((SELECT auth.uid()))
+    OR (public.is_gestor_compras() AND public.user_can_access_cooperativa(cooperativa_id))
   );
 
 DROP POLICY IF EXISTS pa_budget_entries_select ON public.pa_budget_entries;
 CREATE POLICY pa_budget_entries_select ON public.pa_budget_entries
   FOR SELECT TO authenticated
-  USING (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR pa_id = public.current_user_pa_id()
-  );
+  USING (public.user_can_access_pa(pa_id));
 
 DROP POLICY IF EXISTS pa_budget_entries_insert ON public.pa_budget_entries;
 CREATE POLICY pa_budget_entries_insert ON public.pa_budget_entries
   FOR INSERT TO authenticated
   WITH CHECK (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR pa_id = public.current_user_pa_id()
+    public.user_can_access_pa(pa_id)
+    AND (
+      public.is_admin((SELECT auth.uid()))
+      OR public.is_gestor_compras()
+    )
+    AND actor_id = (SELECT auth.uid())
   );
 
 DROP POLICY IF EXISTS pa_budget_allocations_select ON public.pa_budget_allocations;
 CREATE POLICY pa_budget_allocations_select ON public.pa_budget_allocations
   FOR SELECT TO authenticated
-  USING (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-    OR EXISTS (
-      SELECT 1 FROM public.sicoob_orders o
-       WHERE o.id = pa_budget_allocations.order_id
-         AND o.pa_id = public.current_user_pa_id()
-    )
-  );
+  USING (public.sicoob_current_actor_can_read_order(order_id));
 
 DROP POLICY IF EXISTS pa_budget_allocations_write ON public.pa_budget_allocations;
 CREATE POLICY pa_budget_allocations_write ON public.pa_budget_allocations
   FOR ALL TO authenticated
-  USING (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
-  )
+  USING (public.sicoob_current_actor_can_read_order(order_id))
   WITH CHECK (
-    public.has_role(auth.uid(), 'admin')
-    OR public.is_gestor_compras()
+    public.sicoob_current_actor_can_read_order(order_id)
+    AND (
+      cost_center_id IS NULL
+      OR EXISTS (
+        SELECT 1
+          FROM public.cost_centers AS center
+          JOIN public.sicoob_orders AS ord ON ord.id = pa_budget_allocations.order_id
+          JOIN public.postos_atendimento AS service_point ON service_point.id = ord.pa_id
+         WHERE center.id = pa_budget_allocations.cost_center_id
+           AND center.cooperativa_id = service_point.cooperativa_id
+      )
+    )
   );
 
 REVOKE ALL ON FUNCTION public.pa_budget_move_order(UUID, TEXT, TEXT)       FROM PUBLIC, anon;
@@ -611,59 +730,280 @@ GRANT EXECUTE ON FUNCTION public.pa_budget_reconcile(UUID, INT, INT)          TO
 GRANT EXECUTE ON FUNCTION public.pa_budget_id_for_order(UUID)                 TO authenticated;
 
 -- ============================================================================
--- 10. Trigger legado passa a registrar no livro
+-- 10. Backfill do consumo legado + trigger vivo do ciclo
 -- ============================================================================
--- O trigger antigo somava verba_consumida direto quando o pedido virava
--- `confirmed`, o que impedia estorno e contava o pedido inteiro. Agora ele
--- delega a posição ao livro, mantendo as validações de alçada.
-CREATE OR REPLACE FUNCTION public.check_order_constraints_trigger()
+-- O consumo histórico vivia só no agregado `pa_budgets.verba_consumida`. Sem
+-- backfill o primeiro recálculo zeraria o histórico (o livro nasce vazio).
+INSERT INTO public.pa_budget_entries
+  (pa_budget_id, pa_id, competencia_ano, competencia_mes, cost_center_id,
+   tipo, estado, valor, order_id, motivo, actor_id)
+SELECT b.id, b.pa_id, b.ano, b.mes, b.cost_center_id,
+       'ajuste', 'consumido', b.verba_consumida, NULL,
+       'Saldo de consumo legado anterior ao livro de verba', NULL
+  FROM public.pa_budgets b
+ WHERE b.verba_consumida > 0
+   AND NOT EXISTS (
+     SELECT 1 FROM public.pa_budget_entries e WHERE e.pa_budget_id = b.id
+   );
+
+-- Converte status do pedido no estado da verba. `NULL` = fora do ciclo.
+CREATE OR REPLACE FUNCTION public.pa_budget_estado_do_status(p_status TEXT)
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+SET search_path = ''
+AS $$
+  SELECT CASE
+    WHEN p_status IN ('waiting_approval', 'escalated_to_board') THEN 'reservado'
+    WHEN p_status IN ('confirmed', 'logistic', 'in_production',
+                      'in_separation', 'in_transit') THEN 'comprometido'
+    WHEN p_status IN ('delivered', 'completed') THEN 'consumido'
+    ELSE 'liberado'
+  END;
+$$;
+
+REVOKE ALL ON FUNCTION public.pa_budget_estado_do_status(TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pa_budget_estado_do_status(TEXT) TO authenticated, service_role;
+
+-- O trigger vivo em `sicoob_orders` é `trg_validate_sicoob_order_budget`
+-- (migration 20260911143000). Substituímos a função dele: antes somava
+-- `verba_consumida` direto; agora delega a posição ao livro de quatro estados,
+-- preservando as validações de período/alçada.
+CREATE OR REPLACE FUNCTION public.validate_sicoob_order_budget()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_old_estado TEXT;
+  v_new_estado TEXT;
+  v_budget public.pa_budgets%ROWTYPE;
+  v_period_changed BOOLEAN;
+  v_total_changed BOOLEAN;
+BEGIN
+  v_old_estado := public.pa_budget_estado_do_status(OLD.status);
+  v_new_estado := public.pa_budget_estado_do_status(NEW.status);
+  v_period_changed := NEW.pa_id IS DISTINCT FROM OLD.pa_id
+                      OR NEW.created_at IS DISTINCT FROM OLD.created_at;
+  v_total_changed  := NEW.total_amount IS DISTINCT FROM OLD.total_amount;
+
+  -- Pedido já entregue/consumido não pode ter escopo financeiro reescrito.
+  IF v_old_estado = 'consumido' AND (v_period_changed OR v_total_changed) THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '23514',
+      MESSAGE = 'Pedido com verba consumida não permite alterar PA, valor ou período.';
+  END IF;
+
+  -- Entrar no ciclo exige PA e valor.
+  IF v_new_estado <> 'liberado'
+     AND (NEW.pa_id IS NULL OR COALESCE(NEW.total_amount, 0) <= 0) THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '23514',
+      MESSAGE = 'Pedido confirmado exige PA e valor total positivo.';
+  END IF;
+
+  -- Mudou o PA/período estando no ciclo: libera a competência antiga antes.
+  IF v_period_changed AND v_old_estado <> 'liberado' THEN
+    PERFORM public.pa_budget_apply_state(
+      NEW.id, OLD.total_amount, OLD.cost_center_id, 'liberado',
+      'Pedido trocou de PA ou competência', OLD.pa_id, OLD.created_at);
+  END IF;
+
+  IF v_new_estado <> 'liberado' THEN
+    SELECT * INTO v_budget
+      FROM public.pa_budgets
+     WHERE pa_id = NEW.pa_id
+       AND ano = EXTRACT(YEAR FROM NEW.created_at)::integer
+       AND mes = EXTRACT(MONTH FROM NEW.created_at)::integer
+     LIMIT 1;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION USING
+        ERRCODE = 'P0001',
+        MESSAGE = 'Orçamento não configurado para o PA no período do pedido.';
+    END IF;
+
+    -- Mudar o total com rateio já fechado exigiria reescrever o rateio na
+    -- mesma instrução; por isso a revalidação vem ANTES de mover a posição.
+    PERFORM public.pa_budget_validate_allocations(
+      NEW.id, NEW.total_amount, NEW.status, true);
+
+    PERFORM public.pa_budget_apply_state(
+      NEW.id, NEW.total_amount, NEW.cost_center_id, v_new_estado,
+      'Status do pedido: ' || NEW.status,
+      NEW.pa_id, NEW.created_at);
+
+    SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget.id;
+
+    NEW.audit_remaining_budget := COALESCE(v_budget.verba_total, 0)
+      - COALESCE(v_budget.verba_reservada, 0)
+      - COALESCE(v_budget.verba_comprometida, 0)
+      - COALESCE(v_budget.verba_consumida, 0);
+  ELSIF v_old_estado <> 'liberado' THEN
+    PERFORM public.pa_budget_apply_state(
+      NEW.id, OLD.total_amount, OLD.cost_center_id, 'liberado',
+      'Status do pedido: ' || NEW.status, OLD.pa_id, OLD.created_at);
+  ELSIF v_period_changed OR v_total_changed THEN
+    PERFORM public.pa_budget_validate_allocations(
+      NEW.id, NEW.total_amount, NEW.status, true);
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_validate_sicoob_order_budget ON public.sicoob_orders;
+CREATE TRIGGER trg_validate_sicoob_order_budget
+BEFORE UPDATE OF status, pa_id, total_amount, created_at
+ON public.sicoob_orders
+FOR EACH ROW
+EXECUTE FUNCTION public.validate_sicoob_order_budget();
+
+-- ============================================================================
+-- 10b. Reserva na criacao: o pedido ja nasce em `waiting_approval`
+--
+-- `BEFORE INSERT` nao serve aqui: a linha ainda nao existe e a FK de
+-- `pa_budget_entries.order_id` falharia. A reserva roda depois do INSERT e o
+-- proprio trigger devolve o saldo projetado na coluna de auditoria.
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.tg_sicoob_order_budget_after_insert()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_estado TEXT;
+  v_budget public.pa_budgets%ROWTYPE;
+BEGIN
+  v_estado := public.pa_budget_estado_do_status(NEW.status);
+  IF v_estado = 'liberado' THEN
+    RETURN NULL;
+  END IF;
+
+  IF NEW.pa_id IS NULL OR COALESCE(NEW.total_amount, 0) <= 0 THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '23514',
+      MESSAGE = 'Pedido confirmado exige PA e valor total positivo.';
+  END IF;
+
+  SELECT * INTO v_budget
+    FROM public.pa_budgets
+   WHERE pa_id = NEW.pa_id
+     AND ano = EXTRACT(YEAR FROM NEW.created_at)::integer
+     AND mes = EXTRACT(MONTH FROM NEW.created_at)::integer
+   LIMIT 1;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION USING
+      ERRCODE = 'P0001',
+      MESSAGE = 'Orçamento não configurado para o PA no período do pedido.';
+  END IF;
+
+  PERFORM public.pa_budget_validate_allocations(
+    NEW.id, NEW.total_amount, NEW.status, true);
+
+  PERFORM public.pa_budget_apply_state(
+    NEW.id, NEW.total_amount, NEW.cost_center_id, v_estado,
+    'Status do pedido: ' || NEW.status,
+    NEW.pa_id, NEW.created_at);
+
+  SELECT * INTO v_budget FROM public.pa_budgets WHERE id = v_budget.id;
+
+  UPDATE public.sicoob_orders
+     SET audit_remaining_budget = COALESCE(v_budget.verba_total, 0)
+       - COALESCE(v_budget.verba_reservada, 0)
+       - COALESCE(v_budget.verba_comprometida, 0)
+       - COALESCE(v_budget.verba_consumida, 0)
+   WHERE id = NEW.id;
+
+  RETURN NULL;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_validate_sicoob_order_budget_ins ON public.sicoob_orders;
+CREATE TRIGGER trg_validate_sicoob_order_budget_ins
+AFTER INSERT
+ON public.sicoob_orders
+FOR EACH ROW
+EXECUTE FUNCTION public.tg_sicoob_order_budget_after_insert();
+
+-- ============================================================================
+-- 11. Rateio revalidado quando o total do pedido muda
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.pa_budget_validate_allocations(
+  p_order_id UUID,
+  p_total NUMERIC,
+  p_status TEXT,
+  p_estrito BOOLEAN DEFAULT false
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_soma NUMERIC(14,2);
+  v_perc NUMERIC(5,2);
+BEGIN
+  SELECT COALESCE(sum(valor), 0), COALESCE(sum(percentual), 0)
+    INTO v_soma, v_perc
+    FROM public.pa_budget_allocations WHERE order_id = p_order_id;
+
+  IF COALESCE(v_soma, 0) = 0 THEN
+    RETURN;
+  END IF;
+
+  -- O rateio e montado linha a linha enquanto o pedido esta em construcao;
+  -- cada linha chega em uma transacao propria, entao exigir a soma fechada a
+  -- cada INSERT travaria a propria tela de rateio. A soma de 100% e exigida
+  -- quando o pedido entra ou muda de posicao na verba (`p_estrito`).
+  IF NOT p_estrito
+     AND p_status IN ('rascunho', 'draft', 'pending', 'waiting_approval',
+                      'escalated_to_board', 'rejected', 'cancelled') THEN
+    RETURN;
+  END IF;
+
+  IF abs(v_soma - COALESCE(p_total, 0)) > 0.01 THEN
+    RAISE EXCEPTION 'Rateio do pedido % soma %, mas o pedido vale %.',
+      p_order_id, v_soma, p_total;
+  END IF;
+
+  IF abs(v_perc - 100) > 0.01 THEN
+    RAISE EXCEPTION 'Rateio do pedido % esta em % por cento; precisa fechar em 100.',
+      p_order_id, v_perc;
+  END IF;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.pa_budget_validate_allocations(UUID, NUMERIC, TEXT, BOOLEAN)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pa_budget_validate_allocations(UUID, NUMERIC, TEXT, BOOLEAN)
+  TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.tg_validate_order_allocations()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_limite_alcada NUMERIC;
-  v_budget public.pa_budgets%ROWTYPE;
+  v_order_id UUID;
+  v_total NUMERIC(14,2);
+  v_status TEXT;
 BEGIN
-  IF NEW.pa_id IS NULL THEN
-    RETURN NEW;
-  END IF;
+  v_order_id := COALESCE(NEW.order_id, OLD.order_id);
 
-  SELECT * INTO v_budget
-    FROM public.pa_budgets
-   WHERE pa_id = NEW.pa_id
-     AND ano = EXTRACT(YEAR FROM COALESCE(NEW.created_at, now()))::INT
-     AND mes = EXTRACT(MONTH FROM COALESCE(NEW.created_at, now()))::INT
-   LIMIT 1;
+  SELECT COALESCE(total_amount, 0), status
+    INTO v_total, v_status
+    FROM public.sicoob_orders WHERE id = v_order_id;
 
-  IF NOT FOUND THEN
-    IF NEW.status IN ('confirmed', 'waiting_approval') THEN
-      RAISE EXCEPTION 'Orçamento não configurado para o PA % neste período.', NEW.pa_id;
-    END IF;
-    RETURN NEW;
-  END IF;
-
-  v_limite_alcada := v_budget.limite_alcada;
-
-  IF NEW.status = 'confirmed'
-     AND v_limite_alcada IS NOT NULL
-     AND NEW.total_amount > v_limite_alcada
-     AND NEW.approved_by IS NULL THEN
-    RAISE EXCEPTION 'Este pedido excede a alçada de % e requer aprovação formal.', v_limite_alcada;
-  END IF;
-
-  -- Posição do pedido no livro, derivada do status.
-  IF NEW.status = 'waiting_approval' THEN
-    PERFORM public.pa_budget_move_order(NEW.id, 'reservado', 'Pedido aguardando aprovação');
-  ELSIF NEW.status = 'confirmed' THEN
-    PERFORM public.pa_budget_move_order(NEW.id, 'comprometido', 'Pedido confirmado');
-  ELSIF NEW.status = 'delivered' OR NEW.status = 'completed' THEN
-    PERFORM public.pa_budget_move_order(NEW.id, 'consumido', 'Pedido entregue');
-  ELSIF NEW.status = 'draft' THEN
-    PERFORM public.pa_budget_move_order(NEW.id, 'liberado', 'Pedido voltou para rascunho');
-  END IF;
-
-  RETURN NEW;
+  PERFORM public.pa_budget_validate_allocations(v_order_id, v_total, v_status);
+  RETURN NULL;
 END;
 $$;
+
+-- A função legada não é mais reescrita aqui: o trigger que a chamava foi
+-- removido pela migration 20260911143000. O ciclo vive em
+-- `validate_sicoob_order_budget()` + `trg_validate_sicoob_order_budget`.
