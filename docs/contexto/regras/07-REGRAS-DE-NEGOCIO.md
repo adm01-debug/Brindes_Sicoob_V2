@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `0a70249054` · branch `main` · 2026-11-22 19:26 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `54e7819a25` · branch `main` · 2026-11-22 20:03 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5696,7 +5696,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7061 testes em 713 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7066 testes em 713 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5833,6 +5833,7 @@ _nenhum item encontrado_
 | `e2e/rbac-navigation.spec.ts` | 13 | RBAC e navegação · Perfil vendedor · acessa as áreas comerciais · recebe 403 nas áreas administrativas … |
 | `tests/components/PriceFreshnessBadge.quickViewAlwaysShow.test.tsx` | 13 | Quick View / hosts compactos — alwaysShow=false respeita aging\|stale · variant=%s sem alwaysShow · fresh: NÃO renderiza badge · unknown: NÃO renderiza badge … |
 | `tests/components/search/HighlightMatch.test.tsx` | 13 | HighlightMatch · Renderização básica · renderiza texto sem query · renderiza texto com query curta (< 2 chars) sem highlight … |
+| `tests/components/sicoob/OrderInvoicesTab.amount.test.ts` | 13 | parseAmountBR · lê milhar sem decimais como milhar · lê o separador decimal correto · lê milhar no formato US com centavos … |
 | `tests/hooks/useConnectionTester.test.tsx` | 13 | webhook_outbound · useConnectionTester · Timeout: preserva error_kind, timeout_ms, latency e dispara toast  · Network error: kind preservado e toast  … |
 | `tests/hooks/useProductMatch-gaps.test.ts` | 13 | FIX 1: useSupplierComparison — price zero guard · should not produce Infinity when base product price is 0 · FIX 2: name similarity edge cases · should NOT match empty-named products as complementary … |
 | `tests/pages/Auth.test.ts` | 13 | Auth - Login Schema Validation · rejects empty email · rejects invalid email · rejects short password … |
@@ -5945,7 +5946,6 @@ _nenhum item encontrado_
 | `tests/components/admin/connections/ZoneCommandPalette.test.tsx` | 8 | useZoneCommandPalette · não captura Ctrl+K, reservado à barra global de comandos · ignora o atalho quando o foco está num <input> · ZoneCommandPalette — interação … |
 | `tests/components/novelties/NoveltyCards.test.tsx` | 8 | NoveltyGridCard — label changes (PR) · renders  · does NOT render the old  · renders the ProductSparkline for the product … |
 | `tests/components/products/ProductCardImage.private-storage.test.tsx` | 8 | imagem privada do catálogo · assina a referência durável e não gera srcSet sem autorização · mantém uma imagem pública sem pedir assinatura · não trata rota de storage de outro domínio como imagem privada … |
-| `tests/components/sicoob/OrderInvoicesTab.amount.test.ts` | 8 | parseAmountBR · lê milhar sem decimais como milhar · lê o separador decimal correto · lê milhar no formato US com centavos … |
 | `tests/hooks/useAutoSave.test.tsx` | 8 | useAutoSave · persiste apenas no namespace informado, preservando rascunhos simultâneos · expõe falha de persistência para a interface e permite nova tentativa · detecta edição concorrente em outra aba e não sobrescreve o rascunho mais recente … |
 | `tests/hooks/useClientHealthScore.reliable-data.test.ts` | 8 | score de saúde com fonte comprovada · não trata o score sentinela desconhecido como um zero real · não fabrica score, potencial ou recomendação quando a amostra é insuficiente · não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente … |
 | `tests/hooks/useClientsComparison.availability.test.tsx` | 8 | useSingleClientComparisonRow — disponibilidade por fonte · descarta afinidade em cache após falha e usa histórico confiável como fallback · isola falhas de categoria e usa a afinidade confiável como fallback do topo · propaga CRM indisponível para métricas dependentes do ramo e permite retry … |
@@ -6341,6 +6341,8 @@ _nenhum item encontrado_
 | ").eq("user_id", userId).order("created_at", { ascending: false }).limit(20), | `src/components/security/useSecurityData.ts` |
 | ").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10), | `src/components/security/useSecurityData.ts` |
 | 1024 * 1024) { toast.error("O comprovante deve ter no máximo 5 MB."); return; } | `src/components/sicoob/orders/OrderLogisticsTab.tsx` |
+| Separar a decisão do componente mantém a regra testável e a complexidade | `src/components/sicoob/orders/utils/amount.ts` |
+| ciclomática do formulário sob o limite. | `src/components/sicoob/orders/utils/amount.ts` |
 | (${formatCurrency(wizard.totals.grandTotalPerUnit)}/un)\n⏱️ Prazo: ${wizard.totals.maxDays > 0 ? `~${wizard.totals.maxDays} dias úteis` : 'A consultar'}`; | `src/components/simulator/wizard/ConfirmedSummary.tsx` |
 | Row 2: Location (only if single group) + Specs */} | `src/components/simulator/wizard/PersonalizationSummary.tsx` |
 | * Mostra apenas o ícone (modo compacto, ex.: sidebar colapsada). */ | `src/components/ui/RoleBadge.tsx` |
@@ -6485,6 +6487,4 @@ _nenhum item encontrado_
 | * Erro genérico (rede, validação, 500). Caller decide UI. */ | `src/lib/auth/invoke-full-scope.ts` |
 | * Validação síncrona e pequena para manter o formulário público fora do bundle | `src/lib/auth/login-validation.ts` |
 | * Aceita apenas caminhos internos, inclusive ao restaurar a rota após login. */ | `src/lib/auth/safe-internal-path.ts` |
-| (caller deve abortar fluxo padrão de erro). | `src/lib/auth/step-up-error.ts` |
-| - "self"   → vendedor (vê apenas os próprios dados) | `src/lib/auth/visibility-scope.ts` |
-| … +295 linhas — lista completa em `context.json` | |
+| … +298 linhas — lista completa em `context.json` | |

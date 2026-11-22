@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "0a70249054c8c9f4c7600c99c974d6dba56370f8",
+  "commit": "54e7819a2549d326a613aab2c12f5dbcc94d2846",
   "branch": "main",
-  "data_commit": "2026-11-22T16:26:24-03:00",
+  "data_commit": "2026-11-22T17:02:49-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "54e7819",
+    "data": "2026-11-22",
+    "assunto": "fix: extrai parser de moeda e validação do componente de notas (#404)"
+   },
    {
     "sha": "0a70249",
     "data": "2026-11-22",
@@ -126,14 +131,9 @@
     "sha": "e7671e8",
     "data": "2026-11-19",
     "assunto": "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)"
-   },
-   {
-    "sha": "4a46225",
-    "data": "2026-11-19",
-    "assunto": "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)"
    }
   ],
-  "arquivos_mudados_7d": 1291,
+  "arquivos_mudados_7d": 1292,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -176,15 +176,15 @@
     "mudancas": 14
    },
    {
+    "pasta": "src/components/sicoob",
+    "mudancas": 13
+   },
+   {
     "pasta": "PENDENCIAS.md",
     "mudancas": 11
    },
    {
     "pasta": "src/components/quotes",
-    "mudancas": 11
-   },
-   {
-    "pasta": "src/components/sicoob",
     "mudancas": 11
    },
    {
@@ -214,10 +214,6 @@
     "mudancas": 20
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 19
-   },
-   {
     "arquivo": ".github/workflows/ci.yml",
     "mudancas": 18
    },
@@ -226,7 +222,7 @@
     "mudancas": 18
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 18
    },
    {
@@ -235,6 +231,10 @@
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
+    "mudancas": 17
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 17
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 188
+    "commits": 189
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5251,
-  "arquivos_codigo": 3153,
-  "linhas_codigo": 496824,
+  "arquivos_total": 5252,
+  "arquivos_codigo": 3154,
+  "linhas_codigo": 496867,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -775,8 +775,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1131,
-   "linhas": 167020
+   "arquivos": 1132,
+   "linhas": 167033
   },
   "src/constants": {
    "arquivos": 3,
@@ -876,7 +876,7 @@
   },
   "tests/components": {
    "arquivos": 150,
-   "linhas": 27755
+   "linhas": 27781
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -956,7 +956,7 @@
   },
   "tests/scenarios": {
    "arquivos": 32,
-   "linhas": 2199
+   "linhas": 2203
   },
   "tests/scripts": {
    "arquivos": 35,

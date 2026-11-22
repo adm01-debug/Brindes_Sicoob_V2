@@ -7359,6 +7359,7 @@
    "src/lib/utils.ts"
   ],
   "src/components/sicoob/orders/OrderInvoicesTab.tsx": [
+   "src/components/sicoob/orders/utils/amount.ts",
    "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/input.tsx",

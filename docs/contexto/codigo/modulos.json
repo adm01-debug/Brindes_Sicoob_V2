@@ -6412,9 +6412,9 @@
   },
   {
    "modulo": "components/sicoob",
-   "arquivos": 20,
+   "arquivos": 21,
    "testes": 0,
-   "linhas": 2579,
+   "linhas": 2592,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
