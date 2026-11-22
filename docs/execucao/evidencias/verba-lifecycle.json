@@ -50,5 +50,17 @@
     "centros_visiveis_gestor_a": "CC-01",
     "centros_visiveis_gestor_b": "CC-02"
   },
+  "rateio_atomico": {
+    "linhas": "1",
+    "duplicado": "ERROR:  Cada centro de custo pode aparecer uma unica vez no rateio.",
+    "preservado": "1|120.00"
+  },
+  "rascunho_defasado": {
+    "edita_item": "permitido",
+    "motivo_entrada_na_verba": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000206 soma 200.00, mas o pedido vale 350.00."
+  },
+  "livro_escopo": {
+    "competencia_divergente": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\""
+  },
   "resultado": "aprovado"
 }

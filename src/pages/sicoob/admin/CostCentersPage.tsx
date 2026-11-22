@@ -27,21 +27,124 @@ import {
 import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { costCenterService, type CostCenter } from '@/services/sicoob/costCenterService';
 import { useAuth } from '@/contexts/AuthContext';
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Erro desconhecido';
 
-// eslint-disable-next-line max-lines-per-function -- pagina preexistente de 185 linhas; esta PR apenas escopa a query por cooperativa
+// Admin sem cooperativa no perfil precisa escolher onde o centro nasce; os
+// demais herdam a cooperativa do proprio perfil.
+function precisaSelector(
+  editing: CostCenter | null,
+  isAdmin: boolean,
+  doPerfil: string | null,
+  options?: CooperativaOption[],
+): boolean {
+  if (editing) return false;
+  if (!isAdmin || doPerfil) return false;
+  return (options?.length ?? 0) > 1;
+}
+
+async function salvarCentroDeCusto(input: {
+  editing: CostCenter | null;
+  codigo: string;
+  nome: string;
+  ativo: boolean;
+  cooperativaDoPerfil: string | null;
+  isAdmin: boolean;
+  cooperativaEscolhida: string;
+  cooperatives?: CooperativaOption[];
+}) {
+  if (input.editing) {
+    return costCenterService.update(input.editing.id, {
+      codigo: input.codigo,
+      nome: input.nome,
+      ativo: input.ativo,
+    });
+  }
+  // O centro de custo pertence a cooperativa do ator; so admin escolhe
+  // livremente. Antes gravava sempre na primeira cooperativa da lista.
+  const escolhida = resolverCooperativa(
+    input.cooperativaDoPerfil,
+    input.isAdmin,
+    input.cooperativaEscolhida,
+    input.cooperatives,
+  );
+  return costCenterService.create({
+    cooperativa_id: escolhida,
+    codigo: input.codigo,
+    nome: input.nome,
+  });
+}
+
+function cooperativaInicial(doPerfil: string | null, options?: CooperativaOption[]): string {
+  return doPerfil ?? options?.[0]?.id ?? '';
+}
+
+function resolverCooperativa(
+  doPerfil: string | null,
+  isAdmin: boolean,
+  escolhidaNaTela: string,
+  options?: CooperativaOption[],
+): string {
+  const escolhida = doPerfil || (isAdmin ? escolhidaNaTela : '') || options?.[0]?.id || '';
+  if (!escolhida) {
+    throw new Error('Cadastre uma cooperativa antes de criar centros de custo.');
+  }
+  return escolhida;
+}
+
+interface CooperativaOption {
+  id: string;
+  nome: string;
+}
+
+function CooperativaField({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: CooperativaOption[];
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="cc-cooperativa">Cooperativa</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger id="cc-cooperativa">
+          <SelectValue placeholder="Selecione a cooperativa" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((coop) => (
+            <SelectItem key={coop.id} value={coop.id}>
+              {coop.nome}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+// eslint-disable-next-line max-lines-per-function, complexity -- pagina preexistente; esta PR so escopa a query e deixa o admin escolher a cooperativa
 export default function CostCentersPage() {
   const queryClient = useQueryClient();
-  const { cooperativaId: cooperativaDoPerfil } = useAuth();
+  const { cooperativaId: cooperativaDoPerfil, isAdmin } = useAuth();
   const [editing, setEditing] = useState<CostCenter | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [codigo, setCodigo] = useState('');
   const [nome, setNome] = useState('');
   const [ativo, setAtivo] = useState(true);
+  const [cooperativaEscolhida, setCooperativaEscolhida] = useState('');
 
   const { data: cooperatives } = useQuery({
     queryKey: ['cooperativas_options', cooperativaDoPerfil],
@@ -62,17 +165,17 @@ export default function CostCentersPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['cost_centers'] });
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!editing) {
-        // O centro de custo pertence a cooperativa do ator; so admin escolhe
-        // livremente. Antes gravava sempre na primeira cooperativa da lista.
-        const escolhida = cooperativaDoPerfil ?? cooperatives?.[0]?.id ?? null;
-        if (!escolhida)
-          throw new Error('Cadastre uma cooperativa antes de criar centros de custo.');
-        return costCenterService.create({ cooperativa_id: escolhida, codigo, nome });
-      }
-      return costCenterService.update(editing.id, { codigo, nome, ativo });
-    },
+    mutationFn: () =>
+      salvarCentroDeCusto({
+        editing,
+        codigo,
+        nome,
+        ativo,
+        cooperativaDoPerfil,
+        isAdmin,
+        cooperativaEscolhida,
+        cooperatives,
+      }),
     onSuccess: () => {
       toast.success(editing ? 'Centro de custo atualizado' : 'Centro de custo criado');
       setIsOpen(false);
@@ -95,6 +198,7 @@ export default function CostCentersPage() {
     setCodigo('');
     setNome('');
     setAtivo(true);
+    setCooperativaEscolhida(cooperativaInicial(cooperativaDoPerfil, cooperatives));
     setIsOpen(true);
   };
 
@@ -103,10 +207,18 @@ export default function CostCentersPage() {
     setCodigo(row.codigo);
     setNome(row.nome);
     setAtivo(row.ativo);
+    setCooperativaEscolhida(row.cooperativa_id);
     setIsOpen(true);
   };
 
   const cooperativaNome = (id: string) => cooperatives?.find((c) => c.id === id)?.nome ?? '—';
+
+  const precisaEscolherCooperativa = precisaSelector(
+    editing,
+    isAdmin,
+    cooperativaDoPerfil,
+    cooperatives,
+  );
 
   return (
     <>
@@ -205,6 +317,13 @@ export default function CostCentersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {precisaEscolherCooperativa && (
+              <CooperativaField
+                value={cooperativaEscolhida}
+                onChange={setCooperativaEscolhida}
+                options={cooperatives ?? []}
+              />
+            )}
             <div className="space-y-2">
               <Label htmlFor="cc-codigo">Código</Label>
               <Input

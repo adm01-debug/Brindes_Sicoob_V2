@@ -66,8 +66,9 @@ export const costCenterService = {
 
   /**
    * Substitui o rateio do pedido de uma vez.
-   * O upsert roda antes do delete: se a unicidade ou o trigger rejeitarem, o
-   * rateio anterior continua no banco em vez de virar um pedido sem rateio.
+   * A validacao, o delete e o insert rodam na mesma transacao na RPC
+   * `pa_budget_replace_allocations`: antes eram tres round-trips, e um delete
+   * que falhasse deixava o rateio anterior pela metade.
    */
   async replaceAllocations(
     orderId: string,
@@ -78,22 +79,12 @@ export const costCenterService = {
       throw new Error('Cada centro de custo pode aparecer uma unica vez no rateio.');
     }
 
-    if (rows.length > 0) {
-      const { error: upsertError } = await supabase.from('pa_budget_allocations').upsert(
-        rows.map((row) => ({ ...row, order_id: orderId })),
-        { onConflict: 'order_id,cost_center_id' },
-      );
-      if (upsertError) throw upsertError;
-    }
+    const { data, error } = await supabase.rpc(
+      'pa_budget_replace_allocations' as never,
+      { p_order_id: orderId, p_rows: rows } as never,
+    );
+    if (error) throw error;
 
-    const mantidos = rows.map((row) => row.cost_center_id);
-    let deleteQuery = supabase.from('pa_budget_allocations').delete().eq('order_id', orderId);
-    if (mantidos.length > 0) {
-      deleteQuery = deleteQuery.not('cost_center_id', 'in', `(${mantidos.join(',')})`);
-    }
-    const { error: delError } = await deleteQuery;
-    if (delError) throw delError;
-
-    return this.listAllocations(orderId);
+    return (data ?? []) as OrderAllocation[];
   },
 };

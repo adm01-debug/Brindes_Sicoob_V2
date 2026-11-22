@@ -460,15 +460,24 @@ BEGIN
   v_total := COALESCE(p_total, 0);
   v_cc := p_cost_center_id;
 
-  -- Posição atual do pedido: estado do último evento + saldo líquido do livro.
+  -- Posição atual do pedido: saldo líquido do livro e o estado que o ocupa.
+  -- `created_at` é constante dentro da transação e `id` é UUID aleatório, então
+  -- "pegar o último evento" não é determinístico quando a transição grava
+  -- liberação e nova posição juntas. O estado vigente é o único com saldo
+  -- não zerado — cada evento muda um estado e a transição zera o anterior.
   SELECT COALESCE(sum(valor), 0) INTO v_atual_valor
     FROM public.pa_budget_entries
    WHERE order_id = p_order_id AND pa_budget_id = v_budget_id;
 
   SELECT estado INTO v_atual
-    FROM public.pa_budget_entries
-   WHERE order_id = p_order_id AND pa_budget_id = v_budget_id
-   ORDER BY created_at DESC, id DESC
+    FROM (
+      SELECT estado, sum(valor) AS saldo
+        FROM public.pa_budget_entries
+       WHERE order_id = p_order_id AND pa_budget_id = v_budget_id
+       GROUP BY estado
+      HAVING sum(valor) <> 0
+    ) AS posicao
+   ORDER BY abs(posicao.saldo) DESC, posicao.estado
    LIMIT 1;
 
   -- Livro líquido zerado significa pedido fora do ciclo.
@@ -645,6 +654,75 @@ BEGIN
 END;
 $$;
 
+-- Rateio do pedido substituido em uma transacao: o cliente envia o conjunto
+-- final de linhas e o banco faz validacao + upsert + delete juntos. Antes o
+-- front fazia tres round-trips e um delete que falhasse deixava o rateio
+-- anterior apagado.
+CREATE OR REPLACE FUNCTION public.pa_budget_replace_allocations(
+  p_order_id UUID,
+  p_rows JSONB DEFAULT '[]'::jsonb
+)
+RETURNS SETOF public.pa_budget_allocations
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_status TEXT;
+  v_total NUMERIC(14,2);
+  v_duplicados INT;
+BEGIN
+  SELECT COALESCE(total_amount, 0), status
+    INTO v_total, v_status
+    FROM public.sicoob_orders WHERE id = p_order_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Pedido % nao encontrado.', p_order_id;
+  END IF;
+
+  IF NOT public.sicoob_current_actor_can_read_order(p_order_id) THEN
+    RAISE EXCEPTION 'Sem permissao para ratear o pedido %.', p_order_id;
+  END IF;
+
+  SELECT count(*) - count(DISTINCT row_data->>'cost_center_id')
+    INTO v_duplicados
+    FROM jsonb_array_elements(COALESCE(p_rows, '[]'::jsonb)) AS row_data;
+
+  IF COALESCE(v_duplicados, 0) > 0 THEN
+    RAISE EXCEPTION 'Cada centro de custo pode aparecer uma unica vez no rateio.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM jsonb_array_elements(COALESCE(p_rows, '[]'::jsonb)) AS row_data
+     WHERE (row_data->>'cost_center_id') IS NULL
+        OR (row_data->>'valor') IS NULL
+  ) THEN
+    RAISE EXCEPTION 'Cada linha do rateio precisa de centro de custo e valor.';
+  END IF;
+
+  DELETE FROM public.pa_budget_allocations WHERE order_id = p_order_id;
+
+  IF jsonb_array_length(COALESCE(p_rows, '[]'::jsonb)) > 0 THEN
+    INSERT INTO public.pa_budget_allocations (order_id, cost_center_id, valor, percentual)
+    SELECT p_order_id,
+           (row_data->>'cost_center_id')::uuid,
+           (row_data->>'valor')::numeric,
+           (row_data->>'percentual')::numeric
+      FROM jsonb_array_elements(p_rows) AS row_data;
+  END IF;
+
+  PERFORM public.pa_budget_validate_allocations(p_order_id, v_total, v_status);
+
+  RETURN QUERY
+    SELECT * FROM public.pa_budget_allocations
+     WHERE order_id = p_order_id
+     ORDER BY created_at, id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.pa_budget_replace_allocations(UUID, JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pa_budget_replace_allocations(UUID, JSONB) TO authenticated, service_role;
+
 -- ============================================================================
 -- 9. RLS e grants (fix 8: toda tabela nova nasce com policy explícita)
 -- ============================================================================
@@ -660,6 +738,33 @@ GRANT SELECT, INSERT, UPDATE ON public.cost_centers          TO authenticated;
 GRANT SELECT, INSERT         ON public.pa_budget_entries     TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.pa_budget_allocations TO authenticated;
 GRANT ALL ON public.cost_centers, public.pa_budget_entries, public.pa_budget_allocations TO service_role;
+
+-- Confere que a verba declarada no evento pertence ao PA e a competencia
+-- declarados. SECURITY DEFINER para nao depender de grant/RLS em `pa_budgets`.
+CREATE OR REPLACE FUNCTION public.pa_budget_entry_scope_ok(
+  p_budget_id UUID,
+  p_pa_id UUID,
+  p_ano INT,
+  p_mes INT
+)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+      FROM public.pa_budgets AS budget
+     WHERE budget.id = p_budget_id
+       AND budget.pa_id = p_pa_id
+       AND budget.ano = p_ano
+       AND budget.mes = p_mes
+  );
+$$;
+REVOKE ALL ON FUNCTION public.pa_budget_entry_scope_ok(UUID, UUID, INT, INT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pa_budget_entry_scope_ok(UUID, UUID, INT, INT)
+  TO authenticated, service_role;
 
 DROP POLICY IF EXISTS cost_centers_select ON public.cost_centers;
 CREATE POLICY cost_centers_select ON public.cost_centers
@@ -693,6 +798,15 @@ CREATE POLICY pa_budget_entries_insert ON public.pa_budget_entries
       OR public.is_gestor_compras()
     )
     AND actor_id = (SELECT auth.uid())
+    -- A verba e a competencia declaradas precisam ser as do PA informado:
+    -- sem isso o ator lancaria evento na verba de outro posto. A prova roda em
+    -- SECURITY DEFINER porque a policy de `pa_budgets` esconderia justamente a
+    -- linha que ela precisa ler.
+    AND public.pa_budget_entry_scope_ok(
+      pa_budget_entries.pa_budget_id,
+      pa_budget_entries.pa_id,
+      pa_budget_entries.competencia_ano,
+      pa_budget_entries.competencia_mes)
   );
 
 DROP POLICY IF EXISTS pa_budget_allocations_select ON public.pa_budget_allocations;
@@ -845,8 +959,11 @@ BEGIN
       NEW.id, OLD.total_amount, OLD.cost_center_id, 'liberado',
       'Status do pedido: ' || NEW.status, OLD.pa_id, OLD.created_at);
   ELSIF v_period_changed OR v_total_changed THEN
+    -- Pedido ainda fora do ciclo (rascunho): o rateio pode ficar defasado
+    -- enquanto o pedido e montado, senao alterar item viraria impasse. A soma
+    -- de 100% e cobrada quando o pedido entra na verba (ramo acima).
     PERFORM public.pa_budget_validate_allocations(
-      NEW.id, NEW.total_amount, NEW.status, true);
+      NEW.id, NEW.total_amount, NEW.status, false);
   END IF;
 
   RETURN NEW;

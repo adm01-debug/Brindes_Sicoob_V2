@@ -272,6 +272,76 @@ try:
     result["rls"] = {"centros_visiveis_gestor_a": via_gestor_a,
                      "centros_visiveis_gestor_b": via_gestor_b}
 
+    # ---- 14. RPC atomica de rateio (achado Devin #2) -----------------------
+    atomico = "00000000-0000-4000-8000-000000000205"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{atomico}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    linhas = json.dumps([
+        {"cost_center_id": center_a, "valor": 120, "percentual": 60},
+    ])
+    criado = sql(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT count(*) FROM pa_budget_replace_allocations('{atomico}', '{linhas}'::jsonb);"
+    ).stdout.strip().splitlines()[-1]
+    assert criado == "1", criado
+    duplicado_cc = must_fail(
+        f"SET request.jwt.claim.sub = '{GESTOR_A}';\n"
+        f"SELECT * FROM pa_budget_replace_allocations('{atomico}', "
+        f"'[{{\"cost_center_id\":\"{center_a}\",\"valor\":100,\"percentual\":50}},"
+        f"{{\"cost_center_id\":\"{center_a}\",\"valor\":100,\"percentual\":50}}]'::jsonb);",
+        "uma unica vez",
+    )
+    # A rejeicao nao pode ter apagado o rateio anterior.
+    mantido = scalar(
+        f"SELECT count(*) || '|' || COALESCE(sum(valor), 0) FROM pa_budget_allocations"
+        f" WHERE order_id = '{atomico}';"
+    )
+    assert mantido == "1|120.00", mantido
+    result["rateio_atomico"] = {"linhas": criado, "duplicado": duplicado_cc, "preservado": mantido}
+
+    # ---- 15. Rascunho com rateio defasado ainda edita itens (regressao) ----
+    defasado = "00000000-0000-4000-8000-000000000206"
+    sql(
+        "INSERT INTO sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        f" VALUES ('{defasado}', '{PA_A}', '{COOP_A}', '{GESTOR_A}', 'draft', 200);"
+    )
+    sql(
+        "INSERT INTO pa_budget_allocations (order_id, cost_center_id, valor, percentual)"
+        f" VALUES ('{defasado}', '{center_a}', 200, 100);"
+    )
+    sql(f"UPDATE sicoob_orders SET total_amount = 350 WHERE id = '{defasado}';")
+    rascunho_defasado = scalar(
+        f"SELECT total_amount FROM sicoob_orders WHERE id = '{defasado}';"
+    )
+    assert rascunho_defasado == "350.00", rascunho_defasado
+    result["rascunho_defasado"] = {
+        "edita_item": "permitido",
+        "motivo_entrada_na_verba": must_fail(
+            f"UPDATE sicoob_orders SET status = 'waiting_approval' WHERE id = '{defasado}';",
+            "soma",
+        ),
+    }
+    assert scalar(f"SELECT status FROM sicoob_orders WHERE id = '{defasado}';") == "draft"
+
+    # ---- 16. Livro so aceita verba do proprio PA (achado Devin #10) --------
+    verba_b = scalar(
+        "SELECT id FROM pa_budgets WHERE pa_id = "
+        f"'{PA_A}' AND ano = EXTRACT(YEAR FROM now()) AND mes = EXTRACT(MONTH FROM now());"
+    ).strip()
+    result["livro_escopo"] = {
+        "competencia_divergente": must_fail(
+            f"SET request.jwt.claim.sub = '{GESTOR_A}';\nSET ROLE authenticated;\n"
+            "INSERT INTO pa_budget_entries (pa_budget_id, pa_id, competencia_ano,"
+            " competencia_mes, tipo, estado, valor, actor_id)"
+            f" VALUES ('{verba_b}', '{PA_B}', EXTRACT(YEAR FROM now())::int,"
+            " EXTRACT(MONTH FROM now())::int, 'ajuste', 'consumido', 10,"
+            f" '{GESTOR_A}');",
+            "row-level security",
+        )
+    }
+
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/verba-lifecycle.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)
