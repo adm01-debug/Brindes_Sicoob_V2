@@ -2,6 +2,37 @@
 
 Índice e regra em [`README.md`](README.md).
 
+## Veredito 23/11/2026 — 13 lacunas fechadas
+
+Levantamento refeito contra o `main` (`aac38a48f` + esta PR). Nenhuma lacuna
+deste documento continua aberta; duas das treze eram consequência direta de
+outra (sem CAS, o item 3 e o 10 são a mesma causa) e o item 9 só foi corrigido
+nesta PR.
+
+| # | lacuna | veredito | evidência no código |
+| --- | --- | --- | --- |
+| 1 | Baseline assíncrona (adoptBaseline) | fechada antes | `useKitAutoSave.ts:332-339` (`isReady` + `hasReadyBaselineRef`) |
+| 2 | Autosave e manual sem fila/alvo | fechada antes | `useKitAutoSave.ts:247,277-279,470-482` + `KitBuilderPage.tsx:307-319` |
+| 3 | CAS por `updated_at` | fechada antes | `useKitAutoSave.ts:100,148` (`KitConflitoDeEdicao`, `updateWithOptimisticLock`) |
+| 4 | Salvamento manual fora da fila | fechada antes | `KitBuilderPage.tsx:307-319` (retrato → `flushAutoSave` → grava → `syncPersistedVersion`) |
+| 5 | Baseline quando o kit termina de carregar | fechada antes | `useKitAutoSave.ts:336-339` + `KitBuilderPage.tsx:194` (`isHydrated`) |
+| 6 | `isDirty` exposto + guarda de saída | fechada nesta PR | `useKitAutoSave.ts:29,238,351,501` + `KitBuilderPage.tsx:392-398` |
+| 7 | Atualizar template zera categoria e reativa desativado | fechada antes | `useTemplateSnapshot.ts:55-58` (`is_active` fora do UPDATE; categoria só se pedida) |
+| 8 | Template sobrescrito com 'Geral'/`is_active=true` | fechada antes — mesma causa do 7 | `useTemplateSnapshot.ts:56` |
+| 9 | Modo template gravando em `custom_kits` | fechada nesta PR | `useKitAutoSave.ts:230,257-258,351` (`isEnabled`) + `KitBuilderPage.tsx:196-199` |
+| 10 | Edição em outra aba sobrescrita em silêncio | fechada antes — mesma causa do 3 | `useKitAutoSave.ts:148` |
+| 11 | Kit recém-carregado regravado sem edição | fechada antes | `useKitAutoSave.ts:332-339,413,428` (`loadedUpdatedAt`) |
+| 12 | Autosave e manual sem fila (duplicata do 2) | fechada antes | `useKitAutoSave.ts:247,470-482` |
+| 13 | Autosave não ligado à guarda de saída | fechada nesta PR | `KitBuilderPage.tsx:392-398` + `useKitAutoSave.ts:29` |
+
+Regressões cobertas por teste em `tests/hooks/useKitAutoSave.test.tsx`:
+modo template não grava em `custom_kits`; leitura do template não conta como
+edição pendente; edição no template marca pendente; gravação concluída limpa o
+pendente.
+
+O documento abaixo fica como registro do diagnóstico original (estado da PR
+#119) e não como lista de pendências.
+
 ## Persistência do Kit Builder: 13 lacunas confirmadas contra a PR #119
 
 | lacuna | impacto |

@@ -606,4 +606,60 @@ describe('useKitAutoSave', () => {
     // o manual grava; o automatico nao duplica depois
     expect(update).not.toHaveBeenCalled();
   });
+
+  it('nao grava em custom_kits enquanto edita um template do sistema', async () => {
+    // `/montar-kit?template=ID` edita uma linha de `kit_templates`; quem grava
+    // e o "Atualizar template". Com o autosave ligado, cada edicao criava um
+    // kit pessoal paralelo com o conteudo do template.
+    const { rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined, undefined, true, null, false),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal 2026 (editado)' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+
+    expect(insert).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('marca alteracao pendente no modo template sem confundir leitura com edicao', async () => {
+    const { result, rerender } = renderHook(
+      ({ kit, pronto }: { kit: typeof initialKit; pronto: boolean }) =>
+        useKitAutoSave(kit, 1, undefined, undefined, pronto, null, false),
+      { initialProps: { kit: initialKit, pronto: false } },
+    );
+
+    // Conteudo chegando do banco: nao e edicao.
+    rerender({ kit: { ...initialKit, name: 'Natal 2026' }, pronto: false });
+    rerender({ kit: { ...initialKit, name: 'Natal 2026' }, pronto: true });
+    expect(result.current.isDirty).toBe(false);
+
+    rerender({ kit: { ...initialKit, name: 'Natal 2027' }, pronto: true });
+    expect(result.current.isDirty).toBe(true);
+
+    // `retry` nao pode voltar a gravar neste modo.
+    await act(async () => {
+      result.current.retry();
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it('limpa a alteracao pendente quando o autosave conclui a gravacao', async () => {
+    single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: 'v1' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Kit alterado' } });
+    expect(result.current.isDirty).toBe(true);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(insert).toHaveBeenCalledTimes(1);
+    expect(result.current.isDirty).toBe(false);
+  });
 });

@@ -163,6 +163,10 @@ export default function KitBuilderPage() {
   // ser sobrescrita, e nos dois casos o que chega à tela é material novo que
   // o autosave deve mesmo persistir.
   const [isHydrated, setIsHydrated] = useState(!kitIdParam);
+  // ?template= lê uma linha de `kit_templates` depois do primeiro render. Até
+  // ela chegar, o conteúdo na tela é dado lido, não edição — sem isto o
+  // template recém-aberto entrava como alteração pendente.
+  const [isTemplateLoading, setIsTemplateLoading] = useState(Boolean(templateIdParam) && !kitIdParam);
   // `updated_at` da linha que está na tela. A trava otimista do autosave só
   // grava se a linha continuar nessa versão.
   const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | null>(null);
@@ -182,11 +186,16 @@ export default function KitBuilderPage() {
   useCustomKitsRealtime();
 
   const {
-    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
+    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
     capturarSnapshotAtual,
   } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
+    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
+    isHydrated && !isTemplateLoading, loadedUpdatedAt,
+    // Editando um template do sistema: o destino é `kit_templates`, gravado
+    // pelo "Atualizar template". O autosave aqui só criava kits pessoais
+    // paralelos com o conteúdo do template.
+    !templateIdParam,
   );
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
@@ -246,7 +255,7 @@ export default function KitBuilderPage() {
   useEffect(() => {
     if (!templateIdParam || hasLoadedTemplateRef.current || kitIdParam) return;
     hasLoadedTemplateRef.current = true;
-    void loadKitTemplate(templateIdParam, loadKit);
+    void loadKitTemplate(templateIdParam, loadKit).finally(() => setIsTemplateLoading(false));
   }, [templateIdParam, kitIdParam, loadKit]);
 
   useEffect(() => {
@@ -361,6 +370,17 @@ export default function KitBuilderPage() {
   const hasContent = kitHasContent(kitState);
 
   /**
+   * O aviso de saída cobre três situações diferentes: conteúdo do template
+   * ainda não gravado, conflito com outra aba e falha de gravação. A frase
+   * diz qual delas é.
+   */
+  function guardMessage({ temTemplate, conflito }: { temTemplate: boolean; conflito: boolean }): string {
+    if (temTemplate) return 'As alterações no template ainda não foram salvas. Sair agora as descarta.';
+    if (conflito) return 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.';
+    return 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.';
+  }
+
+  /**
    * Sair do montador com trabalho que não está no banco.
    *
    * O autosave cobre o caso normal, mas não cobre dois: a janela de 5s do
@@ -370,10 +390,9 @@ export default function KitBuilderPage() {
    * essa guarda; `/montar-kit` ficava de fora.
    */
   useUnsavedChangesGuard({
-    hasUnsavedChanges: hasContent && (Boolean(lastSaveError) || lastSaveConflict || isAutoSaving),
-    message: lastSaveConflict
-      ? 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.'
-      : 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.',
+    hasUnsavedChanges: hasContent
+      && (isDirty || Boolean(lastSaveError) || lastSaveConflict || isAutoSaving),
+    message: guardMessage({ temTemplate: Boolean(templateIdParam), conflito: lastSaveConflict }),
   });
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
