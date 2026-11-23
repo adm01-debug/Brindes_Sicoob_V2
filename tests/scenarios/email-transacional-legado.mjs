@@ -185,7 +185,9 @@ function resolvedWithStatus(status) {
 }
 
 test('quatro transições distintas do mesmo pedido geram quatro avisos', async () => {
-  const transitions = ['em_producao', 'separado', 'em_transporte', 'entregue'];
+  // Estados que o produto realmente grava (ACTIONS em OrderSellerActions.tsx);
+  // `separado` não existe no enum de pedidos.
+  const transitions = ['em_producao', 'em_separacao', 'em_transporte', 'entregue'];
   const rateLimitState = { used: new Map() };
   for (const status of transitions) {
     const { handler, calls } = app({ configured: true, resolved: resolvedWithStatus(status), rateLimitState });
