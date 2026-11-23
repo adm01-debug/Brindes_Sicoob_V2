@@ -18,6 +18,7 @@ import { CouponInput } from "./CouponInput";
 import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 
 import { Progress } from "@/components/ui/progress";
+import { CartPaBudgetBalance } from "./CartPaBudgetBalance";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { askConfirm } from '@/stores/useConfirmDialogStore';
 
@@ -110,6 +111,7 @@ export function MiniCart() {
 
         {items.length > 0 && (
           <div className="mt-auto pt-4 space-y-4">
+            <CartPaBudgetBalance />
             <CartApprovalThreshold threshold={threshold} subtotal={subtotal} progress={thresholdProgress} remaining={remaining} overThreshold={isOverThreshold} />
 
             <Separator />

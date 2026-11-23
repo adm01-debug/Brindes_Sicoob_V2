@@ -216,6 +216,10 @@ const TARGETS = [
     file: "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
     sha256: "52b28236e2bd1ced6c1374084eeb893c926a832db0b40df74d4bca674c56dfa6",
   },
+  {
+    file: "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+    sha256: "98f4eaea6b752b716fcea73cb044fef2c0a6bc1c033c4ec352db6dce72e041ac",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (

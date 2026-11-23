@@ -332,5 +332,7 @@ export const Sel = {
   ext: {
     /** Toast da lib `sonner` — atributo público da lib. */
     sonnerToast: "[data-sonner-toast]",
+    /** Viewport de rolagem do Radix ScrollArea (`data-radix-scroll-area-viewport`). */
+    radixScrollViewport: "[data-radix-scroll-area-viewport]",
   },
 } as const;

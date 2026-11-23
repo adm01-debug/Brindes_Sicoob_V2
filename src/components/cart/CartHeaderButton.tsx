@@ -10,10 +10,25 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSellerCartContext } from "@/contexts/SellerCartContext";
 import { CartCompanyPicker } from "./CartCompanyPicker";
+import { CartPaBudgetBalance } from "./CartPaBudgetBalance";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
+
+/**
+ * Tetos de altura da lista de orçamentos. O painel inteiro é limitado ao espaço
+ * realmente disponível na janela (variável publicada pelo Radix Popover), então a
+ * lista precisa descontar somente o que está renderizado acima e abaixo dela:
+ * o cabeçalho existe sempre e o rodapé (verba + subtotal + CTA) só aparece
+ * quando o orçamento ativo tem itens. Reservar os ~248px do rodapé sem ele
+ * zerava a altura da lista em janelas baixas, sem rolagem para alcançar os
+ * outros orçamentos. O teto vale para o Root *e* para o viewport porque é o
+ * viewport que rola: `max-h` só no Root, que tem `overflow-hidden`, corta o
+ * conteúdo em vez de rolar e empurra "Gerar Orçamento" para fora da tela.
+ */
+const CART_LIST_MAX_HEIGHT_WITH_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]";
+const CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-4.5rem))]";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -84,6 +99,11 @@ export function CartHeaderButton() {
     updateItemQuantity,
   } = useSellerCartContext();
 
+  // Sem itens no orçamento ativo não existe rodapé: a lista fica com todo o
+  // espaço que sobra, em vez de reservar uma altura que ninguém ocupa.
+  const hasCheckoutFooter = Boolean(activeCart && activeCart.items.length > 0);
+  const listMaxHeight = hasCheckoutFooter ? CART_LIST_MAX_HEIGHT_WITH_FOOTER : CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -112,7 +132,7 @@ export function CartHeaderButton() {
 
       <PopoverContent
         data-testid="cart-drawer"
-        className="w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
+        className="max-h-[var(--radix-popover-content-available-height)] w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
         align="end"
         sideOffset={8}
         onCloseAutoFocus={() => setShowPicker(false)}
@@ -202,20 +222,26 @@ export function CartHeaderButton() {
                 </div>
               ) : (
                 <>
-                  <ScrollArea className="max-h-[440px]">
+                  {/* O rodapé (verba + subtotal + CTA) não rola: a lista cede altura
+                      para que "Gerar Orçamento" continue visível em janelas baixas. */}
+                  <ScrollArea className={listMaxHeight} viewportClassName={listMaxHeight}>
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>
                   </ScrollArea>
 
                   {/* CTA Footer with subtotal */}
-                  {activeCart && activeCart.items.length > 0 && (() => {
+                  {hasCheckoutFooter && activeCart && (() => {
                     const subtotal = activeCart.items.reduce(
                       (sum, item) => sum + item.product_price * item.quantity,
                       0
                     );
                     return (
-                      <div className="p-3 border-t border-border/40 space-y-2">
+                      <div className="border-t border-border/40">
+                      <div className="p-3 space-y-2">
+                        <CartPaBudgetBalance />
+                      </div>
+                      <div className="px-3 pb-3 space-y-2">
                         {/* Subtotal */}
                         <div className="flex items-center justify-between px-1">
                           <span className="text-xs text-muted-foreground">
@@ -226,6 +252,7 @@ export function CartHeaderButton() {
                           </span>
                         </div>
                         <Button
+                          data-testid="cart-checkout-cta"
                           className="w-full gap-2 text-xs h-10 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={() => {
                             const cartIdToDelete = activeCart.id;
@@ -255,6 +282,7 @@ export function CartHeaderButton() {
                           <ArrowRight className="h-3.5 w-3.5" />
                           Gerar Orçamento
                         </Button>
+                      </div>
                       </div>
                     );
                   })()}
