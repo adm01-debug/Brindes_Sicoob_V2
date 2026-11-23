@@ -97,6 +97,27 @@ test('quote_rejected não emite link: recusa do Kanban não cria resposta', asyn
   assert.equal(result.intent.actionUrl, undefined);
 });
 
+test('quote_rejected em orçamento vencido é enviado: a recusa não tem link', async () => {
+  // O bloqueio por validade existe para não anunciar um link que o portal
+  // rejeita. A recusa já está salva e não carrega link, então barrá-la
+  // esconderia do cliente um estado que existe.
+  const result = await resolveEmailIntent(options({
+    eventType: 'quote_rejected',
+    deps: deps({ table: quote({ status: 'rejected', valid_until: '2000-01-01' }) }),
+  }));
+  assert.equal(result.ok, true);
+  assert.equal(result.intent.actionUrl, undefined);
+});
+
+test('quote_approved em orçamento vencido continua barrado por 409', async () => {
+  const result = await resolveEmailIntent(options({
+    eventType: 'quote_approved',
+    deps: deps({ table: quote({ status: 'approved', valid_until: '2000-01-01' }) }),
+  }));
+  assert.equal(result.ok, false);
+  assert.equal(result.failure.error, 'orcamento_vencido');
+});
+
 test('quote_rejected exige status recusado', async () => {
   const result = await resolveEmailIntent(options({
     eventType: 'quote_rejected',

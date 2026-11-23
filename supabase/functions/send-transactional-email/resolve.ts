@@ -158,15 +158,16 @@ async function resolveQuote(options: ResolveOptions, quoteId: string): Promise<R
   if (eventType === "quote_sent" && !SENDABLE_QUOTE_STATUS.has(status))
     return fail(409, "orcamento_indisponivel");
 
-  // O portal recusa (get_public_quote_approval) orcamento vencido. Anunciar o link
-  // de um orcamento fora da validade entrega um botao que a pagina rejeita.
-  if (quoteExpired(quote.valid_until)) return fail(409, "orcamento_vencido");
-
   // Recusa registrada pelo Kanban nao cria token de resposta: o link levaria o
   // cliente a uma pagina que nao consegue responder de volta.
   const needsApprovalLink = eventType !== "quote_rejected";
   let actionUrl: string | undefined;
   if (needsApprovalLink) {
+    // O portal recusa (get_public_quote_approval) orcamento vencido. Anunciar o
+    // link de um orcamento fora da validade entrega um botao que a pagina
+    // rejeita. O bloqueio vale so para quem carrega link: a recusa nao tem link
+    // e ja esta salva, entao barrar o aviso so esconderia um estado real.
+    if (quoteExpired(quote.valid_until)) return fail(409, "orcamento_vencido");
     const token = await deps.ensureApprovalToken(quoteId, String(quote.seller_id ?? user.id));
     if (!token) return fail(503, "link_publico_indisponivel");
     const base = sanitizePublicUrl(options.publicAppUrl);

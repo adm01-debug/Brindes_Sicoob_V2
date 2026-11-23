@@ -85,17 +85,6 @@ serve(withStructuredLogging("send-transactional-email", async (req) => {
   const reference = ["quote_id", "order_id", "approval_request_id"]
     .map((key) => (typeof body[key] === "string" ? `${key}=${String(body[key]).trim()}` : ""))
     .find((value) => value.length > 0) ?? "";
-  const allowed = await withinSendBudget(
-    supabaseAdmin,
-    `${auth.user.id}|${eventType}|${reference}`,
-    "send-transactional-email",
-  );
-  if (!allowed) {
-    return json({
-      error: "limite_de_envio",
-      message: "Limite de envio deste e-mail atingido. Aguarde para tentar novamente.",
-    }, 429);
-  }
 
   const deps: ResolveAdapter = {
     async find(table, columns, filters) {
@@ -156,6 +145,23 @@ serve(withStructuredLogging("send-transactional-email", async (req) => {
   if (!resolved.ok) return json({ error: resolved.failure.error }, resolved.failure.status);
 
   const { intent } = resolved;
+  // A cota acompanha a transicao que o servidor acabou de ler, nao apenas o
+  // pedido: quatro etapas distintas no mesmo pedido sao quatro avisos
+  // legitimamente diferentes e precisam sair. Repetir a mesma transicao cai na
+  // mesma cota, entao o reenvio em massa continua barrado.
+  const transition = typeof intent.data.status === "string" ? intent.data.status : "-";
+  const allowed = await withinSendBudget(
+    supabaseAdmin,
+    `${auth.user.id}|${eventType}|${reference}|${transition}`,
+    "send-transactional-email",
+  );
+  if (!allowed) {
+    return json({
+      error: "limite_de_envio",
+      message: "Limite de envio deste e-mail atingido. Aguarde para tentar novamente.",
+    }, 429);
+  }
+
   const template = renderTemplate(eventType, {
     recipientName: intent.recipientName,
     data: intent.actionUrl ? { ...intent.data, action_url: intent.actionUrl } : intent.data,

@@ -16,6 +16,7 @@ function app({
   configured = false,
   budgetAllowed = true,
   providerId = 'email-sintetico',
+  rateLimitState = null,
   resolved = {
     ok: true,
     intent: {
@@ -28,6 +29,8 @@ function app({
 } = {}) {
   let handler;
   const calls = { resolve: [], deliver: [] };
+  // Estado do teto compartilhado entre chamadas que simulam a mesma janela.
+  const budget = rateLimitState ?? { used: new Map() };
   vm.runInNewContext(code, {
     exports: {}, Response, console,
     Deno: { env: { get: () => configured ? 'configuracao-sintetica' : undefined } },
@@ -46,8 +49,15 @@ function app({
                 supabaseUser: { from: NO_STORE },
                 supabaseAdmin: {
                   from: NO_STORE,
-                  // Teto de envio: libera por padrão; um teste específico nega.
-                  rpc: async () => ({ data: { allowed: budgetAllowed }, error: null }),
+                  // check_rate_limit real: 3 por identificador. O identificador
+                  // compõe usuário + evento + referência + transição.
+                  rpc: async (_name, params) => {
+                    const key = params._identifier;
+                    if (!budgetAllowed) return { data: { allowed: false }, error: null };
+                    const used = (budget.used.get(key) ?? 0) + 1;
+                    budget.used.set(key, used);
+                    return { data: { allowed: used <= params._max_requests }, error: null };
+                  },
                 },
               }
             : { ok: false, response: new Response(JSON.stringify({ error: 'nao_autenticado' }), { status: 401 }) },
@@ -153,11 +163,46 @@ test('propaga a recusa do resolvedor sem tocar no transporte', async () => {
   assert.equal(calls.deliver.length, 0);
 });
 
-test('teto de envio barra reenvio em massa antes do resolvedor', async () => {
+test('teto de envio barra o transporte mesmo quando o resolvedor aceita', async () => {
   const { handler, calls } = app({ configured: true, budgetAllowed: false });
   const response = await handler(post({ event_type: 'quote_sent', quote_id: 'orcamento-sintetico' }));
   assert.equal(response.status, 429);
   assert.equal((await response.json()).error, 'limite_de_envio');
-  assert.equal(calls.resolve.length, 0);
+  // A referência e a transição só existem depois da resolução, por isso a cota
+  // é checada depois dela. O que não pode acontecer é o e-mail sair.
   assert.equal(calls.deliver.length, 0);
+});
+
+function resolvedWithStatus(status) {
+  return {
+    ok: true,
+    intent: {
+      recipientEmail: 'cliente@example.invalid',
+      recipientName: 'Cliente Sintetico',
+      data: { order_number: 'PED-1', total: 100, status },
+    },
+  };
+}
+
+test('quatro transições distintas do mesmo pedido geram quatro avisos', async () => {
+  const transitions = ['em_producao', 'separado', 'em_transporte', 'entregue'];
+  const rateLimitState = { used: new Map() };
+  for (const status of transitions) {
+    const { handler, calls } = app({ configured: true, resolved: resolvedWithStatus(status), rateLimitState });
+    const response = await handler(post({ event_type: 'sicoob_order_status_change', order_id: 'pedido-1' }));
+    assert.equal(response.status, 200, `transição ${status} deveria ser enviada`);
+    assert.equal(calls.deliver.length, 1);
+  }
+  assert.equal(transitions.length, 4);
+});
+
+test('quatro tentativas da mesma transição param na quarta', async () => {
+  const statuses = [];
+  const rateLimitState = { used: new Map() };
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const { handler } = app({ configured: true, resolved: resolvedWithStatus('entregue'), rateLimitState });
+    const response = await handler(post({ event_type: 'sicoob_order_status_change', order_id: 'pedido-1' }));
+    statuses.push(response.status);
+  }
+  assert.deepEqual(statuses, [200, 200, 200, 429]);
 });
