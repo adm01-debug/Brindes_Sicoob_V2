@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.49.4";
 import { authorize } from "../_shared/authorize.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { withStructuredLogging } from "../_shared/structured-logger.ts";
@@ -22,6 +23,31 @@ function randomToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Teto por remetente para o mesmo evento+referencia. Sem isso um vendedor podia
+ * reenviar o mesmo e-mail indefinidamente e inundar a caixa do cliente.
+ * `check_rate_limit` e a SSOT transacional (a janela em memoria da instancia nao
+ * vale entre isolates).
+ */
+async function withinSendBudget(
+  admin: SupabaseClient,
+  identifier: string,
+  endpoint: string,
+): Promise<boolean> {
+  const { data, error } = await admin.rpc("check_rate_limit", {
+    _identifier: identifier,
+    _endpoint: endpoint,
+    _max_requests: 3,
+    _window_seconds: 3600,
+    _block_duration_seconds: 3600,
+  });
+  if (error || !data || typeof (data as { allowed?: unknown }).allowed !== "boolean") {
+    // Servico de protecao fora: falha fechado para nao liberar envio em massa.
+    return false;
+  }
+  return (data as { allowed: boolean }).allowed;
 }
 
 serve(withStructuredLogging("send-transactional-email", async (req) => {
@@ -55,6 +81,21 @@ serve(withStructuredLogging("send-transactional-email", async (req) => {
 
   const supabaseUser = auth.supabaseUser;
   const supabaseAdmin = auth.supabaseAdmin;
+
+  const reference = ["quote_id", "order_id", "approval_request_id"]
+    .map((key) => (typeof body[key] === "string" ? `${key}=${String(body[key]).trim()}` : ""))
+    .find((value) => value.length > 0) ?? "";
+  const allowed = await withinSendBudget(
+    supabaseAdmin,
+    `${auth.user.id}|${eventType}|${reference}`,
+    "send-transactional-email",
+  );
+  if (!allowed) {
+    return json({
+      error: "limite_de_envio",
+      message: "Limite de envio deste e-mail atingido. Aguarde para tentar novamente.",
+    }, 429);
+  }
 
   const deps: ResolveAdapter = {
     async find(table, columns, filters) {

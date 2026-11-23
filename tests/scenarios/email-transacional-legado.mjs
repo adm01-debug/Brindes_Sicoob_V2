@@ -14,6 +14,7 @@ const NO_STORE = () => assert.fail('lookup de tabela não deve usar o cliente an
 function app({
   authenticated = true,
   configured = false,
+  budgetAllowed = true,
   providerId = 'email-sintetico',
   resolved = {
     ok: true,
@@ -43,7 +44,11 @@ function app({
                 user: { id: 'pessoa-sintetica' },
                 role: 'agente',
                 supabaseUser: { from: NO_STORE },
-                supabaseAdmin: { from: NO_STORE },
+                supabaseAdmin: {
+                  from: NO_STORE,
+                  // Teto de envio: libera por padrão; um teste específico nega.
+                  rpc: async () => ({ data: { allowed: budgetAllowed }, error: null }),
+                },
               }
             : { ok: false, response: new Response(JSON.stringify({ error: 'nao_autenticado' }), { status: 401 }) },
         };
@@ -145,5 +150,14 @@ test('propaga a recusa do resolvedor sem tocar no transporte', async () => {
   const response = await handler(post({ event_type: 'quote_sent', quote_id: 'de-outro-vendedor' }));
   assert.equal(response.status, 403);
   assert.equal((await response.json()).error, 'sem_permissao');
+  assert.equal(calls.deliver.length, 0);
+});
+
+test('teto de envio barra reenvio em massa antes do resolvedor', async () => {
+  const { handler, calls } = app({ configured: true, budgetAllowed: false });
+  const response = await handler(post({ event_type: 'quote_sent', quote_id: 'orcamento-sintetico' }));
+  assert.equal(response.status, 429);
+  assert.equal((await response.json()).error, 'limite_de_envio');
+  assert.equal(calls.resolve.length, 0);
   assert.equal(calls.deliver.length, 0);
 });

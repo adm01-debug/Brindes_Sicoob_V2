@@ -53,6 +53,9 @@ const EMAIL_RE = /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/;
 const APPROVABLE_QUOTE_STATUS = new Set(["approved", "approved_singular"]);
 const REJECTABLE_QUOTE_STATUS = new Set(["rejected", "rejected_singular"]);
 const UNSENDABLE_QUOTE_STATUS = new Set(["rejected", "rejected_singular", "expired"]);
+// `quote_sent` anuncia ao cliente que existe um orcamento para ele abrir. Rascunho
+// (ou pedido de aprovacao interna) nao foi enviado a ninguem: so `sent` serve.
+const SENDABLE_QUOTE_STATUS = new Set(["sent"]);
 
 const ORDER_STATUS_SENTENCE: Record<string, string> = {
   draft: "foi criado como rascunho.",
@@ -67,10 +70,36 @@ const ORDER_STATUS_SENTENCE: Record<string, string> = {
   completed: "foi concluído.",
   cancelled: "foi cancelado.",
   rejected: "foi rejeitado.",
+  // Pedido legado (orders) usa status em portugues; sem estes o cliente recebia
+  // "foi criado com sucesso" mesmo em producao ou cancelado.
+  rascunho: "foi criado como rascunho.",
+  enviado_gestor: "foi enviado ao gestor para aprovação.",
+  aprovado_gestor: "foi aprovado pela Singular.",
+  enviado_vendedor: "foi enviado ao vendedor.",
+  em_producao: "está em produção.",
+  em_separacao: "está em separação.",
+  em_transporte: "está em transporte.",
+  entregue: "foi entregue.",
+  concluido: "foi concluído.",
+  cancelado: "foi cancelado.",
 };
 
 export const orderStatusSentence = (status: unknown): string =>
   ORDER_STATUS_SENTENCE[String(status ?? "")] ?? "foi criado com sucesso.";
+
+/** `valid_until` e DATE (yyyy-mm-dd) ou ausente: sem data o orcamento nunca vence. */
+function quoteExpired(validUntil: unknown): boolean {
+  if (typeof validUntil !== "string") return false;
+  const raw = validUntil.trim();
+  if (!raw) return false;
+  const dateOnly = /^\d{4}-\d{2}-\d{2}/.exec(raw)?.[0];
+  const parsed = Date.parse(dateOnly ?? raw);
+  if (Number.isNaN(parsed)) return false;
+  // Comparacao por dia (UTC) espelha `valid_until::date >= CURRENT_DATE` do portal.
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  return parsed < todayUtc;
+}
 
 const fail = (status: number, error: string): ResolveResult => ({ ok: false, failure: { status, error } });
 
@@ -112,7 +141,7 @@ async function resolveQuote(options: ResolveOptions, quoteId: string): Promise<R
   const { eventType, user, canViewAll, deps } = options;
   const quote = await deps.find(
     "quotes",
-    "client_email, client_name, quote_number, total, status, seller_id",
+    "client_email, client_name, quote_number, total, status, seller_id, valid_until",
     { id: quoteId },
   );
   if (!quote) return fail(404, "referencia_nao_encontrada");
@@ -126,20 +155,31 @@ async function resolveQuote(options: ResolveOptions, quoteId: string): Promise<R
     return fail(409, "orcamento_nao_aprovado");
   if (eventType === "quote_rejected" && !REJECTABLE_QUOTE_STATUS.has(status))
     return fail(409, "orcamento_nao_recusado");
-  if (eventType === "quote_sent" && UNSENDABLE_QUOTE_STATUS.has(status))
+  if (eventType === "quote_sent" && !SENDABLE_QUOTE_STATUS.has(status))
     return fail(409, "orcamento_indisponivel");
 
-  const token = await deps.ensureApprovalToken(quoteId, String(quote.seller_id ?? user.id));
-  if (!token) return fail(503, "link_publico_indisponivel");
-  const base = sanitizePublicUrl(options.publicAppUrl);
-  if (!base) return fail(503, "app_url_not_configured");
+  // O portal recusa (get_public_quote_approval) orcamento vencido. Anunciar o link
+  // de um orcamento fora da validade entrega um botao que a pagina rejeita.
+  if (quoteExpired(quote.valid_until)) return fail(409, "orcamento_vencido");
+
+  // Recusa registrada pelo Kanban nao cria token de resposta: o link levaria o
+  // cliente a uma pagina que nao consegue responder de volta.
+  const needsApprovalLink = eventType !== "quote_rejected";
+  let actionUrl: string | undefined;
+  if (needsApprovalLink) {
+    const token = await deps.ensureApprovalToken(quoteId, String(quote.seller_id ?? user.id));
+    if (!token) return fail(503, "link_publico_indisponivel");
+    const base = sanitizePublicUrl(options.publicAppUrl);
+    if (!base) return fail(503, "app_url_not_configured");
+    actionUrl = `${base}/proposta/${token}`;
+  }
 
   return {
     ok: true,
     intent: {
       recipientEmail,
       recipientName: typeof quote.client_name === "string" ? quote.client_name : undefined,
-      actionUrl: `${base}/proposta/${token}`,
+      actionUrl,
       data: {
         quote_number: quote.quote_number,
         total: quote.total,
@@ -191,7 +231,10 @@ async function resolveLegacyOrder(options: ResolveOptions, orderId: string): Pro
   if (!order) return fail(404, "referencia_nao_encontrada");
   if (!owns(order, "seller_id", options.user.id, options.canViewAll)) return fail(403, "sem_permissao");
 
-  const recipientEmail = validEmail(order.client_email);
+  // Pedido legado frequentemente nao tem client_email. Antes o aviso ia para o
+  // e-mail da sessao de quem mudou o status; manter esse destino restaura o
+  // comportamento sem reabrir o buraco (o e-mail vem do JWT, nao do corpo).
+  const recipientEmail = validEmail(order.client_email) ?? validEmail(options.user.email);
   if (!recipientEmail) return fail(422, "destinatario_ausente");
 
   const status = String(order.status ?? "");
@@ -237,13 +280,21 @@ async function resolveApprovalRequest(options: ResolveOptions, requestId: string
 
   const base = sanitizePublicUrl(options.publicAppUrl);
   const orderId = String(request.order_id ?? "");
+  // O template monta assunto e corpo com `order_number`; sem ele o aprovador
+  // recebia "Pedido aguarda sua aprovacao" sem saber qual pedido.
+  const order = orderId
+    ? await options.deps.find("sicoob_orders", "order_number", { id: orderId })
+    : null;
   return {
     ok: true,
     intent: {
       recipientEmail,
       recipientName: recipient?.full_name ?? undefined,
       actionUrl: base ? `${base}/sicoob/pedidos/${orderId}` : undefined,
-      data: { amount_at_request: request.amount_at_request },
+      data: {
+        order_number: order?.order_number,
+        amount_at_request: request.amount_at_request,
+      },
     },
   };
 }
