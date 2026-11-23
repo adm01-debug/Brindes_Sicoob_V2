@@ -948,6 +948,14 @@
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
+      "id": "legacy-d0290140d64cb8eb",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-relatorios-agendados-cron.py"],
+      "manual": ["python3", "scripts/qa/simular-relatorios-agendados-cron.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml. O dispatcher não executa esta operação."
+    },
+    {
       "id": "legacy-34b25c83ca91c1e5",
       "kind": "legacy",
       "files": ["scripts/qa/simular-webhook-internal-auth.py"],

@@ -83,6 +83,7 @@ jobs:
           deno test --no-config supabase/functions/_shared/internal-service-auth.test.ts
           deno test --no-config supabase/functions/_shared/read-limited-body.test.ts
           deno test --no-config --allow-env supabase/functions/_shared/authorize_test.ts
+          deno test --no-config supabase/functions/send-scheduled-reports/report-types.test.ts
           # Verificar shared utilities
           find supabase/functions/_shared -name '*.ts' -not -name '*.test.ts' -print0 | \
             xargs -0 deno check --no-config
@@ -144,6 +145,9 @@ jobs:
 
       - name: Simular autenticação Vault dos chamadores de webhook
         run: python3 scripts/qa/simular-webhook-internal-auth.py
+
+      - name: Simular agendamento do worker de relatórios
+        run: python3 scripts/qa/simular-relatorios-agendados-cron.py
 
       - name: Compilar artefato de produção
         env:
