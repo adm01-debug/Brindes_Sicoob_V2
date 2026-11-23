@@ -233,7 +233,9 @@ function SearchResultItem({
   const Icon = config.icon;
   return (
     <CommandItem
-      value={result.title}
+      // O seletor do cmdk filtra pelo `value`; SKU e categoria precisam entrar
+      // aqui senão o item some quando só eles casam com o termo.
+      value={`${result.title} ${result.subtitle ?? ''}`.trim()}
       onSelect={() => onSelect(result.href)}
       className={cn(
         'mx-2 flex items-center gap-3.5 rounded-xl px-3 py-3 duration-200 animate-in fade-in-0 slide-in-from-bottom-1',
