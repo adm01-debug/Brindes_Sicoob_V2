@@ -16,12 +16,33 @@
  * nunca, REST todo mockado), então o cenário não depende das contas E2E nem
  * das secrets do projeto de QA.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { test, expect } from '@playwright/test';
 import { Sel } from './fixtures/selectors';
 import { gotoAndSettle } from './helpers/nav';
 import type { Page, Route } from '@playwright/test';
 
-const PROJECT_REF = 'fake-project';
+/**
+ * Mesma precedência do `webServer` (`playwright.config.ts`): o `.env.production`
+ * local (quando existe) vence o env do processo, que no CI é
+ * `https://e2e-public.invalid`. O `supabase-js` guarda a sessão em
+ * `sb-<ref>-auth-token`, então o ref precisa acompanhar o servidor em uso —
+ * fixá-lo em `fake-project` deixava a jornada sem sessão no pipeline.
+ */
+function supabaseUrl(): string {
+  try {
+    const file = readFileSync(resolve(process.cwd(), '.env.production'), 'utf8');
+    const line = file.split(/\r?\n/).find((candidate) => candidate.trim().startsWith('VITE_SUPABASE_URL='));
+    if (line) return line.slice(line.indexOf('=') + 1).trim().replace(/^["']/, '').replace(/["']$/, '');
+  } catch {
+    // Sem `.env.production` (CI): o servidor usa o env do processo.
+  }
+  return process.env.VITE_SUPABASE_URL?.trim() || 'https://e2e-public.invalid';
+}
+
+const PROJECT_REF = new URL(supabaseUrl()).hostname.split('.')[0];
 const USER_ID = 'e2e-cart-scroll-user';
 const PA_ID = 'e2e-cart-scroll-pa';
 
