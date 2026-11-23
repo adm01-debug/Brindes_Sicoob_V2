@@ -6,7 +6,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 
 | métrica | valor |
 |---|---|
-| tamanho | 232.3 MB |
+| tamanho | 232.4 MB |
 | schema public | 153.8 MB |
 | schema private | 24.0 KB |
 
@@ -18,28 +18,28 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.telemetry_events | ~98.5k | 47.7 MB | 42.6 MB | 5.0 MB | ~10 | 3 | ~630 | 2026-10-30 |
 | public.query_telemetry | ~63.7k | 43.6 MB | 9.2 MB | 17.1 MB | 3 | ~20 | ~78.8k | 2026-10-30 |
 | public.admin_audit_log_y2026_m10 | ~20.3k | 17.9 MB | 9.1 MB | 8.8 MB | ~20 | 4 | ~21.1k | 2026-10-28 |
-| public.sicoob_approval_worker_dispatches | ~41.5k | 15.8 MB | 10.2 MB | 5.5 MB | ~2.8k | ~59.4k | ~196.8k | 2026-11-22 |
+| public.sicoob_approval_worker_dispatches | ~41.5k | 15.8 MB | 10.2 MB | 5.5 MB | ~2.9k | ~59.5k | ~197k | 2026-11-22 |
 | public.e2e_cleanup_audit | ~10.5k | 6.6 MB | 3.6 MB | 3.0 MB | 7 | 0 | 1 | 2026-10-30 |
 | public.workspace_notifications | ~9.4k | 5.8 MB | 4.3 MB | 1.5 MB | 7 | 0 | ~79.5k | 2026-10-18 |
 | public.login_attempts | ~7.7k | 3.1 MB | 2.1 MB | 984.0 KB | 0 | ~900 | ~6.5k | 2026-10-18 |
 | public.mcp_access_violations | ~2k | 1016.0 KB | 496.0 KB | 480.0 KB | ~180 | 1 | ~4.1k | 2026-10-27 |
 | public.admin_audit_log_y2026_m09 | ~180 | 504.0 KB | 256.0 KB | 208.0 KB | 0 | ~280 | ~9.5k |  |
 | public.quotes | 0 | 320.0 KB | 8.0 KB | 288.0 KB | ~10 | ~1.3k | ~45.5k | 2026-11-07 |
-| public.connection_test_history | ~200 | 192.0 KB | 32.0 KB | 120.0 KB | 9 | ~5.3k | ~10.6k | 2026-10-11 |
+| public.connection_test_history | ~200 | 192.0 KB | 32.0 KB | 120.0 KB | 9 | ~5.3k | ~10.7k | 2026-10-11 |
 | public.sicoob_invitations | 0 | 184.0 KB | 8.0 KB | 168.0 KB | 0 | ~20 | ~130 |  |
-| public.sicoob_orders | 0 | 184.0 KB | 8.0 KB | 152.0 KB | 5 | ~920 | ~5.3k | 2026-10-16 |
+| public.sicoob_orders | 0 | 184.0 KB | 8.0 KB | 152.0 KB | 5 | ~920 | ~5.4k | 2026-10-16 |
 | public.orders | 0 | 160.0 KB | 8.0 KB | 144.0 KB | 0 | 2 | ~12.2k |  |
 | public.request_rate_limits | 1 | 160.0 KB | 16.0 KB | 104.0 KB | ~30 | ~1.1k | ~7.6k | 2026-11-01 |
 | public.admin_audit_log_default | 0 | 152.0 KB | 8.0 KB | 136.0 KB | 0 | ~140 | ~10.9k |  |
 | public.admin_audit_log_y2026_m05 | 0 | 152.0 KB | 8.0 KB | 136.0 KB | 0 | ~280 | ~160 |  |
 | public.admin_audit_log_y2026_m08 | 0 | 152.0 KB | 8.0 KB | 136.0 KB | 0 | ~280 | ~160 |  |
-| public.profiles | ~10 | 144.0 KB | 24.0 KB | 80.0 KB | ~20 | ~41.7M | ~629.8k | 2026-10-28 |
+| public.profiles | ~10 | 144.0 KB | 24.0 KB | 80.0 KB | ~20 | ~41.7M | ~629.9k | 2026-10-28 |
 | public.admin_audit_log_y2026_m11 | 0 | 136.0 KB | 8.0 KB | 120.0 KB | 1 | ~140 | ~10.8k |  |
 | public.bot_detection_log | ~20 | 128.0 KB | 24.0 KB | 64.0 KB | ~20 | ~260 | ~1.7k | 2026-11-13 |
 | public.search_analytics | 0 | 128.0 KB | 8.0 KB | 112.0 KB | 3 | ~20 | ~810 |  |
 | public.e2e_cleanup_rate_limit | ~390 | 112.0 KB | 32.0 KB | 40.0 KB | ~30 | ~220 | ~12.8k | 2026-10-29 |
 | public.product_views | ~60 | 112.0 KB | 16.0 KB | 64.0 KB | 0 | ~800 | ~1.5k |  |
-| public.sicoob_approval_requests | 0 | 112.0 KB | 8.0 KB | 96.0 KB | 5 | ~40 | ~56.4k |  |
+| public.sicoob_approval_requests | 0 | 112.0 KB | 8.0 KB | 96.0 KB | 5 | ~40 | ~56.5k |  |
 | public.admin_config_audit | ~70 | 104.0 KB | 40.0 KB | 32.0 KB | ~40 | 8 | ~30 |  |
 | public.external_connections | 2 | 104.0 KB | 8.0 KB | 88.0 KB | 6 | ~15k | ~100 |  |
 | public.cooperativas | 0 | 96.0 KB | 8.0 KB | 80.0 KB | 2 | ~210 | ~510 |  |
@@ -65,7 +65,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.catalog_marketing_terms | ~30 | 80.0 KB | 8.0 KB | 64.0 KB | 0 | ~30 | ~8k |  |
 | public.order_audit_events | 0 | 80.0 KB | 8.0 KB | 64.0 KB | 0 | 1 | ~30 |  |
 | public.pa_budgets | 0 | 80.0 KB | 8.0 KB | 64.0 KB | ~40 | 2 | ~290 |  |
-| public.postos_atendimento | 0 | 80.0 KB | 8.0 KB | 64.0 KB | ~10 | ~360 | ~1.1k |  |
+| public.postos_atendimento | 0 | 80.0 KB | 8.0 KB | 64.0 KB | ~10 | ~360 | ~1.2k |  |
 | public.sicoob_delivery_destinations | 0 | 80.0 KB | 8.0 KB | 64.0 KB | 0 | 1 | 0 |  |
 | public.sicoob_delivery_receipt_events | 0 | 80.0 KB | 8.0 KB | 64.0 KB | 0 | 1 | ~30 |  |
 | public.sicoob_order_history | 0 | 80.0 KB | 8.0 KB | 64.0 KB | ~20 | 1 | ~100 |  |
@@ -88,7 +88,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.quote_approval_evidence_keys | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 4 | 2 |  |
 | public.quote_approval_tokens | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~820 | ~840 |  |
 | public.quote_history | 0 | 64.0 KB | 8.0 KB | 48.0 KB | ~10 | ~620 | ~70 |  |
-| public.sicoob_approval_deliveries | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~89.8k | ~257.9k |  |
+| public.sicoob_approval_deliveries | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~89.9k | ~258.1k |  |
 | public.sicoob_approval_policies | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 1 | ~150 |  |
 | public.sicoob_order_artwork_versions | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | 1 | ~80 |  |
 | public.step_up_audit_log | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 1 | 0 |  |
@@ -160,7 +160,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.cms_banners | 0 | 32.0 KB | 8.0 KB | 16.0 KB | 0 | ~3.5k | 0 |  |
 | public.comparison_reactions | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | 0 |  |
 | public.export_audit_log | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~30 |  |
-| public.export_jobs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~61.5k |  |
+| public.export_jobs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~61.6k |  |
 | public.favorite_items_trash | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~4.2k |  |
 | public.file_scan_logs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | 0 |  |
 | public.kit_comments | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | 0 |  |
@@ -229,7 +229,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.role_permissions | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~61.6k | ~1.9k |  |
 | public.saved_filters | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 1 | ~4.6k |  |
 | public.saved_trends_views | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 1 | ~830 |  |
-| public.scheduled_exports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~61k | ~550 |  |
+| public.scheduled_exports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~61.1k | ~550 |  |
 | public.scheduled_reports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~1.3k | 0 |  |
 | public.sensitive_access_logs | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 2 | ~30 |  |
 | public.sicoob_approval_delivery_archive | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 1 | 0 |  |
@@ -292,16 +292,16 @@ _nenhum_
 ## Consultas mais custosas (pg_stat_statements, desde o último reset)
 | role | chamadas (~) | total ms (~) | média ms | query |
 |---|---|---|---|---|
-| postgres | ~33.5k | ~26.4M | 787.63 | `SELECT public.monitor_sicoob_approval_worker()` |
-| postgres | ~62.5k | ~6.1M | 96.85 | `SELECT public.dispatch_sicoob_approval_worker()` |
-| postgres | ~67.2k | ~5.1M | 76.09 | `SELECT public.dispatch_sicoob_export_worker()` |
+| postgres | ~33.5k | ~26.4M | 787.45 | `SELECT public.monitor_sicoob_approval_worker()` |
+| postgres | ~62.6k | ~6.1M | 96.79 | `SELECT public.dispatch_sicoob_approval_worker()` |
+| postgres | ~67.2k | ~5.1M | 76.04 | `SELECT public.dispatch_sicoob_export_worker()` |
 | authenticated | ~105.3k | ~4.3M | 40.80 | `WITH pgrst_source AS (UPDATE "public"."profiles" SET "last_login_at" = "pgrst_body"."last_login_at" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "last_login_at" FROM json_to_record(pgrst_payload.json_data` |
 | authenticated | ~2.6k | ~3.8M | 1444.75 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry"."id" FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."created_at" >= $1 LIMIT $2 OFFSET $3 ) , pgrst_source_count AS (SELECT $5 FROM "public"."que` |
 | authenticated | ~2.7k | ~2.6M | 972.64 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry"."id" FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."cache_hit" = $1 AND "public"."query_telemetry"."created_at" >= $2 LIMIT $3 OFFSET $4 ) , pgr` |
-| service_role | ~56.3k | ~2.3M | 40.64 | `WITH pgrst_source AS (SELECT "pgrst_call".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_request_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_request_id" uuid) LIMIT $4) pgrst_body , LATERA` |
-| postgres | ~600 | ~2.3M | 3770.30 | `SELECT jobid, runid, status, start_time, end_time, EXTRACT($2 FROM (end_time - start_time))::numeric(10,2) AS seconds, left(return_message, $3) AS return_message FROM (SELECT *, row_number() OVER (PARTITION BY jobid ORDE` |
+| service_role | ~56.3k | ~2.3M | 40.60 | `WITH pgrst_source AS (SELECT "pgrst_call".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_request_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_request_id" uuid) LIMIT $4) pgrst_body , LATERA` |
+| postgres | ~610 | ~2.3M | 3770.85 | `SELECT jobid, runid, status, start_time, end_time, EXTRACT($2 FROM (end_time - start_time))::numeric(10,2) AS seconds, left(return_message, $3) AS return_message FROM (SELECT *, row_number() OVER (PARTITION BY jobid ORDE` |
 | authenticated | ~6.6k | ~2.1M | 323.78 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry".* FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."severity" = $1 AND "public"."query_telemetry"."created_at" >= $2 LIMIT $3 OFFSET $4 ) , pgrst_s` |
-| authenticated | ~61.2k | ~1.7M | 28.53 | `WITH pgrst_source AS ( SELECT "public"."workspace_notifications".* FROM "public"."workspace_notifications" WHERE "public"."workspace_notifications"."user_id" = $1 ORDER BY "public"."workspace_notifications"."created_at" ` |
+| authenticated | ~61.3k | ~1.7M | 28.51 | `WITH pgrst_source AS ( SELECT "public"."workspace_notifications".* FROM "public"."workspace_notifications" WHERE "public"."workspace_notifications"."user_id" = $1 ORDER BY "public"."workspace_notifications"."created_at" ` |
 | service_role | ~2k | ~1.7M | 825.84 | `WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "_user_id", "_reason", "_source", "_operation", "_target_key_id", "_ip", "_user_agent", "_request_id", "_d` |
 | authenticated | ~2.5k | ~1.5M | 607.74 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry"."duration_ms", "public"."query_telemetry"."severity", "public"."query_telemetry"."record_count", "public"."query_telemetry"."created_at", "public"."query_telemetry` |
 | authenticated | ~115.2k | ~1.4M | 12.24 | `WITH pgrst_source AS (SELECT "pgrst_call".* FROM "public"."get_sicoob_access_state"() pgrst_call) SELECT $3::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), $4) ` |
@@ -312,9 +312,11 @@ _nenhum_
 ## Conexões
 | usuário | estado | n |
 |---|---|---|
-| authenticator | idle | 5 |
+| authenticator | idle | 6 |
 | pgbouncer | idle | 1 |
 | postgres | active | 1 |
 | postgres | idle | 1 |
-| supabase_admin | idle | 2 |
+| supabase_admin | active | 1 |
+| supabase_admin | idle | 8 |
 | supabase_admin |  | 1 |
+| supabase_auth_admin | idle | 1 |
