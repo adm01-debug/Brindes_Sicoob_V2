@@ -890,12 +890,14 @@ try:
     assert saldo_ao_concluir == "-50.00", saldo_ao_concluir
     # Controle negativo: com esse mesmo saldo, gasto NOVO tem de ser barrado.
     # Sem ele o cenario nao provaria nada -- um saldo negativo que ninguem testa
-    # poderia ser apenas um numero gravado, e nao a guarda viva.
+    # poderia ser apenas um numero gravado, e nao a guarda viva. O valor e 40
+    # (abaixo dos 50 planejados) para que a rejeicao so possa vir do saldo
+    # disponivel negativo, e nao de um teto pela verba planejada.
     bloqueio_saldo = must_fail(
         "INSERT INTO public.sicoob_orders"
         " (id, pa_id, cooperative_id, created_by, status, total_amount)"
         " VALUES ('00000000-0000-4000-8000-0000000002fe',"
-        f" '{pa_c}', '{COOP_A}', '{GESTOR_A}', 'waiting_approval', 80);",
+        f" '{pa_c}', '{COOP_A}', '{GESTOR_A}', 'waiting_approval', 40);",
         "Saldo insuficiente",
     )
     move("00000000-0000-4000-8000-000000000282", "completed")
