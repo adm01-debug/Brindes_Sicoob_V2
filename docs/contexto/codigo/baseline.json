@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "87316febd0e0588260ebfeb85a874e906ffd76d9",
+  "commit": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
   "branch": "main",
-  "data_commit": "2026-11-23T19:06:37-03:00",
+  "data_commit": "2026-11-23T20:08:11-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "aac38a4",
+    "data": "2026-11-23",
+    "assunto": "fix: busca global cai para o catálogo local quando a semântica falha (#414)"
+   },
    {
     "sha": "87316fe",
     "data": "2026-11-23",
@@ -126,14 +131,9 @@
     "sha": "449faf1",
     "data": "2026-11-19",
     "assunto": "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)"
-   },
-   {
-    "sha": "0f4d547",
-    "data": "2026-11-19",
-    "assunto": "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)"
    }
   ],
-  "arquivos_mudados_7d": 1322,
+  "arquivos_mudados_7d": 1324,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -266,10 +266,6 @@
     "mudancas": 11
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 11
-   },
-   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
@@ -286,7 +282,7 @@
     "mudancas": 10
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 10
    },
    {
@@ -296,12 +292,16 @@
    {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
+   },
+   {
+    "arquivo": "docs/README.md",
+    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 196
+    "commits": 197
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5273,
-  "arquivos_codigo": 3167,
-  "linhas_codigo": 500762,
+  "arquivos_total": 5274,
+  "arquivos_codigo": 3168,
+  "linhas_codigo": 501051,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 295,
   "migrations": 626,
   "cron_jobs": 28,
-  "testes": 903,
+  "testes": 904,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -780,7 +780,7 @@
   },
   "src/components": {
    "arquivos": 1134,
-   "linhas": 167472
+   "linhas": 167592
   },
   "src/constants": {
    "arquivos": 3,
@@ -879,8 +879,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 151,
-   "linhas": 27923
+   "arquivos": 152,
+   "linhas": 28092
   },
   "tests/contexts": {
    "arquivos": 3,

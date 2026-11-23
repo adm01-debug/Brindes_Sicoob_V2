@@ -7109,6 +7109,7 @@
   ],
   "src/components/search/useGlobalSearch.ts": [
    "src/components/search/searchCache.ts",
+   "src/contexts/ProductsContextDef.ts",
    "src/hooks/search/usePopularSearchItems.ts",
    "src/hooks/search/useVoiceSearchAction.ts",
    "src/hooks/useContextualSuggestions.ts",
@@ -7118,6 +7119,7 @@
    "src/lib/crm-db.ts",
    "src/lib/external-db/index.ts",
    "src/routes/clientRoutes.ts",
+   "src/types/product-catalog.ts",
    "src/utils/product-search.ts"
   ],
   "src/components/search/voice/FloatingParticles.tsx": [

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `87316febd0` · branch `main` · 2026-11-23 22:15 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `aac38a48f9` · branch `main` · 2026-11-23 23:08 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -2941,6 +2941,10 @@ _nenhum item encontrado_
   ```
   if (!file.type.startsWith('image/')) return 'Por favor, selecione uma imagem.'; if (file.size > 10 * 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; return null;
   ```
+- **applyFallback()** — `src/components/search/useGlobalSearch.ts`
+  ```
+  const local = createLocalSearchFallback(searchQuery, localProductsRef.current); // Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, // senão o estado vazio não aparece e Ctrl+Enter abre o produto errado. setSearchIntent(local.length ? createDefaultIntent(searchQuery) : null); setResults(local); const upgraded = await searchCatalogWithoutIntent(searchQuery); if (!upgraded || abortRef.current !== controller) return; setSearchIntent(upgraded.intent); setResults(upgraded.resul …
+  ```
 - **calculateMetrics({ snapshot, mfaAvailable, mfaEnabled, allowedIpCount }: MetricsContext)** — `src/components/security/useSecurityData.ts`
   ```
   const failedAttempts = snapshot.attempts.filter(attempt => !attempt.success).length; let score = 40; if (mfaAvailable && mfaEnabled) score += 30; if (allowedIpCount > 0) score += 20; if (snapshot.devicesCount > 0) score += 10; if (failedAttempts > 5) score -= 10; return { score: Math.min(100, Math.max(0, score)), mfaEnabled, ipRestrictionsActive: allowedIpCount > 0, knownDevicesCount: snapshot.devicesCount, recentLoginAttempts: snapshot.attempts.length, failedLoginAttempts: failedAttempts, secur …
@@ -4753,6 +4757,7 @@ _nenhum item encontrado_
 | `COMPANY_MAX_PAGES` | `5` | `src/components/quotes/company-contact/CompanySearchDropdown.tsx` |
 | `MAX_ENTRIES` | `50` | `src/components/search/searchCache.ts` |
 | `TTL_MS` | `60` | `src/components/search/searchCache.ts` |
+| `SEMANTIC_SEARCH_TIMEOUT_MS` | `8000` | `src/components/search/useGlobalSearch.ts` |
 | `CONNECTION_DIST` | `120` | `src/components/search/voice/FloatingParticles.tsx` |
 | `SIZE` | `220` | `src/components/search/voice/VoiceOrb.tsx` |
 | `TEST_NOTIFICATION_TITLE` | `'Teste de notificação'` | `src/components/security/PushNotificationSettings.tsx` |
@@ -4902,8 +4907,7 @@ _nenhum item encontrado_
 | `INITIAL_BACKOFF_MS` | `800` | `src/lib/external-rpc.ts` |
 | `TRIGGER_TO_FETCH_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
-| `BADGE_RENDER_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
-| … +168 linhas — lista completa em `context.json` | | |
+| … +169 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5746,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7105 testes em 718 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7111 testes em 719 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6050,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
-| … +418 linhas — lista completa em `context.json` | | |
+| … +419 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6390,6 +6394,8 @@ _nenhum item encontrado_
 | * QuoteBuilderSummaryColumn — Coluna 3: Resumo com cards de itens, desconto e CTAs | `src/components/quotes/QuoteBuilderSummaryColumn.tsx` |
 | * Quando true, mostra apenas se houver pedido (silencia loading). */ | `src/components/quotes/QuoteOrderBadge.tsx` |
 | 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; | `src/components/search/VisualSearchButton.tsx` |
+| * Corre a chamada semântica contra o prazo, sem deixar timer solto. */ | `src/components/search/useGlobalSearch.ts` |
+| Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, | `src/components/search/useGlobalSearch.ts` |
 | ").eq("user_id", userId).order("created_at", { ascending: false }).limit(20), | `src/components/security/useSecurityData.ts` |
 | ").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10), | `src/components/security/useSecurityData.ts` |
 | Status que ja comprometem verba: o rateio nao pode ficar defasado neles, | `src/components/sicoob/orders/OrderCostCenterAllocation.tsx` |
@@ -6536,6 +6542,4 @@ _nenhum item encontrado_
 | Telemetria não pode quebrar UX — engole erro silenciosamente. | `src/lib/access/dev-route-telemetry.ts` |
 | a UI dispare requisições amplas que dependeriam apenas do RLS para | `src/lib/auth/apply-seller-scope.ts` |
 | Tipo mínimo para suportar PostgrestFilterBuilder genérico sem importar o tipo | `src/lib/auth/apply-seller-scope.ts` |
-| Retorna `true` se a query deve ser pulada. | `src/lib/auth/apply-seller-scope.ts` |
-| exibido pelo helper; caller normalmente apenas faz `return`. | `src/lib/auth/invoke-full-scope.ts` |
-| … +306 linhas — lista completa em `context.json` | |
+| … +308 linhas — lista completa em `context.json` | |

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "87316febd0e0588260ebfeb85a874e906ffd76d9",
+  "sha": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-23 22:15 UTC",
-  "files_total": 5276,
-  "code_files": 3838,
-  "code_lines": 565202
+  "generated_at": "2026-11-23 23:08 UTC",
+  "files_total": 5277,
+  "code_files": 3839,
+  "code_lines": 565491
  },
  "version": "1.3.2",
- "facts_hash": "8b2e8b7357684295",
+ "facts_hash": "7219165182aae482",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1496,
-   ".tsx": 1450,
+   ".tsx": 1451,
    ".sql": 689,
    ".mjs": 141,
    ".py": 69,
@@ -62444,7 +62444,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1286,
+  "components_count": 1287,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65236,7 +65236,7 @@
   {
    "module": "src/components",
    "files": 1134,
-   "lines": 167472,
+   "lines": 167592,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -67014,8 +67014,8 @@
   },
   {
    "module": "tests",
-   "files": 672,
-   "lines": 90179,
+   "files": 673,
+   "lines": 90348,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -81460,6 +81460,14 @@
     "text": "1024 * 1024) return 'A imagem deve ter no máximo 10MB.';"
    },
    {
+    "file": "src/components/search/useGlobalSearch.ts",
+    "text": "* Corre a chamada semântica contra o prazo, sem deixar timer solto. */"
+   },
+   {
+    "file": "src/components/search/useGlobalSearch.ts",
+    "text": "Vazio é resposta válida: o resultado anterior não pode sobreviver aqui,"
+   },
+   {
     "file": "src/components/security/useSecurityData.ts",
     "text": "\").eq(\"user_id\", userId).order(\"created_at\", { ascending: false }).limit(20),"
    },
@@ -95080,6 +95088,11 @@
     "value": "60"
    },
    {
+    "file": "src/components/search/useGlobalSearch.ts",
+    "name": "SEMANTIC_SEARCH_TIMEOUT_MS",
+    "value": "8000"
+   },
+   {
     "file": "src/components/search/voice/FloatingParticles.tsx",
     "name": "CONNECTION_DIST",
     "value": "120"
@@ -100179,6 +100192,12 @@
     "file": "src/components/search/useGlobalSearch.ts",
     "field": "type",
     "value": "mixed",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/components/search/useGlobalSearch.ts",
+    "field": "type",
+    "value": "product",
     "kind": "escreve"
    },
    {
@@ -109380,6 +109399,12 @@
     "name": "validateImage",
     "params": "file: File",
     "body": "if (!file.type.startsWith('image/')) return 'Por favor, selecione uma imagem.'; if (file.size > 10 * 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; return null;"
+   },
+   {
+    "file": "src/components/search/useGlobalSearch.ts",
+    "name": "applyFallback",
+    "params": "",
+    "body": "const local = createLocalSearchFallback(searchQuery, localProductsRef.current); // Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, // senão o estado vazio não aparece e Ctrl+Enter abre o produto errado. setSearchIntent(local.length ? createDefaultIntent(searchQuery) : null); setResults(local); const upgraded = await searchCatalogWithoutIntent(searchQuery); if (!upgraded || abortRef.current !== controller) return; setSearchIntent(upgraded.intent); setResults(upgraded.resul …"
    },
    {
     "file": "src/components/security/useSecurityData.ts",
@@ -123456,6 +123481,30 @@
    {
     "file": "tests/components/search/client-search-route.test.ts",
     "name": "faz a busca de empresas apontar para a página de detalhe registrada"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "useGlobalSearch — fallback do catálogo local"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "exibe produtos já carregados quando semantic-search retorna erro e encerra o estado de IA"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "usa o catálogo local e encerra o indicador se semantic-search não responde"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "limpa o resultado da consulta anterior quando a busca volta vazia"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "nao deixa a consulta atrasada repovoar a busca apagada"
+   },
+   {
+    "file": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+    "name": "apagar o termo limpa resultados e indicadores"
    },
    {
     "file": "tests/components/security/SecurityDashboard.test.tsx",
@@ -203266,7 +203315,7 @@
   },
   "src/components/search/GlobalSearchPaletteView.tsx": {
    "path": "src/components/search/GlobalSearchPaletteView.tsx",
-   "lines": 441,
+   "lines": 443,
    "exports": [
     "function GlobalSearchPaletteView"
    ],
@@ -203604,11 +203653,12 @@
   },
   "src/components/search/useGlobalSearch.ts": {
    "path": "src/components/search/useGlobalSearch.ts",
-   "lines": 352,
+   "lines": 470,
    "exports": [
     "type SearchResultType",
     "interface SearchResult",
     "interface SearchIntent",
+    "function createLocalSearchFallback",
     "function useGlobalSearch",
     "function executeClientSearch"
    ],
@@ -203619,6 +203669,12 @@
     {
      "name": "SearchResultType",
      "values": "product | client | quote | order | collection | kit | mockup | art_file | cart_template | reminder | conversation | magic_up | category | component | media"
+    }
+   ],
+   "params": [
+    {
+     "name": "SEMANTIC_SEARCH_TIMEOUT_MS",
+     "value": "8000"
     }
    ],
    "status_values": [
@@ -203634,6 +203690,11 @@
     },
     {
      "field": "type",
+     "value": "product",
+     "kind": "escreve"
+    },
+    {
+     "field": "type",
      "value": "client",
      "kind": "escreve"
     },
@@ -203658,9 +203719,20 @@
      "kind": "compara"
     }
    ],
+   "rule_comments": [
+    "* Corre a chamada semântica contra o prazo, sem deixar timer solto. */",
+    "Vazio é resposta válida: o resultado anterior não pode sobreviver aqui,"
+   ],
    "doc": "useGlobalSearch — Hook that encapsulates all search logic for GlobalSearchPalette. (REFATORADO para SOLID/Clean Code)",
    "hooks": [
     "useGlobalSearch"
+   ],
+   "calc_fns": [
+    {
+     "name": "applyFallback",
+     "params": "",
+     "body": "const local = createLocalSearchFallback(searchQuery, localProductsRef.current); // Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, // senão o estado vazio não aparece e Ctrl+Enter abre o produto errado. setSearchIntent(local.length ? createDefaultIntent(searchQuery) : null); setResults(local); const upgraded = await searchCatalogWithoutIntent(searchQuery); if (!upgraded || abortRef.current !== controller) return; setSearchIntent(upgraded.intent); setResults(upgraded.resul …"
+    }
    ],
    "side_effects": [
     "invoke("
@@ -247668,6 +247740,19 @@
     "faz a busca de empresas apontar para a página de detalhe registrada"
    ]
   },
+  "tests/components/search/useGlobalSearch-fallback.test.tsx": {
+   "path": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+   "lines": 169,
+   "is_test": true,
+   "tests": [
+    "useGlobalSearch — fallback do catálogo local",
+    "exibe produtos já carregados quando semantic-search retorna erro e encerra o estado de IA",
+    "usa o catálogo local e encerra o indicador se semantic-search não responde",
+    "limpa o resultado da consulta anterior quando a busca volta vazia",
+    "nao deixa a consulta atrasada repovoar a busca apagada",
+    "apagar o termo limpa resultados e indicadores"
+   ]
+  },
   "tests/components/security/SecurityDashboard.test.tsx": {
    "path": "tests/components/security/SecurityDashboard.test.tsx",
    "lines": 38,
@@ -257618,10 +257703,21 @@
   }
  },
  "git": {
-  "sha": "87316febd0e0588260ebfeb85a874e906ffd76d9",
+  "sha": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "aac38a4",
+    "date": "2026-11-23",
+    "author": "adm01-debug",
+    "subject": "fix: busca global cai para o catálogo local quando a semântica falha (#414)",
+    "files": [
+     "src/components/search/GlobalSearchPaletteView.tsx",
+     "src/components/search/useGlobalSearch.ts",
+     "tests/components/search/useGlobalSearch-fallback.test.tsx"
+    ]
+   },
    {
     "sha": "87316fe",
     "date": "2026-11-23",
@@ -258681,15 +258777,6 @@
     "subject": "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)",
     "files": [
      "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md"
-    ]
-   },
-   {
-    "sha": "5830e19",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)",
-    "files": [
-     ".github/workflows/dependency-review.yml"
     ]
    }
   ],

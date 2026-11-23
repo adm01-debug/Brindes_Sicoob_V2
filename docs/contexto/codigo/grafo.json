@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2264,
- "arestas": 9195,
+ "arestas": 9197,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -145,6 +145,10 @@
    "importado_por": 28
   },
   {
+   "arquivo": "src/types/product-catalog.ts",
+   "importado_por": 28
+  },
+  {
    "arquivo": "src/components/ui/checkbox.tsx",
    "importado_por": 27
   },
@@ -159,10 +163,6 @@
   {
    "arquivo": "src/lib/crm-db.ts",
    "importado_por": 27
-  },
-  {
-   "arquivo": "src/components/products/PriceFreshnessBadge.tsx",
-   "importado_por": 26
   }
  ],
  "ciclos": {
@@ -460,12 +460,12 @@
   {
    "modulo": "contexts",
    "depende_de": 12,
-   "importado_por": 46
+   "importado_por": 47
   },
   {
    "modulo": "types",
    "depende_de": 6,
-   "importado_por": 45
+   "importado_por": 46
   },
   {
    "modulo": "utils",

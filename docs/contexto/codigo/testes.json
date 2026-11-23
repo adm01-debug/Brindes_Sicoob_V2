@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 903,
+ "total": 904,
  "por_tipo": {
   "contrato": 11,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 670
+  "unit": 671
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 650
+   "arquivos": 651
   },
   {
    "padrao": "e2e/",
@@ -3391,6 +3391,17 @@
     "src/components/ui/tooltip.tsx"
    ],
    "casos": 1
+  },
+  {
+   "arquivo": "tests/components/search/useGlobalSearch-fallback.test.tsx",
+   "tipo": "unit",
+   "linhas": 169,
+   "testa": [
+    "src/components/search/useGlobalSearch.ts",
+    "src/contexts/ProductsContextDef.ts",
+    "src/types/product-catalog.ts"
+   ],
+   "casos": 5
   },
   {
    "arquivo": "tests/components/search/VoiceSearchOverlay.test.tsx",
@@ -8024,7 +8035,7 @@
   "src/components/search/HighlightMatch.tsx": 1,
   "src/components/search/SmartSearchInput.tsx": 1,
   "src/components/search/VoiceSearchOverlay.tsx": 1,
-  "src/components/search/useGlobalSearch.ts": 1,
+  "src/components/search/useGlobalSearch.ts": 2,
   "src/components/security/SecurityDashboard.tsx": 1,
   "src/components/seo/PageSEO.tsx": 3,
   "src/components/sicoob/GestorComprasMetrics.tsx": 1,
@@ -8057,6 +8068,7 @@
   "src/contexts/CollectionsContext.tsx": 1,
   "src/contexts/OrganizationContext.tsx": 1,
   "src/contexts/ProductsContext.tsx": 3,
+  "src/contexts/ProductsContextDef.ts": 1,
   "src/contexts/SellerCartContext.tsx": 1,
   "src/hooks/auth/useUserRoles.ts": 1,
   "src/hooks/bi/useClientAffinity.ts": 1,
@@ -8339,7 +8351,7 @@
   "src/types/domain/simulator-wizard.ts": 1,
   "src/types/gravacao.ts": 1,
   "src/types/orders.ts": 1,
-  "src/types/product-catalog.ts": 6,
+  "src/types/product-catalog.ts": 7,
   "src/types/sicoob/orders.ts": 3,
   "src/types/simulation.ts": 2,
   "src/types/stock.ts": 4,
@@ -8570,7 +8582,6 @@
    "src/contexts/BICategoryFocusContext.tsx",
    "src/contexts/DevChallengeContext.tsx",
    "src/contexts/OnboardingContext.tsx",
-   "src/contexts/ProductsContextDef.ts",
    "src/contexts/ThemeContext.tsx",
    "src/hooks/admin/useAccessSecurity.ts",
    "src/hooks/admin/useAdminPermissions.ts",

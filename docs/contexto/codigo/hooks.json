@@ -1482,7 +1482,7 @@
    "hooks_exportados": [
     "useGlobalSearch"
    ],
-   "linhas": 352,
+   "linhas": 470,
    "dominio": "components/search",
    "tabelas": [],
    "rpcs": [],
@@ -1498,6 +1498,7 @@
     "useMemo",
     "useNavigate",
     "usePopularSearchItems",
+    "useProductsContextSafe",
     "useSearch",
     "useSemanticSearch",
     "useState",
@@ -1512,7 +1513,7 @@
     "src/components/search/GlobalSearchPaletteView.tsx",
     "src/components/search/searchCache.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/components/search/voice/usePhaseColors.ts",
@@ -1939,11 +1940,12 @@
     "useContext"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
+    "src/components/search/useGlobalSearch.ts",
     "src/contexts/ProductsContext.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/contexts/SellerCartContext.tsx",

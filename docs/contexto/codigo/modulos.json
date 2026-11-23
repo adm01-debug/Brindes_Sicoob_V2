@@ -6089,7 +6089,7 @@
    "modulo": "components/search",
    "arquivos": 26,
    "testes": 0,
-   "linhas": 6037,
+   "linhas": 6157,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -6212,6 +6212,7 @@
    ],
    "depende_de_modulos": [
     "components/ui",
+    "contexts",
     "hooks",
     "hooks/search",
     "hooks/voice",
@@ -6219,6 +6220,7 @@
     "lib",
     "lib/external-db",
     "routes",
+    "types",
     "utils"
    ],
    "pacotes_externos": [
@@ -7127,6 +7129,7 @@
     "components/providers",
     "components/quote",
     "components/quotes",
+    "components/search",
     "components/security",
     "components/sicoob",
     "components/system",
@@ -16199,6 +16202,7 @@
     "components/products",
     "components/quotes",
     "components/ramo-atividade",
+    "components/search",
     "components/settings",
     "components/simulation",
     "components/simulator",
