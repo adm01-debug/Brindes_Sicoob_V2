@@ -4,6 +4,12 @@
  * O `ScrollArea` aplicava `max-h-*` só no Root, que tem `overflow-hidden`:
  * o conteúdo era cortado em vez de rolar. O viewport é quem rola, por isso
  * o teto de altura precisa chegar nele (`viewportClassName`).
+ *
+ * Este arquivo cobre a estrutura (o teto chega ao viewport e o rodapé fica
+ * fora dele). O comportamento em navegador real — a lista rolar de fato e o
+ * CTA continuar inteiro na tela — está em
+ * `e2e/flows/24-cart-scroll-janela-baixa.spec.ts`, porque o jsdom não calcula
+ * layout.
  */
 import { describe, it, expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
@@ -85,8 +91,12 @@ describe("CartHeaderButton — janela baixa", () => {
 
     await userEvent.click(screen.getByTestId("cart-trigger"));
 
+    // O conteúdo entra com `opacity: 0` via framer-motion; a asserção de
+    // visibilidade precisa reexecutar até a animação de entrada terminar.
     const cta = await screen.findByRole("button", { name: /gerar orçamento/i });
-    expect(cta).toBeVisible();
+    await waitFor(() => {
+      expect(cta).toBeVisible();
+    });
 
     const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
     expect(viewport).not.toBeNull();
