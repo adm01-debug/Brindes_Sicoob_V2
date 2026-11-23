@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 900,
+ "total": 903,
  "por_tipo": {
   "contrato": 11,
   "e2e": 176,
   "pytest": 2,
-  "qa": 43,
-  "unit": 668
+  "qa": 44,
+  "unit": 670
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 648
+   "arquivos": 650
   },
   {
    "padrao": "e2e/",
@@ -24,7 +24,7 @@
   },
   {
    "padrao": "outro",
-   "arquivos": 53
+   "arquivos": 54
   },
   {
    "padrao": "co-localizado (*.test)",
@@ -1404,6 +1404,13 @@
    "casos": 0
   },
   {
+   "arquivo": "scripts/qa/simular-verba-lifecycle.py",
+   "tipo": "qa",
+   "linhas": 940,
+   "testa": [],
+   "casos": 0
+  },
+  {
    "arquivo": "scripts/qa/simular-versionamento-orcamento-atomico.py",
    "tipo": "qa",
    "linhas": 356,
@@ -2474,7 +2481,7 @@
   {
    "arquivo": "tests/components/data-trust-indicators.test.tsx",
    "tipo": "unit",
-   "linhas": 205,
+   "linhas": 208,
    "testa": [
     "src/components/orders/FinancialPanel.tsx",
     "src/components/sicoob/orders/OrderBudgetIntelligence.tsx",
@@ -6024,12 +6031,30 @@
   {
    "arquivo": "tests/lib/sicoob/orderBudgetProjection.test.ts",
    "tipo": "unit",
-   "linhas": 88,
+   "linhas": 128,
    "testa": [
     "src/lib/sicoob/orderBudgetProjection.ts",
     "src/types/sicoob/orders.ts"
    ],
-   "casos": 3
+   "casos": 4
+  },
+  {
+   "arquivo": "tests/lib/sicoob/orderCostCenterAllocation.test.ts",
+   "tipo": "unit",
+   "linhas": 128,
+   "testa": [
+    "src/lib/sicoob/orderCostCenterAllocation.ts"
+   ],
+   "casos": 10
+  },
+  {
+   "arquivo": "tests/lib/sicoob/paBudgetAmounts.test.ts",
+   "tipo": "unit",
+   "linhas": 74,
+   "testa": [
+    "src/lib/sicoob/paBudgetState.ts"
+   ],
+   "casos": 6
   },
   {
    "arquivo": "tests/lib/sicoob/sla-cycle.test.ts",
@@ -8231,7 +8256,8 @@
   "src/lib/sicoob/operationalMetrics.ts": 1,
   "src/lib/sicoob/order-permissions.ts": 1,
   "src/lib/sicoob/orderBudgetProjection.ts": 1,
-  "src/lib/sicoob/paBudgetState.ts": 1,
+  "src/lib/sicoob/orderCostCenterAllocation.ts": 1,
+  "src/lib/sicoob/paBudgetState.ts": 2,
   "src/lib/sicoob/sla-cycle.ts": 1,
   "src/lib/supabase-untyped.ts": 1,
   "src/lib/supplier-colors.ts": 1,
@@ -8475,6 +8501,7 @@
    "src/pages/sicoob/PADashboardPage.tsx",
    "src/pages/sicoob/PAWalletPage.tsx",
    "src/pages/sicoob/StorefrontDemoPage.tsx",
+   "src/pages/sicoob/admin/CostCentersPage.tsx",
    "src/pages/sicoob/orders/OrderDetailPage.tsx",
    "src/pages/sicoob/orders/OrdersKanbanPage.tsx",
    "src/pages/sicoob/orders/OrdersPage.tsx",
@@ -8829,6 +8856,7 @@
    "src/services/infrastructure/BaseHttpService.ts",
    "src/services/materialService.ts",
    "src/services/ramoAtividadeService.ts",
+   "src/services/sicoob/costCenterService.ts",
    "src/services/sicoob/managerStatsService.ts",
    "src/services/sicoob/reorderIdempotency.ts",
    "src/services/sicoob/statsService.ts"

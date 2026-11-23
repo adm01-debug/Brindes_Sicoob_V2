@@ -1701,7 +1701,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 155,
+   "usado_por": 157,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -6768,7 +6768,7 @@
    "hooks_exportados": [
     "usePaBudget"
    ],
-   "linhas": 94,
+   "linhas": 143,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"
@@ -9942,7 +9942,7 @@
    "edges": [],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 20,
+   "usado_por": 21,
    "usado_por_arquivos": [
     "src/components/admin/CouponManager.tsx",
     "src/components/admin/OwnershipRepairDialog.tsx",
@@ -9963,6 +9963,7 @@
     "src/pages/admin/sicoob/tabs/CooperativasTab.tsx",
     "src/pages/admin/sicoob/tabs/PAsTab.tsx",
     "src/pages/sicoob/GestorApprovalsPage.tsx",
+    "src/pages/sicoob/admin/CostCentersPage.tsx",
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
    "coberto_por_testes": 4

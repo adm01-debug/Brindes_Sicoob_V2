@@ -3,12 +3,12 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2942)",
+   "TypeScript (2948)",
    "Markdown (973)",
-   "SQL (687)",
-   "JSON (293)",
+   "SQL (689)",
+   "JSON (294)",
    "JavaScript (153)",
-   "Python (68)",
+   "Python (69)",
    "YAML (24)",
    "CSS (7)"
   ],
@@ -793,6 +793,7 @@
     "scripts/qa/simular-recompra-sicoob.py",
     "scripts/qa/simular-rls-cruzada-sicoob.py",
     "scripts/qa/simular-verba-atomica.py",
+    "scripts/qa/simular-verba-lifecycle.py",
     "scripts/qa/simular-versionamento-orcamento-atomico.py"
    ],
    "npm_scripts": [
@@ -2269,6 +2270,7 @@
    "/convite/:token",
    "/demonstracao",
    "/dossie/:token",
+   "/gestor/centros-custo",
    "/gestor/delegacoes",
    "/instalar",
    "/kit/:token",
@@ -2309,6 +2311,15 @@
      "comprador_singular",
      "dev",
      "gerente_pa",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Centros de Custo",
+    "papeis": [
+     "comprador_singular",
+     "dev",
      "gestor_compras",
      "supervisor"
     ]

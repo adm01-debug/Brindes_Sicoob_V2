@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `40abb0addf` · branch `main` · 2026-11-23 20:52 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `aef4f10d2b` · branch `main` · 2026-11-23 21:45 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -78,6 +78,7 @@
 | `cooperativa_budgets` | _(sem COMMENT ON TABLE — significado não documentado)_ | 9 colunas | migration |
 | `cooperativas` | _(sem COMMENT ON TABLE — significado não documentado)_ | 15 colunas | migration |
 | `cooperativas_parceiras` | _(sem COMMENT ON TABLE — significado não documentado)_ | 9 colunas | migration |
+| `cost_centers` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `coupons` | _(sem COMMENT ON TABLE — significado não documentado)_ | 13 colunas | migration |
 | `custom_kits` | _(sem COMMENT ON TABLE — significado não documentado)_ | 23 colunas | migration |
 | `device_login_notifications` | _(sem COMMENT ON TABLE — significado não documentado)_ | 9 colunas | migration |
@@ -161,7 +162,9 @@
 | `outbound_webhooks` | _(sem COMMENT ON TABLE — significado não documentado)_ | 17 colunas | migration |
 | `ownership_audit_reports` | _(sem COMMENT ON TABLE — significado não documentado)_ | 11 colunas | migration |
 | `ownership_repair_logs` | _(sem COMMENT ON TABLE — significado não documentado)_ | 13 colunas | migration |
-| `pa_budgets` | _(sem COMMENT ON TABLE — significado não documentado)_ | 14 colunas | migration |
+| `pa_budget_allocations` | _(sem COMMENT ON TABLE — significado não documentado)_ | 6 colunas | migration |
+| `pa_budget_entries` | _(sem COMMENT ON TABLE — significado não documentado)_ | 13 colunas | migration |
+| `pa_budgets` | _(sem COMMENT ON TABLE — significado não documentado)_ | 20 colunas | migration |
 | `pa_category_thresholds` | _(sem COMMENT ON TABLE — significado não documentado)_ | 5 colunas | migration |
 | `pa_notification_settings` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
 | `pa_singularidades` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
@@ -257,7 +260,7 @@
 | `sicoob_order_items` | _(sem COMMENT ON TABLE — significado não documentado)_ | 18 colunas | migration |
 | `sicoob_order_payments` | _(sem COMMENT ON TABLE — significado não documentado)_ | 17 colunas | migration |
 | `sicoob_order_shipments` | _(sem COMMENT ON TABLE — significado não documentado)_ | 13 colunas | migration |
-| `sicoob_orders` | _(sem COMMENT ON TABLE — significado não documentado)_ | 32 colunas | migration |
+| `sicoob_orders` | _(sem COMMENT ON TABLE — significado não documentado)_ | 33 colunas | migration |
 | `sicoob_performance_reports` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `sicoob_quote_reorder_requests` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
 | `sicoob_reorder_requests` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
@@ -304,10 +307,7 @@
 | `order_status` (enum) | pending, confirmed, in_production, ready_for_pickup, shipped, delivered, cancelled |  | banco |
 | `fulfillment_status` (enum) | not_started, picking, packing, shipped, delivered |  | banco |
 | `org_role` (enum) | owner, admin, member |  | banco |
-| `step_up_action` (enum) | promote_dev, demote_dev, mcp_full_issue, mcp_full_escalate, secret_rotation, secret_revoke, mcp_key_revoke, mcp_key_rotate |  | banco |
-| `role_migration_item_status` (enum) | pending, success, failed, skipped, dry_run |  | banco |
-| `role_migration_status` (enum) | pending, running, completed, failed, partial, dry_run |  | banco |
-| … +173 linhas — lista completa em `context.json` | | | |
+| … +176 linhas — lista completa em `context.json` | | | |
 
 ## Dados de referência (seed — planos, categorias, perfis fixos)
 
@@ -608,7 +608,7 @@ _nenhum item encontrado_
 - `admin_audit_log_y2027_m01.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `admin_audit_log_y2027_m02.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `admin_audit_log_y2027_m03.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
-- 276/292 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …
+- 279/295 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …
 - Há tabelas usadas no código sem migration no repo — o schema real pode ter sido alterado pelo painel.
 
 ## Regras manuais presentes

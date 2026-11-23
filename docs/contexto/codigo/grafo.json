@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2260,
- "arestas": 9168,
+ "nos": 2264,
+ "arestas": 9195,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 633
+   "importado_por": 635
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,19 +14,19 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 511
+   "importado_por": 513
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 418
+   "importado_por": 420
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 397
+   "importado_por": 399
   },
   {
    "arquivo": "src/components/ui/input.tsx",
-   "importado_por": 269
+   "importado_por": 271
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
@@ -34,7 +34,7 @@
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
-   "importado_por": 166
+   "importado_por": 168
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
@@ -42,19 +42,19 @@
   },
   {
    "arquivo": "src/components/ui/label.tsx",
-   "importado_por": 152
+   "importado_por": 154
   },
   {
    "arquivo": "src/components/ui/select.tsx",
-   "importado_por": 146
+   "importado_por": 148
   },
   {
    "arquivo": "src/components/ui/dialog.tsx",
-   "importado_por": 139
+   "importado_por": 140
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
-   "importado_por": 117
+   "importado_por": 118
   },
   {
    "arquivo": "src/components/ui/scroll-area.tsx",
@@ -74,7 +74,7 @@
   },
   {
    "arquivo": "src/components/ui/table.tsx",
-   "importado_por": 77
+   "importado_por": 78
   },
   {
    "arquivo": "src/lib/external-db/index.ts",
@@ -90,7 +90,7 @@
   },
   {
    "arquivo": "src/components/ui/switch.tsx",
-   "importado_por": 55
+   "importado_por": 56
   },
   {
    "arquivo": "src/components/ui/tabs.tsx",

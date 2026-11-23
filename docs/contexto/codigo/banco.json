@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 625,
+ "migrations": 626,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -346,6 +346,16 @@
   "notify_singular_quote_decision",
   "notify_singular_quote_submission",
   "pa_belongs_to_user_singular",
+  "pa_budget_allocation_write_ok",
+  "pa_budget_apply_state",
+  "pa_budget_close_competence",
+  "pa_budget_entry_scope_ok",
+  "pa_budget_estado_do_status",
+  "pa_budget_id_for_order",
+  "pa_budget_move_order",
+  "pa_budget_reconcile",
+  "pa_budget_replace_allocations",
+  "pa_budget_validate_allocations",
   "permanent_delete_record",
   "prepare_sicoob_order_confirmation",
   "preserve_catalog_marketing_term_authorship",
@@ -451,7 +461,14 @@
   "submit_signed_quote_response",
   "sync_external_connections_from_credentials",
   "sync_is_active_with_deleted_at",
+  "tg_pa_budget_entries_competencia_aberta",
+  "tg_pa_budget_entries_immutable",
+  "tg_recalc_pa_budget_states",
+  "tg_set_order_cost_center",
   "tg_set_updated_at",
+  "tg_sicoob_order_budget_after_insert",
+  "tg_sync_pa_budget_planejada",
+  "tg_validate_order_allocations",
   "transition_sicoob_order_status",
   "trg_auto_revoke_mcp_on_role_loss",
   "trg_sync_external_connections",
@@ -460,6 +477,9 @@
   "update_saved_filters_updated_at",
   "update_updated_at_column",
   "upsert_sicoob_order_shipment",
+  "user_can_access_cooperativa",
+  "user_can_access_pa",
+  "user_is_comprador_singular",
   "validate_discount_approval_status",
   "validate_ip_access_control",
   "validate_main_order_status_transition",
@@ -1081,11 +1101,46 @@
    "funcao": "update_updated_at_column"
   },
   {
+   "nome": "trg_validate_order_allocations",
+   "quando": "after",
+   "evento": "insert or update or delete",
+   "tabela": "pa_budget_allocations",
+   "funcao": "tg_validate_order_allocations"
+  },
+  {
+   "nome": "trg_pa_budget_entries_competencia",
+   "quando": "before",
+   "evento": "insert",
+   "tabela": "pa_budget_entries",
+   "funcao": "tg_pa_budget_entries_competencia_aberta"
+  },
+  {
+   "nome": "trg_pa_budget_entries_imutavel",
+   "quando": "before",
+   "evento": "update or delete",
+   "tabela": "pa_budget_entries",
+   "funcao": "tg_pa_budget_entries_immutable"
+  },
+  {
+   "nome": "trg_recalc_pa_budget_states",
+   "quando": "after",
+   "evento": "insert or update or delete",
+   "tabela": "pa_budget_entries",
+   "funcao": "tg_recalc_pa_budget_states"
+  },
+  {
    "nome": "trg_pa_budgets_updated",
    "quando": "before",
    "evento": "update",
    "tabela": "pa_budgets",
    "funcao": "tg_set_updated_at"
+  },
+  {
+   "nome": "trg_sync_pa_budget_planejada",
+   "quando": "before",
+   "evento": "insert or update",
+   "tabela": "pa_budgets",
+   "funcao": "tg_sync_pa_budget_planejada"
   },
   {
    "nome": "update_pa_budgets_updated_at",
@@ -1723,6 +1778,20 @@
    "evento": "update of status",
    "tabela": "sicoob_orders",
    "funcao": "validate_order_status_transition"
+  },
+  {
+   "nome": "trg_set_order_cost_center",
+   "quando": "before",
+   "evento": "insert",
+   "tabela": "sicoob_orders",
+   "funcao": "tg_set_order_cost_center"
+  },
+  {
+   "nome": "trg_validate_sicoob_order_budget_ins",
+   "quando": "after",
+   "evento": "insert",
+   "tabela": "sicoob_orders",
+   "funcao": "tg_sicoob_order_budget_after_insert"
   },
   {
    "nome": "trigger_check_order_sla",
@@ -9066,7 +9135,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 6,
+   "usada_no_front": 7,
    "usada_em_edges": [
     "sicoob-seed",
     "sicoob-seed-qa"
@@ -9176,6 +9245,112 @@
    "triggers": [
     "set_updated_at_cooperativas"
    ],
+   "sem_rls": false,
+   "nao_usada": false
+  },
+  "cost_centers": {
+   "colunas": {
+    "ativo": {
+     "tipo": "boolean",
+     "nn": true,
+     "pk": false,
+     "default": "true",
+     "ref": null
+    },
+    "codigo": {
+     "tipo": "text",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "cooperativa_id": {
+     "tipo": "uuid",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": "cooperativas"
+    },
+    "created_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": "now()",
+     "ref": null
+    },
+    "id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": true,
+     "default": "gen_random_uuid()",
+     "ref": null
+    },
+    "nome": {
+     "tipo": "text",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "observacoes": {
+     "tipo": "text",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "updated_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": "now()",
+     "ref": null
+    }
+   },
+   "rls": true,
+   "policies": [
+    {
+     "nome": "cost_centers_select",
+     "comando": "select",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "cost_centers_write",
+     "comando": "all",
+     "para": "authenticated",
+     "tipo": "permissive"
+    }
+   ],
+   "indices": [
+    {
+     "nome": "idx_cost_centers_coop",
+     "colunas": "cooperativa_id",
+     "unico": false
+    }
+   ],
+   "fks": [
+    "cooperativa_id->cooperativas"
+   ],
+   "criada_em": "20261122120000_pa_budget_full_lifecycle.sql",
+   "colunas_types": {
+    "ativo": "boolean",
+    "codigo": "string",
+    "cooperativa_id": "string",
+    "created_at": "string",
+    "id": "string",
+    "nome": "string",
+    "updated_at": "string"
+   },
+   "drift": {
+    "so_na_migration": [
+     "observacoes"
+    ],
+    "so_no_types": []
+   },
+   "usada_no_front": 1,
+   "usada_em_edges": [],
+   "triggers": [],
    "sem_rls": false,
    "nao_usada": false
   },
@@ -21458,6 +21633,283 @@
    "sem_rls": false,
    "nao_usada": false
   },
+  "pa_budget_allocations": {
+   "colunas": {
+    "cost_center_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "cost_centers"
+    },
+    "created_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": "now()",
+     "ref": null
+    },
+    "id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": true,
+     "default": "gen_random_uuid()",
+     "ref": null
+    },
+    "order_id": {
+     "tipo": "uuid",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": "sicoob_orders"
+    },
+    "percentual": {
+     "tipo": "numeric(5,2)",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "valor": {
+     "tipo": "numeric(14,2)",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    }
+   },
+   "rls": true,
+   "policies": [
+    {
+     "nome": "pa_budget_allocations_delete",
+     "comando": "delete",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "pa_budget_allocations_insert",
+     "comando": "insert",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "pa_budget_allocations_select",
+     "comando": "select",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "pa_budget_allocations_update",
+     "comando": "update",
+     "para": "authenticated",
+     "tipo": "permissive"
+    }
+   ],
+   "indices": [
+    {
+     "nome": "idx_pba_cost_center",
+     "colunas": "cost_center_id",
+     "unico": false
+    },
+    {
+     "nome": "idx_pba_order",
+     "colunas": "order_id",
+     "unico": false
+    }
+   ],
+   "fks": [
+    "cost_center_id->cost_centers",
+    "order_id->sicoob_orders"
+   ],
+   "criada_em": "20261122120000_pa_budget_full_lifecycle.sql",
+   "colunas_types": {
+    "cost_center_id": "string | null",
+    "created_at": "string",
+    "id": "string",
+    "order_id": "string",
+    "percentual": "number",
+    "valor": "number"
+   },
+   "drift": {
+    "so_na_migration": [],
+    "so_no_types": []
+   },
+   "usada_no_front": 1,
+   "usada_em_edges": [],
+   "triggers": [
+    "trg_validate_order_allocations"
+   ],
+   "sem_rls": false,
+   "nao_usada": false
+  },
+  "pa_budget_entries": {
+   "colunas": {
+    "actor_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "auth"
+    },
+    "competencia_ano": {
+     "tipo": "int",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "competencia_mes": {
+     "tipo": "int",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "cost_center_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "cost_centers"
+    },
+    "created_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": "now()",
+     "ref": null
+    },
+    "estado": {
+     "tipo": "text",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": true,
+     "default": "gen_random_uuid()",
+     "ref": null
+    },
+    "motivo": {
+     "tipo": "text",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "order_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "sicoob_orders"
+    },
+    "pa_budget_id": {
+     "tipo": "uuid",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": "pa_budgets"
+    },
+    "pa_id": {
+     "tipo": "uuid",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": "postos_atendimento"
+    },
+    "tipo": {
+     "tipo": "text",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "valor": {
+     "tipo": "numeric(14,2)",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    }
+   },
+   "rls": true,
+   "policies": [
+    {
+     "nome": "pa_budget_entries_insert",
+     "comando": "insert",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "pa_budget_entries_select",
+     "comando": "select",
+     "para": "authenticated",
+     "tipo": "permissive"
+    }
+   ],
+   "indices": [
+    {
+     "nome": "idx_pbe_budget",
+     "colunas": "pa_budget_id, created_at DESC",
+     "unico": false
+    },
+    {
+     "nome": "idx_pbe_competencia",
+     "colunas": "competencia_ano, competencia_mes",
+     "unico": false
+    },
+    {
+     "nome": "idx_pbe_estado",
+     "colunas": "pa_budget_id, estado",
+     "unico": false
+    },
+    {
+     "nome": "idx_pbe_order",
+     "colunas": "order_id",
+     "unico": false
+    }
+   ],
+   "fks": [
+    "actor_id->auth",
+    "cost_center_id->cost_centers",
+    "order_id->sicoob_orders",
+    "pa_budget_id->pa_budgets",
+    "pa_id->postos_atendimento"
+   ],
+   "criada_em": "20261122120000_pa_budget_full_lifecycle.sql",
+   "colunas_types": {
+    "actor_id": "string | null",
+    "competencia_ano": "number",
+    "competencia_mes": "number",
+    "cost_center_id": "string | null",
+    "created_at": "string",
+    "estado": "string",
+    "id": "string",
+    "motivo": "string | null",
+    "order_id": "string | null",
+    "pa_budget_id": "string",
+    "pa_id": "string",
+    "tipo": "string",
+    "valor": "number"
+   },
+   "drift": {
+    "so_na_migration": [],
+    "so_no_types": []
+   },
+   "usada_no_front": 0,
+   "usada_em_edges": [],
+   "triggers": [
+    "trg_pa_budget_entries_competencia",
+    "trg_pa_budget_entries_imutavel",
+    "trg_recalc_pa_budget_states"
+   ],
+   "sem_rls": false,
+   "nao_usada": true
+  },
   "pa_budgets": {
    "colunas": {
     "ano": {
@@ -21466,6 +21918,13 @@
      "pk": false,
      "default": null,
      "ref": null
+    },
+    "cost_center_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "cost_centers"
     },
     "created_at": {
      "tipo": "timestamptz",
@@ -21480,6 +21939,20 @@
      "pk": false,
      "default": "0",
      "ref": null
+    },
+    "fechada_em": {
+     "tipo": "timestamptz",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "fechada_por": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "auth"
     },
     "id": {
      "tipo": "uuid",
@@ -21544,7 +22017,28 @@
      "default": "now()",
      "ref": null
     },
+    "verba_comprometida": {
+     "tipo": "numeric(14,2)",
+     "nn": true,
+     "pk": false,
+     "default": "0",
+     "ref": null
+    },
     "verba_consumida": {
+     "tipo": "numeric(14,2)",
+     "nn": true,
+     "pk": false,
+     "default": "0",
+     "ref": null
+    },
+    "verba_planejada": {
+     "tipo": "numeric(14,2)",
+     "nn": true,
+     "pk": false,
+     "default": "0",
+     "ref": null
+    },
+    "verba_reservada": {
      "tipo": "numeric(14,2)",
      "nn": true,
      "pk": false,
@@ -21660,6 +22154,11 @@
    ],
    "indices": [
     {
+     "nome": "idx_pa_budgets_cost_center",
+     "colunas": "cost_center_id",
+     "unico": false
+    },
+    {
      "nome": "idx_pa_budgets_pa",
      "colunas": "pa_id",
      "unico": false
@@ -21671,19 +22170,27 @@
     }
    ],
    "fks": [
+    "cost_center_id->cost_centers",
+    "fechada_por->auth",
     "pa_id->postos_atendimento"
    ],
    "criada_em": "20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql",
    "colunas_types": {
     "ano": "number",
+    "cost_center_id": "string | null",
     "created_at": "string",
+    "fechada_em": "string | null",
+    "fechada_por": "string | null",
     "id": "string",
     "limite_alcada": "number | null",
     "mes": "number",
     "observacoes": "string | null",
     "pa_id": "string",
     "updated_at": "string",
+    "verba_comprometida": "number",
     "verba_consumida": "number",
+    "verba_planejada": "number",
+    "verba_reservada": "number",
     "verba_total": "number"
    },
    "drift": {
@@ -21703,6 +22210,7 @@
    ],
    "triggers": [
     "trg_pa_budgets_updated",
+    "trg_sync_pa_budget_planejada",
     "update_pa_budgets_updated_at"
    ],
    "sem_rls": false,
@@ -23071,7 +23579,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 9,
+   "usada_no_front": 10,
    "usada_em_edges": [
     "e2e-auth-test",
     "sicoob-seed",
@@ -35316,6 +35824,13 @@
      "default": null,
      "ref": "cooperativas"
     },
+    "cost_center_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": "cost_centers"
+    },
     "created_at": {
      "tipo": "timestamp with time zone",
      "nn": true,
@@ -35551,6 +36066,7 @@
     "approved_by->auth",
     "consolidation_id->order_consolidations",
     "cooperative_id->cooperativas",
+    "cost_center_id->cost_centers",
     "created_by->auth",
     "pa_id->postos_atendimento",
     "source_quote_id->quotes"
@@ -35566,6 +36082,7 @@
     "commercial_subtotal_amount": "number",
     "consolidation_id": "string | null",
     "cooperative_id": "string | null",
+    "cost_center_id": "string | null",
     "created_at": "string",
     "created_by": "string | null",
     "delivery_address": "string | null",
@@ -35608,6 +36125,8 @@
     "tr_protect_sicoob_order_consolidation_link",
     "tr_require_sicoob_artwork_before_production",
     "tr_validate_sicoob_order_status",
+    "trg_set_order_cost_center",
+    "trg_validate_sicoob_order_budget_ins",
     "trigger_check_order_sla",
     "update_sicoob_orders_updated_at"
    ],
@@ -40921,6 +41440,11 @@
   },
   {
    "nome": "mutate_sicoob_order_item",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "pa_budget_replace_allocations",
    "definida": true,
    "usada_em": 1
   },

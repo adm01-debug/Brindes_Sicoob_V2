@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1172,
+ "total": 1174,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -8810,7 +8810,7 @@
     "SidebarReorganized"
    ],
    "export_default": null,
-   "linhas": 687,
+   "linhas": 693,
    "dominio": "components/layout",
    "hooks_locais": [
     "useAuth"
@@ -14036,7 +14036,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 114,
+   "usado_por": 115,
    "orfao": false
   },
   {
@@ -14282,6 +14282,22 @@
    "hooks_locais": [
     "useAuth",
     "useOrderComments"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/sicoob/orders/OrderCostCenterAllocation.tsx",
+   "exports": [
+    "OrderCostCenterAllocation"
+   ],
+   "export_default": null,
+   "linhas": 352,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useAuth"
    ],
    "tabelas": [],
    "edges": [],
@@ -14892,7 +14908,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 509,
+   "usado_por": 511,
    "orfao": false
   },
   {
@@ -14927,7 +14943,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 629,
+   "usado_por": 631,
    "orfao": false
   },
   {
@@ -14961,7 +14977,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 394,
+   "usado_por": 396,
    "orfao": false
   },
   {
@@ -15074,7 +15090,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 137,
+   "usado_por": 138,
    "orfao": false
   },
   {
@@ -15242,7 +15258,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 267,
+   "usado_por": 269,
    "orfao": false
   },
   {
@@ -15270,7 +15286,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 151,
+   "usado_por": 153,
    "orfao": false
   },
   {
@@ -15451,7 +15467,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 146,
+   "usado_por": 148,
    "orfao": false
   },
   {
@@ -15629,7 +15645,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 55,
+   "usado_por": 56,
    "orfao": false
   },
   {
@@ -15650,7 +15666,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 77,
+   "usado_por": 78,
    "orfao": false
   },
   {
@@ -15847,7 +15863,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 155,
+   "usado_por": 157,
    "orfao": false
   },
   {
@@ -16883,7 +16899,7 @@
     "PAsTab"
    ],
    "export_default": null,
-   "linhas": 453,
+   "linhas": 457,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth"
@@ -18210,6 +18226,24 @@
    "orfao": false
   },
   {
+   "arquivo": "src/pages/sicoob/admin/CostCentersPage.tsx",
+   "exports": [
+    "CostCentersPage"
+   ],
+   "export_default": "CostCentersPage",
+   "linhas": 372,
+   "dominio": "pages/sicoob",
+   "hooks_locais": [
+    "useAuth"
+   ],
+   "tabelas": [
+    "cooperativas"
+   ],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/pages/sicoob/DemoPortalPage.tsx",
    "exports": [
     "DemoPortalPage"
@@ -18325,7 +18359,7 @@
     "OrderDetailPage"
    ],
    "export_default": "OrderDetailPage",
-   "linhas": 303,
+   "linhas": 326,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useApprovalRequests",
@@ -18421,7 +18455,7 @@
     "PAWalletPage"
    ],
    "export_default": "PAWalletPage",
-   "linhas": 406,
+   "linhas": 405,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth"

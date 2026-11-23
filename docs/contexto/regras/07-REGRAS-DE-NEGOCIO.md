@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `40abb0addf` · branch `main` · 2026-11-23 20:52 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `aef4f10d2b` · branch `main` · 2026-11-23 21:45 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -311,7 +311,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `permissions` | Authenticated users can read permissions | SELECT | authenticated | permissive | `true` |  |
 | `role_permissions` | Admins can manage role_permissions | ALL | authenticated | permissive | `has_role(auth.uid(), 'admin')` | `has_role(auth.uid(), 'admin')` |
 | `role_permissions` | Authenticated users can read role_permissions | SELECT | authenticated | permissive | `true` |  |
-| … +583 linhas — lista completa em `context.json` | | | | | | |
+| … +591 linhas — lista completa em `context.json` | | | | | | |
 
 ## C. Restrições de dados (obrigatório / único / default / CHECK / FK / calculada)
 
@@ -617,7 +617,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `personalization_simulations` | `seller_id` | obrigatório; FK → users.id ON DELETE CASCADE |
 | `personalization_simulations` | `product_name` | obrigatório |
 | `personalization_simulations` | `quantity` | default 1; CHECK quantity > 0 |
-| … +1871 linhas — lista completa em `context.json` | | |
+| … +1910 linhas — lista completa em `context.json` | | |
 
 ## D. Automações no banco (triggers e funções — regras que rodam sozinhas)
 
@@ -772,7 +772,6 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | tr_sicoob_centrais_updated_at | BEFORE UPDATE | `sicoob_centrais` | `handle_updated_at` |  |
 | tr_audit_cooperativas | AFTER INSERT OR UPDATE OR DELETE | `cooperativas` | `log_sicoob_admin_action` |  |
 | tr_audit_pas | AFTER INSERT OR UPDATE OR DELETE | `postos_atendimento` | `log_sicoob_admin_action` |  |
-| trg_validate_sicoob_order_budget | BEFORE UPDATE OF STATUS, PA_ID, TOTAL_AMOUNT, CREATED_AT | `sicoob_orders` | `validate_sicoob_order_budget` |  |
 | tr_validate_sicoob_order_status | BEFORE UPDATE OF STATUS | `sicoob_orders` | `validate_order_status_transition` |  |
 | tr_record_sicoob_order_status_event | AFTER UPDATE OF STATUS, SLA_STATUS | `sicoob_orders` | `record_sicoob_order_status_event` |  |
 | tr_guard_sicoob_approval_status_transition | BEFORE UPDATE OF STATUS | `sicoob_orders` | `guard_sicoob_approval_status_transition` |  |
@@ -819,6 +818,14 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | zzz_guard_quote_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quotes` | `guard_quote_price_attestation` |  |
 | zzz_guard_quote_item_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_items` | `guard_quote_price_attestation` |  |
 | zzz_guard_quote_personalization_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_item_personalizations` | `guard_quote_price_attestation` |  |
+| trg_sync_pa_budget_planejada | BEFORE INSERT OR UPDATE | `pa_budgets` | `tg_sync_pa_budget_planejada` |  |
+| trg_recalc_pa_budget_states | AFTER INSERT OR UPDATE OR DELETE | `pa_budget_entries` | `tg_recalc_pa_budget_states` |  |
+| trg_pa_budget_entries_imutavel | BEFORE UPDATE OR DELETE | `pa_budget_entries` | `tg_pa_budget_entries_immutable` |  |
+| trg_pa_budget_entries_competencia | BEFORE INSERT | `pa_budget_entries` | `tg_pa_budget_entries_competencia_aberta` |  |
+| trg_set_order_cost_center | BEFORE INSERT | `sicoob_orders` | `tg_set_order_cost_center` |  |
+| trg_validate_order_allocations | AFTER INSERT OR UPDATE OR DELETE | `pa_budget_allocations` | `tg_validate_order_allocations` |  |
+| trg_validate_sicoob_order_budget | BEFORE UPDATE OF STATUS, PA_ID, TOTAL_AMOUNT, CREATED_AT | `sicoob_orders` | `validate_sicoob_order_budget` |  |
+| trg_validate_sicoob_order_budget_ins | AFTER INSERT | `sicoob_orders` | `tg_sicoob_order_budget_after_insert` |  |
 | trg_notify_singular_quote_decision | AFTER UPDATE OF STATUS | `quotes` | `notify_singular_quote_decision` |  |
 
 Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banco):
@@ -947,6 +954,26 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `register_sicoob_clean_document` | Evidência de inspeção inválida. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
 | `register_sicoob_clean_document` | Tipo detectado, finalidade e caminho final divergem. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
 | `register_sicoob_clean_document` | Os objetos de quarentena e promoção não correspondem à evidência. | `supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql` |
+| `tg_pa_budget_entries_immutable` | O livro de verba é imutável; registre um evento de estorno ou ajuste. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `tg_pa_budget_entries_competencia_aberta` | Competência %/% fechada; movimentos de verba estão bloqueados. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_id_for_order` | Sem permissao para consultar a verba do pedido %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_apply_state` | Estado de verba inválido: % | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_apply_state` | Pedido % inexistente ou sem PA. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_apply_state` | Pedido % não possui verba configurada para a competência. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_apply_state` | Competência %/% fechada; não é possível movimentar verba. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_apply_state` | Saldo insuficiente na competência %/%: disponível %, solicitado %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_move_order` | Sem permissao para movimentar a verba do pedido %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_move_order` | Pedido % inexistente. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_close_competence` | Apenas admin ou gestor de compras do PA pode fechar competência. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_close_competence` | Verba do PA % na competência %/% não existe. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_reconcile` | Sem permissao para conciliar a verba do PA %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_replace_allocations` | Pedido % nao encontrado ou sem permissao para ratear. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_replace_allocations` | Pedido % nao encontrado ou sem permissao para ratear. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_replace_allocations` | Cada centro de custo pode aparecer uma unica vez no rateio. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_replace_allocations` | Cada linha do rateio precisa de centro de custo e valor. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_replace_allocations` | Centro de custo % nao pertence a cooperativa do pedido. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_validate_allocations` | Rateio do pedido % soma %, mas o pedido vale %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
+| `pa_budget_validate_allocations` | Rateio do pedido % esta em % por cento; precisa fechar em 100. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
 | `validate_scheduled_report_email` | email_to must match your registered email address | `supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql` |
 
 ## E. Estados, máquinas de estado e transições
@@ -1025,6 +1052,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `sicoob_approval_worker_dispatches` | `state` | `failed`, `queued`, `succeeded`, `timed_out` | `queued` |
 | `sicoob_document_registry` | `status` | `clean` |  |
 | `sicoob_invitations` | `status` | `accepted`, `pending`, `revoked`, `superseded` | `pending` |
+| `pa_budget_entries` | `estado` | `comprometido`, `consumido`, `reservado` |  |
 | `admin_audit_log_default` | `status` | **livre (sem enum/CHECK)** |  |
 | `admin_audit_log_y2024` | `status` | **livre (sem enum/CHECK)** |  |
 | `admin_audit_log_y2025` | `status` | **livre (sem enum/CHECK)** |  |
@@ -2917,6 +2945,10 @@ _nenhum item encontrado_
   ```
   const failedAttempts = snapshot.attempts.filter(attempt => !attempt.success).length; let score = 40; if (mfaAvailable && mfaEnabled) score += 30; if (allowedIpCount > 0) score += 20; if (snapshot.devicesCount > 0) score += 10; if (failedAttempts > 5) score -= 10; return { score: Math.min(100, Math.max(0, score)), mfaEnabled, ipRestrictionsActive: allowedIpCount > 0, knownDevicesCount: snapshot.devicesCount, recentLoginAttempts: snapshot.attempts.length, failedLoginAttempts: failedAttempts, secur …
   ```
+- **totalOf(rows: Row[])** — `src/components/sicoob/orders/OrderCostCenterAllocation.tsx`
+  ```
+  rows.reduce((sum, row) => sum + (Number(row.valor) || 0), 0);
+  ```
 - **optionTotal(scenario: SimulationScenario)** — `src/components/simulator/ScenarioComparison.tsx`
   ```
   return scenario.bestOption?.grandTotal ?? 0;
@@ -3817,9 +3849,13 @@ _nenhum item encontrado_
   ```
   return status === null || status === undefined || ORDER_STATUSES_PROJECTING_BUDGET.has(status);
   ```
-- **calculateImpact(allocatedBudget: number | null, orderTotal: number, hasNoBudgetImpact: boolean)** — `src/lib/sicoob/orderBudgetProjection.ts`
+- **calculateImpact(allocatedBudget: number | null, orderTotal: number, hasNoBudgetImpact: boolean,)** — `src/lib/sicoob/orderBudgetProjection.ts`
   ```
   if (hasNoBudgetImpact || allocatedBudget === null || allocatedBudget <= 0) return null; return (orderTotal / allocatedBudget) * 100;
+  ```
+- **validarCentros(rows: AllocationRowInput[])** — `src/lib/sicoob/orderCostCenterAllocation.ts`
+  ```
+  const selecionados = rows.map((row) => row.cost_center_id).filter(Boolean); if (selecionados.length !== rows.length) { throw new Error('Selecione o centro de custo de cada linha do rateio.'); } if (new Set(selecionados).size !== selecionados.length) { throw new Error('Cada centro de custo pode aparecer uma unica vez no rateio.'); }
   ```
 - **shouldShowDevInfraMessages(isDev: boolean)** — `src/lib/system/dev-infra-messages.ts`
   ```
@@ -4048,6 +4084,10 @@ _nenhum item encontrado_
 - **ValidationMessage({ id, message }: { id: string; message?: string })** — `src/pages/sicoob/SicoobInvitationsPage.tsx`
   ```
   if (!message) return null; return ( <p id={id} role="alert" className="text-sm text-destructive"> {message} </p> );
+  ```
+- **invalidate()** — `src/pages/sicoob/admin/CostCentersPage.tsx`
+  ```
+  queryClient.invalidateQueries({ queryKey: ['cost_centers'] });
   ```
 - **canTransitionTo(current: OrderStatus, next: OrderStatus)** — `src/pages/sicoob/orders/OrderDetailPage.tsx`
   ```
@@ -4543,6 +4583,7 @@ _nenhum item encontrado_
 | `* - 'warning' → piora moderada (P95 >25% ou error +2pp)` | `src/pages/admin/telemetry/useRegressionGuardrail.ts` |
 | `return quote.total_cost \|\| (quote.real_subtotal ? quote.real_subtotal * 0.7 : 0);` | `src/pages/quotes-dashboard/useQuotesDashboard.ts` |
 | `Você atingiu mais de 90% da verba mensal. Novos pedidos podem exigir aprovação manual` | `src/pages/sicoob/PAWalletPage.tsx` |
+| `Cada pedido pode ser rateado entre centros de custo. O rateio precisa fechar 100% do` | `src/pages/sicoob/admin/CostCentersPage.tsx` |
 | `if (hour >= 14 && hour <= 18) return 0.7 + Math.random() * 0.3;` | `src/pages/trends/trends-mock.ts` |
 | `if (hour >= 9 && hour <= 12) return 0.9 + Math.random() * 0.1;` | `src/pages/trends/trends-mock.ts` |
 | `if (current <= min * 0.25) return 'critical';` | `src/types/stock.ts` |
@@ -5168,7 +5209,7 @@ _nenhum item encontrado_
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +84 linhas — lista completa em `context.json` | |
+| … +89 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5599,7 +5640,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1000 linhas — lista completa em `context.json` | |
+| … +1005 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5705,7 +5746,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7086 testes em 716 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7105 testes em 718 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5885,6 +5926,7 @@ _nenhum item encontrado_
 | `tests/lib/bridge.test.ts` | 11 | invokeBridge · retorna o data da resposta em sucesso · permite operação batch sem table · invokeExternalDb … |
 | `tests/lib/image-converter-extended.test.ts` | 11 | needsConversion — extended · false for PNG · false for JPEG · false for JPG type … |
 | `tests/lib/textUtils-extended.test.ts` | 11 | toTitleCase — comprehensive · capitalizes single word · capitalizes all-caps input · keeps prepositions lowercase … |
+| `tests/lib/sicoob/orderCostCenterAllocation.test.ts` | 11 | buildAllocationPayload · fecha 100,00 em rateio de tres centros iguais · fecha 100,00 em rateio de seis centros iguais · fecha 100,00 em rateio de sete centros iguais … |
 | `tests/p0/webhooks-resilience.test.ts` | 11 | P0 — webhooks resilientes · bitrix-sync: valida a operação antes de consultar serviços · bitrix-sync: protege o upstream com circuit breaker · backoff compartilhado: limita tentativas, usa jitter e respeita orçamento … |
 | `tests/scenarios/email-transacional-resolve.test.mjs` | 11 | quote_sent recusa rascunho: nada foi anunciado ao cliente · quote_sent recusa orçamento vencido (portal rejeitaria o link) · quote_sent emite link público para orçamento válido · quote_rejected não emite link: recusa do Kanban não cria resposta … |
 | `tests/search/GlobalSearchHelpers.test.tsx` | 11 | RankBadge · renders Trophy icon for index 0 · renders Medal for index 1 · renders  … |
@@ -6008,8 +6050,7 @@ _nenhum item encontrado_
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
-| `tests/hooks/useSellerDiscountLimits.test.ts` | 7 | useSellerDiscountLimits · fetchMyLimit popula myLimit com max_discount_percent · myLimit fica null quando não há registro · fetchAllLimits popula limits … |
-| … +416 linhas — lista completa em `context.json` | | |
+| … +418 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6351,6 +6392,7 @@ _nenhum item encontrado_
 | 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; | `src/components/search/VisualSearchButton.tsx` |
 | ").eq("user_id", userId).order("created_at", { ascending: false }).limit(20), | `src/components/security/useSecurityData.ts` |
 | ").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10), | `src/components/security/useSecurityData.ts` |
+| Status que ja comprometem verba: o rateio nao pode ficar defasado neles, | `src/components/sicoob/orders/OrderCostCenterAllocation.tsx` |
 | 1024 * 1024) { toast.error("O comprovante deve ter no máximo 5 MB."); return; } | `src/components/sicoob/orders/OrderLogisticsTab.tsx` |
 | Separar a decisão do componente mantém a regra testável e a complexidade | `src/components/sicoob/orders/utils/amount.ts` |
 | ciclomática do formulário sob o limite. | `src/components/sicoob/orders/utils/amount.ts` |
@@ -6496,5 +6538,4 @@ _nenhum item encontrado_
 | Tipo mínimo para suportar PostgrestFilterBuilder genérico sem importar o tipo | `src/lib/auth/apply-seller-scope.ts` |
 | Retorna `true` se a query deve ser pulada. | `src/lib/auth/apply-seller-scope.ts` |
 | exibido pelo helper; caller normalmente apenas faz `return`. | `src/lib/auth/invoke-full-scope.ts` |
-| * Erro genérico (rede, validação, 500). Caller decide UI. */ | `src/lib/auth/invoke-full-scope.ts` |
-| … +303 linhas — lista completa em `context.json` | |
+| … +306 linhas — lista completa em `context.json` | |

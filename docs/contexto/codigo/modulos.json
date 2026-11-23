@@ -3053,7 +3053,7 @@
    "modulo": "components/layout",
    "arquivos": 18,
    "testes": 0,
-   "linhas": 3342,
+   "linhas": 3348,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -6417,13 +6417,13 @@
   },
   {
    "modulo": "components/sicoob",
-   "arquivos": 21,
+   "arquivos": 22,
    "testes": 0,
-   "linhas": 2593,
+   "linhas": 2945,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 20,
+   "componentes": 21,
    "hooks_locais": [
     "useAIOrderPredictor",
     "useAuth",
@@ -6461,6 +6461,7 @@
     "system-healthcheck"
    ],
    "tabelas": [
+    "cost_centers",
     "notifications",
     "order_approval_history",
     "order_audit_events",
@@ -6471,6 +6472,7 @@
     "order_pilot_approvals",
     "order_templates",
     "orders",
+    "pa_budget_allocations",
     "pa_budgets",
     "postos_atendimento",
     "profiles",
@@ -6491,6 +6493,7 @@
     "duplicate_order_atomic",
     "get_sicoob_access_state",
     "log_order_audit_event",
+    "pa_budget_replace_allocations",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment"
    ],
@@ -7207,7 +7210,7 @@
    "modulo": "hooks",
    "arquivos": 210,
    "testes": 0,
-   "linhas": 35062,
+   "linhas": 35111,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10116,7 +10119,7 @@
    "modulo": "integrations/supabase",
    "arquivos": 2,
    "testes": 0,
-   "linhas": 13451,
+   "linhas": 13608,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10866,7 +10869,7 @@
    "modulo": "lib/access",
    "arquivos": 4,
    "testes": 0,
-   "linhas": 349,
+   "linhas": 350,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11550,9 +11553,9 @@
   },
   {
    "modulo": "lib/sicoob",
-   "arquivos": 7,
+   "arquivos": 8,
    "testes": 0,
-   "linhas": 413,
+   "linhas": 567,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11575,7 +11578,8 @@
    "importado_por_outros_modulos": [
     "components/sicoob",
     "hooks/sicoob",
-    "pages/sicoob"
+    "pages/sicoob",
+    "services/sicoob"
    ],
    "depende_de_modulos": [
     "types/sicoob"
@@ -12618,7 +12622,7 @@
    "modulo": "pages/admin",
    "arquivos": 69,
    "testes": 3,
-   "linhas": 17271,
+   "linhas": 17275,
    "itens_menu": [
     "Acesso & Bots",
     "Aprovações de desconto",
@@ -14403,14 +14407,15 @@
   },
   {
    "modulo": "pages/sicoob",
-   "arquivos": 19,
+   "arquivos": 20,
    "testes": 0,
-   "linhas": 6743,
+   "linhas": 7137,
    "itens_menu": [
     "Acompanhamento",
     "Agregados e recebimentos",
     "Analytics SICOOB",
     "Aprovações",
+    "Centros de Custo",
     "Convites institucionais",
     "Delegações de aprovação",
     "Logística & POD",
@@ -14428,6 +14433,7 @@
     "/gestor/agregados",
     "/gestor/aprovacoes",
     "/gestor/auditoria",
+    "/gestor/centros-custo",
     "/gestor/convites",
     "/gestor/delegacoes",
     "/kpis/sicoob",
@@ -14442,7 +14448,7 @@
     "/vendedor/dashboard"
    ],
    "rotas_http": [],
-   "componentes": 19,
+   "componentes": 20,
    "hooks_locais": [
     "useApprovalRequests",
     "useApprovalThreshold",
@@ -14489,6 +14495,7 @@
    ],
    "tabelas": [
     "cooperativas",
+    "cost_centers",
     "limit_increase_requests",
     "notifications",
     "order_approval_history",
@@ -14501,6 +14508,7 @@
     "order_pilot_approvals",
     "order_templates",
     "orders",
+    "pa_budget_allocations",
     "pa_budgets",
     "pa_category_thresholds",
     "postos_atendimento",
@@ -14538,6 +14546,7 @@
     "list_sicoob_approval_delegate_candidates",
     "log_order_audit_event",
     "mutate_sicoob_order_item",
+    "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "record_sicoob_delivery_receipt",
     "record_sicoob_order_payment",
@@ -14584,6 +14593,7 @@
    "diretos": {
     "edges": [],
     "tabelas": [
+     "cooperativas",
      "order_consolidations",
      "pa_budgets",
      "profiles",
@@ -14740,7 +14750,7 @@
    "modulo": "routes/config",
    "arquivos": 8,
    "testes": 0,
-   "linhas": 514,
+   "linhas": 517,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15278,6 +15288,7 @@
     "connection_test_history",
     "cooperativas",
     "cooperativas_parceiras",
+    "cost_centers",
     "coupons",
     "custom_kits",
     "discount_approval_requests",
@@ -15329,6 +15340,7 @@
     "organizations",
     "outbound_webhooks",
     "ownership_audit_reports",
+    "pa_budget_allocations",
     "pa_budgets",
     "pa_category_thresholds",
     "pa_notification_settings",
@@ -15451,6 +15463,7 @@
     "log_rls_denial",
     "lookup_request_id",
     "mutate_sicoob_order_item",
+    "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "record_sicoob_delivery_receipt",
     "record_sicoob_order_payment",
@@ -15859,9 +15872,9 @@
   },
   {
    "modulo": "services/sicoob",
-   "arquivos": 12,
+   "arquivos": 13,
    "testes": 0,
-   "linhas": 1259,
+   "linhas": 1364,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15874,7 +15887,9 @@
    ],
    "tabelas": [
     "cooperativas",
+    "cost_centers",
     "limit_increase_requests",
+    "pa_budget_allocations",
     "pa_budgets",
     "postos_atendimento",
     "profiles",
@@ -15891,6 +15906,7 @@
     "confirm_sicoob_order",
     "create_sicoob_approval_delegation",
     "list_sicoob_approval_delegate_candidates",
+    "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
@@ -15920,7 +15936,9 @@
     ],
     "tabelas": [
      "cooperativas",
+     "cost_centers",
      "limit_increase_requests",
+     "pa_budget_allocations",
      "pa_budgets",
      "postos_atendimento",
      "profiles",
@@ -15937,6 +15955,7 @@
      "confirm_sicoob_order",
      "create_sicoob_approval_delegation",
      "list_sicoob_approval_delegate_candidates",
+     "pa_budget_replace_allocations",
      "prepare_sicoob_order_confirmation",
      "reject_sicoob_order",
      "reject_sicoob_order_without_approval",
@@ -15960,6 +15979,7 @@
    "depende_de_modulos": [
     "integrations/supabase",
     "lib/orders",
+    "lib/sicoob",
     "types/sicoob"
    ],
    "pacotes_externos": []

@@ -7365,6 +7365,17 @@
    "src/hooks/orders/extensions/index.ts",
    "src/lib/utils.ts"
   ],
+  "src/components/sicoob/orders/OrderCostCenterAllocation.tsx": [
+   "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/components/ui/input.tsx",
+   "src/components/ui/label.tsx",
+   "src/components/ui/select.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/lib/sicoob/orderCostCenterAllocation.ts",
+   "src/services/sicoob/costCenterService.ts"
+  ],
   "src/components/sicoob/orders/OrderInvoicesTab.tsx": [
    "src/components/sicoob/orders/utils/amount.ts",
    "src/components/ui/button.tsx",
@@ -11773,6 +11784,7 @@
    "src/components/ui/textarea.tsx",
    "src/contexts/AuthContext.tsx",
    "src/lib/format.ts",
+   "src/lib/sicoob/paBudgetState.ts",
    "src/lib/utils.ts",
    "src/services/sicoob/approvalService.ts",
    "src/services/sicoob/budgetService.ts"
@@ -11806,6 +11818,22 @@
    "src/components/ui/button.tsx",
    "src/lib/utils.ts"
   ],
+  "src/pages/sicoob/admin/CostCentersPage.tsx": [
+   "src/components/seo/PageSEO.tsx",
+   "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/components/ui/dialog.tsx",
+   "src/components/ui/input.tsx",
+   "src/components/ui/label.tsx",
+   "src/components/ui/select.tsx",
+   "src/components/ui/switch.tsx",
+   "src/components/ui/table.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/integrations/supabase/client.ts",
+   "src/services/sicoob/costCenterService.ts",
+   "src/stores/useConfirmDialogStore.ts"
+  ],
   "src/pages/sicoob/orders/OrderDetailPage.tsx": [
    "src/components/orders/OneClickReorder.tsx",
    "src/components/orders/OrderHistoryTimeline.tsx",
@@ -11815,6 +11843,7 @@
    "src/components/sicoob/orders/OrderAddItemDialog.tsx",
    "src/components/sicoob/orders/OrderBudgetIntelligence.tsx",
    "src/components/sicoob/orders/OrderCommentsTab.tsx",
+   "src/components/sicoob/orders/OrderCostCenterAllocation.tsx",
    "src/components/sicoob/orders/OrderInvoicesTab.tsx",
    "src/components/sicoob/orders/OrderItemsHistory.tsx",
    "src/components/sicoob/orders/OrderLogisticsTab.tsx",
@@ -11838,7 +11867,6 @@
    "src/hooks/useSicoobOrderHistory.ts",
    "src/hooks/useSicoobOrderItems.ts",
    "src/lib/sicoob/order-permissions.ts",
-   "src/lib/sicoob/orderBudgetProjection.ts",
    "src/lib/sicoob/paBudgetState.ts",
    "src/lib/sicoob/sla-cycle.ts",
    "src/lib/utils.ts",
@@ -12055,6 +12083,7 @@
    "src/pages/sicoob/PADashboardPage.tsx",
    "src/pages/sicoob/PAWalletPage.tsx",
    "src/pages/sicoob/SicoobInvitationsPage.tsx",
+   "src/pages/sicoob/admin/CostCentersPage.tsx",
    "src/pages/sicoob/reports/SicoobKpiPage.tsx",
    "src/pages/sicoob/reports/SicoobReportsPage.tsx",
    "src/pages/sicoob/vendedor/SellerDashboardPage.tsx"
@@ -12147,6 +12176,9 @@
   "src/services/sicoob/commonService.ts": [
    "src/integrations/supabase/client.ts"
   ],
+  "src/services/sicoob/costCenterService.ts": [
+   "src/integrations/supabase/client.ts"
+  ],
   "src/services/sicoob/documentIngestService.ts": [
    "src/integrations/supabase/client.ts"
   ],
@@ -12169,7 +12201,8 @@
    "src/types/sicoob/orders.ts"
   ],
   "src/services/sicoob/statsService.ts": [
-   "src/integrations/supabase/client.ts"
+   "src/integrations/supabase/client.ts",
+   "src/lib/sicoob/paBudgetState.ts"
   ],
   "src/services/sicoob/userService.ts": [
    "src/integrations/supabase/client.ts"

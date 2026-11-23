@@ -1,14 +1,14 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 252,
+ "total": 254,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 167,
+  "lib": 168,
   "python": 12,
-  "services": 23,
+  "services": 24,
   "stores": 6,
   "utils": 37
  },
@@ -671,7 +671,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 401,
+   "usado_por": 403,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -752,7 +752,7 @@
     "TablesUpdate"
    ],
    "export_default": null,
-   "linhas": 13379,
+   "linhas": 13536,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -891,7 +891,7 @@
     "rolesForSicoobPath"
    ],
    "export_default": null,
-   "linhas": 68,
+   "linhas": 69,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4734,38 +4734,11 @@
    "camada": "lib",
    "exports": [
     "ORDER_STATUSES_CONSUMING_BUDGET",
+    "ORDER_STATUSES_IN_BUDGET",
     "projectOrderAgainstBudget"
    ],
    "export_default": null,
-   "linhas": 84,
-   "tabelas": [],
-   "rpcs": [],
-   "edges": [],
-   "env": [],
-   "externos": [],
-   "zod_schemas": 0,
-   "flags": [],
-   "papeis": [],
-   "usado_por": 3,
-   "usado_por_modulos": [
-    "components/sicoob",
-    "lib/sicoob",
-    "pages/sicoob"
-   ],
-   "coberto_por_testes": 1,
-   "orfao": false
-  },
-  {
-   "arquivo": "src/lib/sicoob/paBudgetState.ts",
-   "camada": "lib",
-   "exports": [
-    "PaBudgetState",
-    "hasConfiguredPaBudget",
-    "isOrderOverPaBudget",
-    "resolvePaBudgetState"
-   ],
-   "export_default": null,
-   "linhas": 41,
+   "linhas": 97,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4777,9 +4750,64 @@
    "usado_por": 2,
    "usado_por_modulos": [
     "components/sicoob",
-    "pages/sicoob"
+    "lib/sicoob"
    ],
    "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/lib/sicoob/orderCostCenterAllocation.ts",
+   "camada": "lib",
+   "exports": [
+    "AllocationPayloadItem",
+    "AllocationRowInput",
+    "buildAllocationPayload"
+   ],
+   "export_default": null,
+   "linhas": 92,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 1,
+   "usado_por_modulos": [
+    "components/sicoob"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/lib/sicoob/paBudgetState.ts",
+   "camada": "lib",
+   "exports": [
+    "PaBudgetAmounts",
+    "PaBudgetState",
+    "hasConfiguredPaBudget",
+    "isOrderOverPaBudget",
+    "readPaBudgetAmounts",
+    "resolvePaBudgetState"
+   ],
+   "export_default": null,
+   "linhas": 90,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 4,
+   "usado_por_modulos": [
+    "components/sicoob",
+    "pages/sicoob",
+    "services/sicoob"
+   ],
+   "coberto_por_testes": 2,
    "orfao": false
   },
   {
@@ -6222,6 +6250,38 @@
    "orfao": false
   },
   {
+   "arquivo": "src/services/sicoob/costCenterService.ts",
+   "camada": "services",
+   "exports": [
+    "CostCenter",
+    "OrderAllocation",
+    "costCenterService"
+   ],
+   "export_default": null,
+   "linhas": 102,
+   "tabelas": [
+    "cost_centers",
+    "pa_budget_allocations",
+    "postos_atendimento"
+   ],
+   "rpcs": [
+    "pa_budget_replace_allocations"
+   ],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "components/sicoob",
+    "pages/sicoob"
+   ],
+   "coberto_por_testes": 0,
+   "orfao": false
+  },
+  {
    "arquivo": "src/services/sicoob/documentIngestService.ts",
    "camada": "services",
    "exports": [
@@ -6408,7 +6468,7 @@
     "sicoobStatsService"
    ],
    "export_default": null,
-   "linhas": 88,
+   "linhas": 91,
    "tabelas": [
     "pa_budgets",
     "sicoob_order_history",
@@ -6541,7 +6601,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 20,
+   "usado_por": 21,
    "usado_por_modulos": [
     "components/admin",
     "components/cart",

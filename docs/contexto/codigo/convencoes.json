@@ -3,11 +3,11 @@
  "format_version": 2,
  "onde_ficam": {
   "telas": [
-   "src/pages (116)"
+   "src/pages (117)"
   ],
   "componentes": [
-   "src/components (1001)",
-   "src/pages (159)",
+   "src/components (1002)",
+   "src/pages (160)",
    "src/contexts (9)"
   ],
   "hooks": [
@@ -16,14 +16,14 @@
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (167)",
+   "src/lib (168)",
    "src/utils (37)",
-   "src/services (23)"
+   "src/services (24)"
   ],
   "testes": [
-   "tests/ (648)",
+   "tests/ (650)",
    "e2e/ (150)",
-   "outro (53)"
+   "outro (54)"
   ],
   "edge_functions": "supabase/functions",
   "migrations": "supabase/migrations",
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1172)"
+  ".tsx (1174)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)",
    "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)",
    "fix: servidor resolve destinatario do email transacional (#411)",
    "infra: incluir send-transactional-email na publicação de edge functions (#409)",
-   "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
-   "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)"
+   "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

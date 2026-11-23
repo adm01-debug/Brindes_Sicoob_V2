@@ -2,10 +2,10 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "resumo": {
-  "urls": 139,
+  "urls": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
-  "itens_menu": 84,
+  "itens_menu": 85,
   "lazy": 79
  },
  "urls": [
@@ -5371,6 +5371,64 @@
    "arquivos_puxados": 9
   },
   {
+   "protegida": false,
+   "wrappers": [],
+   "pai": null,
+   "indice": false,
+   "lazy": true,
+   "tipo": "tela",
+   "caminho": "/gestor/centros-custo",
+   "componente": null,
+   "arquivo": "src/pages/sicoob/admin/CostCentersPage.tsx",
+   "definida_em": "src/routes/config/sicoob-rbac.ts",
+   "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useMemo",
+    "useMutation",
+    "useQuery",
+    "useQueryClient",
+    "useRef",
+    "useState",
+    "useUserProfile",
+    "useUserRoles"
+   ],
+   "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useUserProfile",
+    "useUserRoles"
+   ],
+   "tabelas": [
+    "cooperativas",
+    "cost_centers",
+    "pa_budget_allocations",
+    "postos_atendimento",
+    "profiles",
+    "user_roles"
+   ],
+   "rpcs": [
+    "get_sicoob_access_state",
+    "pa_budget_replace_allocations"
+   ],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
+   "canais_realtime": [],
+   "flags": [],
+   "papeis": [
+    "admin",
+    "dialog",
+    "manager"
+   ],
+   "arquivos_puxados": 39
+  },
+  {
    "protegida": true,
    "wrappers": [],
    "pai": null,
@@ -8451,7 +8509,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 40
+   "arquivos_puxados": 43
   },
   {
    "protegida": true,
@@ -10200,6 +10258,7 @@
     "useCallback",
     "useCategories",
     "useContext",
+    "useCooperativaDoPa",
     "useCustomizationPriceReactive",
     "useCustomizationPriceV2",
     "useDeliveryPhoto",
@@ -10270,6 +10329,7 @@
     "useUserRoles"
    ],
    "tabelas": [
+    "cost_centers",
     "limit_increase_requests",
     "notifications",
     "order_approval_history",
@@ -10281,8 +10341,10 @@
     "order_pilot_approvals",
     "order_templates",
     "orders",
+    "pa_budget_allocations",
     "pa_budgets",
     "pa_category_thresholds",
+    "postos_atendimento",
     "profiles",
     "sicoob_approval_requests",
     "sicoob_order_artwork_versions",
@@ -10304,6 +10366,7 @@
     "get_sicoob_access_state",
     "log_order_audit_event",
     "mutate_sicoob_order_item",
+    "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment",
@@ -10335,7 +10398,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 135
+   "arquivos_puxados": 138
   },
   {
    "protegida": true,
@@ -10929,7 +10992,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 32
+   "arquivos_puxados": 35
   },
   {
    "protegida": false,
@@ -11485,6 +11548,20 @@
    "papeis_nao_resolvidos": null,
    "definido_em": "src/constants/onboarding.ts",
    "resolve_para": null
+  },
+  {
+   "rotulo": "Centros de Custo",
+   "destino": "/gestor/centros-custo",
+   "grupo": null,
+   "papeis": [
+    "comprador_singular",
+    "dev",
+    "gestor_compras",
+    "supervisor"
+   ],
+   "papeis_nao_resolvidos": null,
+   "definido_em": "src/components/layout/SidebarReorganized.tsx",
+   "resolve_para": "src/pages/sicoob/admin/CostCentersPage.tsx"
   },
   {
    "rotulo": "Chat com Especialista IA",
