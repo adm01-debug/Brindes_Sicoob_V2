@@ -75,7 +75,7 @@
     "propria_cooperativa": "criado",
     "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
   },
-  "rateio_centro_alheio": "ERROR:  Centro de custo 1f2312b3-77d2-42ef-9c83-48a0ab712ad2 nao pertence a cooperativa do pedido.",
+  "rateio_centro_alheio": "ERROR:  Centro de custo 4d9cfbd9-8520-4470-98ba-7e84181eabd0 nao pertence a cooperativa do pedido.",
   "rateio_oraculo": {
     "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
     "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
@@ -120,6 +120,8 @@
   },
   "conclusao_legado_sem_consumo": {
     "pedido_concluido": "valor 80, livro 20",
+    "saldo_disponivel_ao_concluir": "-50.00",
+    "gasto_novo_barrado_no_mesmo_saldo": "ERROR:  Saldo insuficiente na competência 11/2026: disponível -50.00, solicitado 80.00.",
     "consumo_apos_concluir": "100.00",
     "consumo_apos_concluir_dois": "100.00",
     "pedido_capado_a_zero_concluido": "00000000-0000-4000-8000-000000000283",

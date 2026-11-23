@@ -873,13 +873,38 @@ try:
         f" WHERE pa_id = '{pa_c}' AND ano = EXTRACT(YEAR FROM now())"
         " AND mes = EXTRACT(MONTH FROM now());"
     )
+    # Verba cortada abaixo do ja gasto ANTES de concluir: com 800 livres o
+    # cenario passaria mesmo que a conclusao voltasse a exigir saldo. Planejado
+    # de 50 contra 100 consumidos deixa o disponivel negativo, entao concluir os
+    # pedidos so passa se a conclusao nao revalidar saldo de fato.
+    sql(
+        "UPDATE pa_budgets SET verba_planejada = 50"
+        f" WHERE pa_id = '{pa_c}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    saldo_ao_concluir = scalar(
+        "SELECT verba_planejada - verba_consumida FROM pa_budgets"
+        f" WHERE pa_id = '{pa_c}' AND ano = EXTRACT(YEAR FROM now())"
+        " AND mes = EXTRACT(MONTH FROM now());"
+    )
+    assert saldo_ao_concluir == "-50.00", saldo_ao_concluir
+    # Controle negativo: com esse mesmo saldo, gasto NOVO tem de ser barrado.
+    # Sem ele o cenario nao provaria nada -- um saldo negativo que ninguem testa
+    # poderia ser apenas um numero gravado, e nao a guarda viva.
+    bloqueio_saldo = must_fail(
+        "INSERT INTO public.sicoob_orders"
+        " (id, pa_id, cooperative_id, created_by, status, total_amount)"
+        " VALUES ('00000000-0000-4000-8000-0000000002fe',"
+        f" '{pa_c}', '{COOP_A}', '{GESTOR_A}', 'waiting_approval', 80);",
+        "Saldo insuficiente",
+    )
     move("00000000-0000-4000-8000-000000000282", "completed")
     apos_concluir = scalar(agregado_pa_c)
     move("00000000-0000-4000-8000-000000000281", "completed")
     apos_concluir_dois = scalar(agregado_pa_c)
     # 283 ficou sem lancamento: o cap do backfill esgotou os 100 registrados
-    # antes dele. Concluir nao pode exigir saldo (PA C so tem 900 planejados
-    # e 100 consumidos) nem criar posicao nova no livro.
+    # antes dele. Concluir nao pode exigir saldo (o disponivel esta negativo de
+    # proposito) nem criar posicao nova no livro.
     move("00000000-0000-4000-8000-000000000283", "completed")
     apos_concluir_tres = scalar(agregado_pa_c)
     assert apos_concluir == "100.00", apos_concluir
@@ -893,6 +918,8 @@ try:
     assert zero_livro == "0", zero_livro
     result["conclusao_legado_sem_consumo"] = {
         "pedido_concluido": "valor 80, livro 20",
+        "saldo_disponivel_ao_concluir": saldo_ao_concluir,
+        "gasto_novo_barrado_no_mesmo_saldo": bloqueio_saldo,
         "consumo_apos_concluir": apos_concluir,
         "consumo_apos_concluir_dois": apos_concluir_dois,
         "pedido_capado_a_zero_concluido": "00000000-0000-4000-8000-000000000283",
