@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "infra: incluir send-transactional-email na publicação de edge functions (#409)",
    "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
    "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)",
    "fix: extrai parser de moeda e validação do componente de notas (#404)",
-   "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)",
-   "docs: classificar os 683 registros de lacunas por evidencia real (#402)"
+   "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

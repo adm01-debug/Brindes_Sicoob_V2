@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `b7680fb54fb75129fec90026a83e44506ca822ef` (2026-11-23T08:19:15-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e0b7520b31c5d98e0641b564d7495d3d27460df7` (2026-11-23T11:17:29-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5255 |
 | arquivos_codigo | 3154 |
-| linhas_codigo | 496868 |
+| linhas_codigo | 496871 |
 | rotas | 139 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -472,7 +472,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36633 nós · 60925 arestas · 2729 comunidades · grafo do commit `b7680fb5`
+- 36633 nós · 60925 arestas · 2729 comunidades · grafo do commit `e0b7520b`
 - comunidades maiores: react (658), ref_components (420), ref_integrations (406), ref_lib (280), sonner (207), framer-motion (206), react-router-dom (185), expert-chat/index.ts (183), ref_contexts (183), date-fns (172), ref_stores (165), getCorsHeaders (154)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -487,11 +487,11 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - package-lock.json (18)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
-- docs/plano-melhorias-50-etapas.md (16)
 - .github/workflows/lighthouse.yml (15)
-- docs/correcoes-validacao-2026-09-14.md (15)
+- docs/plano-melhorias-50-etapas.md (15)
+- .github/workflows/deploy-sicoob-functions.yml (14)
+- docs/correcoes-validacao-2026-09-14.md (14)
 - src/integrations/supabase/types.ts (14)
-- .github/workflows/deploy-sicoob-functions.yml (13)
 - .github/workflows/bundle-check.yml (12)
 
 ## Workflows
@@ -696,6 +696,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-23 `e0b7520` infra: incluir send-transactional-email na publicação de edge functions (#409)
 - 2026-11-23 `b7680fb` fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)
 - 2026-11-23 `2466761` docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)
 - 2026-11-22 `54e7819` fix: extrai parser de moeda e validação do componente de notas (#404)
@@ -710,7 +711,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-21 `e324c64` feat: e-mail transacional via Resend na edge send-transactional-email (#393)
 - 2026-11-20 `e7e6753` docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)
 - 2026-11-20 `ca511cf` fix: links internos quebrados (ADM-15) (#390)
-- 2026-11-20 `8b37b64` fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

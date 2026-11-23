@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "b7680fb54fb75129fec90026a83e44506ca822ef",
+  "commit": "e0b7520b31c5d98e0641b564d7495d3d27460df7",
   "branch": "main",
-  "data_commit": "2026-11-23T08:19:15-03:00",
+  "data_commit": "2026-11-23T11:17:29-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e0b7520",
+    "data": "2026-11-23",
+    "assunto": "infra: incluir send-transactional-email na publicação de edge functions (#409)"
+   },
    {
     "sha": "b7680fb",
     "data": "2026-11-23",
@@ -126,11 +131,6 @@
     "sha": "a73abe0",
     "data": "2026-11-19",
     "assunto": "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)"
-   },
-   {
-    "sha": "5830e19",
-    "data": "2026-11-19",
-    "assunto": "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)"
    }
   ],
   "arquivos_mudados_7d": 1295,
@@ -234,24 +234,24 @@
     "mudancas": 16
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 16
-   },
-   {
     "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 15
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 15
+   },
+   {
+    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
+    "mudancas": 14
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 14
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 14
-   },
-   {
-    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 191
+    "commits": 192
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 5255,
   "arquivos_codigo": 3154,
-  "linhas_codigo": 496868,
+  "linhas_codigo": 496871,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -576,7 +576,7 @@
   },
   "scripts/ci": {
    "arquivos": 3,
-   "linhas": 267
+   "linhas": 268
   },
   "scripts/compare-edge-functions.mjs": {
    "arquivos": 1,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 35,
-   "linhas": 3336
+   "linhas": 3338
   },
   "tests/search": {
    "arquivos": 1,

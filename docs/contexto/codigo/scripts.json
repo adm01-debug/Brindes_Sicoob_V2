@@ -385,7 +385,7 @@
   {
    "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
    "descricao": null,
-   "linhas": 99,
+   "linhas": 100,
    "env": [],
    "npm_scripts": [],
    "workflows": [
