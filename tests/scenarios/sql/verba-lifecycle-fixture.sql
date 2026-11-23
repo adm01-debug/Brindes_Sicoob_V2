@@ -204,7 +204,15 @@ VALUES ('00000000-0000-4000-8000-000000000281',
         '00000000-0000-4000-8000-000000000003',
         '00000000-0000-4000-8000-000000000010',
         '00000000-0000-4000-8000-000000000020', 'delivered', 80,
-        date_trunc('month', now()) + interval '2 hours');
+        date_trunc('month', now()) + interval '2 hours'),
+       -- Terceiro pedido entregue: a fila do backfill ja esgotou os 100 de
+       -- consumo registrado, entao ele fica com livro liquido ZERO. Concluir
+       -- este pedido nao pode exigir saldo nem inflar o agregado.
+       ('00000000-0000-4000-8000-000000000283',
+        '00000000-0000-4000-8000-000000000003',
+        '00000000-0000-4000-8000-000000000010',
+        '00000000-0000-4000-8000-000000000020', 'delivered', 80,
+        date_trunc('month', now()) + interval '3 hours');
 
 INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount)
 VALUES ('00000000-0000-4000-8000-000000000102',

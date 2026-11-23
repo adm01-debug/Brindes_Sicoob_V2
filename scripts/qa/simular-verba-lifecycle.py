@@ -877,13 +877,26 @@ try:
     apos_concluir = scalar(agregado_pa_c)
     move("00000000-0000-4000-8000-000000000281", "completed")
     apos_concluir_dois = scalar(agregado_pa_c)
+    # 283 ficou sem lancamento: o cap do backfill esgotou os 100 registrados
+    # antes dele. Concluir nao pode exigir saldo (PA C so tem 900 planejados
+    # e 100 consumidos) nem criar posicao nova no livro.
+    move("00000000-0000-4000-8000-000000000283", "completed")
+    apos_concluir_tres = scalar(agregado_pa_c)
     assert apos_concluir == "100.00", apos_concluir
     assert apos_concluir_dois == "100.00", apos_concluir_dois
+    assert apos_concluir_tres == "100.00", apos_concluir_tres
     assert scalar(do_pa_c) == primeira_passada, scalar(do_pa_c)
+    zero_livro = scalar(
+        "SELECT count(*) FROM pa_budget_entries"
+        " WHERE order_id = '00000000-0000-4000-8000-000000000283';"
+    )
+    assert zero_livro == "0", zero_livro
     result["conclusao_legado_sem_consumo"] = {
         "pedido_concluido": "valor 80, livro 20",
         "consumo_apos_concluir": apos_concluir,
         "consumo_apos_concluir_dois": apos_concluir_dois,
+        "pedido_capado_a_zero_concluido": "00000000-0000-4000-8000-000000000283",
+        "consumo_apos_concluir_capado": apos_concluir_tres,
         "lancamentos_preservados": scalar(do_pa_c),
         "consumido_no_agregado": scalar(consumido_pa_c),
     }

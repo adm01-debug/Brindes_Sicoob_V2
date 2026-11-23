@@ -503,6 +503,21 @@ BEGIN
     RETURN v_budget;
   END IF;
 
+  -- Pedido legado ja entregue que o backfill nao conseguiu lancar: o consumo
+  -- historico do agregado acabou antes do fim da fila, entao este pedido ficou
+  -- com livro liquido zero. Ele ja esta contado em `verba_consumida` desde o
+  -- backfill; concluir (`delivered` -> `completed`) nao e gasto novo e nao
+  -- pode exigir saldo livre nem inflar o consumo outra vez.
+  IF p_para_estado = 'consumido'
+     AND COALESCE(v_atual_valor, 0) = 0
+     AND EXISTS (
+       SELECT 1 FROM public.sicoob_orders o
+        WHERE o.id = p_order_id
+          AND o.status IN ('delivered', 'completed')
+     ) THEN
+    RETURN v_budget;
+  END IF;
+
   -- Entrar no ciclo (ou consumir direto) exige saldo livre na competência.
   -- A posição atual é liberada no mesmo movimento, então ela volta ao saldo.
   IF p_para_estado <> 'liberado' THEN
