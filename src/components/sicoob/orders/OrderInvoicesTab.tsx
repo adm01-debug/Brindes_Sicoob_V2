@@ -51,6 +51,7 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
   const amountValido = isAmountValido(amount);
   const parsedAmount = amountValido ? parseAmountBR(amount) : undefined;
   const podeEnviar = Boolean(invoiceNumber.trim()) && Boolean(issuedAt) && amountValido;
+  const uploadDisabled = isUploading || !podeEnviar;
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
     if (!canManage) {
@@ -145,9 +146,9 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
                 accept=".xml"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={(e) => handleFileUpload(e, 'xml')}
-                disabled={isUploading || !podeEnviar}
+                disabled={uploadDisabled}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading || !podeEnviar}>
+              <Button variant="outline" className="gap-2" disabled={uploadDisabled}>
                 <FileCode className="h-4 w-4" />
                 Upload XML
               </Button>
@@ -158,9 +159,9 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
                 accept=".pdf"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={(e) => handleFileUpload(e, 'pdf')}
-                disabled={isUploading || !podeEnviar}
+                disabled={uploadDisabled}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading || !podeEnviar}>
+              <Button variant="outline" className="gap-2" disabled={uploadDisabled}>
                 <FileText className="h-4 w-4" />
                 Upload PDF
               </Button>
