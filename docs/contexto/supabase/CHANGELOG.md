@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-23 21:15 UTC
+
+- **functions** alterado (1): `public.check_rate_limit(_identifier text, _endpoint text, _max_requests integer, _window_seconds integer, _block_duration_seconds integer)`
+
 ## 2026-11-23 11:18 UTC
 
 - **realtime** adicionado (1): `supabase_realtime_messages_publication:realtime.messages_2026_11_26`

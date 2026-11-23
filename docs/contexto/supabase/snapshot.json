@@ -51733,9 +51733,13 @@
             {
               "file": "supabase/functions/quote-approval/index.ts",
               "hits": 1
+            },
+            {
+              "file": "supabase/functions/send-transactional-email/index.ts",
+              "hits": 1
             }
           ],
-          "code_total_files": 3,
+          "code_total_files": 4,
           "cron": [],
           "db": [],
           "triggers": [],
