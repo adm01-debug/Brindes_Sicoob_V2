@@ -6,7 +6,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 
 | métrica | valor |
 |---|---|
-| tamanho | 231.8 MB |
+| tamanho | 231.9 MB |
 | schema public | 153.8 MB |
 | schema private | 24.0 KB |
 
@@ -18,7 +18,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.telemetry_events | ~98.5k | 47.7 MB | 42.6 MB | 5.0 MB | ~10 | 3 | ~630 | 2026-10-30 |
 | public.query_telemetry | ~63.7k | 43.6 MB | 9.2 MB | 17.1 MB | 3 | ~20 | ~78.8k | 2026-10-30 |
 | public.admin_audit_log_y2026_m10 | ~20.3k | 17.9 MB | 9.1 MB | 8.8 MB | ~20 | 4 | ~21.1k | 2026-10-28 |
-| public.sicoob_approval_worker_dispatches | ~38.9k | 15.8 MB | 10.2 MB | 5.5 MB | ~970 | ~58.8k | ~193.6k | 2026-11-22 |
+| public.sicoob_approval_worker_dispatches | ~38.9k | 15.8 MB | 10.2 MB | 5.5 MB | ~1.2k | ~58.9k | ~194k | 2026-11-22 |
 | public.e2e_cleanup_audit | ~10.5k | 6.6 MB | 3.6 MB | 3.0 MB | 7 | 0 | 0 | 2026-10-30 |
 | public.workspace_notifications | ~9.4k | 5.8 MB | 4.3 MB | 1.5 MB | 7 | 0 | ~79.5k | 2026-10-18 |
 | public.login_attempts | ~7.7k | 3.1 MB | 2.1 MB | 984.0 KB | 0 | ~900 | ~6.5k | 2026-10-18 |
@@ -39,7 +39,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.search_analytics | 0 | 128.0 KB | 8.0 KB | 112.0 KB | 3 | ~10 | ~810 |  |
 | public.e2e_cleanup_rate_limit | ~390 | 112.0 KB | 32.0 KB | 40.0 KB | ~30 | ~220 | ~12.8k | 2026-10-29 |
 | public.product_views | ~60 | 112.0 KB | 16.0 KB | 64.0 KB | 0 | ~800 | ~1.5k |  |
-| public.sicoob_approval_requests | 0 | 112.0 KB | 8.0 KB | 96.0 KB | 5 | ~40 | ~55.5k |  |
+| public.sicoob_approval_requests | 0 | 112.0 KB | 8.0 KB | 96.0 KB | 5 | ~40 | ~55.7k |  |
 | public.admin_config_audit | ~70 | 104.0 KB | 40.0 KB | 32.0 KB | ~40 | 7 | ~30 |  |
 | public.external_connections | 2 | 104.0 KB | 8.0 KB | 88.0 KB | 6 | ~14.9k | ~100 |  |
 | public.cooperativas | 0 | 96.0 KB | 8.0 KB | 80.0 KB | 2 | ~210 | ~470 |  |
@@ -88,7 +88,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.quote_approval_evidence_keys | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 3 | 2 |  |
 | public.quote_approval_tokens | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~820 | ~840 |  |
 | public.quote_history | 0 | 64.0 KB | 8.0 KB | 48.0 KB | ~10 | ~620 | ~70 |  |
-| public.sicoob_approval_deliveries | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~88.5k | ~253.8k |  |
+| public.sicoob_approval_deliveries | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | ~88.7k | ~254.4k |  |
 | public.sicoob_approval_policies | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 0 | ~150 |  |
 | public.sicoob_order_artwork_versions | 0 | 64.0 KB | 0 B | 56.0 KB | 0 | 0 | ~80 |  |
 | public.step_up_audit_log | 0 | 64.0 KB | 8.0 KB | 48.0 KB | 0 | 0 | 0 |  |
@@ -137,9 +137,9 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.city_whitelist | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | ~600 | ~30 |  |
 | public.collection_item_reactions | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | 0 |  |
 | public.collection_items | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | ~1.2k | 0 |  |
-| public.collection_items_trash | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | ~40 |  |
+| public.collection_items_trash | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | ~50 |  |
 | public.follow_up_reminders | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | ~30 |  |
-| public.ip_access_control | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | ~40 | ~7.1k |  |
+| public.ip_access_control | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | ~50 | ~7.1k |  |
 | public.ip_whitelist | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | ~600 | ~720 |  |
 | public.kit_collaborators | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | 0 |  |
 | public.limit_increase_requests | 0 | 40.0 KB | 0 B | 32.0 KB | 0 | 0 | ~70 |  |
@@ -160,7 +160,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.cms_banners | 0 | 32.0 KB | 8.0 KB | 16.0 KB | 0 | ~3.5k | 0 |  |
 | public.comparison_reactions | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | 0 |  |
 | public.export_audit_log | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~30 |  |
-| public.export_jobs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~60.6k |  |
+| public.export_jobs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~60.8k |  |
 | public.favorite_items_trash | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~4.2k |  |
 | public.file_scan_logs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | 0 |  |
 | public.kit_comments | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | 0 |  |
@@ -179,7 +179,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.product_components | 0 | 32.0 KB | 8.0 KB | 16.0 KB | 0 | 0 | 0 |  |
 | public.product_groups | 0 | 32.0 KB | 8.0 KB | 16.0 KB | 0 | 0 | 0 |  |
 | public.product_sync_logs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~7.9k |  |
-| public.public_token_failures | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | ~40 | 0 |  |
+| public.public_token_failures | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | ~50 | 0 |  |
 | public.qa_release_evidences | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~30 |  |
 | public.qa_releases | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 0 | ~30 |  |
 | public.quote_audit_logs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~40 |  |
@@ -194,7 +194,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.step_up_challenges | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | ~4.4k | 0 |  |
 | public.telemetry_logs | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 1 | ~30 |  |
 | public.webhook_deliveries | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | ~1.9k | ~1.9k |  |
-| public.webhook_retry_claims | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 3 | 4 |  |
+| public.webhook_retry_claims | 0 | 32.0 KB | 0 B | 24.0 KB | 0 | 3 | 5 |  |
 | private.quote_price_attestations | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 2 | 0 |  |
 | public.admin_settings | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 2 | ~3.6k |  |
 | public.cart_items | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 2 | ~30 |  |
@@ -205,7 +205,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.expert_conversations | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | ~57.7k |  |
 | public.expert_messages | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | 0 |  |
 | public.hardening_health_snapshots | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | 1 |  |
-| public.inbound_webhook_events | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 3 | ~40 |  |
+| public.inbound_webhook_events | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 3 | ~50 |  |
 | public.kit_variants | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | 0 |  |
 | public.magic_up_campaigns | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | ~840 |  |
 | public.magic_up_comments | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | 0 |  |
@@ -229,7 +229,7 @@ Valores aproximados de propósito, para não gerar commits a cada coleta. Fora d
 | public.role_permissions | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~61.6k | ~1.9k |  |
 | public.saved_filters | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | ~4.6k |  |
 | public.saved_trends_views | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | ~830 |  |
-| public.scheduled_exports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~60.1k | ~550 |  |
+| public.scheduled_exports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~60.2k | ~550 |  |
 | public.scheduled_reports | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | ~1.3k | 0 |  |
 | public.sensitive_access_logs | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 1 | ~30 |  |
 | public.sicoob_approval_delivery_archive | 0 | 24.0 KB | 0 B | 16.0 KB | 0 | 0 | 0 |  |
@@ -293,14 +293,14 @@ _nenhum_
 ## Consultas mais custosas (pg_stat_statements, desde o último reset)
 | role | chamadas (~) | total ms (~) | média ms | query |
 |---|---|---|---|---|
-| postgres | ~33.1k | ~26.2M | 792.93 | `SELECT public.monitor_sicoob_approval_worker()` |
-| postgres | ~61.6k | ~6M | 97.75 | `SELECT public.dispatch_sicoob_approval_worker()` |
-| postgres | ~66.3k | ~5.1M | 76.74 | `SELECT public.dispatch_sicoob_export_worker()` |
+| postgres | ~33.1k | ~26.2M | 792.17 | `SELECT public.monitor_sicoob_approval_worker()` |
+| postgres | ~61.7k | ~6M | 97.63 | `SELECT public.dispatch_sicoob_approval_worker()` |
+| postgres | ~66.4k | ~5.1M | 76.65 | `SELECT public.dispatch_sicoob_export_worker()` |
 | authenticated | ~105.3k | ~4.3M | 40.80 | `WITH pgrst_source AS (UPDATE "public"."profiles" SET "last_login_at" = "pgrst_body"."last_login_at" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "last_login_at" FROM json_to_record(pgrst_payload.json_data` |
 | authenticated | ~2.6k | ~3.8M | 1444.75 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry"."id" FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."created_at" >= $1 LIMIT $2 OFFSET $3 ) , pgrst_source_count AS (SELECT $5 FROM "public"."que` |
 | authenticated | ~2.7k | ~2.6M | 972.64 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry"."id" FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."cache_hit" = $1 AND "public"."query_telemetry"."created_at" >= $2 LIMIT $3 OFFSET $4 ) , pgr` |
-| service_role | ~55.4k | ~2.3M | 41.14 | `WITH pgrst_source AS (SELECT "pgrst_call".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_request_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_request_id" uuid) LIMIT $4) pgrst_body , LATERA` |
-| postgres | ~590 | ~2.2M | 3762.49 | `SELECT jobid, runid, status, start_time, end_time, EXTRACT($2 FROM (end_time - start_time))::numeric(10,2) AS seconds, left(return_message, $3) AS return_message FROM (SELECT *, row_number() OVER (PARTITION BY jobid ORDE` |
+| service_role | ~55.5k | ~2.3M | 41.07 | `WITH pgrst_source AS (SELECT "pgrst_call".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_request_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_request_id" uuid) LIMIT $4) pgrst_body , LATERA` |
+| postgres | ~590 | ~2.2M | 3763.95 | `SELECT jobid, runid, status, start_time, end_time, EXTRACT($2 FROM (end_time - start_time))::numeric(10,2) AS seconds, left(return_message, $3) AS return_message FROM (SELECT *, row_number() OVER (PARTITION BY jobid ORDE` |
 | authenticated | ~6.6k | ~2.1M | 323.78 | `WITH pgrst_source AS ( SELECT "public"."query_telemetry".* FROM "public"."query_telemetry" WHERE "public"."query_telemetry"."severity" = $1 AND "public"."query_telemetry"."created_at" >= $2 LIMIT $3 OFFSET $4 ) , pgrst_s` |
 | authenticated | ~61.2k | ~1.7M | 28.53 | `WITH pgrst_source AS ( SELECT "public"."workspace_notifications".* FROM "public"."workspace_notifications" WHERE "public"."workspace_notifications"."user_id" = $1 ORDER BY "public"."workspace_notifications"."created_at" ` |
 | service_role | ~2k | ~1.7M | 825.84 | `WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "_user_id", "_reason", "_source", "_operation", "_target_key_id", "_ip", "_user_agent", "_request_id", "_d` |
