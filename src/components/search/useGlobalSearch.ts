@@ -87,6 +87,46 @@ function normalizeSearchTerm(value: string): string {
     .trim();
 }
 
+function isShortQuery(searchQuery: string): boolean {
+  return !searchQuery.trim() || searchQuery.length < 3;
+}
+
+/** Corre a chamada semântica contra o prazo, sem deixar timer solto. */
+function createTimedSearch(searchQuery: string, controller: AbortController) {
+  const request = requestSemanticSearch(searchQuery, controller.signal);
+  void request.catch(() => undefined);
+  let timedOut = false;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+      resolve(null);
+    }, SEMANTIC_SEARCH_TIMEOUT_MS);
+  });
+  return {
+    didTimeOut: () => timedOut,
+    clear: () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    },
+    result: Promise.race([request, timeout]),
+  };
+}
+
+/** Consultar produto e cliente não depende da IA: só a intenção depende. */
+async function searchCatalogWithoutIntent(
+  searchQuery: string,
+): Promise<{ intent: SearchIntent; results: SearchResult[] } | null> {
+  try {
+    const intent = createDefaultIntent(searchQuery);
+    const remote = await searchByIntent(intent, searchQuery);
+    return remote.length ? { intent, results: remote } : null;
+  } catch (fallbackError: unknown) {
+    console.error('Search fallback error:', fallbackError);
+    return null;
+  }
+}
+
 /** Catálogo já carregado: última linha de defesa quando a busca semântica cai. */
 export function createLocalSearchFallback(
   searchQuery: string,
@@ -191,7 +231,7 @@ function useSemanticSearch(query: string) {
   localProductsRef.current = productsContext?.products ?? [];
   useEffect(() => () => abortRef.current?.abort(), []);
   const performSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim() || searchQuery.length < 3) {
+    if (isShortQuery(searchQuery)) {
       setResults([]);
       setSearchIntent(null);
       setIsSearching(false);
@@ -209,27 +249,26 @@ function useSemanticSearch(query: string) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    const request = requestSemanticSearch(searchQuery, controller.signal);
-    void request.catch(() => undefined);
-    let timedOut = false;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<null>((resolve) => {
-      timeoutId = setTimeout(() => {
-        timedOut = true;
-        controller.abort();
-        resolve(null);
-      }, SEMANTIC_SEARCH_TIMEOUT_MS);
-    });
+    const timed = createTimedSearch(searchQuery, controller);
+    // Mostra já o catálogo em memória e, se os serviços de catálogo e CRM
+    // estiverem no ar, troca pelo resultado completo.
+    const applyFallback = async () => {
+      const local = createLocalSearchFallback(searchQuery, localProductsRef.current);
+      // Vazio é resposta válida: o resultado anterior não pode sobreviver aqui,
+      // senão o estado vazio não aparece e Ctrl+Enter abre o produto errado.
+      setSearchIntent(local.length ? createDefaultIntent(searchQuery) : null);
+      setResults(local);
+      const upgraded = await searchCatalogWithoutIntent(searchQuery);
+      if (!upgraded || abortRef.current !== controller) return;
+      setSearchIntent(upgraded.intent);
+      setResults(upgraded.results);
+    };
     setIsSearching(true);
     setIsAIProcessing(true);
     try {
-      const response = await Promise.race([request, timeout]);
+      const response = await timed.result;
       if (!response) {
-        const fallback = createLocalSearchFallback(searchQuery, localProductsRef.current);
-        if (fallback.length) {
-          setSearchIntent(createDefaultIntent(searchQuery));
-          setResults(fallback);
-        }
+        void applyFallback();
         return;
       }
       setIsAIProcessing(false);
@@ -239,19 +278,18 @@ function useSemanticSearch(query: string) {
     } catch (error: unknown) {
       const aborted = error instanceof Error && error.name === 'AbortError';
       if (!aborted) console.error('Search error:', error);
-      const fallback = createLocalSearchFallback(searchQuery, localProductsRef.current);
-      if (fallback.length && (!aborted || timedOut)) {
-        setSearchIntent(createDefaultIntent(searchQuery));
-        setResults(fallback);
-      }
+      // Aborto causado por uma busca mais nova não é falha: quem assumiu responde.
+      if (aborted && !timed.didTimeOut()) return;
+      void applyFallback();
     } finally {
-      if (timeoutId) clearTimeout(timeoutId);
+      timed.clear();
       setIsSearching(false);
       setIsAIProcessing(false);
     }
   }, []);
   useEffect(() => {
-    if (debouncedQuery) performSearch(debouncedQuery);
+    // Apagar o termo passa por aqui também, para limpar o resultado anterior.
+    void performSearch(debouncedQuery);
   }, [debouncedQuery, performSearch]);
   const groupedResults = useMemo(() => {
     const groups: Record<string, SearchResult[]> = {};

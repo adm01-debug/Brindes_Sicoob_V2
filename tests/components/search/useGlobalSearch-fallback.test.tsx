@@ -119,4 +119,30 @@ describe('useGlobalSearch — fallback do catálogo local', () => {
       vi.useRealTimers();
     }
   });
+
+  it('limpa o resultado da consulta anterior quando a busca volta vazia', async () => {
+    invoke.mockResolvedValue({ data: null, error: new Error('sem IA') });
+
+    const { result } = renderHook(() => useGlobalSearch(), { wrapper: createWrapper() });
+    act(() => result.current.setQuery('caneta'));
+    await waitFor(() => expect(result.current.results.some((item) => item.id === product.id)).toBe(true));
+
+    act(() => result.current.setQuery('zzzz'));
+    await waitFor(() => expect(result.current.results).toHaveLength(0));
+    expect(result.current.searchIntent).toBeNull();
+  });
+
+  it('apagar o termo limpa resultados e indicadores', async () => {
+    invoke.mockResolvedValue({ data: null, error: new Error('sem IA') });
+
+    const { result } = renderHook(() => useGlobalSearch(), { wrapper: createWrapper() });
+    act(() => result.current.setQuery('caneta'));
+    await waitFor(() => expect(result.current.results.length).toBeGreaterThan(0));
+
+    act(() => result.current.setQuery(''));
+    await waitFor(() => expect(result.current.results).toHaveLength(0));
+    expect(result.current.isSearching).toBe(false);
+    expect(result.current.isAIProcessing).toBe(false);
+    expect(result.current.searchIntent).toBeNull();
+  });
 });
