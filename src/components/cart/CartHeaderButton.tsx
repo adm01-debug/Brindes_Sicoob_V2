@@ -17,14 +17,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
 
 /**
- * Teto de altura da lista de orçamentos. O painel inteiro é limitado ao espaço
+ * Tetos de altura da lista de orçamentos. O painel inteiro é limitado ao espaço
  * realmente disponível na janela (variável publicada pelo Radix Popover), então a
- * lista precisa descontar cabeçalho + rodapé (~248px, medidos em Chromium a
- * 1024x520). O teto vale para o Root *e* para o viewport porque é o viewport
- * que rola: `max-h` só no Root, que tem `overflow-hidden`, corta o conteúdo em
- * vez de rolar e empurra "Gerar Orçamento" para fora da tela.
+ * lista precisa descontar somente o que está renderizado acima e abaixo dela:
+ * o cabeçalho existe sempre e o rodapé (verba + subtotal + CTA) só aparece
+ * quando o orçamento ativo tem itens. Reservar os ~248px do rodapé sem ele
+ * zerava a altura da lista em janelas baixas, sem rolagem para alcançar os
+ * outros orçamentos. O teto vale para o Root *e* para o viewport porque é o
+ * viewport que rola: `max-h` só no Root, que tem `overflow-hidden`, corta o
+ * conteúdo em vez de rolar e empurra "Gerar Orçamento" para fora da tela.
  */
-const CART_LIST_MAX_HEIGHT = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]";
+const CART_LIST_MAX_HEIGHT_WITH_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]";
+const CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-4.5rem))]";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -94,6 +98,11 @@ export function CartHeaderButton() {
     removeItem,
     updateItemQuantity,
   } = useSellerCartContext();
+
+  // Sem itens no orçamento ativo não existe rodapé: a lista fica com todo o
+  // espaço que sobra, em vez de reservar uma altura que ninguém ocupa.
+  const hasCheckoutFooter = Boolean(activeCart && activeCart.items.length > 0);
+  const listMaxHeight = hasCheckoutFooter ? CART_LIST_MAX_HEIGHT_WITH_FOOTER : CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -215,14 +224,14 @@ export function CartHeaderButton() {
                 <>
                   {/* O rodapé (verba + subtotal + CTA) não rola: a lista cede altura
                       para que "Gerar Orçamento" continue visível em janelas baixas. */}
-                  <ScrollArea className={CART_LIST_MAX_HEIGHT} viewportClassName={CART_LIST_MAX_HEIGHT}>
+                  <ScrollArea className={listMaxHeight} viewportClassName={listMaxHeight}>
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>
                   </ScrollArea>
 
                   {/* CTA Footer with subtotal */}
-                  {activeCart && activeCart.items.length > 0 && (() => {
+                  {hasCheckoutFooter && activeCart && (() => {
                     const subtotal = activeCart.items.reduce(
                       (sum, item) => sum + item.product_price * item.quantity,
                       0

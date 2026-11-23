@@ -5,13 +5,14 @@
  * o conteúdo era cortado em vez de rolar. O viewport é quem rola, por isso
  * o teto de altura precisa chegar nele (`viewportClassName`).
  *
- * Este arquivo cobre a estrutura (o teto chega ao viewport e o rodapé fica
- * fora dele). O comportamento em navegador real — a lista rolar de fato e o
- * CTA continuar inteiro na tela — está em
+ * Este arquivo cobre a estrutura (o teto chega ao viewport, o rodapé fica
+ * fora dele e orçamento sem itens não reserva o rodapé). O comportamento em
+ * navegador real — a lista rolar de fato e o CTA continuar inteiro na tela —
+ * está em
  * `e2e/cart-scroll-janela-baixa.spec.ts`, porque o jsdom não calcula
  * layout.
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
@@ -47,18 +48,24 @@ const carts: SellerCart[] = Array.from({ length: 3 }, (_, index) => ({
   items: cartItems.map((item) => ({ ...item, cart_id: `cart-${index}` })),
 }));
 
+const cartContext = {
+  carts,
+  activeCart: carts[0] as SellerCart,
+  activeCartId: carts[0].id,
+  totalItems: 15,
+  canCreateCart: true,
+  setActiveCartId: vi.fn(),
+  deleteCart: vi.fn(),
+  removeItem: vi.fn(),
+  updateItemQuantity: vi.fn(),
+};
+
+beforeEach(() => {
+  cartContext.activeCart = carts[0];
+});
+
 vi.mock("@/contexts/SellerCartContext", () => ({
-  useSellerCartContext: () => ({
-    carts,
-    activeCart: carts[0],
-    activeCartId: carts[0].id,
-    totalItems: 15,
-    canCreateCart: true,
-    setActiveCartId: vi.fn(),
-    deleteCart: vi.fn(),
-    removeItem: vi.fn(),
-    updateItemQuantity: vi.fn(),
-  }),
+  useSellerCartContext: () => cartContext,
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -109,5 +116,23 @@ describe("CartHeaderButton — janela baixa", () => {
     await waitFor(() => {
       expect(screen.getAllByTestId("cart-tab")).toHaveLength(3);
     });
+  });
+
+  it("não reserva o rodapé quando o orçamento ativo está sem itens", async () => {
+    cartContext.activeCart = { ...carts[0], items: [] };
+    renderWithProviders(<CartHeaderButton />, { route: "/" });
+
+    await userEvent.click(screen.getByTestId("cart-trigger"));
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("cart-tab")).toHaveLength(3);
+    });
+    expect(screen.queryByTestId("cart-checkout-cta")).toBeNull();
+
+    const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
+    expect(viewport).not.toBeNull();
+    // Sem rodapé o teto desconta só o cabeçalho; reservar 15.5rem zerava a
+    // lista e o vendedor não conseguia trocar de orçamento.
+    expect(viewport).toHaveClass("max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-4.5rem))]");
   });
 });

@@ -154,9 +154,9 @@ function json(route: Route, body: unknown[]) {
  * header pedem dezenas de recursos; devolver lista vazia para o que não é
  * relevante mantém o cenário focado no painel do carrinho.
  */
-async function mockBackend(page: Page) {
+async function mockBackend(page: Page, activeCartItems = ACTIVE_CART_ITEMS) {
   const carts = Array.from({ length: LONG_LIST_LENGTH }, (_, index) => makeCart(index));
-  const items = Array.from({ length: ACTIVE_CART_ITEMS }, (_, index) => makeItem(0, index));
+  const items = Array.from({ length: activeCartItems }, (_, index) => makeItem(0, index));
 
   await page.route('**/auth/v1/**', (route) => {
     const url = route.request().url();
@@ -282,4 +282,49 @@ test.describe('Carrinho em janela baixa', () => {
     expect(ctaBox!.y).toBeGreaterThan(0);
     expect(ctaBox!.y + ctaBox!.height).toBeLessThanOrEqual(viewportHeight);
   });
+
+  test('orçamento ativo sem itens continua mostrando a lista em janela mínima', async ({ page }) => {
+    test.setTimeout(90_000);
+    // 295px é a janela em que o rodapé ausente zerava a lista: sem itens para
+    // o orçamento ativo não há verba, subtotal nem CTA, mas o vendedor ainda
+    // precisa trocar de orçamento.
+    await page.setViewportSize({ width: 1024, height: 295 });
+    await installFakeSession(page);
+    await mockBackend(page, 0);
+
+    await gotoAndSettle(page, '/');
+
+    const trigger = page.locator(Sel.cart.trigger);
+    await expect(trigger).toBeVisible({ timeout: 30_000 });
+    await trigger.click();
+
+    const drawer = page.locator(Sel.cart.drawer);
+    await expect(drawer).toBeVisible();
+    await expect(drawer.locator(Sel.cart.tab)).toHaveCount(LONG_LIST_LENGTH);
+    await expect(page.locator(Sel.cart.checkoutCta)).toHaveCount(0);
+
+    const viewport = drawer.locator(Sel.ext.radixScrollViewport).first();
+    await expect(viewport).toBeVisible();
+    const metrics = await viewport.evaluate((el) => ({ clientHeight: el.clientHeight, scrollHeight: el.scrollHeight }));
+    // A lista tem altura útil: com o teto reservando um rodapé inexistente ela
+    // ficava sem rolagem e o último orçamento ficava inalcançável.
+    expect(metrics.clientHeight).toBeGreaterThan(0);
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+
+    await viewport.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+    const scrolled = await viewport.evaluate((el) => ({ top: el.scrollTop, max: el.scrollHeight - el.clientHeight }));
+    expect(scrolled.max).toBeGreaterThan(0);
+    expect(scrolled.top).toBeGreaterThan(scrolled.max - 2);
+
+    await expect(drawer.locator(Sel.cart.tab).last()).toBeInViewport({ ratio: 1 });
+
+    const viewportHeight = page.viewportSize()!.height;
+    const drawerBox = await drawer.boundingBox();
+    expect(drawerBox).not.toBeNull();
+    expect(drawerBox!.y).toBeGreaterThanOrEqual(0);
+    expect(drawerBox!.y + drawerBox!.height).toBeLessThanOrEqual(viewportHeight + 1);
+  });
 });
+
