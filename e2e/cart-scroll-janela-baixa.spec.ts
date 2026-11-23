@@ -358,7 +358,8 @@ test.describe('Carrinho em janela baixa', () => {
 
     const cta = page.locator(Sel.cart.checkoutCta);
     await expect(cta).toBeVisible();
-    await expect(page.getByTestId('cart-pa-budget-balance')).toBeVisible();
+    // `toBeVisible` nao pega conteudo recortado: o saldo tambem precisa caber.
+    await expect(page.getByTestId('cart-pa-budget-balance')).toBeInViewport({ ratio: 1 });
     await expect(cta).toBeInViewport({ ratio: 1 });
 
     const listWithFooter = await viewport.evaluate((el) => el.clientHeight);
