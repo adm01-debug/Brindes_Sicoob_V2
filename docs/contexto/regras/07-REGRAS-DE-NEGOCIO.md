@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a8dad98053` · branch `main` · 2026-11-23 20:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `40abb0addf` · branch `main` · 2026-11-23 20:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -819,6 +819,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | zzz_guard_quote_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quotes` | `guard_quote_price_attestation` |  |
 | zzz_guard_quote_item_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_items` | `guard_quote_price_attestation` |  |
 | zzz_guard_quote_personalization_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_item_personalizations` | `guard_quote_price_attestation` |  |
+| trg_notify_singular_quote_decision | AFTER UPDATE OF STATUS | `quotes` | `notify_singular_quote_decision` |  |
 
 Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banco):
 
@@ -4420,6 +4421,7 @@ _nenhum item encontrado_
 | `priceFrom: Math.round(t.avgPrice * 0.9),` | `src/components/bi/ClientHealthHero.tsx` |
 | `* Heurística: empresas do mesmo ramo + (LTV agregado de quotes ±30% do cliente atual)` | `src/components/bi/ClientLookalikes.tsx` |
 | `// Heurística: cliente / (cliente + 1.5 × média setor) — capped 5..95%` | `src/components/bi/ClientVsIndustryComparison.tsx` |
+| `<span>Verba acima de 90% — novos pedidos podem exigir aprovação</span>` | `src/components/cart/CartPaBudgetBalance.tsx` |
 | `transition={{ delay: index * 0.03 }}` | `src/components/cart/SortableCartItem.tsx` |
 | `transition={{ delay: idx * 0.03, type: "spring", stiffness: 400, damping: 25 }}` | `src/components/collections/AddToCollectionModal.tsx` |
 | `transition={{ delay: index * 0.035, type: "spring", stiffness: 380, damping: 28 }}` | `src/components/collections/CollectionGridCard.tsx` |
@@ -5597,7 +5599,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +999 linhas — lista completa em `context.json` | |
+| … +1000 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5703,7 +5705,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7078 testes em 714 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7086 testes em 716 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6007,7 +6009,7 @@ _nenhum item encontrado_
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
 | `tests/hooks/useSellerDiscountLimits.test.ts` | 7 | useSellerDiscountLimits · fetchMyLimit popula myLimit com max_discount_percent · myLimit fica null quando não há registro · fetchAllLimits popula limits … |
-| … +414 linhas — lista completa em `context.json` | | |
+| … +416 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6184,6 +6186,7 @@ _nenhum item encontrado_
 | `notify_hardening_regression` | `supabase/migrations/20261008010000_fix_plpgsql_lint_failures.sql` |
 | `notify_singular_quote_submission` | `supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql` |
 | `notify_hardening_regression` | `supabase/migrations/20261118130100_enable_scoped_business_realtime.sql` |
+| `notify_singular_quote_decision` | `supabase/migrations/20261123090000_notify_singular_quote_decision.sql` |
 | `notify_hardening_regression` | `tests/scenarios/business-realtime-contract.scenario.mjs` |
 | `slack.com` | `tests/scenarios/notificacoes-aprovacao.mjs` |
 | `notify_approval_request` | `tests/scenarios/sql/sicoob-approval-policy-fixture.sql` |
@@ -6259,6 +6262,7 @@ _nenhum item encontrado_
 | " value={client.name} onChange={onFieldChange("name")} aria-label="Nome do cliente" required /> | `src/components/ai/AIRecommendationsPanel.tsx` |
 | A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la. | `src/components/bi/ClientHealthHero.tsx` |
 | 50, 0); // estimativa volume mínimo | `src/components/bi/ConfirmQuoteSuggestionsModal.tsx` |
+| lista precisa descontar somente o que está renderizado acima e abaixo dela: | `src/components/cart/CartHeaderButton.tsx` |
 | `limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa | `src/components/cart/cart-company-options.ts` |
 | usado em contextos onde o componente atua como navegador de seleção (não apenas exibição). | `src/components/categories/CategoryTreeNavigator.tsx` |
 | Uma imagem remota inválida não deve interromper a exportação dos demais produtos. | `src/components/collections/ExportCollectionButton.tsx` |
@@ -6353,6 +6357,7 @@ _nenhum item encontrado_
 | (${formatCurrency(wizard.totals.grandTotalPerUnit)}/un)\n⏱️ Prazo: ${wizard.totals.maxDays > 0 ? `~${wizard.totals.maxDays} dias úteis` : 'A consultar'}`; | `src/components/simulator/wizard/ConfirmedSummary.tsx` |
 | Row 2: Location (only if single group) + Specs */} | `src/components/simulator/wizard/PersonalizationSummary.tsx` |
 | * Mostra apenas o ícone (modo compacto, ex.: sidebar colapsada). */ | `src/components/ui/RoleBadge.tsx` |
+| de habilitar rolagem: `h-full` não resolve quando o pai tem apenas | `src/components/ui/scroll-area.tsx` |
 | máximo, no próximo intervalo. | `src/contexts/AuthContext.tsx` |
 | O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
 | O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
@@ -6492,6 +6497,4 @@ _nenhum item encontrado_
 | Retorna `true` se a query deve ser pulada. | `src/lib/auth/apply-seller-scope.ts` |
 | exibido pelo helper; caller normalmente apenas faz `return`. | `src/lib/auth/invoke-full-scope.ts` |
 | * Erro genérico (rede, validação, 500). Caller decide UI. */ | `src/lib/auth/invoke-full-scope.ts` |
-| * Validação síncrona e pequena para manter o formulário público fora do bundle | `src/lib/auth/login-validation.ts` |
-| * Aceita apenas caminhos internos, inclusive ao restaurar a rota após login. */ | `src/lib/auth/safe-internal-path.ts` |
-| … +301 linhas — lista completa em `context.json` | |
+| … +303 linhas — lista completa em `context.json` | |

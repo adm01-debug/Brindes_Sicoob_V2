@@ -924,13 +924,13 @@
   },
   {
    "modulo": "components/cart",
-   "arquivos": 16,
+   "arquivos": 17,
    "testes": 0,
-   "linhas": 2338,
+   "linhas": 2423,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 14,
+   "componentes": 15,
    "hooks_locais": [
     "useApprovalThreshold",
     "useAuth",
@@ -939,6 +939,7 @@
     "useCartTemplates",
     "useSellerCartContext",
     "useSellerCarts",
+    "useSicoobBudget",
     "useUserProfile",
     "useUserRoles"
    ],
@@ -954,6 +955,7 @@
     "coupons",
     "pa_budgets",
     "pa_category_thresholds",
+    "postos_atendimento",
     "profiles",
     "seller_cart_items",
     "seller_carts",
@@ -1001,6 +1003,7 @@
     "hooks",
     "hooks/admin",
     "hooks/cart",
+    "hooks/sicoob",
     "integrations/supabase",
     "lib",
     "stores"
@@ -3346,6 +3349,7 @@
     "useSellerCarts",
     "useSellerCartsPage",
     "useSellerDiscountLimits",
+    "useSicoobBudget",
     "useSimilarKits",
     "useSimulatorWizard",
     "useSmartAlerts",
@@ -3480,6 +3484,7 @@
     "organizations",
     "pa_budgets",
     "pa_category_thresholds",
+    "postos_atendimento",
     "price_history",
     "product_sync_logs",
     "product_views",
@@ -6756,7 +6761,7 @@
    "modulo": "components/ui",
    "arquivos": 59,
    "testes": 0,
-   "linhas": 5719,
+   "linhas": 5727,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -9730,6 +9735,7 @@
     "rpcs": []
    },
    "importado_por_outros_modulos": [
+    "components/cart",
     "components/sicoob",
     "pages/sicoob"
    ],

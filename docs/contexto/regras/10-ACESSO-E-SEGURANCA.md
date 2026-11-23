@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a8dad98053` · branch `main` · 2026-11-23 20:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `40abb0addf` · branch `main` · 2026-11-23 20:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -684,6 +684,7 @@
 - `notify_order_status_change`
 - `notify_quote_client_response`
 - `notify_quote_status_change`
+- `notify_singular_quote_decision`
 - `notify_singular_quote_submission`
 - `pa_belongs_to_user_singular`
 - `permanent_delete_record`
@@ -857,7 +858,7 @@ Middleware matcher (Next.js): nenhum
 | revoke | PUBLIC | execute | `check_sicoob_access_matrix`, `public`, `can_manage`, `can_view_all_sales`, `get_user_org_ids`, `has_role`, `is_admin`, `is_dev`, `is_kit_collaborator`, `is_kit_owner`, `is_supervisor_or_above`, `can_manage`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +11 |
 | revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +60 |
 | revoke | PUBLIC, anon | execute | `is_order_owner_or_admin`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial`, `audit_security_definer_acl`, `audit_security_definer_acl`, `can_manage`, `get_user_pa_id`, `get_user_cooperative_id`, `get_user_singular_id`, `is_kit_owner`, `is_kit_collaborator`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +8 |
-| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +88 |
+| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +89 |
 | revoke | PUBLIC, anon, authenticated | execute | `validate_order_status`, `log_order_status_change`, `record_public_token_failure`, `search_products_semantic`, `check_rate_limit`, `increment_webhook_endpoint_metrics` |
 | revoke | PUBLIC, anon, authenticated, service_role | all | `guard_profile_authority_fields`, `convert_quote_to_sicoob_order_core_20261013`, `create_quote_version_atomic_core_20261013`, `apply_local_quote_approval_response_core_20261013`, `bulk_update_quote_status_atomic_core_20261013`, `approve_quote_with_pdf_atomic_core_20261013`, `request_discount_approval_atomic_core_20261013`, `respond_discount_approval_atomic_core_20261013`, `handle_row_version`, `guard_quote_governance_write`, `assert_quote_content_editable`, `guard_quote_item_content_write`, `guard_quote_personalization_content_write`, `assert_quote_transition`, `webhook_retry_claims` … +6 |
 | revoke | PUBLIC,anon,authenticated | all | `enqueue_sicoob_approval_event`, `claim_sicoob_approval_delivery`, `validate_sicoob_order_document`, `preserve_sicoob_artwork_requirement`, `sicoob_approval_worker_dispatches`, `dispatch_sicoob_approval_worker`, `monitor_sicoob_approval_worker`, `register_sicoob_clean_document`, `validate_sicoob_order_document`, `register_sicoob_clean_document` |

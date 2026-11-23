@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 624,
+ "migrations": 625,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -343,6 +343,7 @@
   "notify_order_status_change",
   "notify_quote_client_response",
   "notify_quote_status_change",
+  "notify_singular_quote_decision",
   "notify_singular_quote_submission",
   "pa_belongs_to_user_singular",
   "permanent_delete_record",
@@ -1400,6 +1401,13 @@
    "evento": "update",
    "tabela": "quotes",
    "funcao": "notify_quote_status_change"
+  },
+  {
+   "nome": "trg_notify_singular_quote_decision",
+   "quando": "after",
+   "evento": "update of status",
+   "tabela": "quotes",
+   "funcao": "notify_singular_quote_decision"
   },
   {
    "nome": "trg_notify_singular_quote_submission",
@@ -29441,6 +29449,7 @@
     "tr_set_quote_hierarchy",
     "trg_dispatch_webhook_quotes",
     "trg_notify_quote_status_change",
+    "trg_notify_singular_quote_decision",
     "trg_notify_singular_quote_submission",
     "trg_quotes_row_version",
     "trg_set_seller_id_default_quotes",

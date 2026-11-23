@@ -3,12 +3,12 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2939)",
+   "TypeScript (2942)",
    "Markdown (973)",
-   "SQL (686)",
-   "JSON (292)",
+   "SQL (687)",
+   "JSON (293)",
    "JavaScript (153)",
-   "Python (67)",
+   "Python (68)",
    "YAML (24)",
    "CSS (7)"
   ],
@@ -1929,7 +1929,7 @@
   "papeis_no_codigo": [
    {
     "papel": "alert",
-    "ocorrencias": 61
+    "ocorrencias": 62
    },
    {
     "papel": "status",
@@ -1949,7 +1949,7 @@
    },
    {
     "papel": "vendedor",
-    "ocorrencias": 25
+    "ocorrencias": 26
    },
    {
     "papel": "admin",
@@ -1996,6 +1996,10 @@
     "ocorrencias": 6
    },
    {
+    "papel": "region",
+    "ocorrencias": 6
+   },
+   {
     "papel": "tab",
     "ocorrencias": 6
    },
@@ -2005,6 +2009,10 @@
    },
    {
     "papel": "assistant",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "authenticated",
     "ocorrencias": 5
    },
    {
@@ -2024,16 +2032,8 @@
     "ocorrencias": 5
    },
    {
-    "papel": "region",
-    "ocorrencias": 5
-   },
-   {
     "papel": "switch",
     "ocorrencias": 5
-   },
-   {
-    "papel": "authenticated",
-    "ocorrencias": 4
    },
    {
     "papel": "listbox",

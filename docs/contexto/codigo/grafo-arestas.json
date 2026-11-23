@@ -2783,6 +2783,7 @@
   ],
   "src/components/cart/CartHeaderButton.tsx": [
    "src/components/cart/CartCompanyPicker.tsx",
+   "src/components/cart/CartPaBudgetBalance.tsx",
    "src/components/ui/button.tsx",
    "src/components/ui/popover.tsx",
    "src/components/ui/scroll-area.tsx",
@@ -2794,6 +2795,12 @@
   "src/components/cart/CartHealthChecklist.tsx": [
    "src/components/ui/card.tsx",
    "src/hooks/useSellerCarts.ts",
+   "src/lib/utils.ts"
+  ],
+  "src/components/cart/CartPaBudgetBalance.tsx": [
+   "src/components/ui/progress.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/hooks/sicoob/useSicoobBudget.ts",
    "src/lib/utils.ts"
   ],
   "src/components/cart/CartTabsRich.tsx": [
@@ -2818,6 +2825,7 @@
    "src/integrations/supabase/types.ts"
   ],
   "src/components/cart/MiniCart.tsx": [
+   "src/components/cart/CartPaBudgetBalance.tsx",
    "src/components/cart/CouponInput.tsx",
    "src/components/ui/button.tsx",
    "src/components/ui/progress.tsx",

@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1171,
+ "total": 1172,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -4707,7 +4707,7 @@
     "CartHeaderButton"
    ],
    "export_default": null,
-   "linhas": 270,
+   "linhas": 298,
    "dominio": "components/cart",
    "hooks_locais": [
     "useSellerCartContext"
@@ -4729,6 +4729,23 @@
    "tabelas": [],
    "edges": [],
    "usado_por": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/cart/CartPaBudgetBalance.tsx",
+   "exports": [
+    "CartPaBudgetBalance"
+   ],
+   "export_default": null,
+   "linhas": 55,
+   "dominio": "components/cart",
+   "hooks_locais": [
+    "useAuth",
+    "useSicoobBudget"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 2,
    "orfao": false
   },
   {
@@ -4790,7 +4807,7 @@
     "MiniCart"
    ],
    "export_default": null,
-   "linhas": 138,
+   "linhas": 140,
    "dominio": "components/cart",
    "hooks_locais": [
     "useApprovalThreshold",
@@ -15367,7 +15384,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 26,
+   "usado_por": 27,
    "orfao": false
   },
   {
@@ -15406,7 +15423,7 @@
     "ScrollBar"
    ],
    "export_default": null,
-   "linhas": 39,
+   "linhas": 47,
    "dominio": "components/ui",
    "hooks_locais": [],
    "tabelas": [],
@@ -15830,7 +15847,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 154,
+   "usado_por": 155,
    "orfao": false
   },
   {

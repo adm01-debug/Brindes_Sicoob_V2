@@ -6,7 +6,7 @@
    "src/pages (116)"
   ],
   "componentes": [
-   "src/components (1000)",
+   "src/components (1001)",
    "src/pages (159)",
    "src/contexts (9)"
   ],
@@ -21,9 +21,9 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (647)",
-   "e2e/ (149)",
-   "outro (52)"
+   "tests/ (648)",
+   "e2e/ (150)",
+   "outro (53)"
   ],
   "edge_functions": "supabase/functions",
   "migrations": "supabase/migrations",
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1171)"
+  ".tsx (1172)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)",
    "fix: servidor resolve destinatario do email transacional (#411)",
    "infra: incluir send-transactional-email na publicação de edge functions (#409)",
    "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
-   "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)",
-   "fix: extrai parser de moeda e validação do componente de notas (#404)"
+   "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

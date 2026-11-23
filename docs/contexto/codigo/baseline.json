@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "a8dad980536ef45ada17e766c624ad65f46dc223",
+  "commit": "40abb0addfd6ff08713a9334c34c77277c919168",
   "branch": "main",
-  "data_commit": "2026-11-23T17:31:43-03:00",
+  "data_commit": "2026-11-23T17:50:29-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "40abb0a",
+    "data": "2026-11-23",
+    "assunto": "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)"
+   },
    {
     "sha": "a8dad98",
     "data": "2026-11-23",
@@ -126,14 +131,9 @@
     "sha": "e1ef799",
     "data": "2026-11-19",
     "assunto": "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)"
-   },
-   {
-    "sha": "726efa7",
-    "data": "2026-11-19",
-    "assunto": "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)"
    }
   ],
-  "arquivos_mudados_7d": 1300,
+  "arquivos_mudados_7d": 1309,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -156,12 +156,12 @@
     "mudancas": 17
    },
    {
-    "pasta": "tests/components/bi",
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 16
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 15
+    "pasta": "tests/components/bi",
+    "mudancas": 16
    },
    {
     "pasta": "package.json",
@@ -198,11 +198,11 @@
   ],
   "arquivos_mais_mudados_90d": [
    {
-    "arquivo": "package.json",
-    "mudancas": 22
+    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 23
    },
    {
-    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "arquivo": "package.json",
     "mudancas": 22
    },
    {
@@ -242,19 +242,19 @@
     "mudancas": 14
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 14
-   },
-   {
     "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 14
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
+    "mudancas": 12
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 12
    },
    {
@@ -286,22 +286,22 @@
     "mudancas": 10
    },
    {
+    "arquivo": "scripts/automation.config.json",
+    "mudancas": 10
+   },
+   {
     "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
    {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
-   },
-   {
-    "arquivo": "docs/README.md",
-    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 193
+    "commits": 194
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5257,
-  "arquivos_codigo": 3156,
-  "linhas_codigo": 497581,
+  "arquivos_total": 5263,
+  "arquivos_codigo": 3160,
+  "linhas_codigo": 498348,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
-  "componentes": 1171,
+  "componentes": 1172,
   "hooks": 394,
   "edge_functions": 107,
   "tabelas": 292,
-  "migrations": 624,
+  "migrations": 625,
   "cron_jobs": 28,
-  "testes": 897,
+  "testes": 900,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -358,6 +358,10 @@
    "arquivos": 1,
    "linhas": 82
   },
+  "e2e/cart-scroll-janela-baixa.spec.ts": {
+   "arquivos": 1,
+   "linhas": 375
+  },
   "e2e/critical-flows": {
    "arquivos": 3,
    "linhas": 60
@@ -372,7 +376,7 @@
   },
   "e2e/fixtures": {
    "arquivos": 5,
-   "linhas": 771
+   "linhas": 773
   },
   "e2e/flows": {
    "arquivos": 40,
@@ -588,7 +592,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3218
+   "linhas": 3222
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -683,8 +687,8 @@
    "linhas": 161
   },
   "scripts/qa": {
-   "arquivos": 38,
-   "linhas": 8570
+   "arquivos": 39,
+   "linhas": 8724
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -775,8 +779,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1132,
-   "linhas": 167021
+   "arquivos": 1133,
+   "linhas": 167114
   },
   "src/constants": {
    "arquivos": 3,
@@ -875,8 +879,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 150,
-   "linhas": 27781
+   "arquivos": 151,
+   "linhas": 27920
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -1058,7 +1062,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1530
+   "linhas": 1534
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

@@ -1701,7 +1701,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 154,
+   "usado_por": 155,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -1710,6 +1710,7 @@
     "src/components/admin/users/CreateUserDialog.tsx",
     "src/components/admin/users/RoleChangeDialog.tsx",
     "src/components/auth/QuickTestLogin.tsx",
+    "src/components/cart/CartPaBudgetBalance.tsx",
     "src/components/collections/CollectionsHeatmap.tsx",
     "src/components/command/GlobalCommandBar.tsx",
     "src/components/common/EnhancedSpotlight.tsx",
@@ -1731,8 +1732,7 @@
     "src/components/layout/ProtectedRoute.tsx",
     "src/components/layout/SicoobRoute.tsx",
     "src/components/layout/SidebarReorganized.tsx",
-    "src/components/layout/sidebar/RestrictedRouteNotice.tsx",
-    "src/components/layout/sidebar/SidebarFooterHealth.tsx"
+    "src/components/layout/sidebar/RestrictedRouteNotice.tsx"
    ],
    "coberto_por_testes": 11
   },
@@ -3563,8 +3563,9 @@
     "useQuery"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
+    "src/components/cart/CartPaBudgetBalance.tsx",
     "src/components/sicoob/BudgetExceededBanner.tsx"
    ],
    "coberto_por_testes": 0
@@ -8397,7 +8398,7 @@
     "src/pages/seller-carts/CartSidebar.tsx",
     "src/pages/seller-carts/useSellerCartsPage.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useSellerDiscountLimits.ts",

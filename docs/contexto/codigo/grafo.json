@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2259,
- "arestas": 9162,
+ "nos": 2260,
+ "arestas": 9168,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -10,7 +10,7 @@
   },
   {
    "arquivo": "src/lib/utils.ts",
-   "importado_por": 564
+   "importado_por": 565
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
@@ -34,7 +34,7 @@
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
-   "importado_por": 165
+   "importado_por": 166
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
@@ -58,7 +58,7 @@
   },
   {
    "arquivo": "src/components/ui/scroll-area.tsx",
-   "importado_por": 93
+   "importado_por": 94
   },
   {
    "arquivo": "src/hooks/useProducts.ts",
@@ -153,15 +153,15 @@
    "importado_por": 27
   },
   {
+   "arquivo": "src/components/ui/progress.tsx",
+   "importado_por": 27
+  },
+  {
    "arquivo": "src/lib/crm-db.ts",
    "importado_por": 27
   },
   {
    "arquivo": "src/components/products/PriceFreshnessBadge.tsx",
-   "importado_por": 26
-  },
-  {
-   "arquivo": "src/components/ui/progress.tsx",
    "importado_por": 26
   }
  ],

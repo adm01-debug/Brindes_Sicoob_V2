@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "a8dad980536ef45ada17e766c624ad65f46dc223",
+  "sha": "40abb0addfd6ff08713a9334c34c77277c919168",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-23 20:32 UTC",
-  "files_total": 5260,
-  "code_files": 3824,
-  "code_lines": 560340
+  "generated_at": "2026-11-23 20:52 UTC",
+  "files_total": 5266,
+  "code_files": 3829,
+  "code_lines": 561183
  },
  "version": "1.3.2",
- "facts_hash": "319b2a113edbb7dd",
+ "facts_hash": "97e115b81594be5b",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,11 +355,11 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1491,
-   ".tsx": 1446,
-   ".sql": 686,
+   ".ts": 1492,
+   ".tsx": 1448,
+   ".sql": 687,
    ".mjs": 141,
-   ".py": 67,
+   ".py": 68,
    ".cjs": 7,
    ".js": 6
   },
@@ -36001,6 +36001,15 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "trg_notify_singular_quote_decision",
+    "when": "AFTER UPDATE OF STATUS",
+    "table": "quotes",
+    "function": "notify_singular_quote_decision",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
    }
   ],
   "functions": {
@@ -41609,6 +41618,21 @@
      "v_project_url",
      "v_request_id",
      "vault"
+    ]
+   },
+   "notify_singular_quote_decision": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_adjust_marker CONSTANT text := 'Modificações sugeridas:'; v_aprovado boolean := NEW.status::text = 'approved_singular'; v_ajuste boolean := NOT v_aprovado AND position(v_adjust_marker IN COALESCE(NEW.rejection_notes, '')) > 0; BEGIN IF OLD.status::text IS NOT DISTINCT FROM NEW.status::text OR NEW.status::text NOT IN ('approved_singular', 'rejected_singular') THEN RETURN NEW; END IF; INSERT INTO public.workspace_notifications ( user_id, title, message, type, category, action_url, metadata ) SELECT DISTINCT p.user_id, CASE WHEN v_aprovado THEN 'Orçamento aprovado pela Singular' WHEN v_ajuste THEN 'Orçamento devolvido para ajustes pela Singular' ELSE 'Orçamento recusado pela Singular' …",
+    "raises": [],
+    "tables": [
+     "NEW",
+     "profiles",
+     "workspace_notifications"
     ]
    },
    "check_migration_status": {
@@ -47711,6 +47735,7 @@
    "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
    "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
    "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
+   "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -54096,6 +54121,14 @@
     "objkind": "function",
     "roles": "service_role",
     "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "notify_singular_quote_decision",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
    }
   ],
   "raises": [
@@ -61247,7 +61280,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1283,
+  "components_count": 1285,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63658,8 +63691,8 @@
   },
   {
    "module": "e2e",
-   "files": 149,
-   "lines": 11490,
+   "files": 150,
+   "lines": 11867,
    "tables": [],
    "exports": [
     "global-setup.ts: globalSetup, async",
@@ -63708,6 +63741,7 @@
     "e2e/admin-verbas-audit.spec.ts",
     "e2e/audit-validation.spec.ts",
     "e2e/auth.spec.ts",
+    "e2e/cart-scroll-janela-baixa.spec.ts",
     "e2e/discount-approval.spec.ts",
     "e2e/editor-permissions.spec.ts",
     "e2e/global-setup.ts",
@@ -63781,8 +63815,7 @@
     "e2e/helpers/favorites.ts",
     "e2e/helpers/forms.ts",
     "e2e/helpers/nav.ts",
-    "e2e/helpers/waits.ts",
-    "e2e/routes/_catalog.ts"
+    "e2e/helpers/waits.ts"
    ]
   },
   {
@@ -63802,8 +63835,8 @@
   },
   {
    "module": "scripts",
-   "files": 169,
-   "lines": 39118,
+   "files": 170,
+   "lines": 39276,
    "tables": [
     "a",
     "admin_audit_log",
@@ -64038,8 +64071,8 @@
   },
   {
    "module": "src/components",
-   "files": 1132,
-   "lines": 167021,
+   "files": 1133,
+   "lines": 167114,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65708,8 +65741,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 624,
-   "lines": 55124,
+   "files": 625,
+   "lines": 55200,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -65813,8 +65846,8 @@
   },
   {
    "module": "tests",
-   "files": 668,
-   "lines": 89573,
+   "files": 669,
+   "lines": 89712,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -70514,6 +70547,7 @@
    ],
    "VITE_SUPABASE_URL": [
     "e2e/audit-validation.spec.ts",
+    "e2e/cart-scroll-janela-baixa.spec.ts",
     "e2e/editor-permissions.spec.ts",
     "e2e/flows/20-all-features-smoke.spec.ts",
     "e2e/flows/p0/07-rls-enforcement.spec.ts",
@@ -75738,6 +75772,10 @@
     "msg": " className="
    },
    {
+    "file": "src/components/cart/CartPaBudgetBalance.tsx",
+    "msg": " aria-live="
+   },
+   {
     "file": "src/components/cart/CouponInput.tsx",
     "msg": "Cupom inválido ou expirado"
    },
@@ -79838,6 +79876,10 @@
     "text": "50, 0); // estimativa volume mínimo"
    },
    {
+    "file": "src/components/cart/CartHeaderButton.tsx",
+    "text": "lista precisa descontar somente o que está renderizado acima e abaixo dela:"
+   },
+   {
     "file": "src/components/cart/cart-company-options.ts",
     "text": "`limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa"
    },
@@ -80212,6 +80254,10 @@
    {
     "file": "src/components/ui/RoleBadge.tsx",
     "text": "* Mostra apenas o ícone (modo compacto, ex.: sidebar colapsada). */"
+   },
+   {
+    "file": "src/components/ui/scroll-area.tsx",
+    "text": "de habilitar rolagem: `h-full` não resolve quando o pai tem apenas"
    },
    {
     "file": "src/contexts/AuthContext.tsx",
@@ -111725,6 +111771,10 @@
     "line": "// Heurística: cliente / (cliente + 1.5 × média setor) — capped 5..95%"
    },
    {
+    "file": "src/components/cart/CartPaBudgetBalance.tsx",
+    "line": "<span>Verba acima de 90% — novos pedidos podem exigir aprovação</span>"
+   },
+   {
     "file": "src/components/cart/SortableCartItem.tsx",
     "line": "transition={{ delay: index * 0.03 }}"
    },
@@ -112353,6 +112403,18 @@
    {
     "file": "e2e/auth.spec.ts",
     "name": "rejeita credenciais inválidas e permanece em /login"
+   },
+   {
+    "file": "e2e/cart-scroll-janela-baixa.spec.ts",
+    "name": "Carrinho em janela baixa"
+   },
+   {
+    "file": "e2e/cart-scroll-janela-baixa.spec.ts",
+    "name": "mantém a verba e o CTA visíveis enquanto a lista rola"
+   },
+   {
+    "file": "e2e/cart-scroll-janela-baixa.spec.ts",
+    "name": "orçamento ativo sem itens continua mostrando a lista em janela mínima"
    },
    {
     "file": "e2e/discount-approval.spec.ts",
@@ -119953,6 +120015,26 @@
    {
     "file": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
     "name": "busca sem resultado com cache distingue a lista salva (não diz "
+   },
+   {
+    "file": "tests/components/cart/cart-header-scroll.test.tsx",
+    "name": "ScrollArea"
+   },
+   {
+    "file": "tests/components/cart/cart-header-scroll.test.tsx",
+    "name": "repassa viewportClassName ao elemento que realmente rola"
+   },
+   {
+    "file": "tests/components/cart/cart-header-scroll.test.tsx",
+    "name": "CartHeaderButton — janela baixa"
+   },
+   {
+    "file": "tests/components/cart/cart-header-scroll.test.tsx",
+    "name": "mantém o CTA fora da área rolável e limita a altura do viewport"
+   },
+   {
+    "file": "tests/components/cart/cart-header-scroll.test.tsx",
+    "name": "não reserva o rodapé quando o orçamento ativo está sem itens"
    },
    {
     "file": "tests/components/catalog/CatalogStorefrontExperience.test.tsx",
@@ -141239,6 +141321,10 @@
     "call": "notify_hardening_regression"
    },
    {
+    "file": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+    "call": "notify_singular_quote_decision"
+   },
+   {
     "file": "tests/scenarios/business-realtime-contract.scenario.mjs",
     "call": "notify_hardening_regression"
    },
@@ -151855,6 +151941,15 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "trg_notify_singular_quote_decision",
+    "when": "AFTER UPDATE OF STATUS",
+    "table": "quotes",
+    "function": "notify_singular_quote_decision",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
    }
   ],
   "db_functions": {
@@ -157463,6 +157558,21 @@
      "v_project_url",
      "v_request_id",
      "vault"
+    ]
+   },
+   "notify_singular_quote_decision": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_adjust_marker CONSTANT text := 'Modificações sugeridas:'; v_aprovado boolean := NEW.status::text = 'approved_singular'; v_ajuste boolean := NOT v_aprovado AND position(v_adjust_marker IN COALESCE(NEW.rejection_notes, '')) > 0; BEGIN IF OLD.status::text IS NOT DISTINCT FROM NEW.status::text OR NEW.status::text NOT IN ('approved_singular', 'rejected_singular') THEN RETURN NEW; END IF; INSERT INTO public.workspace_notifications ( user_id, title, message, type, category, action_url, metadata ) SELECT DISTINCT p.user_id, CASE WHEN v_aprovado THEN 'Orçamento aprovado pela Singular' WHEN v_ajuste THEN 'Orçamento devolvido para ajustes pela Singular' ELSE 'Orçamento recusado pela Singular' …",
+    "raises": [],
+    "tables": [
+     "NEW",
+     "profiles",
+     "workspace_notifications"
     ]
    },
    "check_migration_status": {
@@ -166475,6 +166585,7 @@
    "notify_order_status_change",
    "notify_quote_client_response",
    "notify_quote_status_change",
+   "notify_singular_quote_decision",
    "notify_singular_quote_submission",
    "pa_belongs_to_user_singular",
    "permanent_delete_record",
@@ -172713,6 +172824,14 @@
     "objkind": "function",
     "roles": "service_role",
     "src": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "notify_singular_quote_decision",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
    }
   ],
   "guards": [
@@ -177010,6 +177129,38 @@
     "rejeita credenciais inválidas e permanece em /login"
    ]
   },
+  "e2e/cart-scroll-janela-baixa.spec.ts": {
+   "path": "e2e/cart-scroll-janela-baixa.spec.ts",
+   "lines": 375,
+   "is_test": true,
+   "env": [
+    "VITE_SUPABASE_URL"
+   ],
+   "params": [
+    {
+     "name": "LONG_LIST_LENGTH",
+     "value": "3"
+    },
+    {
+     "name": "ACTIVE_CART_ITEMS",
+     "value": "5"
+    }
+   ],
+   "rule_comments": [
+    "limite do banco por vendedor",
+    "prévia mostra no máximo 5 itens",
+    "Rolar até o último orçamento não pode empurrar o CTA para fora."
+   ],
+   "temporal": [
+    "await expect(trigger).toBeVisible({ timeout: 30_000 });",
+    "expires_in: 7200,"
+   ],
+   "tests": [
+    "Carrinho em janela baixa",
+    "mantém a verba e o CTA visíveis enquanto a lista rola",
+    "orçamento ativo sem itens continua mostrando a lista em janela mínima"
+   ]
+  },
   "e2e/discount-approval.spec.ts": {
    "path": "e2e/discount-approval.spec.ts",
    "lines": 41,
@@ -177375,7 +177526,7 @@
   },
   "e2e/fixtures/selectors.ts": {
    "path": "e2e/fixtures/selectors.ts",
-   "lines": 337,
+   "lines": 339,
    "exports": [
     "const TID",
     "const TID_PREFIX",
@@ -180740,7 +180891,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1530,
+   "lines": 1534,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -181843,6 +181994,17 @@
    ],
    "doc": "!/usr/bin/env python3",
    "uses_service_role": true
+  },
+  "scripts/qa/simular-notificacao-decisao-singular.py": {
+   "path": "scripts/qa/simular-notificacao-decisao-singular.py",
+   "lines": 154,
+   "exports": [
+    "def command",
+    "def sql",
+    "def notificacoes",
+    "def decidir"
+   ],
+   "doc": "Valida a notificação ao vendedor quando a Singular decide o orçamento (SIC-110/SIC-044)."
   },
   "scripts/qa/simular-notification-preferences-auth.py": {
    "path": "scripts/qa/simular-notification-preferences-auth.py",
@@ -190571,13 +190733,16 @@
   },
   "src/components/cart/CartHeaderButton.tsx": {
    "path": "src/components/cart/CartHeaderButton.tsx",
-   "lines": 270,
+   "lines": 298,
    "exports": [
     "function CartHeaderButton"
    ],
    "navigates": [
     "/carrinhos",
     "/orcamentos/novo"
+   ],
+   "rule_comments": [
+    "lista precisa descontar somente o que está renderizado acima e abaixo dela:"
    ],
    "doc": "CartHeaderButton - Ícone de carrinho no header com popover de resumo",
    "calc_fns": [
@@ -190602,6 +190767,19 @@
     }
    ],
    "doc": "CartHealthChecklist - Painel de saúde do carrinho. Substitui o \"Score\" abstrato por uma checklist acionável."
+  },
+  "src/components/cart/CartPaBudgetBalance.tsx": {
+   "path": "src/components/cart/CartPaBudgetBalance.tsx",
+   "lines": 55,
+   "exports": [
+    "function CartPaBudgetBalance"
+   ],
+   "errors": [
+    " aria-live="
+   ],
+   "percents": [
+    "<span>Verba acima de 90% — novos pedidos podem exigir aprovação</span>"
+   ]
   },
   "src/components/cart/CartTabsRich.tsx": {
    "path": "src/components/cart/CartTabsRich.tsx",
@@ -190692,7 +190870,7 @@
   },
   "src/components/cart/MiniCart.tsx": {
    "path": "src/components/cart/MiniCart.tsx",
-   "lines": 138,
+   "lines": 140,
    "exports": [
     "function MiniCart"
    ],
@@ -202655,7 +202833,10 @@
   },
   "src/components/ui/scroll-area.tsx": {
    "path": "src/components/ui/scroll-area.tsx",
-   "lines": 39
+   "lines": 47,
+   "rule_comments": [
+    "de habilitar rolagem: `h-full` não resolve quando o pai tem apenas"
+   ]
   },
   "src/components/ui/select.tsx": {
    "path": "src/components/ui/select.tsx",
@@ -240818,6 +240999,13 @@
    "path": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
    "lines": 58
   },
+  "supabase/migrations/20261123090000_notify_singular_quote_decision.sql": {
+   "path": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+   "lines": 76,
+   "side_effects": [
+    "notify_singular_quote_decision"
+   ]
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -243836,6 +244024,18 @@
     "mantém lista em cache + aviso discreto quando a atualização falha (não esconde cooperativas)",
     "retry com cache remove o aviso de dados salvos e atualiza a lista",
     "busca sem resultado com cache distingue a lista salva (não diz "
+   ]
+  },
+  "tests/components/cart/cart-header-scroll.test.tsx": {
+   "path": "tests/components/cart/cart-header-scroll.test.tsx",
+   "lines": 139,
+   "is_test": true,
+   "tests": [
+    "ScrollArea",
+    "repassa viewportClassName ao elemento que realmente rola",
+    "CartHeaderButton — janela baixa",
+    "mantém o CTA fora da área rolável e limita a altura do viewport",
+    "não reserva o rodapé quando o orçamento ativo está sem itens"
    ]
   },
   "tests/components/catalog/CatalogStorefrontExperience.test.tsx": {
@@ -254694,10 +254894,30 @@
   }
  },
  "git": {
-  "sha": "a8dad980536ef45ada17e766c624ad65f46dc223",
+  "sha": "40abb0addfd6ff08713a9334c34c77277c919168",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "40abb0a",
+    "date": "2026-11-23",
+    "author": "adm01-debug",
+    "subject": "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)",
+    "files": [
+     "docs/execucao/evidencias/notificacao-decisao-singular.json",
+     "e2e/cart-scroll-janela-baixa.spec.ts",
+     "e2e/fixtures/selectors.ts",
+     "scripts/automation.config.json",
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "scripts/qa/simular-notificacao-decisao-singular.py",
+     "src/components/cart/CartHeaderButton.tsx",
+     "src/components/cart/CartPaBudgetBalance.tsx",
+     "src/components/cart/MiniCart.tsx",
+     "src/components/ui/scroll-area.tsx",
+     "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+     "tests/components/cart/cart-header-scroll.test.tsx"
+    ]
+   },
    {
     "sha": "a8dad98",
     "date": "2026-11-23",
@@ -255723,19 +255943,6 @@
      "tests/scripts/fuso-dos-testes.test.ts",
      "vitest.config.ts"
     ]
-   },
-   {
-    "sha": "4a46225",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "ci(deploy): crm-db-bridge entra na allowlist de publicação (#311)",
-    "files": [
-     ".github/workflows/deploy-sicoob-functions.yml",
-     "scripts/ci/verify-supabase-functions-published.mjs",
-     "supabase/config.toml",
-     "supabase/functions/_shared/edge-authz-manifest.ts",
-     "tests/scripts/verify-supabase-functions-published.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -255762,6 +255969,14 @@
    [
     "src/hooks/quote/useQuoteInitialization.ts",
     3
+   ],
+   [
+    "scripts/automation.config.json",
+    2
+   ],
+   [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    2
    ],
    [
     "src/components/quotes/QuoteConvertToOrder.tsx",
@@ -255800,23 +256015,15 @@
     2
    ],
    [
-    ".github/workflows/deploy-sicoob-functions.yml",
-    2
-   ],
-   [
-    "scripts/ci/verify-supabase-functions-published.mjs",
-    2
-   ],
-   [
-    "tests/scripts/verify-supabase-functions-published.test.ts",
-    2
-   ],
-   [
     "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
     2
    ],
    [
     "tests/scenarios/relatorios-agendados-cron.mjs",
+    2
+   ],
+   [
+    "docs/pendencias/_ordem.md",
     2
    ]
   ]
