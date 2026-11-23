@@ -4,7 +4,7 @@
  "stack": {
   "linguagens": [
    "TypeScript (2938)",
-   "Markdown (970)",
+   "Markdown (973)",
    "SQL (686)",
    "JSON (292)",
    "JavaScript (152)",
@@ -1253,6 +1253,10 @@
   {
    "pasta": "docs/agentes",
    "arquivos_md": 6
+  },
+  {
+   "pasta": "docs/qa",
+   "arquivos_md": 3
   },
   {
    "pasta": "docs/RUNBOOKS",

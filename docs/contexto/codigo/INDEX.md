@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `54e7819a2549d326a613aab2c12f5dbcc94d2846` (2026-11-22T17:02:49-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `24667612dbdc589575a510fb8f7be33c794e6487` (2026-11-23T06:54:10-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2938), Markdown (970), SQL (686), JSON (292), JavaScript (152), Python (67), YAML (24), CSS (7)
+- linguagens: TypeScript (2938), Markdown (973), SQL (686), JSON (292), JavaScript (152), Python (67), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,7 +34,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5252 |
+| arquivos_total | 5255 |
 | arquivos_codigo | 3154 |
 | linhas_codigo | 496867 |
 | rotas | 139 |
@@ -51,7 +51,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | testes | 896 |
 | workflows | 17 |
 | scripts | 121 |
-| docs_md | 970 |
+| docs_md | 973 |
 
 ## Onde ficam as coisas
 - telas: src/pages (116)
@@ -472,8 +472,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36608 nós · 60900 arestas · 2771 comunidades · grafo do commit `54e7819a`
-- comunidades maiores: ref_hooks (567), ref_components (410), react (341), ref_lib (282), ref_integrations (258), getCorsHeaders (212), framer-motion (206), ref_types (187), sonner (183), ref_contexts (180), ai-usage.ts (175), ref_stores (167)
+- 36633 nós · 60925 arestas · 2729 comunidades · grafo do commit `24667612`
+- comunidades maiores: react (658), ref_components (420), ref_integrations (406), ref_lib (280), sonner (207), framer-motion (206), react-router-dom (185), expert-chat/index.ts (183), ref_contexts (183), date-fns (172), ref_stores (165), getCorsHeaders (154)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -484,11 +484,11 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - RELATORIO_CI.md (20)
 - .github/workflows/ci.yml (18)
 - .github/workflows/sicoob-ci.yml (18)
-- docs/plano-melhorias-50-etapas.md (18)
 - package-lock.json (18)
 - .github/workflows/codeql.yml (17)
-- docs/correcoes-validacao-2026-09-14.md (17)
+- docs/plano-melhorias-50-etapas.md (17)
 - .github/workflows/e2e.yml (16)
+- docs/correcoes-validacao-2026-09-14.md (16)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (14)
 - .github/workflows/deploy-sicoob-functions.yml (13)
@@ -692,10 +692,11 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/qa (3), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-23 `2466761` docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)
 - 2026-11-22 `54e7819` fix: extrai parser de moeda e validação do componente de notas (#404)
 - 2026-11-22 `0a70249` feat: agenda os relatórios agendados e cobre os cinco tipos (#403)
 - 2026-11-22 `51dc1ef` docs: classificar os 683 registros de lacunas por evidencia real (#402)
@@ -710,7 +711,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-20 `ca511cf` fix: links internos quebrados (ADM-15) (#390)
 - 2026-11-20 `8b37b64` fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)
 - 2026-11-20 `9bcfb62` chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)
-- 2026-11-19 `e877d0c` fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

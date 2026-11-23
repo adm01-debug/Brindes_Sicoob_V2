@@ -1,10 +1,10 @@
 {
  "meta": {
-  "sha": "54e7819a2549d326a613aab2c12f5dbcc94d2846",
+  "sha": "24667612dbdc589575a510fb8f7be33c794e6487",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-22 20:03 UTC",
-  "files_total": 5255,
+  "generated_at": "2026-11-23 10:16 UTC",
+  "files_total": 5258,
   "code_files": 3822,
   "code_lines": 559626
  },
@@ -254425,10 +254425,21 @@
   }
  },
  "git": {
-  "sha": "54e7819a2549d326a613aab2c12f5dbcc94d2846",
+  "sha": "24667612dbdc589575a510fb8f7be33c794e6487",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "2466761",
+    "date": "2026-11-23",
+    "author": "adm01-debug",
+    "subject": "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)",
+    "files": [
+     "docs/qa/01-INVENTARIO.md",
+     "docs/qa/02-CENARIOS.md",
+     "docs/qa/04-PLANO.md"
+    ]
+   },
    {
     "sha": "54e7819",
     "date": "2026-11-22",
@@ -255443,19 +255454,6 @@
      "docs/RECUPERACAO/README.md",
      "docs/RECUPERACAO/cobertura-refs.md"
     ]
-   },
-   {
-    "sha": "fff15ba",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(recuperação): fecha as 5 catracas restantes da varredura dos 95 órfãos (#372)",
-    "files": [
-     "tests/components/SingleVariantPicker.test.tsx",
-     "tests/e2e/cleanup-name-filter-guard.test.ts",
-     "tests/lib/validations/goalSchema.test.ts",
-     "tests/pages/PWAInstallPage.test.tsx",
-     "tests/security/search-analytics-legacy-insert.spec.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -255504,6 +255502,18 @@
     2
    ],
    [
+    "docs/qa/01-INVENTARIO.md",
+    1
+   ],
+   [
+    "docs/qa/02-CENARIOS.md",
+    1
+   ],
+   [
+    "docs/qa/04-PLANO.md",
+    1
+   ],
+   [
     "src/components/sicoob/orders/utils/amount.ts",
     1
    ],
@@ -255525,18 +255535,6 @@
    ],
    [
     "supabase/functions/_shared/scheduled-report-data.ts",
-    1
-   ],
-   [
-    "supabase/functions/process-scheduled-reports/index.ts",
-    1
-   ],
-   [
-    "supabase/functions/send-scheduled-reports/index.ts",
-    1
-   ],
-   [
-    "supabase/functions/send-scheduled-reports/report-types.test.ts",
     1
    ]
   ]

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "54e7819a2549d326a613aab2c12f5dbcc94d2846",
+  "commit": "24667612dbdc589575a510fb8f7be33c794e6487",
   "branch": "main",
-  "data_commit": "2026-11-22T17:02:49-03:00",
+  "data_commit": "2026-11-23T06:54:10-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "2466761",
+    "data": "2026-11-23",
+    "assunto": "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)"
+   },
    {
     "sha": "54e7819",
     "data": "2026-11-22",
@@ -126,14 +131,9 @@
     "sha": "05af443",
     "data": "2026-11-19",
     "assunto": "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)"
-   },
-   {
-    "sha": "e7671e8",
-    "data": "2026-11-19",
-    "assunto": "ci(testes): fixa o fuso do projeto na suite, com catraca (#380)"
    }
   ],
-  "arquivos_mudados_7d": 1292,
+  "arquivos_mudados_7d": 1295,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -222,10 +222,6 @@
     "mudancas": 18
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 18
-   },
-   {
     "arquivo": "package-lock.json",
     "mudancas": 18
    },
@@ -234,11 +230,15 @@
     "mudancas": 17
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 17
    },
    {
     "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 16
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 16
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 189
+    "commits": 190
    },
    {
     "autor": "dependabot[bot]",
@@ -310,7 +310,7 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5252,
+  "arquivos_total": 5255,
   "arquivos_codigo": 3154,
   "linhas_codigo": 496867,
   "rotas": 139,
@@ -327,7 +327,7 @@
   "testes": 896,
   "workflows": 17,
   "scripts": 121,
-  "docs_md": 970
+  "docs_md": 973
  },
  "por_pasta": {
   "docs/execucao": {
