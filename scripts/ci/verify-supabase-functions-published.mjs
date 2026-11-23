@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 
 export const requiredFunctions = [
   'expert-chat',
+  'send-transactional-email',
   'external-db-bridge',
   'sicoob-approval-reconciliation',
   'sicoob-artwork-register',
