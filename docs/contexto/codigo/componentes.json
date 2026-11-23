@@ -14291,7 +14291,7 @@
     "OrderInvoicesTab"
    ],
    "export_default": null,
-   "linhas": 241,
+   "linhas": 242,
    "dominio": "components/sicoob",
    "hooks_locais": [
     "useOrderInvoices"

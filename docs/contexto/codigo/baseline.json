@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "24667612dbdc589575a510fb8f7be33c794e6487",
+  "commit": "b7680fb54fb75129fec90026a83e44506ca822ef",
   "branch": "main",
-  "data_commit": "2026-11-23T06:54:10-03:00",
+  "data_commit": "2026-11-23T08:19:15-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "b7680fb",
+    "data": "2026-11-23",
+    "assunto": "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)"
+   },
    {
     "sha": "2466761",
     "data": "2026-11-23",
@@ -126,11 +131,6 @@
     "sha": "5830e19",
     "data": "2026-11-19",
     "assunto": "feat(ci): dependency review barra CVE novo high/critical nos PRs (#382)"
-   },
-   {
-    "sha": "05af443",
-    "data": "2026-11-19",
-    "assunto": "fix(compliance): adiciona policies RESTRICTIVE nas tabelas internas sem policy (#381)"
    }
   ],
   "arquivos_mudados_7d": 1295,
@@ -172,12 +172,12 @@
     "mudancas": 14
    },
    {
-    "pasta": "src/pages/admin",
+    "pasta": "src/components/sicoob",
     "mudancas": 14
    },
    {
-    "pasta": "src/components/sicoob",
-    "mudancas": 13
+    "pasta": "src/pages/admin",
+    "mudancas": 14
    },
    {
     "pasta": "PENDENCIAS.md",
@@ -230,19 +230,19 @@
     "mudancas": 17
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 17
-   },
-   {
     "arquivo": ".github/workflows/e2e.yml",
     "mudancas": 16
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 16
    },
    {
     "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 15
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 15
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 190
+    "commits": 191
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 5255,
   "arquivos_codigo": 3154,
-  "linhas_codigo": 496867,
+  "linhas_codigo": 496868,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1132,
-   "linhas": 167033
+   "linhas": 167034
   },
   "src/constants": {
    "arquivos": 3,

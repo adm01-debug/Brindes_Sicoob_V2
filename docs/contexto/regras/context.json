@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "24667612dbdc589575a510fb8f7be33c794e6487",
+  "sha": "b7680fb54fb75129fec90026a83e44506ca822ef",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-23 10:16 UTC",
+  "generated_at": "2026-11-23 11:34 UTC",
   "files_total": 5258,
   "code_files": 3822,
-  "code_lines": 559626
+  "code_lines": 559627
  },
  "version": "1.3.2",
- "facts_hash": "0e49d2d51df450f4",
+ "facts_hash": "cedb42309085ab83",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -64036,7 +64036,7 @@
   {
    "module": "src/components",
    "files": 1132,
-   "lines": 167033,
+   "lines": 167034,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -201531,7 +201531,7 @@
   },
   "src/components/sicoob/orders/OrderInvoicesTab.tsx": {
    "path": "src/components/sicoob/orders/OrderInvoicesTab.tsx",
-   "lines": 241,
+   "lines": 242,
    "exports": [
     "function OrderInvoicesTab"
    ],
@@ -254425,10 +254425,19 @@
   }
  },
  "git": {
-  "sha": "24667612dbdc589575a510fb8f7be33c794e6487",
+  "sha": "b7680fb54fb75129fec90026a83e44506ca822ef",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "b7680fb",
+    "date": "2026-11-23",
+    "author": "adm01-debug",
+    "subject": "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
+    "files": [
+     "src/components/sicoob/orders/OrderInvoicesTab.tsx"
+    ]
+   },
    {
     "sha": "2466761",
     "date": "2026-11-23",
@@ -255444,19 +255453,13 @@
      "e2e/flows/p0/03-quote-blocked.spec.ts",
      "scripts/check-critical-test-skip-budget.mjs"
     ]
-   },
-   {
-    "sha": "1fc8d0f",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(recuperação): fecha o ledger — 8 refs arquivadas em tag e veredito das 85 PRs (#373)",
-    "files": [
-     "docs/RECUPERACAO/README.md",
-     "docs/RECUPERACAO/cobertura-refs.md"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+    3
+   ],
    [
     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
     3
@@ -255476,10 +255479,6 @@
    [
     "src/hooks/quote/useQuoteInitialization.ts",
     3
-   ],
-   [
-    "src/components/sicoob/orders/OrderInvoicesTab.tsx",
-    2
    ],
    [
     "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",

@@ -1,7 +1,7 @@
 # Graph Report - Brindes_Sicoob_V2  (2026-11-23)
 
 ## Corpus Check
-- 4707 files · ~3,080,974 words
+- 4707 files · ~3,080,972 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 42 file(s) not represented in the graph (top: (none) 13, .csv 9, .toml 6)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `24667612`
+- Built from commit: `b7680fb5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
