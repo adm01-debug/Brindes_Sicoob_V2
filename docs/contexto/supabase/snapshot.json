@@ -9219,6 +9219,110 @@
         "nullable": false,
         "position": 1,
         "schema": "public",
+        "table": "cost_centers",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "cooperativa_id",
+        "nullable": false,
+        "position": 2,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "codigo",
+        "nullable": false,
+        "position": 3,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "nome",
+        "nullable": false,
+        "position": 4,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": "true",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "ativo",
+        "nullable": false,
+        "position": 5,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "boolean"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "observacoes",
+        "nullable": true,
+        "position": 6,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "created_at",
+        "nullable": false,
+        "position": 7,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "updated_at",
+        "nullable": false,
+        "position": 8,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "id",
+        "nullable": false,
+        "position": 1,
+        "schema": "public",
         "table": "coupons",
         "type": "uuid"
       },
@@ -20373,6 +20477,253 @@
         "nullable": false,
         "position": 1,
         "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "order_id",
+        "nullable": false,
+        "position": 2,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "cost_center_id",
+        "nullable": true,
+        "position": 3,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "valor",
+        "nullable": false,
+        "position": 4,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "numeric(14,2)"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "percentual",
+        "nullable": false,
+        "position": 5,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "numeric(5,2)"
+      },
+      {
+        "comment": null,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "created_at",
+        "nullable": false,
+        "position": 6,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "id",
+        "nullable": false,
+        "position": 1,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "pa_budget_id",
+        "nullable": false,
+        "position": 2,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "pa_id",
+        "nullable": false,
+        "position": 3,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "competencia_ano",
+        "nullable": false,
+        "position": 4,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "integer"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "competencia_mes",
+        "nullable": false,
+        "position": 5,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "integer"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "cost_center_id",
+        "nullable": true,
+        "position": 6,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "tipo",
+        "nullable": false,
+        "position": 7,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "estado",
+        "nullable": false,
+        "position": 8,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "valor",
+        "nullable": false,
+        "position": 9,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "numeric(14,2)"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "order_id",
+        "nullable": true,
+        "position": 10,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "motivo",
+        "nullable": true,
+        "position": 11,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "actor_id",
+        "nullable": true,
+        "position": 12,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "created_at",
+        "nullable": false,
+        "position": 13,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "id",
+        "nullable": false,
+        "position": 1,
+        "schema": "public",
         "table": "pa_budgets",
         "type": "uuid"
       },
@@ -20492,6 +20843,84 @@
         "schema": "public",
         "table": "pa_budgets",
         "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "verba_planejada",
+        "nullable": false,
+        "position": 11,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "numeric(14,2)"
+      },
+      {
+        "comment": null,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "verba_reservada",
+        "nullable": false,
+        "position": 12,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "numeric(14,2)"
+      },
+      {
+        "comment": null,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "verba_comprometida",
+        "nullable": false,
+        "position": 13,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "numeric(14,2)"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "cost_center_id",
+        "nullable": true,
+        "position": 14,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "fechada_em",
+        "nullable": true,
+        "position": 15,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "fechada_por",
+        "nullable": true,
+        "position": 16,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "uuid"
       },
       {
         "comment": null,
@@ -32598,6 +33027,19 @@
       },
       {
         "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "cost_center_id",
+        "nullable": true,
+        "position": 33,
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
         "default": "gen_random_uuid()",
         "generated": null,
         "identity": null,
@@ -38118,6 +38560,77 @@
       },
       {
         "columns": [
+          "codigo"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (btrim(codigo) <> ''::text)",
+        "name": "cost_centers_codigo_nao_vazio",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "cooperativa_id",
+          "codigo"
+        ],
+        "deferrable": false,
+        "definition": "UNIQUE (cooperativa_id, codigo)",
+        "name": "cost_centers_coop_codigo_uk",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "UNIQUE",
+        "validated": true
+      },
+      {
+        "columns": [
+          "cooperativa_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (cooperativa_id) REFERENCES cooperativas(id) ON DELETE CASCADE",
+        "name": "cost_centers_cooperativa_id_fkey",
+        "on_delete": "CASCADE",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "cooperativas",
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "deferrable": false,
+        "definition": "PRIMARY KEY (id)",
+        "name": "cost_centers_pkey",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "cost_centers",
+        "type": "PRIMARY KEY",
+        "validated": true
+      },
+      {
+        "columns": [
           "code"
         ],
         "deferrable": false,
@@ -41852,6 +42365,294 @@
       },
       {
         "columns": [
+          "cost_center_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE RESTRICT",
+        "name": "pa_budget_allocations_cost_center_id_fkey",
+        "on_delete": "RESTRICT",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "cost_centers",
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "order_id",
+          "cost_center_id"
+        ],
+        "deferrable": false,
+        "definition": "UNIQUE (order_id, cost_center_id)",
+        "name": "pa_budget_allocations_order_cc_uk",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "UNIQUE",
+        "validated": true
+      },
+      {
+        "columns": [
+          "order_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (order_id) REFERENCES sicoob_orders(id) ON DELETE CASCADE",
+        "name": "pa_budget_allocations_order_id_fkey",
+        "on_delete": "CASCADE",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "sicoob_orders",
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "percentual"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (percentual >= 0::numeric AND percentual <= 100::numeric)",
+        "name": "pa_budget_allocations_percentual_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "deferrable": false,
+        "definition": "PRIMARY KEY (id)",
+        "name": "pa_budget_allocations_pkey",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "PRIMARY KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "valor"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (valor >= 0::numeric)",
+        "name": "pa_budget_allocations_valor_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "actor_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE SET NULL",
+        "name": "pa_budget_entries_actor_id_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "auth",
+        "ref_table": "users",
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "competencia_mes",
+          "competencia_ano"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (competencia_mes >= 1 AND competencia_mes <= 12 AND competencia_ano >= 2024 AND competencia_ano <= 2100)",
+        "name": "pa_budget_entries_competencia_valida",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "cost_center_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL",
+        "name": "pa_budget_entries_cost_center_id_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "cost_centers",
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "estado"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (estado = ANY (ARRAY['reservado'::text, 'comprometido'::text, 'consumido'::text]))",
+        "name": "pa_budget_entries_estado_valido",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "order_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (order_id) REFERENCES sicoob_orders(id) ON DELETE SET NULL",
+        "name": "pa_budget_entries_order_id_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "sicoob_orders",
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "pa_budget_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (pa_budget_id) REFERENCES pa_budgets(id) ON DELETE CASCADE",
+        "name": "pa_budget_entries_pa_budget_id_fkey",
+        "on_delete": "CASCADE",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "pa_budgets",
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "pa_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id) ON DELETE CASCADE",
+        "name": "pa_budget_entries_pa_id_fkey",
+        "on_delete": "CASCADE",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "postos_atendimento",
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "deferrable": false,
+        "definition": "PRIMARY KEY (id)",
+        "name": "pa_budget_entries_pkey",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "PRIMARY KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "tipo"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (tipo = ANY (ARRAY['reserva'::text, 'liberacao'::text, 'compromisso'::text, 'consumo'::text, 'estorno'::text, 'ajuste'::text]))",
+        "name": "pa_budget_entries_tipo_valido",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "valor"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (valor <> 0::numeric)",
+        "name": "pa_budget_entries_valor_nao_zero",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
           "ano"
         ],
         "deferrable": false,
@@ -42002,6 +42803,64 @@
         "schema": "public",
         "table": "pa_budgets",
         "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "cost_center_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL",
+        "name": "pa_budgets_cost_center_id_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "cost_centers",
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "verba_planejada",
+          "verba_reservada",
+          "verba_comprometida",
+          "verba_consumida"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (verba_planejada >= 0::numeric AND verba_reservada >= 0::numeric AND verba_comprometida >= 0::numeric AND verba_consumida >= 0::numeric)",
+        "name": "pa_budgets_estados_nao_negativos",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
+          "fechada_por"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (fechada_por) REFERENCES auth.users(id) ON DELETE SET NULL",
+        "name": "pa_budgets_fechada_por_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "auth",
+        "ref_table": "users",
+        "schema": "public",
+        "table": "pa_budgets",
+        "type": "FOREIGN KEY",
         "validated": true
       },
       {
@@ -48135,6 +48994,25 @@
       },
       {
         "columns": [
+          "cost_center_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL",
+        "name": "sicoob_orders_cost_center_id_fkey",
+        "on_delete": "SET NULL",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "public",
+        "ref_table": "cost_centers",
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
           "created_by"
         ],
         "deferrable": false,
@@ -53201,11 +54079,18 @@
             {
               "file": "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 10,
+          "code_total_files": 11,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.user_can_access_cooperativa",
+            "public.user_can_access_pa"
+          ],
           "triggers": [],
           "views": []
         },
@@ -53264,11 +54149,18 @@
             {
               "file": "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 8,
+          "code_total_files": 9,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.user_can_access_cooperativa",
+            "public.user_can_access_pa"
+          ],
           "triggers": [],
           "views": []
         },
@@ -57240,12 +58132,20 @@
             {
               "file": "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql",
               "hits": 4
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 7
             }
           ],
-          "code_total_files": 17,
+          "code_total_files": 18,
           "cron": [],
           "db": [
-            "public.guard_profile_authority_fields"
+            "public.guard_profile_authority_fields",
+            "public.pa_budget_allocation_write_ok",
+            "public.pa_budget_close_competence",
+            "public.user_can_access_cooperativa",
+            "public.user_can_access_pa"
           ],
           "triggers": [],
           "views": []
@@ -57576,11 +58476,18 @@
             {
               "file": "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 6
             }
           ],
-          "code_total_files": 7,
+          "code_total_files": 8,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.pa_budget_allocation_write_ok",
+            "public.pa_budget_close_competence"
+          ],
           "triggers": [],
           "views": []
         },
@@ -59299,6 +60206,43 @@
         "callers": {
           "code": [
             {
+              "file": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.quotes.trg_notify_singular_quote_decision"
+          ],
+          "views": []
+        },
+        "comment": "Notifica o vendedor/PA quando a Singular aprova, devolve para ajustes ou recusa o orçamento; filtra apenas usuários ativos e não-excluídos.",
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "definition": null,
+        "definition_sha": "92056488af8d58e8",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "notify_singular_quote_decision",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
               "file": "scripts/db/apply-sicoob-migrations.mjs",
               "hits": 11
             },
@@ -59330,6 +60274,371 @@
         "name": "notify_singular_quote_submission",
         "owner": "postgres",
         "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_order_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 5
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_replace_allocations"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "e612ee8ebda97af5",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "pa_budget_allocation_write_ok",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_order_id uuid, p_total numeric, p_cost_center_id uuid, p_para_estado text, p_motivo text, p_pa_id uuid, p_created_at timestamp with time zone",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 7
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_move_order",
+            "public.pa_budget_replace_allocations",
+            "public.tg_sicoob_order_budget_after_insert",
+            "public.validate_sicoob_order_budget"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "a5f6bfbf8e4b8ec1",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_apply_state",
+        "owner": "postgres",
+        "returns": "pa_budgets",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_pa_id uuid, p_ano integer, p_mes integer, p_fechar boolean",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-lifecycle.py",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "8a691511953376a4",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_close_competence",
+        "owner": "postgres",
+        "returns": "pa_budgets",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_budget_id uuid, p_pa_id uuid, p_ano integer, p_mes integer",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "66f59185bb847b53",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "pa_budget_entry_scope_ok",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_status text",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 4
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_replace_allocations",
+            "public.tg_sicoob_order_budget_after_insert",
+            "public.validate_sicoob_order_budget"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "c5c290adae1b2663",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "pa_budget_estado_do_status",
+        "owner": "postgres",
+        "returns": "text",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "immutable"
+      },
+      {
+        "args": "p_order_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-lifecycle.py",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "8c7874b235ab109f",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_id_for_order",
+        "owner": "postgres",
+        "returns": "uuid",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_order_id uuid, p_para_estado text, p_motivo text",
+        "callers": {
+          "code": [],
+          "code_total_files": 0,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "242eab7d0fefc68e",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_move_order",
+        "owner": "postgres",
+        "returns": "pa_budgets",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_pa_id uuid, p_ano integer, p_mes integer",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-lifecycle.py",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "2db397106a928015",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_reconcile",
+        "owner": "postgres",
+        "returns": "TABLE(pa_budget_id uuid, planejado numeric, reservado_agregado numeric, reservado_livro numeric, comprometido_agregado numeric, comprometido_livro numeric, consumido_agregado numeric, consumido_livro numeric, divergente boolean)",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_order_id uuid, p_rows jsonb",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-lifecycle.py",
+              "hits": 15
+            },
+            {
+              "file": "src/services/sicoob/costCenterService.ts",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "24128a02779f8437",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_replace_allocations",
+        "owner": "postgres",
+        "returns": "SETOF pa_budget_allocations",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_order_id uuid, p_total numeric, p_status text, p_estrito boolean",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 5
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_replace_allocations",
+            "public.tg_sicoob_order_budget_after_insert",
+            "public.tg_validate_order_allocations",
+            "public.validate_sicoob_order_budget"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "0cf9662ea8fde4ba",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "pa_budget_validate_allocations",
+        "owner": "postgres",
+        "returns": "void",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -63031,11 +64340,19 @@
             {
               "file": "supabase/migrations/20260927193000_sicoob_cross_cooperative_rls.sql",
               "hits": 5
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 4
             }
           ],
-          "code_total_files": 4,
+          "code_total_files": 5,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.pa_budget_allocation_write_ok",
+            "public.pa_budget_id_for_order",
+            "public.pa_budget_move_order"
+          ],
           "triggers": [],
           "views": []
         },
@@ -63538,6 +64855,154 @@
         "callers": {
           "code": [
             {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budget_entries.trg_pa_budget_entries_competencia"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "f9a3217b850d1a4c",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_pa_budget_entries_competencia_aberta",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budget_entries.trg_pa_budget_entries_imutavel"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "58ab5fde9b08fb60",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_pa_budget_entries_immutable",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budget_entries.trg_recalc_pa_budget_states"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "f88940b4356d017e",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_recalc_pa_budget_states",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.sicoob_orders.trg_set_order_cost_center"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "413e528bbe720d6c",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_set_order_cost_center",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
               "file": "supabase/migrations/20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql",
               "hits": 4
             }
@@ -63570,6 +65035,117 @@
         "returns": "trigger",
         "schema": "public",
         "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.sicoob_orders.trg_validate_sicoob_order_budget_ins"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "d6aec3ad6aecd04a",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_sicoob_order_budget_after_insert",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budgets.trg_sync_pa_budget_planejada"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "4d5beb1355456026",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_sync_pa_budget_planejada",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budget_allocations.trg_validate_order_allocations"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "4d59b6ba0d194a77",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_validate_order_allocations",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
         "strict": false,
         "volatility": "volatile"
       },
@@ -64021,6 +65597,116 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_cooperativa_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 3
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "1618a3a2b332b358",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "user_can_access_cooperativa",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_pa_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 4
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_close_competence",
+            "public.pa_budget_reconcile"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "e906a493de41b915",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "user_can_access_pa",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_user_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 3
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.pa_budget_allocation_write_ok"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "cb8a02f71006dc7e",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "user_is_comprador_singular",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
         "args": "",
         "callers": {
           "code": [
@@ -64461,9 +66147,13 @@
             {
               "file": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 2,
+          "code_total_files": 3,
           "cron": [],
           "db": [],
           "triggers": [
@@ -64476,7 +66166,7 @@
           "search_path=public"
         ],
         "definition": null,
-        "definition_sha": "279b0f88df72533c",
+        "definition_sha": "1861dd2871425507",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": true,
@@ -68612,6 +70302,49 @@
       },
       {
         "columns": [
+          "cooperativa_id",
+          "codigo"
+        ],
+        "definition": "CREATE UNIQUE INDEX cost_centers_coop_codigo_uk ON public.cost_centers USING btree (cooperativa_id, codigo)",
+        "is_primary": false,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "cost_centers_coop_codigo_uk",
+        "predicate": null,
+        "schema": "public",
+        "table": "cost_centers"
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "definition": "CREATE UNIQUE INDEX cost_centers_pkey ON public.cost_centers USING btree (id)",
+        "is_primary": true,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "cost_centers_pkey",
+        "predicate": null,
+        "schema": "public",
+        "table": "cost_centers"
+      },
+      {
+        "columns": [
+          "cooperativa_id"
+        ],
+        "definition": "CREATE INDEX idx_cost_centers_coop ON public.cost_centers USING btree (cooperativa_id) WHERE ativo",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_cost_centers_coop",
+        "predicate": "ativo",
+        "schema": "public",
+        "table": "cost_centers"
+      },
+      {
+        "columns": [
           "code"
         ],
         "definition": "CREATE UNIQUE INDEX coupons_code_key ON public.coupons USING btree (code)",
@@ -72136,6 +73869,150 @@
         "predicate": null,
         "schema": "public",
         "table": "ownership_repair_logs"
+      },
+      {
+        "columns": [
+          "cost_center_id"
+        ],
+        "definition": "CREATE INDEX idx_pba_cost_center ON public.pa_budget_allocations USING btree (cost_center_id)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pba_cost_center",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_allocations"
+      },
+      {
+        "columns": [
+          "order_id"
+        ],
+        "definition": "CREATE INDEX idx_pba_order ON public.pa_budget_allocations USING btree (order_id)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pba_order",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_allocations"
+      },
+      {
+        "columns": [
+          "order_id",
+          "cost_center_id"
+        ],
+        "definition": "CREATE UNIQUE INDEX pa_budget_allocations_order_cc_uk ON public.pa_budget_allocations USING btree (order_id, cost_center_id)",
+        "is_primary": false,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "pa_budget_allocations_order_cc_uk",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_allocations"
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "definition": "CREATE UNIQUE INDEX pa_budget_allocations_pkey ON public.pa_budget_allocations USING btree (id)",
+        "is_primary": true,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "pa_budget_allocations_pkey",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_allocations"
+      },
+      {
+        "columns": [
+          "pa_budget_id",
+          "created_at"
+        ],
+        "definition": "CREATE INDEX idx_pbe_budget ON public.pa_budget_entries USING btree (pa_budget_id, created_at DESC)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pbe_budget",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_entries"
+      },
+      {
+        "columns": [
+          "competencia_ano",
+          "competencia_mes"
+        ],
+        "definition": "CREATE INDEX idx_pbe_competencia ON public.pa_budget_entries USING btree (competencia_ano, competencia_mes)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pbe_competencia",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_entries"
+      },
+      {
+        "columns": [
+          "pa_budget_id",
+          "estado"
+        ],
+        "definition": "CREATE INDEX idx_pbe_estado ON public.pa_budget_entries USING btree (pa_budget_id, estado)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pbe_estado",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_entries"
+      },
+      {
+        "columns": [
+          "order_id"
+        ],
+        "definition": "CREATE INDEX idx_pbe_order ON public.pa_budget_entries USING btree (order_id) WHERE (order_id IS NOT NULL)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pbe_order",
+        "predicate": "(order_id IS NOT NULL)",
+        "schema": "public",
+        "table": "pa_budget_entries"
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "definition": "CREATE UNIQUE INDEX pa_budget_entries_pkey ON public.pa_budget_entries USING btree (id)",
+        "is_primary": true,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "pa_budget_entries_pkey",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budget_entries"
+      },
+      {
+        "columns": [
+          "cost_center_id"
+        ],
+        "definition": "CREATE INDEX idx_pa_budgets_cost_center ON public.pa_budgets USING btree (cost_center_id)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_pa_budgets_cost_center",
+        "predicate": null,
+        "schema": "public",
+        "table": "pa_budgets"
       },
       {
         "columns": [
@@ -77555,6 +79432,36 @@
     ],
     "lints": [
       {
+        "code": "fk_without_index",
+        "detail": "FK sem índice nas colunas ['actor_id']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
+        "object": "public.pa_budget_entries.pa_budget_entries_actor_id_fkey",
+        "severity": "BAIXA"
+      },
+      {
+        "code": "fk_without_index",
+        "detail": "FK sem índice nas colunas ['cost_center_id']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
+        "object": "public.pa_budget_entries.pa_budget_entries_cost_center_id_fkey",
+        "severity": "BAIXA"
+      },
+      {
+        "code": "fk_without_index",
+        "detail": "FK sem índice nas colunas ['pa_id']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
+        "object": "public.pa_budget_entries.pa_budget_entries_pa_id_fkey",
+        "severity": "BAIXA"
+      },
+      {
+        "code": "fk_without_index",
+        "detail": "FK sem índice nas colunas ['fechada_por']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
+        "object": "public.pa_budgets.pa_budgets_fechada_por_fkey",
+        "severity": "BAIXA"
+      },
+      {
+        "code": "fk_without_index",
+        "detail": "FK sem índice nas colunas ['cost_center_id']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
+        "object": "public.sicoob_orders.sicoob_orders_cost_center_id_fkey",
+        "severity": "BAIXA"
+      },
+      {
         "code": "policy_auth_fn_not_wrapped",
         "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
         "object": "public.admin_audit_log_y2026_m11.Admins can insert audit logs",
@@ -78765,6 +80672,18 @@
         "statements": 1,
         "statements_sha": "2ded60c80af1e9c9",
         "version": "20261119140000"
+      },
+      {
+        "name": "pa_budget_full_lifecycle",
+        "statements": 1,
+        "statements_sha": "8a24b49b44b20f03",
+        "version": "20261122120000"
+      },
+      {
+        "name": "notify_singular_quote_decision",
+        "statements": 1,
+        "statements_sha": "d07ade5d7c293e93",
+        "version": "20261123090000"
       }
     ],
     "policies": [
@@ -80488,6 +82407,30 @@
         "table": "cooperativas_parceiras",
         "using": "(has_role(( SELECT auth.uid() AS uid), 'admin'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'dev'::app_role))",
         "with_check": "(has_role(( SELECT auth.uid() AS uid), 'admin'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'dev'::app_role))"
+      },
+      {
+        "cmd": "SELECT",
+        "name": "cost_centers_select",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "cost_centers",
+        "using": "user_can_access_cooperativa(cooperativa_id)",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "name": "cost_centers_write",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "cost_centers",
+        "using": "(is_admin(( SELECT auth.uid() AS uid)) OR ((is_gestor_compras() OR user_is_comprador_singular()) AND user_can_access_cooperativa(cooperativa_id)))",
+        "with_check": "(is_admin(( SELECT auth.uid() AS uid)) OR ((is_gestor_compras() OR user_is_comprador_singular()) AND user_can_access_cooperativa(cooperativa_id)))"
       },
       {
         "cmd": "ALL",
@@ -82878,6 +84821,78 @@
         "schema": "public",
         "table": "ownership_repair_logs",
         "using": "(has_role(( SELECT auth.uid() AS uid), 'admin'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'dev'::app_role))",
+        "with_check": null
+      },
+      {
+        "cmd": "DELETE",
+        "name": "pa_budget_allocations_delete",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "using": "pa_budget_allocation_write_ok(order_id)",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "name": "pa_budget_allocations_insert",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "using": null,
+        "with_check": "(pa_budget_allocation_write_ok(order_id) AND ((cost_center_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM ((cost_centers center\n     JOIN sicoob_orders ord ON ((ord.id = pa_budget_allocations.order_id)))\n     JOIN postos_atendimento service_point ON ((service_point.id = ord.pa_id)))\n  WHERE ((center.id = pa_budget_allocations.cost_center_id) AND (center.cooperativa_id = service_point.cooperativa_id))))))"
+      },
+      {
+        "cmd": "SELECT",
+        "name": "pa_budget_allocations_select",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "using": "sicoob_current_actor_can_read_order(order_id)",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "name": "pa_budget_allocations_update",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_allocations",
+        "using": "pa_budget_allocation_write_ok(order_id)",
+        "with_check": "(pa_budget_allocation_write_ok(order_id) AND ((cost_center_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM ((cost_centers center\n     JOIN sicoob_orders ord ON ((ord.id = pa_budget_allocations.order_id)))\n     JOIN postos_atendimento service_point ON ((service_point.id = ord.pa_id)))\n  WHERE ((center.id = pa_budget_allocations.cost_center_id) AND (center.cooperativa_id = service_point.cooperativa_id))))))"
+      },
+      {
+        "cmd": "INSERT",
+        "name": "pa_budget_entries_insert",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "using": null,
+        "with_check": "(user_can_access_pa(pa_id) AND (is_admin(( SELECT auth.uid() AS uid)) OR is_gestor_compras()) AND (actor_id = ( SELECT auth.uid() AS uid)) AND pa_budget_entry_scope_ok(pa_budget_id, pa_id, competencia_ano, competencia_mes))"
+      },
+      {
+        "cmd": "SELECT",
+        "name": "pa_budget_entries_select",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_budget_entries",
+        "using": "user_can_access_pa(pa_id)",
         "with_check": null
       },
       {
@@ -88348,6 +90363,21 @@
         "from_extension": false,
         "is_partition": false,
         "kind": "table",
+        "name": "cost_centers",
+        "owner": "postgres",
+        "parent": null,
+        "partition_bound": null,
+        "partition_key": null,
+        "replica_identity": "default",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "public"
+      },
+      {
+        "comment": null,
+        "from_extension": false,
+        "is_partition": false,
+        "kind": "table",
         "name": "coupons",
         "owner": "postgres",
         "parent": null,
@@ -89474,6 +91504,36 @@
         "is_partition": false,
         "kind": "table",
         "name": "ownership_repair_logs",
+        "owner": "postgres",
+        "parent": null,
+        "partition_bound": null,
+        "partition_key": null,
+        "replica_identity": "default",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "public"
+      },
+      {
+        "comment": null,
+        "from_extension": false,
+        "is_partition": false,
+        "kind": "table",
+        "name": "pa_budget_allocations",
+        "owner": "postgres",
+        "parent": null,
+        "partition_bound": null,
+        "partition_key": null,
+        "replica_identity": "default",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "public"
+      },
+      {
+        "comment": null,
+        "from_extension": false,
+        "is_partition": false,
+        "kind": "table",
+        "name": "pa_budget_entries",
         "owner": "postgres",
         "parent": null,
         "partition_bound": null,
@@ -92210,11 +94270,66 @@
         "timing": "BEFORE"
       },
       {
+        "definition": "CREATE TRIGGER trg_validate_order_allocations AFTER INSERT OR DELETE OR UPDATE ON pa_budget_allocations FOR EACH ROW EXECUTE FUNCTION tg_validate_order_allocations()",
+        "events": "INSERT OR DELETE OR UPDATE",
+        "function": "public.tg_validate_order_allocations",
+        "level": "ROW",
+        "name": "trg_validate_order_allocations",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budget_allocations",
+        "timing": "AFTER"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_pa_budget_entries_competencia BEFORE INSERT ON pa_budget_entries FOR EACH ROW EXECUTE FUNCTION tg_pa_budget_entries_competencia_aberta()",
+        "events": "INSERT",
+        "function": "public.tg_pa_budget_entries_competencia_aberta",
+        "level": "ROW",
+        "name": "trg_pa_budget_entries_competencia",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budget_entries",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_pa_budget_entries_imutavel BEFORE DELETE OR UPDATE ON pa_budget_entries FOR EACH ROW EXECUTE FUNCTION tg_pa_budget_entries_immutable()",
+        "events": "DELETE OR UPDATE",
+        "function": "public.tg_pa_budget_entries_immutable",
+        "level": "ROW",
+        "name": "trg_pa_budget_entries_imutavel",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budget_entries",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_recalc_pa_budget_states AFTER INSERT OR DELETE OR UPDATE ON pa_budget_entries FOR EACH ROW EXECUTE FUNCTION tg_recalc_pa_budget_states()",
+        "events": "INSERT OR DELETE OR UPDATE",
+        "function": "public.tg_recalc_pa_budget_states",
+        "level": "ROW",
+        "name": "trg_recalc_pa_budget_states",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budget_entries",
+        "timing": "AFTER"
+      },
+      {
         "definition": "CREATE TRIGGER trg_pa_budgets_updated BEFORE UPDATE ON pa_budgets FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()",
         "events": "UPDATE",
         "function": "public.tg_set_updated_at",
         "level": "ROW",
         "name": "trg_pa_budgets_updated",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budgets",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_sync_pa_budget_planejada BEFORE INSERT OR UPDATE ON pa_budgets FOR EACH ROW EXECUTE FUNCTION tg_sync_pa_budget_planejada()",
+        "events": "INSERT OR UPDATE",
+        "function": "public.tg_sync_pa_budget_planejada",
+        "level": "ROW",
+        "name": "trg_sync_pa_budget_planejada",
         "schema": "public",
         "status": "enabled",
         "table": "pa_budgets",
@@ -92611,6 +94726,17 @@
         "function": "public.notify_quote_status_change",
         "level": "ROW",
         "name": "trg_notify_quote_status_change",
+        "schema": "public",
+        "status": "enabled",
+        "table": "quotes",
+        "timing": "AFTER"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_notify_singular_quote_decision AFTER UPDATE OF status ON quotes FOR EACH ROW EXECUTE FUNCTION notify_singular_quote_decision()",
+        "events": "UPDATE",
+        "function": "public.notify_singular_quote_decision",
+        "level": "ROW",
+        "name": "trg_notify_singular_quote_decision",
         "schema": "public",
         "status": "enabled",
         "table": "quotes",
@@ -93145,6 +95271,17 @@
         "timing": "BEFORE"
       },
       {
+        "definition": "CREATE TRIGGER trg_set_order_cost_center BEFORE INSERT ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION tg_set_order_cost_center()",
+        "events": "INSERT",
+        "function": "public.tg_set_order_cost_center",
+        "level": "ROW",
+        "name": "trg_set_order_cost_center",
+        "schema": "public",
+        "status": "enabled",
+        "table": "sicoob_orders",
+        "timing": "BEFORE"
+      },
+      {
         "definition": "CREATE TRIGGER trg_validate_sicoob_order_budget BEFORE UPDATE OF status, pa_id, total_amount, created_at ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION validate_sicoob_order_budget()",
         "events": "UPDATE",
         "function": "public.validate_sicoob_order_budget",
@@ -93154,6 +95291,17 @@
         "status": "enabled",
         "table": "sicoob_orders",
         "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_validate_sicoob_order_budget_ins AFTER INSERT ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION tg_sicoob_order_budget_after_insert()",
+        "events": "INSERT",
+        "function": "public.tg_sicoob_order_budget_after_insert",
+        "level": "ROW",
+        "name": "trg_validate_sicoob_order_budget_ins",
+        "schema": "public",
+        "status": "enabled",
+        "table": "sicoob_orders",
+        "timing": "AFTER"
       },
       {
         "definition": "CREATE TRIGGER trigger_check_order_sla BEFORE INSERT OR UPDATE ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION check_order_sla()",

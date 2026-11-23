@@ -46,6 +46,7 @@
 | tabela | constraint | colunas | on delete |
 |---|---|---|---|
 | public.limit_increase_requests | limit_increase_requests_pa_id_fkey | pa_id | NO ACTION |
+| public.pa_budget_entries | pa_budget_entries_pa_id_fkey | pa_id | CASCADE |
 | public.pa_budgets | pa_budgets_pa_id_fkey | pa_id | CASCADE |
 | public.pa_category_thresholds | pa_category_thresholds_pa_id_fkey | pa_id | CASCADE |
 | public.pa_notification_settings | pa_notification_settings_pa_id_fkey | pa_id | CASCADE |

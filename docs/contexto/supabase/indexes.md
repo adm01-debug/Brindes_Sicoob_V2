@@ -278,6 +278,9 @@ Uso e tamanho em `stats.md`.
 | public.cooperativas | idx_fk_cooperativas_sicoob_tema_id_fkey | btree | sicoob_tema_id | não | sim |  |
 | public.cooperativas_parceiras | cooperativas_parceiras_pkey | btree | id | sim | sim |  |
 | public.cooperativas_parceiras | cooperativas_parceiras_registration_number_key | btree | registration_number | sim | sim |  |
+| public.cost_centers | cost_centers_coop_codigo_uk | btree | cooperativa_id, codigo | sim | sim |  |
+| public.cost_centers | cost_centers_pkey | btree | id | sim | sim |  |
+| public.cost_centers | idx_cost_centers_coop | btree | cooperativa_id | não | sim | `ativo` |
 | public.coupons | coupons_code_key | btree | code | sim | sim |  |
 | public.coupons | coupons_pkey | btree | id | sim | sim |  |
 | public.custom_kits | custom_kits_pkey | btree | id | sim | sim |  |
@@ -525,6 +528,16 @@ Uso e tamanho em `stats.md`.
 | public.ownership_repair_logs | idx_ownership_repair_logs_created_at | btree | created_at | não | sim |  |
 | public.ownership_repair_logs | idx_ownership_repair_logs_report | btree | report_id | não | sim |  |
 | public.ownership_repair_logs | ownership_repair_logs_pkey | btree | id | sim | sim |  |
+| public.pa_budget_allocations | idx_pba_cost_center | btree | cost_center_id | não | sim |  |
+| public.pa_budget_allocations | idx_pba_order | btree | order_id | não | sim |  |
+| public.pa_budget_allocations | pa_budget_allocations_order_cc_uk | btree | order_id, cost_center_id | sim | sim |  |
+| public.pa_budget_allocations | pa_budget_allocations_pkey | btree | id | sim | sim |  |
+| public.pa_budget_entries | idx_pbe_budget | btree | pa_budget_id, created_at | não | sim |  |
+| public.pa_budget_entries | idx_pbe_competencia | btree | competencia_ano, competencia_mes | não | sim |  |
+| public.pa_budget_entries | idx_pbe_estado | btree | pa_budget_id, estado | não | sim |  |
+| public.pa_budget_entries | idx_pbe_order | btree | order_id | não | sim | `(order_id IS NOT NULL)` |
+| public.pa_budget_entries | pa_budget_entries_pkey | btree | id | sim | sim |  |
+| public.pa_budgets | idx_pa_budgets_cost_center | btree | cost_center_id | não | sim |  |
 | public.pa_budgets | idx_pa_budgets_pa | btree | pa_id | não | sim |  |
 | public.pa_budgets | idx_pa_budgets_period | btree | ano, mes | não | sim |  |
 | public.pa_budgets | pa_budgets_pa_id_ano_mes_key | btree | pa_id, ano, mes | sim | sim |  |

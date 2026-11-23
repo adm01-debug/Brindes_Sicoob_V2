@@ -27,6 +27,12 @@
 | 8 | `observacoes` | `text` | sim |  |  |  |
 | 9 | `created_at` | `timestamp with time zone` | não | `now()` |  |  |
 | 10 | `updated_at` | `timestamp with time zone` | não | `now()` |  |  |
+| 11 | `verba_planejada` | `numeric(14,2)` | não | `0` |  |  |
+| 12 | `verba_reservada` | `numeric(14,2)` | não | `0` |  |  |
+| 13 | `verba_comprometida` | `numeric(14,2)` | não | `0` |  |  |
+| 14 | `cost_center_id` | `uuid` | sim |  |  |  |
+| 15 | `fechada_em` | `timestamp with time zone` | sim |  |  |  |
+| 16 | `fechada_por` | `uuid` | sim |  |  |  |
 
 
 ## Constraints
@@ -42,6 +48,9 @@
 | check_positive_verba_total | CHECK | `CHECK (verba_total >= 0::numeric)` |  |  | sim |
 | check_verba_total_positive | CHECK | `CHECK (verba_total > 0::numeric)` |  |  | sim |
 | pa_budgets_ano_check | CHECK | `CHECK (ano >= 2024 AND ano <= 2100)` |  |  | sim |
+| pa_budgets_cost_center_id_fkey | FOREIGN KEY | `FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL` | SET NULL | NO ACTION | sim |
+| pa_budgets_estados_nao_negativos | CHECK | `CHECK (verba_planejada >= 0::numeric AND verba_reservada >= 0::numeric AND verba_comprometida >= 0::numeric AND verba_consumida >= 0::numeric)` |  |  | sim |
+| pa_budgets_fechada_por_fkey | FOREIGN KEY | `FOREIGN KEY (fechada_por) REFERENCES auth.users(id) ON DELETE SET NULL` | SET NULL | NO ACTION | sim |
 | pa_budgets_limite_alcada_check | CHECK | `CHECK (limite_alcada IS NULL OR limite_alcada >= 0::numeric)` |  |  | sim |
 | pa_budgets_mes_check | CHECK | `CHECK (mes >= 1 AND mes <= 12)` |  |  | sim |
 | pa_budgets_pa_id_ano_mes_key | UNIQUE | `UNIQUE (pa_id, ano, mes)` |  |  | sim |
@@ -51,10 +60,18 @@
 | pa_budgets_verba_total_check | CHECK | `CHECK (verba_total >= 0::numeric)` |  |  | sim |
 
 
+## Referenciada por (FKs de outras tabelas)
+
+| tabela | constraint | colunas | on delete |
+|---|---|---|---|
+| public.pa_budget_entries | pa_budget_entries_pa_budget_id_fkey | pa_budget_id | CASCADE |
+
+
 ## Índices
 
 | nome | método | colunas | único | válido | predicado | definição |
 |---|---|---|---|---|---|---|
+| idx_pa_budgets_cost_center | btree | cost_center_id | não | sim |  | `CREATE INDEX idx_pa_budgets_cost_center ON public.pa_budgets USING btree (cost_center_id)` |
 | idx_pa_budgets_pa | btree | pa_id | não | sim |  | `CREATE INDEX idx_pa_budgets_pa ON public.pa_budgets USING btree (pa_id)` |
 | idx_pa_budgets_period | btree | ano, mes | não | sim |  | `CREATE INDEX idx_pa_budgets_period ON public.pa_budgets USING btree (ano, mes)` |
 | pa_budgets_pa_id_ano_mes_key | btree | pa_id, ano, mes | sim | sim |  | `CREATE UNIQUE INDEX pa_budgets_pa_id_ano_mes_key ON public.pa_budgets USING btree (pa_id, ano, mes)` |
@@ -169,6 +186,7 @@
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
 | trg_pa_budgets_updated | BEFORE | UPDATE | ROW | enabled | public.tg_set_updated_at |
+| trg_sync_pa_budget_planejada | BEFORE | INSERT OR UPDATE | ROW | enabled | public.tg_sync_pa_budget_planejada |
 | update_pa_budgets_updated_at | BEFORE | UPDATE | ROW | enabled | public.update_updated_at_column |
 
 

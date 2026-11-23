@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "aef4f10d2bc43f01009f89aafb13b0788f217098",
+  "commit": "87316febd0e0588260ebfeb85a874e906ffd76d9",
   "branch": "main",
-  "data_commit": "2026-11-23T18:44:38-03:00",
+  "data_commit": "2026-11-23T19:06:37-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "87316fe",
+    "data": "2026-11-23",
+    "assunto": "chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)"
+   },
    {
     "sha": "aef4f10",
     "data": "2026-11-23",
@@ -126,11 +131,6 @@
     "sha": "0f4d547",
     "data": "2026-11-19",
     "assunto": "feat(orcamentos): filtros da lista persistidos na URL (recupera PR #100) (#378)"
-   },
-   {
-    "sha": "9515c40",
-    "data": "2026-11-19",
-    "assunto": "test(edge): catraca para o espalhamento de versões do supabase-js (#377)"
    }
   ],
   "arquivos_mudados_7d": 1322,
@@ -250,10 +250,6 @@
     "mudancas": 12
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 12
-   },
-   {
     "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 12
    },
@@ -266,11 +262,11 @@
     "mudancas": 12
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/execucao/validacao-do-plano.md",
     "mudancas": 11
    },
    {
-    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 11
    },
    {
@@ -290,6 +286,10 @@
     "mudancas": 10
    },
    {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 10
+   },
+   {
     "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 195
+    "commits": 196
    },
    {
     "autor": "dependabot[bot]",

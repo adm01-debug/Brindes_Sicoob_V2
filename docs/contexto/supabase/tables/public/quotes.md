@@ -192,6 +192,7 @@
 | tr_set_quote_hierarchy | BEFORE | INSERT | ROW | enabled | public.set_quote_hierarchy |
 | trg_dispatch_webhook_quotes | AFTER | INSERT OR UPDATE | ROW | enabled | public.dispatch_quote_webhook_event |
 | trg_notify_quote_status_change | AFTER | UPDATE | ROW | enabled | public.notify_quote_status_change |
+| trg_notify_singular_quote_decision | AFTER | UPDATE | ROW | enabled | public.notify_singular_quote_decision |
 | trg_notify_singular_quote_submission | AFTER | UPDATE | ROW | enabled | public.notify_singular_quote_submission |
 | trg_owner__quotes__seller_id | BEFORE | INSERT | ROW | enabled | public.enforce_seller_id_owner |
 | trg_quotes_row_version | BEFORE | UPDATE | ROW | enabled | public.handle_row_version |

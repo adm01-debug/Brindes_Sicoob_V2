@@ -49,6 +49,7 @@
 | 30 | `discount_amount` | `numeric(14,2)` | não | `0` |  |  |
 | 31 | `shipping_amount` | `numeric(14,2)` | não | `0` |  |  |
 | 32 | `pricing_formula_version` | `text` | não | `'legacy-v0'::text` |  |  |
+| 33 | `cost_center_id` | `uuid` | sim |  |  |  |
 
 
 ## Constraints
@@ -61,6 +62,7 @@
 | sicoob_orders_commercial_components_nonnegative | CHECK | `CHECK (merchandise_amount >= 0::numeric AND personalization_amount >= 0::numeric AND negotiation_markup_amount >= 0::numeric AND commercial_subtotal_amount >= 0::numeric AND discount_amount >= 0::numeric AND shipping_amount >= 0::numeric)` |  |  | sim |
 | sicoob_orders_consolidation_id_fkey | FOREIGN KEY | `FOREIGN KEY (consolidation_id) REFERENCES order_consolidations(id) ON DELETE RESTRICT` | RESTRICT | NO ACTION | sim |
 | sicoob_orders_cooperative_id_fkey | FOREIGN KEY | `FOREIGN KEY (cooperative_id) REFERENCES cooperativas(id) ON DELETE CASCADE` | CASCADE | NO ACTION | sim |
+| sicoob_orders_cost_center_id_fkey | FOREIGN KEY | `FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL` | SET NULL | NO ACTION | sim |
 | sicoob_orders_created_by_fkey | FOREIGN KEY | `FOREIGN KEY (created_by) REFERENCES auth.users(id)` | NO ACTION | NO ACTION | sim |
 | sicoob_orders_pa_id_fkey | FOREIGN KEY | `FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id) ON DELETE CASCADE` | CASCADE | NO ACTION | sim |
 | sicoob_orders_pkey | PRIMARY KEY | `PRIMARY KEY (id)` |  |  | sim |
@@ -73,6 +75,8 @@
 | tabela | constraint | colunas | on delete |
 |---|---|---|---|
 | public.order_consolidation_orders | order_consolidation_orders_order_id_fkey | order_id | RESTRICT |
+| public.pa_budget_allocations | pa_budget_allocations_order_id_fkey | order_id | CASCADE |
+| public.pa_budget_entries | pa_budget_entries_order_id_fkey | order_id | SET NULL |
 | public.quotes | quotes_reorder_source_order_id_fkey | reorder_source_order_id | RESTRICT |
 | public.sicoob_approval_requests | sicoob_approval_requests_order_id_fkey | order_id | CASCADE |
 | public.sicoob_document_registry | sicoob_document_registry_order_id_fkey | order_id | RESTRICT |
@@ -157,7 +161,9 @@
 | tr_record_sicoob_order_status_event | AFTER | UPDATE | ROW | enabled | public.record_sicoob_order_status_event |
 | tr_require_sicoob_artwork_before_production | BEFORE | UPDATE | ROW | enabled | public.require_sicoob_artwork_before_production |
 | tr_validate_sicoob_order_status | BEFORE | UPDATE | ROW | enabled | public.validate_order_status_transition |
+| trg_set_order_cost_center | BEFORE | INSERT | ROW | enabled | public.tg_set_order_cost_center |
 | trg_validate_sicoob_order_budget | BEFORE | UPDATE | ROW | enabled | public.validate_sicoob_order_budget |
+| trg_validate_sicoob_order_budget_ins | AFTER | INSERT | ROW | enabled | public.tg_sicoob_order_budget_after_insert |
 | trigger_check_order_sla | BEFORE | INSERT OR UPDATE | ROW | enabled | public.check_order_sla |
 | update_sicoob_orders_updated_at | BEFORE | UPDATE | ROW | enabled | public.update_updated_at_column |
 

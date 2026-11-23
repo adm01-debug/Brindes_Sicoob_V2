@@ -22,6 +22,7 @@
 | public.cooperativa_budgets | cooperativa_id | public.cooperativas | id | CASCADE | NO ACTION |
 | public.cooperativas | central_id | public.sicoob_centrais | id | NO ACTION | NO ACTION |
 | public.cooperativas | sicoob_tema_id | public.sicoob_temas | id | NO ACTION | NO ACTION |
+| public.cost_centers | cooperativa_id | public.cooperativas | id | CASCADE | NO ACTION |
 | public.device_login_notifications | device_id | public.user_known_devices | id | CASCADE | NO ACTION |
 | public.discount_approval_requests | quote_id | public.quotes | id | CASCADE | NO ACTION |
 | public.expert_conversations | seller_id | auth.users | id | CASCADE | NO ACTION |
@@ -95,6 +96,15 @@
 | public.organization_members | organization_id | public.organizations | id | CASCADE | NO ACTION |
 | public.organization_members | user_id | auth.users | id | CASCADE | NO ACTION |
 | public.ownership_repair_logs | report_id | public.ownership_audit_reports | id | SET NULL | NO ACTION |
+| public.pa_budget_allocations | cost_center_id | public.cost_centers | id | RESTRICT | NO ACTION |
+| public.pa_budget_allocations | order_id | public.sicoob_orders | id | CASCADE | NO ACTION |
+| public.pa_budget_entries | actor_id | auth.users | id | SET NULL | NO ACTION |
+| public.pa_budget_entries | cost_center_id | public.cost_centers | id | SET NULL | NO ACTION |
+| public.pa_budget_entries | order_id | public.sicoob_orders | id | SET NULL | NO ACTION |
+| public.pa_budget_entries | pa_budget_id | public.pa_budgets | id | CASCADE | NO ACTION |
+| public.pa_budget_entries | pa_id | public.postos_atendimento | id | CASCADE | NO ACTION |
+| public.pa_budgets | cost_center_id | public.cost_centers | id | SET NULL | NO ACTION |
+| public.pa_budgets | fechada_por | auth.users | id | SET NULL | NO ACTION |
 | public.pa_budgets | pa_id | public.postos_atendimento | id | CASCADE | NO ACTION |
 | public.pa_category_thresholds | pa_id | public.postos_atendimento | id | CASCADE | NO ACTION |
 | public.pa_notification_settings | pa_id | public.postos_atendimento | id | CASCADE | NO ACTION |
@@ -208,6 +218,7 @@
 | public.sicoob_orders | approved_by | auth.users | id | NO ACTION | NO ACTION |
 | public.sicoob_orders | consolidation_id | public.order_consolidations | id | RESTRICT | NO ACTION |
 | public.sicoob_orders | cooperative_id | public.cooperativas | id | CASCADE | NO ACTION |
+| public.sicoob_orders | cost_center_id | public.cost_centers | id | SET NULL | NO ACTION |
 | public.sicoob_orders | created_by | auth.users | id | NO ACTION | NO ACTION |
 | public.sicoob_orders | pa_id | public.postos_atendimento | id | CASCADE | NO ACTION |
 | public.sicoob_orders | source_quote_id | public.quotes | id | RESTRICT | NO ACTION |

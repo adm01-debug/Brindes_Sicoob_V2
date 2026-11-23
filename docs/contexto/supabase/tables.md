@@ -60,6 +60,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.cooperativa_budgets](tables/public/cooperativa_budgets.md) | table | sim | 9 | 9 | não |  |
 | [public.cooperativas](tables/public/cooperativas.md) | table | sim | 4 | 15 | não |  |
 | [public.cooperativas_parceiras](tables/public/cooperativas_parceiras.md) | table | sim | 1 | 9 | não |  |
+| [public.cost_centers](tables/public/cost_centers.md) | table | sim | 2 | 8 | não |  |
 | [public.coupons](tables/public/coupons.md) | table | sim | 1 | 13 | não |  |
 | [public.custom_kits](tables/public/custom_kits.md) | table | sim | 4 | 23 | sim |  |
 | [public.device_login_notifications](tables/public/device_login_notifications.md) | table | sim | 1 | 9 | sim |  |
@@ -136,7 +137,9 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.outbound_webhooks](tables/public/outbound_webhooks.md) | table | sim | 1 | 17 | não |  |
 | [public.ownership_audit_reports](tables/public/ownership_audit_reports.md) | table | sim | 3 | 11 | não |  |
 | [public.ownership_repair_logs](tables/public/ownership_repair_logs.md) | table | sim | 1 | 13 | não |  |
-| [public.pa_budgets](tables/public/pa_budgets.md) | table | sim | 10 | 10 | não |  |
+| [public.pa_budget_allocations](tables/public/pa_budget_allocations.md) | table | sim | 4 | 6 | não |  |
+| [public.pa_budget_entries](tables/public/pa_budget_entries.md) | table | sim | 2 | 13 | não |  |
+| [public.pa_budgets](tables/public/pa_budgets.md) | table | sim | 10 | 16 | não |  |
 | [public.pa_category_thresholds](tables/public/pa_category_thresholds.md) | table | sim | 4 | 5 | não |  |
 | [public.pa_notification_settings](tables/public/pa_notification_settings.md) | table | sim | 4 | 7 | não |  |
 | [public.pa_singularidades](tables/public/pa_singularidades.md) | table | sim | 4 | 7 | não |  |
@@ -217,7 +220,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.sicoob_order_items](tables/public/sicoob_order_items.md) | table | sim | 1 | 18 | não |  |
 | [public.sicoob_order_payments](tables/public/sicoob_order_payments.md) | table | sim | 1 | 17 | não |  |
 | [public.sicoob_order_shipments](tables/public/sicoob_order_shipments.md) | table | sim | 1 | 13 | não |  |
-| [public.sicoob_orders](tables/public/sicoob_orders.md) | table | sim | 4 | 32 | sim |  |
+| [public.sicoob_orders](tables/public/sicoob_orders.md) | table | sim | 4 | 33 | sim |  |
 | [public.sicoob_performance_reports](tables/public/sicoob_performance_reports.md) | table | sim | 1 | 8 | não |  |
 | [public.sicoob_quote_reorder_requests](tables/public/sicoob_quote_reorder_requests.md) | table | sim | 1 | 7 | não |  |
 | [public.sicoob_reorder_requests](tables/public/sicoob_reorder_requests.md) | table | sim | 1 | 7 | não |  |

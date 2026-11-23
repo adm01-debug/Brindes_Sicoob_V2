@@ -4,6 +4,11 @@ Verificações objetivas feitas no catálogo. Um agente deve ler isto antes de p
 
 | severidade | código | objeto | detalhe |
 |---|---|---|---|
+| BAIXA | fk_without_index | public.pa_budget_entries.pa_budget_entries_actor_id_fkey | FK sem índice nas colunas ['actor_id']: joins e DELETE/UPDATE na tabela pai ficam lentos. |
+| BAIXA | fk_without_index | public.pa_budget_entries.pa_budget_entries_cost_center_id_fkey | FK sem índice nas colunas ['cost_center_id']: joins e DELETE/UPDATE na tabela pai ficam lentos. |
+| BAIXA | fk_without_index | public.pa_budget_entries.pa_budget_entries_pa_id_fkey | FK sem índice nas colunas ['pa_id']: joins e DELETE/UPDATE na tabela pai ficam lentos. |
+| BAIXA | fk_without_index | public.pa_budgets.pa_budgets_fechada_por_fkey | FK sem índice nas colunas ['fechada_por']: joins e DELETE/UPDATE na tabela pai ficam lentos. |
+| BAIXA | fk_without_index | public.sicoob_orders.sicoob_orders_cost_center_id_fkey | FK sem índice nas colunas ['cost_center_id']: joins e DELETE/UPDATE na tabela pai ficam lentos. |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m11.Admins can insert audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m11.Admins can view audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |
 | BAIXA | policy_auth_fn_not_wrapped | public.admin_audit_log_y2026_m12.Admins can insert audit logs | Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect. |

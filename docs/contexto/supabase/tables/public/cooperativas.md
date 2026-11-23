@@ -50,6 +50,7 @@
 | tabela | constraint | colunas | on delete |
 |---|---|---|---|
 | public.cooperativa_budgets | cooperativa_budgets_cooperativa_id_fkey | cooperativa_id | CASCADE |
+| public.cost_centers | cost_centers_cooperativa_id_fkey | cooperativa_id | CASCADE |
 | public.order_consolidations | order_consolidations_singular_id_fkey | singular_id | RESTRICT |
 | public.postos_atendimento | postos_atendimento_cooperativa_id_fkey | cooperativa_id | RESTRICT |
 | public.profiles | profiles_cooperativa_id_fkey | cooperativa_id | SET NULL |
