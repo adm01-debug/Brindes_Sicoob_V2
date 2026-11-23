@@ -9,13 +9,15 @@ import {
   SheetTrigger,
   SheetFooter
 } from "@/components/ui/sheet";
-import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info, RefreshCw } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info, RefreshCw, Wallet } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CouponInput } from "./CouponInput";
 import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
+import { useSicoobBudget } from "@/hooks/sicoob/useSicoobBudget";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,6 +26,54 @@ import { askConfirm } from '@/stores/useConfirmDialogStore';
 function MiniCartItem({ item, isUpdating, getQuantity, onQuantityChange, onRemove }: { item: CartItem; isUpdating: boolean; getQuantity: (id: string) => number; onQuantityChange: (id: string, quantity: number) => void; onRemove: (id: string) => void }) {
   const quantity = getQuantity(item.id);
   return <div className="flex gap-4"><div className="h-20 w-20 rounded-md border bg-muted overflow-hidden flex-shrink-0">{item.product_image_url ? <img src={item.product_image_url} alt={item.product_name} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">Sem foto</div>}</div><div className="flex-1 flex flex-col justify-between"><div><h4 className="text-sm font-medium line-clamp-1">{item.product_name}</h4>{item.color_name ? <p className="text-xs text-muted-foreground flex items-center gap-1">Cor: {item.color_name}{item.color_hex ? <span className="h-2 w-2 rounded-full inline-block border" style={{ backgroundColor: item.color_hex }} /> : null}</p> : null}<p className="text-sm font-bold mt-1">{formatCurrency(item.product_price)}</p></div><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-7 w-7" disabled={isUpdating} onClick={(event) => { event.preventDefault(); onQuantityChange(item.id, quantity - 1); }}><Minus className="h-3 w-3" /></Button><span className="text-sm w-6 text-center font-medium tabular-nums">{quantity}</span><Button variant="outline" size="icon" className="h-7 w-7" disabled={isUpdating} onClick={(event) => { event.preventDefault(); onQuantityChange(item.id, quantity + 1); }}><Plus className="h-3 w-3" /></Button></div><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10 transition-colors" onClick={() => onRemove(item.id)}><Trash2 className="h-4 w-4" /></Button></div></div></div>;
+}
+
+function budgetStyles(isLow: boolean) {
+  return {
+    container: isLow ? "space-y-1.5 p-3 rounded-lg border bg-warning/5 border-warning/30 transition-all duration-300" : "space-y-1.5 p-3 rounded-lg border bg-muted/30 border-border/50 transition-all duration-300",
+    icon: isLow ? "h-4 w-4 text-warning" : "h-4 w-4 text-primary",
+    progress: isLow ? "h-1.5 [&>div]:bg-warning" : "h-1.5",
+    status: isLow ? "text-[10px] text-warning font-bold" : "text-[10px] text-muted-foreground",
+  };
+}
+
+function CartPaBudgetBalance() {
+  const { paId } = useAuth();
+  const { data: budget, isLoading } = useSicoobBudget();
+
+  if (!paId) return null;
+  if (isLoading) return <div className="text-[10px] text-muted-foreground px-1 py-0.5">Carregando saldo da verba…</div>;
+  if (!budget) return null;
+
+  const total = Number(budget.verba_total ?? 0);
+  const consumed = Number(budget.verba_consumida ?? 0);
+  const available = Math.max(0, total - consumed);
+  const percent = total > 0 ? Math.min((consumed / total) * 100, 100) : 0;
+  const isLow = percent >= 90;
+  const styles = budgetStyles(isLow);
+
+  return (
+    <div className={styles.container} role="region" aria-label="Saldo de Verba do PA">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1.5">
+          <Wallet className={styles.icon} aria-hidden="true" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Verba do PA</span>
+        </div>
+        <span className="text-[10px] text-muted-foreground">{new Date().toLocaleString("pt-BR", { month: "short", year: "2-digit" })}</span>
+      </div>
+      <Progress value={percent} className={styles.progress} aria-label={`Verba consumida: ${percent.toFixed(0)}%`} />
+      <div className="flex items-center justify-between" aria-live="polite">
+        <span className={styles.status}>{percent.toFixed(0)}% utilizado</span>
+        <span className="text-[10px] font-bold">Disponível: {formatCurrency(available)}</span>
+      </div>
+      {isLow && (
+        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-warning font-semibold bg-warning/10 p-1.5 rounded border border-warning/20" role="alert" aria-live="assertive">
+          <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Verba acima de 90% — novos pedidos podem exigir aprovação</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function CartApprovalThreshold({ threshold, subtotal, progress, remaining, overThreshold }: { threshold: number; subtotal: number; progress: number; remaining: number; overThreshold: boolean }) {
@@ -110,6 +160,7 @@ export function MiniCart() {
 
         {items.length > 0 && (
           <div className="mt-auto pt-4 space-y-4">
+            <CartPaBudgetBalance />
             <CartApprovalThreshold threshold={threshold} subtotal={subtotal} progress={thresholdProgress} remaining={remaining} overThreshold={isOverThreshold} />
 
             <Separator />
