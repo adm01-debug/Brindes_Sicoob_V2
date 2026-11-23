@@ -50,6 +50,12 @@ const bodyShell = (title: string, content: string): string =>
     </div>
   </body></html>`;
 
+/** O estado descrito no corpo vem do banco, nunca de texto livre do chamador. */
+const statusSentence = (data: Record<string, unknown>): string => {
+  const sentence = String(data.status_sentence ?? "").trim();
+  return sentence || "foi criado com sucesso.";
+};
+
 const salutation = (name?: string): string =>
   name ? `<p style="margin:0 0 16px;">Olá, <strong>${esc(name)}</strong>!</p>` : "";
 
@@ -120,7 +126,7 @@ export function renderTemplate(eventType: string, ctx: TemplateContext): Templat
         html: bodyShell("Pedido criado", `
           ${salutation(recipientName)}
           <h1 style="font-size:22px;color:#0f172a;margin:0 0 16px;">Pedido criado! 🚀</h1>
-          <p style="color:#334155;">Seu pedido ${orderNumber ? `#${orderNumber} ` : ""}foi criado e já está em produção.</p>
+          <p style="color:#334155;">Seu pedido ${orderNumber ? `#${orderNumber} ` : ""}${esc(statusSentence(data))}</p>
           <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0;">
             <p style="margin:0;color:#0f172a;font-weight:600;">Total: ${total}</p>
           </div>
@@ -133,6 +139,7 @@ export function renderTemplate(eventType: string, ctx: TemplateContext): Templat
       const orderNumber = esc(data.order_number);
       const status = esc(data.status ?? fmtStatus(data.new_status));
       const notes = esc(data.notes);
+      const sentence = esc(data.status_sentence);
       const url = String(data.action_url ?? "");
       return {
         subject: `Pedido ${orderNumber ? `#${orderNumber} ` : ""}— ${status}`,
@@ -141,6 +148,7 @@ export function renderTemplate(eventType: string, ctx: TemplateContext): Templat
           <h1 style="font-size:22px;color:#0f172a;margin:0 0 16px;">Atualização do seu pedido 📦</h1>
           <div style="background:#eef6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin:16px 0;">
             <p style="margin:0;color:#0f172a;font-weight:600;">Status: ${status}</p>
+            ${sentence ? `<p style="margin:8px 0 0;color:#334155;">Seu pedido ${orderNumber ? `#${orderNumber} ` : ""}${sentence}</p>` : ""}
             ${notes ? `<p style="margin:8px 0 0;color:#334155;">${notes}</p>` : ""}
           </div>
           ${url ? actionButton("Acompanhar pedido", url) : ""}

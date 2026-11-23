@@ -1,5 +1,9 @@
 /**
  * useTransactionalEmail — Hook para enviar emails transacionais.
+ *
+ * O servidor resolve destinatário, dados e link a partir da referência, sob a
+ * RLS do usuário: mandar `recipient_email` ou `data` do cliente permitiria
+ * disparar e-mail para qualquer endereço anunciando um estado inexistente.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,12 +15,16 @@ export type EmailEventType =
   | "sicoob_order_status_change"
   | "sicoob_order_approval_request";
 
-interface SendEmailParams {
-  event_type: EmailEventType;
-  recipient_email: string;
-  recipient_name?: string;
-  data: Record<string, unknown>;
+interface SendEmailParamsBase {
+  /** Complemento opcional (motivo/observação) — nunca define destinatário nem status. */
+  reason?: string;
+  notes?: string;
 }
+
+export type SendEmailParams =
+  | (SendEmailParamsBase & { event_type: "quote_sent" | "quote_approved" | "quote_rejected"; quote_id: string })
+  | (SendEmailParamsBase & { event_type: "order_created" | "sicoob_order_status_change"; order_id: string })
+  | (SendEmailParamsBase & { event_type: "sicoob_order_approval_request"; approval_request_id: string });
 
 export async function sendTransactionalEmail(params: SendEmailParams) {
   try {

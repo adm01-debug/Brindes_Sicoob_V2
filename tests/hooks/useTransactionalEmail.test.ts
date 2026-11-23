@@ -3,7 +3,7 @@ import { sendTransactionalEmail } from '@/hooks/useTransactionalEmail';
 
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { functions: { invoke } } }));
-const params = { event_type: 'quote_sent' as const, recipient_email: 'qa@example.invalid', data: {} };
+const params = { event_type: 'quote_sent' as const, quote_id: 'orcamento-sintetico' };
 describe('confirmação de email transacional', () => {
   beforeEach(() => { invoke.mockReset(); });
   it.each([null, {}, { success: false }, { success: 'true' }, { success: true, message: 'Email validated and queued successfully' }])('não anuncia envio para resposta sem confirmação: %j', async (data) => {
@@ -17,6 +17,12 @@ describe('confirmação de email transacional', () => {
   it('aceita confirmação explícita', async () => {
     invoke.mockResolvedValue({ data: { success: true, delivery_status: 'accepted', provider_id: 'email-sintetico' }, error: null });
     expect((await sendTransactionalEmail(params)).success).toBe(true);
+  });
+  it('envia apenas a referência, nunca destinatário ou corpo', async () => {
+    invoke.mockResolvedValue({ data: { success: true, delivery_status: 'accepted', provider_id: 'email-sintetico' }, error: null });
+    await sendTransactionalEmail(params);
+    expect(invoke).toHaveBeenCalledWith('send-transactional-email', { body: params });
+    expect(Object.keys(invoke.mock.calls[0][1].body)).toEqual(['event_type', 'quote_id']);
   });
   it('exceção de rede retorna falha sem dados privados', async () => {
     invoke.mockRejectedValue(new Error('detalhe privado'));

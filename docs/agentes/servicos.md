@@ -29,7 +29,7 @@ dela (previews antigos, por exemplo).
 ### Deploy de backend — manual e com confirmação
 
 - **Edge functions:** `.github/workflows/deploy-sicoob-functions.yml`, só `workflow_dispatch`, input
-  `PUBLICAR`, environment `construction`, allowlist de **13 funções**. Detalhe em
+  `PUBLICAR`, environment `construction`, allowlist de **15 funções**. Detalhe em
   `docs/agentes/banco.md`. Nunca `supabase functions deploy` direto.
 - **Migrations:** `.github/workflows/apply-sicoob-migrations.yml`, input `APLICAR`, environment
   `construction`. **Proibido** `supabase db push`, `--linked` ou `--include-all`
