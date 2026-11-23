@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSellerCartContext } from "@/contexts/SellerCartContext";
 import { CartCompanyPicker } from "./CartCompanyPicker";
+import { CartPaBudgetBalance } from "./CartPaBudgetBalance";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -215,7 +216,11 @@ export function CartHeaderButton() {
                       0
                     );
                     return (
-                      <div className="p-3 border-t border-border/40 space-y-2">
+                      <div className="border-t border-border/40">
+                      <div className="p-3 space-y-2">
+                        <CartPaBudgetBalance />
+                      </div>
+                      <div className="px-3 pb-3 space-y-2">
                         {/* Subtotal */}
                         <div className="flex items-center justify-between px-1">
                           <span className="text-xs text-muted-foreground">
@@ -255,6 +260,7 @@ export function CartHeaderButton() {
                           <ArrowRight className="h-3.5 w-3.5" />
                           Gerar Orçamento
                         </Button>
+                      </div>
                       </div>
                     );
                   })()}
