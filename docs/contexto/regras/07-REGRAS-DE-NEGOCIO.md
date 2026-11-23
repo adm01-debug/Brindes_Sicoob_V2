@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0b7520b31` · branch `main` · 2026-11-23 15:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a8dad98053` · branch `main` · 2026-11-23 20:32 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1222,13 +1222,13 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `type` | `xml` | escreve | `src/components/sicoob/orders/OrderInvoicesTab.tsx` |
 | `role` | `admin` | compara, escreve, filtra | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useDiscountApproval.ts`<br>`src/hooks/useQuoteTemplates.ts`<br>`src/lib/access/role-policy.ts`<br>`src/lib/rbac/route-matrix.ts`<br>… +8 |
 | `role` | `agent` | compara | `src/components/access/DevAccessDeniedPage.tsx` |
-| `role` | `agente` | compara | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/services/admin/UserService.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts` |
+| `role` | `agente` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/services/admin/UserService.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts`<br>`tests/scenarios/email-transacional-legado.mjs` |
 | `role` | `all` | compara, escreve | `src/pages/OrderAuditPage.tsx`<br>`src/pages/admin/AdminRbacRoutesPage.tsx` |
 | `role` | `assistant` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/ai/AIMockupAssistant.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts` |
 | `role` | `authenticated` | escreve | `src/lib/rbac/route-matrix.ts` |
 | `role` | `comprador_pac` | compara | `src/lib/auth/auth-utils.ts` |
 | `role` | `comprador_singular` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
-| `role` | `dev` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>`src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx`<br>… +4 |
+| `role` | `dev` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>`src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx`<br>… +5 |
 | `role` | `gerente_pa` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
 | `role` | `gestor_compras` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
 | `role` | `gestor_pa` | compara, escreve | `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`<br>`src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
@@ -1241,7 +1241,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `sicoob_pa` | escreve | `src/components/auth/QuickTestLogin.tsx` |
 | `role` | `sicoob_singular` | escreve | `src/components/auth/QuickTestLogin.tsx` |
 | `role` | `string` | compara | `src/components/access/DevAccessDeniedPage.tsx`<br>`supabase/functions/crm-db-bridge/index.ts` |
-| `role` | `supervisor` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>… +4 |
+| `role` | `supervisor` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>… +5 |
 | `role` | `system` | escreve | `supabase/functions/ai-recommendations/index.ts`<br>`supabase/functions/bi-copilot/index.ts`<br>`supabase/functions/comparison-ai-advisor/index.ts`<br>`supabase/functions/expert-chat/index.ts`<br>`supabase/functions/generate-ad-prompt/index.ts`<br>… +8 |
 | `role` | `user` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/ai/AIMockupAssistant.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts`<br>… +20 |
 | `role` | `vendedor` | compara, escreve, filtra | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/SellerDiscountLimitsPanel.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/CreateUserDialog.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>… +9 |
@@ -1250,7 +1250,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `SUBSCRIBED` | compara | `src/hooks/useRealtimeSync.ts` |
 | `status` | `Status` | escreve | `src/components/audit/AuditHistory.tsx` |
 | `status` | `accepted` | compara | `src/pages/sicoob/SicoobInvitationsPage.tsx` |
-| `status` | `active` | compara, escreve, filtra | `src/components/admin/connections/Bitrix24Tab.tsx`<br>`src/components/admin/connections/ConnectionStatusBadge.tsx`<br>`src/components/admin/connections/DataSourceDebugTab.tsx`<br>`src/components/admin/connections/N8nTab.tsx`<br>`src/components/admin/security/SuspiciousTokensPanel.tsx`<br>… +15 |
+| `status` | `active` | compara, escreve, filtra | `src/components/admin/connections/Bitrix24Tab.tsx`<br>`src/components/admin/connections/ConnectionStatusBadge.tsx`<br>`src/components/admin/connections/DataSourceDebugTab.tsx`<br>`src/components/admin/connections/N8nTab.tsx`<br>`src/components/admin/security/SuspiciousTokensPanel.tsx`<br>… +16 |
 | `status` | `aging` | compara | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/utils/price-freshness.ts` |
 | `status` | `alert_sent` | escreve | `supabase/functions/error-monitor/index.ts` |
 | `status` | `alinhada` | escreve | `tests/scenarios/migration-ledger.mjs` |
@@ -1324,7 +1324,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `pass` | compara, escreve | `src/pages/TestDashboard.tsx`<br>`src/pages/admin/qa/QARunDetailPage.tsx`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts` |
 | `status` | `passed` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx` |
 | `status` | `paused` | compara | `src/pages/admin/AdminCampanhasPage.tsx` |
-| `status` | `pending` | compara, escreve, filtra | `src/components/admin/DiscountApprovalHeaderBadge.tsx`<br>`src/components/admin/DiscountApprovalQueue.tsx`<br>`src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/MyPendingOrdersWidget.tsx`<br>… +40 |
+| `status` | `pending` | compara, escreve, filtra | `src/components/admin/DiscountApprovalHeaderBadge.tsx`<br>`src/components/admin/DiscountApprovalQueue.tsx`<br>`src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/MyPendingOrdersWidget.tsx`<br>… +41 |
 | `status` | `pending_approval` | compara | `src/components/quotes/QuoteKanbanBoard.tsx`<br>`src/components/quotes/QuoteManagerApprovalBanner.tsx`<br>`src/components/quotes/QuoteStatusTimeline.tsx`<br>`src/pages/QuoteViewPage.tsx` |
 | `status` | `pending_seller` | compara | `src/pages/sicoob/GestorConsolidatedOrdersPage.tsx` |
 | `status` | `pending_singular_approval` | compara, filtra | `src/components/layout/SidebarReorganized.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/quotes/QuoteSingularApprovalActions.tsx`<br>`src/components/quotes/QuoteStatusTimeline.tsx`<br>`src/pages/QuotesListPage.tsx` |
@@ -1353,7 +1353,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `slow` | compara | `supabase/functions/_shared/external-db-telemetry.ts` |
 | `status` | `stale` | compara | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/utils/price-freshness.ts` |
 | `status` | `step_up_error` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/lib/auth/invoke-full-scope.ts`<br>`src/pages/admin/DevChallengeExamplesPage.tsx` |
-| `status` | `string` | compara | `src/lib/cloud-status.ts`<br>`src/lib/quote-status-config.ts`<br>`supabase/functions/process-batch-export/index.ts` |
+| `status` | `string` | compara | `src/lib/cloud-status.ts`<br>`src/lib/quote-status-config.ts`<br>`supabase/functions/process-batch-export/index.ts`<br>`supabase/functions/send-transactional-email/index.ts` |
 | `status` | `success` | compara, escreve, filtra | `src/components/admin/connections/FailedDeliveriesPanel.tsx`<br>`src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/kit-builder/VolumeIndicator.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useAiUsage.ts`<br>… +13 |
 | `status` | `super` | compara, escreve | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
@@ -4384,6 +4384,10 @@ _nenhum item encontrado_
   ```
   const next = new Date(reference.getTime()); switch (frequency) { case "daily": next.setUTCDate(next.getUTCDate() + 1); break; case "monthly": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …
   ```
+- **validEmail(value: unknown)** — `supabase/functions/send-transactional-email/resolve.ts`
+  ```
+  if (typeof value !== "string") return null; const email = value.trim(); return email.length <= 254 && EMAIL_RE.test(email) ? email : null;
+  ```
 - **validLine(value: unknown)** — `supabase/functions/sicoob-kit-quote/index.ts`
   ```
   if (!value || typeof value !== 'object') return false; const line = value as Record<string, unknown>; if (typeof line.lineId !== 'string' || typeof line.productId !== 'string') return false; if (line.kind !== 'box' && line.kind !== 'item') return false; if (!Number.isInteger(line.unitsPerKit)) return false; if (line.variantId != null && typeof line.variantId !== 'string') return false; if (line.personalization == null) return true; if (typeof line.personalization !== 'object') return false; cons …
@@ -5283,6 +5287,7 @@ _nenhum item encontrado_
 | 100 | `supabase/functions/secrets-manager/index.ts` |
 | 500 | `supabase/functions/send-digest/index.ts` |
 | 1 | `supabase/functions/send-scheduled-reports/index.ts` |
+| 1 | `supabase/functions/send-transactional-email/index.ts` |
 | 100 | `supabase/functions/sicoob-approval-reconciliation/index.ts` |
 | 1 | `supabase/functions/system-healthcheck/index.ts` |
 | 1 | `supabase/functions/validate-access/index.ts` |
@@ -5592,7 +5597,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +998 linhas — lista completa em `context.json` | |
+| … +999 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5667,6 +5672,8 @@ _nenhum item encontrado_
 | `admin` | `supabase/functions/rls-integration-tests/index.ts` |
 | `dev` | `supabase/functions/rls-integration-tests/index.ts` |
 | `dev` | `supabase/functions/secrets-manager/index.ts` |
+| `dev` | `supabase/functions/send-transactional-email/index.ts` |
+| `supervisor` | `supabase/functions/send-transactional-email/index.ts` |
 | `true` | `supabase/functions/sicoob-document-ingest/index.ts` |
 | `agente` | `supabase/functions/sync-quote-bitrix/index.ts` |
 | `admin` | `supabase/migrations/20260425201131_83f9ad4a-ea3e-4bed-ac5e-5bdbd1af3316.sql` |
@@ -5696,7 +5703,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7066 testes em 713 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7078 testes em 714 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5877,6 +5884,7 @@ _nenhum item encontrado_
 | `tests/lib/image-converter-extended.test.ts` | 11 | needsConversion — extended · false for PNG · false for JPEG · false for JPG type … |
 | `tests/lib/textUtils-extended.test.ts` | 11 | toTitleCase — comprehensive · capitalizes single word · capitalizes all-caps input · keeps prepositions lowercase … |
 | `tests/p0/webhooks-resilience.test.ts` | 11 | P0 — webhooks resilientes · bitrix-sync: valida a operação antes de consultar serviços · bitrix-sync: protege o upstream com circuit breaker · backoff compartilhado: limita tentativas, usa jitter e respeita orçamento … |
+| `tests/scenarios/email-transacional-resolve.test.mjs` | 11 | quote_sent recusa rascunho: nada foi anunciado ao cliente · quote_sent recusa orçamento vencido (portal rejeitaria o link) · quote_sent emite link público para orçamento válido · quote_rejected não emite link: recusa do Kanban não cria resposta … |
 | `tests/search/GlobalSearchHelpers.test.tsx` | 11 | RankBadge · renders Trophy icon for index 0 · renders Medal for index 1 · renders  … |
 | `tests/services/orderService.test.ts` | 11 | OrderService.convertQuoteToOrder · delega toda a conversão à RPC transacional do domínio Sicoob · não envia identidade ou organização fornecida pelo navegador ao banco · propaga a falha atômica devolvida pela RPC … |
 | `e2e/editor-permissions.spec.ts` | 10 | Gestor de Compras — permissões e navegação · acessa catálogo, orçamentos e painéis próprios da Singular · carrega os módulos de governança e gestão de compras · bloqueia painéis administrativos reservados ao supervisor … |
@@ -5999,8 +6007,7 @@ _nenhum item encontrado_
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
 | `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
 | `tests/hooks/useSellerDiscountLimits.test.ts` | 7 | useSellerDiscountLimits · fetchMyLimit popula myLimit com max_discount_percent · myLimit fica null quando não há registro · fetchAllLimits popula limits … |
-| `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 7 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
-| … +413 linhas — lista completa em `context.json` | | |
+| … +414 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6487,4 +6494,4 @@ _nenhum item encontrado_
 | * Erro genérico (rede, validação, 500). Caller decide UI. */ | `src/lib/auth/invoke-full-scope.ts` |
 | * Validação síncrona e pequena para manter o formulário público fora do bundle | `src/lib/auth/login-validation.ts` |
 | * Aceita apenas caminhos internos, inclusive ao restaurar a rota após login. */ | `src/lib/auth/safe-internal-path.ts` |
-| … +298 linhas — lista completa em `context.json` | |
+| … +301 linhas — lista completa em `context.json` | |

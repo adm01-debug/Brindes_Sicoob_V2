@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (646)",
+   "tests/ (647)",
    "e2e/ (149)",
    "outro (52)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: servidor resolve destinatario do email transacional (#411)",
    "infra: incluir send-transactional-email na publicação de edge functions (#409)",
    "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
    "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)",
-   "fix: extrai parser de moeda e validação do componente de notas (#404)",
-   "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)"
+   "fix: extrai parser de moeda e validação do componente de notas (#404)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

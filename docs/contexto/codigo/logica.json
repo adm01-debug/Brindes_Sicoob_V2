@@ -5950,7 +5950,7 @@
     "OrderService"
    ],
    "export_default": null,
-   "linhas": 491,
+   "linhas": 474,
    "tabelas": [
     "notifications",
     "order_approval_history",
@@ -6036,10 +6036,9 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 7,
+   "usado_por": 6,
    "usado_por_modulos": [
     "components/orders",
-    "components/quotes",
     "hooks/quotes",
     "pages",
     "utils"

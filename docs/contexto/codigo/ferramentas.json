@@ -3,11 +3,11 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2938)",
+   "TypeScript (2939)",
    "Markdown (973)",
    "SQL (686)",
    "JSON (292)",
-   "JavaScript (152)",
+   "JavaScript (153)",
    "Python (67)",
    "YAML (24)",
    "CSS (7)"
@@ -1494,6 +1494,10 @@
     "arquivos": 4
    },
    {
+    "host": "portal.invalid",
+    "arquivos": 4
+   },
+   {
     "host": "test.supabase.co",
     "arquivos": 4
    },
@@ -1507,10 +1511,6 @@
    },
    {
     "host": "imagedelivery.net",
-    "arquivos": 3
-   },
-   {
-    "host": "portal.invalid",
     "arquivos": 3
    },
    {
@@ -1754,6 +1754,10 @@
     "arquivos": 1
    },
    {
+    "host": "invasor.invalid",
+    "arquivos": 1
+   },
+   {
     "host": "ipapi.co",
     "arquivos": 1
    },
@@ -1933,11 +1937,11 @@
    },
    {
     "papel": "dev",
-    "ocorrencias": 43
+    "ocorrencias": 44
    },
    {
     "papel": "supervisor",
-    "ocorrencias": 29
+    "ocorrencias": 30
    },
    {
     "papel": "user",
@@ -1953,7 +1957,7 @@
    },
    {
     "papel": "agente",
-    "ocorrencias": 16
+    "ocorrencias": 17
    },
    {
     "papel": "system",

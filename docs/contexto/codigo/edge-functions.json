@@ -3010,20 +3010,24 @@
   {
    "nome": "send-transactional-email",
    "entrada": "supabase/functions/send-transactional-email/index.ts",
-   "arquivos": 3,
-   "linhas": 318,
+   "arquivos": 4,
+   "linhas": 760,
    "verify_jwt": true,
    "metodos": [
     "OPTIONS",
     "POST"
    ],
-   "tabelas": [],
-   "rpcs": [],
+   "tabelas": [
+    "profiles",
+    "quote_approval_tokens"
+   ],
+   "rpcs": [
+    "check_rate_limit"
+   ],
    "env": [
     "NOTIFICATION_FROM_EMAIL",
-    "RESEND_API_KEY",
-    "SUPABASE_ANON_KEY",
-    "SUPABASE_URL"
+    "PUBLIC_APP_URL",
+    "RESEND_API_KEY"
    ],
    "buckets": [],
    "chama_edges": [],
@@ -3031,6 +3035,7 @@
     "api.resend.com"
    ],
    "usa_shared": [
+    "authorize.ts",
     "cors.ts",
     "structured-logger.ts"
    ],

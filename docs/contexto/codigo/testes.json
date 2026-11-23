@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 896,
+ "total": 897,
  "por_tipo": {
   "contrato": 11,
   "e2e": 175,
   "pytest": 2,
   "qa": 42,
-  "unit": 666
+  "unit": 667
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 646
+   "arquivos": 647
   },
   {
    "padrao": "e2e/",
@@ -5207,11 +5207,11 @@
   {
    "arquivo": "tests/hooks/useTransactionalEmail.test.ts",
    "tipo": "unit",
-   "linhas": 26,
+   "linhas": 32,
    "testa": [
     "src/hooks/useTransactionalEmail.ts"
    ],
-   "casos": 4
+   "casos": 5
   },
   {
    "arquivo": "tests/hooks/useUndoRedo.test.ts",
@@ -6665,9 +6665,16 @@
   {
    "arquivo": "tests/scenarios/email-transacional-legado.mjs",
    "tipo": "unit",
-   "linhas": 60,
+   "linhas": 211,
    "testa": [],
-   "casos": 4
+   "casos": 9
+  },
+  {
+   "arquivo": "tests/scenarios/email-transacional-resolve.test.mjs",
+   "tipo": "unit",
+   "linhas": 179,
+   "testa": [],
+   "casos": 11
   },
   {
    "arquivo": "tests/scenarios/gate-autorizacao.mjs",

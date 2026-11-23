@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0b7520b31` · branch `main` · 2026-11-23 15:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a8dad98053` · branch `main` · 2026-11-23 20:32 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -311,7 +311,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 299 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 301 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -443,6 +443,8 @@
 - `supabase/functions/send-digest/index.ts`
 - `supabase/functions/send-notification/index.ts`
 - `supabase/functions/send-scheduled-reports/index.ts`
+- `supabase/functions/send-transactional-email/index.ts`
+- `supabase/functions/send-transactional-email/resolve.ts`
 - `supabase/functions/sicoob-approval-notifications/index.ts`
 - `supabase/functions/sicoob-artwork-register/index.ts`
 - `supabase/functions/sicoob-document-ingest/index.ts`
@@ -461,9 +463,7 @@
 - `supabase/migrations/20260301000000_fix_cleanup_old_notifications_drop.sql`
 - `supabase/migrations/20260314133410_b4a5983b-76fc-4419-b422-a590dc0fa2ed.sql`
 - `supabase/migrations/20260323164400_3d7928d1-f21a-4599-b4a4-0af60c245542.sql`
-- `supabase/migrations/20260406202212_20735579-941a-46d2-b872-abe769fe774a.sql`
-- `supabase/migrations/20260407014300_2724b8ff-1566-4bf2-b056-833e45cf0b85.sql`
-- … +149 (lista completa em `context.json`)
+- … +151 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 

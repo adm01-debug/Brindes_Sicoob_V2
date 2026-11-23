@@ -25688,7 +25688,7 @@
     ],
     "so_no_types": []
    },
-   "usada_no_front": 37,
+   "usada_no_front": 36,
    "usada_em_edges": [
     "crm-db-bridge",
     "e2e-auth-test",
@@ -25699,6 +25699,7 @@
     "quote-sync",
     "rls-audit",
     "send-scheduled-reports",
+    "send-transactional-email",
     "sicoob-seed",
     "sicoob-seed-qa",
     "system-healthcheck",
@@ -27189,7 +27190,8 @@
    },
    "usada_no_front": 4,
    "usada_em_edges": [
-    "quote-followup-reminders"
+    "quote-followup-reminders",
+    "send-transactional-email"
    ],
    "triggers": [
     "trg_generate_secure_approval_token",
@@ -35583,7 +35585,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 9,
+   "usada_no_front": 8,
    "usada_em_edges": [
     "_shared",
     "monthly-health-report",
@@ -40496,7 +40498,7 @@
   {
    "nome": "check_rate_limit",
    "definida": true,
-   "usada_em": 2
+   "usada_em": 3
   },
   {
    "nome": "check_rls_enabled",

@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e0b7520b31` · branch `main` · 2026-11-23 15:32 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a8dad98053` · branch `main` · 2026-11-23 20:32 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -340,7 +340,7 @@ _nenhum item encontrado_
 | status | valor `SUBSCRIBED` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/hooks/useRealtimeSync.ts` |
 | status | valor `connecting` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/hooks/useVoiceAgent.ts` |
 | status | valor `disconnected` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/hooks/useVoiceAgent.ts` |
-| status | valor `string` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/lib/cloud-status.ts`<br>`compara:src/lib/quote-status-config.ts`<br>`compara:supabase/functions/process-batch-export/index.ts` |
+| status | valor `string` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/lib/cloud-status.ts`<br>`compara:src/lib/quote-status-config.ts`<br>`compara:supabase/functions/process-batch-export/index.ts`<br>`compara:supabase/functions/send-transactional-email/index.ts` |
 | status | valor `Achado` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/pages/admin/AuditEvidenceDashboard.tsx`<br>`escreve:src/pages/admin/AuditEvidenceDashboard.tsx` |
 | status | valor `failure` para `status` usado no código não existe em nenhum enum do banco/TS | `filtra:src/pages/admin/RLSAuditPage.tsx` |
 | status | valor `pending_seller` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:src/pages/sicoob/GestorConsolidatedOrdersPage.tsx` |
@@ -498,6 +498,7 @@ _nenhum item encontrado_
 | dinâmico | 1 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `supabase/functions/migration-health-check/index.ts` |
 | dinâmico | 6 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `supabase/functions/rls-integration-tests/index.ts` |
 | dinâmico | 1 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `supabase/functions/secure-upload/index.ts` |
+| dinâmico | 1 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `supabase/functions/send-transactional-email/index.ts` |
 | dinâmico | 1 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `supabase/functions/sicoob-artwork-register/index.ts` |
 | dinâmico | 2 chamada(s) `.from(variável)` — tabela só conhecida em runtime | `tests/scripts/check-seller-scope.test.ts` |
 | segurança | função `audit_trigger_func` é SECURITY DEFINER sem `set search_path` (risco de escalação) | `supabase/migrations/20251227100004_audit_log_universal.sql` |

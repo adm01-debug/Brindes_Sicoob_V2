@@ -6568,8 +6568,7 @@
    "src/components/ui/button.tsx",
    "src/contexts/OrganizationContext.tsx",
    "src/hooks/orders/useOrders.ts",
-   "src/hooks/useTransactionalEmail.ts",
-   "src/services/QuoteService.ts"
+   "src/hooks/useTransactionalEmail.ts"
   ],
   "src/components/quotes/QuoteFilters.tsx": [
    "src/components/ui/input.tsx",
@@ -12774,9 +12773,11 @@
    "supabase/functions/send-scheduled-reports/report-types.ts"
   ],
   "supabase/functions/send-transactional-email/index.ts": [
+   "supabase/functions/_shared/authorize.ts",
    "supabase/functions/_shared/cors.ts",
    "supabase/functions/_shared/structured-logger.ts",
    "supabase/functions/send-transactional-email/deliver.ts",
+   "supabase/functions/send-transactional-email/resolve.ts",
    "supabase/functions/send-transactional-email/templates.ts"
   ],
   "supabase/functions/sicoob-approval-notifications/index.ts": [

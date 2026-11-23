@@ -3350,7 +3350,7 @@
    "hooks_exportados": [
     "useQuotes"
    ],
-   "linhas": 337,
+   "linhas": 326,
    "dominio": "hooks/quotes",
    "tabelas": [
     "quotes"
@@ -8430,12 +8430,10 @@
    "hooks_exportados": [
     "useApprovalRequests"
    ],
-   "linhas": 216,
+   "linhas": 191,
    "dominio": "hooks",
    "tabelas": [
-    "profiles",
-    "sicoob_approval_requests",
-    "sicoob_orders"
+    "sicoob_approval_requests"
    ],
    "rpcs": [],
    "edges": [],
@@ -8999,7 +8997,7 @@
   {
    "arquivo": "src/hooks/useTransactionalEmail.ts",
    "hooks_exportados": [],
-   "linhas": 39,
+   "linhas": 47,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],

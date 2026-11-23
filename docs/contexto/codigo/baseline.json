@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e0b7520b31c5d98e0641b564d7495d3d27460df7",
+  "commit": "a8dad980536ef45ada17e766c624ad65f46dc223",
   "branch": "main",
-  "data_commit": "2026-11-23T11:17:29-03:00",
+  "data_commit": "2026-11-23T17:31:43-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "a8dad98",
+    "data": "2026-11-23",
+    "assunto": "fix: servidor resolve destinatario do email transacional (#411)"
+   },
    {
     "sha": "e0b7520",
     "data": "2026-11-23",
@@ -126,14 +131,9 @@
     "sha": "726efa7",
     "data": "2026-11-19",
     "assunto": "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)"
-   },
-   {
-    "sha": "a73abe0",
-    "data": "2026-11-19",
-    "assunto": "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)"
    }
   ],
-  "arquivos_mudados_7d": 1295,
+  "arquivos_mudados_7d": 1300,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -180,11 +180,11 @@
     "mudancas": 14
    },
    {
-    "pasta": "PENDENCIAS.md",
-    "mudancas": 11
+    "pasta": "src/components/quotes",
+    "mudancas": 12
    },
    {
-    "pasta": "src/components/quotes",
+    "pasta": "PENDENCIAS.md",
     "mudancas": 11
    },
    {
@@ -238,15 +238,11 @@
     "mudancas": 15
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 15
-   },
-   {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
     "mudancas": 14
    },
    {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
     "mudancas": 14
    },
    {
@@ -254,7 +250,15 @@
     "mudancas": 14
    },
    {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 13
+   },
+   {
     "arquivo": ".github/workflows/bundle-check.yml",
+    "mudancas": 12
+   },
+   {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 12
    },
    {
@@ -267,10 +271,6 @@
    },
    {
     "arquivo": "docs/execucao/validacao-do-plano.md",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 11
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 192
+    "commits": 193
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5255,
-  "arquivos_codigo": 3154,
-  "linhas_codigo": 496871,
+  "arquivos_total": 5257,
+  "arquivos_codigo": 3156,
+  "linhas_codigo": 497581,
   "rotas": 139,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 292,
   "migrations": 624,
   "cron_jobs": 28,
-  "testes": 896,
+  "testes": 897,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1132,
-   "linhas": 167034
+   "linhas": 167021
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47757
+   "linhas": 47729
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/pages": {
    "arquivos": 195,
-   "linhas": 50793
+   "linhas": 50783
   },
   "src/routes": {
    "arquivos": 9,
@@ -816,7 +816,7 @@
   },
   "src/services": {
    "arquivos": 23,
-   "linhas": 3398
+   "linhas": 3381
   },
   "src/stores": {
    "arquivos": 6,
@@ -839,8 +839,8 @@
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 222,
-   "linhas": 36278
+   "arquivos": 223,
+   "linhas": 36720
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -916,7 +916,7 @@
   },
   "tests/hooks": {
    "arquivos": 147,
-   "linhas": 16330
+   "linhas": 16336
   },
   "tests/integration": {
    "arquivos": 4,
@@ -955,8 +955,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 32,
-   "linhas": 2203
+   "arquivos": 33,
+   "linhas": 2533
   },
   "tests/scripts": {
    "arquivos": 35,
