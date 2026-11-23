@@ -30,7 +30,7 @@ export function CartPaBudgetBalance() {
   const styles = budgetStyles(isLow);
 
   return (
-    <div className={styles.container} role="region" aria-label="Saldo de Verba do PA">
+    <div data-testid="cart-pa-budget-balance" className={styles.container} role="region" aria-label="Saldo de Verba do PA">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
           <Wallet className={styles.icon} aria-hidden="true" />

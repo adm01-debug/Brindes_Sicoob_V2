@@ -16,6 +16,16 @@ import { useState, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
 
+/**
+ * Teto de altura da lista de orçamentos. O painel inteiro é limitado ao espaço
+ * realmente disponível na janela (variável publicada pelo Radix Popover), então a
+ * lista precisa descontar cabeçalho + rodapé (~248px, medidos em Chromium a
+ * 1024x520). O teto vale para o Root *e* para o viewport porque é o viewport
+ * que rola: `max-h` só no Root, que tem `overflow-hidden`, corta o conteúdo em
+ * vez de rolar e empurra "Gerar Orçamento" para fora da tela.
+ */
+const CART_LIST_MAX_HEIGHT = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]";
+
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -113,7 +123,7 @@ export function CartHeaderButton() {
 
       <PopoverContent
         data-testid="cart-drawer"
-        className="w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
+        className="max-h-[var(--radix-popover-content-available-height)] w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
         align="end"
         sideOffset={8}
         onCloseAutoFocus={() => setShowPicker(false)}
@@ -205,10 +215,7 @@ export function CartHeaderButton() {
                 <>
                   {/* O rodapé (verba + subtotal + CTA) não rola: a lista cede altura
                       para que "Gerar Orçamento" continue visível em janelas baixas. */}
-                  <ScrollArea
-                    className="min-h-0 max-h-[min(440px,calc(100dvh-17rem))]"
-                    viewportClassName="max-h-[min(440px,calc(100dvh-17rem))]"
-                  >
+                  <ScrollArea className={CART_LIST_MAX_HEIGHT} viewportClassName={CART_LIST_MAX_HEIGHT}>
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>
@@ -236,6 +243,7 @@ export function CartHeaderButton() {
                           </span>
                         </div>
                         <Button
+                          data-testid="cart-checkout-cta"
                           className="w-full gap-2 text-xs h-10 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={() => {
                             const cartIdToDelete = activeCart.id;

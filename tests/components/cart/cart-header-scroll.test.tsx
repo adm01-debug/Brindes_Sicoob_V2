@@ -8,7 +8,7 @@
  * Este arquivo cobre a estrutura (o teto chega ao viewport e o rodapé fica
  * fora dele). O comportamento em navegador real — a lista rolar de fato e o
  * CTA continuar inteiro na tela — está em
- * `e2e/flows/24-cart-scroll-janela-baixa.spec.ts`, porque o jsdom não calcula
+ * `e2e/cart-scroll-janela-baixa.spec.ts`, porque o jsdom não calcula
  * layout.
  */
 import { describe, it, expect, vi } from "vitest";
@@ -100,8 +100,9 @@ describe("CartHeaderButton — janela baixa", () => {
 
     const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
     expect(viewport).not.toBeNull();
-    // A lista longa rola dentro do teto de altura…
-    expect(viewport).toHaveClass("max-h-[min(440px,calc(100dvh-17rem))]");
+    // A lista longa rola dentro do teto de altura, que acompanha o espaço
+    // realmente disponível na viewport (var do Radix)…
+    expect(viewport).toHaveClass("max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]");
     // …e o rodapé com o CTA fica fora dela: nunca sai da área visível.
     expect(viewport?.contains(cta)).toBe(false);
 
