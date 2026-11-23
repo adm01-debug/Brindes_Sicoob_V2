@@ -25,24 +25,44 @@ import { gotoAndSettle } from './helpers/nav';
 import type { Page, Route } from '@playwright/test';
 
 /**
- * Mesma precedência do `webServer` (`playwright.config.ts`): o `.env.production`
- * local (quando existe) vence o env do processo, que no CI é
- * `https://e2e-public.invalid`. O `supabase-js` guarda a sessão em
- * `sb-<ref>-auth-token`, então o ref precisa acompanhar o servidor em uso —
- * fixá-lo em `fake-project` deixava a jornada sem sessão no pipeline.
+ * Lê `VITE_SUPABASE_URL` do `.env.production` como o shell leria: aspas fora e
+ * comentário no fim descartado (o `webServer` faz `source` do arquivo).
  */
-function supabaseUrl(): string {
+function envProductionUrl(): string | undefined {
   try {
     const file = readFileSync(resolve(process.cwd(), '.env.production'), 'utf8');
     const line = file.split(/\r?\n/).find((candidate) => candidate.trim().startsWith('VITE_SUPABASE_URL='));
-    if (line) return line.slice(line.indexOf('=') + 1).trim().replace(/^["']/, '').replace(/["']$/, '');
+    if (!line) return undefined;
+    const raw = line.slice(line.indexOf('=') + 1).trim();
+    const quote = raw[0];
+    if (quote === '"' || quote === "'") {
+      const end = raw.indexOf(quote, 1);
+      return end === -1 ? raw.slice(1) : raw.slice(1, end);
+    }
+    return raw.split(/\s+#/)[0].trim() || undefined;
   } catch {
     // Sem `.env.production` (CI): o servidor usa o env do processo.
+    return undefined;
   }
-  return process.env.VITE_SUPABASE_URL?.trim() || 'https://e2e-public.invalid';
 }
 
-const PROJECT_REF = new URL(supabaseUrl()).hostname.split('.')[0];
+/** `supabase-js` guarda a sessão em `sb-<ref>-auth-token`, então o ref precisa acompanhar o servidor em uso. */
+function projectRefOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url.trim()).hostname.split('.')[0];
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Mesma precedência do `webServer` (`playwright.config.ts`): o `.env.production`
+ * local (quando existe) vence o env do processo, que no CI é
+ * `https://e2e-public.invalid`. Um valor inválido nunca derruba a coleta: cai
+ * para o próximo candidato.
+ */
+const PROJECT_REF = projectRefOf(envProductionUrl()) ?? projectRefOf(process.env.VITE_SUPABASE_URL) ?? 'e2e-public';
 const USER_ID = 'e2e-cart-scroll-user';
 const PA_ID = 'e2e-cart-scroll-pa';
 
@@ -154,9 +174,11 @@ function json(route: Route, body: unknown[]) {
  * header pedem dezenas de recursos; devolver lista vazia para o que não é
  * relevante mantém o cenário focado no painel do carrinho.
  */
-async function mockBackend(page: Page, activeCartItems = ACTIVE_CART_ITEMS) {
+async function mockBackend(page: Page, itemsByCart: number[] = [ACTIVE_CART_ITEMS, 0, 0]) {
   const carts = Array.from({ length: LONG_LIST_LENGTH }, (_, index) => makeCart(index));
-  const items = Array.from({ length: activeCartItems }, (_, index) => makeItem(0, index));
+  const items = itemsByCart.flatMap((count, cartIndex) =>
+    Array.from({ length: count }, (_, index) => makeItem(cartIndex, index)),
+  );
 
   await page.route('**/auth/v1/**', (route) => {
     const url = route.request().url();
@@ -290,7 +312,9 @@ test.describe('Carrinho em janela baixa', () => {
     // precisa trocar de orçamento.
     await page.setViewportSize({ width: 1024, height: 295 });
     await installFakeSession(page);
-    await mockBackend(page, 0);
+    // O primeiro orçamento está vazio (sem rodapé); o segundo tem itens, para
+    // exercitar a volta do rodapé no mesmo painel.
+    await mockBackend(page, [0, ACTIVE_CART_ITEMS, 0]);
 
     await gotoAndSettle(page, '/');
 
@@ -325,6 +349,25 @@ test.describe('Carrinho em janela baixa', () => {
     expect(drawerBox).not.toBeNull();
     expect(drawerBox!.y).toBeGreaterThanOrEqual(0);
     expect(drawerBox!.y + drawerBox!.height).toBeLessThanOrEqual(viewportHeight + 1);
+
+    // Trocar para um orçamento com itens traz o rodapé de volta: a lista cede
+    // altura e o CTA tem que continuar inteiro na janela.
+    await page.setViewportSize({ width: 1024, height: 420 });
+    const listWithoutFooter = await viewport.evaluate((el) => el.clientHeight);
+    await drawer.locator('[data-cart-id="e2e-cart-1"]').click();
+
+    const cta = page.locator(Sel.cart.checkoutCta);
+    await expect(cta).toBeVisible();
+    await expect(page.getByTestId('cart-pa-budget-balance')).toBeVisible();
+    await expect(cta).toBeInViewport({ ratio: 1 });
+
+    const listWithFooter = await viewport.evaluate((el) => el.clientHeight);
+    expect(listWithFooter).toBeLessThan(listWithoutFooter);
+    expect(listWithFooter).toBeGreaterThan(0);
+
+    const reseated = await drawer.boundingBox();
+    expect(reseated).not.toBeNull();
+    expect(reseated!.y + reseated!.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
   });
 });
 
