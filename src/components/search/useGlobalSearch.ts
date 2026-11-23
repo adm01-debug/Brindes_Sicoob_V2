@@ -87,6 +87,14 @@ function normalizeSearchTerm(value: string): string {
     .trim();
 }
 
+type AbortRef = { current: AbortController | null };
+
+/** Cancela a busca em voo para que nenhuma resposta atrasada repovoe a lista. */
+function cancelPendingSearch(ref: AbortRef): void {
+  ref.current?.abort();
+  ref.current = null;
+}
+
 function isShortQuery(searchQuery: string): boolean {
   return !searchQuery.trim() || searchQuery.length < 3;
 }
@@ -232,6 +240,9 @@ function useSemanticSearch(query: string) {
   useEffect(() => () => abortRef.current?.abort(), []);
   const performSearch = useCallback(async (searchQuery: string) => {
     if (isShortQuery(searchQuery)) {
+      // Sem isso, a consulta remota iniciada na falha da IA retorna depois e
+      // repovoa a lista de uma busca que ja foi apagada.
+      cancelPendingSearch(abortRef);
       setResults([]);
       setSearchIntent(null);
       setIsSearching(false);
@@ -246,7 +257,7 @@ function useSemanticSearch(query: string) {
       setIsAIProcessing(false);
       return;
     }
-    abortRef.current?.abort();
+    cancelPendingSearch(abortRef);
     const controller = new AbortController();
     abortRef.current = controller;
     const timed = createTimedSearch(searchQuery, controller);
@@ -267,6 +278,7 @@ function useSemanticSearch(query: string) {
     setIsAIProcessing(true);
     try {
       const response = await timed.result;
+      if (abortRef.current !== controller) return;
       if (!response) {
         void applyFallback();
         return;

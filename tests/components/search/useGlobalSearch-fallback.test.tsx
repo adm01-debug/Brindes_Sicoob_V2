@@ -132,6 +132,26 @@ describe('useGlobalSearch — fallback do catálogo local', () => {
     expect(result.current.searchIntent).toBeNull();
   });
 
+  it('nao deixa a consulta atrasada repovoar a busca apagada', async () => {
+    vi.useFakeTimers();
+    invoke.mockImplementation(() => new Promise(() => {}));
+
+    try {
+      const { result } = renderHook(() => useGlobalSearch(), { wrapper: createWrapper() });
+      act(() => result.current.setQuery('caneta'));
+      act(() => result.current.setQuery(''));
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(9_000);
+      });
+
+      expect(result.current.results).toHaveLength(0);
+      expect(result.current.searchIntent).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('apagar o termo limpa resultados e indicadores', async () => {
     invoke.mockResolvedValue({ data: null, error: new Error('sem IA') });
 
