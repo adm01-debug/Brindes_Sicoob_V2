@@ -203,7 +203,9 @@ export function CartHeaderButton() {
                 </div>
               ) : (
                 <>
-                  <ScrollArea className="max-h-[440px]">
+                  {/* O rodapé (verba + subtotal + CTA) não rola: a lista cede altura
+                      para que "Gerar Orçamento" continue visível em janelas baixas. */}
+                  <ScrollArea className="max-h-[min(440px,calc(100dvh-17rem))]">
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>

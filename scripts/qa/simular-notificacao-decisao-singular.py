@@ -128,8 +128,15 @@ try:
         "SELECT count(*) FROM public.workspace_notifications;"
     ).stdout.strip() == "0"
 
+    # Volta a pendente antes de zerar o vendedor: sem transição de status o
+    # gatilho retorna cedo e o cenário não exercitaria o filtro de destinatário.
     sql("""
-      UPDATE public.quotes SET status='rejected_singular', seller_id=NULL;
+      UPDATE public.quotes SET status='pending_singular_approval';
+    """)
+    sql("DELETE FROM public.workspace_notifications;")
+    sql("""
+      UPDATE public.quotes SET seller_id=NULL;
+      UPDATE public.quotes SET status='rejected_singular';
     """)
     checks["ignora_sem_vendedor"] = sql(
         "SELECT count(*) FROM public.workspace_notifications;"
