@@ -65,6 +65,40 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-8')).not.toBeNull();
   });
 
+  it('não apaga o rascunho que outra aba gravou', () => {
+    // Mesmo usuário e mesmo orçamento em duas abas dividem a chave: o descarte
+    // de uma não pode levar o trabalho da outra junto.
+    localStorage.setItem(
+      'autosave_quote:usuario-3:orc-9',
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'outra-aba' }),
+    );
+
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).not.toBeNull();
+  });
+
+  it('apaga o rascunho que esta aba gravou', async () => {
+    const props = { quoteId: 'orc-9', scopeId: 'usuario-3', onRestore: vi.fn() };
+    const { rerender, unmount } = render(
+      <TooltipProvider>
+        <QuoteAutoSave {...props} enabled data={{ items: 10 }} />
+      </TooltipProvider>,
+    );
+
+    rerender(
+      <TooltipProvider>
+        <QuoteAutoSave {...props} enabled data={{ items: 12 }} />
+      </TooltipProvider>,
+    );
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    unmount();
+
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).not.toBeNull();
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
+  });
+
   it('apaga o rascunho novo da sessão quando o orçamento ainda não tem número', () => {
     sessionStorage.setItem('quote-new-draft:usuario-4', 'sessao-1');
     localStorage.setItem('autosave_draft:usuario-4:sessao-1', '{"version":1,"data":{}}');

@@ -109,6 +109,30 @@ describe('useAutoSave', () => {
     });
   });
 
+  it('não trata como conflito o rascunho apagado por outra sessão', async () => {
+    // A outra aba confirmou o descarte e apagou a chave. Aqui não há dado de
+    // ninguém a proteger: gravar de novo é a resposta certa, e avisar conflito
+    // pararia o rascunho desta aba para sempre.
+    const onError = vi.fn();
+    const { rerender } = renderHook(
+      ({ data }) => useAutoSave({ key: 'draft-apagado', data, onError }),
+      { initialProps: { data: { items: 1 } } },
+    );
+
+    rerender({ data: { items: 2 } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    expect(localStorage.getItem('autosave_draft-apagado')).not.toBeNull();
+
+    localStorage.removeItem('autosave_draft-apagado');
+    rerender({ data: { items: 3 } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(JSON.parse(localStorage.getItem('autosave_draft-apagado')!)).toMatchObject({
+      data: { items: 3 },
+    });
+  });
+
   it('não grava nada ao desligar quando não há alteração pendente', async () => {
     const onSave = vi.fn();
     const { rerender } = renderHook(

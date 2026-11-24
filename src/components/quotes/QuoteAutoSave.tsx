@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useAutoSave } from '@/hooks/useAutoSave';
+import { descartarRascunhoDestaAba, useAutoSave } from '@/hooks/useAutoSave';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline';
 
@@ -62,11 +62,9 @@ export function limparRascunhoDoOrcamento(args: {
         return id ? `draft:${scopeId}:${id}` : null;
       })();
   if (!chave) return;
-  try {
-    localStorage.removeItem(`autosave_${chave}`);
-  } catch {
-    // Armazenamento bloqueado pelo navegador: não há rascunho a apagar.
-  }
+  // Só o rascunho desta aba: o mesmo orçamento aberto em duas abas tem a mesma
+  // chave, e o descarte de uma não pode apagar o trabalho da outra.
+  descartarRascunhoDestaAba(chave);
 }
 
 export function getQuoteDraftIdForScope(scopeId: string): string {

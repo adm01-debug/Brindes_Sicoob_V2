@@ -9,7 +9,17 @@ interface StoredAutoSave<T> {
   version: typeof AUTO_SAVE_VERSION;
   savedAt: string;
   data: T;
+  /** Aba que gravou: evita que o descarte de uma aba apague o rascunho de outra. */
+  tab?: string;
 }
+
+const AUTOSAVE_TAB_ID = (() => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+})();
 
 const CONCURRENT_DRAFT_MESSAGE =
   'Este rascunho foi alterado em outra aba. Recarregue o orçamento antes de continuar.';
@@ -40,6 +50,25 @@ async function withDraftWriteLock<T>(key: string, operation: () => Promise<T>): 
     return navigator.locks.request(`sicoob-autosave:${key}`, operation);
   }
   return operation();
+}
+
+/**
+ * Apaga o rascunho desta chave, mas so se ele tiver sido gravado por esta aba.
+ *
+ * O rascunho e compartilhado entre abas do mesmo usuario e orcamento: apagar o
+ * que a outra aba gravou derrubaria o trabalho dela junto com o descarte.
+ */
+export function descartarRascunhoDestaAba(key: string): void {
+  const storageKey = `autosave_${key}`;
+  try {
+    const atual = localStorage.getItem(storageKey);
+    if (!atual) return;
+    const dono = (JSON.parse(atual) as { tab?: string }).tab;
+    if (dono && dono !== AUTOSAVE_TAB_ID) return;
+    localStorage.removeItem(storageKey);
+  } catch {
+    // Armazenamento bloqueado ou rascunho ilegivel: nada a apagar.
+  }
 }
 
 function parseStoredAutoSave<T>(value: string): T | null {
@@ -92,7 +121,11 @@ async function persistDraft<T>({
 
     const storageKey = `autosave_${key}`;
     const currentStoredValue = localStorage.getItem(storageKey);
-    if (currentStoredValue !== storageSnapshot.current) {
+    if (currentStoredValue === null && storageSnapshot.current !== null) {
+      // Rascunho apagado por outra sessao (descarte confirmado): nao ha dado de
+      // outra aba a proteger, e gravar de novo e a resposta certa.
+      storageSnapshot.current = null;
+    } else if (currentStoredValue !== storageSnapshot.current) {
       const externalData = JSON.stringify(readStoredData(currentStoredValue));
       if (externalData !== serializedData) {
         conflict.current = true;
@@ -104,6 +137,7 @@ async function persistDraft<T>({
       version: AUTO_SAVE_VERSION,
       savedAt: new Date().toISOString(),
       data,
+      tab: AUTOSAVE_TAB_ID,
     };
     const serialized = JSON.stringify(stored);
     localStorage.setItem(storageKey, serialized);
