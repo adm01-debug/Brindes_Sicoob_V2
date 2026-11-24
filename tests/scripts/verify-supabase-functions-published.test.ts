@@ -88,11 +88,12 @@ describe('verifyPublishedFunctions', () => {
     expect(requiredFunctions).not.toContain('quote-price-attestation');
   });
 
-  it('cobre as 7 canônicas, as 7 endurecidas e crm-db-bridge (total 15)', () => {
+  it('cobre as 7 canônicas, as 7 endurecidas, crm-db-bridge e os 6 workers de cron', () => {
     // Eram 8 endurecidas; `quote-price-attestation` saiu (teto do plano, caso
     // acima), `crm-db-bridge` entrou e `send-transactional-email` foi incluída
-    // nesta rodada — 16 - 1 = 15.
-    expect(requiredFunctions).toHaveLength(15);
+    // em seguida — 16 - 1 = 15. Os 6 workers de pg_cron entraram depois: já
+    // rodavam em produção sem passar pela verificação de publicação.
+    expect(requiredFunctions).toHaveLength(21);
     for (const slug of [
       'bi-copilot',
       'comparison-ai-advisor',
@@ -102,6 +103,12 @@ describe('verifyPublishedFunctions', () => {
       'auth-integrity-check',
       'crm-db-bridge',
       'send-transactional-email',
+      'webhook-dispatcher',
+      'connections-auto-test',
+      'sicoob-approval-notifications',
+      'process-batch-export',
+      'send-scheduled-reports',
+      'connections-health-check',
     ]) {
       expect(requiredFunctions).toContain(slug);
     }

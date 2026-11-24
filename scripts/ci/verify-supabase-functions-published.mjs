@@ -17,6 +17,15 @@ export const requiredFunctions = [
   'secure-upload',
   'auth-integrity-check',
   'crm-db-bridge',
+  // Trabalhadores chamados por pg_cron (migrations 20260429163414,
+  // 20260922225500, 20260923111000, 20260923140000, 20261122180000): estão no
+  // ar, mas fora da allowlist não seriam remedidos nem republicados.
+  'webhook-dispatcher',
+  'connections-auto-test',
+  'sicoob-approval-notifications',
+  'process-batch-export',
+  'send-scheduled-reports',
+  'connections-health-check',
 ];
 
 function getFunctions(payload, label) {

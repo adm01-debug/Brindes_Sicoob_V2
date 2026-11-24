@@ -33,7 +33,9 @@ dela (previews antigos, por exemplo).
   são recusados com 422). Publique a **edge primeiro** e só então o front: na ordem inversa, o front
   novo em produção chama a versão antiga da função durante a janela de deploy e todo envio falha.
 - **Edge functions:** `.github/workflows/deploy-sicoob-functions.yml`, só `workflow_dispatch`, input
-  `PUBLICAR`, environment `construction`, allowlist de **15 funções**. Detalhe em
+  `PUBLICAR`, environment `construction`, allowlist de **21 funções** (as 15 anteriores + os 6 workers
+  de `pg_cron`: `webhook-dispatcher`, `connections-auto-test`, `sicoob-approval-notifications`,
+  `process-batch-export`, `send-scheduled-reports`, `connections-health-check`). Detalhe em
   `docs/agentes/banco.md`. Nunca `supabase functions deploy` direto.
 - **Migrations:** `.github/workflows/apply-sicoob-migrations.yml`, input `APLICAR`, environment
   `construction`. **Proibido** `supabase db push`, `--linked` ou `--include-all`
