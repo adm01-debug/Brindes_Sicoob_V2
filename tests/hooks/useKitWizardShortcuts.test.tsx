@@ -78,8 +78,13 @@ describe('useKitWizardShortcuts', () => {
     const botao = screen.getByRole('button', { name: 'Continuar aqui' });
     expect(dialogo.contains(botao)).toBe(true);
 
+    // O vendedor aperta a seta com o foco dentro da confirmação: é o alvo do
+    // evento que o filtro precisa reconhecer, não a caixa de texto do editor.
+    botao.focus();
+    expect(dialogo.contains(document.activeElement)).toBe(true);
+
     const { onPrev } = montarHook();
-    fireEvent.keyDown(botao, { key: 'ArrowLeft' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'ArrowLeft' });
 
     expect(onPrev).not.toHaveBeenCalled();
     await act(async () => { useConfirmDialogStore.getState().cancelCurrent(); });
