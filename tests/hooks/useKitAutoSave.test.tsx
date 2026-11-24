@@ -48,7 +48,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/lib/logger', () => ({ logger: { warn: vi.fn() } }));
 
-import { useKitAutoSave } from '@/hooks/useKitAutoSave';
+import { KitConflitoDeEdicao, useKitAutoSave } from '@/hooks/useKitAutoSave';
 
 const initialKit = {
   name: 'Kit', kitType: 'montado' as const,
@@ -812,5 +812,53 @@ describe('useKitAutoSave', () => {
 
     expect(insert).toHaveBeenCalledTimes(1);
     expect(result.current.isDirty).toBe(false);
+  });
+  it('entrega ao salvamento manual a versao gravada pelo autosave, nao a do carregamento', async () => {
+    // O salvamento manual grava na mesma linha. Se ele usasse a versao lida ao
+    // abrir o kit, a propria aba seria recusada como conflito logo depois de
+    // qualquer autosave — e o vendedor seria mandado recarregar sem motivo.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'v2' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'v1'),
+      { initialProps: { kit: initialKit } },
+    );
+    expect(result.current.capturarVersaoPersistida()).toBe('v1');
+
+    rerender({ kit: { ...initialKit, name: 'Kit atualizado' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(travaDoUpdate(0)).toBe('v1');
+    expect(result.current.capturarVersaoPersistida()).toBe('v2');
+  });
+
+  it('registra no estado da guarda de saida o conflito visto pelo salvamento manual', () => {
+    // Sem isto o conflito do "Salvar" ficava so no aviso passageiro: a guarda
+    // de saida oferecia "Sair e gravar" e liberava a navegacao, enquanto a
+    // trava recusava a gravacao — a edicao ia embora junto com a tela.
+    const { result } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'v1'),
+      { initialProps: { kit: initialKit } },
+    );
+    expect(result.current.lastSaveConflict).toBe(false);
+
+    act(() => { result.current.registrarConflitoDeEdicao(new KitConflitoDeEdicao()); });
+
+    expect(result.current.lastSaveConflict).toBe(true);
+    expect(result.current.lastSaveError).toContain('alterado em outro lugar');
+  });
+
+  it('nao transforma erro comum do salvamento manual em conflito com outra aba', () => {
+    // Mandar recarregar por um erro passageiro de rede faria o vendedor perder
+    // a tela sem motivo; só o conflito real muda o estado da guarda.
+    const { result } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'v1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    act(() => { result.current.registrarConflitoDeEdicao(new Error('banco fora do ar')); });
+
+    expect(result.current.lastSaveConflict).toBe(false);
+    expect(result.current.lastSaveError).toBeNull();
   });
 });
