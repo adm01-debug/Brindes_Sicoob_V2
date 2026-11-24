@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
+  "commit": "092f7ee5dd333176003c2765a6e31461211aa09e",
   "branch": "main",
-  "data_commit": "2026-11-24T12:27:42-03:00",
+  "data_commit": "2026-11-24T12:51:37-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "092f7ee",
+    "data": "2026-11-24",
+    "assunto": "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)"
+   },
    {
     "sha": "947f1af",
     "data": "2026-11-24",
@@ -126,11 +131,6 @@
     "sha": "8b37b64",
     "data": "2026-11-20",
     "assunto": "fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)"
-   },
-   {
-    "sha": "9bcfb62",
-    "data": "2026-11-20",
-    "assunto": "chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)"
    }
   ],
   "arquivos_mudados_7d": 1330,
@@ -230,12 +230,12 @@
     "mudancas": 17
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
+    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
     "mudancas": 16
    },
    {
-    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 15
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 16
    },
    {
     "arquivo": ".github/workflows/lighthouse.yml",
@@ -270,6 +270,10 @@
     "mudancas": 11
    },
    {
+    "arquivo": "supabase/config.toml",
+    "mudancas": 11
+   },
+   {
     "arquivo": ".github/workflows/migration-ledger-drift.yml",
     "mudancas": 10
    },
@@ -279,10 +283,6 @@
    },
    {
     "arquivo": ".github/workflows/security.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 200
+    "commits": 201
    },
    {
     "autor": "dependabot[bot]",
@@ -312,7 +312,7 @@
  "contagens": {
   "arquivos_total": 5284,
   "arquivos_codigo": 3178,
-  "linhas_codigo": 503431,
+  "linhas_codigo": 503437,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -580,7 +580,7 @@
   },
   "scripts/ci": {
    "arquivos": 3,
-   "linhas": 277
+   "linhas": 280
   },
   "scripts/compare-edge-functions.mjs": {
    "arquivos": 1,
@@ -964,7 +964,7 @@
   },
   "tests/scripts": {
    "arquivos": 35,
-   "linhas": 3345
+   "linhas": 3348
   },
   "tests/search": {
    "arquivos": 1,
@@ -1310,8 +1310,7 @@
    "sicoob-seed-qa",
    "step-up-verify",
    "verify-email",
-   "voice-agent",
-   "webhook-inbound"
+   "voice-agent"
   ],
   "edges_chamadas_sem_pasta": [],
   "tabelas_sem_rls": [

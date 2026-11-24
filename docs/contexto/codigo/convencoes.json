@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)",
    "feat: navegacao interna avisa antes de perder formulario preenchido (#421)",
    "chore: workers de cron entram na allowlist de publicação das edges (#420)",
    "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)",
-   "fix: busca global cai para o catálogo local quando a semântica falha (#414)",
-   "chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)"
+   "fix: busca global cai para o catálogo local quando a semântica falha (#414)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

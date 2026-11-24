@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `947f1afb6a` · branch `main` · 2026-11-24 15:28 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `092f7ee5dd` · branch `main` · 2026-11-24 15:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -840,6 +840,7 @@
 - `ownership-audit`
 - `webhook-dispatcher`
 - `health-check`
+- `webhook-inbound`
 
 ## Rotas protegidas no front
 

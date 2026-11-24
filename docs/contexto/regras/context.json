@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
+  "sha": "092f7ee5dd333176003c2765a6e31461211aa09e",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 15:28 UTC",
+  "generated_at": "2026-11-24 15:52 UTC",
   "files_total": 5287,
   "code_files": 3849,
-  "code_lines": 567871
+  "code_lines": 567877
  },
  "version": "1.3.2",
- "facts_hash": "887c82a0d5376768",
+ "facts_hash": "b4140021ac8afb6f",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -387,7 +387,8 @@
     "comparison-price-watcher",
     "ownership-audit",
     "webhook-dispatcher",
-    "health-check"
+    "health-check",
+    "webhook-inbound"
    ],
    "auth": {}
   },
@@ -60735,7 +60736,7 @@
     "methods": [
      "OPTIONS"
     ],
-    "auth": "service_role (ignora RLS) — NÃO valida usuário no código",
+    "auth": "PÚBLICA (verify_jwt=false em config.toml)",
     "tables": [
      "inbound_webhook_endpoints",
      "inbound_webhook_events"
@@ -65053,7 +65054,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40234,
+   "lines": 40237,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67068,7 +67069,7 @@
   {
    "module": "tests",
    "files": 680,
-   "lines": 91874,
+   "lines": 91877,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -140064,7 +140065,7 @@
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
-    "name": "cobre as 7 canônicas, as 7 endurecidas, crm-db-bridge e os 6 workers de cron"
+    "name": "cobre as canônicas, as endurecidas, crm-db-bridge, os 6 workers de cron e o webhook"
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
@@ -169561,7 +169562,8 @@
    "comparison-price-watcher",
    "ownership-audit",
    "webhook-dispatcher",
-   "health-check"
+   "health-check",
+   "webhook-inbound"
   ],
   "auth_config": {},
   "grants": [
@@ -183999,7 +184001,7 @@
   },
   "scripts/ci/verify-supabase-functions-published.mjs": {
    "path": "scripts/ci/verify-supabase-functions-published.mjs",
-   "lines": 109,
+   "lines": 112,
    "exports": [
     "const requiredFunctions",
     "function verifyPublishedFunctions"
@@ -257258,7 +257260,7 @@
   },
   "tests/scripts/verify-supabase-functions-published.test.ts": {
    "path": "tests/scripts/verify-supabase-functions-published.test.ts",
-   "lines": 128,
+   "lines": 131,
    "is_test": true,
    "tests": [
     "verifyPublishedFunctions",
@@ -257269,7 +257271,7 @@
     "rejeita função inativa, status ausente ou duplicidade de slug",
     "aceita somente números ou strings inteiras positivas sem coerção permissiva",
     "não lista função que o teto do plano impede de criar",
-    "cobre as 7 canônicas, as 7 endurecidas, crm-db-bridge e os 6 workers de cron",
+    "cobre as canônicas, as endurecidas, crm-db-bridge, os 6 workers de cron e o webhook",
     "mantém a lista publicada no workflow em paridade com o verificador"
    ]
   },
@@ -258637,10 +258639,25 @@
   }
  },
  "git": {
-  "sha": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
+  "sha": "092f7ee5dd333176003c2765a6e31461211aa09e",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "092f7ee",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)",
+    "files": [
+     ".github/workflows/deploy-sicoob-functions.yml",
+     "AGENTS.md",
+     "docs/agentes/banco.md",
+     "docs/agentes/servicos.md",
+     "scripts/ci/verify-supabase-functions-published.mjs",
+     "supabase/config.toml",
+     "tests/scripts/verify-supabase-functions-published.test.ts"
+    ]
+   },
    {
     "sha": "947f1af",
     "date": "2026-11-24",
@@ -259738,18 +259755,29 @@
      "src/pages/QuotesListPage.tsx",
      "tests/pages/quotes-list-filtros-na-url.test.tsx"
     ]
-   },
-   {
-    "sha": "9515c40",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "test(edge): catraca para o espalhamento de versões do supabase-js (#377)",
-    "files": [
-     "tests/scripts/supabase-js-version-spread.test.ts"
-    ]
    }
   ],
   "hot_files": [
+   [
+    ".github/workflows/deploy-sicoob-functions.yml",
+    3
+   ],
+   [
+    "AGENTS.md",
+    3
+   ],
+   [
+    "docs/agentes/servicos.md",
+    3
+   ],
+   [
+    "scripts/ci/verify-supabase-functions-published.mjs",
+    3
+   ],
+   [
+    "tests/scripts/verify-supabase-functions-published.test.ts",
+    3
+   ],
    [
     "src/hooks/useQuoteBuilderState.ts",
     3
@@ -259783,6 +259811,10 @@
     3
    ],
    [
+    "docs/agentes/banco.md",
+    2
+   ],
+   [
     "src/components/cart/CartHeaderButton.tsx",
     2
    ],
@@ -259795,26 +259827,6 @@
     2
    ],
    [
-    ".github/workflows/deploy-sicoob-functions.yml",
-    2
-   ],
-   [
-    "AGENTS.md",
-    2
-   ],
-   [
-    "docs/agentes/servicos.md",
-    2
-   ],
-   [
-    "scripts/ci/verify-supabase-functions-published.mjs",
-    2
-   ],
-   [
-    "tests/scripts/verify-supabase-functions-published.test.ts",
-    2
-   ],
-   [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     2
    ],
@@ -259824,10 +259836,6 @@
    ],
    [
     "src/components/quotes/QuoteConvertToOrder.tsx",
-    2
-   ],
-   [
-    "src/hooks/quotes/useQuotes.ts",
     2
    ]
   ]

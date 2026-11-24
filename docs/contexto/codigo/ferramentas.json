@@ -1914,7 +1914,8 @@
    "send-notification",
    "send-scheduled-reports",
    "sicoob-approval-notifications",
-   "webhook-dispatcher"
+   "webhook-dispatcher",
+   "webhook-inbound"
   ],
   "realtime": [
    "admin-conexoes-credentials-changes",

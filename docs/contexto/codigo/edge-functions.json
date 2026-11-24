@@ -25,7 +25,8 @@
   "send-notification",
   "send-scheduled-reports",
   "sicoob-approval-notifications",
-  "webhook-dispatcher"
+  "webhook-dispatcher",
+  "webhook-inbound"
  ],
  "shared": [
   "supabase/functions/_shared/ai-usage-stream.test.ts",
@@ -3709,7 +3710,7 @@
    "entrada": "supabase/functions/webhook-inbound/index.ts",
    "arquivos": 1,
    "linhas": 148,
-   "verify_jwt": true,
+   "verify_jwt": false,
    "metodos": [
     "OPTIONS"
    ],
@@ -3733,7 +3734,7 @@
    "chamada_pelo_front": [],
    "chamada_por_edges": [],
    "chamada_por_sql_ou_cron": false,
-   "orfa": true,
+   "orfa": false,
    "testes": 0
   }
  ],
