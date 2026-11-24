@@ -767,3 +767,60 @@ AFIRMAÇÃO 5 (identidade do kit no UPDATE) — NÃO SE SUSTENTA, o revisor esta
 </details>
 
 
+
+---
+
+## Re-auditoria de 24/11 — descartes medidos um a um (PR fechada por PR fechada)
+
+Escopo: as 10 branches remotas restantes e as 50 PRs fechadas sem merge. Objetivo: separar
+"trabalho parcial de outro agente que precisa ser terminado" de "já incorporado / artefato".
+
+**Método.** `git cherry` não serve neste repo: a `main` foi re-rooted e 56 dos 89 refs antigos
+não têm ancestral comum com ela (ver `cobertura-refs.md`). A prova usada é conteúdo:
+`git fetch origin refs/pull/N/head:refs/audit/prN`, `mb=$(git merge-base origin/main refs/audit/prN)`,
+`git diff --shortstat $mb refs/audit/prN` e verificação linha a linha (`git diff -U0` + procura da
+linha no arquivo correspondente da `main`). Para branch sem PR, mesmo procedimento em `origin/<branch>`.
+
+### Recuperado nesta rodada
+
+| Unidade | Arquivos | Prova da ausência na `main` | Ação |
+| --- | --- | --- | --- |
+| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa | `src/hooks/useCommercialIntelligence.ts`, `src/components/intelligence/CategoryRanking.tsx`, `tests/components/intelligence/CategoryRanking.errors.test.tsx` | `git diff origin/main refs/audit/pr112 -- <hook>` vazio antes da porta (main idêntica à base da PR); `useCommercialIntelligence.ts:440-441` consulta `order_items` sem paginação; `:451` `internalOrders += 1` conta linha, não pedido; `:464` `catch { logger.warn }` zera 40% do score sem avisar; `CategoryRanking.tsx:54,216` sem `isError`, falha renderiza "Nenhuma categoria com vendas" | **PR #429** |
+| `automation/inventario-estado` | `inventario/estado/{banco,edges,rotas}.json` | único commit exclusivo é `190da39e2 chore(inventario): estado real do banco e do codigo [auto]`; 6217 linhas geradas | artefato de automação — não é trabalho de produto, não precisa ser recuperado |
+
+### Trabalho parcial real, ainda ausente da `main` (recuperar)
+
+| Unidade | Arquivos | Prova da ausência | Observação |
+| --- | --- | --- | --- |
+| **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
+| **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
+| **PR #145** — favorito indisponível deixa de sumir da lista | `src/pages/FavoritesPage.tsx` (`UnavailableFavoriteCard`) | `git grep -c UnavailableFavoriteCard origin/main -- src/pages/FavoritesPage.tsx` → 0 | item some da lista em vez de aparecer marcado como indisponível |
+| **PR #176/#157** — estados de dado no BI | `src/components/bi/*` | medido em `ClientOverview360.tsx`: `git diff --shortstat origin/main refs/audit/pr176` → `7 insertions, 17 deletions` (a `main` já tem o grosso; sobram os selos "Dados indisponíveis"/"Dados insuficientes" e o `aria-label` do switch) | residual pequeno, não é a feature inteira |
+| **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
+
+### Confirmado incorporado / descartável (com prova)
+
+| Unidade | Prova |
+| --- | --- |
+| PR #288/#289 (hardening) | migrations renomeadas para `20261118130000`…`20261118130400_*` na `main` |
+| PR #157 (migration de retry) | substituída por `20261030210000_require_active_actor_for_quote_status_retry.sql` |
+| PR #179 (edges) | `supabase/functions/_shared/ilike-pattern.ts` e `supabase/functions/sicoob-document-ingest/registration-state.ts` EXISTEM na `main`; `crm-db-bridge/index.ts` já consome `ilike-pattern` |
+| PR #75 (relatórios Sicoob) | `src/pages/sicoob/reports/SicoobReportsPage.tsx` foi reescrito na `main` (versão da PR: 299+/531− contra a main) e `tests/pages/SicoobReportsPage.budgetHistory.test.ts` existe |
+| PR #119 (`CartCompanyDirectoryResults`) | `src/components/cart/CartCompanyPicker.tsx:24,29,38` e `CartCompanyPickerDialog.tsx:38,43,52` já renderizam `role="alert"` + "Tentar novamente" |
+| PR #105, #85, #117, #118, #154, #158, #161, #149 | docs/inventário (`PENDENCIAS.md`, `RELATORIO_CI.md`, `fontes-sha256.json`, JSON de inventário) — não é produto |
+| `devin/1791201000-ux-onda2` | subconjunto byte a byte de ux-onda1 (PR #100), conforme `branches.md` |
+
+### Não verificado nesta rodada
+
+- Se `20261122180000_schedule_scheduled_reports_worker.sql` e
+  `20261122210000_allow_worker_deactivate_revoked_report.sql` estão aplicadas em produção: a
+  Management API do Supabase devolve 403 para esta conta e não há connection string no ambiente.
+  A allowlist de `scripts/db/apply-sicoob-migrations.mjs` cobre 53 das 627 migrations da `main` —
+  condição pré-existente do repo (`local_sem_ledger: 465` em
+  `scripts/db/migration-ledger-baseline.json`), não regressão isolada dessas duas.
+
+### Regra de exclusão que sai desta rodada
+
+Só pode ser apagada a ref cuja PR aparece em "confirmado incorporado". As branches do cluster
+`ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por escrito. As branches
+dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
