@@ -813,10 +813,23 @@ com status de saída `0` para **todos** os arquivos do ref (árvore idêntica). 
 o texto: em diff vazio o `--shortstat` não imprime nada, e em arquivo binário alterado ele imprime
 `0 insertions, 0 deletions`. Quociente total com diff não vazio = ler o hunk antes de qualquer conclusão.
 
-Foi esse critério que classificou, por exemplo, `src/components/search/useGlobalSearch.ts` como
-cópia velha (15 de 88 linhas presentes, e o teste `tests/components/search/useGlobalSearch-fallback.test.tsx`
-já está 80/80 na `main`) e `e2e/helpers/auth.ts` como trabalho único (1 de 15 linhas presentes, 0
-commits da `main` tocando o arquivo desde a base da PR).
+Medição de 24/11 sobre os 91 refs de auditoria deste clone: **nenhum** tem árvore idêntica à `main`
+(`git diff --quiet origin/main <ref>` devolve `1` para todos os 91). Pelo critério estrito, portanto,
+**nenhum ref está liberado para exclusão** — o quociente de linhas só diz onde olhar primeiro.
+
+Os dois exemplos que estavam aqui (`useGlobalSearch.ts` "15 de 88" e `e2e/helpers/auth.ts` "1 de 15")
+**não se reproduzem** com os refs atuais e foram retirados. Medição linha a linha feita agora:
+
+- `src/components/search/useGlobalSearch.ts` — todo ref que contém o caminho difere da `main`
+  (`status=1`): 0/4 linhas presentes em `refs/audit/pr100`, 7/20 em `refs/audit/pr145`, 1/16 na família
+  `pr75..pr97`. Nenhum ref é idêntico nesse caminho.
+- `e2e/helpers/auth.ts` — **idêntico à `main`** (`status=0`, sem linhas exclusivas) em `pr326`, `pr346`,
+  `pr348`, `pr350`, `pr360`, `pr374`, `pr385`, `pr392` e `pr394`: nesses refs não há nada a recuperar
+  neste arquivo. Nos antigos difere: 7 linhas do ref com 0 presentes na `main` (`pr3`, `pr4`, `pr75..pr97`),
+  6 linhas com 2 presentes (`pr308`, `pr318`).
+
+O que sustenta a classificação dos refs antigos é a leitura do hunk, não a igualdade de árvore — e por
+isso eles seguem no conjunto "não descartável por prova".
 
 ### Recuperado nesta rodada
 
