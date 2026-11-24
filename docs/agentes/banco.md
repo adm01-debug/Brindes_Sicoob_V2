@@ -180,7 +180,7 @@ Regras:
   (`requiredFunctions` em `:4-29`): exige `status ACTIVE` e versão não regressiva para cada uma.
   As outras ~87 funções **não sobem por esse workflow**.
 - **Depois de republicar:** o diff antes/depois prova que a versão subiu, não que o agendamento rodou.
-  Rode `scripts/inventario/banco.sql` (seção `cron`) e confira `exec_24h` e `falhas_24h` dos 6 workers
+  Rode `scripts/inventario/banco.sql` (seção `cron`) e confira `execucoes_24h` e `falhas_24h` dos 6 workers
   de `pg_cron`; republicar uma função cron não perde a agenda (`cron.job`), mas só a execução seguinte
   mostra se ela voltou saudável.
 - `verify_jwt` é por função em `supabase/config.toml:5-82`. Onde é `false`, a validação está no handler;
