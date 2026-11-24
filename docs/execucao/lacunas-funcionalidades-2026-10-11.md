@@ -70,11 +70,12 @@ O que isso significa para o negócio, em ordem de gravidade:
 
 | Status | Registros | O que significa |
 |---|---:|---|
-| PARCIAL | 267 | Parte existe; falta uma camada (tela, servidor, regra, teste ou ligação) |
-| NAO_INICIADA | 124 | Planejado sem nenhum código correspondente |
-| ORFA | 115 | Código pronto, mas desligado: sem rota, sem import, sem chamador ou com flag sem efeito |
+| PARCIAL | 262 | Parte existe; falta uma camada (tela, servidor, regra, teste ou ligação) |
+| NAO_INICIADA | 120 | Planejado sem nenhum código correspondente |
+| ORFA | 110 | Código pronto, mas desligado: sem rota, sem import, sem chamador ou com flag sem efeito |
 | BLOQUEADA_EXTERNA | 81 | Depende de credencial, contrato, decisão de negócio ou operação real |
-| STUB/MOCK | 80 | Existe na tela, mas com dado falso, valor fixo, "em breve" ou botão sem ação |
+| STUB/MOCK | 78 | Existe na tela, mas com dado falso, valor fixo, "em breve" ou botão sem ação |
+| RESOLVIDO | 16 | Lacuna fechada e comprovada por evidência no código ou na produção |
 | DOC_DIVERGENTE | 16 | O documento afirma algo pronto que o código não sustenta |
 
 **Por prioridade e esforço:**
@@ -95,7 +96,7 @@ O CSV ganhou as colunas `veredito_20261122` e `evidencia_20261122`, com cada um 
 
 | Veredito | Registros | O que significa |
 |---|---:|---|
-| ABERTO | 238 | Nenhum artefato correspondente encontrado no repositório — lacuna confirmada |
+| ABERTO | 229 | Nenhum artefato correspondente encontrado no repositório — lacuna confirmada |
 | INDICIO | 288 | Só evidência fraca (vocabulário compartilhado), não prova implementação — exige conferência manual |
 | BLOQUEADA_EXTERNA | 81 | Depende de terceiro, credencial ou decisão de negócio |
 | ARTEFATO_EXISTE | 58 | Existe tabela/coluna/função/rota/edge/arquivo com o nome citado; não prova que a funcionalidade opera |
@@ -104,7 +105,23 @@ O CSV ganhou as colunas `veredito_20261122` e `evidencia_20261122`, com cada um 
 | PARCIAL | 2 | Existe, porém incompleto, com evidência |
 | NAO_VERIFICADO | 2 | Depende de simulação dinâmica no banco |
 
-Resolvidos ou comprovadamente desatualizados nesta data: **PLB-29** e **PLB-32** (centro de custo, rateio e verba em quatro estados — PR #401), **FE-030**, **FE-005**, **ADM-01**, **DOC-02**, **FE-001**, **PLC-02**, **QA-56**, **SIC-021**, **SIC-041**, **ADM-34**, **FE-140** e **ADM-43** (dados reais por padrão; demonstração só com `?demo=1`).
+Resolvidos ou comprovadamente desatualizados nesta data: **PLB-32** (verba em quatro estados, com competência e centro de custo), **FE-030**, **ADM-01**, **DOC-02**, **FE-001**, **PLC-02**, **QA-56**, **SIC-021**, **SIC-041**, **ADM-34**, **FE-140** e **ADM-43** (dados reais por padrão; demonstração só com `?demo=1`). O **PLB-29** foi reduzido a parcial na correção de 24/11 (ver abaixo): entregue no pedido, ausente na proposta.
+
+#### Correção do índice em 24/11/2026
+
+A coluna `status` contradizia o veredito em 11 registros já conferidos em 22/11. **Nove** passaram a `RESOLVIDO`, que é o que o próprio veredito de cada linha afirmava: **PLC-02**, **QA-56**, **FE-001**, **FE-030**, **DOC-02**, **ADM-01**, **SIC-021**, **SIC-041** e **PLB-32** (este também saiu de `NAO_INICIADA`, com a prova de produção abaixo). **Dois** foram rebaixados a `PARCIAL` porque a conferência de hoje mostrou fechamento maior que a evidência:
+
+| Registro | Por que não é resolvido |
+|---|---|
+| **PLB-29** | Centro de custo e rateio existem no **pedido** e na verba (`pa_budget_allocations` com `UNIQUE (order_id, cost_center_id)`, `OrderCostCenterAllocation` em `src/pages/sicoob/orders/OrderDetailPage.tsx:311`, admin em `src/pages/sicoob/admin/CostCentersPage.tsx`), mas não na **proposta**: `pa_budget_allocations` é chaveada por `order_id` e não há uso de `cost_center` no fluxo de orçamentos |
+| **FE-005** | O anexo 05 (`05-frontend-nucleo.md:1276`) classifica como parcial/reclassificado: destino e abas corrigidos, mas criação/edição seguem sem rota e quatro handlers do manager ficam sem consumidor |
+| **EDG-24** | O agendador só existe no repositório: `supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql` não está na allowlist de `scripts/db/apply-sicoob-migrations.mjs` e nunca foi aplicada em produção — sem `cron` em produção, o relatório agendado não é enviado |
+
+Um terceiro rebaixamento não vem dos 11: **EDG-24** já tinha `status=RESOLVIDO` e foi movido a `PARCIAL` porque a migration do agendador nunca foi aplicada (linha da tabela acima).
+
+**PLB-32** ganhou prova de produção, que antes era só leitura de repositório (`[24/11 producao]` na coluna de evidência): `public.pa_budget_entries` responde HTTP 200 no PostgREST de produção e tem `estado`, `competencia_ano`, `competencia_mes`, `cost_center_id`, `valor` e `tipo`; `public.cost_centers` e `public.pa_budget_allocations` também respondem 200.
+
+**O que esta correção não faz:** não fecha as 517 linhas que continuam sem verificação dinâmica (**229 ABERTO** + **288 INDICIO**) — essas exigem conferência funcional, frente por frente. Também não inventa veredito para os 8 registros cuja coluna de veredito contém texto livre em vez de um valor da legenda; eles continuam fora da contagem por veredito (675 classificados + 8 com texto livre = 683).
 
 Continuam abertos com causa confirmada: **EDG-24** (relatórios agendados sem `cron.schedule`) e **EDG-30** (allowlist de deploy cobre 13 de 109 funções). O **QA-11** ficou restrito ao que a execução `43431699691` da `main` comprova: o job `e2e-authenticated` falhou com `Configuração obrigatória do destino E2E ausente` (exit 2), o que é falta de secrets `E2E_*`, não instabilidade de teste; o job só roda por acionamento manual, então não há série histórica que descarte flakiness.
 
