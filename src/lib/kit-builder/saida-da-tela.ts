@@ -34,3 +34,18 @@ export function textoDaSaida(
     grava: true,
   };
 }
+
+/**
+ * A troca de template só grava quando o aviso prometeu gravar.
+ *
+ * Com o aviso de conflito aberto o vendedor confirma "Sair sem salvar" e a
+ * troca segue sem tocar no banco; tentar gravar ali cairia no mesmo conflito e
+ * deixaria o vendedor preso na composição velha. `true` = pode trocar.
+ */
+export async function decidirTrocaDeTemplate(
+  texto: TextoDaSaida,
+  gravarPendente: () => Promise<boolean>,
+): Promise<boolean> {
+  if (!texto.grava) return true;
+  return gravarPendente();
+}
