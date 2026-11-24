@@ -158,6 +158,7 @@
    "src/components/layout/ProtectedRoute.tsx",
    "src/components/layout/SicoobRoute.tsx",
    "src/components/layout/SkeletonLoaders.tsx",
+   "src/components/routing/GlobalExitGuard.tsx",
    "src/components/system/ThemeInitializer.tsx",
    "src/components/ui/sonner.tsx",
    "src/components/ui/toaster.tsx",
@@ -2790,6 +2791,7 @@
    "src/components/ui/tooltip.tsx",
    "src/contexts/SellerCartContext.tsx",
    "src/hooks/useSellerCarts.ts",
+   "src/lib/navigation/dirty-registry.ts",
    "src/lib/utils.ts"
   ],
   "src/components/cart/CartHealthChecklist.tsx": [
@@ -6994,6 +6996,11 @@
    "src/components/ui/switch.tsx",
    "src/hooks/useScheduledReports.ts"
   ],
+  "src/components/routing/GlobalExitGuard.tsx": [
+   "src/components/common/UnsavedChangesDialog.tsx",
+   "src/lib/navigation/dirty-registry.ts",
+   "src/lib/uxMetrics.ts"
+  ],
   "src/components/search/AdvancedSearch.tsx": [
    "src/components/search/VisualSearchButton.tsx",
    "src/components/search/VoiceSearchOverlayConnected.tsx",
@@ -9049,6 +9056,7 @@
    "src/hooks/useQuoteTemplates.ts",
    "src/hooks/useSellerDiscountLimits.ts",
    "src/integrations/supabase/client.ts",
+   "src/lib/navigation/dirty-registry.ts",
    "src/lib/quote-status-config.ts",
    "src/lib/quotes/quote-draft-scope.ts",
    "src/lib/validations/index.ts",
@@ -9281,6 +9289,9 @@
   ],
   "src/hooks/useTransactionalEmail.ts": [
    "src/integrations/supabase/client.ts"
+  ],
+  "src/hooks/useUnsavedChangesGuard.ts": [
+   "src/lib/navigation/dirty-registry.ts"
   ],
   "src/hooks/useVariantStock.ts": [
    "src/hooks/stock/stockFetcher.ts",
@@ -10212,6 +10223,7 @@
    "src/lib/kit-builder/index.ts",
    "src/lib/kit-builder/saida-da-tela.ts",
    "src/lib/logger.ts",
+   "src/lib/navigation/dirty-registry.ts",
    "src/lib/utils.ts",
    "src/pages/kit-builder/useKitBuilderQuote.ts",
    "src/utils/kitPdfGenerator.ts"
@@ -10525,6 +10537,7 @@
    "src/components/ui/badge.tsx",
    "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
+   "src/hooks/useDescartarRascunhoAoDesmontar.ts",
    "src/hooks/useQuoteBuilderState.ts",
    "src/hooks/useScreenDirtyState.ts",
    "src/hooks/useUnsavedChangesGuard.ts",

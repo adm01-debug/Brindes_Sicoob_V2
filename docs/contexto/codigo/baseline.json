@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "dc6bdc010f55c550f93afc34be7e6a04a0675e0e",
+  "commit": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
   "branch": "main",
-  "data_commit": "2026-11-24T07:39:33-03:00",
+  "data_commit": "2026-11-24T12:27:42-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "947f1af",
+    "data": "2026-11-24",
+    "assunto": "feat: navegacao interna avisa antes de perder formulario preenchido (#421)"
+   },
    {
     "sha": "dc6bdc0",
     "data": "2026-11-24",
@@ -126,14 +131,9 @@
     "sha": "9bcfb62",
     "data": "2026-11-20",
     "assunto": "chore: fundação docs/pendencias do goal (683 itens do backlog) (#388)"
-   },
-   {
-    "sha": "e877d0c",
-    "data": "2026-11-19",
-    "assunto": "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)"
    }
   ],
-  "arquivos_mudados_7d": 1331,
+  "arquivos_mudados_7d": 1330,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -180,12 +180,12 @@
     "mudancas": 14
    },
    {
-    "pasta": "src/pages/sicoob",
+    "pasta": "src/components/quotes",
     "mudancas": 13
    },
    {
-    "pasta": "src/components/quotes",
-    "mudancas": 12
+    "pasta": "src/pages/sicoob",
+    "mudancas": 13
    },
    {
     "pasta": "PENDENCIAS.md",
@@ -246,15 +246,15 @@
     "mudancas": 15
    },
    {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 13
+   },
+   {
     "arquivo": ".github/workflows/bundle-check.yml",
     "mudancas": 12
    },
    {
     "arquivo": "src/hooks/quotes/useQuotes.ts",
-    "mudancas": 12
-   },
-   {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 12
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 199
+    "commits": 200
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5278,
-  "arquivos_codigo": 3172,
-  "linhas_codigo": 501767,
+  "arquivos_total": 5284,
+  "arquivos_codigo": 3178,
+  "linhas_codigo": 503431,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 85,
-  "modulos": 145,
-  "componentes": 1174,
-  "hooks": 394,
+  "modulos": 146,
+  "componentes": 1175,
+  "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 626,
   "cron_jobs": 28,
-  "testes": 907,
+  "testes": 911,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -664,7 +664,7 @@
   },
   "scripts/inventario": {
    "arquivos": 6,
-   "linhas": 1305
+   "linhas": 1310
   },
   "scripts/lib": {
    "arquivos": 7,
@@ -772,15 +772,15 @@
   },
   "src/App.tsx": {
    "arquivos": 1,
-   "linhas": 165
+   "linhas": 201
   },
   "src/AuthEntry.tsx": {
    "arquivos": 1,
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1134,
-   "linhas": 167611
+   "arquivos": 1135,
+   "linhas": 167767
   },
   "src/constants": {
    "arquivos": 3,
@@ -795,8 +795,8 @@
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 314,
-   "linhas": 47892
+   "arquivos": 315,
+   "linhas": 48142
   },
   "src/integrations": {
    "arquivos": 3,
@@ -804,7 +804,7 @@
   },
   "src/lib": {
    "arquivos": 169,
-   "linhas": 22859
+   "linhas": 22941
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -812,7 +812,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51286
+   "linhas": 51312
   },
   "src/routes": {
    "arquivos": 9,
@@ -879,8 +879,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 154,
-   "linhas": 28186
+   "arquivos": 156,
+   "linhas": 28721
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -919,8 +919,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 147,
-   "linhas": 16543
+   "arquivos": 149,
+   "linhas": 16997
   },
   "tests/integration": {
    "arquivos": 4,
@@ -928,7 +928,7 @@
   },
   "tests/lib": {
    "arquivos": 78,
-   "linhas": 9401
+   "linhas": 9506
   },
   "tests/load": {
    "arquivos": 1,
@@ -944,7 +944,7 @@
   },
   "tests/pages": {
    "arquivos": 29,
-   "linhas": 3431
+   "linhas": 3446
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
@@ -1073,16 +1073,16 @@
    "linhas": 1284
   },
   {
+   "arquivo": "src/hooks/useQuoteBuilderState.ts",
+   "linhas": 1124
+  },
+  {
    "arquivo": "scripts/graphify-local.mjs",
    "linhas": 1076
   },
   {
    "arquivo": "src/lib/theme-presets.ts",
    "linhas": 1046
-  },
-  {
-   "arquivo": "src/hooks/useQuoteBuilderState.ts",
-   "linhas": 1034
   },
   {
    "arquivo": "scripts/automation.mjs",
@@ -1118,7 +1118,7 @@
   },
   {
    "arquivo": "src/pages/KitBuilderPage.tsx",
-   "linhas": 726
+   "linhas": 730
   },
   {
    "arquivo": "src/pages/magic-up/MagicUpConfigPanel.tsx",

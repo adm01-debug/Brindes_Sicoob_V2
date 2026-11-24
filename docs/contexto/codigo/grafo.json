@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2265,
- "arestas": 9201,
+ "nos": 2267,
+ "arestas": 9210,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -30,7 +30,7 @@
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
-   "importado_por": 183
+   "importado_por": 184
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
@@ -440,7 +440,7 @@
   {
    "modulo": "lib",
    "depende_de": 11,
-   "importado_por": 91
+   "importado_por": 92
   },
   {
    "modulo": "pages",
@@ -510,7 +510,7 @@
   {
    "modulo": "components/common",
    "depende_de": 10,
-   "importado_por": 12
+   "importado_por": 13
   },
   {
    "modulo": "components/quotes",

@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1174,
+ "total": 1175,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -175,7 +175,7 @@
     "App"
    ],
    "export_default": "App",
-   "linhas": 165,
+   "linhas": 201,
    "dominio": null,
    "hooks_locais": [
     "useGlobalErrorCatcher",
@@ -4707,7 +4707,7 @@
     "CartHeaderButton"
    ],
    "export_default": null,
-   "linhas": 298,
+   "linhas": 312,
    "dominio": "components/cart",
    "hooks_locais": [
     "useSellerCartContext"
@@ -5738,7 +5738,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 2,
+   "usado_por": 3,
    "orfao": false
   },
   {
@@ -12554,7 +12554,7 @@
     "QuoteAutoSave"
    ],
    "export_default": null,
-   "linhas": 267,
+   "linhas": 306,
    "dominio": "components/quotes",
    "hooks_locais": [
     "useAutoSave"
@@ -13524,6 +13524,20 @@
    "hooks_locais": [
     "useScheduledReports"
    ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/routing/GlobalExitGuard.tsx",
+   "exports": [
+    "GlobalExitGuard"
+   ],
+   "export_default": null,
+   "linhas": 103,
+   "dominio": "components/routing",
+   "hooks_locais": [],
    "tabelas": [],
    "edges": [],
    "usado_por": 1,
@@ -17372,7 +17386,7 @@
     "KitBuilderPage"
    ],
    "export_default": "KitBuilderPage",
-   "linhas": 726,
+   "linhas": 730,
    "dominio": "pages",
    "hooks_locais": [
     "useCustomKitPersistence",
@@ -17983,9 +17997,10 @@
     "QuoteBuilderPage"
    ],
    "export_default": "QuoteBuilderPage",
-   "linhas": 141,
+   "linhas": 163,
    "dominio": "pages",
    "hooks_locais": [
+    "useDescartarRascunhoAoDesmontar",
     "useQuoteBuilderState",
     "useScreenDirtyState",
     "useUnsavedChangesGuard"

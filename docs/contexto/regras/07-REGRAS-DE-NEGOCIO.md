@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `dc6bdc010f` · branch `main` · 2026-11-24 11:15 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `947f1afb6a` · branch `main` · 2026-11-24 15:28 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1388,7 +1388,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
-| … +97 linhas — lista completa em `context.json` | | | |
+| … +101 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -3157,9 +3157,9 @@ _nenhum item encontrado_
   ```
   const { status, isPaUser, paId, total } = params; if (status === 'draft' || !isPaUser) return true; if (!paId) { toast.error('Seu perfil não possui um Ponto de Atendimento vinculado.'); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …
   ```
-- **applyQuoteTransition(params: TransitionQuoteParams)** — `src/hooks/useQuoteBuilderState.ts`
+- **applyQuoteTransition(params: TransitionQuoteParams,)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …
+  const quoteId = params.quote.id; if (!quoteId) return { aplicada: false, saltosDeVersao: 0, statusVigente: null }; let saltosDeVersao = 0; let statusVigente: string | null = null; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, "draft"); if (!reopened) return { aplicada: false, saltosDeVersao, statusVigente }; effectiveStatus = "draft"; saltosDeVersao = 1; statusVigente = "draft"; } const …
   ```
 - **canPersistQuoteVersion(isEditMode: boolean, expectedRowVersion: number | null)** — `src/hooks/useQuoteBuilderState.ts`
   ```
@@ -4907,7 +4907,7 @@ _nenhum item encontrado_
 | `INITIAL_BACKOFF_MS` | `800` | `src/lib/external-rpc.ts` |
 | `TRIGGER_TO_FETCH_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
 | `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
-| … +169 linhas — lista completa em `context.json` | | |
+| … +170 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7140 testes em 722 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7212 testes em 726 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5834,6 +5834,7 @@ _nenhum item encontrado_
 | `supabase/functions/_shared/credentials.test.ts` | 20 | resolveCredential: integration_credentials preenchida → has_value=true, source= · resolveCredential: linha ausente + env canônica presente → source= · resolveCredential: alias legado (EXTERNAL_SUPABASE_URL) → resolve com source= · resolveCredential: nada configurado → source= … |
 | `supabase/functions/external-db-bridge/applyFiltersAndSwap.integration.test.ts` | 20 | applyFilters: nunca chama .select() (filtro vazio) · applyFilters: nunca chama .select() (filtros simples eq) · applyFilters: nunca chama .select() (operadores PostgREST string) · applyFilters: nunca chama .select() (sufixos _gte/_lte/_isnull/_notnull) … |
 | `tests/lib/external-db-invoke.test.ts` | 20 | extractFunctionErrorMessage · returns message from Error instance · returns generic message for non-Error · extracts detailed message from Response context … |
+| `tests/lib/navigation-dirty-registry.test.ts` | 20 | registro de trabalho não salvo por rota · rota que nao declarou nada continua sem estado — a regra antiga vale · tela limpa declara que nao ha o que perder · tela com trabalho pendente declara sujo … |
 | `tests/lib/private-storage.test.ts` | 20 | resolvePrivateStorageUrlSafe e cache de assinaturas · devolve null em vez de rejeitar quando o objeto nao pode ser assinado · nao derruba as imagens validas do mesmo lote · compartilha a mesma requisicao entre resolucoes simultaneas do mesmo objeto … |
 | `tests/lib/rbac-permissions.test.ts` | 20 | RBAC Permission Matrix · admin · has access to everything · manager … |
 | `tests/pages/QuoteBuilder.test.ts` | 20 | QuoteBuilder — Item Calculations · calculates single item total · calculates quote subtotal · handles empty items list … |
@@ -5842,6 +5843,7 @@ _nenhum item encontrado_
 | `tests/components/ReplenishmentToolbar.test.tsx` | 19 | ReplenishmentToolbar · renders title and count badge · shows loading state when isLoading with zero total · shows filtered/total when hasActiveFilters … |
 | `tests/components/products/ProductCard.test.tsx` | 19 | ProductCard · renders product name and price · renders with favorite state · calls onClick when clicked … |
 | `tests/edge-functions/voice-agent.test.ts` | 19 | Voice Agent Response Contract · action types · should have valid action enum values · response structure … |
+| `tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts` | 19 | saída depois de salvar o orçamento · libera a saída para o detalhe quando o formulário não mudou durante o salvamento · não libera a saída quando o formulário mudou durante o salvamento · mantém a mesma regra quando a transição de status não foi confirmada … |
 | `tests/lib/query-config.test.ts` | 19 | CACHE_TIMES · should have increasing cache durations · getStaleTimeForKey · should return TECNICAS time for tecnicas keys … |
 | `tests/lib/personalization/adapters/raw-row.adapter.test.ts` | 19 | adaptTecnicaRow · espelha PT → EN quando só PT está presente · espelha EN → PT quando só EN está presente · preserva ambos quando payload é híbrido … |
 | `tests/scripts/gates-hardening.test.ts` | 19 | contrato de autorização das edges: o resultado do authorize precisa ser usado · conta  · conta desestruturação e uso direto em condição · NÃO conta  … |
@@ -5854,6 +5856,7 @@ _nenhum item encontrado_
 | `tests/utils/masks.test.ts` | 18 | maskCnpj · formats a complete CNPJ · formats partial input progressively · strips non-digit characters … |
 | `tests/admin/route-guards-ref-warning.test.tsx` | 17 | Route guards — React ref warning guard · AdminRoute (loading) — sem warning de ref · AdminRoute (sem user → Navigate /login) — sem warning de ref · AdminRoute (admin com MFA OK → Outlet) — sem warning de ref … |
 | `tests/admin/skeleton-fallbacks-ref-warning.test.tsx` | 17 | SkeletonLoaders — nenhum ref warning · render direto: %s · como fallback de <Suspense>: %s · getFallback( … |
+| `tests/components/GlobalExitGuard.test.tsx` | 17 | aviso global de saída · segura a navegação quando a tela declarou trabalho pendente · não descarta quando a navegação mantém a tela montada (só muda a query) · tela limpa sai sem ser interrogada … |
 | `tests/components/PriceFreshnessBadge.invalid-dates.test.tsx` | 17 | PriceFreshnessBadge — datas ausentes/inválidas · variant inline (PDP, sempre renderiza) · mostra  · mostra  … |
 | `tests/components/products/ColumnSelector.test.tsx` | 17 | ColumnSelector · shows all 5 options on a 1600px screen · hides options whose minWidth exceeds screen width · shows only 3-col option on a 400px screen (mobile) … |
 | `tests/hooks/voice-modules.test.ts` | 17 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry non-retryable errors … |
@@ -5888,6 +5891,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.quickViewAlwaysShow.test.tsx` | 13 | Quick View / hosts compactos — alwaysShow=false respeita aging\|stale · variant=%s sem alwaysShow · fresh: NÃO renderiza badge · unknown: NÃO renderiza badge … |
 | `tests/components/search/HighlightMatch.test.tsx` | 13 | HighlightMatch · Renderização básica · renderiza texto sem query · renderiza texto com query curta (< 2 chars) sem highlight … |
 | `tests/components/sicoob/OrderInvoicesTab.amount.test.ts` | 13 | parseAmountBR · lê milhar sem decimais como milhar · lê o separador decimal correto · lê milhar no formato US com centavos … |
+| `tests/hooks/useAutoSave.test.tsx` | 13 | useAutoSave · persiste apenas no namespace informado, preservando rascunhos simultâneos · grava o rascunho pendente quando a persistência é desligada · grava a volta ao valor inicial quando ela acontece durante o envio … |
 | `tests/hooks/useConnectionTester.test.tsx` | 13 | webhook_outbound · useConnectionTester · Timeout: preserva error_kind, timeout_ms, latency e dispara toast  · Network error: kind preservado e toast  … |
 | `tests/hooks/useProductMatch-gaps.test.ts` | 13 | FIX 1: useSupplierComparison — price zero guard · should not produce Infinity when base product price is 0 · FIX 2: name similarity edge cases · should NOT match empty-named products as complementary … |
 | `tests/pages/Auth.test.ts` | 13 | Auth - Login Schema Validation · rejects empty email · rejects invalid email · rejects short password … |
@@ -5971,6 +5975,7 @@ _nenhum item encontrado_
 | `tests/components/admin/connections/connectionStatus.test.ts` | 9 | resolveSupabaseConnectionStatus · readOnly cards são sempre active (gerenciados) · retorna  · retorna  … |
 | `tests/components/cart/cart-company-picker-dialog.error.test.tsx` | 9 | CartCompanyPickerDialog — erro no diretório · mostra erro + Tentar novamente quando o fetch falha, e recupera no retry · não inventa vazio no erro (a mensagem de vazio é exclusiva do sucesso) · picker inline: erro mostra Tentar novamente em vez de vazio … |
 | `tests/components/products/ProductSparkline.labels.test.tsx` | 9 | ProductSparkline — origem dos dados · renders the sparkline SVG when real data is available · does NOT show old  · identifica as saídas de estoque na grade de métricas … |
+| `tests/components/quotes/QuoteAutoSave.transicao.test.tsx` | 9 | QuoteAutoSave quando o orçamento deixa de ser editável · grava no mesmo rascunho a edição feita durante o envio · apaga o rascunho do orçamento que o usuário descartou · não apaga o rascunho que outra aba gravou … |
 | `tests/components/quotes/QuoteShareDialog.test.tsx` | 9 | QuoteShareDialog · reutiliza o token ativo e compartilha somente a rota pública · gera um novo token pelo fluxo canônico quando não há link · oferece novo link quando o token está %s … |
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
 | `tests/edge-functions/parseAiResponse.test.ts` | 9 | parseAiResponse · parses tool call arguments correctly · falls back to content parsing when no tool calls · returns fallback for invalid JSON in tool call args … |
@@ -6003,7 +6008,6 @@ _nenhum item encontrado_
 | `tests/components/admin/connections/ZoneCommandPalette.test.tsx` | 8 | useZoneCommandPalette · não captura Ctrl+K, reservado à barra global de comandos · ignora o atalho quando o foco está num <input> · ZoneCommandPalette — interação … |
 | `tests/components/novelties/NoveltyCards.test.tsx` | 8 | NoveltyGridCard — label changes (PR) · renders  · does NOT render the old  · renders the ProductSparkline for the product … |
 | `tests/components/products/ProductCardImage.private-storage.test.tsx` | 8 | imagem privada do catálogo · assina a referência durável e não gera srcSet sem autorização · mantém uma imagem pública sem pedir assinatura · não trata rota de storage de outro domínio como imagem privada … |
-| `tests/hooks/useAutoSave.test.tsx` | 8 | useAutoSave · persiste apenas no namespace informado, preservando rascunhos simultâneos · expõe falha de persistência para a interface e permite nova tentativa · detecta edição concorrente em outra aba e não sobrescreve o rascunho mais recente … |
 | `tests/hooks/useClientHealthScore.reliable-data.test.ts` | 8 | score de saúde com fonte comprovada · não trata o score sentinela desconhecido como um zero real · não fabrica score, potencial ou recomendação quando a amostra é insuficiente · não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente … |
 | `tests/hooks/useClientsComparison.availability.test.tsx` | 8 | useSingleClientComparisonRow — disponibilidade por fonte · descarta afinidade em cache após falha e usa histórico confiável como fallback · isola falhas de categoria e usa a afinidade confiável como fallback do topo · propaga CRM indisponível para métricas dependentes do ramo e permite retry … |
 | `tests/hooks/useDebounce.test.ts` | 8 | useDebounce · should return initial value immediately · should debounce value changes · should reset timer on rapid value changes … |
@@ -6011,6 +6015,7 @@ _nenhum item encontrado_
 | `tests/hooks/useFavoriteQuickAdd.test.tsx` | 8 | useFavoriteQuickAdd · reflete a inclusão local antes de a gravação remota terminar · serializa duas alterações rápidas e preserva a intenção mais recente · mantém removido quando inclusão e remoção rápidas falham no banco … |
 | `tests/hooks/useLoginRateLimit.test.ts` | 8 | useLoginRateLimit · permite login quando não há registro · incrementa tentativas e bloqueia após 5 · é case-insensitive no email … |
 | `tests/hooks/useMockupGenerator.test.ts` | 8 | useMockupGenerator (smoke) · exporta o hook como função · monta sem crashar com providers padrão · restauração de rascunho … |
+| `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 8 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
 | `tests/hooks/useWorkspaceNotifications-cache-invalidation.test.tsx` | 8 | useWorkspaceNotifications — cache invalidation after mutations · markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch · clearAll removes the sessionStorage cache entry and triggers a silent re-fetch · re-fetch after markAllAsRead bypasses the 5s prefetch TTL window … |
 | `tests/hooks/useWorkspaceNotifications-prefetch.test.tsx` | 8 | useWorkspaceNotifications — prefetch TTL idempotency · does not refetch when prefetch is called within 5s of last fetch · refetches when prefetch is called after the 5s TTL window · never toggles isLoading=true during a silent prefetch … |
 | `tests/lib/format-utils.test.ts` | 8 | formatCurrency · formats zero · formats positive values · formats negative values … |
@@ -6020,6 +6025,7 @@ _nenhum item encontrado_
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
 | `tests/pages/AdminLoginAttemptsPage.test.tsx` | 8 | AdminLoginAttemptsPage · renders the page title · renders stats cards · renders stat values … |
 | `tests/pages/GestorCompras.metrics.test.tsx` | 8 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
+| `tests/pages/kit-builder-guarda-saida.test.tsx` | 8 | guarda de saída do montador de kit · segura a saída quando o autosave falhou · nao atrapalha quando tudo esta salvo · para de segurar assim que o estado deixa de ter pendencia … |
 | `tests/pages/orders-filtros-na-url.test.ts` | 8 | filtros de pedidos na URL · lê busca, status, empresa e página · sem query, devolve o padrão e a primeira página · data é lida como dia local — fuso negativo não pode andar um dia … |
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
 | `tests/scripts/check-seller-scope.test.ts` | 8 | analyzeSource — consulta SEM escopo precisa ser acusada · em Promise.all cada query é avaliada sozinha (a escopada não  · analyzeSource — consulta COM escopo ou justificada passa · informa a linha e a tabela da violação … |
@@ -6048,13 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| `tests/hooks/useAdvancedFilters.test.ts` | 7 | useAdvancedFilters - Reset Logic · defaultAdvancedFilters has all string arrays empty · defaultAdvancedFilters has all booleans as false · defaultAdvancedFilters has correct range defaults … |
-| `tests/hooks/useClientSeasonality.errors.test.ts` | 7 | useClientSeasonality — falhas das fontes reais · falha do histórico do cliente vira isError com refetch, não mapa zerado · preserva o histórico do cliente e marca industryError quando o RPC do setor falha · preserva o histórico do cliente e marca industryError quando o CRM do setor falha … |
-| `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
-| `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
-| `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
-| `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
-| … +422 linhas — lista completa em `context.json` | | |
+| … +426 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6391,8 +6391,10 @@ _nenhum item encontrado_
 | * % de desconto APARENTE que o cliente verá */ | `src/components/quote/NegotiationMarkupCard.tsx` |
 | * Desconto REAL calculado (já considera markup) */ | `src/components/quote/NegotiationMarkupCard.tsx` |
 | * Limite de desconto do vendedor; null = sem limite definido */ | `src/components/quote/NegotiationMarkupCard.tsx` |
+| em duas abas tem a mesma chave, e o descarte de uma não pode apagar o | `src/components/quotes/QuoteAutoSave.tsx` |
 | * QuoteBuilderSummaryColumn — Coluna 3: Resumo com cards de itens, desconto e CTAs | `src/components/quotes/QuoteBuilderSummaryColumn.tsx` |
 | * Quando true, mostra apenas se houver pedido (silencia loading). */ | `src/components/quotes/QuoteOrderBadge.tsx` |
+| quando a tela sai de fato: mudar apenas os parametros da URL (menu | `src/components/routing/GlobalExitGuard.tsx` |
 | 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; | `src/components/search/VisualSearchButton.tsx` |
 | * Corre a chamada semântica contra o prazo, sem deixar timer solto. */ | `src/components/search/useGlobalSearch.ts` |
 | Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, | `src/components/search/useGlobalSearch.ts` |
@@ -6416,6 +6418,7 @@ _nenhum item encontrado_
 | A organização e sua permissão vêm da mesma leitura de memberships. | `src/contexts/OrganizationContext.tsx` |
 | limite ficariam fora do cache (validade "unknown" no fechamento), então a | `src/contexts/ProductsContext.tsx` |
 | - Tratamento específico para 429 (rate limit) e 402 (créditos) | `src/hooks/useAIRecommendations.ts` |
+| descarte nao pode apagar o que outra aba gravou. Duas origens contam como | `src/hooks/useAutoSave.ts` |
 | ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob | `src/hooks/useCatalogFiltering.ts` |
 | * Prefetch do catálogo SOMENTE após autenticação (#6). | `src/hooks/useCatalogPrefetch.ts` |
 | O label é apenas apresentação e pode ser "Grande" enquanto value é "G". | `src/hooks/useCatalogRelationFilters.ts` |
@@ -6467,6 +6470,9 @@ _nenhum item encontrado_
 | * Busca apenas a imagem principal de um produto | `src/hooks/useProductImages.ts` |
 | * Hook para buscar apenas a imagem principal | `src/hooks/useProductImages.ts` |
 | campos depois do snapshot inicial e isso não pode contar como "alteração | `src/hooks/useQuoteBuilderState.ts` |
+| * Status que a tela deve passar a considerar vigente, ou `null` quando nada | `src/hooks/useQuoteBuilderState.ts` |
+| trabalho não salvo e não pode ser levada embora na saída para o detalhe. | `src/hooks/useQuoteBuilderState.ts` |
+| O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode | `src/hooks/useQuoteBuilderState.ts` |
 | busca e popular o cache, mescla apenas os campos de preço nos itens — sem | `src/hooks/useQuoteBuilderState.ts` |
 | - 'dev' → apenas dev | `src/hooks/useRBAC.tsx` |
 | Fetch quote items for this product (handle 1000-row limit) | `src/hooks/useSalesHistory.ts` |
@@ -6481,6 +6487,7 @@ _nenhum item encontrado_
 | Delete limit | `src/hooks/useSellerDiscountLimits.ts` |
 | 2. Validar permissão por role | `src/hooks/useSicoobApprovals.ts` |
 | * Teto por página do contrato fechado do CRM (limit > 100 volta 403). */ | `src/hooks/useSimulation.ts` |
+| A pergunta já foi feita aqui; o portão global (\`GlobalExitGuard\`) não pode | `src/hooks/useSmartNavigation.ts` |
 | recente apenas uma vez, senão cada listener navegaria um passo atrás. | `src/hooks/useSmartNavigation.ts` |
 | Se não há variação, criar opções de 1 até o máximo | `src/hooks/useTechniquePricing.ts` |
 | Substitui useState quando o estado deve persistir no histórico/URL. | `src/hooks/useUrlState.ts` |
@@ -6535,11 +6542,4 @@ _nenhum item encontrado_
 | * Solicita permissão para notificações (para futura implementação) | `src/lib/sw-register.ts` |
 | * Score = (recente / baseline) * decay temporal * peso de volume mínimo | `src/lib/trending-score.ts` |
 | volume absoluto (para peso mínimo) | `src/lib/trending-score.ts` |
-| Score alto, mas amortecido pelo volume mínimo | `src/lib/trending-score.ts` |
-| Peso por volume mínimo: produtos com <3 eventos no recente têm peso reduzido | `src/lib/trending-score.ts` |
-| clamp de duration, limite de tamanho de path/role). Este helper só monta | `src/lib/access/dev-route-telemetry.ts` |
-| o payload mínimo. | `src/lib/access/dev-route-telemetry.ts` |
-| evitar duplicatas em re-renders. O rate limit pesado é server-side | `src/lib/access/dev-route-telemetry.ts` |
-| Telemetria não pode quebrar UX — engole erro silenciosamente. | `src/lib/access/dev-route-telemetry.ts` |
-| a UI dispare requisições amplas que dependeriam apenas do RLS para | `src/lib/auth/apply-seller-scope.ts` |
-| … +311 linhas — lista completa em `context.json` | |
+| … +321 linhas — lista completa em `context.json` | |

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "dc6bdc010f55c550f93afc34be7e6a04a0675e0e",
+  "sha": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 11:15 UTC",
-  "files_total": 5281,
-  "code_files": 3843,
-  "code_lines": 566207
+  "generated_at": "2026-11-24 15:28 UTC",
+  "files_total": 5287,
+  "code_files": 3849,
+  "code_lines": 567871
  },
  "version": "1.3.2",
- "facts_hash": "fb103c48c1c8bffd",
+ "facts_hash": "887c82a0d5376768",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1498,
-   ".tsx": 1453,
+   ".ts": 1500,
+   ".tsx": 1457,
    ".sql": 689,
    ".mjs": 141,
    ".py": 69,
@@ -57267,7 +57267,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 169
+    "deps_count": 170
    },
    {
     "path": "",
@@ -61649,6 +61649,20 @@
     "file": "tests/components/DevRoute.test.tsx"
    },
    {
+    "path": "/formulario",
+    "component": "Formulario",
+    "guard": "",
+    "roles": [],
+    "file": "tests/components/GlobalExitGuard.test.tsx"
+   },
+   {
+    "path": "/formulario",
+    "component": "Sonda",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx"
+   },
+   {
     "path": "/gestor",
     "component": "lazyWithRetry",
     "guard": "",
@@ -61957,6 +61971,20 @@
     "file": "tests/pages/quotes-list-filtros-na-url.test.tsx"
    },
    {
+    "path": "/orcamentos/1",
+    "component": "Editor",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx"
+   },
+   {
+    "path": "/orcamentos/2",
+    "component": "Editor",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx"
+   },
+   {
     "path": "/orcamentos/:id",
     "component": "lazyWithRetry",
     "guard": "",
@@ -62011,6 +62039,27 @@
     "guard": "",
     "roles": [],
     "file": "src/routes/config/quotes.ts"
+   },
+   {
+    "path": "/origem",
+    "component": "OutraTela",
+    "guard": "",
+    "roles": [],
+    "file": "tests/components/GlobalExitGuard.test.tsx"
+   },
+   {
+    "path": "/outra",
+    "component": "OutraTela",
+    "guard": "",
+    "roles": [],
+    "file": "tests/components/GlobalExitGuard.test.tsx"
+   },
+   {
+    "path": "/outra",
+    "component": "p",
+    "guard": "",
+    "roles": [],
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx"
    },
    {
     "path": "/p",
@@ -62444,7 +62493,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1289,
+  "components_count": 1292,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -63449,6 +63498,10 @@
    {
     "name": "useDebouncedFilters",
     "file": "src/hooks/useDebouncedFilters.ts"
+   },
+   {
+    "name": "useDescartarRascunhoAoDesmontar",
+    "file": "src/hooks/useDescartarRascunhoAoDesmontar.ts"
    },
    {
     "name": "useDevAccessAudit",
@@ -65000,7 +65053,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40229,
+   "lines": 40234,
    "tables": [
     "a",
     "admin_audit_log",
@@ -65199,7 +65252,7 @@
   {
    "module": "src",
    "files": 4,
-   "lines": 387,
+   "lines": 423,
    "tables": [],
    "exports": [
     "App.tsx: App",
@@ -65235,8 +65288,8 @@
   },
   {
    "module": "src/components",
-   "files": 1134,
-   "lines": 167611,
+   "files": 1135,
+   "lines": 167767,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65568,8 +65621,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 314,
-   "lines": 47892,
+   "files": 315,
+   "lines": 48142,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65668,7 +65721,7 @@
     "useAdvancedFilters.ts: useAdvancedFilters",
     "useAiUsage.ts: AiUsageLog, AiUsageQuota, QuotaStatus, useAiQuotaStatus, useAiUsageLogs, useAiQuotas",
     "useAllowedIPs.ts: useAllowedIPs",
-    "useAutoSave.ts: useAutoSave",
+    "useAutoSave.ts: descartarRascunho, useAutoSave",
     "useBridgeStatusBanner.ts: useBridgeStatusBanner",
     "useBulkImportFile.ts: ImportMode, ImportStep, ParsedData, useBulkImportFile",
     "useBulkSelection.ts: useBulkSelection",
@@ -65791,6 +65844,7 @@
     "src/hooks/useCustomizationPrice.ts",
     "src/hooks/useDebounce.ts",
     "src/hooks/useDebouncedFilters.ts",
+    "src/hooks/useDescartarRascunhoAoDesmontar.ts",
     "src/hooks/useDevAccessAudit.ts",
     "src/hooks/useDevGate.ts",
     "src/hooks/useDeviceDetection.ts",
@@ -65815,8 +65869,7 @@
     "src/hooks/useGeoBlocking.ts",
     "src/hooks/useGlobalShortcuts.ts",
     "src/hooks/useGravacaoPriceV2.ts",
-    "src/hooks/useGravacaoV2.ts",
-    "src/hooks/useIPValidation.ts"
+    "src/hooks/useGravacaoV2.ts"
    ]
   },
   {
@@ -65847,7 +65900,7 @@
   {
    "module": "src/lib",
    "files": 169,
-   "lines": 22859,
+   "lines": 22941,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -66015,7 +66068,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51286,
+   "lines": 51312,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67014,8 +67067,8 @@
   },
   {
    "module": "tests",
-   "files": 676,
-   "lines": 90765,
+   "files": 680,
+   "lines": 91874,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67146,6 +67199,7 @@
     "tests/components/EnhancedErrorBoundary.test.tsx",
     "tests/components/ErrorBoundary.test.tsx",
     "tests/components/GlobalConfirmDialog.test.tsx",
+    "tests/components/GlobalExitGuard.test.tsx",
     "tests/components/KitComposition.test.tsx",
     "tests/components/LastTestLine.test.tsx",
     "tests/components/LoadingScreen.test.tsx",
@@ -67178,8 +67232,7 @@
     "tests/components/QuoteBuilderSummaryColumn.readOnly.test.tsx",
     "tests/components/QuoteBuilderSummaryColumn.staleFilter.test.tsx",
     "tests/components/QuoteBuilderSummaryColumn.staleReactivity.test.tsx",
-    "tests/components/QuoteConsolidationPanel.history.test.tsx",
-    "tests/components/QuoteHistoryTimeline.test.tsx"
+    "tests/components/QuoteConsolidationPanel.history.test.tsx"
    ]
   }
  ],
@@ -81448,12 +81501,20 @@
     "text": "* Limite de desconto do vendedor; null = sem limite definido */"
    },
    {
+    "file": "src/components/quotes/QuoteAutoSave.tsx",
+    "text": "em duas abas tem a mesma chave, e o descarte de uma não pode apagar o"
+   },
+   {
     "file": "src/components/quotes/QuoteBuilderSummaryColumn.tsx",
     "text": "* QuoteBuilderSummaryColumn — Coluna 3: Resumo com cards de itens, desconto e CTAs"
    },
    {
     "file": "src/components/quotes/QuoteOrderBadge.tsx",
     "text": "* Quando true, mostra apenas se houver pedido (silencia loading). */"
+   },
+   {
+    "file": "src/components/routing/GlobalExitGuard.tsx",
+    "text": "quando a tela sai de fato: mudar apenas os parametros da URL (menu"
    },
    {
     "file": "src/components/search/VisualSearchButton.tsx",
@@ -81546,6 +81607,10 @@
    {
     "file": "src/hooks/useAIRecommendations.ts",
     "text": "- Tratamento específico para 429 (rate limit) e 402 (créditos)"
+   },
+   {
+    "file": "src/hooks/useAutoSave.ts",
+    "text": "descarte nao pode apagar o que outra aba gravou. Duas origens contam como"
    },
    {
     "file": "src/hooks/useCatalogFiltering.ts",
@@ -81753,6 +81818,18 @@
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
+    "text": "* Status que a tela deve passar a considerar vigente, ou `null` quando nada"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "text": "trabalho não salvo e não pode ser levada embora na saída para o detalhe."
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "text": "O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
     "text": "busca e popular o cache, mescla apenas os campos de preço nos itens — sem"
    },
    {
@@ -81806,6 +81883,10 @@
    {
     "file": "src/hooks/useSimulation.ts",
     "text": "* Teto por página do contrato fechado do CRM (limit > 100 volta 403). */"
+   },
+   {
+    "file": "src/hooks/useSmartNavigation.ts",
+    "text": "A pergunta já foi feita aqui; o portão global (\\`GlobalExitGuard\\`) não pode"
    },
    {
     "file": "src/hooks/useSmartNavigation.ts",
@@ -82164,6 +82245,14 @@
     "text": "* A tela saiu: volta a valer a regra antiga para essa rota. */"
    },
    {
+    "file": "src/lib/navigation/dirty-registry.ts",
+    "text": "autorização esquecida não pode liberar uma saída de minutos depois."
+   },
+   {
+    "file": "src/lib/navigation/dirty-registry.ts",
+    "text": "Quem tem efeito colateral na saida agenda aqui e o portao executa somente"
+   },
+   {
     "file": "src/lib/navigation/filter-dev-only-items.ts",
     "text": "1. `devOnly: true`           → visível somente para `isDev`."
    },
@@ -82386,6 +82475,10 @@
    {
     "file": "src/pages/KitBuilderPage.tsx",
     "text": "pessoal que estava aberto não pode sobreviver. Era por ele que \"Salvar\""
+   },
+   {
+    "file": "src/pages/KitBuilderPage.tsx",
+    "text": "portão global não pode perguntar de novo sobre a mesma troca."
    },
    {
     "file": "src/pages/MockupGenerator.tsx",
@@ -96170,6 +96263,11 @@
     "value": "90"
    },
    {
+    "file": "src/lib/navigation/dirty-registry.ts",
+    "name": "JANELA_DE_AUTORIZACAO_MS",
+    "value": "2000"
+   },
+   {
     "file": "src/lib/orders/purchasing-sla.ts",
     "name": "DIA_EM_MS",
     "value": "24"
@@ -99913,6 +100011,18 @@
     "kind": "compara"
    },
    {
+    "file": "src/components/routing/GlobalExitGuard.tsx",
+    "field": "state",
+    "value": "blocked",
+    "kind": "compara"
+   },
+   {
+    "file": "src/components/routing/GlobalExitGuard.tsx",
+    "field": "state",
+    "value": "blocked",
+    "kind": "compara"
+   },
+   {
     "file": "src/components/search/AdvancedSearch.tsx",
     "field": "type",
     "value": "product",
@@ -101816,6 +101926,42 @@
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "aprovar",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "status",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "nada",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "aprovar",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "status",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "nada",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
     "field": "status",
     "value": "draft",
     "kind": "compara"
@@ -101842,6 +101988,24 @@
     "file": "src/hooks/useQuoteBuilderState.ts",
     "field": "status",
     "value": "pending",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "nada",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "aprovar",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useQuoteBuilderState.ts",
+    "field": "tipo",
+    "value": "aprovar",
     "kind": "compara"
    },
    {
@@ -109739,8 +109903,8 @@
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "applyQuoteTransition",
-    "params": "params: TransitionQuoteParams",
-    "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …"
+    "params": "params: TransitionQuoteParams,",
+    "body": "const quoteId = params.quote.id; if (!quoteId) return { aplicada: false, saltosDeVersao: 0, statusVigente: null }; let saltosDeVersao = 0; let statusVigente: string | null = null; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, \"draft\"); if (!reopened) return { aplicada: false, saltosDeVersao, statusVigente }; effectiveStatus = \"draft\"; saltosDeVersao = 1; statusVigente = \"draft\"; } const …"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
@@ -118499,6 +118663,74 @@
     "name": "cancela a solicitação pendente ao trocar de rota"
    },
    {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "aviso global de saída"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "segura a navegação quando a tela declarou trabalho pendente"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "não descarta quando a navegação mantém a tela montada (só muda a query)"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "tela limpa sai sem ser interrogada"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "rota que não declarou estado continua sem aviso — não é este guard que muda isso"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "quem já confirmou a saída não é perguntado de novo"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "autorização vencida volta a pedir confirmação"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "voltar do navegador com histórico de verdade"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "segue avisando mesmo depois de a tela reescrever o histórico (importação de carrinho)"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "voltar do navegador com trabalho pendente"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "confirmar a volta pelo navegador sai de fato, sem reabrir o aviso"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "saída depois de salvar o orçamento"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "edição feita durante a gravação volta a pedir confirmação"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "salvamento sem edição pendente sai direto"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "efeito colateral da saída"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "só acontece quando o usuário confirma"
+   },
+   {
+    "file": "tests/components/GlobalExitGuard.test.tsx",
+    "name": "acontece junto com a saída confirmada"
+   },
+   {
     "file": "tests/components/KitComposition.test.tsx",
     "name": "KitComposition"
    },
@@ -123121,6 +123353,42 @@
    {
     "file": "tests/components/quotes/QuoteAutoSave.readonly.test.tsx",
     "name": "espera o identificador do rascunho antes de restaurar a chave local"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "QuoteAutoSave quando o orçamento deixa de ser editável"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "grava no mesmo rascunho a edição feita durante o envio"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "apaga o rascunho do orçamento que o usuário descartou"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "não apaga o rascunho que outra aba gravou"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "preserva a edição da aba duplicada, que herda a mesma sessão"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "apaga o rascunho que esta aba gravou"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "apaga o rascunho restaurado depois de recarregar a página"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "apaga a versão anterior quando a última edição ainda não foi gravada"
+   },
+   {
+    "file": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+    "name": "apaga o rascunho novo da sessão quando o orçamento ainda não tem número"
    },
    {
     "file": "tests/components/quotes/QuoteShareDialog.test.tsx",
@@ -128116,6 +128384,26 @@
    },
    {
     "file": "tests/hooks/useAutoSave.test.tsx",
+    "name": "grava o rascunho pendente quando a persistência é desligada"
+   },
+   {
+    "file": "tests/hooks/useAutoSave.test.tsx",
+    "name": "grava a volta ao valor inicial quando ela acontece durante o envio"
+   },
+   {
+    "file": "tests/hooks/useAutoSave.test.tsx",
+    "name": "grava a tela atual quando a gravação anterior ainda está em curso"
+   },
+   {
+    "file": "tests/hooks/useAutoSave.test.tsx",
+    "name": "não trata como conflito o rascunho apagado por outra sessão"
+   },
+   {
+    "file": "tests/hooks/useAutoSave.test.tsx",
+    "name": "não grava nada ao desligar quando não há alteração pendente"
+   },
+   {
+    "file": "tests/hooks/useAutoSave.test.tsx",
     "name": "expõe falha de persistência para a interface e permite nova tentativa"
    },
    {
@@ -128921,6 +129209,30 @@
    {
     "file": "tests/hooks/useDebouncedFilters.test.ts",
     "name": "cancela debounce anterior em mudanças rápidas"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "useDescartarRascunhoAoDesmontar"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "apaga o rascunho quando a tela sai de verdade"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "apaga o rascunho do editor antigo ao trocar de orçamento na mesma rota"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "não apaga enquanto a tela continua montada (entradas idênticas no histórico)"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "apaga só o rascunho do editor que saiu ao trocar entre caminhos distintos"
+   },
+   {
+    "file": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+    "name": "não apaga quando o pedido não foi feito"
    },
    {
     "file": "tests/hooks/useDevGate.test.ts",
@@ -130519,6 +130831,82 @@
     "name": "devolve a verba consultada quando o banco confirma a competência"
    },
    {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "saída depois de salvar o orçamento"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "libera a saída para o detalhe quando o formulário não mudou durante o salvamento"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não libera a saída quando o formulário mudou durante o salvamento"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "mantém a mesma regra quando a transição de status não foi confirmada"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não apaga a autorização de uma saída que já estava decidida antes do salvamento"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "referência de versão depois de salvar"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "acompanha os saltos que a transição de status provocou na linha"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "mantém a versão devolvida pela gravação quando não houve transição"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não mexe na referência em orçamento novo"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "status da tela depois de salvar"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "acompanha a reabertura: a tela passa a enviar rascunho"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "acompanha o pedido de aprovação"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não mexe no status quando a transição não mudou nada"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "saltos de versão da transição de status"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "conta um salto quando reabre um orçamento fora de rascunho"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "conta o segundo salto quando a reabertura desemboca em pedido de aprovação"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "adota o rascunho e conta o salto quando a aprovação falha após a reabertura"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não conta salto quando a transição falha"
+   },
+   {
+    "file": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+    "name": "não conta salto quando o status final já é o persistido"
+   },
+   {
     "file": "tests/hooks/useQuoteFunnel.test.ts",
     "name": "useQuoteFunnel"
    },
@@ -131189,6 +131577,10 @@
    {
     "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
     "name": "DEPOIS do desmonte da tela, volta a valer a regra antiga da rota crítica"
+   },
+   {
+    "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+    "name": "o voltar CONFIRMADO descarta o trabalho local da tela"
    },
    {
     "file": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
@@ -134269,6 +134661,62 @@
    {
     "file": "tests/lib/navigation-dirty-registry.test.ts",
     "name": "rotas sao independentes entre si"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "autorização de saída de quem já perguntou"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "sem confirmação recente, o portão não está autorizado"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "quem confirmou autoriza a saída que vem logo abaixo"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "autorização velha não libera a próxima saída — o usuário pode ter mudado de ideia"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "o logout apaga a autorização junto com o registro"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "limpar só a autorização preserva quem está sujo"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "rótulo do botão de saída"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "rota sem rótulo devolve null — o portão usa o texto padrão"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "a tela que grava ao sair diz isso no botão"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "ações que só valem depois da saída confirmada"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "executa uma única vez, na ordem em que foram agendadas"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "descartar impede o efeito colateral de quem ficou na tela"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "a saida confirmada descarta o trabalho local de quem declarou"
+   },
+   {
+    "file": "tests/lib/navigation-dirty-registry.test.ts",
+    "name": "o logout limpa a fila junto com o registro"
    },
    {
     "file": "tests/lib/notifications-metrics-budget.test.ts",
@@ -137641,6 +138089,10 @@
    {
     "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
     "name": "segura a saida por dentro do app (Biblioteca) ate a confirmacao"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "descarta o trabalho local so quando o usuario confirma sair"
    },
    {
     "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
@@ -163742,6 +164194,9 @@
       "compara:src/utils/resilience.ts",
       "compara:supabase/functions/_shared/circuit-breaker.ts"
      ],
+     "blocked": [
+      "compara:src/components/routing/GlobalExitGuard.tsx"
+     ],
      "loading": [
       "compara:src/pages/sicoob/orders/OrderDetailPage.tsx",
       "escreve:src/components/sicoob/orders/OrderBudgetIntelligence.tsx",
@@ -163993,6 +164448,37 @@
       "escreve:src/hooks/useNovelties.ts"
      ]
     },
+    "tipo": {
+     "aprovar": [
+      "compara:src/hooks/useQuoteBuilderState.ts",
+      "escreve:src/hooks/useQuoteBuilderState.ts"
+     ],
+     "status": [
+      "escreve:src/hooks/useQuoteBuilderState.ts"
+     ],
+     "nada": [
+      "compara:src/hooks/useQuoteBuilderState.ts",
+      "escreve:src/hooks/useQuoteBuilderState.ts"
+     ],
+     "metalico": [
+      "escreve:src/types/infrastructure/promobrind.ts"
+     ],
+     "CPF": [
+      "compara:src/utils/pixMask.ts"
+     ],
+     "CNPJ": [
+      "compara:src/utils/pixMask.ts"
+     ],
+     "Telefone": [
+      "compara:src/utils/pixMask.ts"
+     ],
+     "Email": [
+      "compara:src/utils/pixMask.ts"
+     ],
+     "Aleatória": [
+      "compara:src/utils/pixMask.ts"
+     ]
+    },
     "delivery_status": {
      "accepted": [
       "compara:src/hooks/useTransactionalEmail.ts",
@@ -164024,26 +164510,6 @@
      ],
      "accepted": [
       "compara:src/pages/sicoob/SicoobInvitationAcceptPage.tsx"
-     ]
-    },
-    "tipo": {
-     "metalico": [
-      "escreve:src/types/infrastructure/promobrind.ts"
-     ],
-     "CPF": [
-      "compara:src/utils/pixMask.ts"
-     ],
-     "CNPJ": [
-      "compara:src/utils/pixMask.ts"
-     ],
-     "Telefone": [
-      "compara:src/utils/pixMask.ts"
-     ],
-     "Email": [
-      "compara:src/utils/pixMask.ts"
-     ],
-     "Aleatória": [
-      "compara:src/utils/pixMask.ts"
      ]
     },
     "last_status": {
@@ -183939,7 +184405,7 @@
   },
   "scripts/inventario/gerar-rotas.mjs": {
    "path": "scripts/inventario/gerar-rotas.mjs",
-   "lines": 462,
+   "lines": 467,
    "exports": [
     "const MAX_SALTOS_FEATURE",
     "function resolverImport",
@@ -185582,7 +186048,7 @@
   },
   "src/App.tsx": {
    "path": "src/App.tsx",
-   "lines": 165,
+   "lines": 201,
    "exports": [
     "default App"
    ],
@@ -193427,7 +193893,7 @@
   },
   "src/components/cart/CartHeaderButton.tsx": {
    "path": "src/components/cart/CartHeaderButton.tsx",
-   "lines": 298,
+   "lines": 312,
    "exports": [
     "function CartHeaderButton"
    ],
@@ -201948,9 +202414,10 @@
   },
   "src/components/quotes/QuoteAutoSave.tsx": {
    "path": "src/components/quotes/QuoteAutoSave.tsx",
-   "lines": 267,
+   "lines": 306,
    "exports": [
     "function createQuoteDraftId",
+    "function limparRascunhoDoOrcamento",
     "function getQuoteDraftIdForScope",
     "function QuoteAutoSave"
    ],
@@ -202005,6 +202472,9 @@
      "value": "saving",
      "kind": "compara"
     }
+   ],
+   "rule_comments": [
+    "em duas abas tem a mesma chave, e o descarte de uma não pode apagar o"
    ],
    "doc": "QuoteAutoSave - Sistema de auto-save para orçamentos Salva rascunhos automaticamente no localStorage com indicador visual",
    "temporal": [
@@ -203292,6 +203762,28 @@
    "lines": 188,
    "exports": [
     "function ScheduledReportsManager"
+   ]
+  },
+  "src/components/routing/GlobalExitGuard.tsx": {
+   "path": "src/components/routing/GlobalExitGuard.tsx",
+   "lines": 103,
+   "exports": [
+    "function GlobalExitGuard"
+   ],
+   "status_values": [
+    {
+     "field": "state",
+     "value": "blocked",
+     "kind": "compara"
+    },
+    {
+     "field": "state",
+     "value": "blocked",
+     "kind": "compara"
+    }
+   ],
+   "rule_comments": [
+    "quando a tela sai de fato: mudar apenas os parametros da URL (menu"
    ]
   },
   "src/components/search/AdvancedSearch.tsx": {
@@ -206528,8 +207020,9 @@
   },
   "src/hooks/useAutoSave.ts": {
    "path": "src/hooks/useAutoSave.ts",
-   "lines": 258,
+   "lines": 345,
    "exports": [
+    "function descartarRascunho",
     "function useAutoSave"
    ],
    "params": [
@@ -206541,6 +207034,9 @@
      "name": "AUTO_SAVE_RETENTION_MS",
      "value": "30"
     }
+   ],
+   "rule_comments": [
+    "descarte nao pode apagar o que outra aba gravou. Duas origens contam como"
    ],
    "hooks": [
     "useAutoSave"
@@ -208284,6 +208780,16 @@
    ],
    "hooks": [
     "useDebouncedFilters"
+   ]
+  },
+  "src/hooks/useDescartarRascunhoAoDesmontar.ts": {
+   "path": "src/hooks/useDescartarRascunhoAoDesmontar.ts",
+   "lines": 31,
+   "exports": [
+    "function useDescartarRascunhoAoDesmontar"
+   ],
+   "hooks": [
+    "useDescartarRascunhoAoDesmontar"
    ]
   },
   "src/hooks/useDevAccessAudit.ts": {
@@ -211534,9 +212040,11 @@
   },
   "src/hooks/useQuoteBuilderState.ts": {
    "path": "src/hooks/useQuoteBuilderState.ts",
-   "lines": 1034,
+   "lines": 1124,
    "exports": [
     "function validateBudgetForSubmission",
+    "function applyQuoteTransition",
+    "function completeQuoteSave",
     "function useQuoteBuilderState"
    ],
    "tables": [
@@ -211567,6 +212075,36 @@
    ],
    "status_values": [
     {
+     "field": "tipo",
+     "value": "aprovar",
+     "kind": "escreve"
+    },
+    {
+     "field": "tipo",
+     "value": "status",
+     "kind": "escreve"
+    },
+    {
+     "field": "tipo",
+     "value": "nada",
+     "kind": "escreve"
+    },
+    {
+     "field": "tipo",
+     "value": "aprovar",
+     "kind": "escreve"
+    },
+    {
+     "field": "tipo",
+     "value": "status",
+     "kind": "escreve"
+    },
+    {
+     "field": "tipo",
+     "value": "nada",
+     "kind": "escreve"
+    },
+    {
      "field": "status",
      "value": "draft",
      "kind": "compara"
@@ -211590,6 +212128,21 @@
      "field": "status",
      "value": "pending",
      "kind": "compara"
+    },
+    {
+     "field": "tipo",
+     "value": "nada",
+     "kind": "compara"
+    },
+    {
+     "field": "tipo",
+     "value": "aprovar",
+     "kind": "compara"
+    },
+    {
+     "field": "tipo",
+     "value": "aprovar",
+     "kind": "compara"
     }
    ],
    "role_checks": [
@@ -211597,6 +212150,9 @@
    ],
    "rule_comments": [
     "campos depois do snapshot inicial e isso não pode contar como \"alteração",
+    "* Status que a tela deve passar a considerar vigente, ou `null` quando nada",
+    "trabalho não salvo e não pode ser levada embora na saída para o detalhe.",
+    "O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode",
     "busca e popular o cache, mescla apenas os campos de preço nos itens — sem"
    ],
    "doc": "useQuoteBuilderState — Estado centralizado do QuoteBuilder (REFATORADO) Extrai toda a lógica de estado, cálculos e ações do QuoteBuilderPage.",
@@ -211636,8 +212192,8 @@
     },
     {
      "name": "applyQuoteTransition",
-     "params": "params: TransitionQuoteParams",
-     "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …"
+     "params": "params: TransitionQuoteParams,",
+     "body": "const quoteId = params.quote.id; if (!quoteId) return { aplicada: false, saltosDeVersao: 0, statusVigente: null }; let saltosDeVersao = 0; let statusVigente: string | null = null; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, \"draft\"); if (!reopened) return { aplicada: false, saltosDeVersao, statusVigente }; effectiveStatus = \"draft\"; saltosDeVersao = 1; statusVigente = \"draft\"; } const …"
     },
     {
      "name": "canPersistQuoteVersion",
@@ -212549,7 +213105,7 @@
   },
   "src/hooks/useScreenDirtyState.ts": {
    "path": "src/hooks/useScreenDirtyState.ts",
-   "lines": 18,
+   "lines": 30,
    "exports": [
     "function useScreenDirtyState"
    ],
@@ -213116,15 +213672,13 @@
   },
   "src/hooks/useSmartNavigation.ts": {
    "path": "src/hooks/useSmartNavigation.ts",
-   "lines": 167,
+   "lines": 187,
    "exports": [
     "function isCriticalPathname",
     "function useSmartNavigation"
    ],
-   "navigates": [
-    "/"
-   ],
    "rule_comments": [
+    "A pergunta já foi feita aqui; o portão global (\\`GlobalExitGuard\\`) não pode",
     "recente apenas uma vez, senão cada listener navegaria um passo atrás."
    ],
    "hooks": [
@@ -213536,7 +214090,7 @@
   },
   "src/hooks/useUnsavedChangesGuard.ts": {
    "path": "src/hooks/useUnsavedChangesGuard.ts",
-   "lines": 68,
+   "lines": 78,
    "exports": [
     "function useUnsavedChangesGuard"
    ],
@@ -219829,17 +220383,33 @@
   },
   "src/lib/navigation/dirty-registry.ts": {
    "path": "src/lib/navigation/dirty-registry.ts",
-   "lines": 60,
+   "lines": 142,
    "exports": [
     "function declararEstadoDaRota",
+    "function descartarTrabalhoDaRota",
     "function esquecerRota",
     "function rotaTemEstadoDeclarado",
     "function rotaEstaSuja",
+    "function rotuloDaRota",
     "function mensagemDaRota",
+    "function agendarAposSaida",
+    "function executarAcoesAposSaida",
+    "function descartarAcoesAposSaida",
+    "function autorizarSaida",
+    "function saidaAutorizada",
+    "function limparAutorizacaoDeSaida",
     "function limparRegistroDeRotas"
    ],
+   "params": [
+    {
+     "name": "JANELA_DE_AUTORIZACAO_MS",
+     "value": "2000"
+    }
+   ],
    "rule_comments": [
-    "* A tela saiu: volta a valer a regra antiga para essa rota. */"
+    "* A tela saiu: volta a valer a regra antiga para essa rota. */",
+    "autorização esquecida não pode liberar uma saída de minutos depois.",
+    "Quem tem efeito colateral na saida agenda aqui e o portao executa somente"
    ]
   },
   "src/lib/navigation/filter-dev-only-items.ts": {
@@ -222096,7 +222666,7 @@
   },
   "src/pages/KitBuilderPage.tsx": {
    "path": "src/pages/KitBuilderPage.tsx",
-   "lines": 726,
+   "lines": 730,
    "exports": [
     "function KitBuilderPage"
    ],
@@ -222137,7 +222707,8 @@
     "lido, não edição do usuário, e não pode disparar salvamento automático —",
     "o autosave deve mesmo persistir.",
     "Item 7 — celebrate first-time validation (false → true)",
-    "pessoal que estava aberto não pode sobreviver. Era por ele que \"Salvar\""
+    "pessoal que estava aberto não pode sobreviver. Era por ele que \"Salvar\"",
+    "portão global não pode perguntar de novo sobre a mesma troca."
    ],
    "doc": "Kit Builder Page — Premium 10/10 design - 2-tier sticky header - Continuous progress wizard - Sticky sidebar with hero pricing - Subtle noise BG + motion transitions",
    "calc_fns": [
@@ -222689,7 +223260,7 @@
   },
   "src/pages/QuoteBuilderPage.tsx": {
    "path": "src/pages/QuoteBuilderPage.tsx",
-   "lines": 141,
+   "lines": 163,
    "exports": [
     "function QuoteBuilderPage"
    ],
@@ -245294,6 +245865,57 @@
     "cancela a solicitação pendente ao trocar de rota"
    ]
   },
+  "tests/components/GlobalExitGuard.test.tsx": {
+   "path": "tests/components/GlobalExitGuard.test.tsx",
+   "lines": 363,
+   "is_test": true,
+   "routes": [
+    {
+     "path": "/outra",
+     "component": "OutraTela",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/origem",
+     "component": "OutraTela",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/formulario",
+     "component": "Formulario",
+     "guard": "",
+     "roles": []
+    }
+   ],
+   "navigates": [
+    "/formulario"
+   ],
+   "rule_comments": [
+    "O menu \"Novo Orçamento\" troca apenas os parâmetros da URL: formulário e"
+   ],
+   "doc": "O portão de saída do portal. O registro de rota suja já existia, mas só o voltar o consultava: menu e link chamavam `navigate` direto e levavam o formulário preenchido embora. Estes testes exercitam a navegação de verdade num data router — o clique no link, o diálogo, o \"Sair sem salvar\" e a autoriz …",
+   "tests": [
+    "aviso global de saída",
+    "segura a navegação quando a tela declarou trabalho pendente",
+    "não descarta quando a navegação mantém a tela montada (só muda a query)",
+    "tela limpa sai sem ser interrogada",
+    "rota que não declarou estado continua sem aviso — não é este guard que muda isso",
+    "quem já confirmou a saída não é perguntado de novo",
+    "autorização vencida volta a pedir confirmação",
+    "voltar do navegador com histórico de verdade",
+    "segue avisando mesmo depois de a tela reescrever o histórico (importação de carrinho)",
+    "voltar do navegador com trabalho pendente",
+    "confirmar a volta pelo navegador sai de fato, sem reabrir o aviso",
+    "saída depois de salvar o orçamento",
+    "edição feita durante a gravação volta a pedir confirmação",
+    "salvamento sem edição pendente sai direto",
+    "efeito colateral da saída",
+    "só acontece quando o usuário confirma",
+    "acontece junto com a saída confirmada"
+   ]
+  },
   "tests/components/KitComposition.test.tsx": {
    "path": "tests/components/KitComposition.test.tsx",
    "lines": 232,
@@ -247734,6 +248356,27 @@
     "espera o identificador do rascunho antes de restaurar a chave local"
    ]
   },
+  "tests/components/quotes/QuoteAutoSave.transicao.test.tsx": {
+   "path": "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+   "lines": 172,
+   "is_test": true,
+   "rule_comments": [
+    "Enviar o orçamento muda o status e a tela fica somente leitura, o que",
+    "de uma não pode levar o trabalho mais novo da outra junto.",
+    "conteúdo distingue — a duplicata editou depois e não pode perder isso."
+   ],
+   "tests": [
+    "QuoteAutoSave quando o orçamento deixa de ser editável",
+    "grava no mesmo rascunho a edição feita durante o envio",
+    "apaga o rascunho do orçamento que o usuário descartou",
+    "não apaga o rascunho que outra aba gravou",
+    "preserva a edição da aba duplicada, que herda a mesma sessão",
+    "apaga o rascunho que esta aba gravou",
+    "apaga o rascunho restaurado depois de recarregar a página",
+    "apaga a versão anterior quando a última edição ainda não foi gravada",
+    "apaga o rascunho novo da sessão quando o orçamento ainda não tem número"
+   ]
+  },
   "tests/components/quotes/QuoteShareDialog.test.tsx": {
    "path": "tests/components/quotes/QuoteShareDialog.test.tsx",
    "lines": 117,
@@ -249981,7 +250624,7 @@
   },
   "tests/hooks/useAutoSave.test.tsx": {
    "path": "tests/hooks/useAutoSave.test.tsx",
-   "lines": 148,
+   "lines": 267,
    "is_test": true,
    "errors": [
     "quota excedida"
@@ -249989,6 +250632,11 @@
    "tests": [
     "useAutoSave",
     "persiste apenas no namespace informado, preservando rascunhos simultâneos",
+    "grava o rascunho pendente quando a persistência é desligada",
+    "grava a volta ao valor inicial quando ela acontece durante o envio",
+    "grava a tela atual quando a gravação anterior ainda está em curso",
+    "não trata como conflito o rascunho apagado por outra sessão",
+    "não grava nada ao desligar quando não há alteração pendente",
     "expõe falha de persistência para a interface e permite nova tentativa",
     "detecta edição concorrente em outra aba e não sobrescreve o rascunho mais recente",
     "revalida a revisão armazenada antes de gravar quando o evento entre abas ainda não chegou",
@@ -250458,6 +251106,48 @@
     "retorna o valor inicial sem delay",
     "aplica debounce em mudanças subsequentes",
     "cancela debounce anterior em mudanças rápidas"
+   ]
+  },
+  "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx": {
+   "path": "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+   "lines": 107,
+   "is_test": true,
+   "routes": [
+    {
+     "path": "/formulario",
+     "component": "Sonda",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/outra",
+     "component": "p",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/orcamentos/1",
+     "component": "Editor",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/orcamentos/2",
+     "component": "Editor",
+     "guard": "",
+     "roles": []
+    }
+   ],
+   "rule_comments": [
+    "diferentes: a transição desmonta o editor anterior e apenas o rascunho"
+   ],
+   "tests": [
+    "useDescartarRascunhoAoDesmontar",
+    "apaga o rascunho quando a tela sai de verdade",
+    "apaga o rascunho do editor antigo ao trocar de orçamento na mesma rota",
+    "não apaga enquanto a tela continua montada (entradas idênticas no histórico)",
+    "apaga só o rascunho do editor que saiu ao trocar entre caminhos distintos",
+    "não apaga quando o pedido não foi feito"
    ]
   },
   "tests/hooks/useDevGate.test.ts": {
@@ -251210,6 +251900,36 @@
     "devolve a verba consultada quando o banco confirma a competência"
    ]
   },
+  "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts": {
+   "path": "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+   "lines": 199,
+   "is_test": true,
+   "rule_comments": [
+    "exemplo). O salvamento não pode revogar essa resposta — quem responde é o"
+   ],
+   "doc": "O que acontece com a tela depois que o orçamento é gravado. O salvamento termina navegando para o detalhe. Quando alguém edita durante a chamada, essa edição não está no orçamento gravado: a saída precisa continuar passando pelo aviso e a referência de versão em memória precisa acompanhar a transiçã …",
+   "tests": [
+    "saída depois de salvar o orçamento",
+    "libera a saída para o detalhe quando o formulário não mudou durante o salvamento",
+    "não libera a saída quando o formulário mudou durante o salvamento",
+    "mantém a mesma regra quando a transição de status não foi confirmada",
+    "não apaga a autorização de uma saída que já estava decidida antes do salvamento",
+    "referência de versão depois de salvar",
+    "acompanha os saltos que a transição de status provocou na linha",
+    "mantém a versão devolvida pela gravação quando não houve transição",
+    "não mexe na referência em orçamento novo",
+    "status da tela depois de salvar",
+    "acompanha a reabertura: a tela passa a enviar rascunho",
+    "acompanha o pedido de aprovação",
+    "não mexe no status quando a transição não mudou nada",
+    "saltos de versão da transição de status",
+    "conta um salto quando reabre um orçamento fora de rascunho",
+    "conta o segundo salto quando a reabertura desemboca em pedido de aprovação",
+    "adota o rascunho e conta o salto quando a aprovação falha após a reabertura",
+    "não conta salto quando a transição falha",
+    "não conta salto quando o status final já é o persistido"
+   ]
+  },
   "tests/hooks/useQuoteFunnel.test.ts": {
    "path": "tests/hooks/useQuoteFunnel.test.ts",
    "lines": 64,
@@ -251613,7 +252333,7 @@
   },
   "tests/hooks/useSmartNavigation.registro-sujo.test.tsx": {
    "path": "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
-   "lines": 153,
+   "lines": 182,
    "is_test": true,
    "params": [
     {
@@ -251632,6 +252352,7 @@
     "a tela escolhe o texto do aviso, em vez do genérico",
     "tela montada DE VERDADE declara pelo hook, e o voltar obedece",
     "DEPOIS do desmonte da tela, volta a valer a regra antiga da rota crítica",
+    "o voltar CONFIRMADO descarta o trabalho local da tela",
     "rota NÃO crítica sem declaração continua saindo sem perguntar"
    ]
   },
@@ -253177,7 +253898,7 @@
   },
   "tests/lib/navigation-dirty-registry.test.ts": {
    "path": "tests/lib/navigation-dirty-registry.test.ts",
-   "lines": 51,
+   "lines": 156,
    "is_test": true,
    "doc": "O voltar pedia confirmação por pathname: em /simulador, /orcamentos/novo e /mockup-generator ele afirmava \"Você tem alterações não salvas nesta tela\" a cada clique, com a tela em branco inclusive. Interrogar sem motivo ensina o usuário a confirmar sem ler.",
    "tests": [
@@ -253186,7 +253907,21 @@
     "tela limpa declara que nao ha o que perder",
     "tela com trabalho pendente declara sujo",
     "ao desmontar, a rota volta a nao ter estado declarado",
-    "rotas sao independentes entre si"
+    "rotas sao independentes entre si",
+    "autorização de saída de quem já perguntou",
+    "sem confirmação recente, o portão não está autorizado",
+    "quem confirmou autoriza a saída que vem logo abaixo",
+    "autorização velha não libera a próxima saída — o usuário pode ter mudado de ideia",
+    "o logout apaga a autorização junto com o registro",
+    "limpar só a autorização preserva quem está sujo",
+    "rótulo do botão de saída",
+    "rota sem rótulo devolve null — o portão usa o texto padrão",
+    "a tela que grava ao sair diz isso no botão",
+    "ações que só valem depois da saída confirmada",
+    "executa uma única vez, na ordem em que foram agendadas",
+    "descartar impede o efeito colateral de quem ficou na tela",
+    "a saida confirmada descarta o trabalho local de quem declarou",
+    "o logout limpa a fila junto com o registro"
    ]
   },
   "tests/lib/notifications-metrics-budget.test.ts": {
@@ -254801,7 +255536,7 @@
   },
   "tests/pages/kit-builder-guarda-saida.test.tsx": {
    "path": "tests/pages/kit-builder-guarda-saida.test.tsx",
-   "lines": 87,
+   "lines": 102,
    "is_test": true,
    "doc": "Sair do montador com trabalho que não chegou ao banco. O autosave cobre o caso normal, mas não a janela do debounce nem — o que importa de verdade — o autosave que falhou ou bateu em conflito: nesse estado o kit existe só na tela. Antes desta guarda, só `QuoteBuilderPage` avisava; fechar a aba em `/ …",
    "tests": [
@@ -254810,6 +255545,7 @@
     "nao atrapalha quando tudo esta salvo",
     "para de segurar assim que o estado deixa de ter pendencia",
     "segura a saida por dentro do app (Biblioteca) ate a confirmacao",
+    "descarta o trabalho local so quando o usuario confirma sair",
     "sai direto quando nao ha nada pendente",
     "declara o estado da rota para o voltar global consultar"
    ]
@@ -257901,10 +258637,41 @@
   }
  },
  "git": {
-  "sha": "dc6bdc010f55c550f93afc34be7e6a04a0675e0e",
+  "sha": "947f1afb6a081ba44cfe982c5b69756707fb8bbf",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "947f1af",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "feat: navegacao interna avisa antes de perder formulario preenchido (#421)",
+    "files": [
+     "scripts/inventario/gerar-rotas.mjs",
+     "src/App.tsx",
+     "src/components/cart/CartHeaderButton.tsx",
+     "src/components/quotes/QuoteAutoSave.tsx",
+     "src/components/routing/GlobalExitGuard.tsx",
+     "src/hooks/useAutoSave.ts",
+     "src/hooks/useDescartarRascunhoAoDesmontar.ts",
+     "src/hooks/useQuoteBuilderState.ts",
+     "src/hooks/useScreenDirtyState.ts",
+     "src/hooks/useSmartNavigation.ts",
+     "src/hooks/useUnsavedChangesGuard.ts",
+     "src/lib/navigation/dirty-registry.ts",
+     "src/pages/KitBuilderPage.tsx",
+     "src/pages/QuoteBuilderPage.tsx",
+     "tests/components/GlobalExitGuard.test.tsx",
+     "tests/components/quotes/QuoteAutoSave.readonly.test.tsx",
+     "tests/components/quotes/QuoteAutoSave.transicao.test.tsx",
+     "tests/hooks/useAutoSave.test.tsx",
+     "tests/hooks/useDescartarRascunhoAoDesmontar.test.tsx",
+     "tests/hooks/useQuoteBuilderState.saidaAposSalvar.test.ts",
+     "tests/hooks/useSmartNavigation.registro-sujo.test.tsx",
+     "tests/lib/navigation-dirty-registry.test.ts",
+     "tests/pages/kit-builder-guarda-saida.test.tsx"
+    ]
+   },
    {
     "sha": "dc6bdc0",
     "date": "2026-11-24",
@@ -258980,19 +259747,13 @@
     "files": [
      "tests/scripts/supabase-js-version-spread.test.ts"
     ]
-   },
-   {
-    "sha": "e1ef799",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "chore(deps): sobe os 10 avancos reais do grupo production-minor-patch (#376)",
-    "files": [
-     "package-lock.json",
-     "package.json"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "src/hooks/useQuoteBuilderState.ts",
+    3
+   ],
    [
     "scripts/automation.config.json",
     3
@@ -259020,6 +259781,18 @@
    [
     "src/hooks/quote/useQuoteInitialization.ts",
     3
+   ],
+   [
+    "src/components/cart/CartHeaderButton.tsx",
+    2
+   ],
+   [
+    "src/pages/KitBuilderPage.tsx",
+    2
+   ],
+   [
+    "tests/pages/kit-builder-guarda-saida.test.tsx",
+    2
    ],
    [
     ".github/workflows/deploy-sicoob-functions.yml",
@@ -259055,22 +259828,6 @@
    ],
    [
     "src/hooks/quotes/useQuotes.ts",
-    2
-   ],
-   [
-    "src/hooks/useSicoobApprovals.ts",
-    2
-   ],
-   [
-    "src/hooks/useTransactionalEmail.ts",
-    2
-   ],
-   [
-    "src/pages/quote-view/QuoteBitrixSync.ts",
-    2
-   ],
-   [
-    "src/services/OrderService.ts",
     2
    ]
   ]

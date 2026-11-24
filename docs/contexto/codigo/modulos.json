@@ -926,7 +926,7 @@
    "modulo": "components/cart",
    "arquivos": 17,
    "testes": 0,
-   "linhas": 2423,
+   "linhas": 2437,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -1006,6 +1006,7 @@
     "hooks/sicoob",
     "integrations/supabase",
     "lib",
+    "lib/navigation",
     "stores"
    ],
    "pacotes_externos": [
@@ -1679,6 +1680,7 @@
     "components/products",
     "components/quotes",
     "components/replenishments",
+    "components/routing",
     "pages",
     "pages/product-detail"
    ],
@@ -3143,6 +3145,7 @@
     "useDebouncedFilters",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDevChallenge",
     "useDevGate",
     "useDiscountApproval",
@@ -3925,6 +3928,7 @@
     "useDebouncedFilters",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useDuplicateEntity",
     "useDuplicateKitDetector",
@@ -5684,7 +5688,7 @@
    "modulo": "components/quotes",
    "arquivos": 73,
    "testes": 0,
-   "linhas": 9511,
+   "linhas": 9550,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -6083,6 +6087,44 @@
    "pacotes_externos": [
     "date-fns",
     "lucide-react"
+   ]
+  },
+  {
+   "modulo": "components/routing",
+   "arquivos": 1,
+   "testes": 0,
+   "linhas": 103,
+   "itens_menu": [],
+   "telas": [],
+   "rotas_http": [],
+   "componentes": 1,
+   "hooks_locais": [],
+   "hooks_definidos": [],
+   "edges": [],
+   "tabelas": [],
+   "rpcs": [],
+   "buckets": [],
+   "canais_realtime": [],
+   "env": [
+    "DEV",
+    "PROD",
+    "VITE_LOVABLE_PREVIEW"
+   ],
+   "flags": [],
+   "papeis": [],
+   "diretos": {
+    "edges": [],
+    "tabelas": [],
+    "rpcs": []
+   },
+   "importado_por_outros_modulos": [],
+   "depende_de_modulos": [
+    "components/common",
+    "lib",
+    "lib/navigation"
+   ],
+   "pacotes_externos": [
+    "react-router-dom"
    ]
   },
   {
@@ -7211,9 +7253,9 @@
   },
   {
    "modulo": "hooks",
-   "arquivos": 210,
+   "arquivos": 211,
    "testes": 0,
-   "linhas": 35225,
+   "linhas": 35475,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -7312,6 +7354,7 @@
     "useDeleteFreshnessOverride",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDevAccessAudit",
     "useDevGate",
     "useDeviceDetection",
@@ -7685,6 +7728,7 @@
     "useSearchAsYouType",
     "useThrottle",
     "useDebouncedFilters",
+    "useDescartarRascunhoAoDesmontar",
     "useDevAccessAudit",
     "useDevGate",
     "useDeviceDetection",
@@ -10302,6 +10346,7 @@
     "useDebouncedFilters",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useDuplicateEntity",
     "useDuplicateKitDetector",
@@ -10795,6 +10840,7 @@
     "components/quotes",
     "components/ramo-atividade",
     "components/replenishments",
+    "components/routing",
     "components/search",
     "components/settings",
     "components/sicoob",
@@ -11272,7 +11318,7 @@
    "modulo": "lib/navigation",
    "arquivos": 5,
    "testes": 0,
-   "linhas": 248,
+   "linhas": 330,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11296,10 +11342,12 @@
     "rpcs": []
    },
    "importado_por_outros_modulos": [
+    "components/cart",
     "components/command",
     "components/common",
     "components/layout",
     "components/navigation",
+    "components/routing",
     "contexts",
     "hooks",
     "pages"
@@ -11736,7 +11784,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19206,
+   "linhas": 19232,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",
@@ -11945,6 +11993,7 @@
     "useDeleteFreshnessOverride",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDevGate",
     "useDiscountApproval",
     "useDropboxFiles",
@@ -14864,6 +14913,7 @@
     "useDeleteFreshnessOverride",
     "useDeleteRamoAtividade",
     "useDeleteSegmento",
+    "useDescartarRascunhoAoDesmontar",
     "useDevAccessAudit",
     "useDevChallenge",
     "useDeviceDetection",

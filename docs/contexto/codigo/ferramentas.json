@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2953)",
+   "TypeScript (2959)",
    "Markdown (973)",
    "SQL (689)",
    "JSON (294)",
@@ -2257,7 +2257,8 @@
   ],
   "guards": [
    "src/components/admin/telemetry/RegressionGuardrailBanner.tsx",
-   "src/components/layout/ProtectedRoute.tsx"
+   "src/components/layout/ProtectedRoute.tsx",
+   "src/components/routing/GlobalExitGuard.tsx"
   ],
   "rotas_protegidas": 108,
   "rotas_publicas": [
@@ -2426,7 +2427,6 @@
    "AccessibilityProvider",
    "AriaLiveProvider",
    "AuthProvider",
-   "BrowserRouter",
    "CollectionsProvider",
    "DevChallengeProvider",
    "EnhancedErrorBoundary",
@@ -2435,6 +2435,7 @@
    "OrganizationProvider",
    "ProductsProvider",
    "QueryClientProvider",
+   "RouterProvider",
    "ThemeProvider",
    "TooltipProvider"
   ]

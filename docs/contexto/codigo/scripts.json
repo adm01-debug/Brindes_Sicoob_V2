@@ -779,7 +779,7 @@
   {
    "arquivo": "scripts/inventario/gerar-rotas.mjs",
    "descricao": "* Inventario das rotas do front -> inventario/estado/rotas.json (fonte de consulta dos agentes).",
-   "linhas": 462,
+   "linhas": 467,
    "env": [],
    "npm_scripts": [
     "inventario:rotas",

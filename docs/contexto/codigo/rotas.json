@@ -7570,6 +7570,7 @@
     "useCustomizationSelection",
     "useDebounce",
     "useDebouncedSave",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useDraftLifecycle",
     "useDraftPersistence",
@@ -7625,6 +7626,7 @@
     "useCustomizationPriceReactive",
     "useCustomizationPriceV2",
     "useDebounce",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useExternalVariantStock",
     "useOrganization",
@@ -7709,7 +7711,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 160
+   "arquivos_puxados": 161
   },
   {
    "protegida": true,
@@ -8213,6 +8215,7 @@
     "useCustomizationSelection",
     "useDebounce",
     "useDebouncedSave",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useDraftLifecycle",
     "useDraftPersistence",
@@ -8268,6 +8271,7 @@
     "useCustomizationPriceReactive",
     "useCustomizationPriceV2",
     "useDebounce",
+    "useDescartarRascunhoAoDesmontar",
     "useDiscountApproval",
     "useExternalVariantStock",
     "useOrganization",
@@ -8352,7 +8356,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 160
+   "arquivos_puxados": 161
   },
   {
    "protegida": true,
