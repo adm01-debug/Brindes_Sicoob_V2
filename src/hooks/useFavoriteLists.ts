@@ -284,7 +284,7 @@ export function useFavoriteListItems(listId: string | null) {
   });
 
   const removeItem = useMutation({
-    mutationFn: async ({ id }: { id: string; productName?: string }) => {
+    mutationFn: async ({ id }: { id: string; productName?: string; productId?: string; variantId?: string | null }) => {
       const { error } = await supabase.from("favorite_items").delete().eq("id", id);
       if (error) throw error;
       return id;
@@ -293,7 +293,7 @@ export function useFavoriteListItems(listId: string | null) {
       qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
       qc.invalidateQueries({ queryKey: LISTS_KEY });
       qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
-      // Toast com undo: restaura o último item da lixeira (que acabou de ser movido pelo trigger)
+      // Toast com undo: restaura o item que acabou de sair (o trigger moveu para a lixeira)
       if (!user) return;
       const productName = variables.productName?.trim() || "Item";
       toast.success(`${productName} removido dos favoritos`, {
@@ -301,11 +301,15 @@ export function useFavoriteListItems(listId: string | null) {
         action: {
           label: "Desfazer",
           onClick: async () => {
-            // pega item mais recente da lixeira deste user e restaura
-            const { data: trashed } = await supabase
+            // Desfazer devolve ESTE item: filtra a lixeira pelo produto (e variante,
+            // quando houver) em vez de pegar o mais recente dela, que pode ser outro.
+            let trashQuery = supabase
               .from("favorite_items_trash")
               .select("*")
-              .eq("user_id", user.id)
+              .eq("user_id", user.id);
+            if (variables.productId) trashQuery = trashQuery.eq("product_id", variables.productId);
+            if (variables.variantId) trashQuery = trashQuery.eq("variant_id", variables.variantId);
+            const { data: trashed } = await trashQuery
               .order("deleted_at", { ascending: false })
               .limit(1)
               .maybeSingle();

@@ -226,7 +226,7 @@ export default function FavoritesPage() {
   }, [selectedListId]);
 
   // Items enriquecidos da lista remota selecionada
-  const { enriched, rawItems, removeItem, updateItem } = useEnrichedFavoriteItems(selectedListId);
+  const { enriched, rawItems, removeItem, updateItem, isLoading: itemsLoading } = useEnrichedFavoriteItems(selectedListId);
   const isRemoteListView = !!selectedListId && !showTrash;
 
   const { getProductsByIds, products: _cacheSignal } = useProductsContext();
@@ -329,9 +329,39 @@ export default function FavoritesPage() {
     () => new Set(productsWithVariant.map((product) => product.id)),
     [productsWithVariant],
   );
-  const unavailableFavoriteIds = isRemoteListView
-    ? rawItems.filter((item) => !resolvedProductIds.has(item.product_id)).map((item) => item.product_id)
-    : favorites.filter((favorite) => !resolvedProductIds.has(favorite.productId)).map((favorite) => favorite.productId);
+  // Um favorito por item (não por produto): duas variantes do mesmo produto geram
+  // dois cartões, cada um com o próprio itemId para remover o registro certo.
+  const unavailableFavorites = useMemo(() => {
+    if (itemsLoading) return [];
+    if (isRemoteListView) {
+      return rawItems
+        .filter((item) => !resolvedProductIds.has(item.product_id))
+        .map((item) => ({
+          key: item.id,
+          itemId: item.id as string | null,
+          productId: item.product_id,
+          variantId: item.variant_id ?? null,
+        }));
+    }
+    return favorites
+      .filter((favorite) => !resolvedProductIds.has(favorite.productId))
+      .map((favorite) => ({
+        key: favorite.productId,
+        itemId: null as string | null,
+        productId: favorite.productId,
+        variantId: null as string | null,
+      }));
+  }, [itemsLoading, isRemoteListView, rawItems, favorites, resolvedProductIds]);
+
+  // A busca também vale para os cartões sem detalhe: nada de mostrar indisponível
+  // quando o termo procurado não corresponde.
+  const visibleUnavailableFavorites = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return unavailableFavorites;
+    return unavailableFavorites.filter((item) =>
+      `${UNAVAILABLE_FAVORITE_NAME} ${item.productId}`.toLowerCase().includes(term),
+    );
+  }, [unavailableFavorites, searchQuery]);
 
   const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
     searchQuery,
@@ -387,7 +417,12 @@ export default function FavoritesPage() {
         const meta = noteMap.get(pid);
         if (meta) {
           const productName = productsWithVariant.find((product) => product.id === pid)?.name ?? UNAVAILABLE_FAVORITE_NAME;
-          removeItem.mutate({ id: meta.itemId, productName });
+          removeItem.mutate({
+            id: meta.itemId,
+            productName,
+            productId: pid,
+            variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+          });
         }
       });
     } else {
@@ -401,7 +436,14 @@ export default function FavoritesPage() {
   const handleRemoveFavorite = (productId: string, productName: string) => {
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate({ id: meta.itemId, productName });
+      if (meta) {
+        removeItem.mutate({
+          id: meta.itemId,
+          productName,
+          productId,
+          variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+        });
+      }
     } else {
       toggleFavorite(productId);
       toast.success(`"${productName}" removido dos favoritos`);
@@ -413,7 +455,14 @@ export default function FavoritesPage() {
     const product = (isRemoteListView ? productsWithVariant : legacyFavoriteProducts).find((p) => p.id === productId);
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate({ id: meta.itemId, productName: product?.name ?? UNAVAILABLE_FAVORITE_NAME });
+      if (meta) {
+        removeItem.mutate({
+          id: meta.itemId,
+          productName: product?.name ?? UNAVAILABLE_FAVORITE_NAME,
+          productId,
+          variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+        });
+      }
     } else {
       toggleFavorite(productId);
       if (product) toast.success(`"${product.name}" removido dos favoritos`);
@@ -618,13 +667,25 @@ export default function FavoritesPage() {
   }
 
   function FavoriteProducts() {
-    if (filteredProducts.length === 0 && unavailableFavoriteIds.length === 0) return <EmptyFavoriteResults />;
-    const unavailableCards = unavailableFavoriteIds.map((productId) => (
+    if (filteredProducts.length === 0 && visibleUnavailableFavorites.length === 0) return <EmptyFavoriteResults />;
+    const unavailableCards = visibleUnavailableFavorites.map((favorite) => (
       <UnavailableFavoriteCard
-        key={`unavailable-${productId}`}
-        productId={productId}
-        onRetry={() => getProductsByIds([productId])}
-        onRemove={() => handleRemoveFavorite(productId, UNAVAILABLE_FAVORITE_NAME)}
+        key={`unavailable-${favorite.key}`}
+        productId={favorite.productId}
+        onRetry={() => getProductsByIds([favorite.productId])}
+        onRemove={() => {
+          if (isRemoteListView && favorite.itemId) {
+            removeItem.mutate({
+              id: favorite.itemId,
+              productName: UNAVAILABLE_FAVORITE_NAME,
+              productId: favorite.productId,
+              variantId: favorite.variantId,
+            });
+            setAriaAnnouncement(`${UNAVAILABLE_FAVORITE_NAME} removido dos favoritos`);
+            return;
+          }
+          handleRemoveFavorite(favorite.productId, UNAVAILABLE_FAVORITE_NAME);
+        }}
       />
     ));
     if (viewMode === 'table') return <>
