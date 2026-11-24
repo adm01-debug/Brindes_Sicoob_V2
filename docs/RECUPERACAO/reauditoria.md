@@ -796,20 +796,22 @@ por isso elas são contadas à parte e não entram no quociente.
 `git diff $mb <ref>` degeneraria para comparação com a árvore de trabalho, o que produz falso
 positivo. O procedimento nesses casos é comparação de árvore, sem ancestralidade:
 
-1. `git diff --shortstat origin/main <ref> -- <path>` — a diferença entre as duas árvores (o git usa
-   base virtual vazia e não precisa de ancestral).
+1. `git diff --quiet origin/main <ref> -- <path>` — compara as duas árvores direto (o git usa base
+   virtual vazia e não precisa de ancestral). Status `0` = arquivo idêntico; `1` = há diferença. Para
+   medir o tamanho da diferença, `git diff --shortstat origin/main <ref> -- <path>` (sem `--quiet`).
 2. Extração das linhas só do ref: `git diff -U0 origin/main <ref> -- <path> | grep -E '^\+'`, e para
    cada linha `git show origin/main:<path> | grep -Fqx -- "<linha>"`. O quociente `linhas do ref
    presentes na main / linhas do ref` mede o quanto a main já cobre aquele arquivo.
-3. Classificação por arquivo: quociente total → a `main` é superconjunto, o ref é cópia velha
-   (descarte); quociente parcial → leitura do hunk completo para decidir se o que sobra é trabalho
-   de outro agente ou apenas uma versão anterior da mesma ideia.
+3. Classificação por arquivo: quociente total → suspeita de cópia velha, confirmada apenas pelo
+   diff vazio (passo 1 com status `0`); quociente parcial → leitura do hunk completo para decidir se
+   o que sobra é trabalho de outro agente ou apenas uma versão anterior da mesma ideia.
 
 O quociente é **triagem, não prova**: ele aceita as linhas em qualquer ordem e ignora as remoções.
 Um arquivo pode marcar 100% de linhas presentes e o ref ainda ter apagado linhas que a `main` mantém
-(ou tê-las em contexto diferente). Quem decide descarte é `git diff --shortstat origin/main <ref> -- <path>`
-= `0 insertions, 0 deletions` para **todos** os arquivos do ref (árvore idêntica). Quociente total com
-diff não vazio = ler o hunk antes de qualquer conclusão.
+(ou tê-las em contexto diferente). Quem decide descarte é `git diff --quiet origin/main <ref> -- <path>`
+com status de saída `0` para **todos** os arquivos do ref (árvore idêntica). O critério é o status, não
+o texto: em diff vazio o `--shortstat` não imprime nada, e em arquivo binário alterado ele imprime
+`0 insertions, 0 deletions`. Quociente total com diff não vazio = ler o hunk antes de qualquer conclusão.
 
 Foi esse critério que classificou, por exemplo, `src/components/search/useGlobalSearch.ts` como
 cópia velha (15 de 88 linhas presentes, e o teste `tests/components/search/useGlobalSearch-fallback.test.tsx`
