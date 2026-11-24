@@ -356,12 +356,15 @@ export default function FavoritesPage() {
   // A busca também vale para os cartões sem detalhe: nada de mostrar indisponível
   // quando o termo procurado não corresponde.
   const visibleUnavailableFavorites = useMemo(() => {
+    // Sem detalhe do produto não há queda de preço confirmada: o filtro "Quedas"
+    // não pode listar cartões de indisponíveis.
+    if (onlyPriceDrops) return [];
     const term = searchQuery.trim().toLowerCase();
     if (!term) return unavailableFavorites;
     return unavailableFavorites.filter((item) =>
       `${UNAVAILABLE_FAVORITE_NAME} ${item.productId}`.toLowerCase().includes(term),
     );
-  }, [unavailableFavorites, searchQuery]);
+  }, [unavailableFavorites, searchQuery, onlyPriceDrops]);
 
   const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
     searchQuery,
