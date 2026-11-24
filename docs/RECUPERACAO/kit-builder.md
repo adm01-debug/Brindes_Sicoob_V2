@@ -60,6 +60,20 @@ seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
 - troca de `?template=` sem desmontar a página volta a contar a leitura como
   leitura (`KitBuilderPage.tsx:192-194,283-290`).
 
+- abrir um template por cima de um kit pessoal desfaz o vínculo com o kit
+  aberto: `?kit=ID&template=T` deixa de gravar por cima do kit do vendedor e o
+  próximo autosave cria linha nova (`KitBuilderPage.tsx:308-318` →
+  `useKitAutoSave.ts:506-519`, coberto em `tests/hooks/useKitAutoSave.test.tsx`);
+- clicar num kit semelhante passa pela guarda da página em vez de navegar
+  direto, então troca de template com edição pendente pergunta antes
+  (`KitBuilderPage.tsx:607` → `SimilarKitsWidget.tsx:51`,
+  `tests/components/SimilarKitsWidget.test.tsx`);
+- o diálogo de saída diz o que a saída faz com o trabalho: "Sair sem salvar"
+  quando o pendente não será gravado e "Sair e gravar" no kit pessoal, que é
+  gravado no desmonte (`KitBuilderPage.tsx:473-475` +
+  `UnsavedChangesDialog.tsx:26`,
+  `tests/components/UnsavedChangesDialog.test.tsx`).
+
 O documento abaixo fica como registro do diagnóstico original (estado da PR
 #119) e não como lista de pendências.
 

@@ -165,6 +165,31 @@ function emEdicaoDeTemplate(templateId: string | null, isRoleLoading: boolean, i
   return Boolean(templateId) && (isRoleLoading || isAdmin);
 }
 
+/**
+ * O aviso de saída tem que dizer o que a saída faz de verdade.
+ *
+ * Num kit pessoal o autosave continua depois da navegação: prometer que "sair
+ * descarta" era falso, e quem confirmasse via o trabalho gravado do mesmo
+ * jeito. Quem realmente perde trabalho é a edição de template (sem autosave) e
+ * o kit cujo salvamento falhou ou bateu em conflito.
+ */
+function textoDaSaida(
+  templateSemAutosave: boolean, erroDeSalvamento: string | null, conflito: boolean,
+): { mensagem: string; rotulo: string } {
+  if (erroDeSalvamento || conflito) return {
+    mensagem: 'Este kit ainda não foi salvo. Sair agora pode descartar as últimas alterações.',
+    rotulo: 'Sair sem salvar',
+  };
+  if (templateSemAutosave) return {
+    mensagem: 'As alterações no template ainda não foram salvas. Sair agora as descarta.',
+    rotulo: 'Sair sem salvar',
+  };
+  return {
+    mensagem: 'A gravação automática continua ao sair: o seu kit será gravado.',
+    rotulo: 'Sair e gravar',
+  };
+}
+
 export default function KitBuilderPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -215,7 +240,7 @@ export default function KitBuilderPage() {
   const {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
-    capturarSnapshotAtual,
+    capturarSnapshotAtual, desvincularKitPessoal,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
     isHydrated && !isTemplateLoading, loadedUpdatedAt,
@@ -283,11 +308,18 @@ export default function KitBuilderPage() {
     if (!templateIdParam || kitIdParam || loadedTemplateId === templateIdParam) return;
     if (templateEmCargaRef.current === templateIdParam) return;
     templateEmCargaRef.current = templateIdParam;
+    // O conteúdo está prestes a ser trocado pelo template: o vínculo com o kit
+    // pessoal que estava aberto não pode sobreviver. Era por ele que "Salvar"
+    // (e o autosave seguinte) atualizava o kit da biblioteca com o conteúdo do
+    // template, em vez de começar um kit novo.
+    setCurrentKitId(undefined);
+    setLoadedUpdatedAt(null);
+    desvincularKitPessoal();
     // Fecha o ciclo pelo id carregado (deu certo ou não): é o que faz a troca de
     // template sem desmontar a página voltar a contar a leitura como leitura.
     void loadKitTemplate(templateIdParam, loadKit, editandoTemplate)
       .finally(() => setLoadedTemplateId(templateIdParam));
-  }, [templateIdParam, kitIdParam, loadedTemplateId, editandoTemplate, loadKit]);
+  }, [templateIdParam, kitIdParam, loadedTemplateId, editandoTemplate, loadKit, desvincularKitPessoal]);
 
   useEffect(() => {
     if (!productIdParam || hasLoadedProductRef.current || kitIdParam) return;
@@ -422,17 +454,6 @@ export default function KitBuilderPage() {
   const hasContent = kitHasContent(kitState);
 
   /**
-   * O aviso de saída cobre três situações diferentes: conteúdo do template
-   * ainda não gravado, conflito com outra aba e falha de gravação. A frase
-   * diz qual delas é.
-   */
-  function guardMessage({ temTemplate, conflito }: { temTemplate: boolean; conflito: boolean }): string {
-    if (temTemplate) return 'As alterações no template ainda não foram salvas. Sair agora as descarta.';
-    if (conflito) return 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.';
-    return 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.';
-  }
-
-  /**
    * Sair do montador com trabalho que não está no banco.
    *
    * O autosave cobre o caso normal, mas não cobre dois: a janela de 5s do
@@ -443,7 +464,8 @@ export default function KitBuilderPage() {
    */
   const temAlteracaoPendente = hasContent
     && (isDirty || Boolean(lastSaveError) || lastSaveConflict || isAutoSaving);
-  const mensagemSaida = guardMessage({ temTemplate: Boolean(templateIdParam), conflito: lastSaveConflict });
+  const saidaDaTela = textoDaSaida(editandoTemplate, lastSaveError, lastSaveConflict);
+  const mensagemSaida = saidaDaTela.mensagem;
   const guardaDeSaida = useUnsavedChangesGuard({
     hasUnsavedChanges: temAlteracaoPendente,
     message: mensagemSaida,
@@ -614,8 +636,11 @@ export default function KitBuilderPage() {
     return <><IdentitySuggestionButton kitName={kitState.name} items={kitState.items.map((item) => ({ name: item.name, sku: item.sku }))}
       description={kitState.identity?.description ?? null} current={kitState.identity}
       onApply={(partial) => setIdentity({ color: '#3B82F6', icon: 'Package', ...(kitState.identity ?? {}), ...partial })} />
+      {/* Trocar de template substitui o conteúdo na mesma montagem: sem a
+          guarda, a edição não salva do template aberto ia embora sem pergunta. */}
       <SimilarKitsWidget currentSkus={kitState.items.map((item) => String(item.sku ?? '').toLowerCase()).filter(Boolean)}
-        excludeId={templateIdParam ?? undefined} /></>;
+        excludeId={templateIdParam ?? undefined}
+        onSelectTemplate={(id) => guardaDeSaida.guardNavigation(() => navigate(`/montar-kit?template=${id}`))} /></>;
   }
 
   function formattedWeight(): string {
@@ -693,7 +718,7 @@ export default function KitBuilderPage() {
       radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04), transparent),
       hsl(var(--background))` }}>
       <UnsavedChangesDialog open={guardaDeSaida.showDialog} onConfirm={guardaDeSaida.confirmLeave}
-        onCancel={guardaDeSaida.cancelLeave} message={guardaDeSaida.message} />
+        onCancel={guardaDeSaida.cancelLeave} message={guardaDeSaida.message} confirmLabel={saidaDaTela.rotulo} />
       <PageSEO title="Kit Maker" description="Monte kits personalizados de brindes promocionais." path="/montar-kit" noIndex />
       <BuilderHeader /><div className="container py-6"><div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <BuilderSteps /><BuilderSidebar /></div></div><div className="h-20 lg:hidden" aria-hidden />

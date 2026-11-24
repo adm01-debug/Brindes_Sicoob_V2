@@ -43,6 +43,15 @@ interface AutoSaveResult {
    */
   capturarSnapshotAtual: () => string;
   /**
+   * Solta o vínculo desta aba com o kit pessoal em edição.
+   *
+   * Abrir um template como base troca o conteúdo do editor sem desmontar a
+   * página: o kit que estava aberto (biblioteca `?kit=` ou rascunho já
+   * autosalvo) continua sendo o destino das gravações. Sem soltar, o primeiro
+   * autosave da composição nova gravaria o template por cima dele.
+   */
+  desvincularKitPessoal: () => void;
+  /**
    * Espera o salvamento automático em voo terminar e devolve o id do kit que
    * ele conhece. O salvamento manual chama isto antes de decidir entre criar e
    * atualizar: sem a espera, clicar em "Salvar" durante o INSERT de um kit novo
@@ -494,6 +503,21 @@ export function useKitAutoSave(
     timerRef.current = setTimeout(() => void saveToDbRef.current?.(alvo), AUTO_SAVE_DELAY_MS);
   };
 
+  const desvincularKitPessoal = useCallback(() => {
+    // A geração invalida respostas em voo: elas pertencem ao kit anterior e não
+    // podem marcar a composição nova como persistida.
+    scopeGenerationRef.current += 1;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = undefined;
+    kitIdRef.current = null;
+    setAutoSavedKitId(null);
+    setLastSavedAt(null);
+    setLastSaveError(null);
+    setLastSaveConflict(false);
+    setIsSaving(false);
+    setIsDirty(false);
+  }, []);
+
   const retry = useCallback(() => {
     if (!isEnabledRef.current) return;
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -505,6 +529,6 @@ export function useKitAutoSave(
 
   return {
     lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
-    retry, syncPersistedVersion, flushPending, capturarSnapshotAtual,
+    retry, syncPersistedVersion, flushPending, capturarSnapshotAtual, desvincularKitPessoal,
   };
 }
