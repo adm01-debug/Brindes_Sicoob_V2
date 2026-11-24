@@ -853,7 +853,6 @@ a PR que o recupera entra na `main`.
 | --- | --- | --- | --- |
 | **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
 | **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
-| **PR #176/#157** — estados de dado no BI | `src/components/bi/*` | medido em `ClientOverview360.tsx`: `git diff --shortstat origin/main refs/audit/pr176` → `7 insertions, 17 deletions` (a `main` já tem o grosso; sobram os selos "Dados indisponíveis"/"Dados insuficientes" e o `aria-label` do switch) | residual pequeno, não é a feature inteira |
 | **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
 
 ### Integrado na `main` em 24/11 (recuperação concluída)
@@ -874,6 +873,7 @@ exclusão" abaixo.
 
 | Unidade | Prova |
 | --- | --- |
+| PR #176/#157/#150 — estados de dado do BI e assinatura HMAC do dossiê | ver "Varredura por símbolo" abaixo: `bi.dataStatus/isUnavailable` da ref é subconjunto do que a `main` já renderiza (`ClientOverview360.tsx` com 4 estados, `aria-label="Comparar período"` idêntico); `bi-share-dossier` assina em `index.ts:46-81` (`hmac`/`signToken`/`verifyToken`); 13 testes `tests/components/bi/*availability*` já na `main` |
 | PR #288/#289 (hardening) | migrations renomeadas para `20261118130000`…`20261118130400_*` na `main` |
 | PR #157 (migration de retry) | substituída por `20261030210000_require_active_actor_for_quote_status_retry.sql` |
 | PR #179 (edges) | `supabase/functions/_shared/ilike-pattern.ts` e `supabase/functions/sicoob-document-ingest/registration-state.ts` EXISTEM na `main`; `crm-db-bridge/index.ts` já consome `ilike-pattern` |
@@ -881,6 +881,61 @@ exclusão" abaixo.
 | PR #119 (`CartCompanyDirectoryResults`) | `src/components/cart/CartCompanyPicker.tsx:24,29,38` e `CartCompanyPickerDialog.tsx:38,43,52` já renderizam `role="alert"` + "Tentar novamente" |
 | PR #105, #85, #117, #118, #154, #158, #161, #149 | docs/inventário (`PENDENCIAS.md`, `RELATORIO_CI.md`, `fontes-sha256.json`, JSON de inventário) — não é produto |
 | `devin/1791201000-ux-onda2` | subconjunto byte a byte de ux-onda1 (PR #100), conforme `branches.md` |
+
+### Varredura por símbolo — todas as refs de auditoria (24/11)
+
+Método novo, mais forte que o quociente de linhas: compara **nomes declarados**, não texto solto.
+
+1. Universo da `main`:
+   `git grep -h -o -E '(export (async )?(function|const|class|interface|type|enum) [A-Za-z0-9_]+|^(async )?function [A-Za-z0-9_]+)' origin/main -- src supabase scripts tests`
+   → **11.017** nomes.
+2. Por ref: só os caminhos que **também existem na `main`** (caminho que só existe na ref é outro caso, já coberto pela tabela de refs); os nomes declarados nesses caminhos que **não aparecem em lugar nenhum da `main`**.
+3. Filtro de ancestralidade: `mb=$(git merge-base origin/main <ref>)`. Nome **ausente no `mb`** e ausente na `main` só pode ter nascido na branch — é candidato real; nome que existe no `mb` é conteúdo antigo da própria `main`, removido depois por decisão, não trabalho de outro agente.
+4. Filtro de uso: nome que aparece **uma única vez** na branch (só a própria definição) é código morto da branch, não capacidade entregue.
+
+Resultado: **107** arquivos da `main` com algum nome só das refs; **61** arquivos com nome nascido na branch; desses, **60** não têm o nome em nenhum ponto da história da `main` (`git log -S <nome> origin/main -- <path>` vazio) e **144** nomes são usados dentro da própria branch (13 são definidos e nunca chamados).
+
+Triagem dos candidatos de maior contagem, nome a nome, contra o que a `main` tem hoje:
+
+| Caminho (`main`) | Nomes só nas refs | Equivalente na `main` | Veredito |
+| --- | --- | --- | --- |
+| `src/components/ai/AIChat.tsx` | `AI_CHAT_MAX_MESSAGES`, `AI_CHAT_MAX_CONTENT_LENGTH`, `ChatError`, `EmptyConversationState` | `src/lib/assistant-message-window.ts:41` `selectExpertChatMessages` com `EXPERT_CHAT_MAX_MESSAGES/_CONTENT_LENGTH/_MESSAGE_LENGTH`, consumido por `AIChat.tsx:99` e `useExpertChat.ts:158`; `role="alert"` em `AIChat.tsx:333` | substituído (promovido a lib compartilhada) |
+| `src/hooks/useCrmCompanies.ts` | `CrmClientsPageResult`, `CrmClientsSortMode`, `clientOrder` | `useCrmCompanies`/`useCrmCompanySelector`/`useCrmCompaniesLegacy` + `DIRECTORY_PAGE/_CAP`; a `main` manda o termo ao servidor (`fetchDirectoryPages(term)`) | substituído (ver limitação nova abaixo) |
+| `src/lib/crm-db.ts` | `listQuoteDirectoryCompanies`, `selectCrmByIdStrict`, `CrmUnavailableError` | `fetchQuoteDirectoryCompanies:332`, `fetchQuoteDirectoryContacts:396`, `selectCrmById:412`, `throwFinalCrmError:204`, `getCrmHttpStatus:200` | substituído (renomeado) |
+| `src/pages/QuoteBuilderPage.tsx` | `QuoteLoadFailure`, `buildQuoteDraftData`, `draftString/draftNumber` | edição gateada por `state.canEdit` (`:97,122,126`), rascunho em `QuoteAutoSave`/`limparRascunhoDoOrcamento` | substituído; **sem tela de falha de carga** — ver limitação nova |
+| `src/pages/GestorCompras.tsx` / `GestorComprasMetrics.tsx` | `ApprovalSlaCard`, `CooperativeSummary`, `calculatePendingSla` | `src/components/sicoob/GestorComprasMetrics.tsx` (160 linhas: verba da competência, carregando/erro/sem verba/sem cooperativa) usado em `GestorCompras.tsx:65` | substituído (a afirmação de 18/11 “não existe na `main`” ficou velha) |
+| `src/components/search/useGlobalSearch.ts` | `createLocalFallback`, `executeSemanticSearch`, `groupSearchResults` | `createLocalSearchFallback:139`, `useSemanticSearch:230` com timeout de 8s, agrupamento por tipo, atalho de voz | substituído |
+| `src/components/bi/ClientVsIndustryComparison.tsx` | `ComparisonError`, `ComparisonStaleNotice`, `InsufficientSampleCard` | `ComparativoIndisponivel` + `AvisoDeCacheDesatualizado` + `OrigemDoDado` (`:346` linhas) | substituído |
+| `src/hooks/bi/useClientHealthScore.ts` | `buildUnknownHealthResult`, `insufficientHealthResult` | `unavailableReason: "source-error" \| "insufficient-data"` | substituído |
+| `src/hooks/bi/useClientSeasonality.ts`, `useClientVsIndustry.ts`, `useClientCategoryAffinity.ts`, `useIndustryCategoryTrends.ts` | `buildSeasonalityResult`, `emptyComparison`, `hasPositiveEvidence` | equivalentes no arquivo da `main` do mesmo caminho (todos maiores que a ref) | substituído |
+| `src/hooks/useScrollRestoration.ts` | `resetScrollRestoration`, `trimOldest` | `MAX_ENTRIES = 50` com poda de `scrollPositions` e `containerPositions` | substituído |
+| `src/hooks/useQuoteBuilderState.ts` | `quoteBuilderCanEdit`, `isValidQuoteRowVersion` | `canPersistQuoteVersion` + `expectedRowVersion` + snapshot enviado ao servidor (`:1123` linhas) | substituído (o “BUG ATIVO NA MAIN” de 18/11 não se reproduz) |
+| `src/hooks/useProductAnalytics.ts` | `buildSearchAnalyticsInsert`, `serializeSearchContext` | `trackSearch` + insert silencioso em `product_views` | substituído |
+| `src/hooks/quotes/useQuotes.ts` | `requiresBulkApprovalPermission`, `hasValidExpectedVersions` | `statusPermissionError:26` + RPC `bulk_update_quote_status_atomic` | substituído |
+| `src/lib/quote-status-config.ts` | `QUOTE_PENDING_STATUSES`, `QUOTE_STATUS_FILTER_ORDER` | config central de status (`pending`, `pending_approval`, …) | substituído |
+| `src/components/common/IntelligenceBadges.tsx` | `MarketIntelligenceStatus`, `TurnoverScoreBadge` | `IntelligenceBadges` com `Tooltip`/`turnoverScore` (`:63-102`) | substituído |
+| `src/components/pricing/*/types.ts`, `src/components/inventory/risk/ProductRiskDetail.tsx`, `src/components/quotes/company-contact/ContactSelector.tsx`, `src/components/favorites/FavoritesClientPicker.tsx`, `src/pages/admin/AdminTelemetriaPage.tsx`, `src/pages/filters/filters-page-helpers.ts`, `src/hooks/useFavoriteLists.ts`, `src/hooks/useKitAutoSave.ts`, `src/pages/PublicFavoriteListPage.tsx`, `src/components/common/PersistentBreadcrumbs.tsx` | 1 a 2 nomes cada | equivalentes no mesmo caminho da `main` (arquivo da `main` sempre maior) | nada a recuperar; refactor interno |
+| `supabase/functions/product-webhook/index.ts` | `upsertProducts` | arquivo da `main` é 410 Gone explícito (“sincronização de produtos foi desativada”) | obsoleto por decisão |
+| `supabase/functions/quote-approval/index.ts` | `publicQuoteProjection` | RPC `get_public_quote_approval` + rate limit por token/origem (“projeção pública sem custos, margens, documentos”) | substituído (mais restritivo) |
+| `supabase/functions/bi-share-dossier/contract.ts` | `signBiSharePayload`, `verifyBiSharePayloadSignature`, `constantTimeEqual` | `index.ts:46-81` `hmac`/`signToken`/`verifyToken` | substituído |
+| `scripts/check-critical-test-skip-budget.mjs`, `scripts/db/apply-sicoob-migrations.mjs` | `collectCriticalSkips`, `validateRecentSecurityMigrationContract` | `apply-sicoob-migrations.mjs` é o único caso em que o nome **existiu** na `main` e foi removido (`git log -S` com 1 commit) | obsoleto por decisão |
+
+**Limites declarados deste método.** Nome novo na branch é prova de trabalho da branch, não prova de perda: a
+`main` pode ter entregado a mesma ideia com outro nome (foi o caso em quase todas as linhas acima) e o método
+não enxerga mudança de **texto de UI** nem de valor de constante dentro de nome igual. Também não cobre o que
+nasceu **antes** do `mb` e foi removido da `main` — para isso vale a leitura de hunk já descrita.
+
+**Duas limitações novas achadas nesta varredura (não são trabalho de outro agente, são lacunas da `main`):**
+
+- `src/hooks/useCrmCompanies.ts:36` — `DIRECTORY_CAP = 200`: a tela de Clientes carrega no máximo 200
+  clientes e a ordenação por razão social/mês (`CrmClientsSortMode`) saiu na reescrita do #98 (`git show
+  dc08200bc^:src/pages/ClientsPage.tsx` **tem** “Ordenar por”; a `main` de hoje não tem). Busca continua
+  indo ao servidor (`fetchDirectoryPages(term)`), então cliente além do 200 só aparece buscando pelo nome.
+- `src/pages/QuoteBuilderPage.tsx` não tem estado de **falha de carga** (nenhum `role="alert"`/retry na
+  página; a ref tinha `QuoteLoadFailure` com retry). Abrir “editar orçamento” com falha de rede hoje não
+  oferece caminho de recuperação na tela.
+- `src/components/intelligence/MarketIntelligenceChart.tsx:1-5` declara “Inclui mock data quando não há
+  dados reais” sem selo visível de dado simulado (a ref tinha `MarketIntelligenceStatus` para isso).
 
 ### Não verificado nesta rodada
 
