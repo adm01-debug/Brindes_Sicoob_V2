@@ -379,8 +379,9 @@ export default function FavoritesPage() {
   // quando o termo procurado não corresponde.
   const visibleUnavailableFavorites = useMemo(() => {
     // Sem detalhe do produto não há queda de preço confirmada: o filtro "Quedas"
-    // não pode listar cartões de indisponíveis.
-    if (onlyPriceDrops) return [];
+    // não pode listar cartões de indisponíveis. Em "Todos os favoritos" não existe o
+    // chip do filtro, então esconder os cartões deixaria a lista sem como voltar.
+    if (onlyPriceDrops && isRemoteListView) return [];
     const term = searchQuery.trim().toLowerCase();
     if (!term) return unavailableFavorites;
     return unavailableFavorites.filter((item) =>
@@ -388,7 +389,7 @@ export default function FavoritesPage() {
         .toLowerCase()
         .includes(term),
     );
-  }, [unavailableFavorites, searchQuery, onlyPriceDrops]);
+  }, [unavailableFavorites, searchQuery, onlyPriceDrops, isRemoteListView]);
 
   const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
     searchQuery,
