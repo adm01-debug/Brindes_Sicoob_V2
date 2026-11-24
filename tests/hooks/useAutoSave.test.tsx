@@ -56,6 +56,31 @@ describe('useAutoSave', () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it('grava a volta ao valor inicial quando ela acontece durante o envio', async () => {
+    // A referência do rascunho é a última gravação, não o valor que foi enviado:
+    // se o usuário voltou de 120 para 100 durante a chamada, o rascunho precisa
+    // refletir a tela (100), senão a restauração traz uma quantidade que ele já
+    // tinha desfeito.
+    const { rerender } = renderHook(
+      ({ data, enabled }) => useAutoSave({ key: 'draft-volta', data, enabled }),
+      { initialProps: { data: { quantity: 100 }, enabled: true } },
+    );
+
+    rerender({ data: { quantity: 120 }, enabled: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    expect(JSON.parse(localStorage.getItem('autosave_draft-volta')!)).toMatchObject({
+      data: { quantity: 120 },
+    });
+
+    rerender({ data: { quantity: 100 }, enabled: true });
+    rerender({ data: { quantity: 100 }, enabled: false });
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+    expect(JSON.parse(localStorage.getItem('autosave_draft-volta')!)).toMatchObject({
+      data: { quantity: 100 },
+    });
+  });
+
   it('não grava nada ao desligar quando não há alteração pendente', async () => {
     const onSave = vi.fn();
     const { rerender } = renderHook(

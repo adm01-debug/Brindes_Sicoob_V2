@@ -12,6 +12,7 @@ import {
   descartarAcoesAposSaida,
   esquecerRota,
   executarAcoesAposSaida,
+  descartarTrabalhoDaRota,
   limparAutorizacaoDeSaida,
   limparRegistroDeRotas,
   rotaEstaSuja,
@@ -127,6 +128,19 @@ describe('ações que só valem depois da saída confirmada', () => {
     executarAcoesAposSaida();
 
     expect(apagou).toBe(false);
+  });
+
+  it('a saida confirmada descarta o trabalho local de quem declarou', () => {
+    let descartes = 0;
+    declararEstadoDaRota('/orcamentos/novo', true, 'mensagem', 'Sair sem salvar', () => {
+      descartes += 1;
+    });
+
+    descartarTrabalhoDaRota('/orcamentos/novo');
+    expect(descartes).toBe(1);
+
+    descartarTrabalhoDaRota('/simulador');
+    expect(descartes).toBe(1);
   });
 
   it('o logout limpa a fila junto com o registro', () => {

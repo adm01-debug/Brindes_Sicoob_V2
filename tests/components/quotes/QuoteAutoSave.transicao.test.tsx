@@ -6,7 +6,7 @@ vi.mock('@/lib/telemetry/structuredLogger', () => ({
   createClientLogger: () => ({ info: vi.fn(), error: vi.fn() }),
 }));
 
-import { QuoteAutoSave } from '@/components/quotes/QuoteAutoSave';
+import { QuoteAutoSave, limparRascunhoDoOrcamento } from '@/components/quotes/QuoteAutoSave';
 
 describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
   beforeEach(() => {
@@ -53,5 +53,24 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
 
     expect(JSON.parse(localStorage.getItem(chave)!)).toMatchObject({ data: { items: 14 } });
     expect(props.onRestore).not.toHaveBeenCalled();
+  });
+
+  it('apaga o rascunho do orçamento que o usuário descartou', () => {
+    localStorage.setItem('autosave_quote:usuario-3:orc-9', '{"version":1,"data":{}}');
+    localStorage.setItem('autosave_quote:usuario-3:orc-8', '{"version":1,"data":{}}');
+
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-8')).not.toBeNull();
+  });
+
+  it('apaga o rascunho novo da sessão quando o orçamento ainda não tem número', () => {
+    sessionStorage.setItem('quote-new-draft:usuario-4', 'sessao-1');
+    localStorage.setItem('autosave_draft:usuario-4:sessao-1', '{"version":1,"data":{}}');
+
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-4', quoteId: null });
+
+    expect(localStorage.getItem('autosave_draft:usuario-4:sessao-1')).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 import {
   autorizarSaida,
   descartarAcoesAposSaida,
+  descartarTrabalhoDaRota,
   executarAcoesAposSaida,
   limparAutorizacaoDeSaida,
   mensagemDaRota,
@@ -72,6 +73,8 @@ export function GlobalExitGuard() {
       // `proceed`: sem a autorizacao, a repeticao cairia no mesmo predicado e
       // o aviso reapareceria em cima da propria confirmacao.
       autorizarSaida();
+      // Antes do `proceed`: a tela desmonta e leva o registro da rota junto.
+      descartarTrabalhoDaRota(location.pathname);
       blocker.proceed();
       // Efeito colateral da saida (apagar o carrinho do cabecalho, por
       // exemplo) so vale quando a saida acontece de fato.

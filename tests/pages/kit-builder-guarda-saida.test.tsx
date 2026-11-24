@@ -59,6 +59,21 @@ describe('guarda de saída do montador de kit', () => {
     expect(result.current.showDialog).toBe(false);
   });
 
+  it('descarta o trabalho local so quando o usuario confirma sair', () => {
+    const descartar = vi.fn();
+    const { result } = renderHook(() =>
+      useUnsavedChangesGuard({ hasUnsavedChanges: true, aoDescartar: descartar }),
+    );
+
+    act(() => result.current.guardNavigation(vi.fn()));
+    act(() => result.current.cancelLeave());
+    expect(descartar).not.toHaveBeenCalled();
+
+    act(() => result.current.guardNavigation(vi.fn()));
+    act(() => result.current.confirmLeave());
+    expect(descartar).toHaveBeenCalledTimes(1);
+  });
+
   it('sai direto quando nao ha nada pendente', () => {
     const acao = vi.fn();
     const { result } = renderHook(() => useUnsavedChangesGuard({ hasUnsavedChanges: false }));

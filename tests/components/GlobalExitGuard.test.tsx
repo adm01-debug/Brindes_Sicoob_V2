@@ -30,8 +30,13 @@ function Moldura() {
   return <><GlobalExitGuard /><Outlet /></>;
 }
 
-function Formulario({ sujo }: { sujo: boolean }) {
-  useScreenDirtyState(sujo, 'O kit tem itens que ainda não foram gravados.');
+function Formulario({ sujo, aoDescartar }: { sujo: boolean; aoDescartar?: () => void }) {
+  useScreenDirtyState(
+    sujo,
+    'O kit tem itens que ainda não foram gravados.',
+    undefined,
+    aoDescartar,
+  );
   return (
     <>
       <p>Formulário</p>
@@ -53,8 +58,13 @@ function OutraTela() {
   return <p>Outra tela</p>;
 }
 
-function montar(opcoes: { sujo: boolean; declara?: boolean; comHistorico?: boolean }) {
-  const { sujo, declara = true, comHistorico = false } = opcoes;
+function montar(opcoes: {
+  sujo: boolean;
+  declara?: boolean;
+  comHistorico?: boolean;
+  aoDescartar?: () => void;
+}) {
+  const { sujo, declara = true, comHistorico = false, aoDescartar } = opcoes;
   const router = createMemoryRouter(
     [
       {
@@ -62,7 +72,11 @@ function montar(opcoes: { sujo: boolean; declara?: boolean; comHistorico?: boole
         children: [
           {
             path: '/formulario',
-            element: declara ? <Formulario sujo={sujo} /> : <FormularioSemDeclaracao />,
+            element: declara ? (
+              <Formulario sujo={sujo} aoDescartar={aoDescartar} />
+            ) : (
+              <FormularioSemDeclaracao />
+            ),
           },
           { path: '/outra', element: <OutraTela /> },
         ],
@@ -107,6 +121,31 @@ describe('aviso global de saída', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Sair sem salvar' }));
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/outra'));
+  });
+
+  it('"Sair sem salvar" descarta o trabalho local da tela', async () => {
+    const aoDescartar = vi.fn();
+    const router = montar({ sujo: true, aoDescartar });
+    await esperarDeclaracao(true);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair sem salvar' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/outra'));
+    expect(aoDescartar).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Continuar editando" preserva o trabalho local da tela', async () => {
+    const aoDescartar = vi.fn();
+    const router = montar({ sujo: true, aoDescartar });
+    await esperarDeclaracao(true);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Continuar editando' }));
+
+    await waitFor(() => expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument());
+    expect(router.state.location.pathname).toBe('/formulario');
+    expect(aoDescartar).not.toHaveBeenCalled();
   });
 
   it('"Continuar editando" mantém o usuário na tela', async () => {

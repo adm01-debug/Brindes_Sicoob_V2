@@ -34,6 +34,41 @@ export function createQuoteDraftId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/** Lê o id do rascunho novo sem criar um (ao contrário de `getQuoteDraftIdForScope`). */
+function lerRascunhoNovoDaSessao(scopeId: string): string | null {
+  try {
+    return sessionStorage.getItem(`quote-new-draft:${scopeId}`);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Apaga o rascunho local deste orçamento.
+ *
+ * Usado quando o usuário confirma "sair sem salvar": sem isto, a edição que ele
+ * descartou é restaurada por cima do que veio do servidor na próxima abertura.
+ */
+export function limparRascunhoDoOrcamento(args: {
+  scopeId?: string | null;
+  quoteId?: string | null;
+}): void {
+  const { scopeId, quoteId } = args;
+  if (!scopeId) return;
+  const chave = quoteId
+    ? `quote:${scopeId}:${quoteId}`
+    : (() => {
+        const id = lerRascunhoNovoDaSessao(scopeId);
+        return id ? `draft:${scopeId}:${id}` : null;
+      })();
+  if (!chave) return;
+  try {
+    localStorage.removeItem(`autosave_${chave}`);
+  } catch {
+    // Armazenamento bloqueado pelo navegador: não há rascunho a apagar.
+  }
+}
+
 export function getQuoteDraftIdForScope(scopeId: string): string {
   const sessionKey = `quote-new-draft:${scopeId}`;
   try {

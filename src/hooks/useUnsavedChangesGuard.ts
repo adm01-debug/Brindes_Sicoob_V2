@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { autorizarSaida } from "@/lib/navigation/dirty-registry";
 
 interface UseUnsavedChangesGuardOptions {
@@ -6,6 +6,8 @@ interface UseUnsavedChangesGuardOptions {
   hasUnsavedChanges: boolean;
   /** Custom message for the browser dialog */
   message?: string;
+  /** Roda quando o usuário confirma sair sem salvar (apaga rascunho local). */
+  aoDescartar?: () => void;
 }
 
 /**
@@ -16,7 +18,10 @@ interface UseUnsavedChangesGuardOptions {
 export function useUnsavedChangesGuard({
   hasUnsavedChanges,
   message = "Você tem alterações não salvas. Deseja realmente sair?",
+  aoDescartar,
 }: UseUnsavedChangesGuardOptions) {
+  const descarteRef = useRef(aoDescartar);
+  descarteRef.current = aoDescartar;
   const [showDialog, setShowDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
@@ -52,6 +57,7 @@ export function useUnsavedChangesGuard({
     // O usuário já respondeu: o portão global não repete a pergunta na
     // navegação que vem logo abaixo.
     autorizarSaida();
+    descarteRef.current?.();
     pendingAction?.();
     setPendingAction(null);
   }, [pendingAction]);

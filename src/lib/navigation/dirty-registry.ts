@@ -17,6 +17,8 @@ interface EstadoDaRota {
   sujo: boolean;
   mensagem?: string;
   rotulo?: string;
+  /** Apaga o trabalho local quando o usuário confirma sair sem salvar. */
+  aoDescartar?: () => void;
 }
 
 const sujoPorRota = new Map<string, EstadoDaRota>();
@@ -31,8 +33,18 @@ export function declararEstadoDaRota(
   sujo: boolean,
   mensagem?: string,
   rotulo?: string,
+  aoDescartar?: () => void,
 ): void {
-  sujoPorRota.set(rota, { sujo, mensagem, rotulo });
+  sujoPorRota.set(rota, { sujo, mensagem, rotulo, aoDescartar });
+}
+
+/**
+ * O usuário confirmou "sair sem salvar": quem guardou rascunho local desta rota
+ * apaga agora. Sem isto, a edição descartada volta na próxima vez que a tela
+ * abrir — o rascunho é restaurado em cima do que veio do servidor.
+ */
+export function descartarTrabalhoDaRota(rota: string): void {
+  sujoPorRota.get(rota)?.aoDescartar?.();
 }
 
 /** A tela saiu: volta a valer a regra antiga para essa rota. */
