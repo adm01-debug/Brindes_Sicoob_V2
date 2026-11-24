@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `092f7ee5dd333176003c2765a6e31461211aa09e` (2026-11-24T12:51:37-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `667250f5ef2185ddb29c335bb534dc55f4213421` (2026-11-24T14:53:20-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2959), Markdown (973), SQL (689), JSON (294), JavaScript (153), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2959), Markdown (973), SQL (690), JSON (294), JavaScript (153), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5284 |
+| arquivos_total | 5285 |
 | arquivos_codigo | 3178 |
-| linhas_codigo | 503437 |
+| linhas_codigo | 503480 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -46,7 +46,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
-| migrations | 626 |
+| migrations | 627 |
 | cron_jobs | 28 |
 | testes | 911 |
 | workflows | 17 |
@@ -473,13 +473,13 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36894 nós · 61412 arestas · 2763 comunidades · grafo do commit `092f7ee5`
+- 36895 nós · 61412 arestas · 2764 comunidades · grafo do commit `667250f5`
 - comunidades maiores: ref_hooks (566), ref_components (517), ref_integrations (495), ref_lib (334), react-router-dom (225), react (219), framer-motion (210), date-fns (175), expert-chat/index.ts (160), ref_stores (160), external-db-bridge/index.ts (156), getCorsHeaders (152)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- scripts/db/apply-sicoob-migrations.mjs (24)
+- scripts/db/apply-sicoob-migrations.mjs (25)
 - package.json (22)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
@@ -697,6 +697,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-24 `667250f` fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)
+- 2026-11-24 `4621e75` fix: estabiliza os dois testes que reprovavam PRs verdes (#423)
 - 2026-11-24 `092f7ee` infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)
 - 2026-11-24 `947f1af` feat: navegacao interna avisa antes de perder formulario preenchido (#421)
 - 2026-11-24 `dc6bdc0` chore: workers de cron entram na allowlist de publicação das edges (#420)
@@ -710,8 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-23 `b7680fb` fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)
 - 2026-11-23 `2466761` docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)
 - 2026-11-22 `54e7819` fix: extrai parser de moeda e validação do componente de notas (#404)
-- 2026-11-22 `0a70249` feat: agenda os relatórios agendados e cobre os cinco tipos (#403)
-- 2026-11-22 `51dc1ef` docs: classificar os 683 registros de lacunas por evidencia real (#402)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

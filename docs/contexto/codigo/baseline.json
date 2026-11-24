@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "092f7ee5dd333176003c2765a6e31461211aa09e",
+  "commit": "667250f5ef2185ddb29c335bb534dc55f4213421",
   "branch": "main",
-  "data_commit": "2026-11-24T12:51:37-03:00",
+  "data_commit": "2026-11-24T14:53:20-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "667250f",
+    "data": "2026-11-24",
+    "assunto": "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)"
+   },
+   {
+    "sha": "4621e75",
+    "data": "2026-11-24",
+    "assunto": "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)"
+   },
    {
     "sha": "092f7ee",
     "data": "2026-11-24",
@@ -121,16 +131,6 @@
     "sha": "e7e6753",
     "data": "2026-11-20",
     "assunto": "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)"
-   },
-   {
-    "sha": "ca511cf",
-    "data": "2026-11-20",
-    "assunto": "fix: links internos quebrados (ADM-15) (#390)"
-   },
-   {
-    "sha": "8b37b64",
-    "data": "2026-11-20",
-    "assunto": "fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)"
    }
   ],
   "arquivos_mudados_7d": 1330,
@@ -153,7 +153,7 @@
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 17
+    "mudancas": 18
    },
    {
     "pasta": "src/hooks/bi",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 24
+    "mudancas": 25
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 201
+    "commits": 203
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5284,
+  "arquivos_total": 5285,
   "arquivos_codigo": 3178,
-  "linhas_codigo": 503437,
+  "linhas_codigo": 503480,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -322,7 +322,7 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 626,
+  "migrations": 627,
   "cron_jobs": 28,
   "testes": 911,
   "workflows": 17,
@@ -592,7 +592,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3226
+   "linhas": 3230
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -880,7 +880,7 @@
   },
   "tests/components": {
    "arquivos": 156,
-   "linhas": 28721
+   "linhas": 28760
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -1062,7 +1062,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1538
+   "linhas": 1542
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

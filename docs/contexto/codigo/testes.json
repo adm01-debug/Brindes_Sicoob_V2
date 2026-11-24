@@ -2420,7 +2420,7 @@
   {
    "arquivo": "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
    "tipo": "unit",
-   "linhas": 229,
+   "linhas": 251,
    "testa": [
     "src/components/cart/CartCompanyPicker.tsx",
     "src/components/cart/CartCompanyPickerDialog.tsx",
@@ -3333,7 +3333,7 @@
   {
    "arquivo": "tests/components/quotes/ReopenExpiredQuoteButton.test.tsx",
    "tipo": "unit",
-   "linhas": 76,
+   "linhas": 93,
    "testa": [
     "src/components/quotes/ReopenExpiredQuoteButton.tsx"
    ],
