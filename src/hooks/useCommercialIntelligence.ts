@@ -245,8 +245,9 @@ async function fetchCategoryMarketSnapshots(since: string): Promise<MarketStockS
       operation: 'select',
       select: 'product_id,units_depleted',
       filters: { summary_date: `gte.${since.split('T')[0]}` },
-      // sem orderBy o deslocamento de cada página não tem ordem comum e pode repetir/omitir linhas
-      orderBy: { column: 'product_id', ascending: true },
+      // `product_id` não é chave única (há uma linha por variante/dia): para o deslocamento
+      // de cada página ter ordem total e não repetir/omitir linhas, ordenamos pela chave `id`.
+      orderBy: { column: 'id', ascending: true },
       limit: CATEGORY_PAGE_SIZE,
       offset,
     }),

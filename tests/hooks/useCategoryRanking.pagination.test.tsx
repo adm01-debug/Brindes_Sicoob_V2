@@ -22,6 +22,16 @@ const ORDER_ITEMS = [
   { id: "item-2", order_id: "order-1", product_id: "product-1", quantity: 3, unit_price: 10 },
 ];
 
+function marketPage(offset: number) {
+  if (offset === 0) {
+    return [
+      { product_id: "product-1", units_depleted: 3 },
+      ...Array.from({ length: 999 }, (_, index) => ({ product_id: `product-${offset + index + 1}`, units_depleted: 0 })),
+    ];
+  }
+  return [{ product_id: "product-1", units_depleted: 4 }];
+}
+
 function catalogPage(offset: number) {
   const size = offset === 0 ? 500 : 1;
   return Array.from({ length: size }, (_, index) => ({
@@ -65,7 +75,7 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
         data: {
           records: body.table === "products"
             ? catalogPage(body.offset ?? 0)
-            : [{ product_id: "product-1", units_depleted: 7 }],
+            : marketPage(body.offset ?? 0),
           count: null,
         },
       },
@@ -73,7 +83,7 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
     }));
   });
 
-  it("lê todas as páginas do catálogo respeitando o teto de 500 do bridge", async () => {
+  it("pagina catálogo (teto 500) e mercado até a última página, com ordem pela chave id", async () => {
     const { result } = renderHook(() => useCategoryRanking(30, null, null, null), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -82,8 +92,9 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
     expect(productsCalls.map((body) => body.offset ?? 0)).toEqual([0, 500]);
     expect(productsCalls.every((body) => body.limit === 500)).toBe(true);
 
-    const marketCall = externalCalls().find((body) => body.table === "stock_daily_summary");
-    expect(marketCall?.orderBy).toEqual({ column: "product_id", ascending: true });
+    const marketCalls = externalCalls().filter((body) => body.table === "stock_daily_summary");
+    expect(marketCalls.map((body) => body.offset ?? 0)).toEqual([0, 1000]);
+    expect(marketCalls.every((body) => body.orderBy && (body.orderBy as { column: string }).column === "id")).toBe(true);
   });
 
   it("conta pedido com vários itens uma única vez e soma mercado e receita", async () => {
