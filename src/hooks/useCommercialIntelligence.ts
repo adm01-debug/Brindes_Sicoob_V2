@@ -77,6 +77,10 @@ const ORDER_VALUE_FIELDS = 'order_id, quantity, unit_price';
 const CATEGORY_PAGE_SIZE = 1000;
 const CATEGORY_FILTER_CHUNK_SIZE = 100;
 const CATEGORY_MAX_EXTERNAL_ROWS = 100000;
+// `products` é tabela pesada no external-db-bridge: com select leve o bridge corta a página
+// em 500 (supabase/functions/external-db-bridge/index.ts computeSafeLimit). Pedir 1000 faria
+// o paginador encerrar na primeira página e perder o resto do catálogo.
+const CATALOG_PAGE_SIZE = 500;
 
 function emptyCommercialKpi(): IntelligenceKPI {
   return { totalQuotes: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, averageTicket: 0, quotesThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 };
@@ -202,16 +206,17 @@ async function fetchCategoryOrderItems(since: string, productIds?: string[]): Pr
 async function fetchAllExternalRows<Row extends object>(
   requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean }>,
   sourceName: string,
+  pageSize: number,
 ): Promise<Row[]> {
   const rows: Row[] = [];
-  for (let offset = 0; offset < CATEGORY_MAX_EXTERNAL_ROWS; offset += CATEGORY_PAGE_SIZE) {
+  for (let offset = 0; offset < CATEGORY_MAX_EXTERNAL_ROWS; offset += pageSize) {
     const result = await requestPage(offset);
     if (!Array.isArray(result?.records) || result.error || result.success === false) {
       const message = typeof result?.error === 'string' ? result.error : `Consulta de ${sourceName} incompleta`;
       throw new Error(message);
     }
     rows.push(...result.records);
-    if (result.records.length < CATEGORY_PAGE_SIZE) return rows;
+    if (result.records.length < pageSize) return rows;
   }
   throw new Error(`Consulta de ${sourceName} excedeu o limite de segurança.`);
 }
@@ -224,10 +229,11 @@ async function fetchCategoryProducts(): Promise<CategoryProduct[]> {
       operation: 'select',
       select: 'id,category_id,main_category_id,category_name',
       orderBy: { column: 'id', ascending: true },
-      limit: CATEGORY_PAGE_SIZE,
+      limit: CATALOG_PAGE_SIZE,
       offset,
     }),
     'categorias do catálogo',
+    CATALOG_PAGE_SIZE,
   );
 }
 
@@ -239,10 +245,13 @@ async function fetchCategoryMarketSnapshots(since: string): Promise<MarketStockS
       operation: 'select',
       select: 'product_id,units_depleted',
       filters: { summary_date: `gte.${since.split('T')[0]}` },
+      // sem orderBy o deslocamento de cada página não tem ordem comum e pode repetir/omitir linhas
+      orderBy: { column: 'product_id', ascending: true },
       limit: CATEGORY_PAGE_SIZE,
       offset,
     }),
     'dados de mercado',
+    CATEGORY_PAGE_SIZE,
   );
 }
 
