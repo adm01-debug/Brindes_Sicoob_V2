@@ -441,6 +441,11 @@ export default function KitBuilderPage() {
   const temAlteracaoPendente = hasContent
     && (isDirty || Boolean(lastSaveError) || lastSaveConflict || isAutoSaving);
   const saidaDaTela = textoDaSaida(editandoTemplate, lastSaveError, lastSaveConflict);
+  // O aviso guarda a ação no clique e mostra o rótulo do render atual: a
+  // política tem de ser lida na confirmação, senão o botão pode dizer "Sair e
+  // gravar" enquanto a ação programada descarta.
+  const saidaAtualRef = useRef(saidaDaTela);
+  saidaAtualRef.current = saidaDaTela;
   const mensagemSaida = saidaDaTela.mensagem;
   const guardaDeSaida = useUnsavedChangesGuard({
     hasUnsavedChanges: temAlteracaoPendente,
@@ -459,7 +464,7 @@ export default function KitBuilderPage() {
     // "Sair sem salvar" (conflito, erro de gravação ou template) descarta de
     // propósito: repetir a gravação cairia no mesmo conflito e prenderia a
     // troca, prometendo um salvamento que já falhou.
-    const gravou = !saidaDaTela.grava || await gravarPendente();
+    const gravou = !saidaAtualRef.current.grava || await gravarPendente();
     if (!gravou) return;
     navigate(`/montar-kit?template=${templateId}`);
   }

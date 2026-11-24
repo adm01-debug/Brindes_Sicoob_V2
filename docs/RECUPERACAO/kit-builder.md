@@ -82,7 +82,9 @@ seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
   gravação que já falhou) e "Sair e gravar" no kit pessoal
   (`src/lib/kit-builder/saida-da-tela.ts`, `UnsavedChangesDialog.tsx:26`,
   coberto em `tests/lib/saida-da-tela.test.ts` e
-  `tests/components/UnsavedChangesDialog.test.tsx`).
+  `tests/components/UnsavedChangesDialog.test.tsx`). A política é lida na
+  confirmação (`saidaAtualRef`), não no clique: o rótulo pode mudar com o aviso
+  aberto e a ação tem que acompanhar.
 
 O documento abaixo fica como registro do diagnóstico original (estado da PR
 #119) e não como lista de pendências.
