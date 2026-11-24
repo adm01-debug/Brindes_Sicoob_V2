@@ -64,12 +64,18 @@ describe("saída depois de salvar o orçamento", () => {
   });
 
   it("mantém a mesma regra quando a transição de status não foi confirmada", () => {
-    const { navigate } = salvar({
+    // Aprovação recusada depois de a reabertura já ter subido a versão: a tela
+    // adota o rascunho e a versão em memória avança um salto.
+    const { setExpectedRowVersion, setStatusDaTela, navigate } = salvar({
       haEdicaoPosteriorAoEnvio: true,
-      transicao: { aplicada: false, saltosDeVersao: 0, statusVigente: "draft" },
+      isEditMode: true,
+      expectedRowVersion: 7,
+      transicao: { aplicada: false, saltosDeVersao: 1, statusVigente: "draft" },
     });
     expect(navigate).toHaveBeenCalledWith("/orcamentos/orc-1");
     expect(saidaAutorizada()).toBe(false);
+    expect(setExpectedRowVersion).toHaveBeenCalledWith(8);
+    expect(setStatusDaTela).toHaveBeenCalledWith("draft");
   });
 
   it("não apaga a autorização de uma saída que já estava decidida antes do salvamento", () => {
@@ -159,6 +165,17 @@ describe("saltos de versão da transição de status", () => {
       updateQuoteStatus: vi.fn(async () => true),
     });
     expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 2, statusVigente: "pending_approval" });
+  });
+
+  it("adota o rascunho e conta o salto quando a aprovação falha após a reabertura", async () => {
+    const transicao = await applyQuoteTransition({
+      ...base,
+      persistedStatus: "rejected",
+      finalStatus: "pending_approval",
+      requestApproval: vi.fn(async () => false),
+      updateQuoteStatus: vi.fn(async () => true),
+    });
+    expect(transicao).toEqual({ aplicada: false, saltosDeVersao: 1, statusVigente: "draft" });
   });
 
   it("não conta salto quando a transição falha", async () => {

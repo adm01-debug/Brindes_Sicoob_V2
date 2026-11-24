@@ -35,6 +35,41 @@ describe('useAutoSave', () => {
     expect(JSON.parse(localStorage.getItem('autosave_draft-b')!)).toMatchObject({ version: 1, data: { title: 'Rascunho B' } });
   });
 
+  it('grava o rascunho pendente quando a persistência é desligada', async () => {
+    // Envio (ou aprovação) do orçamento torna a tela não editável e desliga o
+    // rascunho automático. A edição feita durante a chamada ainda não tinha
+    // entrado no intervalo de 2s: precisa ser gravada antes de parar.
+    const onSave = vi.fn();
+    const { rerender } = renderHook(
+      ({ data, enabled }) => useAutoSave({ key: 'draft-desligado', data, enabled, onSave }),
+      { initialProps: { data: { items: 10 }, enabled: true } },
+    );
+
+    rerender({ data: { items: 12 }, enabled: true });
+    rerender({ data: { items: 12 }, enabled: false });
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+    expect(JSON.parse(localStorage.getItem('autosave_draft-desligado')!)).toMatchObject({
+      version: 1,
+      data: { items: 12 },
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('não grava nada ao desligar quando não há alteração pendente', async () => {
+    const onSave = vi.fn();
+    const { rerender } = renderHook(
+      ({ enabled }) => useAutoSave({ key: 'draft-limpo', data: { items: 1 }, enabled, onSave }),
+      { initialProps: { enabled: true } },
+    );
+
+    rerender({ enabled: false });
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+    expect(localStorage.getItem('autosave_draft-limpo')).toBeNull();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it('expõe falha de persistência para a interface e permite nova tentativa', async () => {
     const onError = vi.fn();
     const setItem = vi.spyOn(Storage.prototype, 'setItem')

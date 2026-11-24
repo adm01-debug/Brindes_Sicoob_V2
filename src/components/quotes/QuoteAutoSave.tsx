@@ -213,12 +213,16 @@ function useQuoteAutoSaveState({
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const draftId = useScopedQuoteDraftId(enabled, scopeId, quoteId);
+  // A chave de um orçamento já gravado não depende de `enabled`: quando a tela
+  // deixa de ser editável, a última gravação local ainda precisa cair no mesmo
+  // rascunho (o que foi digitado durante o envio). Um rascunho novo só existe
+  // enquanto a persistência está ligada.
   const storageKey =
-    enabled && scopeId && (quoteId || draftId)
-      ? quoteId
-        ? `quote:${scopeId}:${quoteId}`
-        : `draft:${scopeId}:${draftId}`
-      : '';
+    scopeId && quoteId
+      ? `quote:${scopeId}:${quoteId}`
+      : enabled && scopeId && draftId
+        ? `draft:${scopeId}:${draftId}`
+        : '';
   const persistenceEnabled = enabled && Boolean(storageKey);
 
   const { restore, lastError } = useAutoSave({

@@ -201,6 +201,17 @@ function useDebouncedSave<T>(args: {
       if (timeout.current) clearTimeout(timeout.current);
     };
   }, [data, enabled, interval, save]);
+
+  const estavaAtivo = useRef(enabled);
+  useEffect(() => {
+    // Desligar a persistência cancela o temporizador pendente. Se o usuário
+    // editou enquanto uma chamada em curso tornava o orçamento imutável (envio,
+    // aprovação), a alteração ficaria só na tela e se perderia ao fechar a aba:
+    // grava o rascunho uma última vez antes de parar. `save()` não escreve nada
+    // quando nada mudou.
+    if (estavaAtivo.current && !enabled) void save();
+    estavaAtivo.current = enabled;
+  }, [enabled, save]);
 }
 
 function useRestoreDraft<T>(key: string, storageSnapshot: { current: string | null }) {

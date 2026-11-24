@@ -31,7 +31,7 @@ describe('QuoteAutoSave em orçamento somente leitura', () => {
     );
 
     await waitFor(() => expect(useAutoSave).toHaveBeenCalledWith(expect.objectContaining({
-      key: '',
+      key: 'quote:usuario-1:quote-1',
       enabled: false,
     })));
     expect(restore).not.toHaveBeenCalled();
