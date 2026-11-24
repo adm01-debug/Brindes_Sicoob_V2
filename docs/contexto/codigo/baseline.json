@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "667250f5ef2185ddb29c335bb534dc55f4213421",
+  "commit": "a409d6d3c3f73dc4c1909aa75c301364d34e5862",
   "branch": "main",
-  "data_commit": "2026-11-24T14:53:20-03:00",
+  "data_commit": "2026-11-24T15:39:24-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "a409d6d",
+    "data": "2026-11-24",
+    "assunto": "chore: alinha status do indice de lacunas aos vereditos verificados (#426)"
+   },
+   {
+    "sha": "1aa0068",
+    "data": "2026-11-24",
+    "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#425)"
+   },
    {
     "sha": "667250f",
     "data": "2026-11-24",
@@ -121,19 +131,9 @@
     "sha": "ca1fccc",
     "data": "2026-11-21",
     "assunto": "fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)"
-   },
-   {
-    "sha": "e324c64",
-    "data": "2026-11-21",
-    "assunto": "feat: e-mail transacional via Resend na edge send-transactional-email (#393)"
-   },
-   {
-    "sha": "e7e6753",
-    "data": "2026-11-20",
-    "assunto": "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)"
    }
   ],
-  "arquivos_mudados_7d": 1330,
+  "arquivos_mudados_7d": 1329,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -218,12 +218,12 @@
     "mudancas": 19
    },
    {
-    "arquivo": ".github/workflows/ci.yml",
+    "arquivo": "package-lock.json",
     "mudancas": 18
    },
    {
-    "arquivo": "package-lock.json",
-    "mudancas": 18
+    "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 17
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
@@ -254,14 +254,6 @@
     "mudancas": 12
    },
    {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
-    "mudancas": 12
-   },
-   {
-    "arquivo": "src/services/QuoteService.ts",
-    "mudancas": 12
-   },
-   {
     "arquivo": "docs/execucao/validacao-do-plano.md",
     "mudancas": 11
    },
@@ -270,7 +262,11 @@
     "mudancas": 11
    },
    {
-    "arquivo": "supabase/config.toml",
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "src/services/QuoteService.ts",
     "mudancas": 11
    },
    {
@@ -283,6 +279,10 @@
    },
    {
     "arquivo": ".github/workflows/security.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
    {
@@ -301,16 +301,20 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 203
+    "commits": 204
    },
    {
     "autor": "dependabot[bot]",
     "commits": 13
+   },
+   {
+    "autor": "github-actions[bot]",
+    "commits": 1
    }
   ]
  },
  "contagens": {
-  "arquivos_total": 5285,
+  "arquivos_total": 5286,
   "arquivos_codigo": 3178,
   "linhas_codigo": 503480,
   "rotas": 140,

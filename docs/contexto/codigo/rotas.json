@@ -5371,7 +5371,7 @@
    "arquivos_puxados": 9
   },
   {
-   "protegida": false,
+   "protegida": true,
    "wrappers": [],
    "pai": null,
    "indice": false,
@@ -5712,7 +5712,7 @@
    "arquivos_puxados": 37
   },
   {
-   "protegida": false,
+   "protegida": true,
    "wrappers": [],
    "pai": null,
    "indice": false,
@@ -5877,7 +5877,7 @@
    "arquivos_puxados": 132
   },
   {
-   "protegida": false,
+   "protegida": true,
    "wrappers": [],
    "pai": null,
    "indice": false,

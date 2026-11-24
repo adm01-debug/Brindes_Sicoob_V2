@@ -6,7 +6,7 @@
    "TypeScript (2959)",
    "Markdown (973)",
    "SQL (690)",
-   "JSON (294)",
+   "JSON (295)",
    "JavaScript (153)",
    "Python (69)",
    "YAML (24)",
@@ -2261,7 +2261,7 @@
    "src/components/layout/ProtectedRoute.tsx",
    "src/components/routing/GlobalExitGuard.tsx"
   ],
-  "rotas_protegidas": 108,
+  "rotas_protegidas": 111,
   "rotas_publicas": [
    "/*",
    "/*",
@@ -2272,9 +2272,6 @@
    "/convite/:token",
    "/demonstracao",
    "/dossie/:token",
-   "/gestor/centros-custo",
-   "/gestor/delegacoes",
-   "/instalar",
    "/kit/:token",
    "/lista-publica/:token",
    "/login",

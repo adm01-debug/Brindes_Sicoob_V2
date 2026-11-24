@@ -1,10 +1,10 @@
 {
  "meta": {
-  "sha": "667250f5ef2185ddb29c335bb534dc55f4213421",
+  "sha": "a409d6d3c3f73dc4c1909aa75c301364d34e5862",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 17:53 UTC",
-  "files_total": 5288,
+  "generated_at": "2026-11-24 19:13 UTC",
+  "files_total": 5289,
   "code_files": 3850,
   "code_lines": 567972
  },
@@ -258756,10 +258756,31 @@
   }
  },
  "git": {
-  "sha": "667250f5ef2185ddb29c335bb534dc55f4213421",
+  "sha": "a409d6d3c3f73dc4c1909aa75c301364d34e5862",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "a409d6d",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "chore: alinha status do indice de lacunas aos vereditos verificados (#426)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
+    ]
+   },
+   {
+    "sha": "1aa0068",
+    "date": "2026-11-24",
+    "author": "github-actions[bot]",
+    "subject": "chore(inventario): estado real do banco e do codigo [auto] (#425)",
+    "files": [
+     "inventario/estado/banco.json",
+     "inventario/estado/edges.json",
+     "inventario/estado/rotas.json"
+    ]
+   },
    {
     "sha": "667250f",
     "date": "2026-11-24",
@@ -259846,34 +259867,13 @@
      "docs/pendencias/_linha-de-base.md",
      "docs/pendencias/_ordem.md"
     ]
-   },
-   {
-    "sha": "e877d0c",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "fix(orcamentos): restaura fluxo sugestoes BI -> criador de orcamentos (#387)",
-    "files": [
-     "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
-     "src/hooks/quote/useQuoteInitialization.ts",
-     "src/hooks/quote/useQuoteProductSearch.ts",
-     "src/hooks/useQuoteBuilderState.ts",
-     "tests/components/bi/ConfirmQuoteSuggestionsModal.selecao.test.tsx",
-     "tests/hooks/useQuoteInitialization.suggestions.integration.test.tsx",
-     "tests/hooks/useQuoteInitialization.suggestions.test.ts",
-     "tests/hooks/useQuoteProductSearch.suggestions.test.ts"
-    ]
-   },
-   {
-    "sha": "67f5a8a",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "chore: padroniza template de PR (recupera trabalho alheio) (#386)",
-    "files": [
-     ".github/PULL_REQUEST_TEMPLATE.md"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    3
+   ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
@@ -259896,10 +259896,6 @@
    ],
    [
     "tests/scripts/verify-supabase-functions-published.test.ts",
-    3
-   ],
-   [
-    "src/hooks/useQuoteBuilderState.ts",
     3
    ],
    [
@@ -259927,8 +259923,8 @@
     3
    ],
    [
-    "src/hooks/quote/useQuoteInitialization.ts",
-    3
+    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    2
    ],
    [
     "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
@@ -259943,15 +259939,15 @@
     2
    ],
    [
+    "src/hooks/useQuoteBuilderState.ts",
+    2
+   ],
+   [
     "src/pages/KitBuilderPage.tsx",
     2
    ],
    [
     "tests/pages/kit-builder-guarda-saida.test.tsx",
-    2
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     2
    ]
   ]

@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore: alinha status do indice de lacunas aos vereditos verificados (#426)",
+   "chore(inventario): estado real do banco e do codigo [auto] (#425)",
    "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)",
    "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)",
-   "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)",
-   "feat: navegacao interna avisa antes de perder formulario preenchido (#421)",
-   "chore: workers de cron entram na allowlist de publicação das edges (#420)"
+   "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

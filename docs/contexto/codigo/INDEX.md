@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `667250f5ef2185ddb29c335bb534dc55f4213421` (2026-11-24T14:53:20-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `a409d6d3c3f73dc4c1909aa75c301364d34e5862` (2026-11-24T15:39:24-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2959), Markdown (973), SQL (690), JSON (294), JavaScript (153), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2959), Markdown (973), SQL (690), JSON (295), JavaScript (153), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,7 +34,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5285 |
+| arquivos_total | 5286 |
 | arquivos_codigo | 3178 |
 | linhas_codigo | 503480 |
 | rotas | 140 |
@@ -217,12 +217,12 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `/gestor/agregados` [tela] → src/pages/sicoob/GestorConsolidatedOrdersPage.tsx (protegida)
 - `/gestor/aprovacoes` [tela] → src/pages/sicoob/GestorApprovalsPage.tsx (protegida)
 - `/gestor/auditoria` [tela] → src/pages/sicoob/GestorAuditPage.tsx (protegida)
-- `/gestor/centros-custo` [tela] → src/pages/sicoob/admin/CostCentersPage.tsx
+- `/gestor/centros-custo` [tela] → src/pages/sicoob/admin/CostCentersPage.tsx (protegida)
 - `/gestor/compras` [tela] → src/pages/GestorCompras.tsx (protegida)
 - `/gestor/convites` [tela] → src/pages/sicoob/SicoobInvitationsPage.tsx (protegida)
-- `/gestor/delegacoes` [tela] → src/pages/sicoob/GestorDelegationsPage.tsx
+- `/gestor/delegacoes` [tela] → src/pages/sicoob/GestorDelegationsPage.tsx (protegida)
 - `/gestor/orcamentos` [tela] → src/pages/GestorOrcamentos.tsx (protegida)
-- `/instalar` [tela] → src/pages/PWAInstallPage.tsx
+- `/instalar` [tela] → src/pages/PWAInstallPage.tsx (protegida)
 - `/inteligencia-comercial` [tela] → src/pages/CommercialIntelligencePage.tsx (protegida)
 - `/kit/:token` [tela] → src/pages/PublicKitViewPage.tsx
 - `/kpis/sicoob` [tela] → src/pages/sicoob/reports/SicoobKpiPage.tsx (protegida)
@@ -452,7 +452,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Permissões / papéis
 - papéis no código: alert (62), status (54), dev (44), supervisor (30), user (29), vendedor (26), admin (22), agente (17), system (16), button (14), dialog (12), group (11), list (11), listitem (11), combobox (7), img (7), progressbar (6), region (6), tab (6), tablist (6), assistant (5), authenticated (5), manager (5), navigation (5), radio (5), radiogroup (5), switch (5), listbox (4), public (4), alertdialog (3), gerente_pa (3), gestor_pa (3), gestor_singular (3), main (3), presentation (3), separator (3), agent (2), all (2), anon (2), gestor_compras (2), log (2), option (2), owner (2), string (2), toolbar (2), tooltip (2), article (1), banner (1), complementary (1), comprador_singular (1), contentinfo (1), document (1), editor (1), grid (1), gridcell (1), heading (1), link (1), menu (1), none (1), publico (1), seller (1), service_role (1), sicoob_central (1), sicoob_gestor (1), sicoob_pa (1), sicoob_singular (1), sup (1)
 - enums de papel: app_role: admin|manager|vendedor|supervisor|dev|gestor_compras|gerente_pa|comprador_pac|comprador_singular|comprador_pac|comprador_singular; org_role: owner|admin|member; role_migration_status: pending|running|completed|failed|partial|dry_run; role_migration_item_status: pending|success|failed|skipped|dry_run
-- guards: src/components/admin/telemetry/RegressionGuardrailBanner.tsx, src/components/layout/ProtectedRoute.tsx, src/components/routing/GlobalExitGuard.tsx · rotas protegidas: 108 · públicas: /*, /*, /403, /approve/:token, /colecao-publica/:token, /comparar-publica/:token, /convite/:token, /demonstracao, /dossie/:token, /gestor/centros-custo, /gestor/delegacoes, /instalar, /kit/:token, /lista-publica/:token, /login, /login, /loja-demo, /proposta/:token, /public/colecao/:token, /public/comparativo/:token, /public/dossie/:token, /public/favoritos/:token, /public/kit/:token, /public/orcamento/:token/aprovacao, /reset-password, /reset-password, /sso/callback, /sso/callback, /verificacao, /verificacao
+- guards: src/components/admin/telemetry/RegressionGuardrailBanner.tsx, src/components/layout/ProtectedRoute.tsx, src/components/routing/GlobalExitGuard.tsx · rotas protegidas: 111 · públicas: /*, /*, /403, /approve/:token, /colecao-publica/:token, /comparar-publica/:token, /convite/:token, /demonstracao, /dossie/:token, /kit/:token, /lista-publica/:token, /login, /login, /loja-demo, /proposta/:token, /public/colecao/:token, /public/comparativo/:token, /public/dossie/:token, /public/favoritos/:token, /public/kit/:token, /public/orcamento/:token/aprovacao, /reset-password, /reset-password, /sso/callback, /sso/callback, /verificacao, /verificacao
 - feature flags: ENABLE_DEMO_PAGES, ENABLE_RLS, FEATURE_GROUPS, FEATURE_X, nova-tela, novo-inbox
 
 ## Alertas (baseline.json → alertas)
@@ -473,7 +473,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36895 nós · 61412 arestas · 2764 comunidades · grafo do commit `667250f5`
+- 36895 nós · 61412 arestas · 2764 comunidades · grafo do commit `a409d6d3`
 - comunidades maiores: ref_hooks (566), ref_components (517), ref_integrations (495), ref_lib (334), react-router-dom (225), react (219), framer-motion (210), date-fns (175), expert-chat/index.ts (160), ref_stores (160), external-db-bridge/index.ts (156), getCorsHeaders (152)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -484,8 +484,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
 - .github/workflows/sicoob-ci.yml (19)
-- .github/workflows/ci.yml (18)
 - package-lock.json (18)
+- .github/workflows/ci.yml (17)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/deploy-sicoob-functions.yml (16)
 - .github/workflows/e2e.yml (16)
@@ -493,7 +493,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - src/integrations/supabase/types.ts (15)
 - src/hooks/useQuoteBuilderState.ts (13)
 - .github/workflows/bundle-check.yml (12)
-- src/hooks/quotes/useQuotes.ts (12)
+- docs/execucao/validacao-do-plano.md (11)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -697,6 +697,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-24 `a409d6d` chore: alinha status do indice de lacunas aos vereditos verificados (#426)
+- 2026-11-24 `1aa0068` chore(inventario): estado real do banco e do codigo [auto] (#425)
 - 2026-11-24 `667250f` fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)
 - 2026-11-24 `4621e75` fix: estabiliza os dois testes que reprovavam PRs verdes (#423)
 - 2026-11-24 `092f7ee` infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)
@@ -710,8 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-23 `a8dad98` fix: servidor resolve destinatario do email transacional (#411)
 - 2026-11-23 `e0b7520` infra: incluir send-transactional-email na publicação de edge functions (#409)
 - 2026-11-23 `b7680fb` fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)
-- 2026-11-23 `2466761` docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)
-- 2026-11-22 `54e7819` fix: extrai parser de moeda e validação do componente de notas (#404)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
