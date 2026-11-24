@@ -781,11 +781,29 @@ não têm ancestral comum com ela (ver `cobertura-refs.md`). A prova usada é co
 `git diff --shortstat $mb refs/audit/prN` e verificação linha a linha (`git diff -U0` + procura da
 linha no arquivo correspondente da `main`). Para branch sem PR, mesmo procedimento em `origin/<branch>`.
 
+**Refs sem ancestral comum (56 das 89).** Nesses refs `mb` é vazio e não existe base histórica: um
+`git diff $mb <ref>` degeneraria para comparação com a árvore de trabalho, o que produz falso
+positivo. O procedimento nesses casos é comparação de árvore, sem ancestralidade:
+
+1. `git diff --shortstat origin/main <ref> -- <path>` — a diferença entre as duas árvores (o git usa
+   base virtual vazia e não precisa de ancestral).
+2. Extração das linhas só do ref: `git diff -U0 origin/main <ref> -- <path> | grep -E '^\+'`, e para
+   cada linha `git show origin/main:<path> | grep -Fqx -- "<linha>"`. O quociente `linhas do ref
+   presentes na main / linhas do ref` mede o quanto a main já cobre aquele arquivo.
+3. Classificação por arquivo: quociente total → a `main` é superconjunto, o ref é cópia velha
+   (descarte); quociente parcial → leitura do hunk completo para decidir se o que sobra é trabalho
+   de outro agente ou apenas uma versão anterior da mesma ideia.
+
+Foi esse critério que classificou, por exemplo, `src/components/search/useGlobalSearch.ts` como
+cópia velha (15 de 88 linhas presentes, e o teste `tests/components/search/useGlobalSearch-fallback.test.tsx`
+já está 80/80 na `main`) e `e2e/helpers/auth.ts` como trabalho único (1 de 15 linhas presentes, 0
+commits da `main` tocando o arquivo desde a base da PR).
+
 ### Recuperado nesta rodada
 
 | Unidade | Arquivos | Prova da ausência na `main` | Ação |
 | --- | --- | --- | --- |
-| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa | `src/hooks/useCommercialIntelligence.ts`, `src/components/intelligence/CategoryRanking.tsx`, `tests/components/intelligence/CategoryRanking.errors.test.tsx` | `git diff origin/main refs/audit/pr112 -- <hook>` vazio antes da porta (main idêntica à base da PR); `useCommercialIntelligence.ts:440-441` consulta `order_items` sem paginação; `:451` `internalOrders += 1` conta linha, não pedido; `:464` `catch { logger.warn }` zera 40% do score sem avisar; `CategoryRanking.tsx:54,216` sem `isError`, falha renderiza "Nenhuma categoria com vendas" | **PR #429** |
+| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa (recuperado em **PR #429**) | `src/hooks/useCommercialIntelligence.ts`, `src/components/intelligence/CategoryRanking.tsx`, `tests/components/intelligence/CategoryRanking.errors.test.tsx` | `git diff origin/main refs/audit/pr112 -- <hook>` vazio antes da porta (main idêntica à base da PR); `useCommercialIntelligence.ts:440-441` consulta `order_items` sem paginação; `:451` `internalOrders += 1` conta linha, não pedido; `:464` `catch { logger.warn }` zera 40% do score sem avisar; `CategoryRanking.tsx:54,216` sem `isError`, falha renderiza "Nenhuma categoria com vendas" | **PR #429** |
 | `automation/inventario-estado` | `inventario/estado/{banco,edges,rotas}.json` | único commit exclusivo é `190da39e2 chore(inventario): estado real do banco e do codigo [auto]`; 6217 linhas geradas | artefato de automação — não é trabalho de produto, não precisa ser recuperado |
 
 ### Trabalho parcial real, ainda ausente da `main` (recuperar)
@@ -794,7 +812,7 @@ linha no arquivo correspondente da `main`). Para branch sem PR, mesmo procedimen
 | --- | --- | --- | --- |
 | **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
 | **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
-| **PR #145** — favorito indisponível deixa de sumir da lista | `src/pages/FavoritesPage.tsx` (`UnavailableFavoriteCard`) | `git grep -c UnavailableFavoriteCard origin/main -- src/pages/FavoritesPage.tsx` → 0 | item some da lista em vez de aparecer marcado como indisponível |
+| **PR #145** — favorito indisponível deixa de sumir da lista (recuperado em **PR #431**) | `src/pages/FavoritesPage.tsx` (`UnavailableFavoriteCard`), `src/hooks/useFavoriteLists.ts`, `e2e/helpers/auth.ts`, `e2e/routes/quotes/view.spec.ts`, `e2e/audit-validation.spec.ts` | `git grep -c UnavailableFavoriteCard origin/main -- src/pages/FavoritesPage.tsx` → 0; `e2e/helpers/auth.ts` e os dois specs com 0 commits da `main` desde a base da PR | item some da lista em vez de aparecer marcado como indisponível; a branch também carregava correção de sessão e2e de outra conta e isolamento do orçamento |
 | **PR #176/#157** — estados de dado no BI | `src/components/bi/*` | medido em `ClientOverview360.tsx`: `git diff --shortstat origin/main refs/audit/pr176` → `7 insertions, 17 deletions` (a `main` já tem o grosso; sobram os selos "Dados indisponíveis"/"Dados insuficientes" e o `aria-label` do switch) | residual pequeno, não é a feature inteira |
 | **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
 
@@ -821,6 +839,13 @@ linha no arquivo correspondente da `main`). Para branch sem PR, mesmo procedimen
 
 ### Regra de exclusão que sai desta rodada
 
-Só pode ser apagada a ref cuja PR aparece em "confirmado incorporado". As branches do cluster
-`ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por escrito. As branches
-dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
+Só pode ser apagada a ref cuja PR aparece em "confirmado incorporado" **por inteiro**. Incorporação
+parcial não libera exclusão: se qualquer parte da PR continuar em "trabalho parcial real, ainda ausente",
+a ref fica. Exemplos vivos nesta rodada: **#119** está em "confirmado incorporado" pelo que a `main`
+já absorveu, mas segue pendente pela guarda de navegação e pelos testes de segurança; **#157** está
+incorporada pela migration de retry e pela tela de relatórios, mas segue pendente pelos selos de dado
+do BI. Nos dois casos, o veredito é "conservar a ref até a parte pendente ser recuperada ou declarada
+obsoleta por escrito".
+
+As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
+escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
