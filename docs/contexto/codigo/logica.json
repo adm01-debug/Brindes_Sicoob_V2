@@ -6639,16 +6639,17 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 21,
+   "usado_por": 22,
    "usado_por_modulos": [
     "components/admin",
     "components/cart",
     "components/common",
     "hooks",
+    "pages",
     "pages/admin",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 4,
+   "coberto_por_testes": 5,
    "orfao": false
   },
   {

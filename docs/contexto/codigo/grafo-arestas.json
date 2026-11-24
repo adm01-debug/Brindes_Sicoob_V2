@@ -10226,6 +10226,7 @@
    "src/lib/navigation/dirty-registry.ts",
    "src/lib/utils.ts",
    "src/pages/kit-builder/useKitBuilderQuote.ts",
+   "src/stores/useConfirmDialogStore.ts",
    "src/utils/kitPdfGenerator.ts"
   ],
   "src/pages/KitLibraryPage.tsx": [

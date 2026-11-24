@@ -7255,7 +7255,7 @@
    "modulo": "hooks",
    "arquivos": 211,
    "testes": 0,
-   "linhas": 35475,
+   "linhas": 35486,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11784,7 +11784,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19232,
+   "linhas": 19237,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

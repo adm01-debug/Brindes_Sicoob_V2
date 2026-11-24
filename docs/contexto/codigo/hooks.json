@@ -6347,7 +6347,7 @@
    "hooks_exportados": [
     "useKitWizardShortcuts"
    ],
-   "linhas": 76,
+   "linhas": 87,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -6360,7 +6360,7 @@
    "usado_por_arquivos": [
     "src/pages/KitBuilderPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useLoginAttempts.ts",
@@ -9970,7 +9970,7 @@
    "edges": [],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 21,
+   "usado_por": 22,
    "usado_por_arquivos": [
     "src/components/admin/CouponManager.tsx",
     "src/components/admin/OwnershipRepairDialog.tsx",
@@ -9980,6 +9980,7 @@
     "src/components/cart/MiniCart.tsx",
     "src/components/common/GlobalConfirmDialog.tsx",
     "src/hooks/useSmartNavigation.ts",
+    "src/pages/KitBuilderPage.tsx",
     "src/pages/admin/AdminCMSPage.tsx",
     "src/pages/admin/AdminCampanhasPage.tsx",
     "src/pages/admin/AdminCentraisPage.tsx",
@@ -9994,7 +9995,7 @@
     "src/pages/sicoob/admin/CostCentersPage.tsx",
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
-   "coberto_por_testes": 4
+   "coberto_por_testes": 5
   },
   {
    "arquivo": "src/stores/useFavoritesStore.ts",

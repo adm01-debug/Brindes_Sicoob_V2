@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (658)",
+   "tests/ (659)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: unifica o último confirm nativo do Kit Builder no diálogo global (#427)",
    "chore: alinha status do indice de lacunas aos vereditos verificados (#426)",
    "chore(inventario): estado real do banco e do codigo [auto] (#425)",
    "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)",
-   "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)",
-   "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)"
+   "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

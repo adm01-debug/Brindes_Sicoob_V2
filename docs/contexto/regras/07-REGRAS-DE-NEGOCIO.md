@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `a409d6d3c3` · branch `main` · 2026-11-24 19:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7630297bde` · branch `main` · 2026-11-24 21:10 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7212 testes em 726 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7217 testes em 727 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6054,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +426 linhas — lista completa em `context.json` | | |
+| … +427 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
