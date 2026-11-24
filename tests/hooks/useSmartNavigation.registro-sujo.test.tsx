@@ -141,6 +141,35 @@ describe('voltar x registro de estado sujo', () => {
     expect(localizacao.current).toBe('/');
   });
 
+  it('o voltar CONFIRMADO descarta o trabalho local da tela', async () => {
+    // O cabeçalho móvel sai por aqui, sem passar pelo portão global: sem o
+    // descarte nesta confirmação, o rascunho restaurado traz de volta a edição
+    // que o vendedor acabou de descartar.
+    const descartar = vi.fn();
+    declararEstadoDaRota(ROTA_CRITICA, true, undefined, undefined, descartar);
+    const { result, localizacao } = montarVoltar(ROTA_CRITICA);
+
+    await clicarVoltar(result);
+    expect(descartar).not.toHaveBeenCalled();
+
+    await responder(true);
+
+    expect(descartar).toHaveBeenCalledTimes(1);
+    expect(localizacao.current).toBe('/');
+  });
+
+  it('"continuar aqui" não descarta o trabalho local', async () => {
+    const descartar = vi.fn();
+    declararEstadoDaRota(ROTA_CRITICA, true, undefined, undefined, descartar);
+    const { result, localizacao } = montarVoltar(ROTA_CRITICA);
+
+    await clicarVoltar(result);
+    await responder(false);
+
+    expect(descartar).not.toHaveBeenCalled();
+    expect(localizacao.current).toBe(ROTA_CRITICA);
+  });
+
   it('rota NÃO crítica sem declaração continua saindo sem perguntar', async () => {
     const { result, localizacao } = montarVoltar('/pedidos/123');
 

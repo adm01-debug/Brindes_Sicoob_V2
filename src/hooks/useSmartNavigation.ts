@@ -5,6 +5,7 @@ import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { dismissTopmostOverlay } from '@/lib/overlay';
 import {
   autorizarSaida,
+  descartarTrabalhoDaRota,
   mensagemDaRota,
   rotaEstaSuja,
   rotaTemEstadoDeclarado,
@@ -35,8 +36,16 @@ function precisaConfirmarSaida(pathname: string, isCriticalPath: boolean): boole
   return isCriticalPath;
 }
 
+function caminhoDeSaida(pathname: string, fallbackPath?: string): string {
+  if (fallbackPath) return fallbackPath;
+  const pathParts = pathname.split('/').filter(Boolean);
+  if (pathParts.length <= 1) return '/';
+  return '/' + pathParts.slice(0, -1).join('/');
+}
+
 async function performBackNavigation(deps: BackNavigationDeps) {
   const { navigate, pathname, fallbackPath, isCriticalPath, force, getPrevious, pop, setDirection } = deps;
+  let confirmouSaida = false;
   if (!force && precisaConfirmarSaida(pathname, isCriticalPath)) {
     trackUx('guard.shown');
     const confirmed = await askConfirm({
@@ -51,6 +60,7 @@ async function performBackNavigation(deps: BackNavigationDeps) {
       return;
     }
     trackUx('guard.confirm');
+    confirmouSaida = true;
   }
 
   // A pergunta já foi feita aqui; o portão global (\`GlobalExitGuard\`) não pode
@@ -63,22 +73,20 @@ async function performBackNavigation(deps: BackNavigationDeps) {
   Haptics.impactLight();
   setDirection('backward');
   const previous = getPrevious();
+  // O cabecalho movel sai por aqui, sem passar pelo portao global: quem
+  // confirmou a saida precisa descartar o trabalho local, senao o rascunho
+  // restaurado traz de volta o que o usuario descartou. Navegar para o mesmo
+  // caminho mantem a tela montada e nao descarta nada.
+  const destino = previous?.pathname ?? caminhoDeSaida(pathname, fallbackPath);
+  if (confirmouSaida && destino !== pathname) descartarTrabalhoDaRota(pathname);
 
   if (previous) {
     pop(); // Remove o atual
     navigate(-1);
-  } else if (fallbackPath) {
-    navigate(fallbackPath);
-  } else {
-    // Lógica de subida hierárquica inteligente
-    const pathParts = pathname.split('/').filter(Boolean);
-    if (pathParts.length <= 1) {
-      navigate('/');
-    } else {
-      // Se estamos em /pedidos/123, sobe para /pedidos
-      navigate('/' + pathParts.slice(0, -1).join('/'));
-    }
+    return;
   }
+  // Se estamos em /pedidos/123, sobe para /pedidos
+  navigate(destino);
 }
 
 // Rastrear navegação no histórico persistido (dedup de entradas iguais fica no store).

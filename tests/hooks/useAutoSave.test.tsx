@@ -81,6 +81,34 @@ describe('useAutoSave', () => {
     });
   });
 
+  it('grava a tela atual quando a gravação anterior ainda está em curso', async () => {
+    // Gravação lenta (envio em curso) + vendedor voltando ao valor anterior +
+    // tela desligando: comparar com a última gravação *concluída* engoliria o
+    // flush e o rascunho ficaria com o valor que ele já tinha desfeito.
+    const pendentes: Array<() => void> = [];
+    const onSave = vi.fn(
+      () => new Promise<void>((resolve) => { pendentes.push(resolve); }),
+    );
+    const { rerender } = renderHook(
+      ({ data, enabled }) => useAutoSave({ key: 'draft-em-curso', data, enabled, onSave }),
+      { initialProps: { data: { quantity: 100 }, enabled: true } },
+    );
+
+    rerender({ data: { quantity: 120 }, enabled: true });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    rerender({ data: { quantity: 100 }, enabled: true });
+    rerender({ data: { quantity: 100 }, enabled: false });
+    await act(async () => { pendentes.shift()?.(); await vi.advanceTimersByTimeAsync(0); });
+    await act(async () => { pendentes.shift()?.(); await vi.advanceTimersByTimeAsync(0); });
+
+    expect(onSave).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(localStorage.getItem('autosave_draft-em-curso')!)).toMatchObject({
+      data: { quantity: 100 },
+    });
+  });
+
   it('não grava nada ao desligar quando não há alteração pendente', async () => {
     const onSave = vi.fn();
     const { rerender } = renderHook(

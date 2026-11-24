@@ -163,23 +163,43 @@ function useDraftPersistence<T>(args: {
 }) {
   const { key, dataRef, lastSavedData, storageSnapshot, conflict, onSave, onError, setLastError } =
     args;
+  // A comparacao e com o que ja foi enfileirado, nao com o que ja terminou: com
+  // uma gravacao em curso, a edicao mais nova precisa entrar na fila mesmo que
+  // coincida com a ultima versao confirmada. A fila garante que a ultima
+  // gravacao a chegar ao armazenamento seja a que reflete a tela.
+  const ultimoEnfileirado = useRef<string>(JSON.stringify(dataRef.current));
+  const fila = useRef<Promise<void>>(Promise.resolve());
+
+  useEffect(() => {
+    ultimoEnfileirado.current = lastSavedData.current;
+  }, [key, lastSavedData]);
+
   return useCallback(async () => {
     const data = dataRef.current;
     const serializedData = JSON.stringify(data);
-    if (serializedData === lastSavedData.current) return;
+    if (serializedData === ultimoEnfileirado.current) return;
+    ultimoEnfileirado.current = serializedData;
 
-    try {
-      await persistDraft({ key, data, serializedData, storageSnapshot, conflict, onSave });
-      lastSavedData.current = serializedData;
-      setLastError(null);
-      log.info('saved', { key });
-    } catch (error) {
+    const execucao = fila.current.then(async () => {
+      try {
+        await persistDraft({ key, data, serializedData, storageSnapshot, conflict, onSave });
+        lastSavedData.current = serializedData;
+        setLastError(null);
+        log.info('saved', { key });
+      } catch (error) {
+        // Falhou: libera a mesma versao para nova tentativa.
+        if (ultimoEnfileirado.current === serializedData) {
+          ultimoEnfileirado.current = lastSavedData.current;
+        }
       const saveError =
         error instanceof Error ? error : new Error('Não foi possível salvar o rascunho.');
       setLastError(saveError);
       onError?.(saveError);
-      log.error('save_failed', { key, error: saveError });
-    }
+        log.error('save_failed', { key, error: saveError });
+      }
+    });
+    fila.current = execucao;
+    await execucao;
   }, [key, dataRef, lastSavedData, storageSnapshot, conflict, onSave, onError, setLastError]);
 }
 

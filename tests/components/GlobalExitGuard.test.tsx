@@ -30,7 +30,12 @@ function Moldura() {
   return <><GlobalExitGuard /><Outlet /></>;
 }
 
-function Formulario({ sujo, aoDescartar }: { sujo: boolean; aoDescartar?: () => void }) {
+function Formulario({ sujo, aoDescartar, destino = '/outra', rotulo = 'Outra tela' }: {
+  sujo: boolean;
+  aoDescartar?: () => void;
+  destino?: string;
+  rotulo?: string;
+}) {
   useScreenDirtyState(
     sujo,
     'O kit tem itens que ainda não foram gravados.',
@@ -40,7 +45,7 @@ function Formulario({ sujo, aoDescartar }: { sujo: boolean; aoDescartar?: () => 
   return (
     <>
       <p>Formulário</p>
-      <Link to="/outra">Outra tela</Link>
+      <Link to={destino}>{rotulo}</Link>
     </>
   );
 }
@@ -63,8 +68,19 @@ function montar(opcoes: {
   declara?: boolean;
   comHistorico?: boolean;
   aoDescartar?: () => void;
+  entrada?: string;
+  destino?: string;
+  rotulo?: string;
 }) {
-  const { sujo, declara = true, comHistorico = false, aoDescartar } = opcoes;
+  const {
+    sujo,
+    declara = true,
+    comHistorico = false,
+    aoDescartar,
+    entrada = '/formulario',
+    destino,
+    rotulo,
+  } = opcoes;
   const router = createMemoryRouter(
     [
       {
@@ -73,7 +89,7 @@ function montar(opcoes: {
           {
             path: '/formulario',
             element: declara ? (
-              <Formulario sujo={sujo} aoDescartar={aoDescartar} />
+              <Formulario sujo={sujo} aoDescartar={aoDescartar} destino={destino} rotulo={rotulo} />
             ) : (
               <FormularioSemDeclaracao />
             ),
@@ -84,7 +100,7 @@ function montar(opcoes: {
     ],
     comHistorico
       ? { initialEntries: ['/origem', '/formulario'], initialIndex: 1 }
-      : { initialEntries: ['/formulario'] },
+      : { initialEntries: [entrada] },
   );
   render(<RouterProvider router={router} />);
   return router;
@@ -133,6 +149,28 @@ describe('aviso global de saída', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/outra'));
     expect(aoDescartar).toHaveBeenCalledTimes(1);
+  });
+
+  it('não descarta quando a navegação mantém a tela montada (só muda a query)', async () => {
+    // O menu "Novo Orçamento" troca apenas os parâmetros da URL: formulário e
+    // rascunho continuam montados com a mesma chave. Apagar o rascunho ali
+    // deixaria o autosave sem base de comparação e a próxima edição da aba
+    // viraria um conflito falso.
+    const aoDescartar = vi.fn();
+    const router = montar({
+      sujo: true,
+      aoDescartar,
+      entrada: '/formulario?edicao=1',
+      destino: '/formulario',
+      rotulo: 'Mesmo orçamento',
+    });
+    await esperarDeclaracao(true);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Mesmo orçamento' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair sem salvar' }));
+
+    await waitFor(() => expect(router.state.location.search).toBe(''));
+    expect(aoDescartar).not.toHaveBeenCalled();
   });
 
   it('"Continuar editando" preserva o trabalho local da tela', async () => {
