@@ -226,7 +226,9 @@ describe('saída depois de salvar o orçamento', () => {
       finalStatus: 'draft',
       transitionApplied: true,
       saltosDeVersao: 0,
+      statusVigente: null,
       setExpectedRowVersion: () => {},
+      setStatusDaTela: () => {},
       haEdicaoPosteriorAoEnvio: () => haEdicaoPosteriorAoEnvio,
       navigate: () => {},
     });

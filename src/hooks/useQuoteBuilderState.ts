@@ -348,39 +348,74 @@ interface TransicaoAplicada {
    * com versão defasada e seria recusado pelo lock otimista.
    */
   saltosDeVersao: number;
+  /**
+   * Status que a tela deve passar a considerar vigente, ou `null` quando nada
+   * mudou no banco. A gravação seguinte envia o status da tela
+   * (`buildQuoteData`), e a RPC recusa divergência com
+   * `42501 / Use o fluxo formal para alterar o status`: quem fica na tela
+   * depois de salvar precisa acompanhar a reabertura e o pedido de aprovação.
+   */
+  statusVigente: string | null;
+}
+
+type AcaoDaTransicao =
+  | { tipo: "aprovar"; requested: number; allowed: number; notes?: string }
+  | { tipo: "status"; status: Quote["status"] }
+  | { tipo: "nada" };
+
+function decidirAcaoDaTransicao(
+  params: TransitionQuoteParams,
+  effectiveStatus: string,
+): AcaoDaTransicao {
+  if (
+    params.finalStatus === "pending_approval" &&
+    params.maxDiscountPercent !== null &&
+    params.maxDiscountPercent !== undefined
+  ) {
+    return {
+      tipo: "aprovar",
+      requested: params.realDiscountPercent,
+      allowed: params.maxDiscountPercent,
+      notes: params.sellerNotes,
+    };
+  }
+  if (params.finalStatus !== effectiveStatus) {
+    return { tipo: "status", status: params.finalStatus };
+  }
+  return { tipo: "nada" };
 }
 
 export async function applyQuoteTransition(
   params: TransitionQuoteParams,
 ): Promise<TransicaoAplicada> {
   const quoteId = params.quote.id;
-  if (!quoteId) return { aplicada: false, saltosDeVersao: 0 };
+  if (!quoteId) return { aplicada: false, saltosDeVersao: 0, statusVigente: null };
+
   let saltosDeVersao = 0;
+  let statusVigente: string | null = null;
   let effectiveStatus = params.persistedStatus;
   if (quoteStatusRequiresDraftReset(effectiveStatus)) {
-    const reopened = await params.updateQuoteStatus(quoteId, 'draft');
-    if (!reopened) return { aplicada: false, saltosDeVersao };
-    effectiveStatus = 'draft';
-    saltosDeVersao += 1;
+    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    if (!reopened) return { aplicada: false, saltosDeVersao, statusVigente };
+    effectiveStatus = "draft";
+    saltosDeVersao = 1;
+    statusVigente = "draft";
   }
-  if (
-    params.finalStatus === 'pending_approval' &&
-    params.maxDiscountPercent !== null &&
-    params.maxDiscountPercent !== undefined
-  ) {
-    const requested = await params.requestApproval(
-      quoteId,
-      params.realDiscountPercent,
-      params.maxDiscountPercent,
-      params.sellerNotes,
-    );
-    return { aplicada: requested, saltosDeVersao: requested ? saltosDeVersao + 1 : saltosDeVersao };
-  }
-  if (params.finalStatus !== effectiveStatus) {
-    const updated = await params.updateQuoteStatus(quoteId, params.finalStatus);
-    return { aplicada: updated, saltosDeVersao: updated ? saltosDeVersao + 1 : saltosDeVersao };
-  }
-  return { aplicada: true, saltosDeVersao };
+
+  const acao = decidirAcaoDaTransicao(params, effectiveStatus);
+  if (acao.tipo === "nada") return { aplicada: true, saltosDeVersao, statusVigente };
+
+  const aplicada =
+    acao.tipo === "aprovar"
+      ? await params.requestApproval(quoteId, acao.requested, acao.allowed, acao.notes)
+      : await params.updateQuoteStatus(quoteId, acao.status);
+
+  const statusAlcancado = acao.tipo === "aprovar" ? "pending_approval" : acao.status;
+  return {
+    aplicada,
+    saltosDeVersao: aplicada ? saltosDeVersao + 1 : saltosDeVersao,
+    statusVigente: aplicada ? statusAlcancado : statusVigente,
+  };
 }
 
 function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote['status'] {
@@ -402,7 +437,9 @@ interface CompleteSaveParams {
   finalStatus: SaveStatus;
   transitionApplied: boolean;
   saltosDeVersao: number;
+  statusVigente: string | null;
   setExpectedRowVersion: (version: number | null) => void;
+  setStatusDaTela: (status: string) => void;
   /**
    * Alguém editou a tela enquanto o servidor gravava? O snapshot enviado é a
    * referência do que está salvo, então edição posterior a ele continua sendo
@@ -423,6 +460,12 @@ export function completeQuoteSave(params: CompleteSaveParams): void {
         ? versaoDoServidor + params.saltosDeVersao
         : versaoDoServidor,
     );
+  }
+  if (params.statusVigente) {
+    // A reabertura e o pedido de aprovação mudam o status no banco. A tela
+    // continua enviando `currentStatus`, então sem acompanhar aqui a próxima
+    // gravação é recusada com "use o fluxo formal para alterar o status".
+    params.setStatusDaTela(params.statusVigente);
   }
   if (!transitionApplied) {
     toast.warning(
@@ -942,7 +985,9 @@ export function useQuoteBuilderState() {
         finalStatus,
         transitionApplied: transicao.aplicada,
         saltosDeVersao: transicao.saltosDeVersao,
+        statusVigente: transicao.statusVigente,
         setExpectedRowVersion,
+        setStatusDaTela: setCurrentStatus,
         navigate,
       });
     },

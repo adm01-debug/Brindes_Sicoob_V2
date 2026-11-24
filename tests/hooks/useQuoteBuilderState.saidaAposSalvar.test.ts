@@ -16,28 +16,32 @@ import {
 } from "@/lib/navigation/dirty-registry";
 
 const result = { id: "orc-1", row_version: 7 } as never;
-const transicaoSemImpacto = { aplicada: true, saltosDeVersao: 0 } as const;
+const transicaoSemImpacto = { aplicada: true, saltosDeVersao: 0, statusVigente: null } as const;
 
 function salvar(opcoes: {
   haEdicaoPosteriorAoEnvio?: boolean;
   isEditMode?: boolean;
   expectedRowVersion?: number | null;
-  transicao?: { aplicada: boolean; saltosDeVersao: number };
+  transicao?: { aplicada: boolean; saltosDeVersao: number; statusVigente: string | null };
 }) {
   const navigate = vi.fn();
   const setExpectedRowVersion = vi.fn();
+  const setStatusDaTela = vi.fn();
+  const transicao = opcoes.transicao ?? transicaoSemImpacto;
   completeQuoteSave({
     result,
     isEditMode: opcoes.isEditMode ?? false,
     expectedRowVersion: opcoes.expectedRowVersion ?? null,
     finalStatus: "draft",
-    transitionApplied: (opcoes.transicao ?? transicaoSemImpacto).aplicada,
-    saltosDeVersao: (opcoes.transicao ?? transicaoSemImpacto).saltosDeVersao,
+    transitionApplied: transicao.aplicada,
+    saltosDeVersao: transicao.saltosDeVersao,
+    statusVigente: transicao.statusVigente,
     setExpectedRowVersion,
+    setStatusDaTela,
     haEdicaoPosteriorAoEnvio: () => opcoes.haEdicaoPosteriorAoEnvio ?? false,
     navigate,
   });
-  return { navigate, setExpectedRowVersion };
+  return { navigate, setExpectedRowVersion, setStatusDaTela };
 }
 
 describe("saída depois de salvar o orçamento", () => {
@@ -62,7 +66,7 @@ describe("saída depois de salvar o orçamento", () => {
   it("mantém a mesma regra quando a transição de status não foi confirmada", () => {
     const { navigate } = salvar({
       haEdicaoPosteriorAoEnvio: true,
-      transicao: { aplicada: false, saltosDeVersao: 0 },
+      transicao: { aplicada: false, saltosDeVersao: 0, statusVigente: "draft" },
     });
     expect(navigate).toHaveBeenCalledWith("/orcamentos/orc-1");
     expect(saidaAutorizada()).toBe(false);
@@ -85,7 +89,7 @@ describe("referência de versão depois de salvar", () => {
     const { setExpectedRowVersion } = salvar({
       isEditMode: true,
       expectedRowVersion: 6,
-      transicao: { aplicada: true, saltosDeVersao: 1 },
+      transicao: { aplicada: true, saltosDeVersao: 1, statusVigente: "draft" },
     });
     expect(setExpectedRowVersion).toHaveBeenCalledWith(8);
   });
@@ -98,6 +102,31 @@ describe("referência de versão depois de salvar", () => {
   it("não mexe na referência em orçamento novo", () => {
     const { setExpectedRowVersion } = salvar({ isEditMode: false });
     expect(setExpectedRowVersion).not.toHaveBeenCalled();
+  });
+});
+
+describe("status da tela depois de salvar", () => {
+  it("acompanha a reabertura: a tela passa a enviar rascunho", () => {
+    // Sem isso a próxima gravação mandaria o status antigo (recusado pela RPC
+    // com "use o fluxo formal para alterar o status").
+    const { setStatusDaTela } = salvar({
+      isEditMode: true,
+      transicao: { aplicada: true, saltosDeVersao: 1, statusVigente: "draft" },
+    });
+    expect(setStatusDaTela).toHaveBeenCalledWith("draft");
+  });
+
+  it("acompanha o pedido de aprovação", () => {
+    const { setStatusDaTela } = salvar({
+      isEditMode: true,
+      transicao: { aplicada: true, saltosDeVersao: 2, statusVigente: "pending_approval" },
+    });
+    expect(setStatusDaTela).toHaveBeenCalledWith("pending_approval");
+  });
+
+  it("não mexe no status quando a transição não mudou nada", () => {
+    const { setStatusDaTela } = salvar({ isEditMode: true });
+    expect(setStatusDaTela).not.toHaveBeenCalled();
   });
 });
 
@@ -118,7 +147,7 @@ describe("saltos de versão da transição de status", () => {
       updateQuoteStatus,
     });
     expect(updateQuoteStatus).toHaveBeenCalledWith("orc-1", "draft");
-    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 1 });
+    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 1, statusVigente: "draft" });
   });
 
   it("conta o segundo salto quando a reabertura desemboca em pedido de aprovação", async () => {
@@ -129,7 +158,7 @@ describe("saltos de versão da transição de status", () => {
       requestApproval: vi.fn(async () => true),
       updateQuoteStatus: vi.fn(async () => true),
     });
-    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 2 });
+    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 2, statusVigente: "pending_approval" });
   });
 
   it("não conta salto quando a transição falha", async () => {
@@ -138,7 +167,7 @@ describe("saltos de versão da transição de status", () => {
       persistedStatus: "rejected",
       updateQuoteStatus: vi.fn(async () => false),
     });
-    expect(transicao).toEqual({ aplicada: false, saltosDeVersao: 0 });
+    expect(transicao).toEqual({ aplicada: false, saltosDeVersao: 0, statusVigente: null });
   });
 
   it("não conta salto quando o status final já é o persistido", async () => {
@@ -147,6 +176,6 @@ describe("saltos de versão da transição de status", () => {
       persistedStatus: "draft",
       updateQuoteStatus: vi.fn(async () => true),
     });
-    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 0 });
+    expect(transicao).toEqual({ aplicada: true, saltosDeVersao: 0, statusVigente: null });
   });
 });
