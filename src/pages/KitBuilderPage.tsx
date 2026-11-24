@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
 import { decidirTrocaDeTemplate, textoDaSaida } from '@/lib/kit-builder/saida-da-tela';
 import { autorizarSaida } from '@/lib/navigation/dirty-registry';
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -488,11 +489,15 @@ export default function KitBuilderPage() {
   // Recarregar busca a versao de quem gravou do outro lado e descarta o que
   // esta na tela — e o conflito so aparece porque a gravacao automatica falhou,
   // ou seja, sempre ha alteracao nao salva aqui. Perguntar antes.
-  function recarregarAposConflito() {
-    const confirmado = window.confirm(
-      'Recarregar traz a versao salva em outro lugar e descarta as alteracoes desta tela, '
-      + 'que nao foram salvas. Deseja recarregar?',
-    );
+  async function recarregarAposConflito() {
+    const confirmado = await askConfirm({
+      title: 'Recarregar e descartar as alterações desta tela?',
+      description: 'Recarregar traz a versão salva em outro lugar e descarta as alterações '
+        + 'desta tela, que não foram salvas.',
+      variant: 'warning',
+      confirmLabel: 'Recarregar',
+      cancelLabel: 'Continuar aqui',
+    });
     if (confirmado) window.location.reload();
   }
 

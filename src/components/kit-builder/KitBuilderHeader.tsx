@@ -62,7 +62,7 @@ function SaveStatus({ props }: { props: KitBuilderHeaderProps }) {
   if (props.isAutoSaving) return <Badge variant="outline" className="text-[10px] gap-1 h-5"><Loader2 className="h-2.5 w-2.5 animate-spin" /> Salvando…</Badge>;
   // Conflito não se resolve repetindo: a outra aba gravou depois que esta
   // abriu a tela, e regravar por cima apagaria aquele trabalho.
-  if (props.autoSaveConflict) return <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={props.onReloadAfterConflict}>Alterado em outro lugar — recarregar</Button>;
+  if (props.autoSaveConflict) return <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={() => { void props.onReloadAfterConflict?.(); }}>Alterado em outro lugar — recarregar</Button>;
   if (props.autoSaveError) return <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={props.onRetryAutoSave}>Falha ao salvar — tentar novamente</Button>;
   if (props.lastSavedAt) return <Badge variant="outline" className="text-[10px] gap-1 h-5 border-success/40 text-success"><Cloud className="h-2.5 w-2.5" />Salvo {props.lastSavedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</Badge>;
   return null;
