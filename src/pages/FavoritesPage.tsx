@@ -370,7 +370,7 @@ export default function FavoritesPage() {
         key: favorite.productId,
         itemId: null as string | null,
         productId: favorite.productId,
-        variantId: null as string | null,
+        variantId: favorite.variant?.variant_id ?? null,
         variantInfo: favorite.variant ?? null,
       }));
   }, [itemsLoading, isRemoteListView, rawItems, favorites, resolvedProductIds]);
@@ -595,7 +595,9 @@ export default function FavoritesPage() {
   }
 
   function FavoritesSearch() {
-    if (productsWithVariant.length === 0) return null;
+    // Lista só com favoritos indisponíveis também precisa da busca: o termo pode ter
+    // vindo de outra lista e não haveria como limpar nem procurar pela variante salva.
+    if (productsWithVariant.length === 0 && unavailableFavorites.length === 0) return null;
     return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input placeholder="Buscar nos favoritos..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="pl-9" />
     </div>;

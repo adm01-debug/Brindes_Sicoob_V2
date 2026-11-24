@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { FavoritesSortBar } from "@/components/favorites/FavoritesSortBar";
 
@@ -17,6 +17,9 @@ describe("FavoritesSortBar — chip de quedas", () => {
 
     const chip = screen.getByRole("button", { name: /Quedas/ });
     expect(chip).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(chip);
+    expect(onToggle).toHaveBeenCalledWith(false);
   });
 
   it("some quando não há queda e o filtro está desligado", () => {
