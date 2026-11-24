@@ -143,6 +143,11 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
       </TooltipProvider>,
     );
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    // A versão anterior existe no navegador e difere do que a tela abandonou.
+    const chave = 'autosave_quote:usuario-3:orc-9';
+    const gravado = JSON.parse(localStorage.getItem(chave)!);
+    expect(gravado.data).toEqual({ items: 12 });
+    expect(gravado.data).not.toEqual({ items: 12, tags: ['urgente'] });
     unmount();
 
     // Edição nova (tags), nunca gravada, é o que a tela abandonou.
@@ -152,7 +157,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
       data: { items: 12, tags: ['urgente'] },
     });
 
-    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
+    expect(localStorage.getItem(chave)).toBeNull();
   });
 
   it('apaga o rascunho novo da sessão quando o orçamento ainda não tem número', () => {
