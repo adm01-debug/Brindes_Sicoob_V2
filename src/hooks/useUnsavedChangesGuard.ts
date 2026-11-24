@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useState } from "react";
+import { autorizarSaida } from "@/lib/navigation/dirty-registry";
 
 interface UseUnsavedChangesGuardOptions {
   /** Whether there are unsaved changes */
@@ -48,6 +49,9 @@ export function useUnsavedChangesGuard({
 
   const confirmLeave = useCallback(() => {
     setShowDialog(false);
+    // O usuário já respondeu: o portão global não repete a pergunta na
+    // navegação que vem logo abaixo.
+    autorizarSaida();
     pendingAction?.();
     setPendingAction(null);
   }, [pendingAction]);

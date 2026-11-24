@@ -6,11 +6,14 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  autorizarSaida,
   declararEstadoDaRota,
   esquecerRota,
+  limparAutorizacaoDeSaida,
   limparRegistroDeRotas,
   rotaEstaSuja,
   rotaTemEstadoDeclarado,
+  saidaAutorizada,
 } from '@/lib/navigation/dirty-registry';
 
 describe('registro de trabalho não salvo por rota', () => {
@@ -46,5 +49,39 @@ describe('registro de trabalho não salvo por rota', () => {
     declararEstadoDaRota('/montar-kit', false);
     expect(rotaEstaSuja('/orcamentos/novo')).toBe(true);
     expect(rotaEstaSuja('/montar-kit')).toBe(false);
+  });
+});
+
+describe('autorização de saída de quem já perguntou', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('sem confirmação recente, o portão não está autorizado', () => {
+    expect(saidaAutorizada()).toBe(false);
+  });
+
+  it('quem confirmou autoriza a saída que vem logo abaixo', () => {
+    const agora = Date.now();
+    autorizarSaida();
+    expect(saidaAutorizada(agora + 10)).toBe(true);
+  });
+
+  it('autorização velha não libera a próxima saída — o usuário pode ter mudado de ideia', () => {
+    const agora = Date.now();
+    autorizarSaida();
+    expect(saidaAutorizada(agora + 60_000)).toBe(false);
+  });
+
+  it('o logout apaga a autorização junto com o registro', () => {
+    autorizarSaida();
+    limparRegistroDeRotas();
+    expect(saidaAutorizada()).toBe(false);
+  });
+
+  it('limpar só a autorização preserva quem está sujo', () => {
+    declararEstadoDaRota('/montar-kit', true);
+    autorizarSaida();
+    limparAutorizacaoDeSaida();
+    expect(saidaAutorizada()).toBe(false);
+    expect(rotaEstaSuja('/montar-kit')).toBe(true);
   });
 });

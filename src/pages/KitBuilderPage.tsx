@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
 import { decidirTrocaDeTemplate, textoDaSaida } from '@/lib/kit-builder/saida-da-tela';
+import { autorizarSaida } from '@/lib/navigation/dirty-registry';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -464,6 +465,9 @@ export default function KitBuilderPage() {
     // A política é lida agora: com o aviso aberto o estado pode ter mudado.
     const podeTrocar = await decidirTrocaDeTemplate(saidaAtualRef.current, gravarPendente);
     if (!podeTrocar) return;
+    // A decisão foi tomada aqui (e a gravação pode ter levado segundos): o
+    // portão global não pode perguntar de novo sobre a mesma troca.
+    autorizarSaida();
     navigate(`/montar-kit?template=${templateId}`);
   }
   // "Biblioteca" e o voltar do app navegam por dentro do SPA, onde o

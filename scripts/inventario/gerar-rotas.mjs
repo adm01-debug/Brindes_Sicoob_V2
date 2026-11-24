@@ -211,10 +211,15 @@ export function lerGruposDeRotas(raiz) {
  * Como o App.tsx monta as rotas: para cada `{grupo.map(` e para cada `<Route path=...>` inline,
  * a pilha de guardas/layouts em que ele esta. A varredura de `<Route>` usa a mesma expressao do
  * gerador de contexto (scripts/ai-context/gerar.mjs): atributo com `{...}` pode conter `>`.
+ *
+ * O recorte comeca em `createRoutesFromElements(` e nao mais em `<Routes>`: a arvore passou para o
+ * data router, mas continua em JSX (o que muda e quem navega, nao a declaracao). O inicio tem de
+ * ficar antes do primeiro `{grupo.map(`, que vem antes do primeiro `<Route>`.
  */
 export function lerMontagem(raiz) {
   const texto = ler(raiz, APP);
-  const corpo = texto.slice(texto.indexOf('<Routes>'), texto.lastIndexOf('</Routes>'));
+  const inicio = texto.indexOf('createRoutesFromElements(');
+  const corpo = texto.slice(inicio >= 0 ? inicio : 0, texto.lastIndexOf('</Route>'));
   const re = /<Route\b((?:[^>{/]|\/(?!>)|\{(?:[^{}]|\{[^{}]*\})*\})*)(\/?)>|<\/Route\s*>|\{\s*(\w+)\s*\.map\(/g;
   const pilha = [];
   const grupos = {};

@@ -50,10 +50,40 @@ export function mensagemDaRota(rota: string): string | null {
 }
 
 /**
+ * Autorização de saída para quem JÁ perguntou ao usuário.
+ *
+ * Com o aviso global ligado (`GlobalExitGuard`), toda navegação interna passa
+ * por um portão único. As telas que já confirmam por conta própria — o "Sair e
+ * gravar" do montador de kit, o voltar do portal — navegam depois da resposta e
+ * seriam interrogadas de novo: perguntar duas vezes ensina o usuário a
+ * confirmar sem ler, e aí a pergunta que importa passa batida.
+ *
+ * A janela é curta porque a navegação acontece no mesmo instante da resposta:
+ * autorização esquecida não pode liberar uma saída de minutos depois.
+ */
+const JANELA_DE_AUTORIZACAO_MS = 2000;
+let autorizadoEm = 0;
+
+/** Quem acabou de confirmar a saída avisa aqui, imediatamente antes de navegar. */
+export function autorizarSaida(): void {
+  autorizadoEm = Date.now();
+}
+
+/** Vale a autorização recente? Lida sem consumir: o portão pode ser consultado mais de uma vez. */
+export function saidaAutorizada(agora: number = Date.now()): boolean {
+  return autorizadoEm > 0 && agora - autorizadoEm <= JANELA_DE_AUTORIZACAO_MS;
+}
+
+export function limparAutorizacaoDeSaida(): void {
+  autorizadoEm = 0;
+}
+
+/**
  * Zera o registro. Chamado no logout: sem isto, o estado sujo de quem saiu
  * sobrevive à sessão e o próximo login é interrogado por trabalho que não é
  * dele. Também usado pelos testes.
  */
 export function limparRegistroDeRotas(): void {
   sujoPorRota.clear();
+  limparAutorizacaoDeSaida();
 }

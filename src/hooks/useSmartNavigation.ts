@@ -3,7 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { dismissTopmostOverlay } from '@/lib/overlay';
-import { mensagemDaRota, rotaEstaSuja, rotaTemEstadoDeclarado } from '@/lib/navigation/dirty-registry';
+import {
+  autorizarSaida,
+  mensagemDaRota,
+  rotaEstaSuja,
+  rotaTemEstadoDeclarado,
+} from '@/lib/navigation/dirty-registry';
 import { trackUx } from '@/lib/uxMetrics';
 import { Haptics } from '@/utils/haptics';
 
@@ -47,6 +52,11 @@ async function performBackNavigation(deps: BackNavigationDeps) {
     }
     trackUx('guard.confirm');
   }
+
+  // A pergunta já foi feita aqui; o portão global (\`GlobalExitGuard\`) não pode
+  // repetir a mesma pergunta na navegação logo abaixo. Autorização curta: vale
+  // para esta saída, não para a próxima.
+  autorizarSaida();
 
   // nav.back conta retorno efetivo: só depois de passar pela confirmação.
   trackUx('nav.back');

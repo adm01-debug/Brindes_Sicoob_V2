@@ -4,7 +4,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createQueryClient } from "@/lib/query-config";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+  Route,
+  Navigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -17,6 +25,7 @@ import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
+import { GlobalExitGuard } from "@/components/routing/GlobalExitGuard";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { useWebVitals } from "@/hooks/infrastructure/useWebVitals";
@@ -60,30 +69,36 @@ const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
 const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
 const AuthenticatedShell = lazyWithRetry(() => import("@/components/layout/AuthenticatedShell").then((module) => ({ default: module.AuthenticatedShell })));
 const MainLayout = lazyWithRetry(() => import("@/components/layout/MainLayout").then((module) => ({ default: module.MainLayout })));
-const App = () => {
-  useGlobalErrorCatcher();
-  useWebVitals({ debug: import.meta.env.DEV });
+/**
+ * A moldura comum do portal.
+ *
+ * No data router não existe o que ficava fora de `<Routes>`: tudo o que usa
+ * router tem de ser rota. Este layout é a raiz, então o `AuthProvider`
+ * continua acima de todas as telas — é dele que `ProtectedRoute` depende — e o
+ * `GlobalExitGuard` fica montado durante toda a sessão.
+ */
+const RootLayout = () => (
+  <AuthProvider>
+    <Toaster />
+    <Sonner />
+    <RouteScrollReset />
+    <RouteAnnouncer />
+    <GlobalExitGuard />
+    <Outlet />
+  </AuthProvider>
+);
 
-  useEffect(() => {
-    markBootSuccessful();
-  }, []);
-
-  return (
-    <ErrorBoundary name="Root">
-      <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <ThemeInitializer />
-        <AccessibilityProvider>
-          <AriaLiveProvider>
-            <TooltipProvider>
-              <BrowserRouter>
-                <AuthProvider>
-                  <Toaster />
-                  <Sonner />
-                  <RouteScrollReset />
-                  <RouteAnnouncer />
-
-                  <Routes>
+/**
+ * A árvore continua escrita em JSX de propósito: é dela que
+ * `scripts/inventario/gerar-rotas.mjs` lê a guarda de cada rota. O data router
+ * só troca quem navega, não o formato da declaração — a conferência de rotas
+ * guardadas segue lendo o mesmo texto.
+ */
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: createRoutesFromElements(
+      <>
                         {/* Public Routes */}
                         {publicRoutes.map(r => (
                           <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
@@ -149,9 +164,28 @@ const App = () => {
                           </Route>
                           </Route>
                         </Route>
-                  </Routes>
-                </AuthProvider>
-              </BrowserRouter>
+      </>,
+    ),
+  },
+]);
+
+const App = () => {
+  useGlobalErrorCatcher();
+  useWebVitals({ debug: import.meta.env.DEV });
+
+  useEffect(() => {
+    markBootSuccessful();
+  }, []);
+
+  return (
+    <ErrorBoundary name="Root">
+      <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ThemeInitializer />
+        <AccessibilityProvider>
+          <AriaLiveProvider>
+            <TooltipProvider>
+                  <RouterProvider router={router} />
             </TooltipProvider>
           </AriaLiveProvider>
         </AccessibilityProvider>
