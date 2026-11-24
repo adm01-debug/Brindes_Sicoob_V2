@@ -70,7 +70,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     // de uma não pode levar o trabalho mais novo da outra junto.
     localStorage.setItem(
       'autosave_quote:usuario-3:orc-9',
-      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 } }),
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'outra-aba' }),
     );
 
     limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: { items: 12 } });
@@ -84,7 +84,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     sessionStorage.setItem('quote-new-draft:usuario-3', 'sessao-9');
     localStorage.setItem(
       'autosave_draft:usuario-3:sessao-9',
-      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 20 } }),
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 20 }, tab: 'aba-duplicada' }),
     );
 
     limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: null, data: { items: 12 } });
@@ -115,13 +115,42 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
 
   it('apaga o rascunho restaurado depois de recarregar a página', () => {
     // Recarregar não muda o conteúdo: o que está gravado é exatamente o que a
-    // tela restaurou, então o descarte continua valendo depois do reload.
+    // tela restaurou, então o descarte continua valendo depois do reload, mesmo
+    // que a marca do documento tenha mudado.
     localStorage.setItem(
       'autosave_quote:usuario-3:orc-9',
-      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 } }),
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'documento-anterior' }),
     );
 
     limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: { items: 10 } });
+
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
+  });
+
+  it('apaga a versão anterior quando a última edição ainda não foi gravada', async () => {
+    // A gravação automática espera 2s e é cancelada no desmonte: sair logo após
+    // editar deixa no navegador a versão anterior, desta mesma tela. Ela precisa
+    // sair junto, senão o editor a restaura na próxima abertura.
+    const props = { quoteId: 'orc-9', scopeId: 'usuario-3', onRestore: vi.fn() };
+    const { rerender, unmount } = render(
+      <TooltipProvider>
+        <QuoteAutoSave {...props} enabled data={{ items: 10 }} />
+      </TooltipProvider>,
+    );
+    rerender(
+      <TooltipProvider>
+        <QuoteAutoSave {...props} enabled data={{ items: 12 }} />
+      </TooltipProvider>,
+    );
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    unmount();
+
+    // Edição nova (tags), nunca gravada, é o que a tela abandonou.
+    limparRascunhoDoOrcamento({
+      scopeId: 'usuario-3',
+      quoteId: 'orc-9',
+      data: { items: 12, tags: ['urgente'] },
+    });
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
   });

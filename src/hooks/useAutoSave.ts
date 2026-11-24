@@ -9,8 +9,24 @@ interface StoredAutoSave<T> {
   version: typeof AUTO_SAVE_VERSION;
   savedAt: string;
   data: T;
-  /** Aba que gravou: evita que o descarte de uma aba apague o rascunho de outra. */
+  /** Documento que gravou: evita que o descarte de uma aba apague o rascunho de outra. */
+  tab?: string;
 }
+
+/**
+ * Identidade deste documento (carregamento da pagina).
+ *
+ * Fica em memoria de proposito: duplicar a aba cria um documento novo com id
+ * proprio, enquanto a comparacao por conteudo cobre o recarregamento, em que o
+ * rascunho restaurado e exatamente o que a tela tem.
+ */
+const AUTOSAVE_ID_DOCUMENTO = (() => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+})();
 
 const CONCURRENT_DRAFT_MESSAGE =
   'Este rascunho foi alterado em outra aba. Recarregue o orçamento antes de continuar.';
@@ -44,19 +60,26 @@ async function withDraftWriteLock<T>(key: string, operation: () => Promise<T>): 
 }
 
 /**
- * Apaga o rascunho desta chave quando ele guarda exatamente o conteudo informado.
+ * Apaga o rascunho desta chave que pertence a esta tela.
  *
- * O rascunho e compartilhado entre abas do mesmo usuario e orcamento. Comparar
- * o conteudo, e nao a aba que gravou, distingue trabalho alheio de forma
- * confiavel: uma aba duplicada herda a mesma identificacao da original, mas
- * grava outro conteudo, e continua preservada.
+ * O rascunho e compartilhado entre abas do mesmo usuario e orcamento, entao o
+ * descarte nao pode apagar o que outra aba gravou. Duas origens contam como
+ * desta tela:
+ *
+ * - o documento que gravou (aba ou janela atual), mesmo que a copia guardada
+ *   seja anterior a ultima edicao, que ainda nao passou pelo intervalo de
+ *   gravacao;
+ * - um rascunho com exatamente o conteudo informado, o que cobre o
+ *   recarregamento: o rascunho restaurado e o que a tela tem.
  */
 export function descartarRascunho(key: string, data: unknown): void {
   const storageKey = `autosave_${key}`;
   try {
     const atual = localStorage.getItem(storageKey);
     if (!atual) return;
-    if (JSON.stringify(readStoredData(atual)) !== JSON.stringify(data)) return;
+    const gravadoPorEstaTela =
+      (JSON.parse(atual) as { tab?: string }).tab === AUTOSAVE_ID_DOCUMENTO;
+    if (!gravadoPorEstaTela && JSON.stringify(readStoredData(atual)) !== JSON.stringify(data)) return;
     localStorage.removeItem(storageKey);
   } catch {
     // Armazenamento bloqueado ou rascunho ilegivel: nada a apagar.
@@ -129,6 +152,7 @@ async function persistDraft<T>({
       version: AUTO_SAVE_VERSION,
       savedAt: new Date().toISOString(),
       data,
+      tab: AUTOSAVE_ID_DOCUMENTO,
     };
     const serialized = JSON.stringify(stored);
     localStorage.setItem(storageKey, serialized);

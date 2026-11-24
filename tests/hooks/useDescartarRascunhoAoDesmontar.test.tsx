@@ -29,6 +29,16 @@ function montar(descartar: () => void) {
   return { api, unmount };
 }
 
+function Editor({ id, apagados, api }: { id: string; apagados: string[]; api: { current: Api | null } }) {
+  const marcar = useDescartarRascunhoAoDesmontar(() => apagados.push(id));
+  const navigate = useNavigate();
+  useEffect(() => {
+    marcar();
+    api.current = { marcar, ir: (destino: string) => navigate(destino) };
+  }, [api, marcar, navigate]);
+  return <p>editor {id}</p>;
+}
+
 describe('useDescartarRascunhoAoDesmontar', () => {
   it('apaga o rascunho quando a tela sai de verdade', () => {
     const descartar = vi.fn();
@@ -63,6 +73,26 @@ describe('useDescartarRascunhoAoDesmontar', () => {
     act(() => api.current!.ir('/formulario'));
 
     expect(descartar).not.toHaveBeenCalled();
+  });
+
+  it('apaga só o rascunho do editor que saiu ao trocar entre caminhos distintos', () => {
+    // Dois orçamentos abertos pela mesma rota de edição, com caminhos
+    // diferentes: a transição desmonta o editor anterior e apenas o rascunho
+    // dele pode ser apagado.
+    const apagados: string[] = [];
+    const api: { current: Api | null } = { current: null };
+    render(
+      <MemoryRouter initialEntries={['/orcamentos/1']}>
+        <Routes>
+          <Route path="/orcamentos/1" element={<Editor key="orc-1" id="orc-1" apagados={apagados} api={api} />} />
+          <Route path="/orcamentos/2" element={<Editor key="orc-2" id="orc-2" apagados={apagados} api={api} />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    act(() => api.current!.ir('/orcamentos/2'));
+
+    expect(apagados).toEqual(['orc-1']);
   });
 
   it('não apaga quando o pedido não foi feito', () => {
