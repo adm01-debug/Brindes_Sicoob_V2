@@ -214,6 +214,20 @@ function hasOrderFallback(meta: unknown): boolean {
   );
 }
 
+// Devolve true quando ainda há páginas a buscar; false quando a coleta terminou.
+function hasMorePages(sourceName: string, degraded: boolean, received: number, pageSize: number, offset: number): boolean {
+  if (received < pageSize) {
+    if (offset > 0 && degraded) {
+      throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
+    }
+    return false;
+  }
+  if (degraded) {
+    throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
+  }
+  return true;
+}
+
 async function fetchAllExternalRows<Row extends object>(
   requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean; meta?: unknown }>,
   sourceName: string,
@@ -227,18 +241,11 @@ async function fetchAllExternalRows<Row extends object>(
       throw new Error(message);
     }
     rows.push(...result.records);
-    const degraded = hasOrderFallback(result.meta);
     // Primeira chamada já incompleta = todos os registros vieram de uma vez: a ordem
     // é irrelevante e a resposta degradada ainda é confiável. Fora disso, sem ordem
     // o deslocamento repete/omite linhas, então a paginação é abortada.
-    if (result.records.length < pageSize) {
-      if (offset > 0 && degraded) {
-        throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
-      }
+    if (!hasMorePages(sourceName, hasOrderFallback(result.meta), result.records.length, pageSize, offset)) {
       return rows;
-    }
-    if (degraded) {
-      throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
     }
   }
   throw new Error(`Consulta de ${sourceName} excedeu o limite de segurança.`);
