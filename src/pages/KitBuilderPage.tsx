@@ -473,7 +473,7 @@ export default function KitBuilderPage() {
   // "Biblioteca" e o voltar do app navegam por dentro do SPA, onde o
   // `beforeunload` acima não alcança: o registro de rota responde por essas
   // saídas.
-  useScreenDirtyState(temAlteracaoPendente, mensagemSaida);
+  useScreenDirtyState(temAlteracaoPendente, mensagemSaida, saidaDaTela.rotulo);
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 

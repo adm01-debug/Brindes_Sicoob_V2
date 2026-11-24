@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GlobalExitGuard } from '@/components/routing/GlobalExitGuard';
 import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
 import {
+  agendarAposSaida,
   autorizarSaida,
   limparRegistroDeRotas,
   rotaEstaSuja,
@@ -45,8 +46,8 @@ function OutraTela() {
   return <p>Outra tela</p>;
 }
 
-function montar(opcoes: { sujo: boolean; declara?: boolean }) {
-  const { sujo, declara = true } = opcoes;
+function montar(opcoes: { sujo: boolean; declara?: boolean; comHistorico?: boolean }) {
+  const { sujo, declara = true, comHistorico = false } = opcoes;
   const router = createMemoryRouter(
     [
       {
@@ -60,7 +61,9 @@ function montar(opcoes: { sujo: boolean; declara?: boolean }) {
         ],
       },
     ],
-    { initialEntries: ['/formulario'] },
+    comHistorico
+      ? { initialEntries: ['/origem', '/formulario'], initialIndex: 1 }
+      : { initialEntries: ['/formulario'] },
   );
   render(<RouterProvider router={router} />);
   return router;
@@ -152,5 +155,49 @@ describe('aviso global de saída', () => {
 
     expect(await screen.findByText('Alterações não salvas')).toBeInTheDocument();
     relogio.mockRestore();
+  });
+});
+
+describe('voltar do navegador com trabalho pendente', () => {
+  it('confirmar a volta pelo navegador sai de fato, sem reabrir o aviso', async () => {
+    const router = montar({ sujo: true, comHistorico: true });
+    await esperarDeclaracao(true);
+
+    await router.navigate(-1);
+
+    expect(await screen.findByText('Alterações não salvas')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/formulario');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sair sem salvar' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/origem'));
+    await waitFor(() => expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument());
+  });
+});
+
+describe('efeito colateral da saída', () => {
+  it('só acontece quando o usuário confirma', async () => {
+    montar({ sujo: true });
+    await esperarDeclaracao(true);
+    const apagarCarrinho = vi.fn();
+    agendarAposSaida(apagarCarrinho);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Continuar editando' }));
+
+    expect(apagarCarrinho).not.toHaveBeenCalled();
+  });
+
+  it('acontece junto com a saída confirmada', async () => {
+    const router = montar({ sujo: true });
+    await esperarDeclaracao(true);
+    const apagarCarrinho = vi.fn();
+    agendarAposSaida(apagarCarrinho);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair sem salvar' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/outra'));
+    expect(apagarCarrinho).toHaveBeenCalledTimes(1);
   });
 });

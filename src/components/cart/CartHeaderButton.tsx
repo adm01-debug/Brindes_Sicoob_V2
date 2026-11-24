@@ -3,7 +3,12 @@
  */
 
 import { ShoppingCart, Trash2, Plus, Building2, Package, X, ArrowRight, Eraser, Minus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  agendarAposSaida,
+  rotaEstaSuja,
+  rotaTemEstadoDeclarado,
+} from "@/lib/navigation/dirty-registry";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -66,6 +71,7 @@ function CartSummaryCard({ cart, active, onActivate, onDelete, removeItem, updat
 
 export function CartHeaderButton() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -276,7 +282,15 @@ export function CartHeaderButton() {
                                 })),
                               },
                             });
-                            deleteCart(cartIdToDelete);
+                            // O portao global pode segurar esta navegacao: apagar o
+                            // carrinho antes apagaria os itens que ainda nao chegaram
+                            // ao orcamento se o usuario escolhesse continuar editando.
+                            if (rotaTemEstadoDeclarado(location.pathname)
+                              && rotaEstaSuja(location.pathname)) {
+                              agendarAposSaida(() => deleteCart(cartIdToDelete));
+                            } else {
+                              deleteCart(cartIdToDelete);
+                            }
                           }}
                         >
                           <ArrowRight className="h-3.5 w-3.5" />

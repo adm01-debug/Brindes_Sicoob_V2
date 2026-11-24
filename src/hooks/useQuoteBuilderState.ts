@@ -26,6 +26,7 @@ import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+import { autorizarSaida } from "@/lib/navigation/dirty-registry";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -395,12 +396,17 @@ function completeQuoteSave(params: CompleteSaveParams): void {
     toast.warning(
       'O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.',
     );
+    // O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode
+    // cair no aviso de "alteracoes nao salvas" (o snapshot limpo chega um
+    // render depois da navegacao).
+    autorizarSaida();
     params.navigate(`/orcamentos/${result.id}`);
     return;
   }
   if (finalStatus === 'pending_singular_approval') {
     toast.success('Solicitação enviada para aprovação da Singular!');
   }
+  autorizarSaida();
   params.navigate(`/orcamentos/${result.id}`);
 }
 

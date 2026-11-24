@@ -16,6 +16,7 @@
 interface EstadoDaRota {
   sujo: boolean;
   mensagem?: string;
+  rotulo?: string;
 }
 
 const sujoPorRota = new Map<string, EstadoDaRota>();
@@ -25,8 +26,13 @@ const sujoPorRota = new Map<string, EstadoDaRota>();
  * quando quiser, o que avisar. O texto genérico ("alterações não salvas") não
  * diz ao usuário o que ele perde; a tela sabe.
  */
-export function declararEstadoDaRota(rota: string, sujo: boolean, mensagem?: string): void {
-  sujoPorRota.set(rota, { sujo, mensagem });
+export function declararEstadoDaRota(
+  rota: string,
+  sujo: boolean,
+  mensagem?: string,
+  rotulo?: string,
+): void {
+  sujoPorRota.set(rota, { sujo, mensagem, rotulo });
 }
 
 /** A tela saiu: volta a valer a regra antiga para essa rota. */
@@ -42,6 +48,16 @@ export function rotaTemEstadoDeclarado(rota: string): boolean {
 /** Há trabalho não salvo declarado nesta rota? */
 export function rotaEstaSuja(rota: string): boolean {
   return sujoPorRota.get(rota)?.sujo === true;
+}
+
+/**
+ * O verbo do botao de confirmacao, quando a tela sabe qual e.
+ *
+ * O montador de kit grava em segundo plano ao sair: rotular a saida de "Sair sem
+ * salvar" ali contradiz o proprio aviso dele ("a gravacao continua").
+ */
+export function rotuloDaRota(rota: string): string | null {
+  return sujoPorRota.get(rota)?.rotulo ?? null;
 }
 
 /** O aviso que a tela pediu, se pediu algum. */
@@ -62,6 +78,29 @@ export function mensagemDaRota(rota: string): string | null {
  * autorização esquecida não pode liberar uma saída de minutos depois.
  */
 const JANELA_DE_AUTORIZACAO_MS = 2000;
+
+/**
+ * Trabalho que so pode acontecer DEPOIS da saida confirmada.
+ *
+ * O carrinho do cabecalho apagava a linha do banco no mesmo clique que pedia a
+ * navegacao. Com o portao global segurando essa navegacao, cancelar deixava o
+ * usuario na tela e o carrinho apagado: os itens nunca chegavam ao orcamento.
+ * Quem tem efeito colateral na saida agenda aqui e o portao executa somente
+ * quando o usuario confirma.
+ */
+const acoesAposSaida: Array<() => void> = [];
+
+export function agendarAposSaida(acao: () => void): void {
+  acoesAposSaida.push(acao);
+}
+
+export function executarAcoesAposSaida(): void {
+  acoesAposSaida.splice(0).forEach((acao) => acao());
+}
+
+export function descartarAcoesAposSaida(): void {
+  acoesAposSaida.length = 0;
+}
 let autorizadoEm = 0;
 
 /** Quem acabou de confirmar a saída avisa aqui, imediatamente antes de navegar. */
@@ -86,4 +125,5 @@ export function limparAutorizacaoDeSaida(): void {
 export function limparRegistroDeRotas(): void {
   sujoPorRota.clear();
   limparAutorizacaoDeSaida();
+  descartarAcoesAposSaida();
 }

@@ -2,10 +2,14 @@ import { useEffect } from 'react';
 import { useBlocker, useLocation } from 'react-router-dom';
 import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 import {
+  autorizarSaida,
+  descartarAcoesAposSaida,
+  executarAcoesAposSaida,
   limparAutorizacaoDeSaida,
   mensagemDaRota,
   rotaEstaSuja,
   rotaTemEstadoDeclarado,
+  rotuloDaRota,
   saidaAutorizada,
 } from '@/lib/navigation/dirty-registry';
 import { trackUx } from '@/lib/uxMetrics';
@@ -53,15 +57,26 @@ export function GlobalExitGuard() {
   const decidir = (resposta: 'sair' | 'ficar') => {
     if (blocker.state !== 'blocked') return;
     trackUx(resposta === 'sair' ? 'guard.confirm' : 'guard.cancel');
-    if (resposta === 'sair') blocker.proceed();
-    else blocker.reset();
+    if (resposta === 'sair') {
+      // O voltar do navegador (POP) e repetido pelo roteador depois do
+      // `proceed`: sem a autorizacao, a repeticao cairia no mesmo predicado e
+      // o aviso reapareceria em cima da propria confirmacao.
+      autorizarSaida();
+      blocker.proceed();
+      // Efeito colateral da saida (apagar o carrinho do cabecalho, por
+      // exemplo) so vale quando a saida acontece de fato.
+      executarAcoesAposSaida();
+      return;
+    }
+    descartarAcoesAposSaida();
+    blocker.reset();
   };
 
   return (
     <UnsavedChangesDialog
       open={bloqueado}
       message={mensagemDaRota(location.pathname) ?? undefined}
-      confirmLabel="Sair sem salvar"
+      confirmLabel={rotuloDaRota(location.pathname) ?? 'Sair sem salvar'}
       onConfirm={() => decidir('sair')}
       onCancel={() => decidir('ficar')}
     />

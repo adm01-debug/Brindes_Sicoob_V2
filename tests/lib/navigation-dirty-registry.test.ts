@@ -6,13 +6,17 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  agendarAposSaida,
   autorizarSaida,
   declararEstadoDaRota,
+  descartarAcoesAposSaida,
   esquecerRota,
+  executarAcoesAposSaida,
   limparAutorizacaoDeSaida,
   limparRegistroDeRotas,
   rotaEstaSuja,
   rotaTemEstadoDeclarado,
+  rotuloDaRota,
   saidaAutorizada,
 } from '@/lib/navigation/dirty-registry';
 
@@ -83,5 +87,55 @@ describe('autorização de saída de quem já perguntou', () => {
     limparAutorizacaoDeSaida();
     expect(saidaAutorizada()).toBe(false);
     expect(rotaEstaSuja('/montar-kit')).toBe(true);
+  });
+});
+
+describe('rótulo do botão de saída', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('rota sem rótulo devolve null — o portão usa o texto padrão', () => {
+    declararEstadoDaRota('/orcamentos/novo', true, 'Orçamento não salvo.');
+    expect(rotuloDaRota('/orcamentos/novo')).toBeNull();
+  });
+
+  it('a tela que grava ao sair diz isso no botão', () => {
+    declararEstadoDaRota('/montar-kit', true, 'A gravação continua.', 'Sair e gravar');
+    expect(rotuloDaRota('/montar-kit')).toBe('Sair e gravar');
+  });
+});
+
+describe('ações que só valem depois da saída confirmada', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('executa uma única vez, na ordem em que foram agendadas', () => {
+    const ordem: string[] = [];
+    agendarAposSaida(() => ordem.push('primeira'));
+    agendarAposSaida(() => ordem.push('segunda'));
+
+    executarAcoesAposSaida();
+
+    expect(ordem).toEqual(['primeira', 'segunda']);
+    executarAcoesAposSaida();
+    expect(ordem).toEqual(['primeira', 'segunda']);
+  });
+
+  it('descartar impede o efeito colateral de quem ficou na tela', () => {
+    let apagou = false;
+    agendarAposSaida(() => { apagou = true; });
+
+    descartarAcoesAposSaida();
+    executarAcoesAposSaida();
+
+    expect(apagou).toBe(false);
+  });
+
+  it('o logout limpa a fila junto com o registro', () => {
+    let apagou = false;
+    agendarAposSaida(() => { apagou = true; });
+
+    limparRegistroDeRotas();
+    executarAcoesAposSaida();
+
+    expect(apagou).toBe(false);
   });
 });

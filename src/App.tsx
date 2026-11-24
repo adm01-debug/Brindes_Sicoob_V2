@@ -84,7 +84,9 @@ const RootLayout = () => (
     <RouteScrollReset />
     <RouteAnnouncer />
     <GlobalExitGuard />
-    <Outlet />
+    <ErrorBoundary name="Rota">
+      <Outlet />
+    </ErrorBoundary>
   </AuthProvider>
 );
 
