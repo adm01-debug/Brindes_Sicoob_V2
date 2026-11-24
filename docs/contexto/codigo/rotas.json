@@ -6948,6 +6948,7 @@
     "useQueryClient",
     "useRBAC",
     "useRef",
+    "useScreenDirtyState",
     "useSearchParams",
     "useSensor",
     "useSensors",
@@ -6990,6 +6991,7 @@
     "useProductCustomizationOptions",
     "useProductPrintAreasV2",
     "useRBAC",
+    "useScreenDirtyState",
     "useSimilarKits",
     "useSmartNavigation",
     "useTemplateSnapshot",
@@ -7039,7 +7041,7 @@
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 162
+   "arquivos_puxados": 166
   },
   {
    "protegida": true,

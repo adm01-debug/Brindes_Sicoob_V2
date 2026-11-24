@@ -10168,6 +10168,7 @@
    "src/hooks/useExternalVariantStock.ts"
   ],
   "src/pages/KitBuilderPage.tsx": [
+   "src/components/common/UnsavedChangesDialog.tsx",
    "src/components/kit-builder/FreightEstimator.tsx",
    "src/components/kit-builder/IdentitySuggestionButton.tsx",
    "src/components/kit-builder/KitBuilderHeader.tsx",
@@ -10202,11 +10203,14 @@
    "src/hooks/useKitBuilderTransformers.ts",
    "src/hooks/useKitUndoRedo.ts",
    "src/hooks/useKitWizardShortcuts.ts",
+   "src/hooks/useRBAC.tsx",
+   "src/hooks/useScreenDirtyState.ts",
    "src/hooks/useTemplateSnapshot.ts",
    "src/hooks/useUnsavedChangesGuard.ts",
    "src/integrations/supabase/client.ts",
    "src/lib/external-db/index.ts",
    "src/lib/kit-builder/index.ts",
+   "src/lib/kit-builder/saida-da-tela.ts",
    "src/lib/logger.ts",
    "src/lib/utils.ts",
    "src/pages/kit-builder/useKitBuilderQuote.ts",

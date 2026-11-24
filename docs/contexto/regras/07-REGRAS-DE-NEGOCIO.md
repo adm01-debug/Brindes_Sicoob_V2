@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `aac38a48f9` · branch `main` · 2026-11-23 23:08 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4e35f677e6` · branch `main` · 2026-11-24 01:49 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7111 testes em 719 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7140 testes em 722 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5789,6 +5789,7 @@ _nenhum item encontrado_
 | `tests/e2e/phase5-propagation.test.ts` | 35 | Phase 5.1 — Quote Items with size_code · quote item with color and size · quote item without size (non-apparel) · quote item subtotal calculation … |
 | `tests/lib/date-utils.test.ts` | 35 | date-utils · formatDate · formats ISO string with default pattern · formats Date object … |
 | `tests/scripts/audit-scripts.test.ts` | 34 | inventário de evidências de auditoria · todo item  · reprova arquivo inexistente e trecho ausente, e não confere item a implementar · leitura da RPC check_tables_rls … |
+| `tests/hooks/useKitAutoSave.test.tsx` | 33 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/ai-usage.test.ts` | 31 | AI Usage - Cost Estimation · calculates Gemini 2.5 Flash cost correctly · calculates Gemini 3 Flash Preview cost correctly · calculates GPT-5 cost correctly … |
 | `tests/e2e/performance.test.ts` | 31 | E2E Performance — Lazy Loading · MainLayout lazy loads 12+ components · E2E Performance — Query Limits · app page size < supabase limit … |
 | `tests/lib/date-utils-extended.test.ts` | 31 | formatDate — extended · formats Date object dd/MM/yyyy · formats ISO string · formats timestamp … |
@@ -5806,7 +5807,6 @@ _nenhum item encontrado_
 | `tests/hooks/useReplenishments.test.ts` | 26 | Replenishment utility functions · isReplenishment · returns true when updated_at is 1+ day after created_at · returns false when updated_at equals created_at (new product) … |
 | `tests/e2e/seller-carts.test.ts` | 25 | E2E Carts — Cart Total Calculation · calculates correctly · empty cart is 0 · single item … |
 | `tests/hooks/voice/retry.test.ts` | 25 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry on non-retryable error … |
-| `tests/hooks/useKitAutoSave.test.tsx` | 24 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/lib/query-config-extended.test.ts` | 24 | CACHE_TIMES constants · VERY_STABLE is 1 hour · STABLE is 30 min · TECNICAS is 15 min … |
 | `supabase/functions/external-db-bridge/callerSelectIsHeavy.test.ts` | 23 | extractBaseColumn: nome simples · extractBaseColumn: alias PostgREST  · extractBaseColumn: operadores JSON  · extractBaseColumn: alias + JSON op combinados … |
 | `supabase/functions/send-scheduled-reports/report-types.test.ts` | 23 | todo tipo aceito pelo CHECK do banco tem gerador · próxima execução fica ancorada em 8h e avança o período · janela do período segue a frequência · relatório de orçamentos filtra pelo dono do agendamento … |
@@ -5950,6 +5950,7 @@ _nenhum item encontrado_
 | `tests/hooks/useZoneCollapse.test.ts` | 10 | useZoneCollapse · inicia com todas as zonas expandidas (collapsed=false) por padrão · toggle alterna o estado de uma zona específica sem afetar as outras · expand reabre uma zona colapsada e é no-op se já expandida (preserva referência) … |
 | `tests/lib/dev-route-telemetry.test.ts` | 10 | recordDevRouteTelemetry — payload e RPC · chama record_dev_route_telemetry com event_type, path, role e duration arredondado · passa undefined (não null) quando userRole/durationMs estão ausentes · não envia PII: payload contém apenas event_type, path, role e duration … |
 | `tests/lib/quote-status-config.test.ts` | 10 | isQuoteCommerciallyEditable · permite alteração no estado %s · preserva a versão histórica no estado %s · preserva o histórico no estado %s … |
+| `tests/lib/saida-da-tela.test.ts` | 10 | textoDaSaida · promete gravar quando o autosave cobre a saida · avisa descarte quando a gravacao falhou · avisa descarte no conflito com outra aba e nao tenta gravar de novo … |
 | `tests/lib/supplier-colors.test.ts` | 10 | getSupplierColors · returns XBZ colors for xbz supplier · returns Spot colors for SPOT supplier · returns Spot colors for Stricker supplier … |
 | `tests/lib/auth/apply-seller-scope.test.ts` | 10 | applySellerScope · aplica .eq( · permite trocar a coluna do filtro (ex.: user_id) · NÃO aplica filtro quando escopo é all (admin/dev) … |
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
@@ -6053,8 +6054,7 @@ _nenhum item encontrado_
 | `tests/hooks/useIPValidation.test.ts` | 7 | useIPValidation · fetchCurrentIP retorna o IP do ipify · validateIPForUser retorna allowed=true (validação real é pós-login) · validateIPForAuthenticatedUser bloqueia quando edge function diz no … |
 | `tests/hooks/useLoginAttempts.test.ts` | 7 | useLoginAttempts · should export the hook function · should export useLoginAttemptStats · should export LoginAttempt interface shape … |
 | `tests/hooks/useQuoteFunnel.test.ts` | 7 | useQuoteFunnel · retorna 5 estágios · contagem cumulativa: aprovado conta em sent/viewed · rateFromPrev=null para draft, % para demais … |
-| `tests/hooks/useRBAC.test.tsx` | 7 | useRBAC · dev tem wildcard mesmo sem permissões no banco · agente recebe permissões do banco e parseia code → action/resource · hasRole considera o role atual (agente) … |
-| … +419 linhas — lista completa em `context.json` | | |
+| … +422 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6447,6 +6447,7 @@ _nenhum item encontrado_
 | Este arquivo mantém apenas os hooks React. | `src/hooks/useGravacaoV2.ts` |
 | Validação completa acontece após login via edge function | `src/hooks/useIPValidation.ts` |
 | Em caso de erro na validação, permitir acesso (fail-open) | `src/hooks/useIPValidation.ts` |
+| lados usarem exatamente a mesma regra de string. | `src/hooks/useKitAutoSave.ts` |
 | Sair da tela não pode descartar a gravação agendada. | `src/hooks/useKitAutoSave.ts` |
 | * Exportada para que a regra de disponibilidade seja testada sem rede. */ | `src/hooks/useKitStockForecast.ts` |
 | * Hook para validação de estoque dos itens do Kit Builder | `src/hooks/useKitStockValidation.ts` |
@@ -6541,5 +6542,4 @@ _nenhum item encontrado_
 | evitar duplicatas em re-renders. O rate limit pesado é server-side | `src/lib/access/dev-route-telemetry.ts` |
 | Telemetria não pode quebrar UX — engole erro silenciosamente. | `src/lib/access/dev-route-telemetry.ts` |
 | a UI dispare requisições amplas que dependeriam apenas do RLS para | `src/lib/auth/apply-seller-scope.ts` |
-| Tipo mínimo para suportar PostgrestFilterBuilder genérico sem importar o tipo | `src/lib/auth/apply-seller-scope.ts` |
-| … +308 linhas — lista completa em `context.json` | |
+| … +311 linhas — lista completa em `context.json` | |

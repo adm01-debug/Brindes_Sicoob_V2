@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
+  "sha": "4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-23 23:08 UTC",
-  "files_total": 5277,
-  "code_files": 3839,
-  "code_lines": 565491
+  "generated_at": "2026-11-24 01:49 UTC",
+  "files_total": 5281,
+  "code_files": 3843,
+  "code_lines": 566191
  },
  "version": "1.3.2",
- "facts_hash": "7219165182aae482",
+ "facts_hash": "38fe543091c1ba82",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1496,
-   ".tsx": 1451,
+   ".ts": 1498,
+   ".tsx": 1453,
    ".sql": 689,
    ".mjs": 141,
    ".py": 69,
@@ -56631,7 +56631,7 @@
      "get_sicoob_access_state",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 176
+    "deps_count": 179
    },
    {
     "path": "",
@@ -58002,7 +58002,7 @@
     "tables_transitive": [],
     "invokes_transitive": [],
     "rpc_transitive": [],
-    "deps_count": 1
+    "deps_count": 3
    },
    {
     "path": "",
@@ -62444,7 +62444,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1287,
+  "components_count": 1289,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65236,7 +65236,7 @@
   {
    "module": "src/components",
    "files": 1134,
-   "lines": 167592,
+   "lines": 167611,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65569,7 +65569,7 @@
   {
    "module": "src/hooks",
    "files": 314,
-   "lines": 47778,
+   "lines": 47892,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -65846,8 +65846,8 @@
   },
   {
    "module": "src/lib",
-   "files": 168,
-   "lines": 22807,
+   "files": 169,
+   "lines": 22859,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -66015,7 +66015,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51181,
+   "lines": 51286,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67014,8 +67014,8 @@
   },
   {
    "module": "tests",
-   "files": 673,
-   "lines": 90348,
+   "files": 676,
+   "lines": 90758,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -81673,6 +81673,10 @@
    },
    {
     "file": "src/hooks/useKitAutoSave.ts",
+    "text": "lados usarem exatamente a mesma regra de string."
+   },
+   {
+    "file": "src/hooks/useKitAutoSave.ts",
     "text": "Sair da tela não pode descartar a gravação agendada."
    },
    {
@@ -82136,6 +82140,10 @@
     "text": "Views e Materialized Views (somente leitura) — do bridge"
    },
    {
+    "file": "src/lib/kit-builder/saida-da-tela.ts",
+    "text": "confirmação não pode tentar gravar de novo: o conflito não se resolve"
+   },
+   {
     "file": "src/lib/kit-builder/types.ts",
     "text": "Peso máximo suportado em gramas (para validação)"
    },
@@ -82374,6 +82382,10 @@
    {
     "file": "src/pages/KitBuilderPage.tsx",
     "text": "Item 7 — celebrate first-time validation (false → true)"
+   },
+   {
+    "file": "src/pages/KitBuilderPage.tsx",
+    "text": "pessoal que estava aberto não pode sobreviver. Era por ele que \"Salvar\""
    },
    {
     "file": "src/pages/MockupGenerator.tsx",
@@ -119879,6 +119891,22 @@
     "name": "has aria-label on filter selects"
    },
    {
+    "file": "tests/components/SimilarKitsWidget.test.tsx",
+    "name": "SimilarKitsWidget"
+   },
+   {
+    "file": "tests/components/SimilarKitsWidget.test.tsx",
+    "name": "entrega o template escolhido para a pagina decidir a troca"
+   },
+   {
+    "file": "tests/components/SimilarKitsWidget.test.tsx",
+    "name": "sem a pagina, cai na navegacao direta para o template"
+   },
+   {
+    "file": "tests/components/SimilarKitsWidget.test.tsx",
+    "name": "fica oculto quando o kit ainda nao tem SKU"
+   },
+   {
     "file": "tests/components/SimulationPriceSourceBadge.test.tsx",
     "name": "SimulationPriceSourceBadge"
    },
@@ -120109,6 +120137,18 @@
    {
     "file": "tests/components/TelemetryCharts.test.tsx",
     "name": "renders tooltips"
+   },
+   {
+    "file": "tests/components/UnsavedChangesDialog.test.tsx",
+    "name": "UnsavedChangesDialog"
+   },
+   {
+    "file": "tests/components/UnsavedChangesDialog.test.tsx",
+    "name": "mantem o rotulo padrao de descarte"
+   },
+   {
+    "file": "tests/components/UnsavedChangesDialog.test.tsx",
+    "name": "aceita um rotulo que diz o que a saida faz com o trabalho"
    },
    {
     "file": "tests/components/data-trust-indicators.test.tsx",
@@ -129575,6 +129615,42 @@
     "name": "flushPending cancela a gravacao agendada que o salvamento manual vai cobrir"
    },
    {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "nao grava em custom_kits enquanto edita um template do sistema"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "marca alteracao pendente no modo template sem confundir leitura com edicao"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "sincronizar a versao nao reacorda o autosave no modo template"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "desvincular o kit pessoal faz a proxima gravacao criar linha nova"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "resposta que chega depois da troca nao readota o kit anterior"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "gravarPendente grava a composicao da tela antes da troca"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "gravarPendente nao repete a gravacao que ja esta em voo"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "gravarPendente devolve false quando a gravacao falha"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "limpa a alteracao pendente quando o autosave conclui a gravacao"
+   },
+   {
     "file": "tests/hooks/useKitBuilder-extended.test.ts",
     "name": "useKitUndoRedo"
    },
@@ -134967,6 +135043,46 @@
     "name": "defaults unknown roles to "
    },
    {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "textoDaSaida"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "promete gravar quando o autosave cobre a saida"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "avisa descarte quando a gravacao falhou"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "avisa descarte no conflito com outra aba e nao tenta gravar de novo"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "avisa descarte na edicao de template, que nao tem autosave"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "decidirTrocaDeTemplate"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "com o aviso de conflito aberto troca sem repetir a gravacao"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "na edicao de template troca sem tentar gravar"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "no kit pessoal grava o pendente antes de trocar"
+   },
+   {
+    "file": "tests/lib/saida-da-tela.test.ts",
+    "name": "no kit pessoal nao troca quando a gravacao falha"
+   },
+   {
     "file": "tests/lib/secret-validators.test.ts",
     "name": "validateSecret — guarda de sufixo mínimo (4 chars)"
    },
@@ -137521,6 +137637,18 @@
    {
     "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
     "name": "para de segurar assim que o estado deixa de ter pendencia"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "segura a saida por dentro do app (Biblioteca) ate a confirmacao"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "sai direto quando nao ha nada pendente"
+   },
+   {
+    "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
+    "name": "declara o estado da rota para o voltar global consultar"
    },
    {
     "file": "tests/pages/orders-filtros-na-url.test.ts",
@@ -194337,7 +194465,7 @@
   },
   "src/components/common/UnsavedChangesDialog.tsx": {
    "path": "src/components/common/UnsavedChangesDialog.tsx",
-   "lines": 42,
+   "lines": 45,
    "exports": [
     "function UnsavedChangesDialog"
    ]
@@ -197113,7 +197241,7 @@
   },
   "src/components/kit-builder/KitBuilderHeader.tsx": {
    "path": "src/components/kit-builder/KitBuilderHeader.tsx",
-   "lines": 147,
+   "lines": 157,
    "exports": [
     "function KitBuilderHeader"
    ],
@@ -197435,7 +197563,7 @@
   },
   "src/components/kit-builder/SimilarKitsWidget.tsx": {
    "path": "src/components/kit-builder/SimilarKitsWidget.tsx",
-   "lines": 75,
+   "lines": 81,
    "exports": [
     "function SimilarKitsWidget"
    ],
@@ -209175,7 +209303,7 @@
   },
   "src/hooks/useKitAutoSave.ts": {
    "path": "src/hooks/useKitAutoSave.ts",
-   "lines": 464,
+   "lines": 578,
    "exports": [
     "class KitConflitoDeEdicao",
     "function useKitAutoSave"
@@ -209217,6 +209345,7 @@
     }
    ],
    "rule_comments": [
+    "lados usarem exatamente a mesma regra de string.",
     "Sair da tela não pode descartar a gravação agendada."
    ],
    "doc": "Kit Auto-Save Hook Saves kit state automatically with debounce (5 seconds). Only triggers after the user has made meaningful changes.",
@@ -219518,6 +219647,18 @@
     }
    ]
   },
+  "src/lib/kit-builder/saida-da-tela.ts": {
+   "path": "src/lib/kit-builder/saida-da-tela.ts",
+   "lines": 52,
+   "exports": [
+    "interface TextoDaSaida",
+    "function textoDaSaida",
+    "function decidirTrocaDeTemplate"
+   ],
+   "rule_comments": [
+    "confirmação não pode tentar gravar de novo: o conflito não se resolve"
+   ]
+  },
   "src/lib/kit-builder/status.ts": {
    "path": "src/lib/kit-builder/status.ts",
    "lines": 24,
@@ -221955,7 +222096,7 @@
   },
   "src/pages/KitBuilderPage.tsx": {
    "path": "src/pages/KitBuilderPage.tsx",
-   "lines": 621,
+   "lines": 726,
    "exports": [
     "function KitBuilderPage"
    ],
@@ -221978,7 +222119,9 @@
     ]
    },
    "navigates": [
-    "/montar-kit?kit="
+    "/meus-kits",
+    "/montar-kit?kit=",
+    "/montar-kit?template="
    ],
    "errors": [
     "Erro ao carregar kit",
@@ -221993,7 +222136,8 @@
    "rule_comments": [
     "lido, não edição do usuário, e não pode disparar salvamento automático —",
     "o autosave deve mesmo persistir.",
-    "Item 7 — celebrate first-time validation (false → true)"
+    "Item 7 — celebrate first-time validation (false → true)",
+    "pessoal que estava aberto não pode sobreviver. Era por ele que \"Salvar\""
    ],
    "doc": "Kit Builder Page — Premium 10/10 design - 2-tier sticky header - Continuous progress wizard - Sticky sidebar with hero pricing - Subtle noise BG + motion transitions",
    "calc_fns": [
@@ -245901,6 +246045,20 @@
     "has aria-label on filter selects"
    ]
   },
+  "tests/components/SimilarKitsWidget.test.tsx": {
+   "path": "tests/components/SimilarKitsWidget.test.tsx",
+   "lines": 69,
+   "is_test": true,
+   "rule_comments": [
+    "A pagina sabe se ha edicao pendente: o widget nao pode navegar sozinho,"
+   ],
+   "tests": [
+    "SimilarKitsWidget",
+    "entrega o template escolhido para a pagina decidir a troca",
+    "sem a pagina, cai na navegacao direta para o template",
+    "fica oculto quando o kit ainda nao tem SKU"
+   ]
+  },
   "tests/components/SimulationPriceSourceBadge.test.tsx": {
    "path": "tests/components/SimulationPriceSourceBadge.test.tsx",
    "lines": 56,
@@ -245997,6 +246155,16 @@
     "renders legends",
     "renders cartesian grids",
     "renders tooltips"
+   ]
+  },
+  "tests/components/UnsavedChangesDialog.test.tsx": {
+   "path": "tests/components/UnsavedChangesDialog.test.tsx",
+   "lines": 25,
+   "is_test": true,
+   "tests": [
+    "UnsavedChangesDialog",
+    "mantem o rotulo padrao de descarte",
+    "aceita um rotulo que diz o que a saida faz com o trabalho"
    ]
   },
   "tests/components/data-trust-indicators.test.tsx": {
@@ -250557,13 +250725,14 @@
   },
   "tests/hooks/useKitAutoSave.test.tsx": {
    "path": "tests/hooks/useKitAutoSave.test.tsx",
-   "lines": 610,
+   "lines": 817,
    "is_test": true,
    "rule_comments": [
     "sair sem editar de novo nao pode gerar um segundo UPDATE",
     "B nao pode se perder: o reagendamento tem de grava-lo.",
     "a primeira gravacao da fila responde agora; a segunda nao pode gravar",
-    "linha existe numa versao diferente: e conflito, nao falta de permissao."
+    "linha existe numa versao diferente: e conflito, nao falta de permissao.",
+    "`retry` nao pode voltar a gravar neste modo."
    ],
    "tests": [
     "useKitAutoSave",
@@ -250589,7 +250758,16 @@
     "a trava usa a versao do conteudo que esta na tela, nao a do banco na hora de gravar",
     "salvar manualmente sincroniza a versao e o autosave seguinte nao vira conflito",
     "flushPending espera o INSERT em voo e devolve o id criado",
-    "flushPending cancela a gravacao agendada que o salvamento manual vai cobrir"
+    "flushPending cancela a gravacao agendada que o salvamento manual vai cobrir",
+    "nao grava em custom_kits enquanto edita um template do sistema",
+    "marca alteracao pendente no modo template sem confundir leitura com edicao",
+    "sincronizar a versao nao reacorda o autosave no modo template",
+    "desvincular o kit pessoal faz a proxima gravacao criar linha nova",
+    "resposta que chega depois da troca nao readota o kit anterior",
+    "gravarPendente grava a composicao da tela antes da troca",
+    "gravarPendente nao repete a gravacao que ja esta em voo",
+    "gravarPendente devolve false quando a gravacao falha",
+    "limpa a alteracao pendente quando o autosave conclui a gravacao"
    ]
   },
   "tests/hooks/useKitBuilder-extended.test.ts": {
@@ -253309,6 +253487,23 @@
     "defaults unknown roles to "
    ]
   },
+  "tests/lib/saida-da-tela.test.ts": {
+   "path": "tests/lib/saida-da-tela.test.ts",
+   "lines": 65,
+   "is_test": true,
+   "tests": [
+    "textoDaSaida",
+    "promete gravar quando o autosave cobre a saida",
+    "avisa descarte quando a gravacao falhou",
+    "avisa descarte no conflito com outra aba e nao tenta gravar de novo",
+    "avisa descarte na edicao de template, que nao tem autosave",
+    "decidirTrocaDeTemplate",
+    "com o aviso de conflito aberto troca sem repetir a gravacao",
+    "na edicao de template troca sem tentar gravar",
+    "no kit pessoal grava o pendente antes de trocar",
+    "no kit pessoal nao troca quando a gravacao falha"
+   ]
+  },
   "tests/lib/secret-validators.test.ts": {
    "path": "tests/lib/secret-validators.test.ts",
    "lines": 57,
@@ -254606,14 +254801,17 @@
   },
   "tests/pages/kit-builder-guarda-saida.test.tsx": {
    "path": "tests/pages/kit-builder-guarda-saida.test.tsx",
-   "lines": 43,
+   "lines": 87,
    "is_test": true,
    "doc": "Sair do montador com trabalho que não chegou ao banco. O autosave cobre o caso normal, mas não a janela do debounce nem — o que importa de verdade — o autosave que falhou ou bateu em conflito: nesse estado o kit existe só na tela. Antes desta guarda, só `QuoteBuilderPage` avisava; fechar a aba em `/ …",
    "tests": [
     "guarda de saída do montador de kit",
     "segura a saída quando o autosave falhou",
     "nao atrapalha quando tudo esta salvo",
-    "para de segurar assim que o estado deixa de ter pendencia"
+    "para de segurar assim que o estado deixa de ter pendencia",
+    "segura a saida por dentro do app (Biblioteca) ate a confirmacao",
+    "sai direto quando nao ha nada pendente",
+    "declara o estado da rota para o voltar global consultar"
    ]
   },
   "tests/pages/orders-filtros-na-url.test.ts": {
@@ -257703,10 +257901,30 @@
   }
  },
  "git": {
-  "sha": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
+  "sha": "4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "4e35f67",
+    "date": "2026-11-23",
+    "author": "adm01-debug",
+    "subject": "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)",
+    "files": [
+     "docs/RECUPERACAO/kit-builder.md",
+     "src/components/common/UnsavedChangesDialog.tsx",
+     "src/components/kit-builder/KitBuilderHeader.tsx",
+     "src/components/kit-builder/SimilarKitsWidget.tsx",
+     "src/hooks/useKitAutoSave.ts",
+     "src/lib/kit-builder/saida-da-tela.ts",
+     "src/pages/KitBuilderPage.tsx",
+     "tests/components/SimilarKitsWidget.test.tsx",
+     "tests/components/UnsavedChangesDialog.test.tsx",
+     "tests/hooks/useKitAutoSave.test.tsx",
+     "tests/lib/saida-da-tela.test.ts",
+     "tests/pages/kit-builder-guarda-saida.test.tsx"
+    ]
+   },
    {
     "sha": "aac38a4",
     "date": "2026-11-23",
@@ -258768,15 +258986,6 @@
      "src/components/common/NavigationHistoryMenu.tsx",
      "src/components/layout/MainLayout.tsx",
      "tests/components/NavigationHistoryMenu.test.tsx"
-    ]
-   },
-   {
-    "sha": "a73abe0",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "docs(auditoria): registra status de verificacao das etapas do plano 100 (29/10) (#383)",
-    "files": [
-     "docs/execucao/auditoria-planejamento-2026-10-13/local-PLANO_100.md"
     ]
    }
   ],

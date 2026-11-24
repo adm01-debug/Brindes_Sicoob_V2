@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 254,
+ "total": 255,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 168,
+  "lib": 169,
   "python": 12,
   "services": 24,
   "stores": 6,
@@ -2805,6 +2805,31 @@
    "orfao": false
   },
   {
+   "arquivo": "src/lib/kit-builder/saida-da-tela.ts",
+   "camada": "lib",
+   "exports": [
+    "TextoDaSaida",
+    "decidirTrocaDeTemplate",
+    "textoDaSaida"
+   ],
+   "export_default": null,
+   "linhas": 52,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 1,
+   "usado_por_modulos": [
+    "pages"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/lib/kit-builder/status.ts",
    "camada": "lib",
    "exports": [
@@ -3169,7 +3194,7 @@
     "contexts",
     "hooks"
    ],
-   "coberto_por_testes": 3,
+   "coberto_por_testes": 4,
    "orfao": false
   },
   {

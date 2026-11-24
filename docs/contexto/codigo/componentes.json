@@ -5733,12 +5733,12 @@
     "UnsavedChangesDialog"
    ],
    "export_default": null,
-   "linhas": 42,
+   "linhas": 45,
    "dominio": "components/common",
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "orfao": false
   },
   {
@@ -8021,7 +8021,7 @@
     "KitBuilderHeader"
    ],
    "export_default": null,
-   "linhas": 147,
+   "linhas": 157,
    "dominio": "components/kit-builder",
    "hooks_locais": [
     "useRBAC",
@@ -8402,7 +8402,7 @@
     "SimilarKitsWidget"
    ],
    "export_default": null,
-   "linhas": 75,
+   "linhas": 81,
    "dominio": "components/kit-builder",
    "hooks_locais": [
     "useSimilarKits"
@@ -17372,7 +17372,7 @@
     "KitBuilderPage"
    ],
    "export_default": "KitBuilderPage",
-   "linhas": 621,
+   "linhas": 726,
    "dominio": "pages",
    "hooks_locais": [
     "useCustomKitPersistence",
@@ -17383,6 +17383,8 @@
     "useKitBuilderQuote",
     "useKitUndoRedo",
     "useKitWizardShortcuts",
+    "useRBAC",
+    "useScreenDirtyState",
     "useTemplateSnapshot",
     "useUnsavedChangesGuard"
    ],

@@ -6032,7 +6032,7 @@
    "hooks_exportados": [
     "useKitAutoSave"
    ],
-   "linhas": 464,
+   "linhas": 578,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"
@@ -7882,13 +7882,14 @@
     "useQuery"
    ],
    "canais_realtime": [],
-   "usado_por": 7,
+   "usado_por": 8,
    "usado_por_arquivos": [
     "src/components/kit-builder/KitBuilderHeader.tsx",
     "src/components/layout/sidebar/SidebarNavGroup.tsx",
     "src/components/quotes/QuoteKanbanBoard.tsx",
     "src/components/quotes/QuoteManagerApprovalBanner.tsx",
     "src/hooks/quotes/useQuotes.ts",
+    "src/pages/KitBuilderPage.tsx",
     "src/pages/QuotesKanbanPage.tsx",
     "src/pages/QuotesListPage.tsx"
    ],
@@ -8207,13 +8208,14 @@
     "useLocation"
    ],
    "canais_realtime": [],
-   "usado_por": 3,
+   "usado_por": 4,
    "usado_por_arquivos": [
+    "src/pages/KitBuilderPage.tsx",
     "src/pages/MockupGenerator.tsx",
     "src/pages/QuoteBuilderPage.tsx",
     "src/pages/SimuladorWizard.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useScroll.ts",

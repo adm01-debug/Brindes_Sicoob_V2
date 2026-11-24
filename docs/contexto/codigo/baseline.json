@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "aac38a48f91ca9dc32c966d1a0729a74455c74c3",
+  "commit": "4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2",
   "branch": "main",
-  "data_commit": "2026-11-23T20:08:11-03:00",
+  "data_commit": "2026-11-23T22:41:09-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "4e35f67",
+    "data": "2026-11-23",
+    "assunto": "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)"
+   },
    {
     "sha": "aac38a4",
     "data": "2026-11-23",
@@ -126,14 +131,9 @@
     "sha": "67f5a8a",
     "data": "2026-11-19",
     "assunto": "chore: padroniza template de PR (recupera trabalho alheio) (#386)"
-   },
-   {
-    "sha": "449faf1",
-    "data": "2026-11-19",
-    "assunto": "feat(pedidos): filtros da lista persistidos na URL (recupera PR #100) (#379)"
    }
   ],
-  "arquivos_mudados_7d": 1324,
+  "arquivos_mudados_7d": 1330,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -282,10 +282,6 @@
     "mudancas": 10
    },
    {
-    "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 10
-   },
-   {
     "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
@@ -296,12 +292,16 @@
    {
     "arquivo": "docs/README.md",
     "mudancas": 9
+   },
+   {
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
+    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 197
+    "commits": 198
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5274,
-  "arquivos_codigo": 3168,
-  "linhas_codigo": 501051,
+  "arquivos_total": 5278,
+  "arquivos_codigo": 3172,
+  "linhas_codigo": 501751,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 295,
   "migrations": 626,
   "cron_jobs": 28,
-  "testes": 904,
+  "testes": 907,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -780,7 +780,7 @@
   },
   "src/components": {
    "arquivos": 1134,
-   "linhas": 167592
+   "linhas": 167611
   },
   "src/constants": {
    "arquivos": 3,
@@ -796,15 +796,15 @@
   },
   "src/hooks": {
    "arquivos": 314,
-   "linhas": 47778
+   "linhas": 47892
   },
   "src/integrations": {
    "arquivos": 3,
    "linhas": 13647
   },
   "src/lib": {
-   "arquivos": 168,
-   "linhas": 22807
+   "arquivos": 169,
+   "linhas": 22859
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -812,7 +812,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51181
+   "linhas": 51286
   },
   "src/routes": {
    "arquivos": 9,
@@ -879,8 +879,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 152,
-   "linhas": 28092
+   "arquivos": 154,
+   "linhas": 28186
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -920,15 +920,15 @@
   },
   "tests/hooks": {
    "arquivos": 147,
-   "linhas": 16336
+   "linhas": 16543
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 77,
-   "linhas": 9336
+   "arquivos": 78,
+   "linhas": 9401
   },
   "tests/load": {
    "arquivos": 1,
@@ -944,7 +944,7 @@
   },
   "tests/pages": {
    "arquivos": 29,
-   "linhas": 3387
+   "linhas": 3431
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
@@ -1117,6 +1117,10 @@
    "linhas": 737
   },
   {
+   "arquivo": "src/pages/KitBuilderPage.tsx",
+   "linhas": 726
+  },
+  {
    "arquivo": "src/pages/magic-up/MagicUpConfigPanel.tsx",
    "linhas": 723
   },
@@ -1139,10 +1143,6 @@
   {
    "arquivo": "src/data/pantone-coated.ts",
    "linhas": 695
-  },
-  {
-   "arquivo": "src/components/layout/SidebarReorganized.tsx",
-   "linhas": 693
   }
  ],
  "qualidade": {
@@ -1151,7 +1151,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 71
+  "arquivos_acima_500_linhas": 72
  },
  "todos": [
   {

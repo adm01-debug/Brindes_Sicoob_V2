@@ -16,12 +16,12 @@
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (168)",
+   "src/lib (169)",
    "src/utils (37)",
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (651)",
+   "tests/ (654)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)",
    "fix: busca global cai para o catálogo local quando a semântica falha (#414)",
    "chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)",
    "feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)",
-   "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)",
-   "fix: servidor resolve destinatario do email transacional (#411)"
+   "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
