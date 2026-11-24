@@ -54,7 +54,13 @@ jobs:
             get-visitor-info \
             secure-upload \
             auth-integrity-check \
-            crm-db-bridge
+            crm-db-bridge \
+            webhook-dispatcher \
+            connections-auto-test \
+            sicoob-approval-notifications \
+            process-batch-export \
+            send-scheduled-reports \
+            connections-health-check
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
