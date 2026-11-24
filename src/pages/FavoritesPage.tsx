@@ -55,12 +55,27 @@ const UNAVAILABLE_FAVORITE_NAME = "Produto salvo";
 type FavoritePriceMeta = { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string };
 type FavoriteNoteMeta = { itemId: string; note: string | null };
 
+// Detalhe salvo da variante: sem ele dois cartões do mesmo produto ficam idênticos
+// e não há como saber qual registro está sendo removido.
+function variantDetailOf(
+  info: FavoriteVariantInfo | null | undefined,
+  variantId: string | null,
+): string | null {
+  const parts: string[] = [];
+  if (info?.color_name) parts.push(`Cor: ${info.color_name}`);
+  if (info?.size_code) parts.push(`Tam: ${info.size_code}`);
+  if (parts.length) return parts.join(" · ");
+  return variantId ? `Variante: ${variantId.slice(0, 8)}` : null;
+}
+
 function UnavailableFavoriteCard({
   productId,
+  variantDetail,
   onRetry,
   onRemove,
 }: {
   productId: string;
+  variantDetail?: string | null;
   onRetry: () => void;
   onRemove: () => void;
 }) {
@@ -79,6 +94,11 @@ function UnavailableFavoriteCard({
           Não foi possível carregar os detalhes agora.
         </p>
         <p className="mt-1 break-all text-xs text-muted-foreground">ID: {productId}</p>
+        {variantDetail && (
+          <p className="mt-1 text-xs text-muted-foreground" data-testid="favorite-variant">
+            {variantDetail}
+          </p>
+        )}
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onRetry}>
@@ -341,6 +361,7 @@ export default function FavoritesPage() {
           itemId: item.id as string | null,
           productId: item.product_id,
           variantId: item.variant_id ?? null,
+          variantInfo: (item.variant_info ?? null) as FavoriteVariantInfo | null,
         }));
     }
     return favorites
@@ -350,6 +371,7 @@ export default function FavoritesPage() {
         itemId: null as string | null,
         productId: favorite.productId,
         variantId: null as string | null,
+        variantInfo: favorite.variant ?? null,
       }));
   }, [itemsLoading, isRemoteListView, rawItems, favorites, resolvedProductIds]);
 
@@ -362,7 +384,9 @@ export default function FavoritesPage() {
     const term = searchQuery.trim().toLowerCase();
     if (!term) return unavailableFavorites;
     return unavailableFavorites.filter((item) =>
-      `${UNAVAILABLE_FAVORITE_NAME} ${item.productId}`.toLowerCase().includes(term),
+      `${UNAVAILABLE_FAVORITE_NAME} ${item.productId} ${variantDetailOf(item.variantInfo, item.variantId) ?? ""}`
+        .toLowerCase()
+        .includes(term),
     );
   }, [unavailableFavorites, searchQuery, onlyPriceDrops]);
 
@@ -675,6 +699,7 @@ export default function FavoritesPage() {
       <UnavailableFavoriteCard
         key={`unavailable-${favorite.key}`}
         productId={favorite.productId}
+        variantDetail={variantDetailOf(favorite.variantInfo, favorite.variantId)}
         onRetry={() => getProductsByIds([favorite.productId])}
         onRemove={() => {
           if (isRemoteListView && favorite.itemId) {

@@ -33,8 +33,12 @@ interface Props {
 function shouldShowPriceDropChip(
   onTogglePriceDrops: Props["onTogglePriceDrops"],
   priceDropCount: Props["priceDropCount"],
+  onlyPriceDrops: boolean,
 ) {
   if (!onTogglePriceDrops) return false;
+  // Com o filtro ligado o chip precisa continuar visível: é o único jeito de desligar
+  // quando a lista atual não tem nenhuma queda.
+  if (onlyPriceDrops) return true;
   if (typeof priceDropCount !== "number") return true;
   return priceDropCount > 0;
 }
@@ -108,7 +112,7 @@ function SortMenu({ value, onChange }: Pick<Props, "value" | "onChange">) {
 export function FavoritesSortBar({
   value, onChange, onlyPriceDrops = false, onTogglePriceDrops, priceDropCount,
 }: Props) {
-  const showDropChip = shouldShowPriceDropChip(onTogglePriceDrops, priceDropCount);
+  const showDropChip = shouldShowPriceDropChip(onTogglePriceDrops, priceDropCount, onlyPriceDrops);
 
   return (
     <div className="flex items-center gap-1.5">
