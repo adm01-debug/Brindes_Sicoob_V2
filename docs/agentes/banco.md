@@ -169,16 +169,17 @@ Regras:
   funções).
 - Deploy: `.github/workflows/deploy-sicoob-functions.yml` — **manual, nunca automático no merge**: só
   `workflow_dispatch` com `confirmar = PUBLICAR` e `github.ref == 'refs/heads/main'` (`:16`),
-  `environment: construction` (`:20`), Supabase CLI pinada `2.120.0` (`:29-31`). Publica **21 funções
-  nomeadas** (`:42-63`): `expert-chat`, `send-transactional-email`, `external-db-bridge`,
+  `environment: construction` (`:20`), Supabase CLI pinada `2.120.0` (`:29-31`). Publica **22 funções
+  nomeadas** (`:42-64`): `expert-chat`, `send-transactional-email`, `external-db-bridge`,
   `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-document-ingest`,
   `sicoob-kit-quote`, `sicoob-reorder`, `bi-copilot`, `comparison-ai-advisor`, `get-app-logs`,
   `get-visitor-info`, `secure-upload`, `auth-integrity-check`, `crm-db-bridge` e os 6 workers de
   `pg_cron` (`webhook-dispatcher`, `connections-auto-test`, `sicoob-approval-notifications`,
-  `process-batch-export`, `send-scheduled-reports`, `connections-health-check`).
+  `process-batch-export`, `send-scheduled-reports`, `connections-health-check`) e o recebedor de
+  webhook externo `webhook-inbound`.
   Confirmação por diff antes/depois em `scripts/ci/verify-supabase-functions-published.mjs`
-  (`requiredFunctions` em `:4-29`): exige `status ACTIVE` e versão não regressiva para cada uma.
-  As outras ~87 funções **não sobem por esse workflow**.
+  (`requiredFunctions` em `:4-32`): exige `status ACTIVE` e versão não regressiva para cada uma.
+  As outras ~86 funções **não sobem por esse workflow**.
 - **Depois de republicar:** o diff antes/depois prova que a versão subiu, não que o agendamento rodou.
   Rode `scripts/inventario/banco.sql` (seção `cron`) e confira `execucoes_24h` e `falhas_24h` dos 6 workers
   de `pg_cron`; republicar uma função cron não perde a agenda (`cron.job`), mas só a execução seguinte

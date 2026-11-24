@@ -60,7 +60,8 @@ jobs:
             sicoob-approval-notifications \
             process-batch-export \
             send-scheduled-reports \
-            connections-health-check
+            connections-health-check \
+            webhook-inbound
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
