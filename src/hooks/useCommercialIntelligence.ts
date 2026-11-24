@@ -203,8 +203,19 @@ async function fetchCategoryOrderItems(since: string, productIds?: string[]): Pr
   return Array.from(rows.values());
 }
 
+// O bridge pode responder com sucesso repetindo a consulta SEM a ordem pedida
+// (fallback interno quando a coluna de ordenação não existe). Sem ordem estável o
+// deslocamento das páginas repete/omite linhas, então a paginação é abortada em vez
+// de devolver dado incompleto.
+function hasOrderFallback(meta: unknown): boolean {
+  return (
+    typeof meta === 'object' && meta !== null &&
+    typeof (meta as { orderBy_fallback?: unknown }).orderBy_fallback === 'string'
+  );
+}
+
 async function fetchAllExternalRows<Row extends object>(
-  requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean }>,
+  requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean; meta?: unknown }>,
   sourceName: string,
   pageSize: number,
 ): Promise<Row[]> {
@@ -214,6 +225,9 @@ async function fetchAllExternalRows<Row extends object>(
     if (!Array.isArray(result?.records) || result.error || result.success === false) {
       const message = typeof result?.error === 'string' ? result.error : `Consulta de ${sourceName} incompleta`;
       throw new Error(message);
+    }
+    if (hasOrderFallback(result.meta)) {
+      throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
     }
     rows.push(...result.records);
     if (result.records.length < pageSize) return rows;

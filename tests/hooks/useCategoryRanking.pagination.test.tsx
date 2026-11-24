@@ -110,6 +110,29 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
     expect(result.current.data?.marketAvailable).toBe(true);
   });
 
+  it("aborta a paginação do mercado quando o bridge responde sem a ordem pedida", async () => {
+    mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => ({
+      data: {
+        success: true,
+        data: {
+          records: body.table === "products"
+            ? catalogPage(body.offset ?? 0)
+            : marketPage(body.offset ?? 0),
+          count: null,
+          ...(body.table === "stock_daily_summary" ? { meta: { orderBy_fallback: "id" } } : {}),
+        },
+      },
+      error: null,
+    }));
+
+    const { result } = renderHook(() => useCategoryRanking(30, null, null, null), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.marketAvailable).toBe(false);
+    expect(result.current.data?.marketError).toContain("sem ordenação garantida");
+    expect(result.current.data?.items[0]?.internalRevenue).toBe(50);
+  });
+
   it("mantém a receita interna e sinaliza o erro quando o mercado falha", async () => {
     mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => {
       if (body.table === "products") {
