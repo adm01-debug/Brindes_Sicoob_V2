@@ -50,6 +50,15 @@ interface AutoSaveResult {
    */
   capturarVersaoPersistida: () => string | null;
   /**
+   * O salvamento manual bateu na mesma trava do autosave. Registrar o conflito
+   * aqui e o que faz o cabecalho e a guarda de saida enxergarem o problema:
+   * sem isto o aviso de saida oferecia "Sair e gravar" e o botao Biblioteca
+   * liberava a navegacao, mas a trava recusava a gravacao — a edicao ficava so
+   * na tela e ia embora com ela. Nao adota a versao remota nem limpa o
+   * snapshot: a tela continua sendo a unica copia do trabalho.
+   */
+  registrarConflitoDeEdicao: (erro: unknown) => void;
+  /**
    * Solta o vínculo desta aba com o kit pessoal em edição.
    *
    * Abrir um template como base troca o conteúdo do editor sem desmontar a
@@ -579,9 +588,20 @@ export function useKitAutoSave(
   /** Versão da linha que esta aba conhece — a trava do salvamento manual. */
   const capturarVersaoPersistida = useCallback(() => knownUpdatedAtRef.current, []);
 
+  /**
+   * Conflito visto pelo salvamento manual: a guarda de saída precisa saber.
+   * Quem distingue o conflito dos outros erros é o próprio hook — a classe é
+   * dele, e assim quem salva só relata o erro que recebeu.
+   */
+  const registrarConflitoDeEdicao = useCallback((erro: unknown) => {
+    if (!(erro instanceof KitConflitoDeEdicao)) return;
+    setLastSaveError(erro.message);
+    setLastSaveConflict(true);
+  }, []);
+
   return {
     lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry, syncPersistedVersion, flushPending, capturarSnapshotAtual, desvincularKitPessoal,
-    gravarPendente, capturarVersaoPersistida,
+    gravarPendente, capturarVersaoPersistida, registrarConflitoDeEdicao,
   };
 }

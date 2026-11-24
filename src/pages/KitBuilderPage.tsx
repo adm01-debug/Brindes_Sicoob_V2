@@ -219,6 +219,7 @@ export default function KitBuilderPage() {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
     capturarSnapshotAtual, desvincularKitPessoal, gravarPendente, capturarVersaoPersistida,
+    registrarConflitoDeEdicao,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
     isHydrated && !isTemplateLoading, loadedUpdatedAt,
@@ -380,7 +381,13 @@ export default function KitBuilderPage() {
         setLoadedUpdatedAt(versao);
         syncPersistedVersion(versao, snapshotEnviado);
       }
-    } catch { /* handled by hook */ }
+    } catch (err) {
+      // O aviso ao usuário quem mostra é o hook de persistência. O conflito,
+      // porém, tem de chegar à guarda de saída: sem isto o aviso de saída
+      // prometia "Sair e gravar" e a navegação era liberada, enquanto a trava
+      // recusava a gravação — a edição ia embora junto com a tela.
+      registrarConflitoDeEdicao(err);
+    }
   };
 
   const handleExportPDF = () => {

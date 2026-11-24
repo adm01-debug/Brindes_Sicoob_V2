@@ -52,6 +52,29 @@ conflito (recarregar) de linha inexistente/RLS, em vez de vazar o erro cru do
 PostgREST. Coberto por `tests/hooks/useCustomKitPersistence.test.tsx` (3 casos,
 2 deles falham contra o código anterior).
 
+**Revisão da PR #428, rodada 1 — o conflito do salvamento manual chega à guarda
+de saída (fechado em 24/11/2026).** A trava do "Salvar" recusa a gravação quando
+a linha saiu da versão conhecida, mas o aviso ao usuário era passageiro (toast):
+o estado que a guarda de saída lê (`lastSaveError`/`lastSaveConflict`) não sabia
+do conflito. Nesse intervalo o aviso de saída oferecia "Sair e gravar" e o botão
+Biblioteca liberava a navegação, enquanto a trava continuava recusando — a
+edição ia embora com a tela, que é exatamente a perda que a trava existe para
+impedir. Agora o erro do salvamento manual é entregue a
+`registrarConflitoDeEdicao(erro)` (`useKitAutoSave.ts`), que só reage a
+`KitConflitoDeEdicao` — erro comum de rede não vira "recarregue a página" — e
+`textoDaSaida` já devolvia "Sair sem salvar" (`grava: false`) nesse estado.
+Coberto por `tests/hooks/useKitAutoSave.test.tsx` (versão viva entregue ao
+salvamento manual; conflito registrado na guarda; erro comum não vira conflito).
+
+**Fronteira conhecida (não coberta por esta trava):** favoritar/desfavoritar na
+Biblioteca (`KitLibraryPage.tsx`) grava `is_favorite` sem tocar em `updated_at`,
+e o payload do montador também carrega esse campo. Uma aba com o kit aberto pode
+portanto desfazer um favorito marcado na Biblioteca sem conflito. Não foi
+corrigido aqui porque carimbar `updated_at` na ação de favorito reordena a lista
+"Meus kits" (que ordena por `updated_at desc`): é preferência de lista, não
+conteúdo do kit, e a correção pede decidir antes se o favorito deve ou não mexer
+na ordenação.
+
 **Revisão da PR (23/11/2026) — o que passou a ficar coberto:**
 
 - saída por dentro do app pergunta antes de descartar: o botão "Biblioteca" sai
