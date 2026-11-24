@@ -831,6 +831,13 @@ Os dois exemplos que estavam aqui (`useGlobalSearch.ts` "15 de 88" e `e2e/helper
 O que sustenta a classificação dos refs antigos é a leitura do hunk, não a igualdade de árvore — e por
 isso eles seguem no conjunto "não descartável por prova".
 
+**A regra de exclusão não exige árvore idêntica.** O que a exclusão de um ref exige é que **todo** o
+trabalho dele esteja já incorporado à `main` ou comprovadamente obsoleto. A igualdade de árvore é apenas
+a prova mais barata (e nenhum ref atual passa por ela), então a prova tem de ser feita arquivo a arquivo:
+`git diff --quiet origin/main <ref> -- <path>` com status `0` em cada caminho, ou leitura do hunk quando
+o status é `1` mostrando que o que sobra já está na `main` de forma equivalente ou foi substituído.
+Sem essa prova por caminho, o ref fica — mesmo que a PR esteja fechada e o assunto pareça resolvido.
+
 ### Recuperado nesta rodada
 
 | Unidade | Arquivos | Prova da ausência na `main` | Ação |
