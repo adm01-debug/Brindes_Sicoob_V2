@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bc7da67a15` · branch `main` · 2026-11-24 21:29 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `dffd62ed6c` · branch `main` · 2026-11-24 23:06 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1320,7 +1320,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `failure` | filtra | `src/pages/admin/RLSAuditPage.tsx` |
 | `status` | `forbidden` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `fresh` | compara | `src/components/products/PriceFreshnessBadge.tsx` |
-| `status` | `fulfilled` | compara | `src/components/admin/connections/CredentialsChangedBanner.tsx`<br>`src/components/admin/connections/GlobalRefreshFromDbButton.tsx`<br>`src/services/sicoob/orderService.ts` |
+| `status` | `fulfilled` | compara | `src/components/admin/connections/CredentialsChangedBanner.tsx`<br>`src/components/admin/connections/GlobalRefreshFromDbButton.tsx`<br>`src/hooks/useCommercialIntelligence.ts`<br>`src/services/sicoob/orderService.ts` |
 | `status` | `gap` | compara, escreve | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `healthy` | compara, escreve | `src/components/admin/telemetry/AppHealthDashboard.tsx`<br>`src/hooks/useCloudStatus.ts`<br>`src/lib/cloud-status.ts`<br>`src/lib/diagnostics.ts`<br>`supabase/functions/system-healthcheck/index.ts` |
 | `status` | `idle` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx` |
@@ -1366,7 +1366,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `received_with_issues` | compara | `src/pages/sicoob/GestorConsolidatedOrdersPage.tsx` |
 | `status` | `refunded` | compara | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
 | `status` | `regression` | compara | `src/components/admin/telemetry/RegressionGuardrailBanner.tsx` |
-| `status` | `rejected` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +15 |
+| `status` | `rejected` | compara, escreve | `src/components/admin/DiscountManagementPanel.tsx`<br>`src/components/admin/PasswordResetApproval.tsx`<br>`src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>… +16 |
 | `status` | `rejected_singular` | compara | `src/components/quotes/QuoteApprovalNotes.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/quotes/QuoteStatusTimeline.tsx` |
 | `status` | `revision` | compara, escreve | `src/components/orders/OrderPilotWorkflow.tsx`<br>`src/components/orders/PilotApprovalPanel.tsx`<br>`src/components/sicoob/orders/OrderPilotApprovalsTab.tsx` |
 | `status` | `revoked` | compara, escreve | `src/components/admin/security/keys/McpKeyRow.tsx`<br>`src/components/admin/security/keys/useMcpKeys.ts`<br>`src/components/kit-builder/KitShareLinkDialog.tsx`<br>`src/components/quotes/QuoteApprovalLinkCard.tsx`<br>`src/hooks/useKitShare.ts`<br>… +2 |
@@ -4819,6 +4819,10 @@ _nenhum item encontrado_
 | `ORDER_ITEMS_TABLE` | `'order_items'` | `src/hooks/useCommercialIntelligence.ts` |
 | `PRODUCT_ID_COLUMN` | `'product_id'` | `src/hooks/useCommercialIntelligence.ts` |
 | `ORDER_VALUE_FIELDS` | `'order_id, quantity, unit_price'` | `src/hooks/useCommercialIntelligence.ts` |
+| `CATEGORY_PAGE_SIZE` | `1000` | `src/hooks/useCommercialIntelligence.ts` |
+| `CATEGORY_FILTER_CHUNK_SIZE` | `100` | `src/hooks/useCommercialIntelligence.ts` |
+| `CATEGORY_MAX_EXTERNAL_ROWS` | `100000` | `src/hooks/useCommercialIntelligence.ts` |
+| `CATALOG_PAGE_SIZE` | `500` | `src/hooks/useCommercialIntelligence.ts` |
 | `MAX_COMPARE_ITEMS` | `4` | `src/hooks/useComparison.ts` |
 | `GO_TO_QUOTES_SUGGESTION` | `'ir para orçamentos'` | `src/hooks/useContextualSuggestions.ts` |
 | `GO_TO_CATALOG_SUGGESTION` | `'ir para catálogo'` | `src/hooks/useContextualSuggestions.ts` |
@@ -4903,11 +4907,7 @@ _nenhum item encontrado_
 | `MAX_QUEUE` | `20` | `src/lib/error-reporter.ts` |
 | `COLD_START_DEFER_MS` | `8000` | `src/lib/error-reporter.ts` |
 | `PREWARM_COOLDOWN_MS` | `5` | `src/lib/external-db-prewarm.ts` |
-| `MAX_RETRIES` | `3` | `src/lib/external-rpc.ts` |
-| `INITIAL_BACKOFF_MS` | `800` | `src/lib/external-rpc.ts` |
-| `TRIGGER_TO_FETCH_HISTORY` | `20` | `src/lib/notifications-metrics.ts` |
-| `TRIGGER_TO_FETCH_TTL_MS` | `5000` | `src/lib/notifications-metrics.ts` |
-| … +170 linhas — lista completa em `context.json` | | |
+| … +174 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5644,7 +5644,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1005 linhas — lista completa em `context.json` | |
+| … +1009 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7224 testes em 728 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7235 testes em 730 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6054,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +428 linhas — lista completa em `context.json` | | |
+| … +430 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

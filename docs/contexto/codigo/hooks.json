@@ -4746,7 +4746,7 @@
     "useTopClients",
     "useTrendingProducts"
    ],
-   "linhas": 515,
+   "linhas": 727,
    "dominio": "hooks",
    "tabelas": [
     "order_items",
@@ -4775,7 +4775,7 @@
     "src/components/intelligence/TopClients.tsx",
     "src/components/intelligence/TrendingProducts.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useComparison.ts",

@@ -6066,6 +6066,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dialog",
     "group",
     "manager",

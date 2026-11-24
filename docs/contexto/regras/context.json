@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "bc7da67a1559010536e2c084c1187613f603c949",
+  "sha": "dffd62ed6c8d0f8c37346c573cfa4bf51e724e2f",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 21:29 UTC",
-  "files_total": 5291,
-  "code_files": 3852,
-  "code_lines": 568310
+  "generated_at": "2026-11-24 23:06 UTC",
+  "files_total": 5293,
+  "code_files": 3854,
+  "code_lines": 568944
  },
  "version": "1.3.2",
- "facts_hash": "177293198582b4c6",
+ "facts_hash": "7f6943dd5bf9e134",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1500,
-   ".tsx": 1459,
+   ".tsx": 1461,
    ".sql": 690,
    ".mjs": 141,
    ".py": 69,
@@ -62551,7 +62551,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1292,
+  "components_count": 1293,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65347,7 +65347,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167767,
+   "lines": 167904,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65680,7 +65680,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48186,
+   "lines": 48398,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67125,8 +67125,8 @@
   },
   {
    "module": "tests",
-   "files": 682,
-   "lines": 92198,
+   "files": 684,
+   "lines": 92483,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -70267,6 +70267,7 @@
    ],
    "order_items": [
     "created_at",
+    "id",
     "order_id",
     "product_id",
     "product_image_url",
@@ -77263,6 +77264,10 @@
     "msg": " className="
    },
    {
+    "file": "src/components/intelligence/CategoryRanking.tsx",
+    "msg": " className="
+   },
+   {
     "file": "src/components/intelligence/HotSearchesCard.tsx",
     "msg": " className="
    },
@@ -77861,6 +77866,18 @@
    {
     "file": "src/hooks/useCommemorativeDates.ts",
     "msg": "Usuário não autenticado"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "msg": "A paginação de itens de pedido não avançou."
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "msg": "Consulta de ${sourceName} excedeu o limite de segurança."
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "msg": "Consulta de ${sourceName} sem ordenação garantida pelo bridge"
    },
    {
     "file": "src/hooks/useConnectionTester.ts",
@@ -95561,6 +95578,26 @@
     "value": "'order_id, quantity, unit_price'"
    },
    {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "name": "CATEGORY_PAGE_SIZE",
+    "value": "1000"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "name": "CATEGORY_FILTER_CHUNK_SIZE",
+    "value": "100"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "name": "CATEGORY_MAX_EXTERNAL_ROWS",
+    "value": "100000"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "name": "CATALOG_PAGE_SIZE",
+    "value": "500"
+   },
+   {
     "file": "src/hooks/useComparison.ts",
     "name": "MAX_COMPARE_ITEMS",
     "value": "4"
@@ -101236,6 +101273,18 @@
     "file": "src/hooks/useCloudStatus.ts",
     "field": "status",
     "value": "down",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "field": "status",
+    "value": "rejected",
+    "kind": "compara"
+   },
+   {
+    "file": "src/hooks/useCommercialIntelligence.ts",
+    "field": "status",
+    "value": "fulfilled",
     "kind": "compara"
    },
    {
@@ -121977,6 +122026,22 @@
     "name": "preserva opções em cache e informa falha de atualização"
    },
    {
+    "file": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+    "name": "CategoryRanking — falha versus lista vazia"
+   },
+   {
+    "file": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+    "name": "mostra erro com retry e não apresenta falha inicial como ranking vazio"
+   },
+   {
+    "file": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+    "name": "exibe o estado vazio apenas após consulta bem-sucedida sem categorias"
+   },
+   {
+    "file": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+    "name": "mantém a receita interna e desabilita os modos externos quando o mercado falha"
+   },
+   {
     "file": "tests/components/intelligence/TrendsHeatmap.errors.test.tsx",
     "name": "estados centralizados do mapa de calor de tendências"
    },
@@ -128671,6 +128736,34 @@
    {
     "file": "tests/hooks/useCategories.test.tsx",
     "name": "generates slugs from category names"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "useCategoryRanking — paginação e contagem de pedidos"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "pagina catálogo (teto 500) e mercado até a última página, com ordem pela chave id"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "conta pedido com vários itens uma única vez e soma mercado e receita"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "aceita resposta degradada quando todos os registros cabem na primeira página"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "aborta a paginação do mercado quando o bridge responde sem a ordem pedida"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "aborta quando a ordenação se perde só na última página do mercado"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+    "name": "mantém a receita interna e sinaliza o erro quando o mercado falha"
    },
    {
     "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
@@ -163559,6 +163652,7 @@
       "compara:src/components/quotes/QuoteStatusTimeline.tsx",
       "compara:src/components/sicoob/orders/OrderPilotApprovalsTab.tsx",
       "compara:src/hooks/quotes/useQuotes.ts",
+      "compara:src/hooks/useCommercialIntelligence.ts",
       "compara:src/hooks/usePilotApprovals.ts",
       "compara:src/lib/external-db-prewarm.ts",
       "compara:src/lib/sicoob/operationalMetrics.ts",
@@ -163657,6 +163751,7 @@
      "fulfilled": [
       "compara:src/components/admin/connections/CredentialsChangedBanner.tsx",
       "compara:src/components/admin/connections/GlobalRefreshFromDbButton.tsx",
+      "compara:src/hooks/useCommercialIntelligence.ts",
       "compara:src/services/sicoob/orderService.ts"
      ],
      "unconfigured": [
@@ -196962,9 +197057,12 @@
   },
   "src/components/intelligence/CategoryRanking.tsx": {
    "path": "src/components/intelligence/CategoryRanking.tsx",
-   "lines": 337,
+   "lines": 474,
    "exports": [
     "function CategoryRanking"
+   ],
+   "errors": [
+    " className="
    ],
    "calc_fns": [
     {
@@ -207996,7 +208094,7 @@
   },
   "src/hooks/useCommercialIntelligence.ts": {
    "path": "src/hooks/useCommercialIntelligence.ts",
-   "lines": 515,
+   "lines": 727,
    "exports": [
     "interface IntelligenceKPI",
     "interface TrendingProduct",
@@ -208004,6 +208102,7 @@
     "interface OpportunityProduct",
     "interface RevenuePoint",
     "interface CategoryRankingItem",
+    "interface CategoryRankingData",
     "function useCommercialKPIs",
     "function useTrendingProducts",
     "function useSegmentAnalysis",
@@ -208039,6 +208138,10 @@
      "op": "select"
     },
     {
+     "table": "order_items",
+     "op": "select"
+    },
+    {
      "table": "quote_items",
      "op": "select"
     },
@@ -208096,14 +208199,6 @@
     },
     {
      "table": "orders",
-     "op": "select"
-    },
-    {
-     "table": "order_items",
-     "op": "select"
-    },
-    {
-     "table": "order_items",
      "op": "select"
     },
     {
@@ -208140,6 +208235,7 @@
     ],
     "order_items": [
      "created_at",
+     "id",
      "order_id",
      "product_id",
      "product_name",
@@ -208149,6 +208245,11 @@
     ]
    },
    "dyn_from": 5,
+   "errors": [
+    "A paginação de itens de pedido não avançou.",
+    "Consulta de ${sourceName} excedeu o limite de segurança.",
+    "Consulta de ${sourceName} sem ordenação garantida pelo bridge"
+   ],
    "params": [
     {
      "name": "ORDER_ITEMS_TABLE",
@@ -208161,6 +208262,34 @@
     {
      "name": "ORDER_VALUE_FIELDS",
      "value": "'order_id, quantity, unit_price'"
+    },
+    {
+     "name": "CATEGORY_PAGE_SIZE",
+     "value": "1000"
+    },
+    {
+     "name": "CATEGORY_FILTER_CHUNK_SIZE",
+     "value": "100"
+    },
+    {
+     "name": "CATEGORY_MAX_EXTERNAL_ROWS",
+     "value": "100000"
+    },
+    {
+     "name": "CATALOG_PAGE_SIZE",
+     "value": "500"
+    }
+   ],
+   "status_values": [
+    {
+     "field": "status",
+     "value": "rejected",
+     "kind": "compara"
+    },
+    {
+     "field": "status",
+     "value": "fulfilled",
+     "kind": "compara"
     }
    ],
    "doc": "useCommercialIntelligence — Hook agregador para o módulo de Inteligência Comercial Helpers extraídos para intelligence/intelligenceHelpers.ts",
@@ -247816,6 +247945,21 @@
     "preserva opções em cache e informa falha de atualização"
    ]
   },
+  "tests/components/intelligence/CategoryRanking.errors.test.tsx": {
+   "path": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+   "lines": 81,
+   "is_test": true,
+   "errors": [
+    ")).not.toBeInTheDocument();\n  });\n\n  it(",
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "CategoryRanking — falha versus lista vazia",
+    "mostra erro com retry e não apresenta falha inicial como ranking vazio",
+    "exibe o estado vazio apenas após consulta bem-sucedida sem categorias",
+    "mantém a receita interna e desabilita os modos externos quando o mercado falha"
+   ]
+  },
   "tests/components/intelligence/TrendsHeatmap.errors.test.tsx": {
    "path": "tests/components/intelligence/TrendsHeatmap.errors.test.tsx",
    "lines": 44,
@@ -250941,6 +251085,20 @@
     "useCategories",
     "fetches and transforms categories",
     "generates slugs from category names"
+   ]
+  },
+  "tests/hooks/useCategoryRanking.pagination.test.tsx": {
+   "path": "tests/hooks/useCategoryRanking.pagination.test.tsx",
+   "lines": 204,
+   "is_test": true,
+   "tests": [
+    "useCategoryRanking — paginação e contagem de pedidos",
+    "pagina catálogo (teto 500) e mercado até a última página, com ordem pela chave id",
+    "conta pedido com vários itens uma única vez e soma mercado e receita",
+    "aceita resposta degradada quando todos os registros cabem na primeira página",
+    "aborta a paginação do mercado quando o bridge responde sem a ordem pedida",
+    "aborta quando a ordenação se perde só na última página do mercado",
+    "mantém a receita interna e sinaliza o erro quando o mercado falha"
    ]
   },
   "tests/hooks/useClientCategoryAffinity.error.test.tsx": {
@@ -258836,10 +258994,22 @@
   }
  },
  "git": {
-  "sha": "bc7da67a1559010536e2c084c1187613f603c949",
+  "sha": "dffd62ed6c8d0f8c37346c573cfa4bf51e724e2f",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "dffd62e",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)",
+    "files": [
+     "src/components/intelligence/CategoryRanking.tsx",
+     "src/hooks/useCommercialIntelligence.ts",
+     "tests/components/intelligence/CategoryRanking.errors.test.tsx",
+     "tests/hooks/useCategoryRanking.pagination.test.tsx"
+    ]
+   },
    {
     "sha": "bc7da67",
     "date": "2026-11-24",
@@ -259257,18 +259427,6 @@
      "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
      "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
      "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md"
-    ]
-   },
-   {
-    "sha": "ca511cf",
-    "date": "2026-11-20",
-    "author": "adm01-debug",
-    "subject": "fix: links internos quebrados (ADM-15) (#390)",
-    "files": [
-     "docs/pendencias/ADM-15-links-internos-quebrados-nos-componentes-da-fati.md",
-     "src/components/dashboard/MyDiscountRequestsWidget.tsx",
-     "src/components/dashboard/UpcomingDatesWidget.tsx",
-     "src/components/search/SmartSuggestions.tsx"
     ]
    }
   ],

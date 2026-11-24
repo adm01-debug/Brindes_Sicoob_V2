@@ -7207,7 +7207,7 @@
     "CategoryRanking"
    ],
    "export_default": null,
-   "linhas": 337,
+   "linhas": 474,
    "dominio": "components/intelligence",
    "hooks_locais": [
     "useCategoryRanking"

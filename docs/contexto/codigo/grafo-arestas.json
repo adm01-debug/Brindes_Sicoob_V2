@@ -8584,8 +8584,7 @@
    "src/integrations/supabase/client.ts",
    "src/lib/auth/apply-seller-scope.ts",
    "src/lib/auth/visibility-scope.ts",
-   "src/lib/external-db/index.ts",
-   "src/lib/logger.ts"
+   "src/lib/external-db/index.ts"
   ],
   "src/hooks/useComparison.ts": [
    "src/hooks/useProductAnalytics.ts",
