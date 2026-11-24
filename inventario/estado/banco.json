@@ -1,0 +1,4861 @@
+{
+  "alertas": [
+    {
+      "detalhe": [
+        "230844 linhas com mais de 7 dias"
+      ],
+      "tipo": "historico_cron_sem_limpeza"
+    },
+    {
+      "detalhe": [
+        "e2e-auth-test",
+        "error-monitor",
+        "generate-mockup-nanobanana",
+        "migrate-helper",
+        "qa-block-monitor",
+        "quote-price-attestation",
+        "sicoob-seed-debug"
+      ],
+      "tipo": "edge_sem_deploy"
+    }
+  ],
+  "cron": {
+    "config": {
+      "cron.max_running_jobs": "32",
+      "cron.use_background_workers": "off",
+      "max_worker_processes": "6"
+    },
+    "disponivel": true,
+    "historico": {
+      "bytes": 53067776,
+      "linhas": 260893,
+      "mais_antigo": "2026-09-16T14:15:00Z",
+      "mais_de_7_dias": 230844
+    },
+    "horas_paradas_7d": [],
+    "jobs": [
+      {
+        "agenda": "10 4 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_discount_test_data"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-discount-test-data",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "0 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_expired_collection_trash"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-expired-collection-trash",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "10 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_expired_favorite_trash"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-expired-favorite-trash",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "20 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_expired_public_comparisons"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-expired-public-comparisons",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "*/15 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_expired_step_up"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 96,
+        "execucoes_7d": 672,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-expired-step-up",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "30 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_old_notifications"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-old-notifications",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "0 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_rate_limits"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 24,
+        "execucoes_7d": 168,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-rate-limits",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "40 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_security_logs"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-security-logs",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "50 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.cleanup_webhook_logs"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "cleanup-webhook-logs",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "*/15 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.dispatch_sicoob_connections_auto_test"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 96,
+        "execucoes_7d": 672,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "connections-auto-test",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "7,22,37,52 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.dispatch_sicoob_connections_health_check"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 96,
+        "execucoes_7d": 593,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "connections-health-check",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "0 3 1 * *",
+        "ativo": true,
+        "chama": [
+          "public.ensure_admin_audit_log_partitions"
+        ],
+        "duracao_max_s_7d": null,
+        "execucoes_24h": 0,
+        "execucoes_7d": 0,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "ensure-admin-audit-log-partitions",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "*/4 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.dispatch_sicoob_external_db_keepalive"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 360,
+        "execucoes_7d": 2520,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "external-db-bridge-keepalive",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "* * * * *",
+        "ativo": true,
+        "chama": [
+          "public.dispatch_sicoob_export_worker"
+        ],
+        "duracao_max_s_7d": 1,
+        "execucoes_24h": 1440,
+        "execucoes_7d": 10080,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "process-export-queue",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "*/2 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.monitor_sicoob_approval_worker"
+        ],
+        "duracao_max_s_7d": 12,
+        "execucoes_24h": 720,
+        "execucoes_7d": 5040,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "sicoob-approval-outbox-monitor",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "23 3 * * *",
+        "ativo": true,
+        "chama": [
+          "public.archive_sicoob_approval_deliveries"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 1,
+        "execucoes_7d": 7,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "sicoob-approval-outbox-retention",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "* * * * *",
+        "ativo": true,
+        "chama": [
+          "public.dispatch_sicoob_approval_worker"
+        ],
+        "duracao_max_s_7d": 2,
+        "execucoes_24h": 1440,
+        "execucoes_7d": 10080,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "sicoob-approval-outbox-worker",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      },
+      {
+        "agenda": "17 * * * *",
+        "ativo": true,
+        "chama": [
+          "public.mark_overdue_sicoob_payments"
+        ],
+        "duracao_max_s_7d": 0,
+        "execucoes_24h": 24,
+        "execucoes_7d": 168,
+        "falhas_24h": 0,
+        "falhas_7d": 0,
+        "nome": "sicoob-materialize-overdue-payments",
+        "startup_timeout_7d": 0,
+        "taxa_falha_7d_pct": 0,
+        "ultima_falha": null
+      }
+    ]
+  },
+  "edge_functions": {
+    "no_repo": 107,
+    "no_repo_sem_deploy": [
+      "e2e-auth-test",
+      "error-monitor",
+      "generate-mockup-nanobanana",
+      "migrate-helper",
+      "qa-block-monitor",
+      "quote-price-attestation",
+      "sicoob-seed-debug"
+    ],
+    "publicadas": [
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "admin-audit-hook",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-08T03:46Z",
+        "slug": "ai-recommendations",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "analyze-logo-colors",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "auth-integrity-check",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 14
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "bi-copilot",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 14
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "bi-share-dossier",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "bitrix-sync",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "block-ip-temporarily",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-15T10:05Z",
+        "slug": "categories-api",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "cleanup-notifications",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "cleanup-novelties",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "cnpj-lookup",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "collections-public-react",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "collections-watcher",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-15T10:05Z",
+        "slug": "commemorative-dates",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "comparison-ai-advisor",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 14
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "comparison-price-watcher",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "comparisons-public-react",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "connection-tester",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "connections-auto-test",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "connections-health-check",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:24Z",
+        "slug": "connections-hub-audit",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "crm-db-bridge",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 16
+      },
+      {
+        "atualizada_em": "2026-09-28T13:29Z",
+        "slug": "detect-new-device",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "dropbox-list",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "e2e-cleanup",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "elevenlabs-scribe-token",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "elevenlabs-tts",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "expert-chat",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 21
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "external-connections-sync",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 4
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "external-db-bridge",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 20
+      },
+      {
+        "atualizada_em": "2026-10-15T10:06Z",
+        "slug": "external-db-inspect",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 9
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "favorites-public-react",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "favorites-watcher",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "force-global-logout",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "full-op-diagnostics",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "generate-ad-image",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "generate-ad-prompt",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:30Z",
+        "slug": "generate-mockup",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "generate-product-seo",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "get-app-logs",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 14
+      },
+      {
+        "atualizada_em": "2026-11-19T10:26Z",
+        "slug": "get-visitor-info",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 9
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "github-credentials-test",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "github-fix-config",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-15T10:06Z",
+        "slug": "health-check",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "image-proxy",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "kit-ai-builder",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "kit-identity-suggest",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "kit-public-view",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "log-login-attempt",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "magic-up-score",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "manage-users",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "market-intelligence-insights",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-15T10:06Z",
+        "slug": "materials-api",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-10-14T10:44Z",
+        "slug": "mcp-keys-issue",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-10-14T10:44Z",
+        "slug": "mcp-keys-revoke",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-10-14T10:44Z",
+        "slug": "mcp-keys-rotate",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-10-14T10:57Z",
+        "slug": "mcp-keys-update",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:31Z",
+        "slug": "mcp-server",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "migration-health-check",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "monthly-health-report",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "ownership-audit",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "ownership-repair",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "process-batch-export",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 9
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "process-queue",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "process-scheduled-reports",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "product-webhook",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:25Z",
+        "slug": "quote-approval",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "quote-followup-reminders",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "quote-public-view",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "quote-sync",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "rate-limit-check",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "rls-audit",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "rls-integration-tests",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "rls-matrix-export",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-14T10:56Z",
+        "slug": "secrets-manager",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "secure-upload",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 15
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "semantic-search",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "send-digest",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "send-notification",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "send-scheduled-reports",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "send-transactional-email",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 9
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "sicoob-approval-notifications",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "sicoob-approval-reconciliation",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 12
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "sicoob-artwork-register",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 12
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "sicoob-document-ingest",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 14
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "sicoob-kit-quote",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 13
+      },
+      {
+        "atualizada_em": "2026-11-24T10:41Z",
+        "slug": "sicoob-reorder",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 13
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "sicoob-seed",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-08T04:04Z",
+        "slug": "sicoob-seed-qa",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "step-up-verify",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:26Z",
+        "slug": "sync-quote-bitrix",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:32Z",
+        "slug": "system-healthcheck",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-10-16T11:25Z",
+        "slug": "trends-insights",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 9
+      },
+      {
+        "atualizada_em": "2026-09-28T13:33Z",
+        "slug": "validate-access",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-10-14T22:15Z",
+        "slug": "verify-email",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-09-28T13:33Z",
+        "slug": "visual-search",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-09-28T13:33Z",
+        "slug": "voice-agent",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 7
+      },
+      {
+        "atualizada_em": "2026-11-24T10:42Z",
+        "slug": "webhook-dispatcher",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      },
+      {
+        "atualizada_em": "2026-11-24T15:53Z",
+        "slug": "webhook-inbound",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 8
+      }
+    ],
+    "publicadas_sem_codigo_no_repo": []
+  },
+  "fonte": "scripts/inventario/banco.sql + GET /functions + .from() em src/ e supabase/functions/ (scripts/inventario/gerar-banco.mjs)",
+  "format_version": 1,
+  "medido_em": "2026-11-24T17:58:26Z",
+  "operacao": {
+    "filas": [
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "device_login_notifications"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "inbound_webhook_events"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": [],
+        "tabela": "notification_digests"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": [],
+        "tabela": "notification_logs"
+      },
+      {
+        "bytes": 57344,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "notifications"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": [],
+        "tabela": "optimization_queue"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": [],
+        "tabela": "optimization_queue_runs"
+      },
+      {
+        "bytes": 32768,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "outbound_webhooks"
+      },
+      {
+        "bytes": 32768,
+        "linhas": 0,
+        "por_status": [],
+        "tabela": "scheduled_notifications"
+      },
+      {
+        "bytes": 65536,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "sicoob_approval_deliveries"
+      },
+      {
+        "bytes": 73728,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "sicoob_delivery_allocations"
+      },
+      {
+        "bytes": 81920,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "sicoob_delivery_destinations"
+      },
+      {
+        "bytes": 81920,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "sicoob_delivery_receipt_events"
+      },
+      {
+        "bytes": 32768,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "webhook_deliveries"
+      },
+      {
+        "bytes": 24576,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "webhook_logs"
+      },
+      {
+        "bytes": 32768,
+        "linhas": 0,
+        "por_status": null,
+        "tabela": "webhook_retry_claims"
+      },
+      {
+        "bytes": 6127616,
+        "linhas": 9538,
+        "por_status": null,
+        "tabela": "workspace_notifications"
+      }
+    ]
+  },
+  "origem": {
+    "fonte": "src/integrations/supabase/types.ts",
+    "migrations_no_repo": 627,
+    "tabelas_em_comum_com_types": 242,
+    "tabelas_em_types": 242
+  },
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "resumo": {
+    "cron_ativos": 18,
+    "cron_jobs": 18,
+    "funcoes_public": 378,
+    "ledger_registros": 162,
+    "ledger_versao_max": "20261124142500",
+    "max_connections": 60,
+    "policies": 621,
+    "postgres": "17.6",
+    "tabelas_public": 243,
+    "tabelas_sem_rls": 0,
+    "tamanho_bytes": 244853907,
+    "triggers_public": 201,
+    "views_public": 5
+  },
+  "tabelas": [
+    {
+      "bytes": 8192,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "_backup_custom_kits_pinned_20261118",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "access_blocked_log",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "access_security_settings",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 0,
+      "citada_no_banco": true,
+      "linhas": 21779,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 16,
+        "src": 12
+      }
+    },
+    {
+      "bytes": 155648,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_default",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2024",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2025",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m01",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m02",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m03",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m04",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 155648,
+      "citada_no_banco": false,
+      "linhas": 11,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m05",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m06",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m07",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 155648,
+      "citada_no_banco": false,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m08",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 516096,
+      "citada_no_banco": false,
+      "linhas": 222,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m09",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 18817024,
+      "citada_no_banco": false,
+      "linhas": 21545,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m10",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 139264,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m11",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2026_m12",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2027_m01",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2027_m02",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_audit_log_y2027_m03",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 106496,
+      "citada_no_banco": true,
+      "linhas": 123,
+      "linhas_exatas": true,
+      "nome": "admin_config_audit",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "admin_settings",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ai_insights_cache",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ai_usage_events",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ai_usage_logs",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 9,
+      "linhas_exatas": true,
+      "nome": "ai_usage_quotas",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "art_file_attachments",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "audit_log",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "bitrix_clients",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "bitrix_deals",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "bitrix_sync_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 4,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "blog_posts",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 131072,
+      "citada_no_banco": true,
+      "linhas": 7,
+      "linhas_exatas": true,
+      "nome": "bot_detection_log",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 10,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "campaigns",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cart_items",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cart_templates",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 30,
+      "linhas_exatas": true,
+      "nome": "catalog_marketing_terms",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "catalog_product_marketing",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "category_icons",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "city_whitelist",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 8
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 3,
+      "linhas_exatas": true,
+      "nome": "cms_banners",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cms_config",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cms_sections",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "collection_item_reactions",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "collection_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 9
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "collection_items_trash",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "collections",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 9
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "comparison_reactions",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "component_media",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 196608,
+      "citada_no_banco": true,
+      "linhas": 230,
+      "linhas_exatas": true,
+      "nome": "connection_test_history",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 9,
+        "src": 8
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "cooperativa_budgets",
+      "policies": 9,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 2,
+      "linhas_exatas": true,
+      "nome": "cooperativas",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 4,
+        "src": 13
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cooperativas_parceiras",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "cost_centers",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "coupons",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "custom_kits",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 19
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "device_login_notifications",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "discount_approval_requests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 5,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 11
+      }
+    },
+    {
+      "bytes": 6922240,
+      "citada_no_banco": false,
+      "linhas": 11495,
+      "linhas_exatas": true,
+      "nome": "e2e_cleanup_audit",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 114688,
+      "citada_no_banco": true,
+      "linhas": 391,
+      "linhas_exatas": true,
+      "nome": "e2e_cleanup_rate_limit",
+      "policies": 8,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "expert_conversations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "expert_messages",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "export_audit_log",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "export_jobs",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 106496,
+      "citada_no_banco": true,
+      "linhas": 2,
+      "linhas_exatas": true,
+      "nome": "external_connections",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 14,
+        "src": 11
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 3,
+      "linhas_exatas": true,
+      "nome": "external_connections_sync_log",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "favorite_item_reactions",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 6,
+      "linhas_exatas": true,
+      "nome": "favorite_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 3,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 12
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "favorite_items_trash",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 10,
+      "linhas_exatas": true,
+      "nome": "favorite_lists",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "file_scan_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "follow_up_reminders",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "generated_mockups",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "hardening_health_snapshots",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 90112,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "inbound_webhook_endpoints",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "inbound_webhook_events",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 6,
+      "linhas_exatas": true,
+      "nome": "integration_credentials",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 6,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ip_access_control",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ip_whitelist",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 8
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "kit_collaborators",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "kit_comments",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "kit_share_tokens",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 3,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "kit_templates",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 11
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "kit_variants",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "limit_increase_requests",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 3268608,
+      "citada_no_banco": true,
+      "linhas": 7985,
+      "linhas_exatas": true,
+      "nome": "login_attempts",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 8
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_brand_kits",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_campaigns",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_comments",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_generations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 9
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_public_shares",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "magic_up_reactions",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "manager_notification_config",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 1040384,
+      "citada_no_banco": true,
+      "linhas": 2054,
+      "linhas_exatas": true,
+      "nome": "mcp_access_violations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mcp_api_keys",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": true,
+      "triggers": 4,
+      "uso_no_codigo": {
+        "edges": 8,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mcp_full_grantors",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mcp_key_auto_revocations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 5,
+      "linhas_exatas": true,
+      "nome": "mockup_drafts",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mockup_prompt_configs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mockup_prompt_history",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "mockup_templates",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "newsletter_subscribers",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "notification_channels",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "notification_digests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "notification_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 14,
+      "linhas_exatas": true,
+      "nome": "notification_preferences",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "notification_templates",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "notifications",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "optimization_queue",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "optimization_queue_runs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_approval_history",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_audit_events",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_comments",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_consolidation_orders",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_consolidations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_duplicate_requests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_invoices",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 15
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_logistics",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_logistics_tracking",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_payments",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_pilot_approvals",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_template_items",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "order_templates",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 163840,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "orders",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 11,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 30
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "organization_members",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "organizations",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "outbound_webhooks",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 10
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 2,
+      "linhas_exatas": true,
+      "nome": "ownership_audit_reports",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "ownership_repair_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "pa_budget_allocations",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 6,
+      "linhas_exatas": true,
+      "nome": "pa_budget_entries",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 3,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 6,
+      "linhas_exatas": true,
+      "nome": "pa_budgets",
+      "policies": 10,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 3,
+      "uso_no_codigo": {
+        "edges": 4,
+        "src": 13
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "pa_category_thresholds",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "pa_notification_settings",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "pa_singularidades",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": false,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "password_reset_requests",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "permissions",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "personalization_simulations",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "pontos_atendimento",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "portfolio_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 3,
+      "linhas_exatas": true,
+      "nome": "postos_atendimento",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 16
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "price_history",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_categories",
+      "policies": 5,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 73728,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_component_location_techniques",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_component_locations",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_components",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 12
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_group_components",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 73728,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_group_location_techniques",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_group_locations",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_group_members",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 10
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_groups",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_price_freshness_overrides",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "product_sync_logs",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 114688,
+      "citada_no_banco": true,
+      "linhas": 73,
+      "linhas_exatas": true,
+      "nome": "product_views",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 147456,
+      "citada_no_banco": true,
+      "linhas": 14,
+      "linhas_exatas": true,
+      "nome": "profiles",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 4,
+      "uso_no_codigo": {
+        "edges": 15,
+        "src": 48
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "public_token_failures",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "qa_release_evidences",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "qa_releases",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "qa_rls_audits",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "qa_run_steps",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 2,
+      "linhas_exatas": true,
+      "nome": "qa_runs",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 45785088,
+      "citada_no_banco": true,
+      "linhas": 64934,
+      "linhas_exatas": true,
+      "nome": "query_telemetry",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 10
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "quote_approval_evidence_keys",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_approval_tokens",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 5,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_audit_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_comments",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_consolidations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_history",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_item_personalizations",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 3,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 18
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_save_idempotency",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quote_templates",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 327680,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "quotes",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 18,
+      "uso_no_codigo": {
+        "edges": 38,
+        "src": 37
+      }
+    },
+    {
+      "bytes": 163840,
+      "citada_no_banco": true,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "request_rate_limits",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "rls_denial_log",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "role_migration_batches",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "role_migration_items",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "role_permissions",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sales_goals",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "saved_filters",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "saved_trends_views",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "scheduled_exports",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "scheduled_notifications",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "scheduled_reports",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 6,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 131072,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "search_analytics",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "secret_rotation_log",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "seller_cart_items",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 11
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 5,
+      "linhas_exatas": true,
+      "nome": "seller_carts",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 7
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "seller_discount_limits",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 8
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sensitive_access_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_delegations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_deliveries",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_delivery_archive",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_policies",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 114688,
+      "citada_no_banco": true,
+      "linhas": 4,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_requests",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 5,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 16531456,
+      "citada_no_banco": true,
+      "linhas": 41496,
+      "linhas_exatas": true,
+      "nome": "sicoob_approval_worker_dispatches",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 7,
+      "linhas_exatas": true,
+      "nome": "sicoob_centrais",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 73728,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_delivery_allocations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_delivery_destinations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_delivery_receipt_events",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_document_registry",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 98304,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_invitation_events",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": true,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 188416,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_invitations",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": true,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_kit_quote_requests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 1,
+      "linhas_exatas": true,
+      "nome": "sicoob_manager_audit",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_artwork_versions",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 29,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_history",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 57344,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_invoices",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_item_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 81920,
+      "citada_no_banco": true,
+      "linhas": 28,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_items",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 2,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 73728,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_payments",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 73728,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_order_shipments",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 188416,
+      "citada_no_banco": true,
+      "linhas": 14,
+      "linhas_exatas": true,
+      "nome": "sicoob_orders",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 13,
+      "uso_no_codigo": {
+        "edges": 5,
+        "src": 17
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_performance_reports",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_quote_reorder_requests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 40960,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_reorder_requests",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "sicoob_rls_audit_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 4,
+      "linhas_exatas": true,
+      "nome": "sicoob_temas",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "simulator_wizard_drafts",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 3
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "singulares",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 65536,
+      "citada_no_banco": true,
+      "linhas": 2,
+      "linhas_exatas": true,
+      "nome": "step_up_audit_log",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "step_up_challenges",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "step_up_tokens",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 1,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "system_settings",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 50044928,
+      "citada_no_banco": false,
+      "linhas": 100600,
+      "linhas_exatas": true,
+      "nome": "telemetry_events",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "telemetry_logs",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 16384,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "test_suites_runs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "user_comparisons",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 2,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "user_known_devices",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 4
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": false,
+      "linhas": 10,
+      "linhas_exatas": true,
+      "nome": "user_onboarding",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "user_preferences",
+      "policies": 3,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 1,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 2
+      }
+    },
+    {
+      "bytes": 90112,
+      "citada_no_banco": true,
+      "linhas": 15,
+      "linhas_exatas": true,
+      "nome": "user_roles",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 5,
+      "uso_no_codigo": {
+        "edges": 24,
+        "src": 5
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "video_variant_links",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 9
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "voice_command_logs",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 1
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "webhook_configs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "webhook_deliveries",
+      "policies": 2,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 3,
+        "src": 6
+      }
+    },
+    {
+      "bytes": 49152,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "webhook_delivery_metrics",
+      "policies": 8,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 24576,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "webhook_logs",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 32768,
+      "citada_no_banco": true,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "webhook_retry_claims",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
+      "bytes": 6127616,
+      "citada_no_banco": true,
+      "linhas": 9538,
+      "linhas_exatas": true,
+      "nome": "workspace_notifications",
+      "policies": 4,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 13,
+        "src": 12
+      }
+    }
+  ],
+  "tabelas_orfas": {
+    "criterio": "0 linhas + nao citada em funcao/view do banco + nenhum .from() em src/ ou supabase/functions/",
+    "lista": [
+      "_backup_custom_kits_pinned_20261118",
+      "admin_audit_log_default",
+      "admin_audit_log_y2024",
+      "admin_audit_log_y2025",
+      "admin_audit_log_y2026_m01",
+      "admin_audit_log_y2026_m02",
+      "admin_audit_log_y2026_m03",
+      "admin_audit_log_y2026_m04",
+      "admin_audit_log_y2026_m06",
+      "admin_audit_log_y2026_m07",
+      "admin_audit_log_y2026_m11",
+      "admin_audit_log_y2026_m12",
+      "admin_audit_log_y2027_m01",
+      "admin_audit_log_y2027_m02",
+      "admin_audit_log_y2027_m03",
+      "blog_posts",
+      "component_media",
+      "magic_up_comments",
+      "magic_up_public_shares",
+      "magic_up_reactions",
+      "manager_notification_config",
+      "mcp_full_grantors",
+      "mockup_templates",
+      "notification_channels",
+      "notification_templates",
+      "order_logistics_tracking",
+      "order_payments",
+      "order_template_items",
+      "pa_singularidades",
+      "pontos_atendimento",
+      "portfolio_items",
+      "singulares",
+      "telemetry_logs",
+      "test_suites_runs",
+      "webhook_configs",
+      "webhook_logs"
+    ]
+  }
+}
