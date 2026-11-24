@@ -13,13 +13,30 @@ interface StoredAutoSave<T> {
   tab?: string;
 }
 
-const AUTOSAVE_TAB_ID = (() => {
+const CHAVE_ID_ABA = 'autosave-tab-id';
+const ID_ABA_SEM_SESSAO = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * Identidade da aba, estavel enquanto ela existir.
+ *
+ * Fica no `sessionStorage` porque ele e por aba e sobrevive ao recarregar: com
+ * um id novo a cada carregamento, o descarte apos um reload trataria o rascunho
+ * desta propria aba como sendo de outra e nao apagaria nada.
+ */
+function idDaAba(): string {
   try {
-    return crypto.randomUUID();
+    const salvo = sessionStorage.getItem(CHAVE_ID_ABA);
+    if (salvo) return salvo;
+    const novo =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : ID_ABA_SEM_SESSAO;
+    sessionStorage.setItem(CHAVE_ID_ABA, novo);
+    return novo;
   } catch {
-    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return ID_ABA_SEM_SESSAO;
   }
-})();
+}
 
 const CONCURRENT_DRAFT_MESSAGE =
   'Este rascunho foi alterado em outra aba. Recarregue o orçamento antes de continuar.';
@@ -64,7 +81,7 @@ export function descartarRascunhoDestaAba(key: string): void {
     const atual = localStorage.getItem(storageKey);
     if (!atual) return;
     const dono = (JSON.parse(atual) as { tab?: string }).tab;
-    if (dono && dono !== AUTOSAVE_TAB_ID) return;
+    if (dono && dono !== idDaAba()) return;
     localStorage.removeItem(storageKey);
   } catch {
     // Armazenamento bloqueado ou rascunho ilegivel: nada a apagar.
@@ -137,7 +154,7 @@ async function persistDraft<T>({
       version: AUTO_SAVE_VERSION,
       savedAt: new Date().toISOString(),
       data,
-      tab: AUTOSAVE_TAB_ID,
+      tab: idDaAba(),
     };
     const serialized = JSON.stringify(stored);
     localStorage.setItem(storageKey, serialized);
@@ -172,6 +189,13 @@ function useCrossTabDraftGuard<T>(args: {
         return;
       }
       storageSnapshot.current = event.newValue;
+      if (event.newValue === null) {
+        // A outra sessao apagou o rascunho (descarte confirmado). Nao ha versao
+        // dela a proteger: a proxima gravacao desta aba volta a escrever.
+        conflict.current = false;
+        setLastError(null);
+        return;
+      }
       if (JSON.stringify(readStoredData(event.newValue)) === JSON.stringify(dataRef.current))
         return;
 

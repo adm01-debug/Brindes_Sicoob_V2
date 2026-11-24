@@ -78,7 +78,9 @@ async function performBackNavigation(deps: BackNavigationDeps) {
   // restaurado traz de volta o que o usuario descartou. Navegar para o mesmo
   // caminho mantem a tela montada e nao descarta nada.
   const destino = previous?.pathname ?? caminhoDeSaida(pathname, fallbackPath);
-  if (confirmouSaida && destino !== pathname) descartarTrabalhoDaRota(pathname);
+  // Marca o descarte sem adivinhar o destino: quem decide se a tela saiu e o
+  // desmonte dela, nao o caminho previsto pelo historico do portal.
+  if (confirmouSaida) descartarTrabalhoDaRota(pathname);
 
   if (previous) {
     pop(); // Remove o atual

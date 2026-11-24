@@ -30,6 +30,7 @@ import { ValidityPicker } from "@/components/quotes/builder/ValidityPicker";
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useScreenDirtyState } from "@/hooks/useScreenDirtyState";
+import { useDescartarRascunhoAoDesmontar } from "@/hooks/useDescartarRascunhoAoDesmontar";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
 import { TagManager } from "@/components/quotes/TagManager";
 import { ReorderCatalogValidityBanner } from "@/components/quotes/ReorderCatalogValidityBanner";
@@ -133,8 +134,8 @@ export default function QuoteBuilderPage() {
   const state = useQuoteBuilderState();
   // Sair sem salvar descarta também o rascunho local: senão a edição recusada
   // volta sozinha na próxima vez que o orçamento abrir.
-  const descartarRascunhoLocal = () =>
-    limparRascunhoDoOrcamento({ scopeId: state.draftScopeId, quoteId: state.quoteId });
+  const descartarRascunhoLocal = useDescartarRascunhoAoDesmontar(() =>
+    limparRascunhoDoOrcamento({ scopeId: state.draftScopeId, quoteId: state.quoteId }));
   const unsaved = useUnsavedChangesGuard({
     hasUnsavedChanges: state.hasUnsavedData,
     aoDescartar: descartarRascunhoLocal,

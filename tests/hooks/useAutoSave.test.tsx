@@ -13,6 +13,9 @@ describe('useAutoSave', () => {
     vi.useFakeTimers();
     localStorage.clear();
     sessionStorage.clear();
+    // Id de aba fixo: sem isso o primeiro salvamento grava no sessionStorage e
+    // consome o mock de `setItem` usado nos testes de falha de persistência.
+    sessionStorage.setItem('autosave-tab-id', 'aba-teste');
   });
 
   afterEach(() => {
@@ -124,6 +127,13 @@ describe('useAutoSave', () => {
     expect(localStorage.getItem('autosave_draft-apagado')).not.toBeNull();
 
     localStorage.removeItem('autosave_draft-apagado');
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'autosave_draft-apagado',
+        newValue: null,
+        storageArea: localStorage,
+      }),
+    );
     rerender({ data: { items: 3 } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
 

@@ -68,6 +68,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
   it('não apaga o rascunho que outra aba gravou', () => {
     // Mesmo usuário e mesmo orçamento em duas abas dividem a chave: o descarte
     // de uma não pode levar o trabalho da outra junto.
+    sessionStorage.setItem('autosave-tab-id', 'aba-atual');
     localStorage.setItem(
       'autosave_quote:usuario-3:orc-9',
       JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'outra-aba' }),
@@ -96,6 +97,20 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).not.toBeNull();
     limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
+  });
+
+  it('apaga o rascunho que esta aba gravou antes de recarregar', () => {
+    // Recarregar mantém a mesma aba: o rascunho guardado antes do reload é desta
+    // sessão e precisa sair quando o usuário descarta, senão volta na reabertura.
+    sessionStorage.setItem('autosave-tab-id', 'aba-recarregada');
+    localStorage.setItem(
+      'autosave_quote:usuario-3:orc-9',
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'aba-recarregada' }),
+    );
+
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
   });
 
