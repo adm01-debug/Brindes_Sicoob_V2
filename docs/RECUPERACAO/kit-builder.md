@@ -66,6 +66,14 @@ impedir. Agora o erro do salvamento manual é entregue a
 Coberto por `tests/hooks/useKitAutoSave.test.tsx` (versão viva entregue ao
 salvamento manual; conflito registrado na guarda; erro comum não vira conflito).
 
+**Fronteira conhecida — falta o harness da página.** Nenhum teste renderiza
+`KitBuilderPage` hoje, então o caminho completo "Atualizar" → conflito →
+Biblioteca → "Sair sem salvar" não é exercitado de ponta a ponta. O que existe
+cobre as três peças isoladas: a política (`tests/lib/saida-da-tela.test.ts`), o
+estado que a guarda lê (`tests/hooks/useKitAutoSave.test.tsx`) e a guarda
+(`tests/pages/kit-builder-guarda-saida.test.tsx`). Montar o harness da página
+(Supabase, auth, router e as children) é tarefa própria.
+
 **Fronteira conhecida (não coberta por esta trava):** favoritar/desfavoritar na
 Biblioteca (`KitLibraryPage.tsx`) grava `is_favorite` sem tocar em `updated_at`,
 e o payload do montador também carrega esse campo. Uma aba com o kit aberto pode
