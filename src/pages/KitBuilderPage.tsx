@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
+import { textoDaSaida } from '@/lib/kit-builder/saida-da-tela';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -163,31 +164,6 @@ async function loadKitTemplate(
  */
 function emEdicaoDeTemplate(templateId: string | null, isRoleLoading: boolean, isAdmin: boolean): boolean {
   return Boolean(templateId) && (isRoleLoading || isAdmin);
-}
-
-/**
- * O aviso de saída tem que dizer o que a saída faz de verdade.
- *
- * Num kit pessoal o autosave continua depois da navegação: prometer que "sair
- * descarta" era falso, e quem confirmasse via o trabalho gravado do mesmo
- * jeito. Quem realmente perde trabalho é a edição de template (sem autosave) e
- * o kit cujo salvamento falhou ou bateu em conflito.
- */
-function textoDaSaida(
-  templateSemAutosave: boolean, erroDeSalvamento: string | null, conflito: boolean,
-): { mensagem: string; rotulo: string } {
-  if (erroDeSalvamento || conflito) return {
-    mensagem: 'Este kit ainda não foi salvo. Sair agora pode descartar as últimas alterações.',
-    rotulo: 'Sair sem salvar',
-  };
-  if (templateSemAutosave) return {
-    mensagem: 'As alterações no template ainda não foram salvas. Sair agora as descarta.',
-    rotulo: 'Sair sem salvar',
-  };
-  return {
-    mensagem: 'A gravação automática continua ao sair: o seu kit será gravado.',
-    rotulo: 'Sair e gravar',
-  };
 }
 
 export default function KitBuilderPage() {
@@ -480,7 +456,10 @@ export default function KitBuilderPage() {
    * — trocar de template apagaria a única cópia do trabalho.
    */
   async function trocarDeTemplate(templateId: string) {
-    const gravou = await gravarPendente();
+    // "Sair sem salvar" (conflito, erro de gravação ou template) descarta de
+    // propósito: repetir a gravação cairia no mesmo conflito e prenderia a
+    // troca, prometendo um salvamento que já falhou.
+    const gravou = !saidaDaTela.grava || await gravarPendente();
     if (!gravou) return;
     navigate(`/montar-kit?template=${templateId}`);
   }

@@ -279,6 +279,19 @@ export function useKitAutoSave(
     onKitIdCreated?.(createdId);
   }, [onKitIdCreated]);
 
+  /** Fecha uma gravacao bem-sucedida: adota id/versao e limpa a pendencia. */
+  const marcarPersistido = useCallback((
+    snapshot: string, createdId: string | null, updatedAt: string | null,
+  ) => {
+    adoptCreatedId(createdId);
+    knownUpdatedAtRef.current = updatedAt;
+    persistedSnapshotRef.current = snapshot;
+    setLastSavedAt(new Date());
+    setLastSaveError(null);
+    setLastSaveConflict(false);
+    setIsDirty(false);
+  }, [adoptCreatedId]);
+
   const saveToDb = useCallback(async (snapshot: string): Promise<boolean> => {
     if (!user?.id) return false;
 
@@ -308,13 +321,7 @@ export function useKitAutoSave(
       // composição nova ao kit anterior, e a edição seguinte gravaria por cima
       // dele.
       if (operationGeneration !== scopeGenerationRef.current) return false;
-      adoptCreatedId(persisted.createdId);
-      knownUpdatedAtRef.current = persisted.updatedAt;
-      persistedSnapshotRef.current = snapshot;
-      setLastSavedAt(new Date());
-      setLastSaveError(null);
-      setLastSaveConflict(false);
-      setIsDirty(false);
+      marcarPersistido(snapshot, persisted.createdId, persisted.updatedAt);
       return true;
     } catch (err) {
       if (operationGeneration !== scopeGenerationRef.current) return false;
@@ -331,7 +338,7 @@ export function useKitAutoSave(
         setIsSaving(pendingSavesRef.current > 0);
       }
     }
-  }, [adoptCreatedId, user?.id, kitState, kitQuantity]);
+  }, [marcarPersistido, user?.id, kitState, kitQuantity]);
 
   // Create a snapshot hash to detect meaningful changes
   useEffect(() => {
@@ -543,6 +550,9 @@ export function useKitAutoSave(
     // `clearTimeout(undefined)` é inofensivo.
     clearTimeout(timerRef.current);
     timerRef.current = undefined;
+    // Uma gravação em voo pode já cobrir este conteúdo: esperar a fila antes de
+    // decidir evita enfileirar a mesma composição duas vezes.
+    await saveQueueRef.current;
     const alvo = latestSnapshotRef.current;
     if (!alvo || alvo === persistedSnapshotRef.current) return true;
     const gravou = await saveToDbRef.current?.(alvo);

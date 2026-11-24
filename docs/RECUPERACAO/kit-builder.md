@@ -67,7 +67,8 @@ seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
 - a troca de template grava o pendente antes de substituir a composição, senão
   o "Sair e gravar" do aviso prometia uma gravação que o desmonte não faria
   (não há desmonte): `gravarPendente` (`KitBuilderPage.tsx` `trocarDeTemplate`),
-  e falha na gravação segura o vendedor na composição;
+  falha na gravação segura o vendedor na composição e uma gravação já em voo
+  não é repetida;
 - gravação que responde depois da troca de escopo não readota a linha antiga
   (`saveToDb` confere a geração depois do `persistAutoSave`), então a edição
   seguinte cria linha nova em vez de sobrescrever o kit anterior;
@@ -75,10 +76,12 @@ seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
   direto, então troca de template com edição pendente pergunta antes
   (`KitBuilderPage.tsx:607` → `SimilarKitsWidget.tsx:51`,
   `tests/components/SimilarKitsWidget.test.tsx`);
-- o diálogo de saída diz o que a saída faz com o trabalho: "Sair sem salvar"
-  quando o pendente não será gravado e "Sair e gravar" no kit pessoal, que é
-  gravado no desmonte (`KitBuilderPage.tsx:473-475` +
-  `UnsavedChangesDialog.tsx:26`,
+- o diálogo de saída diz o que a saída faz com o trabalho e age como disse:
+  "Sair sem salvar" quando o pendente não será gravado (template, erro de
+  gravação ou conflito — nesses casos confirmar descarta, sem repetir a
+  gravação que já falhou) e "Sair e gravar" no kit pessoal
+  (`src/lib/kit-builder/saida-da-tela.ts`, `UnsavedChangesDialog.tsx:26`,
+  coberto em `tests/lib/saida-da-tela.test.ts` e
   `tests/components/UnsavedChangesDialog.test.tsx`).
 
 O documento abaixo fica como registro do diagnóstico original (estado da PR

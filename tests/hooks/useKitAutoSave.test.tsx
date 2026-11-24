@@ -753,6 +753,33 @@ describe('useKitAutoSave', () => {
     expect(result.current.lastSavedAt).not.toBeNull();
   });
 
+  it('gravarPendente nao repete a gravacao que ja esta em voo', async () => {
+    // A troca de template durante o autosave enfileirava uma segunda gravacao
+    // da mesma composicao e esperava as duas.
+    let liberarInsert: (valor: unknown) => void = () => undefined;
+    single.mockImplementationOnce(() => new Promise((resolve) => { liberarInsert = resolve; }));
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(insert).toHaveBeenCalledTimes(1);
+
+    let gravou = false;
+    const pendente = result.current.gravarPendente().then((ok) => { gravou = ok; });
+    await act(async () => {
+      liberarInsert({ data: { id: 'kit-natal', updated_at: 'v1' }, error: null });
+      await pendente;
+    });
+
+    expect(gravou).toBe(true);
+    expect(insert).toHaveBeenCalledTimes(1);
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it('gravarPendente devolve false quando a gravacao falha', async () => {
     maybeSingle.mockResolvedValue({ data: null, error: new Error('sem permissao') });
 
