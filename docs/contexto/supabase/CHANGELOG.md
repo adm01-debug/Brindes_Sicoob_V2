@@ -2,6 +2,11 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-24 00:34 UTC
+
+- **realtime** adicionado (1): `supabase_realtime_messages_publication:realtime.messages_2026_11_27`
+- **realtime** removido (1): `supabase_realtime_messages_publication:realtime.messages_2026_11_20`
+
 ## 2026-11-23 22:16 UTC
 
 - **colunas** adicionado (34): `public.cost_centers.ativo`, `public.cost_centers.codigo`, `public.cost_centers.cooperativa_id`, `public.cost_centers.created_at`, `public.cost_centers.id`, `public.cost_centers.nome`, `public.cost_centers.observacoes`, `public.cost_centers.updated_at`, `public.pa_budget_allocations.cost_center_id`, `public.pa_budget_allocations.created_at`, `public.pa_budget_allocations.id`, `public.pa_budget_allocations.order_id`, `public.pa_budget_allocations.percentual`, `public.pa_budget_allocations.valor`, `public.pa_budget_entries.actor_id`, `public.pa_budget_entries.competencia_ano`, `public.pa_budget_entries.competencia_mes`, `public.pa_budget_entries.cost_center_id`, `public.pa_budget_entries.created_at`, `public.pa_budget_entries.estado`, `public.pa_budget_entries.id`, `public.pa_budget_entries.motivo`, `public.pa_budget_entries.order_id`, `public.pa_budget_entries.pa_budget_id`, `public.pa_budget_entries.pa_id`, `public.pa_budget_entries.tipo`, `public.pa_budget_entries.valor`, `public.pa_budgets.cost_center_id`, `public.pa_budgets.fechada_em`, `public.pa_budgets.fechada_por`, `public.pa_budgets.verba_comprometida`, `public.pa_budgets.verba_planejada`, `public.pa_budgets.verba_reservada`, `public.sicoob_orders.cost_center_id`
