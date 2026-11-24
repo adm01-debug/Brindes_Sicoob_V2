@@ -110,6 +110,28 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
     expect(result.current.data?.marketAvailable).toBe(true);
   });
 
+  it("aceita resposta degradada quando todos os registros cabem na primeira página", async () => {
+    mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => ({
+      data: {
+        success: true,
+        data: {
+          records: body.table === "products"
+            ? catalogPage(body.offset ?? 0)
+            : [{ product_id: "product-1", units_depleted: 7 }],
+          count: null,
+          ...(body.table === "stock_daily_summary" ? { meta: { orderBy_fallback: "id" } } : {}),
+        },
+      },
+      error: null,
+    }));
+
+    const { result } = renderHook(() => useCategoryRanking(30, null, null, null), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.marketAvailable).toBe(true);
+    expect(result.current.data?.items[0]?.marketDepleted).toBe(7);
+  });
+
   it("aborta a paginação do mercado quando o bridge responde sem a ordem pedida", async () => {
     mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => ({
       data: {

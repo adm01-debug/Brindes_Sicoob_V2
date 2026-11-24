@@ -226,11 +226,20 @@ async function fetchAllExternalRows<Row extends object>(
       const message = typeof result?.error === 'string' ? result.error : `Consulta de ${sourceName} incompleta`;
       throw new Error(message);
     }
-    if (hasOrderFallback(result.meta)) {
+    rows.push(...result.records);
+    const degraded = hasOrderFallback(result.meta);
+    // Primeira chamada já incompleta = todos os registros vieram de uma vez: a ordem
+    // é irrelevante e a resposta degradada ainda é confiável. Fora disso, sem ordem
+    // o deslocamento repete/omite linhas, então a paginação é abortada.
+    if (result.records.length < pageSize) {
+      if (offset > 0 && degraded) {
+        throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
+      }
+      return rows;
+    }
+    if (degraded) {
       throw new Error(`Consulta de ${sourceName} sem ordenação garantida pelo bridge`);
     }
-    rows.push(...result.records);
-    if (result.records.length < pageSize) return rows;
   }
   throw new Error(`Consulta de ${sourceName} excedeu o limite de segurança.`);
 }
