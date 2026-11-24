@@ -7167,7 +7167,7 @@
   {
    "arquivo": "tests/scripts/verify-supabase-functions-published.test.ts",
    "tipo": "unit",
-   "linhas": 121,
+   "linhas": 128,
    "testa": [
     "scripts/ci/verify-supabase-functions-published.mjs"
    ],

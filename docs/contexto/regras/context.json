@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2",
+  "sha": "dc6bdc010f55c550f93afc34be7e6a04a0675e0e",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 01:49 UTC",
+  "generated_at": "2026-11-24 11:15 UTC",
   "files_total": 5281,
   "code_files": 3843,
-  "code_lines": 566191
+  "code_lines": 566207
  },
  "version": "1.3.2",
- "facts_hash": "38fe543091c1ba82",
+ "facts_hash": "fb103c48c1c8bffd",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -65000,7 +65000,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40220,
+   "lines": 40229,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67015,7 +67015,7 @@
   {
    "module": "tests",
    "files": 676,
-   "lines": 90758,
+   "lines": 90765,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -139612,7 +139612,7 @@
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
-    "name": "cobre as 7 canônicas, as 7 endurecidas e crm-db-bridge (total 15)"
+    "name": "cobre as 7 canônicas, as 7 endurecidas, crm-db-bridge e os 6 workers de cron"
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
@@ -183533,7 +183533,7 @@
   },
   "scripts/ci/verify-supabase-functions-published.mjs": {
    "path": "scripts/ci/verify-supabase-functions-published.mjs",
-   "lines": 100,
+   "lines": 109,
    "exports": [
     "const requiredFunctions",
     "function verifyPublishedFunctions"
@@ -256522,7 +256522,7 @@
   },
   "tests/scripts/verify-supabase-functions-published.test.ts": {
    "path": "tests/scripts/verify-supabase-functions-published.test.ts",
-   "lines": 121,
+   "lines": 128,
    "is_test": true,
    "tests": [
     "verifyPublishedFunctions",
@@ -256533,7 +256533,7 @@
     "rejeita função inativa, status ausente ou duplicidade de slug",
     "aceita somente números ou strings inteiras positivas sem coerção permissiva",
     "não lista função que o teto do plano impede de criar",
-    "cobre as 7 canônicas, as 7 endurecidas e crm-db-bridge (total 15)",
+    "cobre as 7 canônicas, as 7 endurecidas, crm-db-bridge e os 6 workers de cron",
     "mantém a lista publicada no workflow em paridade com o verificador"
    ]
   },
@@ -257901,10 +257901,24 @@
   }
  },
  "git": {
-  "sha": "4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2",
+  "sha": "dc6bdc010f55c550f93afc34be7e6a04a0675e0e",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "dc6bdc0",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "chore: workers de cron entram na allowlist de publicação das edges (#420)",
+    "files": [
+     ".github/workflows/deploy-sicoob-functions.yml",
+     "AGENTS.md",
+     "docs/agentes/banco.md",
+     "docs/agentes/servicos.md",
+     "scripts/ci/verify-supabase-functions-published.mjs",
+     "tests/scripts/verify-supabase-functions-published.test.ts"
+    ]
+   },
    {
     "sha": "4e35f67",
     "date": "2026-11-23",
@@ -258976,17 +258990,6 @@
      "package-lock.json",
      "package.json"
     ]
-   },
-   {
-    "sha": "726efa7",
-    "date": "2026-11-19",
-    "author": "adm01-debug",
-    "subject": "feat(nav): resgata menu de histórico de navegação (KPI nav.history-jump) (#384)",
-    "files": [
-     "src/components/common/NavigationHistoryMenu.tsx",
-     "src/components/layout/MainLayout.tsx",
-     "tests/components/NavigationHistoryMenu.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -259019,6 +259022,26 @@
     3
    ],
    [
+    ".github/workflows/deploy-sicoob-functions.yml",
+    2
+   ],
+   [
+    "AGENTS.md",
+    2
+   ],
+   [
+    "docs/agentes/servicos.md",
+    2
+   ],
+   [
+    "scripts/ci/verify-supabase-functions-published.mjs",
+    2
+   ],
+   [
+    "tests/scripts/verify-supabase-functions-published.test.ts",
+    2
+   ],
+   [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     2
    ],
@@ -259048,26 +259071,6 @@
    ],
    [
     "src/services/OrderService.ts",
-    2
-   ],
-   [
-    "supabase/functions/send-transactional-email/index.ts",
-    2
-   ],
-   [
-    "supabase/functions/send-transactional-email/templates.ts",
-    2
-   ],
-   [
-    "tests/scenarios/email-transacional-legado.mjs",
-    2
-   ],
-   [
-    "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
-    2
-   ],
-   [
-    "tests/scenarios/relatorios-agendados-cron.mjs",
     2
    ]
   ]

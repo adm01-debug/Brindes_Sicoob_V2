@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `4e35f677e657da2ff7ab04235cf4bc5b1ee58ce2` (2026-11-23T22:41:09-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `dc6bdc010f55c550f93afc34be7e6a04a0675e0e` (2026-11-24T07:39:33-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5278 |
 | arquivos_codigo | 3172 |
-| linhas_codigo | 501751 |
+| linhas_codigo | 501767 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -473,7 +473,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36853 nós · 61356 arestas · 2738 comunidades · grafo do commit `4e35f677`
+- 36853 nós · 61356 arestas · 2738 comunidades · grafo do commit `dc6bdc01`
 - comunidades maiores: ref_hooks (552), ref_components (427), ref_lib (301), sonner (260), getCorsHeaders (233), react-router-dom (230), ref_node_fs (228), framer-motion (227), ref_integrations (221), ref_contexts (209), ref_services (186), ref_stores (177)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -488,9 +488,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - package-lock.json (18)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
+- .github/workflows/deploy-sicoob-functions.yml (15)
 - .github/workflows/lighthouse.yml (15)
 - src/integrations/supabase/types.ts (15)
-- .github/workflows/deploy-sicoob-functions.yml (14)
 - .github/workflows/bundle-check.yml (12)
 - src/hooks/quotes/useQuotes.ts (12)
 - src/hooks/useQuoteBuilderState.ts (12)
@@ -616,7 +616,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Documentos (raiz e docs/)
 - `.github/PULL_REQUEST_TEMPLATE.md` (27 linhas)
 - `.github/pull_request_template.md` (27 linhas)
-- `AGENTS.md` — AGENTS.md — Brindes Sicoob V2 (149 linhas)
+- `AGENTS.md` — AGENTS.md — Brindes Sicoob V2 (150 linhas)
 - `AUDIT_EXPORT_FILTERED.md` — 📂 EXPORTAÇÃO DE INVENTÁRIO FILTRADA (49 linhas)
 - `CHANGELOG.md` — Changelog (77 linhas)
 - `CLAUDE.md` (2 linhas)
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-24 `dc6bdc0` chore: workers de cron entram na allowlist de publicação das edges (#420)
 - 2026-11-23 `4e35f67` fix: autosave nao grava em custom_kits ao editar template do sistema (#415)
 - 2026-11-23 `aac38a4` fix: busca global cai para o catálogo local quando a semântica falha (#414)
 - 2026-11-23 `87316fe` chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-22 `51dc1ef` docs: classificar os 683 registros de lacunas por evidencia real (#402)
 - 2026-11-21 `88dc17b` fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)
 - 2026-11-21 `b591559` chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)
-- 2026-11-21 `bb6242f` fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
