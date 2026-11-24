@@ -374,7 +374,7 @@ NAO VERIFICADO: nao li a thread/corpo da PR #97 no GitHub (trabalho restrito a l
 - **A recuperar:** Validação de acesso falha aberta: erro no RPC mantém a sessão viva — 
 - **A recuperar:** Dados de um usuário sobrevivem ao login de outro no mesmo navegador — 
 - **A recuperar:** Preço de personalização inventado e botão do simulador que descarta a simulação — 
-- **A recuperar:** Ranking de categorias engole falha do mercado e trunca a base — 
+- **Incorporado:** Ranking de categorias — a falha do catálogo é propagada e a do mercado é exposta (`src/hooks/useCommercialIntelligence.ts:661-680`, `marketAvailable`/`marketError`), com selo na tela. A truncagem da base por fornecedor segue aberta em `useSupplierSales` (`:695`, `slice(0, 200)`).
 - **A recuperar:** Painel de telemetria do admin mostra 0 quando a consulta falha — 
 - **A recuperar:** Rascunho de orçamento perde cliente, contato e todas as condições comerciais — 
 - **A recuperar:** Edição de orçamento com contato falsificado e estado residual do orçamento anterior — 
@@ -515,7 +515,7 @@ NÃO VERIFICADO: se `npm ci` conclui hoje do zero neste container (proibido roda
 - **A recuperar:** Fallback do catálogo local + timeout de 8s + propagação de erro na busca global (useGlobalSearch) — 
 - **A recuperar:** Teste de fallback da busca global (edge com erro e edge sem resposta) — 
 - **A recuperar:** Toast de remoção de favorito mostra sempre 'Item' (bug vivo na main) — 
-- **A recuperar:** Card de favorito indisponível (favorito cujo produto não resolve desaparece da tela) — 
+- **Incorporado:** Card de favorito indisponível — `src/pages/FavoritesPage.tsx:88` ("Favorito salvo; detalhes do produto indisponíveis") e `:112` ("Remover favorito indisponível"), recuperado na PR #431 (commit 3c5882b0e).
 - **A recuperar:** Spec e2e de visualização de orçamento sem asserção de happy path — 
 - **A recuperar:** restoreRoleStorage aceita storage de outra conta antes de falhar — 
 - **A recuperar:** Flake de corrida no teste de acessibilidade do AdminVerbasPage — 

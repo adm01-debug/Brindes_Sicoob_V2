@@ -902,13 +902,13 @@ Triagem dos candidatos de maior contagem, nome a nome, contra o que a `main` tem
 | `src/components/ai/AIChat.tsx` | `AI_CHAT_MAX_MESSAGES`, `AI_CHAT_MAX_CONTENT_LENGTH`, `ChatError`, `EmptyConversationState` | `src/lib/assistant-message-window.ts:41` `selectExpertChatMessages` com `EXPERT_CHAT_MAX_MESSAGES/_CONTENT_LENGTH/_MESSAGE_LENGTH`, consumido por `AIChat.tsx:99` e `useExpertChat.ts:158`; `role="alert"` em `AIChat.tsx:333` | substituído (promovido a lib compartilhada) |
 | `src/hooks/useCrmCompanies.ts` | `CrmClientsPageResult`, `CrmClientsSortMode`, `clientOrder` | `useCrmCompanies`/`useCrmCompanySelector`/`useCrmCompaniesLegacy` + `DIRECTORY_PAGE/_CAP`; a `main` manda o termo ao servidor (`fetchDirectoryPages(term)`) | substituído (ver limitação nova abaixo) |
 | `src/lib/crm-db.ts` | `listQuoteDirectoryCompanies`, `selectCrmByIdStrict`, `CrmUnavailableError` | `fetchQuoteDirectoryCompanies:332`, `fetchQuoteDirectoryContacts:396`, `selectCrmById:412`, `throwFinalCrmError:204`, `getCrmHttpStatus:200` | substituído (renomeado) |
-| `src/pages/QuoteBuilderPage.tsx` | `QuoteLoadFailure`, `buildQuoteDraftData`, `draftString/draftNumber` | edição gateada por `state.canEdit` (`:97,122,126`), rascunho em `QuoteAutoSave`/`limparRascunhoDoOrcamento` | substituído; **sem tela de falha de carga** — ver limitação nova |
+| `src/pages/QuoteBuilderPage.tsx` | `QuoteLoadFailure`, `buildQuoteDraftData`, `draftString/draftNumber` | edição gateada por `state.canEdit` (`:97,122,126`), rascunho em `QuoteAutoSave`/`limparRascunhoDoOrcamento` | **parcial** — `QuoteLoadFailure` continuava ausente: nem rejeição de `fetchQuote` nem retorno nulo eram tratados, e a tela ficava no spinner infinito ou abria editor vazio (recuperado na PR #436) |
 | `src/pages/GestorCompras.tsx` / `GestorComprasMetrics.tsx` | `ApprovalSlaCard`, `CooperativeSummary`, `calculatePendingSla` | `src/components/sicoob/GestorComprasMetrics.tsx` (160 linhas: verba da competência, carregando/erro/sem verba/sem cooperativa) usado em `GestorCompras.tsx:65` | substituído (a afirmação de 18/11 “não existe na `main`” ficou velha) |
 | `src/components/search/useGlobalSearch.ts` | `createLocalFallback`, `executeSemanticSearch`, `groupSearchResults` | `createLocalSearchFallback:139`, `useSemanticSearch:230` com timeout de 8s, agrupamento por tipo, atalho de voz | substituído |
 | `src/components/bi/ClientVsIndustryComparison.tsx` | `ComparisonError`, `ComparisonStaleNotice`, `InsufficientSampleCard` | `ComparativoIndisponivel` + `AvisoDeCacheDesatualizado` + `OrigemDoDado` (`:346` linhas) | substituído |
 | `src/hooks/bi/useClientHealthScore.ts` | `buildUnknownHealthResult`, `insufficientHealthResult` | `unavailableReason: "source-error" \| "insufficient-data"` | substituído |
 | `src/hooks/bi/useClientSeasonality.ts`, `useClientVsIndustry.ts`, `useClientCategoryAffinity.ts`, `useIndustryCategoryTrends.ts` | `buildSeasonalityResult`, `emptyComparison`, `hasPositiveEvidence` | equivalentes no arquivo da `main` do mesmo caminho (todos maiores que a ref) | substituído |
-| `src/hooks/useScrollRestoration.ts` | `resetScrollRestoration`, `trimOldest` | `MAX_ENTRIES = 50` com poda de `scrollPositions` e `containerPositions` | substituído |
+| `src/hooks/useScrollRestoration.ts` | `resetScrollRestoration`, `trimOldest` | `MAX_ENTRIES = 50` com poda de `scrollPositions` e `containerPositions` (`:33-48`) | **parcial** — a poda cobre `trimOldest`, mas não a limpeza na troca de sessão/logout: `grep -rn resetScrollRestoration src/` na `main` não devolve nada |
 | `src/hooks/useQuoteBuilderState.ts` | `quoteBuilderCanEdit`, `isValidQuoteRowVersion` | `canPersistQuoteVersion` + `expectedRowVersion` + snapshot enviado ao servidor (`:1123` linhas) | substituído (o “BUG ATIVO NA MAIN” de 18/11 não se reproduz) |
 | `src/hooks/useProductAnalytics.ts` | `buildSearchAnalyticsInsert`, `serializeSearchContext` | `trackSearch` + insert silencioso em `product_views` | substituído |
 | `src/hooks/quotes/useQuotes.ts` | `requiresBulkApprovalPermission`, `hasValidExpectedVersions` | `statusPermissionError:26` + RPC `bulk_update_quote_status_atomic` | substituído |
@@ -924,6 +924,13 @@ Triagem dos candidatos de maior contagem, nome a nome, contra o que a `main` tem
 `main` pode ter entregado a mesma ideia com outro nome (foi o caso em quase todas as linhas acima) e o método
 não enxerga mudança de **texto de UI** nem de valor de constante dentro de nome igual. Também não cobre o que
 nasceu **antes** do `mb` e foi removido da `main` — para isso vale a leitura de hunk já descrita.
+
+**Cegueiras do filtro textual** (apontadas na revisão da PR #432): a expressão
+`export (async )?(function|const|class|interface|type|enum) <nome>` não captura `export default function`
+(ex.: `BusinessIntelligencePage`, `src/pages/BusinessIntelligencePage.tsx:421`), nem declaração sem `export`;
+um nome citado dentro de comentário passa pelo filtro de uso; e `git log -S` restrito ao caminho atual não
+enxerga a ocorrência do mesmo nome em outro arquivo. Nenhum veredito desta seção depende só desse filtro —
+cada célula foi reconferida lendo o símbolo na `main` —, mas a lista de candidatos pode estar incompleta.
 
 **Duas limitações novas achadas nesta varredura (não são trabalho de outro agente, são lacunas da `main`):**
 
@@ -953,7 +960,10 @@ parcial não libera exclusão: se qualquer parte da PR continuar em "trabalho pa
 a ref fica. Exemplos vivos nesta rodada: **#119** está em "confirmado incorporado" pelo que a `main`
 já absorveu, mas segue pendente pela guarda de navegação e pelos testes de segurança; **#157** está
 incorporada pela migration de retry (a tela de relatórios pertence à **#75**, tabela acima), mas segue
-pendente pelos selos de dado do BI. Nos dois casos, o veredito é "conservar a ref até a parte pendente
+pendente pelos selos de dado do BI — e essa pendência é menor do que a tabela sugere: o selo "dados
+ilustrativos" já existia no cabeçalho do gráfico (`MarketIntelligenceChart.tsx:174-177`) e o resumo do pico já
+dizia "(demo)" (`:226-229`); o que faltava era o dado fabricado em si, removido na PR #434 (série vazia e
+estado "Sem movimentações de mercado no período"). Cobertura de estados ≠ cobertura da ref inteira. Nos dois casos, o veredito é "conservar a ref até a parte pendente
 ser recuperada ou declarada obsoleta por escrito".
 
 As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
