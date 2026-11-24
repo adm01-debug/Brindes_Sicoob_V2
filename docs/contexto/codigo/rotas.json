@@ -6523,6 +6523,7 @@
     "useContext",
     "useCustomKitPersistence",
     "useEffect",
+    "useKitAutoSave",
     "useKitShare",
     "useKitShareSummary",
     "useKitShareTokens",
@@ -6541,6 +6542,7 @@
     "useAuth",
     "useAuthAAL",
     "useCustomKitPersistence",
+    "useKitAutoSave",
     "useKitShare",
     "useKitShareSummary",
     "useKitShareTokens",
@@ -6572,7 +6574,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 57
+   "arquivos_puxados": 58
   },
   {
    "protegida": true,

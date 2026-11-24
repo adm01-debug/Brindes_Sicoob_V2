@@ -17386,7 +17386,7 @@
     "KitBuilderPage"
    ],
    "export_default": "KitBuilderPage",
-   "linhas": 735,
+   "linhas": 742,
    "dominio": "pages",
    "hooks_locais": [
     "useCustomKitPersistence",

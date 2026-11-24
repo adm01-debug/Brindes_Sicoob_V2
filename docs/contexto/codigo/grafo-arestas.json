@@ -8642,6 +8642,7 @@
   ],
   "src/hooks/useCustomKitPersistence.ts": [
    "src/contexts/AuthContext.tsx",
+   "src/hooks/useKitAutoSave.ts",
    "src/integrations/supabase/client.ts",
    "src/lib/kit-builder/custom-kit-payload.ts",
    "src/lib/kit-builder/index.ts"

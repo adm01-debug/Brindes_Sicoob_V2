@@ -2881,6 +2881,7 @@
     "useCustomizationPriceCalculator",
     "useCustomizationPriceReactive",
     "useCustomizationPriceV2",
+    "useKitAutoSave",
     "useKitCollaborators",
     "useKitComments",
     "useKitIdentitySuggestion",
@@ -7255,7 +7256,7 @@
    "modulo": "hooks",
    "arquivos": 211,
    "testes": 0,
-   "linhas": 35486,
+   "linhas": 35519,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11238,6 +11239,7 @@
     "useAuth",
     "useAuthAAL",
     "useCustomKitPersistence",
+    "useKitAutoSave",
     "useUserProfile",
     "useUserRoles"
    ],
@@ -11784,7 +11786,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19237,
+   "linhas": 19244,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

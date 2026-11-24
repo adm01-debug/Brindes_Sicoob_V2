@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7630297bde` · branch `main` · 2026-11-24 21:10 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bc7da67a15` · branch `main` · 2026-11-24 21:29 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7217 testes em 727 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7224 testes em 728 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5786,10 +5786,10 @@ _nenhum item encontrado_
 | `tests/e2e/navigation-layout.test.tsx` | 37 | E2E Navigation — Route Registry · has public routes · has protected routes · has admin routes … |
 | `tests/e2e/phase1-foundation-types.test.ts` | 37 | Phase 1.1 — ProductColor Type Contract · accepts valid color with all fields · accepts color without optional fields · handles zero stock … |
 | `tests/e2e/phase4-admin-grid.test.ts` | 36 | Phase 4.1 — Variation Axes Config · detects color-only axes · detects color + size axes · detects all three axes … |
+| `tests/hooks/useKitAutoSave.test.tsx` | 36 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/e2e/phase5-propagation.test.ts` | 35 | Phase 5.1 — Quote Items with size_code · quote item with color and size · quote item without size (non-apparel) · quote item subtotal calculation … |
 | `tests/lib/date-utils.test.ts` | 35 | date-utils · formatDate · formats ISO string with default pattern · formats Date object … |
 | `tests/scripts/audit-scripts.test.ts` | 34 | inventário de evidências de auditoria · todo item  · reprova arquivo inexistente e trecho ausente, e não confere item a implementar · leitura da RPC check_tables_rls … |
-| `tests/hooks/useKitAutoSave.test.tsx` | 33 | useKitAutoSave · nao rebaixa para rascunho o kit que o montador considera valido · grava a identidade escolhida no primeiro autosave de um kit novo · não confirma salvamento quando o Supabase retorna erro e permite nova tentativa … |
 | `tests/ai-usage.test.ts` | 31 | AI Usage - Cost Estimation · calculates Gemini 2.5 Flash cost correctly · calculates Gemini 3 Flash Preview cost correctly · calculates GPT-5 cost correctly … |
 | `tests/e2e/performance.test.ts` | 31 | E2E Performance — Lazy Loading · MainLayout lazy loads 12+ components · E2E Performance — Query Limits · app page size < supabase limit … |
 | `tests/lib/date-utils-extended.test.ts` | 31 | formatDate — extended · formats Date object dd/MM/yyyy · formats ISO string · formats timestamp … |
@@ -6054,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +427 linhas — lista completa em `context.json` | | |
+| … +428 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 912,
+ "total": 913,
  "por_tipo": {
   "contrato": 11,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 679
+  "unit": 680
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 659
+   "arquivos": 660
   },
   {
    "padrao": "e2e/",
@@ -4633,6 +4633,15 @@
    "casos": 4
   },
   {
+   "arquivo": "tests/hooks/useCustomKitPersistence.test.tsx",
+   "tipo": "unit",
+   "linhas": 130,
+   "testa": [
+    "src/hooks/useCustomKitPersistence.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/hooks/useDebounce-extended.test.ts",
    "tipo": "unit",
    "linhas": 88,
@@ -4781,11 +4790,11 @@
   {
    "arquivo": "tests/hooks/useKitAutoSave.test.tsx",
    "tipo": "unit",
-   "linhas": 817,
+   "linhas": 865,
    "testa": [
     "src/hooks/useKitAutoSave.ts"
    ],
-   "casos": 32
+   "casos": 35
   },
   {
    "arquivo": "tests/hooks/useKitBuilder-extended.test.ts",
@@ -8210,6 +8219,7 @@
   "src/hooks/useContextualSuggestions.ts": 1,
   "src/hooks/useCrmCompanies.ts": 1,
   "src/hooks/useCurrentOrgId.ts": 1,
+  "src/hooks/useCustomKitPersistence.ts": 1,
   "src/hooks/useCustomizationPrice.ts": 3,
   "src/hooks/useDebounce.ts": 2,
   "src/hooks/useDebouncedFilters.ts": 1,
@@ -8748,7 +8758,6 @@
    "src/hooks/useConnectionTestHistory.ts",
    "src/hooks/useConsecutiveFailures.ts",
    "src/hooks/useCurrentSection.ts",
-   "src/hooks/useCustomKitPersistence.ts",
    "src/hooks/useCustomKitsRealtime.ts",
    "src/hooks/useDevAccessAudit.ts",
    "src/hooks/useDeviceDetection.ts",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "7630297bde42887f43ebca78d2195026891060ec",
+  "sha": "bc7da67a1559010536e2c084c1187613f603c949",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 21:10 UTC",
-  "files_total": 5290,
-  "code_files": 3851,
-  "code_lines": 568092
+  "generated_at": "2026-11-24 21:29 UTC",
+  "files_total": 5291,
+  "code_files": 3852,
+  "code_lines": 568310
  },
  "version": "1.3.2",
- "facts_hash": "fecda2a84ce51a07",
+ "facts_hash": "177293198582b4c6",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1500,
-   ".tsx": 1458,
+   ".tsx": 1459,
    ".sql": 690,
    ".mjs": 141,
    ".py": 69,
@@ -56710,7 +56710,7 @@
      "increment_kit_template_usage",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 53
+    "deps_count": 54
    },
    {
     "path": "",
@@ -65680,7 +65680,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48153,
+   "lines": 48186,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66126,7 +66126,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51317,
+   "lines": 51324,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67125,8 +67125,8 @@
   },
   {
    "module": "tests",
-   "files": 681,
-   "lines": 92020,
+   "files": 682,
+   "lines": 92198,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67794,11 +67794,6 @@
      "src/pages/admin/KitTemplatesMetricsPage.tsx",
      "supabase/functions/kit-public-view/index.ts"
     ],
-    "update": [
-     "src/hooks/useCustomKitPersistence.ts",
-     "src/hooks/useKitAutoSave.ts",
-     "src/pages/KitLibraryPage.tsx"
-    ],
     "insert": [
      "src/hooks/useCustomKitPersistence.ts",
      "src/hooks/useKitAutoSave.ts",
@@ -67807,6 +67802,11 @@
     ],
     "delete": [
      "src/hooks/useCustomKitPersistence.ts",
+     "src/pages/KitLibraryPage.tsx"
+    ],
+    "update": [
+     "src/hooks/useCustomKitPersistence.ts",
+     "src/hooks/useKitAutoSave.ts",
      "src/pages/KitLibraryPage.tsx"
     ]
    },
@@ -129133,6 +129133,22 @@
     "name": "returns null when no org selected"
    },
    {
+    "file": "tests/hooks/useCustomKitPersistence.test.tsx",
+    "name": "useCustomKitPersistence — trava do salvamento manual"
+   },
+   {
+    "file": "tests/hooks/useCustomKitPersistence.test.tsx",
+    "name": "recusa o "
+   },
+   {
+    "file": "tests/hooks/useCustomKitPersistence.test.tsx",
+    "name": "grava contra a versão conhecida e devolve a versão nova"
+   },
+   {
+    "file": "tests/hooks/useCustomKitPersistence.test.tsx",
+    "name": "sem versão conhecida (kit novo nesta aba) não trava a gravação"
+   },
+   {
     "file": "tests/hooks/useCustomizationPrice.functional.test.ts",
     "name": "useCustomizationPriceCalculator"
    },
@@ -130019,6 +130035,18 @@
    {
     "file": "tests/hooks/useKitAutoSave.test.tsx",
     "name": "limpa a alteracao pendente quando o autosave conclui a gravacao"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "entrega ao salvamento manual a versao gravada pelo autosave, nao a do carregamento"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "registra no estado da guarda de saida o conflito visto pelo salvamento manual"
+   },
+   {
+    "file": "tests/hooks/useKitAutoSave.test.tsx",
+    "name": "nao transforma erro comum do salvamento manual em conflito com outra aba"
    },
    {
     "file": "tests/hooks/useKitBuilder-extended.test.ts",
@@ -208783,16 +208811,12 @@
   },
   "src/hooks/useCustomKitPersistence.ts": {
    "path": "src/hooks/useCustomKitPersistence.ts",
-   "lines": 189,
+   "lines": 192,
    "exports": [
     "interface CustomKitRow",
     "function useCustomKitPersistence"
    ],
    "tables": [
-    {
-     "table": "custom_kits",
-     "op": "select,update"
-    },
     {
      "table": "custom_kits",
      "op": "insert,select"
@@ -209944,9 +209968,11 @@
   },
   "src/hooks/useKitAutoSave.ts": {
    "path": "src/hooks/useKitAutoSave.ts",
-   "lines": 578,
+   "lines": 608,
    "exports": [
     "class KitConflitoDeEdicao",
+    "interface PersistResult",
+    "function updateWithOptimisticLock",
     "function useKitAutoSave"
    ],
    "tables": [
@@ -222801,7 +222827,7 @@
   },
   "src/pages/KitBuilderPage.tsx": {
    "path": "src/pages/KitBuilderPage.tsx",
-   "lines": 735,
+   "lines": 742,
    "exports": [
     "function KitBuilderPage"
    ],
@@ -251170,6 +251196,21 @@
     "returns null when no org selected"
    ]
   },
+  "tests/hooks/useCustomKitPersistence.test.tsx": {
+   "path": "tests/hooks/useCustomKitPersistence.test.tsx",
+   "lines": 130,
+   "is_test": true,
+   "rule_comments": [
+    "* Catraca: o \"Salvar\" manual do Kit Builder não pode apagar em silêncio o que"
+   ],
+   "doc": "Catraca: o \"Salvar\" manual do Kit Builder não pode apagar em silêncio o que outra aba gravou. Origem: `docs/RECUPERACAO/kit-builder.md` (nuance dos itens 3 e 10) — a trava otimista por `updated_at` existia só no autosave; `persistCustomKit` atualiza por `id` + `user_id`, então duas abas no mesmo kit …",
+   "tests": [
+    "useCustomKitPersistence — trava do salvamento manual",
+    "recusa o ",
+    "grava contra a versão conhecida e devolve a versão nova",
+    "sem versão conhecida (kit novo nesta aba) não trava a gravação"
+   ]
+  },
   "tests/hooks/useCustomizationPrice.functional.test.ts": {
    "path": "tests/hooks/useCustomizationPrice.functional.test.ts",
    "lines": 164,
@@ -251554,7 +251595,7 @@
   },
   "tests/hooks/useKitAutoSave.test.tsx": {
    "path": "tests/hooks/useKitAutoSave.test.tsx",
-   "lines": 817,
+   "lines": 865,
    "is_test": true,
    "rule_comments": [
     "sair sem editar de novo nao pode gerar um segundo UPDATE",
@@ -251596,7 +251637,10 @@
     "gravarPendente grava a composicao da tela antes da troca",
     "gravarPendente nao repete a gravacao que ja esta em voo",
     "gravarPendente devolve false quando a gravacao falha",
-    "limpa a alteracao pendente quando o autosave conclui a gravacao"
+    "limpa a alteracao pendente quando o autosave conclui a gravacao",
+    "entrega ao salvamento manual a versao gravada pelo autosave, nao a do carregamento",
+    "registra no estado da guarda de saida o conflito visto pelo salvamento manual",
+    "nao transforma erro comum do salvamento manual em conflito com outra aba"
    ]
   },
   "tests/hooks/useKitBuilder-extended.test.ts": {
@@ -258792,10 +258836,24 @@
   }
  },
  "git": {
-  "sha": "7630297bde42887f43ebca78d2195026891060ec",
+  "sha": "bc7da67a1559010536e2c084c1187613f603c949",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "bc7da67",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "fix: trava otimista também no salvamento manual do kit (#428)",
+    "files": [
+     "docs/RECUPERACAO/kit-builder.md",
+     "src/hooks/useCustomKitPersistence.ts",
+     "src/hooks/useKitAutoSave.ts",
+     "src/pages/KitBuilderPage.tsx",
+     "tests/hooks/useCustomKitPersistence.test.tsx",
+     "tests/hooks/useKitAutoSave.test.tsx"
+    ]
+   },
    {
     "sha": "7630297",
     "date": "2026-11-24",
@@ -259212,22 +259270,12 @@
      "src/components/dashboard/UpcomingDatesWidget.tsx",
      "src/components/search/SmartSuggestions.tsx"
     ]
-   },
-   {
-    "sha": "8b37b64",
-    "date": "2026-11-20",
-    "author": "adm01-debug",
-    "subject": "fix(bitrix): after-merge EDG-12 color_name e SIC-054 libera comprador_singular (#389)",
-    "files": [
-     "src/components/quotes/QuoteSingularApprovalActions.tsx",
-     "supabase/functions/sync-quote-bitrix/index.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "src/pages/KitBuilderPage.tsx",
-    3
+    4
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -259266,6 +259314,18 @@
     3
    ],
    [
+    "docs/RECUPERACAO/kit-builder.md",
+    2
+   ],
+   [
+    "src/hooks/useKitAutoSave.ts",
+    2
+   ],
+   [
+    "tests/hooks/useKitAutoSave.test.tsx",
+    2
+   ],
+   [
     "src/components/kit-builder/KitBuilderHeader.tsx",
     2
    ],
@@ -259291,18 +259351,6 @@
    ],
    [
     "tests/pages/kit-builder-guarda-saida.test.tsx",
-    2
-   ],
-   [
-    "src/components/quotes/QuoteConvertToOrder.tsx",
-    2
-   ],
-   [
-    "src/hooks/quotes/useQuotes.ts",
-    2
-   ],
-   [
-    "src/hooks/useSicoobApprovals.ts",
     2
    ]
   ]

@@ -5176,7 +5176,7 @@
    "hooks_exportados": [
     "useCustomKitPersistence"
    ],
-   "linhas": 189,
+   "linhas": 192,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"
@@ -5200,7 +5200,7 @@
     "src/pages/KitBuilderPage.tsx",
     "src/pages/KitLibraryPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useCustomKitsRealtime.ts",
@@ -6054,7 +6054,7 @@
    "hooks_exportados": [
     "useKitAutoSave"
    ],
-   "linhas": 578,
+   "linhas": 608,
    "dominio": "hooks",
    "tabelas": [
     "custom_kits"
@@ -6069,8 +6069,9 @@
     "useState"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
+    "src/hooks/useCustomKitPersistence.ts",
     "src/pages/KitBuilderPage.tsx"
    ],
    "coberto_por_testes": 2
