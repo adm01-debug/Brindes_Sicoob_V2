@@ -842,7 +842,6 @@ Sem essa prova por caminho, o ref fica — mesmo que a PR esteja fechada e o ass
 
 | Unidade | Arquivos | Prova da ausência na `main` | Ação |
 | --- | --- | --- | --- |
-| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa (recuperação proposta na **PR #429**) | `src/hooks/useCommercialIntelligence.ts`, `src/components/intelligence/CategoryRanking.tsx`, `tests/components/intelligence/CategoryRanking.errors.test.tsx` | `git diff origin/main refs/audit/pr112 -- <hook>` vazio antes da porta (main idêntica à base da PR); `useCommercialIntelligence.ts:440-441` consulta `order_items` sem paginação; `:451` `internalOrders += 1` conta linha, não pedido; `:464` `catch { logger.warn }` zera 40% do score sem avisar; `CategoryRanking.tsx:54,216` sem `isError`, falha renderiza "Nenhuma categoria com vendas" | recuperação **proposta** na PR #429 (aberta); sai desta tabela quando a #429 entrar na `main` |
 | `automation/inventario-estado` | `inventario/estado/{banco,edges,rotas}.json` | único commit exclusivo é `190da39e2 chore(inventario): estado real do banco e do codigo [auto]`; 6217 linhas geradas | artefato de automação — não é trabalho de produto, não precisa ser recuperado |
 
 ### Trabalho parcial real, ainda ausente da `main` (recuperar)
@@ -854,9 +853,22 @@ a PR que o recupera entra na `main`.
 | --- | --- | --- | --- |
 | **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
 | **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
-| **PR #145** — favorito indisponível deixa de sumir da lista (recuperação proposta na **PR #431**) | `src/pages/FavoritesPage.tsx` (`UnavailableFavoriteCard`), `src/hooks/useFavoriteLists.ts`, `e2e/helpers/auth.ts`, `e2e/routes/quotes/view.spec.ts`, `e2e/audit-validation.spec.ts` | `git grep -c UnavailableFavoriteCard origin/main -- src/pages/FavoritesPage.tsx` → 0; `e2e/helpers/auth.ts` e os dois specs com 0 commits da `main` desde a base da PR | item some da lista em vez de aparecer marcado como indisponível; a branch também carregava correção de sessão e2e de outra conta e isolamento do orçamento. Recuperação **proposta** na PR #431 (aberta): continua pendente até o merge |
 | **PR #176/#157** — estados de dado no BI | `src/components/bi/*` | medido em `ClientOverview360.tsx`: `git diff --shortstat origin/main refs/audit/pr176` → `7 insertions, 17 deletions` (a `main` já tem o grosso; sobram os selos "Dados indisponíveis"/"Dados insuficientes" e o `aria-label` do switch) | residual pequeno, não é a feature inteira |
 | **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
+
+### Integrado na `main` em 24/11 (recuperação concluída)
+
+| Unidade | Entrou na `main` por | Commit |
+| --- | --- | --- |
+| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa | PR #429 (squash) | `dffd62ed6` |
+| **PR #145** — favorito indisponível deixa de sumir da lista | PR #431 (squash) | `3c5882b0e` |
+| Este ledger — método de descarte, tabela de refs e regra de exclusão | PR #430 (squash) | `617dc9f73` |
+
+As duas linhas correspondentes saíram de "Trabalho parcial real, ainda ausente da `main`". Os refs
+antigos (`refs/audit/pr112`, `refs/audit/pr145`) continuam no clone e **não foram apagados**: ter
+recuperado o trabalho na `main` não é a prova de que o ref inteiro está coberto — ver "Regra de
+exclusão" abaixo.
+
 
 ### Confirmado incorporado / descartável (com prova)
 
