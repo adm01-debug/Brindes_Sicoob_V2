@@ -59,7 +59,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     localStorage.setItem('autosave_quote:usuario-3:orc-9', '{"version":1,"data":{}}');
     localStorage.setItem('autosave_quote:usuario-3:orc-8', '{"version":1,"data":{}}');
 
-    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: {} });
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-8')).not.toBeNull();
@@ -67,16 +67,29 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
 
   it('não apaga o rascunho que outra aba gravou', () => {
     // Mesmo usuário e mesmo orçamento em duas abas dividem a chave: o descarte
-    // de uma não pode levar o trabalho da outra junto.
-    sessionStorage.setItem('autosave-tab-id', 'aba-atual');
+    // de uma não pode levar o trabalho mais novo da outra junto.
     localStorage.setItem(
       'autosave_quote:usuario-3:orc-9',
-      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'outra-aba' }),
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 } }),
     );
 
-    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: { items: 12 } });
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).not.toBeNull();
+  });
+
+  it('preserva a edição da aba duplicada, que herda a mesma sessão', () => {
+    // Duplicar a aba copia o sessionStorage: as duas se apresentam igual. Só o
+    // conteúdo distingue — a duplicata editou depois e não pode perder isso.
+    sessionStorage.setItem('quote-new-draft:usuario-3', 'sessao-9');
+    localStorage.setItem(
+      'autosave_draft:usuario-3:sessao-9',
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 20 } }),
+    );
+
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: null, data: { items: 12 } });
+
+    expect(localStorage.getItem('autosave_draft:usuario-3:sessao-9')).not.toBeNull();
   });
 
   it('apaga o rascunho que esta aba gravou', async () => {
@@ -96,20 +109,19 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     unmount();
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).not.toBeNull();
-    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: { items: 12 } });
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
   });
 
-  it('apaga o rascunho que esta aba gravou antes de recarregar', () => {
-    // Recarregar mantém a mesma aba: o rascunho guardado antes do reload é desta
-    // sessão e precisa sair quando o usuário descarta, senão volta na reabertura.
-    sessionStorage.setItem('autosave-tab-id', 'aba-recarregada');
+  it('apaga o rascunho restaurado depois de recarregar a página', () => {
+    // Recarregar não muda o conteúdo: o que está gravado é exatamente o que a
+    // tela restaurou, então o descarte continua valendo depois do reload.
     localStorage.setItem(
       'autosave_quote:usuario-3:orc-9',
-      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 }, tab: 'aba-recarregada' }),
+      JSON.stringify({ version: 1, savedAt: new Date().toISOString(), data: { items: 10 } }),
     );
 
-    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9' });
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-3', quoteId: 'orc-9', data: { items: 10 } });
 
     expect(localStorage.getItem('autosave_quote:usuario-3:orc-9')).toBeNull();
   });
@@ -118,7 +130,7 @@ describe('QuoteAutoSave quando o orçamento deixa de ser editável', () => {
     sessionStorage.setItem('quote-new-draft:usuario-4', 'sessao-1');
     localStorage.setItem('autosave_draft:usuario-4:sessao-1', '{"version":1,"data":{}}');
 
-    limparRascunhoDoOrcamento({ scopeId: 'usuario-4', quoteId: null });
+    limparRascunhoDoOrcamento({ scopeId: 'usuario-4', quoteId: null, data: {} });
 
     expect(localStorage.getItem('autosave_draft:usuario-4:sessao-1')).toBeNull();
   });

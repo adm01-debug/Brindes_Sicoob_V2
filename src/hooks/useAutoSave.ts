@@ -10,32 +10,6 @@ interface StoredAutoSave<T> {
   savedAt: string;
   data: T;
   /** Aba que gravou: evita que o descarte de uma aba apague o rascunho de outra. */
-  tab?: string;
-}
-
-const CHAVE_ID_ABA = 'autosave-tab-id';
-const ID_ABA_SEM_SESSAO = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-/**
- * Identidade da aba, estavel enquanto ela existir.
- *
- * Fica no `sessionStorage` porque ele e por aba e sobrevive ao recarregar: com
- * um id novo a cada carregamento, o descarte apos um reload trataria o rascunho
- * desta propria aba como sendo de outra e nao apagaria nada.
- */
-function idDaAba(): string {
-  try {
-    const salvo = sessionStorage.getItem(CHAVE_ID_ABA);
-    if (salvo) return salvo;
-    const novo =
-      typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : ID_ABA_SEM_SESSAO;
-    sessionStorage.setItem(CHAVE_ID_ABA, novo);
-    return novo;
-  } catch {
-    return ID_ABA_SEM_SESSAO;
-  }
 }
 
 const CONCURRENT_DRAFT_MESSAGE =
@@ -70,18 +44,19 @@ async function withDraftWriteLock<T>(key: string, operation: () => Promise<T>): 
 }
 
 /**
- * Apaga o rascunho desta chave, mas so se ele tiver sido gravado por esta aba.
+ * Apaga o rascunho desta chave quando ele guarda exatamente o conteudo informado.
  *
- * O rascunho e compartilhado entre abas do mesmo usuario e orcamento: apagar o
- * que a outra aba gravou derrubaria o trabalho dela junto com o descarte.
+ * O rascunho e compartilhado entre abas do mesmo usuario e orcamento. Comparar
+ * o conteudo, e nao a aba que gravou, distingue trabalho alheio de forma
+ * confiavel: uma aba duplicada herda a mesma identificacao da original, mas
+ * grava outro conteudo, e continua preservada.
  */
-export function descartarRascunhoDestaAba(key: string): void {
+export function descartarRascunho(key: string, data: unknown): void {
   const storageKey = `autosave_${key}`;
   try {
     const atual = localStorage.getItem(storageKey);
     if (!atual) return;
-    const dono = (JSON.parse(atual) as { tab?: string }).tab;
-    if (dono && dono !== idDaAba()) return;
+    if (JSON.stringify(readStoredData(atual)) !== JSON.stringify(data)) return;
     localStorage.removeItem(storageKey);
   } catch {
     // Armazenamento bloqueado ou rascunho ilegivel: nada a apagar.
@@ -154,7 +129,6 @@ async function persistDraft<T>({
       version: AUTO_SAVE_VERSION,
       savedAt: new Date().toISOString(),
       data,
-      tab: idDaAba(),
     };
     const serialized = JSON.stringify(stored);
     localStorage.setItem(storageKey, serialized);

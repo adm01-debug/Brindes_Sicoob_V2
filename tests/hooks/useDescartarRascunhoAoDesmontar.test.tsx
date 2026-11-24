@@ -40,17 +40,28 @@ describe('useDescartarRascunhoAoDesmontar', () => {
     expect(descartar).toHaveBeenCalledTimes(1);
   });
 
-  it('não apaga quando a navegação troca só a query e a tela continua montada', () => {
-    // Duas entradas de histórico para o mesmo caminho (atalho usado duas vezes,
-    // menu trocando só os parâmetros) mudam a URL sem desmontar o formulário.
+  it('apaga o rascunho do editor antigo ao trocar de orçamento na mesma rota', () => {
+    // A animação de transição mantém o editor anterior montado: o descarte
+    // precisa valer no desmonte dele, não ser cancelado pela URL nova.
     const descartar = vi.fn();
     const { api, unmount } = montar(descartar);
 
     api.current!.marcar();
-    act(() => api.current!.ir('/formulario?edicao=1'));
+    act(() => api.current!.ir('/formulario?orcamento=2'));
 
     expect(descartar).not.toHaveBeenCalled();
     unmount();
+    expect(descartar).toHaveBeenCalledTimes(1);
+  });
+
+  it('não apaga enquanto a tela continua montada (entradas idênticas no histórico)', () => {
+    const descartar = vi.fn();
+    const { api } = montar(descartar);
+
+    api.current!.marcar();
+    act(() => api.current!.ir('/formulario'));
+    act(() => api.current!.ir('/formulario'));
+
     expect(descartar).not.toHaveBeenCalled();
   });
 

@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { descartarRascunhoDestaAba, useAutoSave } from '@/hooks/useAutoSave';
+import { descartarRascunho, useAutoSave } from '@/hooks/useAutoSave';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline';
 
@@ -52,8 +52,9 @@ function lerRascunhoNovoDaSessao(scopeId: string): string | null {
 export function limparRascunhoDoOrcamento(args: {
   scopeId?: string | null;
   quoteId?: string | null;
+  data: unknown;
 }): void {
-  const { scopeId, quoteId } = args;
+  const { scopeId, quoteId, data } = args;
   if (!scopeId) return;
   const chave = quoteId
     ? `quote:${scopeId}:${quoteId}`
@@ -62,9 +63,10 @@ export function limparRascunhoDoOrcamento(args: {
         return id ? `draft:${scopeId}:${id}` : null;
       })();
   if (!chave) return;
-  // Só o rascunho desta aba: o mesmo orçamento aberto em duas abas tem a mesma
-  // chave, e o descarte de uma não pode apagar o trabalho da outra.
-  descartarRascunhoDestaAba(chave);
+  // Só o rascunho que guarda exatamente este conteúdo: o mesmo orçamento aberto
+  // em duas abas tem a mesma chave, e o descarte de uma não pode apagar o
+  // trabalho mais novo da outra.
+  descartarRascunho(chave, data);
 }
 
 export function getQuoteDraftIdForScope(scopeId: string): string {

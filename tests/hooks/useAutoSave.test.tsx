@@ -13,9 +13,6 @@ describe('useAutoSave', () => {
     vi.useFakeTimers();
     localStorage.clear();
     sessionStorage.clear();
-    // Id de aba fixo: sem isso o primeiro salvamento grava no sessionStorage e
-    // consome o mock de `setItem` usado nos testes de falha de persistência.
-    sessionStorage.setItem('autosave-tab-id', 'aba-teste');
   });
 
   afterEach(() => {
