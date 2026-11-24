@@ -5,30 +5,60 @@
 ## Veredito 23/11/2026 — 13 lacunas fechadas
 
 Levantamento refeito contra o `main` (`aac38a48f` + esta PR). Nenhuma lacuna
-deste documento continua aberta; duas das treze eram consequência direta de
-outra (sem CAS, o item 3 e o 10 são a mesma causa) e o item 9 só foi corrigido
-nesta PR.
+deste documento continua aberta no caminho automático; duas das treze eram
+consequência direta de outra (sem CAS, o item 3 e o 10 são a mesma causa), o
+item 9 só foi corrigido nesta PR e os itens 3 e 10 guardam a nuance do
+salvamento manual, abaixo da tabela.
+
+Onde a evidência é um símbolo (`flushPending`, `isEnabled`…), o número da linha
+fica junto do arquivo só quando ele é estável: âncora por nome não envelhece a
+cada edição.
 
 | # | lacuna | veredito | evidência no código |
 | --- | --- | --- | --- |
-| 1 | Baseline assíncrona (adoptBaseline) | fechada antes | `useKitAutoSave.ts:332-339` (`isReady` + `hasReadyBaselineRef`) |
-| 2 | Autosave e manual sem fila/alvo | fechada antes | `useKitAutoSave.ts:247,277-279,470-482` + `KitBuilderPage.tsx:307-319` |
-| 3 | CAS por `updated_at` | fechada antes | `useKitAutoSave.ts:100,148` (`KitConflitoDeEdicao`, `updateWithOptimisticLock`) |
-| 4 | Salvamento manual fora da fila | fechada antes | `KitBuilderPage.tsx:307-319` (retrato → `flushAutoSave` → grava → `syncPersistedVersion`) |
-| 5 | Baseline quando o kit termina de carregar | fechada antes | `useKitAutoSave.ts:336-339` + `KitBuilderPage.tsx:194` (`isHydrated`) |
-| 6 | `isDirty` exposto + guarda de saída | fechada nesta PR | `useKitAutoSave.ts:29,238,351,501` + `KitBuilderPage.tsx:392-398` |
+| 1 | Baseline assíncrona (adoptBaseline) | fechada antes | `useKitAutoSave.ts` — `isReady` + `hasReadyBaselineRef` |
+| 2 | Autosave e manual sem fila/alvo | fechada antes | `useKitAutoSave.ts` — `saveQueueRef`, `pendingSavesRef`, `flushPending` + `KitBuilderPage.tsx` — `handleSaveKit` (retrato → `flushAutoSave` → grava → `syncPersistedVersion`) |
+| 3 | CAS por `updated_at` | fechada no autosave — ver nuance | `useKitAutoSave.ts:100,148` (`KitConflitoDeEdicao`, `updateWithOptimisticLock`) |
+| 4 | Salvamento manual fora da fila | fechada antes | `KitBuilderPage.tsx:347-371` — `handleSaveKit` (retrato → `flushAutoSave` → grava → `syncPersistedVersion`) |
+| 5 | Baseline quando o kit termina de carregar | fechada antes | `useKitAutoSave.ts` — `isReady`/`hasReadyBaselineRef` + `KitBuilderPage.tsx:221` (`isHydrated`) |
+| 6 | `isDirty` exposto + guarda de saída | fechada nesta PR | `useKitAutoSave.ts:29` (tipo) e retorno do hook + `KitBuilderPage.tsx:447-454` |
 | 7 | Atualizar template zera categoria e reativa desativado | fechada antes | `useTemplateSnapshot.ts:55-58` (`is_active` fora do UPDATE; categoria só se pedida) |
 | 8 | Template sobrescrito com 'Geral'/`is_active=true` | fechada antes — mesma causa do 7 | `useTemplateSnapshot.ts:56` |
-| 9 | Modo template gravando em `custom_kits` | fechada nesta PR | `useKitAutoSave.ts:230,257-258,351` (`isEnabled`) + `KitBuilderPage.tsx:196-199` |
-| 10 | Edição em outra aba sobrescrita em silêncio | fechada antes — mesma causa do 3 | `useKitAutoSave.ts:148` |
-| 11 | Kit recém-carregado regravado sem edição | fechada antes | `useKitAutoSave.ts:332-339,413,428` (`loadedUpdatedAt`) |
-| 12 | Autosave e manual sem fila (duplicata do 2) | fechada antes | `useKitAutoSave.ts:247,470-482` |
-| 13 | Autosave não ligado à guarda de saída | fechada nesta PR | `KitBuilderPage.tsx:392-398` + `useKitAutoSave.ts:29` |
+| 9 | Modo template gravando em `custom_kits` | fechada nesta PR | `useKitAutoSave.ts:230,257-258,351,490` (`isEnabled`) + `KitBuilderPage.tsx:164,211` (`emEdicaoDeTemplate`) |
+| 10 | Edição em outra aba sobrescrita em silêncio | fechada no autosave — ver nuance | `useKitAutoSave.ts:148` |
+| 11 | Kit recém-carregado regravado sem edição | fechada antes | `useKitAutoSave.ts` — `loadedUpdatedAt`, `knownUpdatedAtRef` + `KitBuilderPage.tsx:221` |
+| 12 | Autosave e manual sem fila (duplicata do 2) | fechada antes | `useKitAutoSave.ts` — `saveQueueRef`, `pendingSavesRef`, `flushPending` |
+| 13 | Autosave não ligado à guarda de saída | fechada nesta PR | `KitBuilderPage.tsx:447-454,489` + `useKitAutoSave.ts:29` |
 
-Regressões cobertas por teste em `tests/hooks/useKitAutoSave.test.tsx`:
-modo template não grava em `custom_kits`; leitura do template não conta como
-edição pendente; edição no template marca pendente; gravação concluída limpa o
-pendente.
+Regressões cobertas por teste: modo template não grava em `custom_kits`,
+leitura do template não conta como edição pendente, edição no template marca
+pendente e gravação concluída limpa o pendente
+(`tests/hooks/useKitAutoSave.test.tsx`); saída por dentro do app só navega
+depois da confirmação e a rota fica declarada como suja
+(`tests/pages/kit-builder-guarda-saida.test.tsx`).
+
+**Nuance dos itens 3 e 10: o CAS existe no caminho automático.** O salvamento
+manual (`src/hooks/useCustomKitPersistence.ts:45-62`) atualiza por `id` +
+`user_id`, sem comparar `updated_at`: duas abas que clicarem em "Salvar" ao
+mesmo tempo (ou dois cliques manuais depois de um autosave de outra aba)
+seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
+único furo conhecido desta família de lacunas — fechado só no autosave.
+
+**Revisão da PR (23/11/2026) — o que passou a ficar coberto:**
+
+- saída por dentro do app pergunta antes de descartar: o botão "Biblioteca" sai
+  por `guardNavigation` e a rota é declarada suja para o voltar global
+  (`KitBuilderPage.tsx:447-454` + `:489`);
+- vendedor que abre `?template=` (widget de kits semelhantes) usa o template
+  como base do kit dele: autosave pessoal ligado e "Salvar" grava na biblioteca
+  em vez de tentar atualizar a linha do sistema, o que o RLS recusava
+  (`KitBuilderPage.tsx:164,211,331-346`);
+- "Atualizar template" avisa o autosave do que foi gravado
+  (`KitBuilderPage.tsx:331-346` → `syncPersistedVersion`), então a tela não
+  segue marcada como pendente depois de salvar com sucesso; e no modo template
+  esse aviso não reagenda gravação (`useKitAutoSave.ts:489-495`);
+- troca de `?template=` sem desmontar a página volta a contar a leitura como
+  leitura (`KitBuilderPage.tsx:192-194,283-290`).
 
 O documento abaixo fica como registro do diagnóstico original (estado da PR
 #119) e não como lista de pendências.

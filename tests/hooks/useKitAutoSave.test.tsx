@@ -646,6 +646,28 @@ describe('useKitAutoSave', () => {
     expect(insert).not.toHaveBeenCalled();
   });
 
+  it('sincronizar a versao nao reacorda o autosave no modo template', async () => {
+    // "Atualizar template" grava `kit_templates` e depois avisa o autosave. Se
+    // esse aviso reagendasse uma gravacao, voltaria a criar kit pessoal a
+    // partir do template.
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined, undefined, true, null, false),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal 2026 (editado)' } });
+    expect(result.current.isDirty).toBe(true);
+
+    await act(async () => {
+      result.current.syncPersistedVersion(null, result.current.capturarSnapshotAtual());
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+
+    expect(result.current.isDirty).toBe(false);
+    expect(insert).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it('limpa a alteracao pendente quando o autosave conclui a gravacao', async () => {
     single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: 'v1' }, error: null });
 

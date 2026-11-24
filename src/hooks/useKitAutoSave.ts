@@ -458,12 +458,7 @@ export function useKitAutoSave(
     // O que o usuário digitou depois do clique não foi para lugar nenhum:
     // reagenda, em vez de se perder entre a confirmação manual e o descarte
     // da fila.
-    if (latestSnapshotRef.current && latestSnapshotRef.current !== persistido) {
-      timerRef.current = setTimeout(
-        () => void saveToDbRef.current?.(latestSnapshotRef.current),
-        AUTO_SAVE_DELAY_MS,
-      );
-    }
+    reagendarRef.current();
   }, []);
 
   /** Drena a fila do autosave e devolve o id conhecido depois dela. */
@@ -487,6 +482,17 @@ export function useKitAutoSave(
   // identidade do callback mudaria a cada tecla digitada.
   const saveToDbRef = useRef<typeof saveToDb>();
   saveToDbRef.current = saveToDb;
+
+  // Mesma razão do ref acima: o callback é estável, mas precisa do estado do
+  // render atual. E no modo template (autosave desligado) não reagenda nada —
+  // lá o destino é `kit_templates`, gravado pelo "Atualizar template".
+  const reagendarRef = useRef<() => void>(() => {});
+  reagendarRef.current = () => {
+    if (!isEnabledRef.current) return;
+    const alvo = latestSnapshotRef.current;
+    if (!alvo || alvo === persistedSnapshotRef.current) return;
+    timerRef.current = setTimeout(() => void saveToDbRef.current?.(alvo), AUTO_SAVE_DELAY_MS);
+  };
 
   const retry = useCallback(() => {
     if (!isEnabledRef.current) return;

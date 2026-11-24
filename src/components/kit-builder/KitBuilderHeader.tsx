@@ -51,6 +51,11 @@ interface KitBuilderHeaderProps {
   templateId?: string;
   /** Saved kit ID — enables share link dialog. */
   currentKitId?: string;
+  /** Biblioteca — a página decide se pergunta antes de sair com pendência. */
+  onOpenLibrary?: () => void;
+  /** Grava/atualiza o template do sistema; quem sincroniza o autosave é a página. */
+  onSaveAsTemplate?: () => void;
+  isSavingTemplate?: boolean;
 }
 
 function SaveStatus({ props }: { props: KitBuilderHeaderProps }) {
@@ -83,14 +88,19 @@ function TemplateAction({ props }: { props: KitBuilderHeaderProps }) {
   if (!isAdmin || !kitState || !props.hasContent) return null;
   const label = props.templateId ? "Atualizar template" : "Salvar como template";
   const tooltip = props.templateId ? "Atualizar template do sistema" : "Salvar este kit como template do sistema (admin)";
-  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => saveAsTemplate({ kitState, templateId: props.templateId })} disabled={isSavingTemplate} className="gap-2 border-primary/40 text-primary hover:bg-primary/10" aria-label="Salvar como template do sistema">{isSavingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}<span className="hidden md:inline">{label}</span></Button></TooltipTrigger><TooltipContent>{tooltip}</TooltipContent></Tooltip></TooltipProvider>;
+  // Com `onSaveAsTemplate` quem grava é a página: só ela sabe avisar o autosave
+  // que o conteúdo foi para o banco, senão a tela seguia marcada como pendente
+  // e pedia confirmação para sair logo depois de um salvamento bem-sucedido.
+  const salvar = props.onSaveAsTemplate ?? (() => void saveAsTemplate({ kitState, templateId: props.templateId }));
+  const salvando = props.isSavingTemplate ?? isSavingTemplate;
+  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={salvar} disabled={salvando} className="gap-2 border-primary/40 text-primary hover:bg-primary/10" aria-label="Salvar como template do sistema">{salvando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}<span className="hidden md:inline">{label}</span></Button></TooltipTrigger><TooltipContent>{tooltip}</TooltipContent></Tooltip></TooltipProvider>;
 }
 
 function KitActions({ props }: { props: KitBuilderHeaderProps }) {
   const navigate = useNavigate();
   const SaveIcon = props.isSaving ? Loader2 : props.lastSavedAt && !props.isAutoSaving ? Check : Save;
   return <div className="flex items-center gap-2 shrink-0"><HistoryActions props={props} /><KitIdentityPicker identity={props.identity} onChange={props.onIdentityChange} /><KitShareLinkDialog kitId={props.currentKitId} kitName={props.kitName} />
-    <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => navigate("/meus-kits")} className="gap-2" aria-label="Abrir biblioteca de kits"><Library className="h-4 w-4" /><span className="hidden md:inline">Biblioteca</span></Button></TooltipTrigger><TooltipContent>Abrir biblioteca de kits</TooltipContent></Tooltip></TooltipProvider>
+    <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={props.onOpenLibrary ?? (() => navigate("/meus-kits"))} className="gap-2" aria-label="Abrir biblioteca de kits"><Library className="h-4 w-4" /><span className="hidden md:inline">Biblioteca</span></Button></TooltipTrigger><TooltipContent>Abrir biblioteca de kits</TooltipContent></Tooltip></TooltipProvider>
     <TemplateAction props={props} /><Button variant={props.isValid && props.hasContent ? "default" : "outline"} onClick={props.onSave} disabled={props.isSaving || !props.hasContent} className="font-medium"><SaveIcon className={cn("h-4 w-4 mr-2", props.isSaving && "animate-spin")} />{props.isExistingKit ? "Atualizar" : "Salvar"}</Button><Button variant="outline" onClick={props.onReset} className="font-medium text-destructive hover:text-destructive"><RotateCcw className="h-4 w-4 mr-2" /> Novo kit</Button><div className="hidden lg:block"><KitAIPromptDialog onApply={props.onAIApply} /></div>
   </div>;
 }
