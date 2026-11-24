@@ -155,6 +155,33 @@ describe("useCategoryRanking — paginação e contagem de pedidos", () => {
     expect(result.current.data?.items[0]?.internalRevenue).toBe(50);
   });
 
+  it("aborta quando a ordenação se perde só na última página do mercado", async () => {
+    mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => {
+      const offset = body.offset ?? 0;
+      return {
+        data: {
+          success: true,
+          data: {
+            records: body.table === "products" ? catalogPage(offset) : marketPage(offset),
+            count: null,
+            // Página cheia veio ordenada; a última (curta) veio sem a ordem pedida.
+            ...(body.table === "stock_daily_summary" && offset > 0 ? { meta: { orderBy_fallback: "id" } } : {}),
+          },
+        },
+        error: null,
+      };
+    });
+
+    const { result } = renderHook(() => useCategoryRanking(30, null, null, null), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const marketCalls = externalCalls().filter((body) => body.table === "stock_daily_summary");
+    expect(marketCalls.map((body) => body.offset ?? 0)).toEqual([0, 1000]);
+    expect(result.current.data?.marketAvailable).toBe(false);
+    expect(result.current.data?.marketError).toContain("sem ordenação garantida");
+    expect(result.current.data?.items[0]?.internalRevenue).toBe(50);
+  });
+
   it("mantém a receita interna e sinaliza o erro quando o mercado falha", async () => {
     mocks.invokeWithRetry.mockImplementation(async (body: { table: string; offset?: number }) => {
       if (body.table === "products") {
