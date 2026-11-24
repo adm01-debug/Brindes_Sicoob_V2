@@ -60,10 +60,17 @@ seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
 - troca de `?template=` sem desmontar a página volta a contar a leitura como
   leitura (`KitBuilderPage.tsx:192-194,283-290`).
 
-- abrir um template por cima de um kit pessoal desfaz o vínculo com o kit
-  aberto: `?kit=ID&template=T` deixa de gravar por cima do kit do vendedor e o
-  próximo autosave cria linha nova (`KitBuilderPage.tsx:308-318` →
+- escolher um kit semelhante com um kit pessoal aberto desfaz o vínculo com
+  ele: a composição do template deixa de ser gravada por cima do kit do
+  vendedor e o próximo autosave cria linha nova (`KitBuilderPage.tsx:308-318` →
   `useKitAutoSave.ts:506-519`, coberto em `tests/hooks/useKitAutoSave.test.tsx`);
+- a troca de template grava o pendente antes de substituir a composição, senão
+  o "Sair e gravar" do aviso prometia uma gravação que o desmonte não faria
+  (não há desmonte): `gravarPendente` (`KitBuilderPage.tsx` `trocarDeTemplate`),
+  e falha na gravação segura o vendedor na composição;
+- gravação que responde depois da troca de escopo não readota a linha antiga
+  (`saveToDb` confere a geração depois do `persistAutoSave`), então a edição
+  seguinte cria linha nova em vez de sobrescrever o kit anterior;
 - clicar num kit semelhante passa pela guarda da página em vez de navegar
   direto, então troca de template com edição pendente pergunta antes
   (`KitBuilderPage.tsx:607` → `SimilarKitsWidget.tsx:51`,

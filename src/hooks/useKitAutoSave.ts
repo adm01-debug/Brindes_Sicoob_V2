@@ -52,6 +52,12 @@ interface AutoSaveResult {
    */
   desvincularKitPessoal: () => void;
   /**
+   * Grava a composição da tela e espera a fila antes de a página trocar de
+   * conteúdo. Usado na troca de template, que substitui o editor sem
+   * desmontar. `false` = a gravação falhou.
+   */
+  gravarPendente: () => Promise<boolean>;
+  /**
    * Espera o salvamento automático em voo terminar e devolve o id do kit que
    * ele conhece. O salvamento manual chama isto antes de decidir entre criar e
    * atualizar: sem a espera, clicar em "Salvar" durante o INSERT de um kit novo
@@ -273,11 +279,11 @@ export function useKitAutoSave(
     onKitIdCreated?.(createdId);
   }, [onKitIdCreated]);
 
-  const saveToDb = useCallback(async (snapshot: string) => {
-    if (!user?.id) return;
+  const saveToDb = useCallback(async (snapshot: string): Promise<boolean> => {
+    if (!user?.id) return false;
 
     // Don't auto-save empty kits
-    if (isEmptyKit(kitState)) return;
+    if (isEmptyKit(kitState)) return true;
 
     const payload = buildCustomKitPayload(user.id, kitState, kitQuantity);
 
@@ -290,29 +296,34 @@ export function useKitAutoSave(
     setIsSaving(true);
     try {
       await previousSave;
-      if (operationGeneration !== scopeGenerationRef.current) return;
+      if (operationGeneration !== scopeGenerationRef.current) return false;
       const persisted = await persistAutoSave(
         payload,
         kitIdRef.current,
         operationUserId,
         knownUpdatedAtRef.current,
       );
+      // A resposta pode chegar depois de o escopo mudar (troca de kit ou de
+      // template). Adotar o id/versão da linha antiga aqui vincularia a
+      // composição nova ao kit anterior, e a edição seguinte gravaria por cima
+      // dele.
+      if (operationGeneration !== scopeGenerationRef.current) return false;
       adoptCreatedId(persisted.createdId);
       knownUpdatedAtRef.current = persisted.updatedAt;
-      if (operationGeneration === scopeGenerationRef.current) {
-        persistedSnapshotRef.current = snapshot;
-        setLastSavedAt(new Date());
-        setLastSaveError(null);
-        setLastSaveConflict(false);
-        setIsDirty(false);
-      }
+      persistedSnapshotRef.current = snapshot;
+      setLastSavedAt(new Date());
+      setLastSaveError(null);
+      setLastSaveConflict(false);
+      setIsDirty(false);
+      return true;
     } catch (err) {
-      if (operationGeneration !== scopeGenerationRef.current) return;
+      if (operationGeneration !== scopeGenerationRef.current) return false;
       logger.warn('[auto-save] Failed:', err);
       const conflito = err instanceof KitConflitoDeEdicao;
       setLastSaveError(err instanceof Error ? err.message : FALHA_GENERICA);
       setLastSaveConflict(conflito);
       avisarFalhaDeAutosave(conflito);
+      return false;
     } finally {
       releaseQueue();
       pendingSavesRef.current -= 1;
@@ -518,6 +529,27 @@ export function useKitAutoSave(
     setIsDirty(false);
   }, []);
 
+  /**
+   * Grava o que está na tela antes de a página trocar de composição.
+   *
+   * A troca de template substitui o conteúdo sem desmontar a página: o flush de
+   * desmonte não roda e o debounce seria cancelado pelo `desvincularKitPessoal`,
+   * então o "Sair e gravar" do aviso prometia uma gravação que não acontecia.
+   * Devolve `false` quando a gravação falhou, para a página segurar o vendedor
+   * na composição em vez de descartá-la.
+   */
+  const gravarPendente = useCallback(async (): Promise<boolean> => {
+    if (!isEnabledRef.current) return true;
+    // `clearTimeout(undefined)` é inofensivo.
+    clearTimeout(timerRef.current);
+    timerRef.current = undefined;
+    const alvo = latestSnapshotRef.current;
+    if (!alvo || alvo === persistedSnapshotRef.current) return true;
+    const gravou = await saveToDbRef.current?.(alvo);
+    await saveQueueRef.current;
+    return gravou !== false;
+  }, []);
+
   const retry = useCallback(() => {
     if (!isEnabledRef.current) return;
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -530,5 +562,6 @@ export function useKitAutoSave(
   return {
     lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry, syncPersistedVersion, flushPending, capturarSnapshotAtual, desvincularKitPessoal,
+    gravarPendente,
   };
 }

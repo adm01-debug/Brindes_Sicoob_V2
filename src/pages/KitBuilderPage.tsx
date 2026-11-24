@@ -240,7 +240,7 @@ export default function KitBuilderPage() {
   const {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
-    capturarSnapshotAtual, desvincularKitPessoal,
+    capturarSnapshotAtual, desvincularKitPessoal, gravarPendente,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
     isHydrated && !isTemplateLoading, loadedUpdatedAt,
@@ -470,6 +470,20 @@ export default function KitBuilderPage() {
     hasUnsavedChanges: temAlteracaoPendente,
     message: mensagemSaida,
   });
+
+  /**
+   * Troca de template a partir do widget de kits semelhantes.
+   *
+   * A troca substitui a composição sem desmontar a página, então o flush de
+   * desmonte do autosave não roda: gravar o pendente aqui é o que faz o "Sair e
+   * gravar" do aviso ser verdade. Se a gravação falhar, a tela fica como está
+   * — trocar de template apagaria a única cópia do trabalho.
+   */
+  async function trocarDeTemplate(templateId: string) {
+    const gravou = await gravarPendente();
+    if (!gravou) return;
+    navigate(`/montar-kit?template=${templateId}`);
+  }
   // "Biblioteca" e o voltar do app navegam por dentro do SPA, onde o
   // `beforeunload` acima não alcança: o registro de rota responde por essas
   // saídas.
@@ -640,7 +654,7 @@ export default function KitBuilderPage() {
           guarda, a edição não salva do template aberto ia embora sem pergunta. */}
       <SimilarKitsWidget currentSkus={kitState.items.map((item) => String(item.sku ?? '').toLowerCase()).filter(Boolean)}
         excludeId={templateIdParam ?? undefined}
-        onSelectTemplate={(id) => guardaDeSaida.guardNavigation(() => navigate(`/montar-kit?template=${id}`))} /></>;
+        onSelectTemplate={(id) => guardaDeSaida.guardNavigation(() => { void trocarDeTemplate(id); })} /></>;
   }
 
   function formattedWeight(): string {

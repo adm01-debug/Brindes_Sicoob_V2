@@ -697,6 +697,79 @@ describe('useKitAutoSave', () => {
     expect(update).toHaveBeenCalledTimes(1); // nao sobrescreveu o kit-1
   });
 
+  it('resposta que chega depois da troca nao readota o kit anterior', async () => {
+    // Trocar de template cancela o que ainda nao saiu, mas o INSERT ja enviado
+    // ainda responde. Adotar esse id ligava a composicao do template ao kit
+    // anterior, e a edicao seguinte gravava por cima dele.
+    let liberarInsert: (valor: unknown) => void = () => undefined;
+    single.mockImplementationOnce(() => new Promise((resolve) => { liberarInsert = resolve; }));
+    const onCriado = vi.fn();
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined, onCriado),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(insert).toHaveBeenCalledTimes(1);
+
+    act(() => { result.current.desvincularKitPessoal(); });
+
+    await act(async () => {
+      liberarInsert({ data: { id: 'kit-natal', updated_at: 'v1' }, error: null });
+      await Promise.resolve();
+    });
+
+    expect(onCriado).not.toHaveBeenCalled();
+    expect(result.current.autoSavedKitId).toBeNull();
+
+    single.mockResolvedValue({ data: { id: 'kit-boas-vindas', updated_at: 'v2' }, error: null });
+    rerender({ kit: { ...initialKit, name: 'Boas-vindas' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(insert).toHaveBeenCalledTimes(2);
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('gravarPendente grava a composicao da tela antes da troca', async () => {
+    // A troca de template nao desmonta a pagina: o flush de desmonte nao roda
+    // e o aviso "Sair e gravar" ficaria mentindo.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'v2' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal 2026' } });
+    expect(update).not.toHaveBeenCalled();
+
+    let gravou = false;
+    await act(async () => { gravou = await result.current.gravarPendente(); });
+
+    expect(gravou).toBe(true);
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ name: 'Natal 2026' }));
+    expect(result.current.lastSavedAt).not.toBeNull();
+  });
+
+  it('gravarPendente devolve false quando a gravacao falha', async () => {
+    maybeSingle.mockResolvedValue({ data: null, error: new Error('sem permissao') });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Natal 2026' } });
+
+    let gravou = true;
+    await act(async () => { gravou = await result.current.gravarPendente(); });
+
+    expect(gravou).toBe(false);
+    expect(result.current.lastSaveError).toContain('sem permissao');
+  });
+
   it('limpa a alteracao pendente quando o autosave conclui a gravacao', async () => {
     single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: 'v1' }, error: null });
 
