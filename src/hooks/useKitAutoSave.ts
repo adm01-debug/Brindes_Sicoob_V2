@@ -21,6 +21,12 @@ interface AutoSaveResult {
   lastSaveError: string | null;
   /** O erro atual é conflito com outra aba: repetir não resolve, recarregar sim. */
   lastSaveConflict: boolean;
+  /**
+   * O que está na tela ainda não está gravado — inclui a janela do debounce e
+   * o modo template, onde nada é gravado automaticamente. Serve ao aviso de
+   * saída da página, que antes só cobria autosave em voo ou com erro.
+   */
+  isDirty: boolean;
   retry: () => void;
   /**
    * O salvamento manual grava na mesma linha e muda `updated_at`. Sem avisar o
@@ -36,6 +42,21 @@ interface AutoSaveResult {
    * depois do clique continua pendente, em vez de ser dado como gravado.
    */
   capturarSnapshotAtual: () => string;
+  /**
+   * Solta o vínculo desta aba com o kit pessoal em edição.
+   *
+   * Abrir um template como base troca o conteúdo do editor sem desmontar a
+   * página: o kit que estava aberto (biblioteca `?kit=` ou rascunho já
+   * autosalvo) continua sendo o destino das gravações. Sem soltar, o primeiro
+   * autosave da composição nova gravaria o template por cima dele.
+   */
+  desvincularKitPessoal: () => void;
+  /**
+   * Grava a composição da tela e espera a fila antes de a página trocar de
+   * conteúdo. Usado na troca de template, que substitui o editor sem
+   * desmontar. `false` = a gravação falhou.
+   */
+  gravarPendente: () => Promise<boolean>;
   /**
    * Espera o salvamento automático em voo terminar e devolve o id do kit que
    * ele conhece. O salvamento manual chama isto antes de decidir entre criar e
@@ -188,6 +209,15 @@ async function persistAutoSave(
 }
 
 /**
+ * Identidade do contexto de gravação (usuário + kit). Construída num lugar só:
+ * a comparação `scopeRef.current === nextScope` só funciona enquanto os dois
+ * lados usarem exatamente a mesma regra de string.
+ */
+function scopeKey(userId: string | undefined, kitId: string | undefined): string {
+  return `${userId ?? 'anon'}:${kitId ?? 'new'}`;
+}
+
+/**
  * @param isReady  false enquanto o kit ainda está sendo carregado do banco.
  *   Abrir `/montar-kit?kit=ID` monta o hook com o ID já definido e o kit ainda
  *   vazio, então o baseline nascia vazio; quando a leitura chegava, o estado
@@ -197,6 +227,13 @@ async function persistAutoSave(
  *   abrindo uma janela para sobrescrever o que outra aba tivesse gravado.
  *   Enquanto `isReady` é false, mudança de estado é chegada de dado lido, não
  *   edição: vira baseline em vez de gravação.
+ * @param isEnabled  false no modo template (`/montar-kit?template=ID`). Ali o
+ *   conteúdo pertence a uma linha de `kit_templates` e quem grava é o
+ *   "Atualizar template"; a gravação automática continuava mandando o mesmo
+ *   conteúdo para `custom_kits` e criava um kit pessoal paralelo a cada
+ *   edição — rascunho fantasma na lista "Meus kits" do admin, com o template
+ *   nunca atualizado por esse caminho. Desligado, a edição fica na tela e o
+ *   aviso de saída (`isDirty`) assume o papel de não perder o trabalho.
  */
 export function useKitAutoSave(
   kitState: KitState,
@@ -205,6 +242,7 @@ export function useKitAutoSave(
   onKitIdCreated?: (id: string) => void,
   isReady = true,
   loadedUpdatedAt: string | null = null,
+  isEnabled = true,
 ): AutoSaveResult {
   const { user } = useAuth();
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -212,13 +250,14 @@ export function useKitAutoSave(
   const [autoSavedKitId, setAutoSavedKitId] = useState<string | null>(currentKitId || null);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
   const [lastSaveConflict, setLastSaveConflict] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const persistedSnapshotRef = useRef<string>('');
   const latestSnapshotRef = useRef<string>('');
   const kitIdRef = useRef<string | null>(currentKitId || null);
   // Versão da linha que esta aba conhece, para a trava otimista.
   const knownUpdatedAtRef = useRef<string | null>(loadedUpdatedAt);
-  const scopeRef = useRef(`${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`);
+  const scopeRef = useRef(scopeKey(user?.id, currentKitId));
   const scopeGenerationRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
   const pendingSavesRef = useRef(0);
@@ -229,6 +268,9 @@ export function useKitAutoSave(
   // o teste `!isReady` sozinho não segura a regravação. O baseline é adotado
   // na transição para pronto, não enquanto não-pronto.
   const hasReadyBaselineRef = useRef(false);
+  // Lido por callbacks com lista de dependências vazia (desmonte, `retry`).
+  const isEnabledRef = useRef(isEnabled);
+  isEnabledRef.current = isEnabled;
 
   const adoptCreatedId = useCallback((createdId: string | null) => {
     if (!createdId) return;
@@ -237,11 +279,24 @@ export function useKitAutoSave(
     onKitIdCreated?.(createdId);
   }, [onKitIdCreated]);
 
-  const saveToDb = useCallback(async (snapshot: string) => {
-    if (!user?.id) return;
+  /** Fecha uma gravacao bem-sucedida: adota id/versao e limpa a pendencia. */
+  const marcarPersistido = useCallback((
+    snapshot: string, createdId: string | null, updatedAt: string | null,
+  ) => {
+    adoptCreatedId(createdId);
+    knownUpdatedAtRef.current = updatedAt;
+    persistedSnapshotRef.current = snapshot;
+    setLastSavedAt(new Date());
+    setLastSaveError(null);
+    setLastSaveConflict(false);
+    setIsDirty(false);
+  }, [adoptCreatedId]);
+
+  const saveToDb = useCallback(async (snapshot: string): Promise<boolean> => {
+    if (!user?.id) return false;
 
     // Don't auto-save empty kits
-    if (isEmptyKit(kitState)) return;
+    if (isEmptyKit(kitState)) return true;
 
     const payload = buildCustomKitPayload(user.id, kitState, kitQuantity);
 
@@ -254,28 +309,28 @@ export function useKitAutoSave(
     setIsSaving(true);
     try {
       await previousSave;
-      if (operationGeneration !== scopeGenerationRef.current) return;
+      if (operationGeneration !== scopeGenerationRef.current) return false;
       const persisted = await persistAutoSave(
         payload,
         kitIdRef.current,
         operationUserId,
         knownUpdatedAtRef.current,
       );
-      adoptCreatedId(persisted.createdId);
-      knownUpdatedAtRef.current = persisted.updatedAt;
-      if (operationGeneration === scopeGenerationRef.current) {
-        persistedSnapshotRef.current = snapshot;
-        setLastSavedAt(new Date());
-        setLastSaveError(null);
-        setLastSaveConflict(false);
-      }
+      // A resposta pode chegar depois de o escopo mudar (troca de kit ou de
+      // template). Adotar o id/versão da linha antiga aqui vincularia a
+      // composição nova ao kit anterior, e a edição seguinte gravaria por cima
+      // dele.
+      if (operationGeneration !== scopeGenerationRef.current) return false;
+      marcarPersistido(snapshot, persisted.createdId, persisted.updatedAt);
+      return true;
     } catch (err) {
-      if (operationGeneration !== scopeGenerationRef.current) return;
+      if (operationGeneration !== scopeGenerationRef.current) return false;
       logger.warn('[auto-save] Failed:', err);
       const conflito = err instanceof KitConflitoDeEdicao;
       setLastSaveError(err instanceof Error ? err.message : FALHA_GENERICA);
       setLastSaveConflict(conflito);
       avisarFalhaDeAutosave(conflito);
+      return false;
     } finally {
       releaseQueue();
       pendingSavesRef.current -= 1;
@@ -283,7 +338,7 @@ export function useKitAutoSave(
         setIsSaving(pendingSavesRef.current > 0);
       }
     }
-  }, [adoptCreatedId, user?.id, kitState, kitQuantity]);
+  }, [marcarPersistido, user?.id, kitState, kitQuantity]);
 
   // Create a snapshot hash to detect meaningful changes
   useEffect(() => {
@@ -312,9 +367,18 @@ export function useKitAutoSave(
       return;
     }
 
-    if (newSnapshot === persistedSnapshotRef.current) return;
+    if (newSnapshot === persistedSnapshotRef.current) {
+      setIsDirty(false);
+      return;
+    }
 
-    if (timerRef.current) clearTimeout(timerRef.current);
+    // A guarda de saída da página lê isto; no modo template é o único rastro,
+    // porque ali não há gravação automática.
+    setIsDirty(true);
+    if (!isEnabled) return;
+
+    // `clearTimeout(undefined)` é inofensivo.
+    clearTimeout(timerRef.current);
     // O timer solta a referência ao disparar: mantê-la faria o desmonte ler
     // uma gravação JÁ FEITA como edição pendente e regravar o kit.
     timerRef.current = setTimeout(() => {
@@ -325,7 +389,7 @@ export function useKitAutoSave(
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [kitState, kitQuantity, saveToDb, isReady]);
+  }, [kitState, kitQuantity, saveToDb, isReady, isEnabled]);
 
   // Sair da tela não pode descartar a gravação agendada.
   //
@@ -337,6 +401,7 @@ export function useKitAutoSave(
   // troca de rota). Fechar a aba é outra história e quem avisa é o
   // `useUnsavedChangesGuard` da página.
   useEffect(() => () => {
+    if (!isEnabledRef.current) return;
     if (!timerRef.current) return;
     clearTimeout(timerRef.current);
     timerRef.current = undefined;
@@ -351,7 +416,7 @@ export function useKitAutoSave(
   // já enviadas terminam no registro de origem, mas nunca contaminam o novo
   // contexto; a fila mantém a ordem das alterações dentro do mesmo kit.
   useEffect(() => {
-    const nextScope = `${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`;
+    const nextScope = scopeKey(user?.id, currentKitId);
     if (scopeRef.current === nextScope) return;
 
     // O pai adota o ID que esta própria instância acabou de criar. Essa
@@ -378,6 +443,7 @@ export function useKitAutoSave(
     setLastSaveError(null);
     setLastSaveConflict(false);
     setIsSaving(false);
+    setIsDirty(false);
     const snapshot = createSnapshot(kitState, kitQuantity);
     persistedSnapshotRef.current = snapshot;
     latestSnapshotRef.current = snapshot;
@@ -415,15 +481,11 @@ export function useKitAutoSave(
     setLastSavedAt(new Date());
     setLastSaveError(null);
     setLastSaveConflict(false);
+    setIsDirty(Boolean(latestSnapshotRef.current && latestSnapshotRef.current !== persistido));
     // O que o usuário digitou depois do clique não foi para lugar nenhum:
     // reagenda, em vez de se perder entre a confirmação manual e o descarte
     // da fila.
-    if (latestSnapshotRef.current && latestSnapshotRef.current !== persistido) {
-      timerRef.current = setTimeout(
-        () => void saveToDbRef.current?.(latestSnapshotRef.current),
-        AUTO_SAVE_DELAY_MS,
-      );
-    }
+    reagendarRef.current();
   }, []);
 
   /** Drena a fila do autosave e devolve o id conhecido depois dela. */
@@ -448,7 +510,58 @@ export function useKitAutoSave(
   const saveToDbRef = useRef<typeof saveToDb>();
   saveToDbRef.current = saveToDb;
 
+  // Mesma razão do ref acima: o callback é estável, mas precisa do estado do
+  // render atual. E no modo template (autosave desligado) não reagenda nada —
+  // lá o destino é `kit_templates`, gravado pelo "Atualizar template".
+  const reagendarRef = useRef<() => void>(() => {});
+  reagendarRef.current = () => {
+    if (!isEnabledRef.current) return;
+    const alvo = latestSnapshotRef.current;
+    if (!alvo || alvo === persistedSnapshotRef.current) return;
+    timerRef.current = setTimeout(() => void saveToDbRef.current?.(alvo), AUTO_SAVE_DELAY_MS);
+  };
+
+  const desvincularKitPessoal = useCallback(() => {
+    // A geração invalida respostas em voo: elas pertencem ao kit anterior e não
+    // podem marcar a composição nova como persistida.
+    scopeGenerationRef.current += 1;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = undefined;
+    kitIdRef.current = null;
+    setAutoSavedKitId(null);
+    setLastSavedAt(null);
+    setLastSaveError(null);
+    setLastSaveConflict(false);
+    setIsSaving(false);
+    setIsDirty(false);
+  }, []);
+
+  /**
+   * Grava o que está na tela antes de a página trocar de composição.
+   *
+   * A troca de template substitui o conteúdo sem desmontar a página: o flush de
+   * desmonte não roda e o debounce seria cancelado pelo `desvincularKitPessoal`,
+   * então o "Sair e gravar" do aviso prometia uma gravação que não acontecia.
+   * Devolve `false` quando a gravação falhou, para a página segurar o vendedor
+   * na composição em vez de descartá-la.
+   */
+  const gravarPendente = useCallback(async (): Promise<boolean> => {
+    if (!isEnabledRef.current) return true;
+    // `clearTimeout(undefined)` é inofensivo.
+    clearTimeout(timerRef.current);
+    timerRef.current = undefined;
+    // Uma gravação em voo pode já cobrir este conteúdo: esperar a fila antes de
+    // decidir evita enfileirar a mesma composição duas vezes.
+    await saveQueueRef.current;
+    const alvo = latestSnapshotRef.current;
+    if (!alvo || alvo === persistedSnapshotRef.current) return true;
+    const gravou = await saveToDbRef.current?.(alvo);
+    await saveQueueRef.current;
+    return gravou !== false;
+  }, []);
+
   const retry = useCallback(() => {
+    if (!isEnabledRef.current) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     const snapshot = latestSnapshotRef.current;
     if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
@@ -457,7 +570,8 @@ export function useKitAutoSave(
   const capturarSnapshotAtual = useCallback(() => latestSnapshotRef.current, []);
 
   return {
-    lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
-    retry, syncPersistedVersion, flushPending, capturarSnapshotAtual,
+    lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
+    retry, syncPersistedVersion, flushPending, capturarSnapshotAtual, desvincularKitPessoal,
+    gravarPendente,
   };
 }
