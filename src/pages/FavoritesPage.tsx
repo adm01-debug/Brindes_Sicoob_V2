@@ -686,7 +686,10 @@ export default function FavoritesPage() {
   }
 
   function EmptyFavoriteResults() {
-    if (productsWithVariant.length > 0 && searchQuery) return <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
+    // Lista só com favoritos indisponíveis também tem busca: com termo ativo o aviso é
+    // "nenhum resultado", não a sugestão de produtos do catálogo.
+    const hasAnyFavorite = productsWithVariant.length > 0 || unavailableFavorites.length > 0;
+    if (hasAnyFavorite && searchQuery) return <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
       <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><h3 className="font-display text-lg font-semibold text-foreground mb-1">
         Nenhum favorito encontrado</h3><p className="text-muted-foreground text-sm">Nenhum produto corresponde a "{searchQuery}"</p>
     </div>;
