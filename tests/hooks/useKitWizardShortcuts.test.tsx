@@ -7,10 +7,13 @@
  * seta esquerda trocava de etapa e "Continuar aqui" devolvia o vendedor à etapa
  * anterior.
  */
-import { renderHook } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 
+import { GlobalConfirmDialog } from '@/components/common/GlobalConfirmDialog';
 import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
+import { useConfirmDialogStore } from '@/stores/useConfirmDialogStore';
 
 function montarDialogo(role: string) {
   const dialogo = document.createElement('div');
@@ -62,6 +65,24 @@ describe('useKitWizardShortcuts', () => {
     apertar(botao, 'ArrowLeft');
 
     expect(onPrev).not.toHaveBeenCalled();
+  });
+
+  it('ignora a seta vinda do diálogo global de confirmação, o diálogo real', async () => {
+    // O filtro depende do papel que o diálogo real declara: se ele parasse de
+    // usar role="dialog"/"alertdialog", o atalho voltaria a mexer na etapa por
+    // baixo da confirmação sem ninguém perceber.
+    render(<MemoryRouter><GlobalConfirmDialog /></MemoryRouter>);
+    await act(async () => { void useConfirmDialogStore.getState().ask({ title: 'Recarregar?', cancelLabel: 'Continuar aqui' }); });
+
+    const dialogo = screen.getByRole('alertdialog');
+    const botao = screen.getByRole('button', { name: 'Continuar aqui' });
+    expect(dialogo.contains(botao)).toBe(true);
+
+    const { onPrev } = montarHook();
+    fireEvent.keyDown(botao, { key: 'ArrowLeft' });
+
+    expect(onPrev).not.toHaveBeenCalled();
+    await act(async () => { useConfirmDialogStore.getState().cancelCurrent(); });
   });
 
   it('continua navegando fora de diálogo', () => {
