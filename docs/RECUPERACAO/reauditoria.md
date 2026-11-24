@@ -767,3 +767,127 @@ AFIRMAÇÃO 5 (identidade do kit no UPDATE) — NÃO SE SUSTENTA, o revisor esta
 </details>
 
 
+
+---
+
+## Re-auditoria de 24/11 — descartes medidos um a um (PR fechada por PR fechada)
+
+Escopo: as 10 branches remotas restantes e as 50 PRs fechadas sem merge. Objetivo: separar
+"trabalho parcial de outro agente que precisa ser terminado" de "já incorporado / artefato".
+
+**Método.** `git cherry` não serve neste repo: a `main` foi re-rooted e 56 dos 89 refs antigos
+não têm ancestral comum com ela (ver `cobertura-refs.md`). A prova usada é conteúdo:
+`git fetch origin refs/pull/N/head:refs/audit/prN`, `mb=$(git merge-base origin/main refs/audit/prN)`,
+`git diff --shortstat $mb refs/audit/prN` e verificação linha a linha. Para branch sem PR, mesmo
+procedimento em `origin/<branch>`.
+
+O comando exato da verificação linha a linha: o cabeçalho do diff e o marcador `+` **não** entram na
+busca — o texto comparado é a linha original do arquivo.
+
+```bash
+git diff -U0 $mb <ref> -- <path> | grep -E '^\+' | grep -v '^\+\+\+ ' | cut -c2- > /tmp/ref-lines.txt
+while IFS= read -r line; do git show origin/main:<path> | grep -Fqx -- "$line"; done < /tmp/ref-lines.txt
+```
+
+Linhas em branco adicionadas pelo ref (`+` sozinho) viram string vazia e casam com qualquer arquivo:
+por isso elas são contadas à parte e não entram no quociente.
+
+**Refs sem ancestral comum (56 das 89).** Nesses refs `mb` é vazio e não existe base histórica: um
+`git diff $mb <ref>` degeneraria para comparação com a árvore de trabalho, o que produz falso
+positivo. O procedimento nesses casos é comparação de árvore, sem ancestralidade:
+
+1. `git diff --quiet origin/main <ref> -- <path>` — compara as duas árvores direto (o git usa base
+   virtual vazia e não precisa de ancestral). Status `0` = arquivo idêntico; `1` = há diferença. Para
+   medir o tamanho da diferença, `git diff --shortstat origin/main <ref> -- <path>` (sem `--quiet`).
+2. Extração das linhas só do ref: `git diff -U0 origin/main <ref> -- <path> | grep -E '^\+'`, e para
+   cada linha `git show origin/main:<path> | grep -Fqx -- "<linha>"`. O quociente `linhas do ref
+   presentes na main / linhas do ref` mede o quanto a main já cobre aquele arquivo.
+3. Classificação por arquivo: quociente total → suspeita de cópia velha, confirmada apenas pelo
+   diff vazio (passo 1 com status `0`); quociente parcial → leitura do hunk completo para decidir se
+   o que sobra é trabalho de outro agente ou apenas uma versão anterior da mesma ideia.
+
+O quociente é **triagem, não prova**: ele aceita as linhas em qualquer ordem e ignora as remoções.
+Um arquivo pode marcar 100% de linhas presentes e o ref ainda ter apagado linhas que a `main` mantém
+(ou tê-las em contexto diferente). Quem decide descarte é `git diff --quiet origin/main <ref> -- <path>`
+com status de saída `0` para **todos** os arquivos do ref (árvore idêntica). O critério é o status, não
+o texto: em diff vazio o `--shortstat` não imprime nada, e em arquivo binário alterado ele imprime
+`0 insertions, 0 deletions`. Quociente total com diff não vazio = ler o hunk antes de qualquer conclusão.
+
+Medição de 24/11 sobre os 91 refs de auditoria deste clone: **nenhum** tem árvore idêntica à `main`
+(`git diff --quiet origin/main <ref>` devolve `1` para todos os 91). Pelo critério estrito, portanto,
+**nenhum ref está liberado para exclusão** — o quociente de linhas só diz onde olhar primeiro.
+
+Os dois exemplos que estavam aqui (`useGlobalSearch.ts` "15 de 88" e `e2e/helpers/auth.ts` "1 de 15")
+**não se reproduzem** com os refs atuais e foram retirados. Medição linha a linha feita agora:
+
+- `src/components/search/useGlobalSearch.ts` — todo ref que contém o caminho difere da `main`
+  (`status=1`): 0/4 linhas presentes em `refs/audit/pr100`, 7/20 em `refs/audit/pr145`, 1/16 na família
+  `pr75..pr97`. Nenhum ref é idêntico nesse caminho.
+- `e2e/helpers/auth.ts` — **idêntico à `main`** (`status=0`, sem linhas exclusivas) em `pr326`, `pr346`,
+  `pr348`, `pr350`, `pr360`, `pr374`, `pr385`, `pr392` e `pr394`: nesses refs não há nada a recuperar
+  neste arquivo. Nos antigos difere: 7 linhas do ref com 0 presentes na `main` (`pr3`, `pr4`, `pr75..pr97`),
+  6 linhas com 2 presentes (`pr308`, `pr318`).
+
+O que sustenta a classificação dos refs antigos é a leitura do hunk, não a igualdade de árvore — e por
+isso eles seguem no conjunto "não descartável por prova".
+
+**A regra de exclusão não exige árvore idêntica.** O que a exclusão de um ref exige é que **todo** o
+trabalho dele esteja já incorporado à `main` ou comprovadamente obsoleto. A igualdade de árvore é apenas
+a prova mais barata (e nenhum ref atual passa por ela), então a prova tem de ser feita arquivo a arquivo:
+`git diff --quiet origin/main <ref> -- <path>` com status `0` em cada caminho, ou leitura do hunk quando
+o status é `1` mostrando que o que sobra já está na `main` de forma equivalente ou foi substituído.
+Sem essa prova por caminho, o ref fica — mesmo que a PR esteja fechada e o assunto pareça resolvido.
+
+### Recuperado nesta rodada
+
+| Unidade | Arquivos | Prova da ausência na `main` | Ação |
+| --- | --- | --- | --- |
+| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa (recuperação proposta na **PR #429**) | `src/hooks/useCommercialIntelligence.ts`, `src/components/intelligence/CategoryRanking.tsx`, `tests/components/intelligence/CategoryRanking.errors.test.tsx` | `git diff origin/main refs/audit/pr112 -- <hook>` vazio antes da porta (main idêntica à base da PR); `useCommercialIntelligence.ts:440-441` consulta `order_items` sem paginação; `:451` `internalOrders += 1` conta linha, não pedido; `:464` `catch { logger.warn }` zera 40% do score sem avisar; `CategoryRanking.tsx:54,216` sem `isError`, falha renderiza "Nenhuma categoria com vendas" | recuperação **proposta** na PR #429 (aberta); sai desta tabela quando a #429 entrar na `main` |
+| `automation/inventario-estado` | `inventario/estado/{banco,edges,rotas}.json` | único commit exclusivo é `190da39e2 chore(inventario): estado real do banco e do codigo [auto]`; 6217 linhas geradas | artefato de automação — não é trabalho de produto, não precisa ser recuperado |
+
+### Trabalho parcial real, ainda ausente da `main` (recuperar)
+
+Recuperação **proposta** (PR aberta) não é recuperação **integrada**: o item só sai desta tabela quando
+a PR que o recupera entra na `main`.
+
+| Unidade | Arquivos | Prova da ausência | Observação |
+| --- | --- | --- | --- |
+| **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
+| **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
+| **PR #145** — favorito indisponível deixa de sumir da lista (recuperação proposta na **PR #431**) | `src/pages/FavoritesPage.tsx` (`UnavailableFavoriteCard`), `src/hooks/useFavoriteLists.ts`, `e2e/helpers/auth.ts`, `e2e/routes/quotes/view.spec.ts`, `e2e/audit-validation.spec.ts` | `git grep -c UnavailableFavoriteCard origin/main -- src/pages/FavoritesPage.tsx` → 0; `e2e/helpers/auth.ts` e os dois specs com 0 commits da `main` desde a base da PR | item some da lista em vez de aparecer marcado como indisponível; a branch também carregava correção de sessão e2e de outra conta e isolamento do orçamento. Recuperação **proposta** na PR #431 (aberta): continua pendente até o merge |
+| **PR #176/#157** — estados de dado no BI | `src/components/bi/*` | medido em `ClientOverview360.tsx`: `git diff --shortstat origin/main refs/audit/pr176` → `7 insertions, 17 deletions` (a `main` já tem o grosso; sobram os selos "Dados indisponíveis"/"Dados insuficientes" e o `aria-label` do switch) | residual pequeno, não é a feature inteira |
+| **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
+
+### Confirmado incorporado / descartável (com prova)
+
+| Unidade | Prova |
+| --- | --- |
+| PR #288/#289 (hardening) | migrations renomeadas para `20261118130000`…`20261118130400_*` na `main` |
+| PR #157 (migration de retry) | substituída por `20261030210000_require_active_actor_for_quote_status_retry.sql` |
+| PR #179 (edges) | `supabase/functions/_shared/ilike-pattern.ts` e `supabase/functions/sicoob-document-ingest/registration-state.ts` EXISTEM na `main`; `crm-db-bridge/index.ts` já consome `ilike-pattern` |
+| PR #75 (relatórios Sicoob) | `src/pages/sicoob/reports/SicoobReportsPage.tsx` foi reescrito na `main` (versão da PR: 299+/531− contra a main) e `tests/pages/SicoobReportsPage.budgetHistory.test.ts` existe |
+| PR #119 (`CartCompanyDirectoryResults`) | `src/components/cart/CartCompanyPicker.tsx:24,29,38` e `CartCompanyPickerDialog.tsx:38,43,52` já renderizam `role="alert"` + "Tentar novamente" |
+| PR #105, #85, #117, #118, #154, #158, #161, #149 | docs/inventário (`PENDENCIAS.md`, `RELATORIO_CI.md`, `fontes-sha256.json`, JSON de inventário) — não é produto |
+| `devin/1791201000-ux-onda2` | subconjunto byte a byte de ux-onda1 (PR #100), conforme `branches.md` |
+
+### Não verificado nesta rodada
+
+- Se `20261122180000_schedule_scheduled_reports_worker.sql` e
+  `20261122210000_allow_worker_deactivate_revoked_report.sql` estão aplicadas em produção: a
+  Management API do Supabase devolve 403 para esta conta e não há connection string no ambiente.
+  A allowlist de `scripts/db/apply-sicoob-migrations.mjs` cobre 53 das 627 migrations da `main` —
+  condição pré-existente do repo (`local_sem_ledger: 465` em
+  `scripts/db/migration-ledger-baseline.json`), não regressão isolada dessas duas.
+
+### Regra de exclusão que sai desta rodada
+
+Só pode ser apagada a ref cuja PR aparece em "confirmado incorporado" **por inteiro**. Incorporação
+parcial não libera exclusão: se qualquer parte da PR continuar em "trabalho parcial real, ainda ausente",
+a ref fica. Exemplos vivos nesta rodada: **#119** está em "confirmado incorporado" pelo que a `main`
+já absorveu, mas segue pendente pela guarda de navegação e pelos testes de segurança; **#157** está
+incorporada pela migration de retry (a tela de relatórios pertence à **#75**, tabela acima), mas segue
+pendente pelos selos de dado do BI. Nos dois casos, o veredito é "conservar a ref até a parte pendente
+ser recuperada ou declarada obsoleta por escrito".
+
+As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
+escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
