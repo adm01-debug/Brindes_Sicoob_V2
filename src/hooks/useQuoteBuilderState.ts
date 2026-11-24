@@ -384,10 +384,16 @@ interface CompleteSaveParams {
   finalStatus: SaveStatus;
   transitionApplied: boolean;
   setExpectedRowVersion: (version: number | null) => void;
+  /**
+   * Alguém editou a tela enquanto o servidor gravava? O snapshot enviado é a
+   * referência do que está salvo, então edição posterior a ele continua sendo
+   * trabalho não salvo e não pode ser levada embora na saída para o detalhe.
+   */
+  haEdicaoPosteriorAoEnvio: () => boolean;
   navigate: (path: string) => void;
 }
 
-function completeQuoteSave(params: CompleteSaveParams): void {
+export function completeQuoteSave(params: CompleteSaveParams): void {
   const { result, finalStatus, transitionApplied } = params;
   if (params.isEditMode) {
     params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
@@ -398,15 +404,16 @@ function completeQuoteSave(params: CompleteSaveParams): void {
     );
     // O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode
     // cair no aviso de "alteracoes nao salvas" (o snapshot limpo chega um
-    // render depois da navegacao).
-    autorizarSaida();
+    // render depois da navegacao). Edicao feita durante a chamada fica de fora
+    // da autorizacao: ela nao esta no orcamento gravado.
+    if (!params.haEdicaoPosteriorAoEnvio()) autorizarSaida();
     params.navigate(`/orcamentos/${result.id}`);
     return;
   }
   if (finalStatus === 'pending_singular_approval') {
     toast.success('Solicitação enviada para aprovação da Singular!');
   }
-  autorizarSaida();
+  if (!params.haEdicaoPosteriorAoEnvio()) autorizarSaida();
   params.navigate(`/orcamentos/${result.id}`);
 }
 
@@ -898,6 +905,7 @@ export function useQuoteBuilderState() {
         updateQuoteStatus,
       });
       completeQuoteSave({
+        haEdicaoPosteriorAoEnvio: () => JSON.stringify(formSnapshotRef.current) !== submittedFormSnapshot,
         result,
         isEditMode,
         expectedRowVersion,

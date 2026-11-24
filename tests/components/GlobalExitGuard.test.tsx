@@ -8,7 +8,13 @@
  */
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router-dom';
+import {
+  Link,
+  Outlet,
+  RouterProvider,
+  createBrowserRouter,
+  createMemoryRouter,
+} from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GlobalExitGuard } from '@/components/routing/GlobalExitGuard';
 import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
@@ -155,6 +161,39 @@ describe('aviso global de saída', () => {
 
     expect(await screen.findByText('Alterações não salvas')).toBeInTheDocument();
     relogio.mockRestore();
+  });
+});
+
+describe('voltar do navegador com histórico de verdade', () => {
+  it('segue avisando mesmo depois de a tela reescrever o histórico (importação de carrinho)', async () => {
+    // useQuoteInitialization.ts:351 faz window.history.replaceState({}, title)
+    // ao importar um carrinho, o que apaga o state da entrada do histórico.
+    // O voltar seguinte tem de continuar caindo no aviso.
+    window.history.replaceState({}, '', '/origem');
+    const router = createBrowserRouter([
+      {
+        element: <Moldura />,
+        children: [
+          { path: '/origem', element: <OutraTela /> },
+          { path: '/formulario', element: <Formulario sujo /> },
+        ],
+      },
+    ]);
+    render(<RouterProvider router={router} />);
+    await router.navigate('/formulario');
+    await esperarDeclaracao(true);
+
+    // A entrada atual passa a existir sem state nenhum, como depois da
+    // importacao de carrinho.
+    window.history.replaceState({}, document.title);
+    expect(window.history.state).toEqual({});
+    await router.navigate(-1);
+
+    expect(await screen.findByText('Alterações não salvas')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/formulario');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sair sem salvar' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/origem'));
   });
 });
 
