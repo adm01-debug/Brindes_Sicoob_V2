@@ -99,6 +99,15 @@ verify_jwt = false
 [functions.health-check]
 verify_jwt = false
 
+# Recebe webhook de sistema externo: quem chama nao tem JWT do Supabase, a
+# autenticidade vem do HMAC por endpoint (`hmac_secret_ref`) validado no
+# handler. Sem esta declaracao o deploy pela CLI aplica o padrao
+# `verify_jwt = true` e passa a recusar o emissor externo com 401 — foi o que a
+# sonda em producao mostrou nao acontecer hoje (chamada sem cabecalho de
+# autorizacao chega ao handler e responde 404 do slug inexistente).
+[functions.webhook-inbound]
+verify_jwt = false
+
 # Gateway exige JWT; a autorizacao fina continua no proprio handler.
 [functions.sicoob-artwork-register]
 verify_jwt = true

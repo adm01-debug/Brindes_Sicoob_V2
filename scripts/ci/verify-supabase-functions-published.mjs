@@ -26,6 +26,9 @@ export const requiredFunctions = [
   'process-batch-export',
   'send-scheduled-reports',
   'connections-health-check',
+  // Recebe webhook externo: fora da allowlist nunca seria republicado nem
+  // remedido, e a URL anunciada em `WebhooksTab` ficaria sem verificacao.
+  'webhook-inbound',
 ];
 
 function getFunctions(payload, label) {
