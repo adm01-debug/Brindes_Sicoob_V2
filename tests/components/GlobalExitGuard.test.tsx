@@ -17,6 +17,7 @@ import {
 } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GlobalExitGuard } from '@/components/routing/GlobalExitGuard';
+import { completeQuoteSave } from '@/hooks/useQuoteBuilderState';
 import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
 import {
   agendarAposSaida,
@@ -211,6 +212,46 @@ describe('voltar do navegador com trabalho pendente', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/origem'));
     await waitFor(() => expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument());
+  });
+});
+
+describe('saída depois de salvar o orçamento', () => {
+  const resultado = { id: 'orc-1', row_version: 3 } as never;
+
+  function concluirSalvamento(haEdicaoPosteriorAoEnvio: boolean) {
+    completeQuoteSave({
+      result: resultado,
+      isEditMode: false,
+      expectedRowVersion: null,
+      finalStatus: 'draft',
+      transitionApplied: true,
+      saltosDeVersao: 0,
+      setExpectedRowVersion: () => {},
+      haEdicaoPosteriorAoEnvio: () => haEdicaoPosteriorAoEnvio,
+      navigate: () => {},
+    });
+  }
+
+  it('edição feita durante a gravação volta a pedir confirmação', async () => {
+    const router = montar({ sujo: true });
+    await esperarDeclaracao(true);
+
+    concluirSalvamento(true);
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+
+    expect(await screen.findByText('Alterações não salvas')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/formulario');
+  });
+
+  it('salvamento sem edição pendente sai direto', async () => {
+    const router = montar({ sujo: true });
+    await esperarDeclaracao(true);
+
+    concluirSalvamento(false);
+    await userEvent.click(screen.getByRole('link', { name: 'Outra tela' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/outra'));
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
   });
 });
 

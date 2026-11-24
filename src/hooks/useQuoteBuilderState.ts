@@ -338,31 +338,49 @@ interface TransitionQuoteParams {
   updateQuoteStatus: (quoteId: string, status: Quote['status']) => Promise<boolean>;
 }
 
-async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
+interface TransicaoAplicada {
+  aplicada: boolean;
+  /**
+   * Quantas vezes a versão da linha subiu na transição. As RPCs de status
+   * (`bulk_update_quote_status_atomic`, `request_discount_approval_atomic`)
+   * fazem `row_version = row_version + 1`, então quem permanece na tela depois
+   * de salvar precisa somar esses saltos: sem isso o próximo salvamento sairia
+   * com versão defasada e seria recusado pelo lock otimista.
+   */
+  saltosDeVersao: number;
+}
+
+export async function applyQuoteTransition(
+  params: TransitionQuoteParams,
+): Promise<TransicaoAplicada> {
   const quoteId = params.quote.id;
-  if (!quoteId) return false;
+  if (!quoteId) return { aplicada: false, saltosDeVersao: 0 };
+  let saltosDeVersao = 0;
   let effectiveStatus = params.persistedStatus;
   if (quoteStatusRequiresDraftReset(effectiveStatus)) {
     const reopened = await params.updateQuoteStatus(quoteId, 'draft');
-    if (!reopened) return false;
+    if (!reopened) return { aplicada: false, saltosDeVersao };
     effectiveStatus = 'draft';
+    saltosDeVersao += 1;
   }
   if (
     params.finalStatus === 'pending_approval' &&
     params.maxDiscountPercent !== null &&
     params.maxDiscountPercent !== undefined
   ) {
-    return params.requestApproval(
+    const requested = await params.requestApproval(
       quoteId,
       params.realDiscountPercent,
       params.maxDiscountPercent,
       params.sellerNotes,
     );
+    return { aplicada: requested, saltosDeVersao: requested ? saltosDeVersao + 1 : saltosDeVersao };
   }
   if (params.finalStatus !== effectiveStatus) {
-    return params.updateQuoteStatus(quoteId, params.finalStatus);
+    const updated = await params.updateQuoteStatus(quoteId, params.finalStatus);
+    return { aplicada: updated, saltosDeVersao: updated ? saltosDeVersao + 1 : saltosDeVersao };
   }
-  return true;
+  return { aplicada: true, saltosDeVersao };
 }
 
 function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote['status'] {
@@ -383,6 +401,7 @@ interface CompleteSaveParams {
   expectedRowVersion: number | null;
   finalStatus: SaveStatus;
   transitionApplied: boolean;
+  saltosDeVersao: number;
   setExpectedRowVersion: (version: number | null) => void;
   /**
    * Alguém editou a tela enquanto o servidor gravava? O snapshot enviado é a
@@ -396,7 +415,14 @@ interface CompleteSaveParams {
 export function completeQuoteSave(params: CompleteSaveParams): void {
   const { result, finalStatus, transitionApplied } = params;
   if (params.isEditMode) {
-    params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
+    const versaoDoServidor = result.row_version ?? params.expectedRowVersion;
+    // Soma os saltos da transição de status: quem edita durante a gravação fica
+    // na tela e salvaria de novo com a versão de antes da reabertura.
+    params.setExpectedRowVersion(
+      typeof versaoDoServidor === 'number'
+        ? versaoDoServidor + params.saltosDeVersao
+        : versaoDoServidor,
+    );
   }
   if (!transitionApplied) {
     toast.warning(
@@ -843,6 +869,12 @@ export function useQuoteBuilderState() {
       }
       if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
       if (!validateFreshPrices(status, items)) return;
+      // Fotografa o formulário antes de qualquer espera: o que vai ao servidor
+      // são os valores desta closure (os do clique), então a referência de
+      // "está gravado" precisa ser a mesma foto. Lendo depois do await da verba
+      // de PA, uma edição feita durante a espera entraria na foto sem ter sido
+      // enviada e seria dada como salva.
+      const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
       const isPaUser = isPaPurchaser(isGerentePa, userRoles);
       const validBudget = await validatePaBudget({
         status,
@@ -873,8 +905,6 @@ export function useQuoteBuilderState() {
         shippingType,
         shippingCost,
       });
-      // Fotografa o formulário como ele vai para o servidor, antes da chamada.
-      const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
       const result = await persistQuote({
         isEditMode,
         quoteId,
@@ -894,7 +924,7 @@ export function useQuoteBuilderState() {
       // "alterações não salvas" ao sair de um orçamento que acabara de salvar.
       setBaselineSalvo(submittedFormSnapshot);
       createIdempotencyKeyRef.current = null;
-      const transitionApplied = await applyQuoteTransition({
+      const transicao = await applyQuoteTransition({
         quote: result,
         finalStatus,
         persistedStatus,
@@ -910,7 +940,8 @@ export function useQuoteBuilderState() {
         isEditMode,
         expectedRowVersion,
         finalStatus,
-        transitionApplied,
+        transitionApplied: transicao.aplicada,
+        saltosDeVersao: transicao.saltosDeVersao,
         setExpectedRowVersion,
         navigate,
       });

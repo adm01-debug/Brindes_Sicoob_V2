@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useBlocker, useLocation } from 'react-router-dom';
 import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 import {
@@ -51,11 +51,21 @@ export function GlobalExitGuard() {
     limparAutorizacaoDeSaida();
   }, [location.key]);
 
+  // `blocker.state` é o valor do render em que o diálogo foi montado, então ele
+  // continua "blocked" logo depois do `proceed()`; o fechamento automático do
+  // diálogo (Radix) chamaria a resposta contrária na mesma batida. Esta trava
+  // garante uma resposta por bloqueio.
+  const respostaDada = useRef(false);
+  useEffect(() => {
+    if (!bloqueado) respostaDada.current = false;
+  }, [bloqueado]);
+
   // O diálogo fecha sozinho depois de uma resposta, e fechar também cai aqui:
   // sem esta trava, o "Sair sem salvar" viraria um cancelamento em seguida e a
   // mesma saída seria contada duas vezes.
   const decidir = (resposta: 'sair' | 'ficar') => {
-    if (blocker.state !== 'blocked') return;
+    if (blocker.state !== 'blocked' || respostaDada.current) return;
+    respostaDada.current = true;
     trackUx(resposta === 'sair' ? 'guard.confirm' : 'guard.cancel');
     if (resposta === 'sair') {
       // O voltar do navegador (POP) e repetido pelo roteador depois do
