@@ -43,6 +43,13 @@ interface AutoSaveResult {
    */
   capturarSnapshotAtual: () => string;
   /**
+   * Versão da linha que esta aba conhece agora (a mesma que o autosave usa na
+   * trava). O "Salvar" manual precisa dela: depois de um autosave, a versão que
+   * a página guardou fica velha, e gravar com ela seria recusado como conflito
+   * vindo da própria aba.
+   */
+  capturarVersaoPersistida: () => string | null;
+  /**
    * Solta o vínculo desta aba com o kit pessoal em edição.
    *
    * Abrir um template como base troca o conteúdo do editor sem desmontar a
@@ -136,7 +143,7 @@ async function readKnownUpdatedAt(kitId: string, userId: string): Promise<string
   return data?.updated_at ?? null;
 }
 
-interface PersistResult {
+export interface PersistResult {
   createdId: string | null;
   updatedAt: string | null;
 }
@@ -160,7 +167,7 @@ async function explainEmptyUpdate(
  * esta aba conhece. Sem isso, duas abas no mesmo kit se sobrescrevem em
  * silêncio — a última gravação vence e o trabalho da outra some sem aviso.
  */
-async function updateWithOptimisticLock(
+export async function updateWithOptimisticLock(
   payload: ReturnType<typeof buildCustomKitPayload>,
   kitId: string,
   userId: string,
@@ -569,9 +576,12 @@ export function useKitAutoSave(
 
   const capturarSnapshotAtual = useCallback(() => latestSnapshotRef.current, []);
 
+  /** Versão da linha que esta aba conhece — a trava do salvamento manual. */
+  const capturarVersaoPersistida = useCallback(() => knownUpdatedAtRef.current, []);
+
   return {
     lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry, syncPersistedVersion, flushPending, capturarSnapshotAtual, desvincularKitPessoal,
-    gravarPendente,
+    gravarPendente, capturarVersaoPersistida,
   };
 }

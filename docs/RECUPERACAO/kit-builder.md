@@ -37,12 +37,20 @@ pendente e gravação concluída limpa o pendente
 depois da confirmação e a rota fica declarada como suja
 (`tests/pages/kit-builder-guarda-saida.test.tsx`).
 
-**Nuance dos itens 3 e 10: o CAS existe no caminho automático.** O salvamento
-manual (`src/hooks/useCustomKitPersistence.ts:45-62`) atualiza por `id` +
-`user_id`, sem comparar `updated_at`: duas abas que clicarem em "Salvar" ao
-mesmo tempo (ou dois cliques manuais depois de um autosave de outra aba)
-seguem com último-escreve-vence. É o mesmo mecanismo do item 3, ou seja, é o
-único furo conhecido desta família de lacunas — fechado só no autosave.
+**Itens 3 e 10 — CAS no caminho automático e no manual (fechado em 24/11/2026,
+PR #428).** O salvamento manual (`src/hooks/useCustomKitPersistence.ts`)
+atualizava por `id` + `user_id`, sem comparar `updated_at`: duas abas que
+clicassem em "Salvar" ao mesmo tempo (ou dois cliques manuais depois de um
+autosave de outra aba) seguiam com último-escreve-vence — era o único furo
+conhecido desta família de lacunas. Hoje o update manual chama a mesma
+`updateWithOptimisticLock` do autosave, com a versão esperada lida de
+`capturarVersaoPersistida()` (`useKitAutoSave.ts`): o estado de versão da página
+fica velho depois de um autosave e travaria a própria aba, então a leitura é da
+versão viva do hook. Sem versão conhecida (kit criado nesta aba) a gravação
+segue sem trava, igual ao autosave; zero linhas atualizadas passam a distinguir
+conflito (recarregar) de linha inexistente/RLS, em vez de vazar o erro cru do
+PostgREST. Coberto por `tests/hooks/useCustomKitPersistence.test.tsx` (3 casos,
+2 deles falham contra o código anterior).
 
 **Revisão da PR (23/11/2026) — o que passou a ficar coberto:**
 

@@ -218,7 +218,7 @@ export default function KitBuilderPage() {
   const {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
-    capturarSnapshotAtual, desvincularKitPessoal, gravarPendente,
+    capturarSnapshotAtual, desvincularKitPessoal, gravarPendente, capturarVersaoPersistida,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
     isHydrated && !isTemplateLoading, loadedUpdatedAt,
@@ -370,7 +370,7 @@ export default function KitBuilderPage() {
       const idDoAutosave = await flushAutoSave();
       const editingId = currentKitId || idDoAutosave || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
-      const result = await saveKit(kitState, kitQuantity, editingId);
+      const result = await saveKit(kitState, kitQuantity, editingId, capturarVersaoPersistida());
       if (result && 'id' in result) {
         setCurrentKitId((result as { id: string }).id);
         // O "Salvar" acabou de mudar `updated_at`. Sem avisar o autosave, a
