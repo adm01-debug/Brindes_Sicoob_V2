@@ -146,7 +146,7 @@ function roleStoragePath(role: Role): string {
   return path.join(AUTH_DIR, filenames[role]);
 }
 
-async function restoreRoleStorage(page: Page, role: Role, email: string): Promise<boolean> {
+async function restoreRoleStorage(page: Page, role: Role, expectedEmail: string): Promise<boolean> {
   const storagePath = roleStoragePath(role);
   if (!fs.existsSync(storagePath)) return false;
 
@@ -160,6 +160,23 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
   const currentOrigin = new URL(page.url()).origin;
   const originState = state.origins?.find(({ origin }) => origin === currentOrigin);
   if (!originState?.localStorage.length) return false;
+
+  // A sessão global `user` pode ter sido criada com E2E_USER_EMAIL, enquanto
+  // este fluxo pede E2E_VIEWER_EMAIL. Só restaure um arquivo que pertence à
+  // conta solicitada; se for outra conta, o chamador deve autenticar pela UI.
+  const storedEmail = originState.localStorage
+    .filter(({ name }) => /sb-.*-auth-token/.test(name))
+    .map(({ value }) => {
+      try {
+        const session = JSON.parse(value);
+        const candidate = session?.user?.email ?? session?.currentSession?.user?.email;
+        return typeof candidate === 'string' ? candidate.toLowerCase() : null;
+      } catch {
+        return null;
+      }
+    })
+    .find((candidate) => candidate === expectedEmail.toLowerCase());
+  if (!storedEmail) return false;
 
   await page.context().clearCookies();
   await page.evaluate((entries) => {
@@ -177,7 +194,7 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
       },
       { timeout: 10_000, message: `aguardando restauração da sessão ${role}` },
     )
-    .toBe(email.toLowerCase());
+    .toBe(expectedEmail.toLowerCase());
   // A sessão já está no storage, mas o guard público ainda precisa concluir
   // o redirecionamento de /login. Sem esta barreira, a próxima page.goto pode
   // ser abortada pela navegação concorrente do React Router.
