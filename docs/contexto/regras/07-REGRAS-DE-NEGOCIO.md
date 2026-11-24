@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `dffd62ed6c` · branch `main` · 2026-11-24 23:06 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `3c5882b0e6` · branch `main` · 2026-11-24 23:21 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -2381,9 +2381,9 @@ _nenhum item encontrado_
   ```
   void }) {
   ```
-- **shouldShowPriceDropChip(onTogglePriceDrops: Props["onTogglePriceDrops"], priceDropCount: Props["priceDropCount"],)** — `src/components/favorites/FavoritesSortBar.tsx`
+- **shouldShowPriceDropChip(onTogglePriceDrops: Props["onTogglePriceDrops"], priceDropCount: Props["priceDropCount"], onlyPriceDrops: boolean,)** — `src/components/favorites/FavoritesSortBar.tsx`
   ```
-  if (!onTogglePriceDrops) return false; if (typeof priceDropCount !== "number") return true; return priceDropCount > 0;
+  if (!onTogglePriceDrops) return false; // Com o filtro ligado o chip precisa continuar visível: é o único jeito de desligar // quando a lista atual não tem nenhuma queda. if (onlyPriceDrops) return true; if (typeof priceDropCount !== "number") return true; return priceDropCount > 0;
   ```
 - **PriceDropCount({ count, selected }: { count: number | null | undefined; selected: boolean })** — `src/components/favorites/FavoritesSortBar.tsx`
   ```
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7235 testes em 730 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7241 testes em 732 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6054,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +430 linhas — lista completa em `context.json` | | |
+| … +432 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6542,4 +6542,4 @@ _nenhum item encontrado_
 | * Solicita permissão para notificações (para futura implementação) | `src/lib/sw-register.ts` |
 | * Score = (recente / baseline) * decay temporal * peso de volume mínimo | `src/lib/trending-score.ts` |
 | volume absoluto (para peso mínimo) | `src/lib/trending-score.ts` |
-| … +321 linhas — lista completa em `context.json` | |
+| … +322 linhas — lista completa em `context.json` | |

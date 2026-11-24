@@ -6804,7 +6804,7 @@
     "FavoritesSortBar"
    ],
    "export_default": null,
-   "linhas": 126,
+   "linhas": 130,
    "dominio": "components/favorites",
    "hooks_locais": [],
    "tabelas": [],
@@ -17240,7 +17240,7 @@
     "FavoritesPage"
    ],
    "export_default": "FavoritesPage",
-   "linhas": 619,
+   "linhas": 784,
    "dominio": "pages",
    "hooks_locais": [
     "useCatalogSelection",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "dffd62ed6c8d0f8c37346c573cfa4bf51e724e2f",
+  "sha": "3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 23:06 UTC",
-  "files_total": 5293,
-  "code_files": 3854,
-  "code_lines": 568944
+  "generated_at": "2026-11-24 23:21 UTC",
+  "files_total": 5295,
+  "code_files": 3856,
+  "code_lines": 569320
  },
  "version": "1.3.2",
- "facts_hash": "7f6943dd5bf9e134",
+ "facts_hash": "803296391ae29cfa",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1500,
-   ".tsx": 1461,
+   ".tsx": 1463,
    ".sql": 690,
    ".mjs": 141,
    ".py": 69,
@@ -62551,7 +62551,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1293,
+  "components_count": 1294,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -64967,7 +64967,7 @@
   {
    "module": "e2e",
    "files": 150,
-   "lines": 11867,
+   "lines": 11903,
    "tables": [],
    "exports": [
     "global-setup.ts: globalSetup, async",
@@ -65347,7 +65347,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167904,
+   "lines": 167908,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65680,7 +65680,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48398,
+   "lines": 48402,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66126,7 +66126,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51324,
+   "lines": 51489,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67125,8 +67125,8 @@
   },
   {
    "module": "tests",
-   "files": 684,
-   "lines": 92483,
+   "files": 686,
+   "lines": 92650,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -82534,6 +82534,10 @@
    {
     "file": "src/pages/FavoritesPage.tsx",
     "text": "Map de notas (apenas remoto)"
+   },
+   {
+    "file": "src/pages/FavoritesPage.tsx",
+    "text": "não pode listar cartões de indisponíveis. Em \"Todos os favoritos\" não existe o"
    },
    {
     "file": "src/pages/KitBuilderPage.tsx",
@@ -108846,8 +108850,8 @@
    {
     "file": "src/components/favorites/FavoritesSortBar.tsx",
     "name": "shouldShowPriceDropChip",
-    "params": "onTogglePriceDrops: Props[\"onTogglePriceDrops\"], priceDropCount: Props[\"priceDropCount\"],",
-    "body": "if (!onTogglePriceDrops) return false; if (typeof priceDropCount !== \"number\") return true; return priceDropCount > 0;"
+    "params": "onTogglePriceDrops: Props[\"onTogglePriceDrops\"], priceDropCount: Props[\"priceDropCount\"], onlyPriceDrops: boolean,",
+    "body": "if (!onTogglePriceDrops) return false; // Com o filtro ligado o chip precisa continuar visível: é o único jeito de desligar // quando a lista atual não tem nenhuma queda. if (onlyPriceDrops) return true; if (typeof priceDropCount !== \"number\") return true; return priceDropCount > 0;"
    },
    {
     "file": "src/components/favorites/FavoritesSortBar.tsx",
@@ -121998,6 +122002,18 @@
     "name": "renders open state"
    },
    {
+    "file": "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
+    "name": "FavoritesSortBar — chip de quedas"
+   },
+   {
+    "file": "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
+    "name": "continua visível com o filtro ligado e nenhuma queda na lista atual"
+   },
+   {
+    "file": "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
+    "name": "some quando não há queda e o filtro está desligado"
+   },
+   {
     "file": "tests/components/filters/FilterPanel.test.tsx",
     "name": "FilterPanel"
    },
@@ -129728,6 +129744,18 @@
    {
     "file": "tests/hooks/useExternalVariantStock.private-storage.test.tsx",
     "name": "mantem o valor original quando o storage nao consegue assinar"
+   },
+   {
+    "file": "tests/hooks/useFavoriteListItems.undo.test.tsx",
+    "name": "useFavoriteListItems — desfazer remoção"
+   },
+   {
+    "file": "tests/hooks/useFavoriteListItems.undo.test.tsx",
+    "name": "restaura o produto e variante removidos, não o item mais recente da lixeira"
+   },
+   {
+    "file": "tests/hooks/useFavoriteListItems.undo.test.tsx",
+    "name": "sem produto informado, mantém o comportamento antigo (item mais recente)"
    },
    {
     "file": "tests/hooks/useFavoriteQuickAdd.test.tsx",
@@ -180465,7 +180493,7 @@
   },
   "e2e/audit-validation.spec.ts": {
    "path": "e2e/audit-validation.spec.ts",
-   "lines": 94,
+   "lines": 100,
    "is_test": true,
    "env": [
     "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -181875,7 +181903,7 @@
   },
   "e2e/helpers/auth.ts": {
    "path": "e2e/helpers/auth.ts",
-   "lines": 328,
+   "lines": 345,
    "exports": [
     "interface LoginCreds",
     "type Role",
@@ -181924,6 +181952,7 @@
     "- **Todo login UI** deve passar por `loginViaUI` ou `loginAs` — nunca usar",
     "apenas refazendo UI se a sessão não estiver presente.",
     "* Quando true, espera permanecer em /login (validação/erro). */",
+    "conta solicitada; se for outra conta, o chamador deve autenticar pela UI.",
     "Reaproveita a sessão somente quando ela pertence exatamente à conta",
     "Esta navegação serve apenas para disponibilizar o localStorage da origin."
    ],
@@ -182631,7 +182660,7 @@
   },
   "e2e/routes/quotes/view.spec.ts": {
    "path": "e2e/routes/quotes/view.spec.ts",
-   "lines": 28,
+   "lines": 41,
    "is_test": true
   },
   "e2e/routes/sicoob/logistica-onda-a.spec.ts": {
@@ -196675,7 +196704,7 @@
   },
   "src/components/favorites/FavoritesSortBar.tsx": {
    "path": "src/components/favorites/FavoritesSortBar.tsx",
-   "lines": 126,
+   "lines": 130,
    "exports": [
     "type FavoritesSort",
     "function FavoritesSortBar"
@@ -196692,8 +196721,8 @@
    "calc_fns": [
     {
      "name": "shouldShowPriceDropChip",
-     "params": "onTogglePriceDrops: Props[\"onTogglePriceDrops\"], priceDropCount: Props[\"priceDropCount\"],",
-     "body": "if (!onTogglePriceDrops) return false; if (typeof priceDropCount !== \"number\") return true; return priceDropCount > 0;"
+     "params": "onTogglePriceDrops: Props[\"onTogglePriceDrops\"], priceDropCount: Props[\"priceDropCount\"], onlyPriceDrops: boolean,",
+     "body": "if (!onTogglePriceDrops) return false; // Com o filtro ligado o chip precisa continuar visível: é o único jeito de desligar // quando a lista atual não tem nenhuma queda. if (onlyPriceDrops) return true; if (typeof priceDropCount !== \"number\") return true; return priceDropCount > 0;"
     },
     {
      "name": "PriceDropCount",
@@ -209662,7 +209691,7 @@
   },
   "src/hooks/useFavoriteLists.ts": {
    "path": "src/hooks/useFavoriteLists.ts",
-   "lines": 511,
+   "lines": 515,
    "exports": [
     "interface FavoriteList",
     "interface FavoriteListItem",
@@ -222744,7 +222773,7 @@
   },
   "src/pages/FavoritesPage.tsx": {
    "path": "src/pages/FavoritesPage.tsx",
-   "lines": 619,
+   "lines": 784,
    "exports": [
     "function FavoritesPage"
    ],
@@ -222759,7 +222788,8 @@
     }
    ],
    "rule_comments": [
-    "Map de notas (apenas remoto)"
+    "Map de notas (apenas remoto)",
+    "não pode listar cartões de indisponíveis. Em \"Todos os favoritos\" não existe o"
    ],
    "calc_fns": [
     {
@@ -247916,6 +247946,16 @@
     "renders open state"
    ]
   },
+  "tests/components/favorites/FavoritesSortBar.chip.test.tsx": {
+   "path": "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
+   "lines": 39,
+   "is_test": true,
+   "tests": [
+    "FavoritesSortBar — chip de quedas",
+    "continua visível com o filtro ligado e nenhuma queda na lista atual",
+    "some quando não há queda e o filtro está desligado"
+   ]
+  },
   "tests/components/filters/FilterPanel.test.tsx": {
    "path": "tests/components/filters/FilterPanel.test.tsx",
    "lines": 174,
@@ -251623,6 +251663,16 @@
     "useExternalVariantStock",
     "assina a miniatura da variante antes de expor ao consumidor",
     "mantem o valor original quando o storage nao consegue assinar"
+   ]
+  },
+  "tests/hooks/useFavoriteListItems.undo.test.tsx": {
+   "path": "tests/hooks/useFavoriteListItems.undo.test.tsx",
+   "lines": 128,
+   "is_test": true,
+   "tests": [
+    "useFavoriteListItems — desfazer remoção",
+    "restaura o produto e variante removidos, não o item mais recente da lixeira",
+    "sem produto informado, mantém o comportamento antigo (item mais recente)"
    ]
   },
   "tests/hooks/useFavoriteQuickAdd.test.tsx": {
@@ -258994,10 +259044,26 @@
   }
  },
  "git": {
-  "sha": "dffd62ed6c8d0f8c37346c573cfa4bf51e724e2f",
+  "sha": "3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "3c5882b",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)",
+    "files": [
+     "e2e/audit-validation.spec.ts",
+     "e2e/helpers/auth.ts",
+     "e2e/routes/quotes/view.spec.ts",
+     "src/components/favorites/FavoritesSortBar.tsx",
+     "src/hooks/useFavoriteLists.ts",
+     "src/pages/FavoritesPage.tsx",
+     "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
+     "tests/hooks/useFavoriteListItems.undo.test.tsx"
+    ]
+   },
    {
     "sha": "dffd62e",
     "date": "2026-11-24",
@@ -259415,18 +259481,6 @@
      "supabase/functions/send-transactional-email/index.ts",
      "supabase/functions/send-transactional-email/templates.ts",
      "tests/scenarios/email-transacional-legado.mjs"
-    ]
-   },
-   {
-    "sha": "e7e6753",
-    "date": "2026-11-20",
-    "author": "adm01-debug",
-    "subject": "docs: provar aplicação em produção dos P0 SIC-021/040/041/060 (#391)",
-    "files": [
-     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
-     "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
-     "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
-     "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md"
     ]
    }
   ],

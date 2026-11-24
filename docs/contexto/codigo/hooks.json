@@ -5739,7 +5739,7 @@
     "useFavoriteTrash",
     "useLegacyFavoritesMigration"
    ],
-   "linhas": 511,
+   "linhas": 515,
    "dominio": "hooks",
    "tabelas": [
     "favorite_items",
@@ -5774,7 +5774,7 @@
     "src/hooks/useFavoriteQuickAdd.ts",
     "src/pages/FavoritesPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useFavoriteQuickAdd.ts",
