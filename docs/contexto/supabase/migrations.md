@@ -165,3 +165,4 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261119140000 | [fix_compliance_rls_scan](migrations/20261119140000_fix_compliance_rls_scan.sql) | 1 |
 | 20261122120000 | [pa_budget_full_lifecycle](migrations/20261122120000_pa_budget_full_lifecycle.sql) | 1 |
 | 20261123090000 | [notify_singular_quote_decision](migrations/20261123090000_notify_singular_quote_decision.sql) | 1 |
+| 20261124142500 | [revoke_execute_pa_budget_triggers](migrations/20261124142500_revoke_execute_pa_budget_triggers.sql) | 1 |

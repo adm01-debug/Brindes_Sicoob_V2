@@ -2,6 +2,11 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-24 18:19 UTC
+
+- **functions** alterado (8): `public.audit_security_definer_acl()`, `public.tg_pa_budget_entries_competencia_aberta()`, `public.tg_pa_budget_entries_immutable()`, `public.tg_recalc_pa_budget_states()`, `public.tg_set_order_cost_center()`, `public.tg_sicoob_order_budget_after_insert()`, `public.tg_sync_pa_budget_planejada()`, `public.tg_validate_order_allocations()`
+- **migrations** adicionado (1): `20261124142500_revoke_execute_pa_budget_triggers`
+
 ## 2026-11-24 00:34 UTC
 
 - **realtime** adicionado (1): `supabase_realtime_messages_publication:realtime.messages_2026_11_27`
