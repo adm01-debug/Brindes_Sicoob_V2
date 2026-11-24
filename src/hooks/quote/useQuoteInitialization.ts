@@ -6,8 +6,14 @@ import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { useQuoteUrlPrefill } from "./useQuoteUrlPrefill";
+import { logger } from "@/lib/logger";
 import type { Product } from "@/types/quote-builder";
 import { loadQuoteProductsByIds } from "@/hooks/quote/useQuoteProductSearch";
+
+export const QUOTE_LOAD_FAILED =
+  "Não foi possível carregar este orçamento. Verifique a conexão e tente novamente.";
+export const QUOTE_LOAD_NOT_FOUND =
+  "Orçamento não encontrado ou sem permissão de acesso.";
 
 interface InitParams {
   isEditMode: boolean;
@@ -41,6 +47,7 @@ interface InitParams {
     setItemsIfEmpty?: (v: QuoteItem[]) => void;
     setTags: (v: string[]) => void;
     setLoadingQuote: (v: boolean) => void;
+    setQuoteLoadError?: (v: string | null) => void;
     setActiveItemIndex: (v: number | null) => void;
     setActiveItemIndexIfUnset?: (v: number) => void;
     setExpandedItems: (v: Set<number>) => void;
@@ -309,8 +316,11 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
   useEffect(() => {
     if (!isEditMode || !quoteId) return;
     setters.setLoadingQuote(true);
+    setters.setQuoteLoadError?.(null);
     fetchQuote(quoteId).then((quote) => {
-      if (quote) {
+      if (!quote) {
+        setters.setQuoteLoadError?.(QUOTE_LOAD_NOT_FOUND);
+      } else {
         applyExistingQuote(quote, setters);
         // quote_items não persiste price_updated_at/freshness (schema sem as
         // colunas). Rehidrata do catálogo (SSOT) para o badge/validação de
@@ -329,6 +339,10 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
           }));
         }
       }
+    }).catch((err) => {
+      logger.error("Falha ao carregar orçamento:", err);
+      setters.setQuoteLoadError?.(QUOTE_LOAD_FAILED);
+    }).finally(() => {
       setters.setLoadingQuote(false);
     });
   }, [fetchQuote, isEditMode, quoteId, setters, getProductCost, getProductById]);
