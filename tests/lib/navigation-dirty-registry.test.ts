@@ -6,11 +6,19 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  agendarAposSaida,
+  autorizarSaida,
   declararEstadoDaRota,
+  descartarAcoesAposSaida,
   esquecerRota,
+  executarAcoesAposSaida,
+  descartarTrabalhoDaRota,
+  limparAutorizacaoDeSaida,
   limparRegistroDeRotas,
   rotaEstaSuja,
   rotaTemEstadoDeclarado,
+  rotuloDaRota,
+  saidaAutorizada,
 } from '@/lib/navigation/dirty-registry';
 
 describe('registro de trabalho não salvo por rota', () => {
@@ -46,5 +54,102 @@ describe('registro de trabalho não salvo por rota', () => {
     declararEstadoDaRota('/montar-kit', false);
     expect(rotaEstaSuja('/orcamentos/novo')).toBe(true);
     expect(rotaEstaSuja('/montar-kit')).toBe(false);
+  });
+});
+
+describe('autorização de saída de quem já perguntou', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('sem confirmação recente, o portão não está autorizado', () => {
+    expect(saidaAutorizada()).toBe(false);
+  });
+
+  it('quem confirmou autoriza a saída que vem logo abaixo', () => {
+    const agora = Date.now();
+    autorizarSaida();
+    expect(saidaAutorizada(agora + 10)).toBe(true);
+  });
+
+  it('autorização velha não libera a próxima saída — o usuário pode ter mudado de ideia', () => {
+    const agora = Date.now();
+    autorizarSaida();
+    expect(saidaAutorizada(agora + 60_000)).toBe(false);
+  });
+
+  it('o logout apaga a autorização junto com o registro', () => {
+    autorizarSaida();
+    limparRegistroDeRotas();
+    expect(saidaAutorizada()).toBe(false);
+  });
+
+  it('limpar só a autorização preserva quem está sujo', () => {
+    declararEstadoDaRota('/montar-kit', true);
+    autorizarSaida();
+    limparAutorizacaoDeSaida();
+    expect(saidaAutorizada()).toBe(false);
+    expect(rotaEstaSuja('/montar-kit')).toBe(true);
+  });
+});
+
+describe('rótulo do botão de saída', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('rota sem rótulo devolve null — o portão usa o texto padrão', () => {
+    declararEstadoDaRota('/orcamentos/novo', true, 'Orçamento não salvo.');
+    expect(rotuloDaRota('/orcamentos/novo')).toBeNull();
+  });
+
+  it('a tela que grava ao sair diz isso no botão', () => {
+    declararEstadoDaRota('/montar-kit', true, 'A gravação continua.', 'Sair e gravar');
+    expect(rotuloDaRota('/montar-kit')).toBe('Sair e gravar');
+  });
+});
+
+describe('ações que só valem depois da saída confirmada', () => {
+  beforeEach(() => limparRegistroDeRotas());
+
+  it('executa uma única vez, na ordem em que foram agendadas', () => {
+    const ordem: string[] = [];
+    agendarAposSaida(() => ordem.push('primeira'));
+    agendarAposSaida(() => ordem.push('segunda'));
+
+    executarAcoesAposSaida();
+
+    expect(ordem).toEqual(['primeira', 'segunda']);
+    executarAcoesAposSaida();
+    expect(ordem).toEqual(['primeira', 'segunda']);
+  });
+
+  it('descartar impede o efeito colateral de quem ficou na tela', () => {
+    let apagou = false;
+    agendarAposSaida(() => { apagou = true; });
+
+    descartarAcoesAposSaida();
+    executarAcoesAposSaida();
+
+    expect(apagou).toBe(false);
+  });
+
+  it('a saida confirmada descarta o trabalho local de quem declarou', () => {
+    let descartes = 0;
+    declararEstadoDaRota('/orcamentos/novo', true, 'mensagem', 'Sair sem salvar', () => {
+      descartes += 1;
+    });
+
+    descartarTrabalhoDaRota('/orcamentos/novo');
+    expect(descartes).toBe(1);
+
+    descartarTrabalhoDaRota('/simulador');
+    expect(descartes).toBe(1);
+  });
+
+  it('o logout limpa a fila junto com o registro', () => {
+    let apagou = false;
+    agendarAposSaida(() => { apagou = true; });
+
+    limparRegistroDeRotas();
+    executarAcoesAposSaida();
+
+    expect(apagou).toBe(false);
   });
 });
