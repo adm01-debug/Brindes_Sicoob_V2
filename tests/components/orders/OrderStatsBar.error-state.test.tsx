@@ -23,9 +23,22 @@ describe("OrderStatsBar", () => {
     mocks.useOrdersList.mockReturnValue({ data: undefined, isError: true, refetch: mocks.refetch });
 
     render(<OrderStatsBar />);
-    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente as estatísticas" }));
 
     expect(mocks.refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("mostra recarga, não zeros, enquanto a retentativa está em curso", () => {
+    mocks.useOrdersList.mockReturnValue({ data: undefined, isError: true, refetch: mocks.refetch });
+
+    const { rerender } = render(<OrderStatsBar />);
+    // Retentar tira a consulta do estado de erro mantendo `data` indefinido.
+    mocks.useOrdersList.mockReturnValue({ data: undefined, isError: false, refetch: mocks.refetch });
+    rerender(<OrderStatsBar />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Recarregando estatísticas de pedidos");
+    expect(screen.queryByText("Total de Pedidos")).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("conta os pedidos quando a consulta responde", () => {

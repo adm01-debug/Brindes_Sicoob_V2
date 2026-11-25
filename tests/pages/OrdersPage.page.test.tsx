@@ -60,7 +60,7 @@ describe('OrdersPage', () => {
     expect(screen.getByText('pedido ord-1')).toBeTruthy();
     expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível atualizar a lista');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente a atualização da lista' }));
     expect(mocks.refetch).toHaveBeenCalledTimes(1);
 
     rerender(<OrdersPage />);

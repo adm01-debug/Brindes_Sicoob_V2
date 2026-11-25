@@ -158,7 +158,12 @@ function OrdersStaleNotice({ onRetry }: { onRetry?: () => void }) {
         </p>
       </div>
       {onRetry && (
-        <Button size="sm" variant="outline" onClick={() => void onRetry()}>
+        <Button
+          size="sm"
+          variant="outline"
+          aria-label="Tentar novamente a atualização da lista"
+          onClick={() => void onRetry()}
+        >
           Tentar novamente
         </Button>
       )}
@@ -355,7 +360,11 @@ function OrdersErrorState({ onRetry }: { onRetry?: () => void }) {
           A consulta falhou, então nenhum pedido foi listado — isto não é uma lista vazia.
         </p>
         {onRetry && (
-          <Button variant="outline" onClick={() => void onRetry()}>
+          <Button
+            variant="outline"
+            aria-label="Tentar novamente o carregamento dos pedidos"
+            onClick={() => void onRetry()}
+          >
             Tentar novamente
           </Button>
         )}
