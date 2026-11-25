@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 931,
+ "total": 932,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 697
+  "unit": 698
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 678
+   "arquivos": 679
   },
   {
    "padrao": "e2e/",
@@ -4221,6 +4221,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/hooks/bi/useIndustryTrends.test.tsx",
+   "tipo": "unit",
+   "linhas": 76,
+   "testa": [
+    "src/hooks/bi/useIndustryTrends.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
    "tipo": "unit",
    "linhas": 102,
@@ -8337,7 +8346,7 @@
   "src/hooks/bi/useClientVsIndustry.ts": 4,
   "src/hooks/bi/useClientsComparison.ts": 1,
   "src/hooks/bi/useIndustryCategoryTrends.ts": 2,
-  "src/hooks/bi/useIndustryTrends.ts": 2,
+  "src/hooks/bi/useIndustryTrends.ts": 3,
   "src/hooks/bi/useSeasonalPeakNotifications.ts": 1,
   "src/hooks/catalog/useCatalogFilters.ts": 1,
   "src/hooks/dev/useBridgeMetrics.ts": 5,

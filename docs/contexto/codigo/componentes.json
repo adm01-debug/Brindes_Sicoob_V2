@@ -4585,7 +4585,7 @@
     "IndustryTrendingProducts"
    ],
    "export_default": null,
-   "linhas": 223,
+   "linhas": 227,
    "dominio": "components/bi",
    "hooks_locais": [
     "useBICategoryFocus",

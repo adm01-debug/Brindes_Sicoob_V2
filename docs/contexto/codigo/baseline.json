@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "1e59beb0d00998c2a58c625415cd3342d2624c60",
+  "commit": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
   "branch": "main",
-  "data_commit": "2026-11-25T14:17:44-03:00",
+  "data_commit": "2026-11-25T15:07:38-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "950c2f5",
+    "data": "2026-11-25",
+    "assunto": "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)"
+   },
+   {
+    "sha": "514293d",
+    "data": "2026-11-25",
+    "assunto": "docs: reavalia os vereditos dos testes divergentes (#447)"
+   },
    {
     "sha": "1e59beb",
     "data": "2026-11-25",
@@ -121,16 +131,6 @@
     "sha": "4621e75",
     "data": "2026-11-24",
     "assunto": "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)"
-   },
-   {
-    "sha": "092f7ee",
-    "data": "2026-11-24",
-    "assunto": "infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)"
-   },
-   {
-    "sha": "947f1af",
-    "data": "2026-11-24",
-    "assunto": "feat: navegacao interna avisa antes de perder formulario preenchido (#421)"
    }
   ],
   "arquivos_mudados_7d": 1212,
@@ -157,7 +157,7 @@
    },
    {
     "pasta": "src/hooks/bi",
-    "mudancas": 17
+    "mudancas": 19
    },
    {
     "pasta": "package.json",
@@ -168,16 +168,16 @@
     "mudancas": 16
    },
    {
+    "pasta": "src/components/bi",
+    "mudancas": 15
+   },
+   {
     "pasta": "src/components/sicoob",
     "mudancas": 15
    },
    {
     "pasta": "src/pages/admin",
     "mudancas": 15
-   },
-   {
-    "pasta": "src/components/bi",
-    "mudancas": 14
    },
    {
     "pasta": "src/components/quotes",
@@ -243,11 +243,11 @@
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 14
+    "mudancas": 13
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 13
+    "mudancas": 12
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
@@ -259,10 +259,6 @@
    },
    {
     "arquivo": "scripts/automation.config.json",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "src/services/QuoteService.ts",
     "mudancas": 11
    },
    {
@@ -282,26 +278,30 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/services/QuoteService.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "docs/README.md",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 9
    },
    {
     "arquivo": "src/pages/KitBuilderPage.tsx",
     "mudancas": 9
+   },
+   {
+    "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "AGENTS.md",
+    "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 220
+    "commits": 222
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5310,
-  "arquivos_codigo": 3199,
-  "linhas_codigo": 507236,
+  "arquivos_total": 5311,
+  "arquivos_codigo": 3200,
+  "linhas_codigo": 507349,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 931,
+  "testes": 932,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167921
+   "linhas": 167925
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48555
+   "linhas": 48588
   },
   "src/integrations": {
    "arquivos": 3,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 157,
-   "linhas": 18228
+   "arquivos": 158,
+   "linhas": 18304
   },
   "tests/integration": {
    "arquivos": 4,

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "1e59beb0d00998c2a58c625415cd3342d2624c60",
+  "sha": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 17:18 UTC",
-  "files_total": 5313,
-  "code_files": 3873,
-  "code_lines": 571813
+  "generated_at": "2026-11-25 18:08 UTC",
+  "files_total": 5314,
+  "code_files": 3874,
+  "code_lines": 571926
  },
  "version": "1.3.2",
- "facts_hash": "458fb241c29b3c8e",
+ "facts_hash": "b4b8b2a6d88eeaa0",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1504,
-   ".tsx": 1472,
+   ".tsx": 1473,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -65403,7 +65403,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167921,
+   "lines": 167925,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65736,7 +65736,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48555,
+   "lines": 48588,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67181,8 +67181,8 @@
   },
   {
    "module": "tests",
-   "files": 700,
-   "lines": 94574,
+   "files": 701,
+   "lines": 94650,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -82127,6 +82127,14 @@
    },
    {
     "file": "src/hooks/bi/useIndustryTrends.ts",
+    "text": "* Amostra setorial insuficiente (`companiesInRamo` abaixo do mínimo) não vira tendência. */"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
+    "text": "depois do `ORDER BY total_quantity DESC LIMIT` do banco: com um teto curto, produto elegível que cai"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
     "text": "A falha do CRM nao pode virar \"setor sem tendencia\": sem propagar, o"
    },
    {
@@ -95986,6 +95994,21 @@
     "file": "src/hooks/bi/useClientVsIndustry.ts",
     "name": "DAYS_WINDOW",
     "value": "180"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
+    "name": "MIN_SECTOR_COMPANIES",
+    "value": "3"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
+    "name": "RPC_ROW_LIMIT",
+    "value": "1000"
+   },
+   {
+    "file": "src/hooks/bi/useIndustryTrends.ts",
+    "name": "MAX_TRENDS",
+    "value": "10"
    },
    {
     "file": "src/hooks/catalog/useCatalogPagination.ts",
@@ -132773,6 +132796,22 @@
    {
     "file": "tests/hooks/bi/useIndustryTrends.erro-crm.test.tsx",
     "name": "setor que respondeu sem produto continua sem erro"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.test.tsx",
+    "name": "useIndustryTrends"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.test.tsx",
+    "name": "não rotula agregado de 90 dias como tendência temporal nem promove compra isolada"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.test.tsx",
+    "name": "não perde produto elegível além da 60ª posição por volume (teto de linhas do RPC)"
+   },
+   {
+    "file": "tests/hooks/bi/useIndustryTrends.test.tsx",
+    "name": "mantém amostra insuficiente quando o ramo tem menos de três empresas"
    },
    {
     "file": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
@@ -194474,7 +194513,7 @@
   },
   "src/components/bi/IndustryTrendingProducts.tsx": {
    "path": "src/components/bi/IndustryTrendingProducts.tsx",
-   "lines": 223,
+   "lines": 227,
    "exports": [
     "function IndustryTrendingProducts"
    ],
@@ -215330,7 +215369,7 @@
   },
   "src/hooks/bi/useBIDossierExport.ts": {
    "path": "src/hooks/bi/useBIDossierExport.ts",
-   "lines": 185,
+   "lines": 186,
    "exports": [
     "function useBIDossierExport"
    ],
@@ -215630,7 +215669,7 @@
   },
   "src/hooks/bi/useIndustryTrends.ts": {
    "path": "src/hooks/bi/useIndustryTrends.ts",
-   "lines": 131,
+   "lines": 163,
    "exports": [
     "interface IndustryTopProduct",
     "interface IndustryTrendItem",
@@ -215640,7 +215679,23 @@
    "rpc": [
     "get_industry_top_products"
    ],
+   "params": [
+    {
+     "name": "MIN_SECTOR_COMPANIES",
+     "value": "3"
+    },
+    {
+     "name": "RPC_ROW_LIMIT",
+     "value": "1000"
+    },
+    {
+     "name": "MAX_TRENDS",
+     "value": "10"
+    }
+   ],
    "rule_comments": [
+    "* Amostra setorial insuficiente (`companiesInRamo` abaixo do mínimo) não vira tendência. */",
+    "depois do `ORDER BY total_quantity DESC LIMIT` do banco: com um teto curto, produto elegível que cai",
     "A falha do CRM nao pode virar \"setor sem tendencia\": sem propagar, o"
    ],
    "doc": "useIndustryTrends — top produtos vendidos para empresas do mesmo ramo. Estratégia: 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade 2) Chama RPC get_industry_top_products(_company_ids, _days) 3) Se a amostra estiver vazia, devolve estado vazio explícito: o conjunto simulado é só do c …",
@@ -253779,6 +253834,17 @@
     "setor que respondeu sem produto continua sem erro"
    ]
   },
+  "tests/hooks/bi/useIndustryTrends.test.tsx": {
+   "path": "tests/hooks/bi/useIndustryTrends.test.tsx",
+   "lines": 76,
+   "is_test": true,
+   "tests": [
+    "useIndustryTrends",
+    "não rotula agregado de 90 dias como tendência temporal nem promove compra isolada",
+    "não perde produto elegível além da 60ª posição por volume (teto de linhas do RPC)",
+    "mantém amostra insuficiente quando o ramo tem menos de três empresas"
+   ]
+  },
   "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx": {
    "path": "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
    "lines": 102,
@@ -259687,10 +259753,31 @@
   }
  },
  "git": {
-  "sha": "1e59beb0d00998c2a58c625415cd3342d2624c60",
+  "sha": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "950c2f5",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)",
+    "files": [
+     "src/components/bi/IndustryTrendingProducts.tsx",
+     "src/hooks/bi/useBIDossierExport.ts",
+     "src/hooks/bi/useIndustryTrends.ts",
+     "tests/hooks/bi/useIndustryTrends.test.tsx"
+    ]
+   },
+   {
+    "sha": "514293d",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "docs: reavalia os vereditos dos testes divergentes (#447)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md"
+    ]
+   },
    {
     "sha": "1e59beb",
     "date": "2026-11-25",
@@ -260043,64 +260130,24 @@
      "src/components/search/useGlobalSearch.ts",
      "tests/components/search/useGlobalSearch-fallback.test.tsx"
     ]
-   },
-   {
-    "sha": "87316fe",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)",
-    "files": [
-     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
-    ]
-   },
-   {
-    "sha": "aef4f10",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)",
-    "files": [
-     ".github/workflows/sicoob-ci.yml",
-     "docs/execucao/evidencias/verba-lifecycle.json",
-     "scripts/automation.config.json",
-     "scripts/db/.check-runtime-refs-allowlist.json",
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "scripts/qa/simular-verba-lifecycle.py",
-     "src/components/layout/SidebarReorganized.tsx",
-     "src/components/sicoob/orders/OrderCostCenterAllocation.tsx",
-     "src/hooks/usePaBudget.ts",
-     "src/integrations/supabase/types.ts",
-     "src/lib/access/role-policy.ts",
-     "src/lib/sicoob/orderBudgetProjection.ts",
-     "src/lib/sicoob/orderCostCenterAllocation.ts",
-     "src/lib/sicoob/paBudgetState.ts",
-     "src/pages/admin/sicoob/tabs/PAsTab.tsx",
-     "src/pages/sicoob/PAWalletPage.tsx",
-     "src/pages/sicoob/admin/CostCentersPage.tsx",
-     "src/pages/sicoob/orders/OrderDetailPage.tsx",
-     "src/routes/config/sicoob-rbac.ts",
-     "src/services/sicoob/costCenterService.ts",
-     "src/services/sicoob/statsService.ts",
-     "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
-     "tests/components/data-trust-indicators.test.tsx",
-     "tests/lib/sicoob/orderBudgetProjection.test.ts",
-     "tests/lib/sicoob/orderCostCenterAllocation.test.ts",
-     "tests/lib/sicoob/paBudgetAmounts.test.ts",
-     "tests/scenarios/sql/verba-lifecycle-fixture.sql"
-    ]
    }
   ],
   "hot_files": [
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    4
-   ],
    [
     "src/pages/KitBuilderPage.tsx",
     4
    ],
    [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    3
+   ],
+   [
     "docs/agentes/banco.md",
     3
+   ],
+   [
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
+    2
    ],
    [
     "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -260152,10 +260199,6 @@
    ],
    [
     "src/components/kit-builder/KitBuilderHeader.tsx",
-    2
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     2
    ],
    [

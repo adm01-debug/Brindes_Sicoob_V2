@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `1e59beb0d0` · branch `main` · 2026-11-25 17:18 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `950c2f51f6` · branch `main` · 2026-11-25 18:08 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4874,6 +4874,9 @@ _nenhum item encontrado_
 | `THRESHOLD` | `15` | `src/hooks/bi/useClientVsIndustry.ts` |
 | `MIN_SAMPLE` | `3` | `src/hooks/bi/useClientVsIndustry.ts` |
 | `DAYS_WINDOW` | `180` | `src/hooks/bi/useClientVsIndustry.ts` |
+| `MIN_SECTOR_COMPANIES` | `3` | `src/hooks/bi/useIndustryTrends.ts` |
+| `RPC_ROW_LIMIT` | `1000` | `src/hooks/bi/useIndustryTrends.ts` |
+| `MAX_TRENDS` | `10` | `src/hooks/bi/useIndustryTrends.ts` |
 | `ITEMS_PER_PAGE` | `24` | `src/hooks/catalog/useCatalogPagination.ts` |
 | `MOBILE_BREAKPOINT` | `768` | `src/hooks/common/use-mobile.tsx` |
 | `MAX_VISIBLE` | `60` | `src/hooks/dev/useBridgeMetrics.ts` |
@@ -4899,10 +4902,7 @@ _nenhum item encontrado_
 | `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
 | `CRM_DB_BRIDGE_FUNCTION` | `"crm-db-bridge"` | `src/lib/crm-db.ts` |
 | `MAX_RETRIES` | `2` | `src/lib/crm-db.ts` |
-| `INITIAL_BACKOFF_MS` | `600` | `src/lib/crm-db.ts` |
-| `INDUSTRY_PEERS_FALLBACK_LIMIT` | `500` | `src/lib/crm-db.ts` |
-| `FLUSH_INTERVAL` | `5000` | `src/lib/error-reporter.ts` |
-| … +177 linhas — lista completa em `context.json` | | |
+| … +180 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7312 testes em 744 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7316 testes em 745 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6048,7 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
-| … +444 linhas — lista completa em `context.json` | | |
+| … +445 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6500,6 +6500,8 @@ _nenhum item encontrado_
 | A falha do histórico não pode ser interpretada como zero compras/risco. | `src/hooks/bi/useClientHealthScore.ts` |
 | apenas contra a carteira — o contrato não aplica `is_customer` aqui. | `src/hooks/bi/useClientVsIndustry.ts` |
 | (industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o | `src/hooks/bi/useClientsComparison.ts` |
+| * Amostra setorial insuficiente (`companiesInRamo` abaixo do mínimo) não vira tendência. */ | `src/hooks/bi/useIndustryTrends.ts` |
+| depois do `ORDER BY total_quantity DESC LIMIT` do banco: com um teto curto, produto elegível que cai | `src/hooks/bi/useIndustryTrends.ts` |
 | A falha do CRM nao pode virar "setor sem tendencia": sem propagar, o | `src/hooks/bi/useIndustryTrends.ts` |
 | (3 é o mínimo válido de ColumnCount — 4 colunas só fica disponível a partir de 768px, ver columnOptions em ColumnSelector.tsx) | `src/hooks/catalog/useCatalogDisplay.ts` |
 | validação. O contato fica vazio até seleção real no formulário. | `src/hooks/quote/useQuoteInitialization.ts` |
@@ -6534,6 +6536,4 @@ _nenhum item encontrado_
 | O evento vai marcado: quem tem atalho destrutivo em Escape deve | `src/lib/overlay.ts` |
 | permitir renovação sem ampliar indefinidamente o prazo do bearer token. | `src/lib/private-storage.ts` |
 | conta anterior e nao pode ser cacheada nem devolvida. | `src/lib/private-storage.ts` |
-| Variante tolerante: um objeto removido ou sem permissão de leitura devolve | `src/lib/private-storage.ts` |
-| * Re-export do ErrorBoundary do Sentry (apenas após o load assíncrono). | `src/lib/sentry.ts` |
-| … +326 linhas — lista completa em `context.json` | |
+| … +328 linhas — lista completa em `context.json` | |

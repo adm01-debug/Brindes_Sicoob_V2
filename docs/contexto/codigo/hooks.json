@@ -2177,7 +2177,7 @@
    "hooks_exportados": [
     "useBIDossierExport"
    ],
-   "linhas": 185,
+   "linhas": 186,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2463,7 +2463,7 @@
    "hooks_exportados": [
     "useIndustryTrends"
    ],
-   "linhas": 131,
+   "linhas": 163,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2483,7 +2483,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 3
   },
   {
    "arquivo": "src/hooks/bi/useSeasonalPeakNotifications.ts",
