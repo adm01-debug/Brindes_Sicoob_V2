@@ -122,3 +122,39 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/scripts/scheduled-edge-deploy-parity.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
 | `tests/scripts/scheduled-report-seller-scope.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
 | `tests/unit/e2e-cleanup-client.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
+
+## Reavaliação dos 36 `comportamento-divergente`
+
+Os vereditos acima foram medidos pela execução dos testes contra a `main`. Esta seção registra a
+reavaliação feita lendo o código de produção atual: nem todo "divergente" é perda — parte é desenho
+que a `main` substituiu por outro melhor, e essa parte não deve ser reintroduzida.
+
+### Já incorporado pela `main` por outra via (não recuperar)
+
+| Teste órfão | Evidência do estado atual |
+| --- | --- |
+| `tests/components/FinancialPanel.test.tsx` | `src/components/orders/FinancialPanel.tsx:40` já diz "Margem: não calculada neste pedido" — o comportamento (não inventar margem) está preservado; só o texto do teste é de uma versão anterior. |
+| `tests/components/OrderBudgetIntelligence.no-fallback.test.tsx` | `src/components/sicoob/orders/OrderBudgetIntelligence.tsx:77` (`resolveBudgetState`) tem o estado `unconfigured`, o título "Análise indisponível" e o texto "A verba está cadastrada com valor zero; o impacto percentual não pode ser calculado". `src/lib/sicoob/orderBudgetProjection.ts:81,94` evita divisão por zero (`allocatedBudget <= 0` → `null`; `=== 0` → `100`). A `main` é mais completa que a versão testada. |
+| `tests/hooks/bi/useIndustryTrends.test.tsx` | Recuperado na PR #446, adaptado à API atual (`fetchIndustryPeerIds`): amostra mínima de 3 empresas + agregado de 90 dias não vira tendência temporal. |
+| `tests/components/intelligence/analytics-query-errors.test.tsx` | Recuperado na PR #445: falha de consulta deixa de virar funil zerado, com alerta e retentativa. |
+
+### Perda confirmada por ausência de código (fila de recuperação)
+
+Nenhum destes textos/estados existe em `src/` da `main` hoje. Cada linha é trabalho de outro agente
+que precisa ser reintegrado (e testado) antes de a branch de origem ser fechada.
+
+| Teste órfão | Estado que falta na `main` |
+| --- | --- |
+| `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | Aviso "Exibindo o último gráfico disponível" quando o `refetch` falha com cache em mãos: hoje a tela não distingue dado velho de dado atual. |
+| `tests/components/common/IntelligenceBadges.errors.test.tsx` | Aviso de falha parcial ("Não foi possível atualizar todos os…") nos selos de inteligência. |
+| `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `role="alert"` + "Tentar novamente" nos indicadores; texto "dados disponíveis continuam exibidos"; `role="status"` para o vazio confirmado. `src/pages/ProductDetail.tsx` hoje não consome `useProductIntelligenceData`/`useStockVelocity` nesse nível. |
+| `tests/components/QuotesSelectors*` / `Seleção recuperada` | Confirmação "Seleção recuperada" ao restaurar seleção em memória depois de erro. |
+| `tests/components/AIMockupAssistant.history.test.tsx` | Entrada "Abrir assistente" e histórico da conversa. |
+| `tests/pages/GestorCompras.error-state.test.tsx` | Estado de erro da página canônica de Gestor de Compras (os textos existem em `GestorComprasMetrics.tsx:129`, mas não no fluxo da página). |
+| `tests/hooks/bi/useClientSeasonality.test.tsx` | Amostra setorial insuficiente no mapa de calor: `resolveSeasonalityResult` recebe `companiesCount` (`src/hooks/bi/useClientSeasonality.ts`) e **não usa**; um setor com 1 empresa é apresentado como mercado. Diferente de `useIndustryTrends`, que passou a ter essa regra na #446. |
+
+### Medido e descartado
+
+- `fix/hermes-20261029-budget-no-fallback` — a versão de `OrderBudgetIntelligence`/`FinancialPanel` desta
+  branch é anterior à evolução da `main`; reaproveitar o teste exigiria regredir a tela.
+- `claude/chore-manutencao-261125-0835-f897449f` — churn de estilo (`"` → `'`), sem mudança de comportamento.
