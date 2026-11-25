@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `97166578de` · branch `main` · 2026-11-25 01:02 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `b71a077d43` · branch `main` · 2026-11-25 01:33 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1253,7 +1253,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `agent` | compara | `src/components/access/DevAccessDeniedPage.tsx` |
 | `role` | `agente` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/services/admin/UserService.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts`<br>`tests/scenarios/email-transacional-legado.mjs` |
 | `role` | `all` | compara, escreve | `src/pages/OrderAuditPage.tsx`<br>`src/pages/admin/AdminRbacRoutesPage.tsx` |
-| `role` | `assistant` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/ai/AIMockupAssistant.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts` |
+| `role` | `assistant` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts` |
 | `role` | `authenticated` | escreve | `src/lib/rbac/route-matrix.ts` |
 | `role` | `comprador_pac` | compara | `src/lib/auth/auth-utils.ts` |
 | `role` | `comprador_singular` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
@@ -1272,7 +1272,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `string` | compara | `src/components/access/DevAccessDeniedPage.tsx`<br>`supabase/functions/crm-db-bridge/index.ts` |
 | `role` | `supervisor` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>… +5 |
 | `role` | `system` | escreve | `supabase/functions/ai-recommendations/index.ts`<br>`supabase/functions/bi-copilot/index.ts`<br>`supabase/functions/comparison-ai-advisor/index.ts`<br>`supabase/functions/expert-chat/index.ts`<br>`supabase/functions/generate-ad-prompt/index.ts`<br>… +8 |
-| `role` | `user` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/ai/AIMockupAssistant.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts`<br>… +20 |
+| `role` | `user` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts`<br>`src/hooks/useExpertConversations.tsx`<br>… +19 |
 | `role` | `vendedor` | compara, escreve, filtra | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/SellerDiscountLimitsPanel.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/CreateUserDialog.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>… +9 |
 | `status` | `Achado` | compara, escreve | `src/pages/admin/AuditEvidenceDashboard.tsx` |
 | `status` | `Pendente` | compara, escreve | `src/components/search/GlobalSearch.tsx`<br>`src/pages/admin/AuditEvidenceDashboard.tsx` |
@@ -4461,7 +4461,6 @@ _nenhum item encontrado_
 | `* ou sucesso 24h entre 70% e 95%,` | `src/components/admin/connections/usePulseBarStatus.ts` |
 | `* - Amarelo (warning): falhas dentro do esperado (<2% taxa).` | `src/components/admin/telemetry/PlatformFailureCards.tsx` |
 | `* - Vermelho (destructive): pico de falhas (>2% taxa) ou delta crescente.` | `src/components/admin/telemetry/PlatformFailureCards.tsx` |
-| `transition={{ delay: idx * 0.05 }}` | `src/components/ai/AIMockupAssistant.tsx` |
 | `priceFrom: Math.round(t.avgPrice * 0.9),` | `src/components/bi/ClientHealthHero.tsx` |
 | `* Heurística: empresas do mesmo ramo + (LTV agregado de quotes ±30% do cliente atual)` | `src/components/bi/ClientLookalikes.tsx` |
 | `// Heurística: cliente / (cliente + 1.5 × média setor) — capped 5..95%` | `src/components/bi/ClientVsIndustryComparison.tsx` |
@@ -5662,7 +5661,6 @@ _nenhum item encontrado_
 | `vendedor` | `src/components/admin/users/PromotionDialog.tsx` |
 | `vendedor` | `src/components/admin/users/UserTable.tsx` |
 | `user` | `src/components/ai/AIChat.tsx` |
-| `user` | `src/components/ai/AIMockupAssistant.tsx` |
 | `assistant` | `src/components/bi/BIAiCopilot.tsx` |
 | `user` | `src/components/bi/BIAiCopilot.tsx` |
 | `assistant` | `src/components/expert/chat/ChatMessageList.tsx` |
@@ -5750,7 +5748,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7247 testes em 734 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7274 testes em 738 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5938,6 +5936,7 @@ _nenhum item encontrado_
 | `tests/p0/webhooks-resilience.test.ts` | 11 | P0 — webhooks resilientes · bitrix-sync: valida a operação antes de consultar serviços · bitrix-sync: protege o upstream com circuit breaker · backoff compartilhado: limita tentativas, usa jitter e respeita orçamento … |
 | `tests/scenarios/email-transacional-resolve.test.mjs` | 11 | quote_sent recusa rascunho: nada foi anunciado ao cliente · quote_sent recusa orçamento vencido (portal rejeitaria o link) · quote_sent emite link público para orçamento válido · quote_rejected não emite link: recusa do Kanban não cria resposta … |
 | `tests/search/GlobalSearchHelpers.test.tsx` | 11 | RankBadge · renders Trophy icon for index 0 · renders Medal for index 1 · renders  … |
+| `tests/security/privileged-client-data-guards.test.ts` | 11 | barreiras estaticas para dados privilegiados de clientes · carrega todos os papeis e falha fechado para vinculo invalido · autoriza o shape completo antes de resolver a credencial service-role externa · ignora comentario que cita a tag de rota ao medir o bloco … |
 | `tests/services/orderService.test.ts` | 11 | OrderService.convertQuoteToOrder · delega toda a conversão à RPC transacional do domínio Sicoob · não envia identidade ou organização fornecida pelo navegador ao banco · propaga a falha atômica devolvida pela RPC … |
 | `e2e/editor-permissions.spec.ts` | 10 | Gestor de Compras — permissões e navegação · acessa catálogo, orçamentos e painéis próprios da Singular · carrega os módulos de governança e gestão de compras · bloqueia painéis administrativos reservados ao supervisor … |
 | `tests/a11y/onda5-a11y.test.tsx` | 10 | Onda 5 — auditoria automatizada axe-core (WCAG 2.1 AA) · MagicUpVariationComparator · não viola regras WCAG com 3 variações (button-name, aria-*, nested-interactive) · não viola WCAG quando uma variação está ativa e outra é vencedora (aria-pressed/aria-current) … |
@@ -6048,13 +6047,12 @@ _nenhum item encontrado_
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
+| `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
-| `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
-| `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +434 linhas — lista completa em `context.json` | | |
+| … +438 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6304,6 +6302,7 @@ _nenhum item encontrado_
 | * Sem persistência (memória apenas). Atualiza em tempo real via subscribe. | `src/components/admin/telemetry/BridgesLiveCard.tsx` |
 | ultrapassa o limite configurado, mostra um alerta destacado com | `src/components/admin/telemetry/PlatformFailureAlertBanner.tsx` |
 | - obriga justificativa (mínimo 10 caracteres) | `src/components/admin/users/PromotionDialog.tsx` |
+| * Dados de catálogo (somente rótulos) usados pelo modo `layout`. */ | `src/components/ai/AIChat.tsx` |
 | " value={client.name} onChange={onFieldChange("name")} aria-label="Nome do cliente" required /> | `src/components/ai/AIRecommendationsPanel.tsx` |
 | A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la. | `src/components/bi/ClientHealthHero.tsx` |
 | 50, 0); // estimativa volume mínimo | `src/components/bi/ConfirmQuoteSuggestionsModal.tsx` |
@@ -6541,5 +6540,4 @@ _nenhum item encontrado_
 | * Deve ser chamado no main.tsx após setupLocale() | `src/lib/sw-register.ts` |
 | * Solicita permissão para notificações (para futura implementação) | `src/lib/sw-register.ts` |
 | * Score = (recente / baseline) * decay temporal * peso de volume mínimo | `src/lib/trending-score.ts` |
-| volume absoluto (para peso mínimo) | `src/lib/trending-score.ts` |
-| … +322 linhas — lista completa em `context.json` | |
+| … +323 linhas — lista completa em `context.json` | |

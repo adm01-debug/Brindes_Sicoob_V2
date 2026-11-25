@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "97166578de642a7833fa4a2b1eb36d4480011167",
+  "sha": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 01:02 UTC",
-  "files_total": 5297,
-  "code_files": 3858,
-  "code_lines": 569438
+  "generated_at": "2026-11-25 01:33 UTC",
+  "files_total": 5302,
+  "code_files": 3863,
+  "code_lines": 570243
  },
  "version": "1.3.2",
- "facts_hash": "85d8451af6c71925",
+ "facts_hash": "dedcfdf44ecf1d13",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1501,
-   ".tsx": 1464,
+   ".ts": 1503,
+   ".tsx": 1467,
    ".sql": 690,
    ".mjs": 141,
    ".py": 69,
@@ -62551,7 +62551,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1294,
+  "components_count": 1297,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -64813,6 +64813,34 @@
     "file": "tests/components/ProtectedRoute.test.tsx"
    },
    {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
     "guard": "ProtectedRoute",
     "file": "tests/sicoob/route-access-scenarios.test.tsx"
    }
@@ -65347,7 +65375,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167908,
+   "lines": 167930,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65957,8 +65985,8 @@
   },
   {
    "module": "src/lib",
-   "files": 169,
-   "lines": 22941,
+   "files": 170,
+   "lines": 23000,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -65968,6 +65996,7 @@
    "exports": [
     "admin-export-utils.ts: exportToExcel, importFromExcel",
     "assistant-message-window.ts: EXPERT_CHAT_MAX_MESSAGES, EXPERT_CHAT_MAX_CONTENT_LENGTH, EXPERT_CHAT_MAX_MESSAGE_LENGTH, AssistantMessageLike, selectExpertChatMessages",
+    "assistant-stream.ts: parseExpertStreamLine, readExpertStream",
     "audit-logger.ts: logAdminAction",
     "catalog-filter-state.ts: canApplyCatalogFilter",
     "chunk-recovery.ts: clearChunkRecoveryState, isChunkLoadError, extractChunkUrl, attemptChunkRecovery, markBootSuccessful",
@@ -66004,16 +66033,15 @@
     "qa-seed.ts: runQaSeed",
     "query-config.ts: CACHE_TIMES, GC_TIMES, QUERY_KEY_PREFIXES, createQueryClient, getStaleTimeForKey, getGcTimeForKey",
     "quote-status-config.ts: QuoteStatusConfig, QUOTE_STATUS_CONFIG, isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset, canBulkMarkQuotesPending, getQuoteStatusLabel",
-    "request-id-injection.ts: injectRequestId",
-    "roles.ts: AppRole, ROLE_ALIASES, RoleVisual, ROLE_VISUAL, getRoleLabel, getRoleVisual"
+    "request-id-injection.ts: injectRequestId"
    ],
    "docs": [
     "assistant-message-window.ts: Contrato de tamanho aceito pela Edge Function expert-chat.",
+    "assistant-stream.ts: Leitura do stream SSE da edge function `expert-chat` (`data: {\"choices\":[{\"delta\":{\"content\":\"...\"}}]}` terminando em `data: [DONE]`). Compartilhado entre o chat comercial, o assistente de layouts e o `AIChat`.",
     "catalog-filter-state.ts: Mantém um filtro relacional ativo quando um refetch falha, desde que exista uma resposta anterior (inclusive uma lista vazia) ainda disponível no cache.",
     "circuit-breaker.ts: Generic Circuit Breaker implementation to prevent overwhelming failing services. Can be used for Edge Functions, external APIs, etc.",
     "connections-config.ts: Configuração compartilhada para o hub de conexões em /admin/conexoes. Centralizada para reuso futuro em alertas e jobs cron.",
-    "crm-db.ts: CRM Database Access Layer Acessa o banco externo CRM (pgxfvjmuubtbowutlide) via Edge Function crm-db-bridge. Substitui completamente o acesso a bitrix_clients.",
-    "date-utils.ts: src/lib/date-utils.ts"
+    "crm-db.ts: CRM Database Access Layer Acessa o banco externo CRM (pgxfvjmuubtbowutlide) via Edge Function crm-db-bridge. Substitui completamente o acesso a bitrix_clients."
    ],
    "deps": [
     "@e965/xlsx",
@@ -66043,6 +66071,7 @@
    "file_list": [
     "src/lib/admin-export-utils.ts",
     "src/lib/assistant-message-window.ts",
+    "src/lib/assistant-stream.ts",
     "src/lib/audit-logger.ts",
     "src/lib/catalog-filter-state.ts",
     "src/lib/chunk-recovery.ts",
@@ -66119,8 +66148,7 @@
     "src/lib/bi/demoClient.ts",
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/executive-summary.ts",
-    "src/lib/bi/industryRecommendations.ts",
-    "src/lib/bi/mockData.ts"
+    "src/lib/bi/industryRecommendations.ts"
    ]
   },
   {
@@ -67125,8 +67153,8 @@
   },
   {
    "module": "tests",
-   "files": 688,
-   "lines": 92742,
+   "files": 692,
+   "lines": 93466,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67167,6 +67195,7 @@
     "route-error-element-checker.test.ts: Regressão para `scripts/check-route-error-element.mjs`. Garante: 1. O checker passa no estado atual do projeto (exit 0). 2. Cada regra individual REALMENTE dispara contra um fixture controlado — evita \"verde silencioso\" se a regex for quebrada por refactor. 3. A allowlist `// route-error-allow:` con …"
    ],
    "deps": [
+    "))\n      .join(",
     "@playwright/test",
     "@supabase/supabase-js",
     "@tanstack/react-query",
@@ -67190,8 +67219,7 @@
     "node:net",
     "node:os",
     "node:path",
-    "node:test",
-    "node:url"
+    "node:test"
    ],
    "imports_modules": [
     "e2e",
@@ -69558,7 +69586,8 @@
      "supabase/functions/rls-integration-tests/index.ts",
      "supabase/functions/secrets-manager/index.ts",
      "supabase/functions/send-scheduled-reports/index.ts",
-     "tests/rls/personas.test.ts"
+     "tests/rls/personas.test.ts",
+     "tests/security/privileged-client-data-guards.test.ts"
     ],
     "update": [
      "src/services/admin/UserService.ts",
@@ -80634,10 +80663,6 @@
     "value": "user"
    },
    {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "value": "user"
-   },
-   {
     "file": "src/components/bi/BIAiCopilot.tsx",
     "value": "assistant"
    },
@@ -81230,6 +81255,10 @@
    {
     "file": "src/components/admin/users/PromotionDialog.tsx",
     "text": "- obriga justificativa (mínimo 10 caracteres)"
+   },
+   {
+    "file": "src/components/ai/AIChat.tsx",
+    "text": "* Dados de catálogo (somente rótulos) usados pelo modo `layout`. */"
    },
    {
     "file": "src/components/ai/AIRecommendationsPanel.tsx",
@@ -98183,65 +98212,11 @@
    {
     "file": "src/components/ai/AIChat.tsx",
     "field": "role",
-    "value": "user",
-    "kind": "compara"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
     "value": "assistant",
     "kind": "escreve"
    },
    {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "assistant",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "assistant",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "compara"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "compara"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "field": "role",
-    "value": "user",
-    "kind": "compara"
-   },
-   {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
+    "file": "src/components/ai/AIChat.tsx",
     "field": "role",
     "value": "user",
     "kind": "compara"
@@ -113557,10 +113532,6 @@
     "line": "* - Vermelho (destructive): pico de falhas (>2% taxa) ou delta crescente."
    },
    {
-    "file": "src/components/ai/AIMockupAssistant.tsx",
-    "line": "transition={{ delay: idx * 0.05 }}"
-   },
-   {
     "file": "src/components/bi/ClientHealthHero.tsx",
     "line": "priceFrom: Math.round(t.avgPrice * 0.9),"
    },
@@ -121653,6 +121624,70 @@
    {
     "file": "tests/components/admin/connections/connectionStatus.test.ts",
     "name": "simulação real: payload do secrets-manager para Promobrind"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "AIChat consome o stream real do expert-chat"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "exibe a resposta recebida em SSE e envia modo e contexto do mockup"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "mostra erro quando a resposta chega sem conteudo"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "descarta a resposta antiga quando o chat e reiniciado durante a geracao"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "segue acompanhando enquanto a propria animacao de rolagem avanca"
+   },
+   {
+    "file": "tests/components/ai/aichat-stream.test.tsx",
+    "name": "nao puxa a rolagem quando a pessoa esta lendo uma mensagem anterior"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-focus.test.tsx",
+    "name": "foco do assistente de layouts"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-focus.test.tsx",
+    "name": "leva o foco para o chat ao abrir e devolve ao botao ao fechar"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-focus.test.tsx",
+    "name": "deixa o foco dentro do painel ao reabrir durante a resposta"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "assistente de layouts entrega a conversa para a IA real"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "abre o chat real no modo layout com o contexto do produto e da tecnica"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "preserva a conversa ao minimizar e reabrir"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "nao responde por conta propria nem some ao fechar"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "o assistente nao simula IA no codigo"
+   },
+   {
+    "file": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+    "name": "nao carrega respostas prontas nem aleatoriedade local"
    },
    {
     "file": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
@@ -140481,6 +140516,50 @@
    {
     "file": "tests/security/portal-access-policy.test.ts",
     "name": "nega vínculo ausente, inativo ou excluído"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "barreiras estaticas para dados privilegiados de clientes"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "carrega todos os papeis e falha fechado para vinculo invalido"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "autoriza o shape completo antes de resolver a credencial service-role externa"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "ignora comentario que cita a tag de rota ao medir o bloco"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "protege diagnosticos detalhados e mantem ping agregado"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "nao registra valores de filtros nem previews de registros do CRM"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "nega clientId antes da primeira busca de PII no expert-chat"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "monta as rotas de clientes uma unica vez, na area autenticada e fora do bloco AdminRoute"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "mantem a criacao de orcamento dentro do shell autenticado"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "seletores de orcamento usam somente o DTO dedicado do bridge"
+   },
+   {
+    "file": "tests/security/privileged-client-data-guards.test.ts",
+    "name": "seletores de carrinho usam o diretorio restrito e nao o CRM generico"
    },
    {
     "file": "tests/security/rls-seller-policies.spec.ts",
@@ -163492,14 +163571,12 @@
      ],
      "user": [
       "compara:src/components/ai/AIChat.tsx",
-      "compara:src/components/ai/AIMockupAssistant.tsx",
       "compara:src/components/bi/BIAiCopilot.tsx",
       "compara:src/components/expert/chat/ChatMessageList.tsx",
       "compara:src/components/expert/chat/useExpertChat.ts",
       "compara:src/lib/assistant-message-window.ts",
       "compara:supabase/functions/expert-chat/index.ts",
       "escreve:src/components/ai/AIChat.tsx",
-      "escreve:src/components/ai/AIMockupAssistant.tsx",
       "escreve:src/components/bi/BIAiCopilot.tsx",
       "escreve:src/components/expert/chat/useExpertChat.ts",
       "escreve:src/hooks/useExpertConversations.tsx",
@@ -163528,7 +163605,6 @@
       "compara:src/components/expert/chat/ChatMessageList.tsx",
       "compara:src/components/expert/chat/useExpertChat.ts",
       "escreve:src/components/ai/AIChat.tsx",
-      "escreve:src/components/ai/AIMockupAssistant.tsx",
       "escreve:src/components/bi/BIAiCopilot.tsx",
       "escreve:src/components/expert/chat/useExpertChat.ts"
      ],
@@ -176381,6 +176457,34 @@
    {
     "guard": "ProtectedRoute",
     "file": "tests/components/ProtectedRoute.test.tsx"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
+   },
+   {
+    "guard": "ProtectedRoute",
+    "file": "tests/security/privileged-client-data-guards.test.ts"
    },
    {
     "guard": "ProtectedRoute",
@@ -193432,7 +193536,7 @@
   },
   "src/components/ai/AIChat.tsx": {
    "path": "src/components/ai/AIChat.tsx",
-   "lines": 386,
+   "lines": 562,
    "exports": [
     "interface ChatMessage",
     "interface ProductMention",
@@ -193472,78 +193576,28 @@
     },
     {
      "field": "role",
+     "value": "assistant",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
      "value": "user",
      "kind": "compara"
     }
    ],
    "role_checks": [
     "user"
+   ],
+   "rule_comments": [
+    "* Dados de catálogo (somente rótulos) usados pelo modo `layout`. */"
    ],
    "doc": "AIChat — Chat conversacional reutilizável que consome a edge function `expert-chat`. Features: - Histórico de mensagens user/assistant com auto-scroll - Envio com Enter (Shift+Enter quebra linha) - Loading state, error state, cancelamento via AbortController - Markdown leve + reconhecimento do padrã …"
   },
   "src/components/ai/AIMockupAssistant.tsx": {
    "path": "src/components/ai/AIMockupAssistant.tsx",
-   "lines": 311,
+   "lines": 209,
    "exports": [
     "function AIMockupAssistant"
-   ],
-   "status_values": [
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "assistant",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "assistant",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "assistant",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "user",
-     "kind": "compara"
-    }
-   ],
-   "role_checks": [
-    "user"
-   ],
-   "percents": [
-    "transition={{ delay: idx * 0.05 }}"
    ]
   },
   "src/components/ai/AIRecommendationsPanel.tsx": {
@@ -196535,7 +196589,7 @@
   },
   "src/components/expert/chat/useExpertChat.ts": {
    "path": "src/components/expert/chat/useExpertChat.ts",
-   "lines": 606,
+   "lines": 554,
    "exports": [
     "interface Message",
     "function useExpertChat"
@@ -217764,6 +217818,15 @@
     "user"
    ],
    "doc": "Contrato de tamanho aceito pela Edge Function expert-chat."
+  },
+  "src/lib/assistant-stream.ts": {
+   "path": "src/lib/assistant-stream.ts",
+   "lines": 59,
+   "exports": [
+    "function parseExpertStreamLine",
+    "function readExpertStream"
+   ],
+   "doc": "Leitura do stream SSE da edge function `expert-chat` (`data: {\"choices\":[{\"delta\":{\"content\":\"...\"}}]}` terminando em `data: [DONE]`). Compartilhado entre o chat comercial, o assistente de layouts e o `AIChat`."
   },
   "src/lib/audit-logger.ts": {
    "path": "src/lib/audit-logger.ts",
@@ -247696,6 +247759,52 @@
    ],
    "uses_service_role": true
   },
+  "tests/components/ai/aichat-stream.test.tsx": {
+   "path": "tests/components/ai/aichat-stream.test.tsx",
+   "lines": 220,
+   "is_test": true,
+   "errors": [
+    ").textContent).toContain("
+   ],
+   "tests": [
+    "AIChat consome o stream real do expert-chat",
+    "exibe a resposta recebida em SSE e envia modo e contexto do mockup",
+    "mostra erro quando a resposta chega sem conteudo",
+    "descarta a resposta antiga quando o chat e reiniciado durante a geracao",
+    "segue acompanhando enquanto a propria animacao de rolagem avanca",
+    "nao puxa a rolagem quando a pessoa esta lendo uma mensagem anterior"
+   ],
+   "side_effects": [
+    "enqueue("
+   ]
+  },
+  "tests/components/ai/aimockup-assistant-focus.test.tsx": {
+   "path": "tests/components/ai/aimockup-assistant-focus.test.tsx",
+   "lines": 85,
+   "is_test": true,
+   "tests": [
+    "foco do assistente de layouts",
+    "leva o foco para o chat ao abrir e devolve ao botao ao fechar",
+    "deixa o foco dentro do painel ao reabrir durante a resposta"
+   ],
+   "side_effects": [
+    "enqueue("
+   ]
+  },
+  "tests/components/ai/aimockup-assistant-real-ai.test.tsx": {
+   "path": "tests/components/ai/aimockup-assistant-real-ai.test.tsx",
+   "lines": 83,
+   "is_test": true,
+   "tests": [
+    "assistente de layouts entrega a conversa para a IA real",
+    "abre o chat real no modo layout com o contexto do produto e da tecnica",
+    "tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto",
+    "preserva a conversa ao minimizar e reabrir",
+    "nao responde por conta propria nem some ao fechar",
+    "o assistente nao simula IA no codigo",
+    "nao carrega respostas prontas nem aleatoriedade local"
+   ]
+  },
   "tests/components/bi/BIAiCopilot.context-availability.test.ts": {
    "path": "tests/components/bi/BIAiCopilot.context-availability.test.ts",
    "lines": 51,
@@ -257865,6 +257974,63 @@
     "nega vínculo ausente, inativo ou excluído"
    ]
   },
+  "tests/security/privileged-client-data-guards.test.ts": {
+   "path": "tests/security/privileged-client-data-guards.test.ts",
+   "lines": 336,
+   "is_test": true,
+   "tables": [
+    {
+     "table": "user_roles",
+     "op": "select"
+    },
+    {
+     "table": "user_roles",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "user_roles": [
+     "role",
+     "user_id"
+    ]
+   },
+   "params": [
+    {
+     "name": "ADMIN_BLOCK",
+     "value": "\"<Route element={<AdminRoute />}>\""
+    },
+    {
+     "name": "PROTECTED_BLOCK",
+     "value": "\"<Route element={<ProtectedRoute />}>\""
+    }
+   ],
+   "guards": [
+    "AdminRoute",
+    "AdminRoute",
+    "ProtectedRoute",
+    "ProtectedRoute",
+    "AdminRoute",
+    "AdminRoute",
+    "ProtectedRoute"
+   ],
+   "rule_comments": [
+    "apenas da linha de abertura. A busca do marcador ignora espacos e quebras de",
+    "Abertura citada so em comentario nao pode virar \"a proxima rota qualquer\"."
+   ],
+   "tests": [
+    "barreiras estaticas para dados privilegiados de clientes",
+    "carrega todos os papeis e falha fechado para vinculo invalido",
+    "autoriza o shape completo antes de resolver a credencial service-role externa",
+    "ignora comentario que cita a tag de rota ao medir o bloco",
+    "protege diagnosticos detalhados e mantem ping agregado",
+    "nao registra valores de filtros nem previews de registros do CRM",
+    "nega clientId antes da primeira busca de PII no expert-chat",
+    "monta as rotas de clientes uma unica vez, na area autenticada e fora do bloco AdminRoute",
+    "mantem a criacao de orcamento dentro do shell autenticado",
+    "seletores de orcamento usam somente o DTO dedicado do bridge",
+    "seletores de carrinho usam o diretorio restrito e nao o CRM generico"
+   ]
+  },
   "tests/security/rls-seller-policies.spec.ts": {
    "path": "tests/security/rls-seller-policies.spec.ts",
    "lines": 379,
@@ -259112,10 +259278,35 @@
   }
  },
  "git": {
-  "sha": "97166578de642a7833fa4a2b1eb36d4480011167",
+  "sha": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "b71a077",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "feat: assistente de layouts passa a usar a IA real (#435)",
+    "files": [
+     "src/components/ai/AIChat.tsx",
+     "src/components/ai/AIMockupAssistant.tsx",
+     "src/components/expert/chat/useExpertChat.ts",
+     "src/lib/assistant-stream.ts",
+     "supabase/functions/expert-chat/index.ts",
+     "tests/components/ai/aichat-stream.test.tsx",
+     "tests/components/ai/aimockup-assistant-focus.test.tsx",
+     "tests/components/ai/aimockup-assistant-real-ai.test.tsx"
+    ]
+   },
+   {
+    "sha": "ca1b482",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)",
+    "files": [
+     "tests/security/privileged-client-data-guards.test.ts"
+    ]
+   },
    {
     "sha": "9716657",
     "date": "2026-11-24",
@@ -259521,39 +259712,12 @@
      "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
      "docs/pendencias/_ordem.md"
     ]
-   },
-   {
-    "sha": "bb6242f",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "fix: bloqueia notificação de pico sazonal simulada (ADM-35) (#398)",
-    "files": [
-     "src/hooks/bi/useSeasonalPeakNotifications.ts",
-     "src/pages/BusinessIntelligencePage.tsx",
-     "tests/hooks/bi/useSeasonalPeakNotifications.demo.test.tsx",
-     "tests/pages/BusinessIntelligencePage.seasonal-peak.demo.test.tsx"
-    ]
-   },
-   {
-    "sha": "cf2d42b",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "fix: hidratação tardia de preço no editor de orçamento (cache lazy do catálogo) (#397)",
-    "files": [
-     "src/contexts/ProductsContext.tsx",
-     "src/hooks/useQuoteBuilderState.ts",
-     "tests/contexts/ProductsContext.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "src/pages/KitBuilderPage.tsx",
     4
-   ],
-   [
-    "src/hooks/useQuoteBuilderState.ts",
-    3
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -259590,6 +259754,10 @@
    [
     "src/components/sicoob/orders/OrderInvoicesTab.tsx",
     3
+   ],
+   [
+    "src/hooks/useQuoteBuilderState.ts",
+    2
    ],
    [
     "src/pages/QuoteBuilderPage.tsx",

@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "97166578de642a7833fa4a2b1eb36d4480011167",
+  "commit": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
   "branch": "main",
-  "data_commit": "2026-11-24T22:01:32-03:00",
+  "data_commit": "2026-11-24T22:32:46-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "b71a077",
+    "data": "2026-11-24",
+    "assunto": "feat: assistente de layouts passa a usar a IA real (#435)"
+   },
+   {
+    "sha": "ca1b482",
+    "data": "2026-11-24",
+    "assunto": "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)"
+   },
    {
     "sha": "9716657",
     "data": "2026-11-24",
@@ -121,19 +131,9 @@
     "sha": "2466761",
     "data": "2026-11-23",
     "assunto": "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)"
-   },
-   {
-    "sha": "54e7819",
-    "data": "2026-11-22",
-    "assunto": "fix: extrai parser de moeda e validação do componente de notas (#404)"
-   },
-   {
-    "sha": "0a70249",
-    "data": "2026-11-22",
-    "assunto": "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)"
    }
   ],
-  "arquivos_mudados_7d": 1284,
+  "arquivos_mudados_7d": 1290,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 211
+    "commits": 213
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5294,
-  "arquivos_codigo": 3186,
-  "linhas_codigo": 504946,
+  "arquivos_total": 5299,
+  "arquivos_codigo": 3191,
+  "linhas_codigo": 505751,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 627,
   "cron_jobs": 28,
-  "testes": 919,
+  "testes": 923,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167908
+   "linhas": 167930
   },
   "src/constants": {
    "arquivos": 3,
@@ -807,8 +807,8 @@
    "linhas": 13647
   },
   "src/lib": {
-   "arquivos": 169,
-   "linhas": 22941
+   "arquivos": 170,
+   "linhas": 23000
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 158,
-   "linhas": 28880
+   "arquivos": 161,
+   "linhas": 29268
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -979,8 +979,8 @@
    "linhas": 54
   },
   "tests/security": {
-   "arquivos": 7,
-   "linhas": 991
+   "arquivos": 8,
+   "linhas": 1327
   },
   "tests/services": {
    "arquivos": 14,
@@ -1159,7 +1159,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 72
+  "arquivos_acima_500_linhas": 73
  },
  "todos": [
   {

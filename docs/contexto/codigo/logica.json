@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 255,
+ "total": 256,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 169,
+  "lib": 170,
   "python": 12,
   "services": 24,
   "stores": 6,
@@ -966,6 +966,31 @@
     "components/expert"
    ],
    "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/lib/assistant-stream.ts",
+   "camada": "lib",
+   "exports": [
+    "parseExpertStreamLine",
+    "readExpertStream"
+   ],
+   "export_default": null,
+   "linhas": 59,
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "components/ai",
+    "components/expert"
+   ],
+   "coberto_por_testes": 0,
    "orfao": false
   },
   {

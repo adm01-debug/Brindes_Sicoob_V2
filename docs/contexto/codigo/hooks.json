@@ -1100,7 +1100,7 @@
    "hooks_exportados": [
     "useExpertChat"
    ],
-   "linhas": 606,
+   "linhas": 554,
    "dominio": "components/expert",
    "tabelas": [
     "profiles",

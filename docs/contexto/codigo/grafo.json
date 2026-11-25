@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2267,
- "arestas": 9212,
+ "nos": 2268,
+ "arestas": 9213,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -26,7 +26,7 @@
   },
   {
    "arquivo": "src/components/ui/input.tsx",
-   "importado_por": 271
+   "importado_por": 270
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
@@ -58,7 +58,7 @@
   },
   {
    "arquivo": "src/components/ui/scroll-area.tsx",
-   "importado_por": 94
+   "importado_por": 93
   },
   {
    "arquivo": "src/hooks/useProducts.ts",

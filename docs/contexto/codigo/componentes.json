@@ -4028,12 +4028,12 @@
     "ProductMention"
    ],
    "export_default": null,
-   "linhas": 386,
+   "linhas": 562,
    "dominio": "components/ai",
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "orfao": false
   },
   {
@@ -4042,7 +4042,7 @@
     "AIMockupAssistant"
    ],
    "export_default": null,
-   "linhas": 311,
+   "linhas": 209,
    "dominio": "components/ai",
    "hooks_locais": [],
    "tabelas": [],
@@ -15272,7 +15272,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 269,
+   "usado_por": 268,
    "orfao": false
   },
   {
@@ -15458,7 +15458,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 93,
+   "usado_por": 92,
    "orfao": false
   },
   {

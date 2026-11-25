@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2967)",
+   "TypeScript (2972)",
    "Markdown (973)",
    "SQL (690)",
    "JSON (295)",
@@ -1495,6 +1495,10 @@
     "arquivos": 4
    },
    {
+    "host": "exemplo.test",
+    "arquivos": 4
+   },
+   {
     "host": "portal.invalid",
     "arquivos": 4
    },
@@ -1696,10 +1700,6 @@
    },
    {
     "host": "example.test",
-    "arquivos": 1
-   },
-   {
-    "host": "exemplo.test",
     "arquivos": 1
    },
    {
@@ -1931,7 +1931,7 @@
   "papeis_no_codigo": [
    {
     "papel": "alert",
-    "ocorrencias": 64
+    "ocorrencias": 65
    },
    {
     "papel": "status",
@@ -2010,10 +2010,6 @@
     "ocorrencias": 6
    },
    {
-    "papel": "assistant",
-    "ocorrencias": 5
-   },
-   {
     "papel": "authenticated",
     "ocorrencias": 5
    },
@@ -2039,6 +2035,10 @@
    },
    {
     "papel": "alertdialog",
+    "ocorrencias": 4
+   },
+   {
+    "papel": "assistant",
     "ocorrencias": 4
    },
    {

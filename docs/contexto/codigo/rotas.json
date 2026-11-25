@@ -6766,6 +6766,7 @@
     "useRelatedProducts",
     "useScreenDirtyState",
     "useSearchAsYouType",
+    "useSendTurn",
     "useState",
     "useSuccessAnimation",
     "useTechniqueHandlers",
@@ -6848,7 +6849,7 @@
     "tooltip",
     "user"
    ],
-   "arquivos_puxados": 165
+   "arquivos_puxados": 166
   },
   {
    "protegida": true,

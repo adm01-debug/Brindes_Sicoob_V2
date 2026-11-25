@@ -2449,13 +2449,13 @@
    "src/components/ui/button.tsx",
    "src/integrations/supabase/client.ts",
    "src/lib/assistant-message-window.ts",
+   "src/lib/assistant-stream.ts",
    "src/lib/utils.ts"
   ],
   "src/components/ai/AIMockupAssistant.tsx": [
+   "src/components/ai/AIChat.tsx",
    "src/components/ui/badge.tsx",
    "src/components/ui/button.tsx",
-   "src/components/ui/input.tsx",
-   "src/components/ui/scroll-area.tsx",
    "src/lib/utils.ts"
   ],
   "src/components/ai/AIRecommendationsPanel.tsx": [
@@ -3595,6 +3595,7 @@
    "src/hooks/useExpertConversations.tsx",
    "src/integrations/supabase/client.ts",
    "src/lib/assistant-message-window.ts",
+   "src/lib/assistant-stream.ts",
    "src/lib/external-db/index.ts"
   ],
   "src/components/expert/chat/useExpertChatTts.ts": [

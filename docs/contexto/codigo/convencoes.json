@@ -16,12 +16,12 @@
    "src/pages (22)"
   ],
   "servicos_logica": [
-   "src/lib (169)",
+   "src/lib (170)",
    "src/utils (37)",
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (666)",
+   "tests/ (670)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: assistente de layouts passa a usar a IA real (#435)",
+   "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)",
    "fix: orcamento existente avisa quando nao carrega (#436)",
    "docs: ledger reflete as recuperacoes ja integradas na main (#432)",
-   "docs: re-auditoria dos descartes medida PR por PR (#430)",
-   "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)",
-   "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)"
+   "docs: re-auditoria dos descartes medida PR por PR (#430)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
