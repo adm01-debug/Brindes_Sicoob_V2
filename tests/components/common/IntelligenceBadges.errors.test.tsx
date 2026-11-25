@@ -3,6 +3,7 @@ import "@testing-library/jest-dom";
 import { describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { IntelligenceBadges } from "@/components/common/IntelligenceBadges";
+import { buildBadgeResult } from "@/hooks/useProductIntelligenceBadges";
 
 const cachedBadge = {
   type: "best-seller" as const,
@@ -10,6 +11,10 @@ const cachedBadge = {
   emoji: "🔥",
   tooltip: "Indicador de mercado em cache",
 };
+
+// Sem inteligência o hook só produz selos de cadastro: é o selo que existe de
+// verdade num produto sem dado de mercado, ao contrário de Best-Seller.
+const [seloDeCadastro] = buildBadgeResult(undefined, undefined, { featured: true }, false).badges;
 
 describe("IntelligenceBadges — erro e dados de mercado", () => {
   it("mostra erro, mantém indicador em cache e dispara retry", () => {
@@ -60,18 +65,18 @@ describe("IntelligenceBadges — erro e dados de mercado", () => {
   it("acompanha os selos de cadastro com o aviso de falha e com a ausência de mercado", () => {
     const { rerender } = render(
       <TooltipProvider>
-        <IntelligenceBadges badges={[cachedBadge]} isError onRetry={vi.fn()} />
+        <IntelligenceBadges badges={[seloDeCadastro]} isError onRetry={vi.fn()} />
       </TooltipProvider>,
     );
     expect(screen.getByRole("alert")).toHaveTextContent("Não foi possível carregar os indicadores");
-    expect(screen.getByText(/Best-Seller/)).toBeInTheDocument();
+    expect(screen.getByText(/Destaque/)).toBeInTheDocument();
 
     rerender(
       <TooltipProvider>
-        <IntelligenceBadges badges={[cachedBadge]} isEmpty />
+        <IntelligenceBadges badges={[seloDeCadastro]} isEmpty />
       </TooltipProvider>,
     );
     expect(screen.getByRole("status")).toHaveTextContent("Sem indicadores de mercado disponíveis");
-    expect(screen.getByText(/Best-Seller/)).toBeInTheDocument();
+    expect(screen.getByText(/Destaque/)).toBeInTheDocument();
   });
 });

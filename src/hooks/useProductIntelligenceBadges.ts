@@ -41,7 +41,10 @@ export interface ProductIntelligenceBadgesData {
 export interface ProductIntelligenceBadgesResult extends ProductIntelligenceBadgesData {
   /** Alguma consulta de mercado falhou; o dado já medido continua exibido. */
   isError: boolean;
-  /** Existe dado de mercado medido, mesmo que a última atualização tenha falhado. */
+  /**
+   * Existe indicador de mercado na tela. Só a inteligência gera selo, potencial e
+   * nível de demanda; velocidade sozinha não exibe número nenhum, então não conta.
+   */
   hasMarketData: boolean;
   /** As duas consultas responderam sem dado de mercado: ausência confirmada, não falha. */
   isEmpty: boolean;
@@ -182,10 +185,13 @@ export function useProductIntelligenceBadges(
 
   // Falha de uma das consultas não pode virar "produto sem indicadores": o painel
   // precisa dizer que falhou e oferecer retentativa, mantendo o que já foi medido.
-  const hasMarketData = Boolean(intel.data) || (vel.data?.length ?? 0) > 0;
+  // `hasMarketData` alimenta o texto do aviso ("os dados continuam exibidos"), então
+  // só vale quando há selo/valor na tela — e isso vem apenas da inteligência.
+  const hasMarketData = Boolean(intel.data);
+  const hasAnyData = hasMarketData || (vel.data?.length ?? 0) > 0;
   const isError = intel.isError || vel.isError;
   // "Vazio confirmado" = as duas consultas terminaram (sem carregar, sem erro) e sem dado.
-  const isEmpty = !isError && !intel.isLoading && !vel.isLoading && !hasMarketData;
+  const isEmpty = !isError && !intel.isLoading && !vel.isLoading && !hasAnyData;
 
   const refetchIntel = intel.refetch;
   const refetchVel = vel.refetch;
