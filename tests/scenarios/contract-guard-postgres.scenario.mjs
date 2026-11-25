@@ -130,15 +130,18 @@ test("a guarda do lote real lista o inventário de cláusulas e reverte a transa
 });
 
 test("a guarda roda dentro da transação do lote real, antes do COMMIT", () => {
-  assert.match(loteReal, /^BEGIN;/, "o lote precisa abrir uma transação");
-  const inicioTransacao = loteReal.indexOf("BEGIN;");
-  const inicioGuarda = loteReal.indexOf("DO $sicoob_contract_guard$");
-  const fimTransacao = loteReal.lastIndexOf("COMMIT;");
-  assert.notEqual(inicioGuarda, -1, "guarda de contrato ausente no lote");
-  assert.ok(inicioGuarda > inicioTransacao, "a guarda precisa rodar depois do BEGIN");
-  assert.ok(fimTransacao > inicioGuarda, "o COMMIT precisa vir depois da guarda");
-  assert.ok(
-    loteReal.indexOf("COMMIT;") === fimTransacao,
-    "a guarda não pode ficar depois de um COMMIT — o lote inteiro precisa ser uma transação só",
-  );
+  // Comparação por linha inteira: um literal como SELECT $$COMMIT;$$; não conta como
+  // controle de transação, e é isso que o lote precisa garantir.
+  const linhas = loteReal.split("\n");
+  const marcadas = linhas.map((linha) => linha.trim());
+  const iBegin = marcadas.indexOf("BEGIN;");
+  const commits = marcadas.reduce((total, linha) => total + (linha === "COMMIT;" ? 1 : 0), 0);
+  const iCommit = marcadas.lastIndexOf("COMMIT;");
+  const iGuarda = linhas.findIndex((linha) => linha.includes("DO $sicoob_contract_guard$"));
+
+  assert.equal(iBegin, 0, "o lote precisa abrir com BEGIN;");
+  assert.notEqual(iGuarda, -1, "guarda de contrato ausente no lote");
+  assert.equal(commits, 1, "o lote precisa ter um único COMMIT;");
+  assert.ok(iGuarda > iBegin, "a guarda precisa rodar depois do BEGIN");
+  assert.ok(iGuarda < iCommit, "o COMMIT precisa vir depois da guarda");
 });
