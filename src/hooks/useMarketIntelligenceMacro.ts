@@ -174,27 +174,73 @@ function isRangeError(error: unknown): boolean {
   return /PGRST103|range not satisfiable|requested range/i.test(msg);
 }
 
-/**
- * Sonda se ha registros depois do teto de leitura. Distingue "atingiu o teto" de
- * "tem exatamente o tanto que cabe": so o segundo caso e dado completo.
- */
+/** Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */
 async function hasRowsBeyondCap(filters: Record<string, unknown>): Promise<boolean> {
+  const probe = await invokeExternalDb<StockRow>({
+    table: 'stock_daily_summary',
+    operation: 'select',
+    select: 'id',
+    filters,
+    limit: 1,
+    offset: MAX_ROWS,
+    orderBy: { column: 'id', ascending: true },
+  });
+  return (probe.records ?? []).length > 0;
+}
+
+/**
+ * Decide se a leitura que parou no teto deixou dado para tras. A contagem exata da
+ * ultima pagina cheia responde de graca quando o bridge a devolve; sem ela, uma
+ * sonda no offset do teto responde. Sonda que falha (timeout, 5xx) nao prova fim de
+ * dado: nesse caso o painel avisa que o total pode estar incompleto.
+ */
+async function capTruncated(
+  rowsLength: number,
+  total: number | null,
+  filters: Record<string, unknown>,
+): Promise<boolean> {
+  if (total !== null) return total > rowsLength;
   try {
-    const probe = await invokeExternalDb<StockRow>({
+    return await hasRowsBeyondCap(filters);
+  } catch (error) {
+    return !isRangeError(error);
+  }
+}
+
+interface StockPage {
+  records?: StockRow[];
+  count?: number | null;
+  meta?: unknown;
+}
+
+/** `null` = PostgREST recusou o deslocamento (PGRST103): o dado acabou, nao e erro. */
+async function readStockPage(
+  filters: Record<string, unknown>,
+  offset: number,
+): Promise<StockPage | null> {
+  try {
+    return await invokeExternalDb<StockRow>({
       table: 'stock_daily_summary',
       operation: 'select',
-      select: 'id',
+      select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
       filters,
-      limit: 1,
-      offset: MAX_ROWS,
+      limit: PAGE_SIZE,
+      offset,
       orderBy: { column: 'id', ascending: true },
     });
-    return (probe.records ?? []).length > 0;
   } catch (error) {
-    // PGRST103 = deslocamento alem do total: nao ha nada depois do teto.
-    if (isRangeError(error)) return false;
-    return false;
+    // Offset 0 recusado nao e fim de dado: e falha real da consulta.
+    if (offset > 0 && isRangeError(error)) return null;
+    throw error;
   }
+}
+
+type PageStop = 'continue' | 'short' | 'degraded';
+
+/** Pagina curta encerra a leitura; degradada encerra e ja sinaliza parcial. */
+function pageStop(meta: unknown, received: number): PageStop {
+  if (hasDegradedPage(meta)) return 'degraded';
+  return received < PAGE_SIZE ? 'short' : 'continue';
 }
 
 /**
@@ -204,36 +250,25 @@ async function hasRowsBeyondCap(filters: Record<string, unknown>): Promise<boole
 async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockRowsPage> {
   const rows: StockRow[] = [];
   let truncated = false;
+  let total: number | null = null;
   for (let offset = 0; offset < MAX_ROWS; offset += PAGE_SIZE) {
-    let page;
-    try {
-      page = await invokeExternalDb<StockRow>({
-        table: 'stock_daily_summary',
-        operation: 'select',
-        select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
-        filters,
-        limit: PAGE_SIZE,
-        offset,
-        orderBy: { column: 'id', ascending: true },
-      });
-    } catch (error) {
-      // rows preenchido = ja houve pagina bem-sucedida, logo offset > 0.
-      if (rows.length > 0 && isRangeError(error)) break;
-      throw error;
-    }
+    const page = await readStockPage(filters, offset);
+    // `null` = deslocamento recusado: o dado acabou aqui.
+    if (!page) break;
     const batch = page.records ?? [];
     rows.push(...batch);
-    // Pagina degradada e sabidamente incompleta: nao ha o que sondar.
-    if (hasDegradedPage(page.meta)) {
-      truncated = true;
+    // Contagem exata do bridge (quando devolvida) evita a sonda do teto.
+    if (typeof page.count === 'number') total = page.count;
+    const stop = pageStop(page.meta, batch.length);
+    if (stop !== 'continue') {
+      truncated = stop === 'degraded';
       break;
     }
-    if (batch.length < PAGE_SIZE) break;
     if (hasOrderFallback(page.meta)) throw new Error('Consulta de estoque sem ordenação garantida pelo bridge');
   }
   // Saiu do laco com todas as paginas cheias = bateu no teto; so entao vale
-  // sondar se existe registro alem dele (60 mil exatos nao e resultado parcial).
-  if (rows.length >= MAX_ROWS) truncated = await hasRowsBeyondCap(filters);
+  // confirmar se existe registro alem dele (60 mil exatos nao e resultado parcial).
+  if (rows.length >= MAX_ROWS) truncated = await capTruncated(rows.length, total, filters);
   return { rows, truncated };
 }
 

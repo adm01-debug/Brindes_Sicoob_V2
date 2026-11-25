@@ -122,7 +122,11 @@ describe("inteligencia de mercado sem dados reais", () => {
 
     mocks.market.mockReturnValue({ data: { ...completo, truncated: true }, isLoading: false, error: null });
     const truncado = render(<MarketIntelligenceChart />);
-    expect(screen.getByText(/Resultados parciais/)).toBeTruthy();
+    const aviso = screen.getByText(/Resultados parciais/).textContent ?? "";
+    expect(aviso).toContain("podem estar incompletos");
+    // O aviso nao pode atribuir a causa a um limite de registros: pagina degradada
+    // (timeout) e sonda que falhou tambem chegam aqui sem exceder o teto.
+    expect(aviso).not.toMatch(/mais registros|limite de leitura|60 mil/);
     truncado.unmount();
 
     mocks.market.mockReturnValue({ data: { ...completo, truncated: false }, isLoading: false, error: null });

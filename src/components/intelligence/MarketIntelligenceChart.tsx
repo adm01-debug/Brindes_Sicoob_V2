@@ -199,7 +199,7 @@ function MarketChartReady({ model }: { model: MarketChartModel }) {
     <MarketInsight kpis={model.effectiveData.kpis} />
     {model.effectiveData.truncated && (
       <p className="text-xs text-muted-foreground" role="status">
-        ⚠️ Resultados parciais: a janela selecionada tem mais registros do que o limite de leitura do painel. Reduza o período para ver os totais completos.
+        ⚠️ Resultados parciais: o painel não conseguiu ler todo o período selecionado — os indicadores podem estar incompletos. Reduza o período para ver os totais completos.
       </p>
     )}
   </CardContent></Card>;

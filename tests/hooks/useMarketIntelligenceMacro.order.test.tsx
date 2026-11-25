@@ -18,6 +18,26 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 const cutoffDoPedido = (call: unknown) =>
   (call as { filters: { summary_date_gte: string } }).filters.summary_date_gte;
 
+
+/** Data dentro da janela movel (ontem). */
+const data = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+/** Pagina cheia do teto: 5.000 linhas e, opcionalmente, a contagem exata do bridge. */
+function paginasCheias(count?: number | null) {
+  const linha = {
+    summary_date: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
+    stock_close: 4,
+    units_depleted: 1,
+    units_restocked: 0,
+    supplier_id: 'fornecedor-1',
+  };
+  const records = Array.from({ length: 5000 }, () => linha);
+  return async (request: { limit?: number }) => {
+    if (request.limit === 1) return { records: [] as unknown[] };
+    return { records, count };
+  };
+}
+
 describe('janela de consulta do mercado macro', () => {
   beforeEach(() => {
     client = novoCliente();
@@ -193,5 +213,53 @@ describe('janela de consulta do mercado macro', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invoke).toHaveBeenCalledTimes(1);
     expect(result.current.data?.truncated).toBe(true);
+  });
+
+  it('usa a contagem exata do bridge e dispensa a sonda quando o teto passa', async () => {
+    // 60.005 no filtro: a contagem da pagina cheia ja denuncia o dado sobrando.
+    invoke.mockImplementation(paginasCheias(60005));
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(12);
+    expect(result.current.data?.truncated).toBe(true);
+  });
+
+  it('usa a contagem exata do bridge e nao avisa quanto o total e o teto', async () => {
+    invoke.mockImplementation(paginasCheias(60000));
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(12);
+    expect(result.current.data?.truncated).toBe(false);
+  });
+
+  it('nao trata falha da sonda do teto como fim de leitura', async () => {
+    // Sem contagem do bridge, a sonda responde; time out dela nao prova que acabou o dado.
+    invoke.mockImplementation(async (request: { limit?: number }) => {
+      if (request.limit === 1) throw new Error('statement timeout');
+      return { records: Array.from({ length: 5000 }, () => ({ summary_date: data(), stock_close: 4, units_depleted: 1, units_restocked: 0, supplier_id: 'fornecedor-1' })) };
+    });
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(13);
+    expect(result.current.data?.truncated).toBe(true);
+  });
+
+  it('trata deslocamento recusado na sonda como fim de leitura de verdade', async () => {
+    invoke.mockImplementation(async (request: { limit?: number }) => {
+      if (request.limit === 1) throw new Error('PGRST103: Requested range not satisfiable');
+      return { records: Array.from({ length: 5000 }, () => ({ summary_date: data(), stock_close: 4, units_depleted: 1, units_restocked: 0, supplier_id: 'fornecedor-1' })) };
+    });
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(13);
+    expect(result.current.data?.truncated).toBe(false);
   });
 });
