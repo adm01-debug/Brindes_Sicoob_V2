@@ -5700,7 +5700,7 @@
    "modulo": "components/quotes",
    "arquivos": 73,
    "testes": 0,
-   "linhas": 9550,
+   "linhas": 9552,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11810,7 +11810,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19420,
+   "linhas": 19436,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

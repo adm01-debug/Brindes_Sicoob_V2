@@ -12975,7 +12975,7 @@
     "QuoteProductSelector"
    ],
    "export_default": null,
-   "linhas": 35,
+   "linhas": 37,
    "dominio": "components/quotes",
    "hooks_locais": [],
    "tabelas": [],
@@ -17994,10 +17994,11 @@
   {
    "arquivo": "src/pages/QuoteBuilderPage.tsx",
    "exports": [
+    "QuoteBuilderDialogs",
     "QuoteBuilderPage"
    ],
    "export_default": "QuoteBuilderPage",
-   "linhas": 173,
+   "linhas": 189,
    "dominio": "pages",
    "hooks_locais": [
     "useDescartarRascunhoAoDesmontar",

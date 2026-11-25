@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 937,
+ "total": 938,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 703
+  "unit": 704
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 684
+   "arquivos": 685
   },
   {
    "padrao": "e2e/",
@@ -3393,6 +3393,16 @@
     "src/components/ui/tooltip.tsx"
    ],
    "casos": 8
+  },
+  {
+   "arquivo": "tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx",
+   "tipo": "unit",
+   "linhas": 84,
+   "testa": [
+    "src/components/quotes/QuoteProductSelector.tsx",
+    "src/pages/QuoteBuilderPage.tsx"
+   ],
+   "casos": 4
   },
   {
    "arquivo": "tests/components/quotes/QuoteShareDialog.test.tsx",
@@ -8337,6 +8347,7 @@
   "src/components/quotes/QuoteBuilderSummaryColumn.tsx": 4,
   "src/components/quotes/QuoteConsolidationPanel.tsx": 1,
   "src/components/quotes/QuoteHistoryTimeline.tsx": 1,
+  "src/components/quotes/QuoteProductSelector.tsx": 1,
   "src/components/quotes/QuoteShareDialog.tsx": 1,
   "src/components/quotes/ReopenExpiredQuoteButton.tsx": 1,
   "src/components/quotes/ReorderCatalogValidityBanner.tsx": 1,
@@ -8619,6 +8630,7 @@
   "src/pages/PWAInstallPage.tsx": 1,
   "src/pages/PublicFavoriteListPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
+  "src/pages/QuoteBuilderPage.tsx": 1,
   "src/pages/QuotesListPage.tsx": 1,
   "src/pages/TrendsPage.tsx": 1,
   "src/pages/admin/AdminLoginAttemptsPage.tsx": 1,
@@ -8776,7 +8788,6 @@
    "src/pages/PublicComparisonPage.tsx",
    "src/pages/PublicDossierPage.tsx",
    "src/pages/PublicKitViewPage.tsx",
-   "src/pages/QuoteBuilderPage.tsx",
    "src/pages/QuoteTemplatesPage.tsx",
    "src/pages/QuoteViewPage.tsx",
    "src/pages/QuotesDashboardPage.tsx",

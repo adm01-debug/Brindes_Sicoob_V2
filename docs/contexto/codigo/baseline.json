@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "bebc2c9692601c0b0f281120c44b10ea1a2e1884",
+  "commit": "f0354ac2a33680e528a4a03ec39691dc4e62febf",
   "branch": "main",
-  "data_commit": "2026-11-25T20:37:20Z",
+  "data_commit": "2026-11-25T20:51:23Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "f0354ac",
+    "data": "2026-11-25",
+    "assunto": "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)"
+   },
    {
     "sha": "bebc2c9",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "7630297",
     "data": "2026-11-24",
     "assunto": "fix: unifica o último confirm nativo do Kit Builder no diálogo global (#427)"
-   },
-   {
-    "sha": "a409d6d",
-    "data": "2026-11-24",
-    "assunto": "chore: alinha status do indice de lacunas aos vereditos verificados (#426)"
    }
   ],
-  "arquivos_mudados_7d": 1204,
+  "arquivos_mudados_7d": 1206,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -181,7 +181,7 @@
    },
    {
     "pasta": "src/components/quotes",
-    "mudancas": 13
+    "mudancas": 14
    },
    {
     "pasta": "src/pages/sicoob",
@@ -270,11 +270,11 @@
     "mudancas": 10
    },
    {
-    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
     "mudancas": 10
    },
    {
-    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
+    "arquivo": "src/pages/QuoteBuilderPage.tsx",
     "mudancas": 10
    },
    {
@@ -282,11 +282,11 @@
     "mudancas": 9
    },
    {
-    "arquivo": "src/pages/KitBuilderPage.tsx",
+    "arquivo": "docs/execucao/validacao-do-plano.md",
     "mudancas": 9
    },
    {
-    "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "arquivo": "src/pages/KitBuilderPage.tsx",
     "mudancas": 9
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 225
+    "commits": 226
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5316,
-  "arquivos_codigo": 3205,
-  "linhas_codigo": 507732,
+  "arquivos_total": 5317,
+  "arquivos_codigo": 3206,
+  "linhas_codigo": 507834,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 937,
+  "testes": 938,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167944
+   "linhas": 167946
   },
   "src/constants": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51501
+   "linhas": 51517
   },
   "src/routes": {
    "arquivos": 9,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 164,
-   "linhas": 29571
+   "arquivos": 165,
+   "linhas": 29655
   },
   "tests/contexts": {
    "arquivos": 3,

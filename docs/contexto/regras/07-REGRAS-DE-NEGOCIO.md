@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bebc2c9692` · branch `main` · 2026-11-25 20:38 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f0354ac2a3` · branch `main` · 2026-11-25 20:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7333 testes em 750 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7338 testes em 751 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6048,7 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
-| … +450 linhas — lista completa em `context.json` | | |
+| … +451 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6389,6 +6389,7 @@ _nenhum item encontrado_
 | em duas abas tem a mesma chave, e o descarte de uma não pode apagar o | `src/components/quotes/QuoteAutoSave.tsx` |
 | * QuoteBuilderSummaryColumn — Coluna 3: Resumo com cards de itens, desconto e CTAs | `src/components/quotes/QuoteBuilderSummaryColumn.tsx` |
 | * Quando true, mostra apenas se houver pedido (silencia loading). */ | `src/components/quotes/QuoteOrderBadge.tsx` |
+| * Quando a cotação não aceita mais edição (salvando/enviada), o seletor não pode reabrir. */ | `src/components/quotes/QuoteProductSelector.tsx` |
 | quando a tela sai de fato: mudar apenas os parametros da URL (menu | `src/components/routing/GlobalExitGuard.tsx` |
 | 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; | `src/components/search/VisualSearchButton.tsx` |
 | * Corre a chamada semântica contra o prazo, sem deixar timer solto. */ | `src/components/search/useGlobalSearch.ts` |
@@ -6535,5 +6536,4 @@ _nenhum item encontrado_
 | e fornece uma mensagem orientando o que o usuário deve fazer. | `src/lib/masked-suffix.ts` |
 | Conteúdo em animação de fechamento já não deve segurar a navegação. | `src/lib/overlay.ts` |
 | O evento vai marcado: quem tem atalho destrutivo em Escape deve | `src/lib/overlay.ts` |
-| permitir renovação sem ampliar indefinidamente o prazo do bearer token. | `src/lib/private-storage.ts` |
-| … +329 linhas — lista completa em `context.json` | |
+| … +330 linhas — lista completa em `context.json` | |
