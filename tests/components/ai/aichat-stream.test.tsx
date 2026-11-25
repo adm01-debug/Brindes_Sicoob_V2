@@ -119,6 +119,53 @@ describe("AIChat consome o stream real do expert-chat", () => {
     expect(screen.queryByText(/nao pode voltar/)).toBeNull();
   });
 
+  it("segue acompanhando enquanto a propria animacao de rolagem avanca", async () => {
+    const encoder = new TextEncoder();
+    const pushRef: { push: (chunk: string) => void; finish: () => void } = { push: () => {}, finish: () => {} };
+    const stream = new ReadableStream({
+      start(controller) {
+        pushRef.push = (chunk: string) => {
+          const payload = JSON.stringify({ choices: [{ delta: { content: chunk } }] });
+          controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+        };
+        pushRef.finish = () => {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        };
+      },
+    });
+    mocks.fetch.mockResolvedValue(
+      new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+    );
+
+    render(<AIChat />);
+    fireEvent.change(input(), { target: { value: "Onde coloco a arte?" } });
+    fireEvent.keyDown(input(), { key: "Enter" });
+
+    pushRef.push("Primeira resposta");
+    await waitFor(() => expect(screen.getByText(/Primeira resposta/)).toBeTruthy());
+
+    const log = screen.getByRole("log");
+    Object.defineProperty(log, "scrollHeight", { value: 1000, configurable: true });
+    Object.defineProperty(log, "clientHeight", { value: 300, configurable: true });
+    Object.defineProperty(log, "scrollTop", { value: 0, configurable: true, writable: true });
+    scrollSpy.mockClear();
+
+    // A rolagem suave emite eventos descendo em direcao ao fim da conversa.
+    for (const y of [120, 400, 650]) {
+      log.scrollTop = y;
+      fireEvent.scroll(log);
+    }
+
+    await act(async () => {
+      pushRef.push(" e continua chegando");
+      pushRef.finish();
+    });
+
+    expect(screen.getByText(/continua chegando/)).toBeTruthy();
+    expect(scrollSpy).toHaveBeenCalled();
+  });
+
   it("nao puxa a rolagem quando a pessoa esta lendo uma mensagem anterior", async () => {
     const encoder = new TextEncoder();
     const pushRef: { push: (chunk: string) => void; finish: () => void } = { push: () => {}, finish: () => {} };
@@ -146,10 +193,14 @@ describe("AIChat consome o stream real do expert-chat", () => {
     await waitFor(() => expect(screen.getByText(/Primeira resposta/)).toBeTruthy());
 
     const log = screen.getByRole("log");
-    // Pessoa rolou para cima: 600px longe do fim da conversa.
     Object.defineProperty(log, "scrollHeight", { value: 1000, configurable: true });
     Object.defineProperty(log, "clientHeight", { value: 300, configurable: true });
-    Object.defineProperty(log, "scrollTop", { value: 100, configurable: true, writable: true });
+    Object.defineProperty(log, "scrollTop", { value: 0, configurable: true, writable: true });
+    fireEvent.scroll(log);
+    // A animacao desceu ate 400 e a pessoa pegou a rolagem no meio do caminho.
+    log.scrollTop = 400;
+    fireEvent.scroll(log);
+    log.scrollTop = 250;
     fireEvent.scroll(log);
     scrollSpy.mockClear();
 

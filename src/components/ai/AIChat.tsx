@@ -425,15 +425,36 @@ export function AIChat({
   // Acompanha a resposta so enquanto a pessoa estiver no fim da conversa:
   // rolar por cima de quem esta lendo uma mensagem anterior tira o texto da tela.
   const nearBottomRef = useRef(true);
+  const lastScrollTopRef = useRef(0);
+  // Rolagem suave tambem emite eventos: sem esta marca, a propria animacao
+  // desligaria o acompanhamento antes de chegar ao fim da conversa.
+  const animatingRef = useRef(false);
+
   const handleLogScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 48;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const wentUp = el.scrollTop < lastScrollTopRef.current;
+    lastScrollTopRef.current = el.scrollTop;
+    if (distance <= 48) {
+      nearBottomRef.current = true;
+      animatingRef.current = false;
+      return;
+    }
+    if (wentUp) {
+      nearBottomRef.current = false;
+      animatingRef.current = false;
+      return;
+    }
+    if (animatingRef.current) return;
+    nearBottomRef.current = false;
   }, []);
 
   useEffect(() => {
-    if (!nearBottomRef.current) return;
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el || !nearBottomRef.current) return;
+    animatingRef.current = true;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading, streaming]);
 
   const { sendTurn, cancel } = useSendTurn(messages, setMessages, setStreaming, setError, setIsLoading, {
