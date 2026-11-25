@@ -268,6 +268,8 @@ describe('janela de consulta do mercado macro', () => {
     expect(result.current.isError).toBe(false);
     expect(invoke).toHaveBeenCalledTimes(3);
     expect(result.current.data?.truncated).toBe(false);
+    // As duas paginas ja lidas continuam valendo: 10 mil unidades, nao zero.
+    expect(result.current.data?.kpis.totalDepleted30d).toBe(10000);
   });
 
   it('trata deslocamento recusado na sonda como fim de leitura de verdade', async () => {
