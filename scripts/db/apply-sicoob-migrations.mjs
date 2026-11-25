@@ -1163,9 +1163,8 @@ BEGIN
 END;
 $sicoob_state_guard$;
 ${migrations}
-DO $sicoob_contract_guard$
-BEGIN
-  IF to_regclass('public.quote_save_idempotency') IS NULL
+${renderContractGuard(`
+     to_regclass('public.quote_save_idempotency') IS NULL
      OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.quote_save_idempotency'::regclass)
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)'))
         IS DISTINCT FROM ${idempotencyBody}
@@ -1489,12 +1488,198 @@ BEGIN
          AND pg_get_constraintdef(oid)
            = 'UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)'
      )
-     OR to_regclass('public.idx_favorite_items_unique') IS NOT NULL THEN
-    RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado.';
-  END IF;
-END;
-$sicoob_contract_guard$;
+     OR to_regclass('public.idx_favorite_items_unique') IS NOT NULL`)}
 ${notificationGuard}COMMIT;`;
+}
+
+// A guarda do lote nasce de uma única cadeia de cláusulas ligadas por "OR": assim, quando
+// ela dispara, a mensagem não diz qual cláusula derrubou o lote. Aqui a cadeia é cortada nos
+// "OR" de primeiro nível e cada cláusula vira um IF que registra seu índice na mensagem final,
+// avaliado no mesmo ponto do lote (depois das migrations pendentes) em que a guarda roda.
+// Os corpos de função embutidos (dollar-quoted) também têm "OR" indentado igual: por isso o
+// corte segue o mesmo léxico de stripNonCode (strings, E-strings, identificadores e dollar
+// quotes) e só separa fora de aspas e fora de parênteses.
+export function sanitizeContractChain(chain) {
+  let clean = "";
+  let index = 0;
+  while (index < chain.length) {
+    const char = chain[index];
+    const pair = chain.slice(index, index + 2);
+    if (pair === "--") {
+      // Preserva a quebra de linha: é ela que marca o separador da próxima cláusula.
+      const next = chain.indexOf("\n", index);
+      index = next < 0 ? chain.length : next;
+      continue;
+    }
+    if (pair === "/*") {
+      const end = chain.indexOf("*/", index + 2);
+      clean += " ";
+      index = end < 0 ? chain.length : end + 2;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      const quote = char;
+      const isEscapeString = quote === "'"
+        && /[Ee]/.test(chain[index - 1] ?? "")
+        && !/[A-Za-z0-9_$]/.test(chain[index - 2] ?? " ");
+      clean += char;
+      index += 1;
+      while (index < chain.length) {
+        if (isEscapeString && chain[index] === "\\") {
+          clean += chain.slice(index, index + 2);
+          index += 2;
+          continue;
+        }
+        if (chain[index] === quote) {
+          if (chain[index + 1] === quote) {
+            clean += chain.slice(index, index + 2);
+            index += 2;
+            continue;
+          }
+          clean += quote;
+          index += 1;
+          break;
+        }
+        clean += chain[index];
+        index += 1;
+      }
+      continue;
+    }
+    const dollarTag = chain.slice(index).match(/^\$[A-Za-z_]*[A-Za-z0-9_]*\$/);
+    if (dollarTag) {
+      const end = chain.indexOf(dollarTag[0], index + dollarTag[0].length);
+      const stop = end < 0 ? chain.length : end + dollarTag[0].length;
+      clean += chain.slice(index, stop);
+      index = stop;
+      continue;
+    }
+    clean += char;
+    index += 1;
+  }
+  return clean;
+}
+
+function splitContractClauses(chain) {
+  const clean = sanitizeContractChain(chain);
+  const clauses = [];
+  let start = 0;
+  let depth = 0;
+  let index = 0;
+  while (index < clean.length) {
+    const char = clean[index];
+    if (char === "'" || char === '"') {
+      const quote = char;
+      const isEscapeString = quote === "'"
+        && /[Ee]/.test(clean[index - 1] ?? "")
+        && !/[A-Za-z0-9_$]/.test(clean[index - 2] ?? " ");
+      index += 1;
+      while (index < clean.length) {
+        if (isEscapeString && clean[index] === "\\") { index += 2; continue; }
+        if (clean[index] === quote) {
+          if (clean[index + 1] === quote) { index += 2; continue; }
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      continue;
+    }
+    const dollarTag = clean.slice(index).match(/^\$[A-Za-z_]*[A-Za-z0-9_]*\$/);
+    if (dollarTag) {
+      const end = clean.indexOf(dollarTag[0], index + dollarTag[0].length);
+      index = end < 0 ? clean.length : end + dollarTag[0].length;
+      continue;
+    }
+    if (char === "(" || char === "[") { depth += 1; index += 1; continue; }
+    if (char === ")" || char === "]") { depth -= 1; index += 1; continue; }
+    if (depth === 0 && clean.startsWith("\n     OR ", index)) {
+      clauses.push(clean.slice(start, index));
+      index += "\n     OR ".length;
+      start = index;
+      continue;
+    }
+    index += 1;
+  }
+  clauses.push(clean.slice(start));
+  return clauses.map((clause) => clause.trim()).filter(Boolean);
+}
+
+const CONTRACT_GUARD_MESSAGE = "O contrato crítico não foi produzido; lote cancelado.";
+
+function contractClauseLabel(index) {
+  return `c${String(index + 1).padStart(2, "0")}`;
+}
+
+export function renderContractGuard(chain) {
+  const clauses = splitContractClauses(chain);
+  if (!clauses.length) {
+    throw new Error("Guarda de contrato sem cláusulas; lote não pode ser montado.");
+  }
+  // Cada cláusula roda em subtransação própria: uma cláusula que não pode nem ser
+  // avaliada (objeto ausente, coluna inexistente) entra na lista como falha com o
+  // SQLSTATE, em vez de abortar o lote no primeiro erro e esconder as demais.
+  const checks = clauses.map((clause, index) => [
+    "  BEGIN",
+    `    IF (${clause}) THEN`,
+    `      falhas := falhas || '${contractClauseLabel(index)}'::text;`,
+    "    END IF;",
+    "  EXCEPTION WHEN OTHERS THEN",
+    `    falhas := falhas || ('${contractClauseLabel(index)}:' || SQLSTATE)::text;`,
+    "  END;",
+  ].join("\n"));
+  return [
+    "DO $sicoob_contract_guard$",
+    "DECLARE",
+    "  falhas text[] := ARRAY[]::text[];",
+    "BEGIN",
+    ...checks,
+    "  IF COALESCE(array_length(falhas, 1), 0) > 0 THEN",
+    `    RAISE EXCEPTION '${CONTRACT_GUARD_MESSAGE} Cláusulas falhando: %.'`,
+    "      , array_to_string(falhas, ', ');",
+    "  END IF;",
+    "END;",
+    "$sicoob_contract_guard$;",
+  ].join("\n");
+}
+
+const CONTRACT_GUARD_BLOCK = /\nDO \$sicoob_contract_guard\$([\s\S]*?)\$sicoob_contract_guard\$;/;
+const CONTRACT_GUARD_CLAUSES = /\n {4}IF \(([\s\S]*?)\) THEN\n {6}falhas := falhas \|\| 'c(\d{2})'::text;\n {4}END IF;/g;
+
+export function extractContractGuardClauses(batchSql) {
+  const block = CONTRACT_GUARD_BLOCK.exec(batchSql);
+  if (!block) return [];
+  const declaradas = block[1].match(/falhas := falhas \|\| 'c\d{2}'::text;/g) ?? [];
+  const found = new Map();
+  for (const matched of block[1].matchAll(CONTRACT_GUARD_CLAUSES)) {
+    const index = Number(matched[2]);
+    if (found.has(index)) throw new Error(`Cláusula c${matched[2]} repetida na guarda de contrato.`);
+    found.set(index, matched[1].trim());
+  }
+  if (found.size !== declaradas.length) {
+    throw new Error(`Guarda de contrato ilegível: ${declaradas.length} cláusulas declaradas, ${found.size} extraídas.`);
+  }
+  const indexes = [...found.keys()].sort((left, right) => left - right);
+  indexes.forEach((index, position) => {
+    if (index !== position + 1) throw new Error("Guarda de contrato fora de sequência; lote inválido.");
+  });
+  return indexes.map((index) => found.get(index));
+}
+
+function reportFailingContractClauses(error, clauses) {
+  const message = error instanceof Error ? error.message : String(error);
+  const matched = /Cláusulas falhando: ([^.]+)\./.exec(message);
+  if (!matched) return;
+  for (const item of matched[1].split(",")) {
+    const [label, estado] = item.trim().split(":");
+    const index = Number(label.slice(1));
+    const clause = clauses[index - 1];
+    if (!Number.isInteger(index) || !clause) {
+      console.error(`[guarda] ${item.trim()} sem cláusula correspondente no lote.`);
+      continue;
+    }
+    const sufixo = estado ? ` (SQLSTATE ${estado})` : "";
+    console.error(`[guarda] ${label}${sufixo} falha: ${clause.replace(/\s+/g, " ").slice(0, 600)}`);
+  }
 }
 
 async function main() {
@@ -1546,7 +1731,14 @@ async function main() {
 
     if (client.transport === "management-api") {
       if (pending.length) {
-        await client.query(buildManagementApiBatch(targets, before));
+        const batch = buildManagementApiBatch(targets, before);
+        const clauses = extractContractGuardClauses(batch);
+        try {
+          await client.query(batch);
+        } catch (error) {
+          reportFailingContractClauses(error, clauses);
+          throw error;
+        }
       } else {
         console.log("Todas as migrations autorizadas já estavam aplicadas; nenhuma escrita executada.");
       }
