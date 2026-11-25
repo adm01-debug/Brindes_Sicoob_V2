@@ -158,6 +158,15 @@ function hasOrderFallback(meta: unknown): boolean {
   );
 }
 
+// Depois de um timeout o bridge reduz o limite da pagina e marca
+// `meta.pagination_degraded`: a pagina curta NAO significa fim da leitura.
+function hasDegradedPage(meta: unknown): boolean {
+  return (
+    typeof meta === 'object' && meta !== null &&
+    (meta as { pagination_degraded?: unknown }).pagination_degraded === true
+  );
+}
+
 // Offset igual ao total exato faz o PostgREST responder PGRST103 em vez de uma
 // pagina vazia; isso encerra a leitura em vez de derrubar o painel.
 function isRangeError(error: unknown): boolean {
@@ -166,12 +175,35 @@ function isRangeError(error: unknown): boolean {
 }
 
 /**
+ * Sonda se ha registros depois do teto de leitura. Distingue "atingiu o teto" de
+ * "tem exatamente o tanto que cabe": so o segundo caso e dado completo.
+ */
+async function hasRowsBeyondCap(filters: Record<string, unknown>): Promise<boolean> {
+  try {
+    const probe = await invokeExternalDb<StockRow>({
+      table: 'stock_daily_summary',
+      operation: 'select',
+      select: 'id',
+      filters,
+      limit: 1,
+      offset: MAX_ROWS,
+      orderBy: { column: 'id', ascending: true },
+    });
+    return (probe.records ?? []).length > 0;
+  } catch (error) {
+    // PGRST103 = deslocamento alem do total: nao ha nada depois do teto.
+    if (isRangeError(error)) return false;
+    return false;
+  }
+}
+
+/**
  * Pagina `stock_daily_summary` por `id` (ordem total: sem repetir nem omitir
  * linhas empatadas na mesma data) ate a ultima pagina incompleta.
  */
 async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockRowsPage> {
   const rows: StockRow[] = [];
-  let truncated = true;
+  let truncated = false;
   for (let offset = 0; offset < MAX_ROWS; offset += PAGE_SIZE) {
     let page;
     try {
@@ -185,20 +217,23 @@ async function fetchStockSummaries(filters: Record<string, unknown>): Promise<St
         orderBy: { column: 'id', ascending: true },
       });
     } catch (error) {
-      if (offset > 0 && rows.length > 0 && isRangeError(error)) {
-        truncated = false;
-        break;
-      }
+      // rows preenchido = ja houve pagina bem-sucedida, logo offset > 0.
+      if (rows.length > 0 && isRangeError(error)) break;
       throw error;
     }
     const batch = page.records ?? [];
     rows.push(...batch);
-    if (batch.length < PAGE_SIZE) {
-      truncated = false;
+    // Pagina degradada e sabidamente incompleta: nao ha o que sondar.
+    if (hasDegradedPage(page.meta)) {
+      truncated = true;
       break;
     }
+    if (batch.length < PAGE_SIZE) break;
     if (hasOrderFallback(page.meta)) throw new Error('Consulta de estoque sem ordenação garantida pelo bridge');
   }
+  // Saiu do laco com todas as paginas cheias = bateu no teto; so entao vale
+  // sondar se existe registro alem dele (60 mil exatos nao e resultado parcial).
+  if (rows.length >= MAX_ROWS) truncated = await hasRowsBeyondCap(filters);
   return { rows, truncated };
 }
 

@@ -47,13 +47,15 @@ describe('janela de consulta do mercado macro', () => {
         supplier_id: 'fornecedor-1',
       };
     };
-    invoke.mockResolvedValueOnce({ records: [dia(3, 2)] }).mockResolvedValueOnce({ records: [dia(2, 5)] });
+    // Ordem invertida na mesma resposta: se o hook nao ordenasse, a serie sairia 3, 2.
+    invoke.mockResolvedValueOnce({ records: [dia(2, 5), dia(3, 2)] });
 
     const { result } = renderHook(() => useMarketIntelligenceMacro(30), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const datas = result.current.data?.daily.map((ponto) => ponto.date) ?? [];
-    expect(datas).toEqual([...datas].sort((a, b) => a.localeCompare(b)));
+    const serie = result.current.data?.daily.map((ponto) => [ponto.date, ponto.depleted]) ?? [];
+    expect(serie.map(([, depleted]) => depleted)).toEqual([2, 5]);
+    expect(serie.map(([date]) => date)).toEqual([...serie.map(([date]) => date)].sort((a, b) => a.localeCompare(b)));
   });
 
   it('amplia a janela no servidor: 360 dias pede um corte anterior ao de 30 dias', async () => {
@@ -123,7 +125,7 @@ describe('janela de consulta do mercado macro', () => {
     expect(result.current.data?.truncated).toBe(false);
   });
 
-  it('sinaliza resultado parcial ao atingir o teto de leitura', async () => {
+  it('sinaliza resultado parcial quando existe registro acima do teto', async () => {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
     const linha = {
@@ -134,12 +136,62 @@ describe('janela de consulta do mercado macro', () => {
       supplier_id: 'fornecedor-1',
     };
     const paginaCheia = Array.from({ length: 5000 }, () => linha);
-    invoke.mockResolvedValue({ records: paginaCheia });
+    // A sonda (limit 1 no offset do teto) encontra uma linha: existe dado alem do teto.
+    invoke.mockImplementation(async (request: { limit?: number }) =>
+      request.limit === 1 ? { records: [linha] } : { records: paginaCheia },
+    );
 
     const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(invoke).toHaveBeenCalledTimes(12);
+    expect(invoke).toHaveBeenCalledTimes(13);
+    expect(invoke.mock.calls[12][0]).toEqual(expect.objectContaining({ offset: 60000, limit: 1 }));
+    expect(result.current.data?.truncated).toBe(true);
+  });
+
+  it('nao avisa parcial quando o total coincide exatamente com o teto', async () => {
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    const linha = {
+      summary_date: ontem.toISOString().slice(0, 10),
+      stock_close: 4,
+      units_depleted: 1,
+      units_restocked: 0,
+      supplier_id: 'fornecedor-1',
+    };
+    const paginaCheia = Array.from({ length: 5000 }, () => linha);
+    // 12 paginas cheias (60.000 = teto) e a sonda vazia: nada alem do teto.
+    invoke.mockImplementation(async (request: { limit?: number }) =>
+      request.limit === 1 ? { records: [] } : { records: paginaCheia },
+    );
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(13);
+    expect(invoke.mock.calls[12][0]).toEqual(expect.objectContaining({ offset: 60000 }));
+    expect(result.current.data?.truncated).toBe(false);
+  });
+
+  it('marca parcial quando o bridge degrade a pagina (timeout reduz o limite)', async () => {
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    const linha = {
+      summary_date: ontem.toISOString().slice(0, 10),
+      stock_close: 4,
+      units_depleted: 1,
+      units_restocked: 0,
+      supplier_id: 'fornecedor-1',
+    };
+    invoke.mockResolvedValueOnce({
+      records: Array.from({ length: 50 }, () => linha),
+      meta: { pagination_degraded: true, effective_limit: 50 },
+    });
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invoke).toHaveBeenCalledTimes(1);
     expect(result.current.data?.truncated).toBe(true);
   });
 });
