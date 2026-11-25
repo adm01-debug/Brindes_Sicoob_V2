@@ -2,9 +2,15 @@
 // sem a variável os casos são pulados, para não exigir servidor de banco no runner padrão.
 //
 // Cobre a migration 20261125193000_revoke_execute_legacy_notification_helpers.sql:
-// as duas assinaturas de is_dnd_active, a helper de limpeza, a idempotência e o Down
+// as duas assinaturas de is_dnd_active, a helper de limpeza, a idempotência, o Down
 // documentado no corpo da migration (exigência do CONTRIBUTING: "toda migration deve
-// ser testada para reversão").
+// ser testada para reversão") e o aborto do lote atômico.
+//
+// Os arquivos de cenário rodam em paralelo e compartilham o mesmo servidor, então cada
+// execução usa um banco próprio: notification-guard-postgres.scenario.mjs também
+// recria public.cleanup_old_notifications(), e as duas rodando no mesmo banco se
+// derrubariam. Sem permissão de CREATE DATABASE o cenário cai para o banco da URL e
+// limpa as funções no fim.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadAuthorizedTargets } from "../../scripts/db/apply-sicoob-migrations.mjs";
@@ -13,6 +19,12 @@ const databaseUrl = process.env.SICOOB_TEST_DATABASE_URL;
 const VERSION = "20261125193000";
 const MIGRATION = loadAuthorizedTargets().find((target) => target.version === VERSION);
 assert.ok(MIGRATION, `migration ${VERSION} ausente da allowlist de aplicação`);
+
+const FUNCOES = [
+  "public.cleanup_old_notifications()",
+  "public.is_dnd_active(uuid)",
+  "public.is_dnd_active()",
+];
 
 const DOWN = `
   GRANT EXECUTE ON FUNCTION public.cleanup_old_notifications() TO PUBLIC, anon, authenticated;
@@ -39,26 +51,52 @@ async function carregarCliente() {
 
 async function comBancoDescartavel(executar) {
   const Client = await carregarCliente();
-  const client = new Client({ connectionString: databaseUrl });
-  await client.connect();
+  const admin = new Client({ connectionString: databaseUrl });
+  await admin.connect();
+  const nome = `sicoob_acl_${process.pid}_${Date.now()}`;
+  const isolada = new URL(databaseUrl);
+  isolada.pathname = `/${nome}`;
+  let client = null;
+  let bancoProprio = false;
   try {
+    try {
+      await admin.query(`CREATE DATABASE ${nome}`);
+      bancoProprio = true;
+      client = new Client({ connectionString: isolada.toString() });
+      await client.connect();
+    } catch (erro) {
+      if (erro.code !== "42501") throw erro;
+      client = new Client({ connectionString: databaseUrl });
+      await client.connect();
+    }
     await client.query(`
       DO $$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
       END $$;
+      CREATE SCHEMA IF NOT EXISTS sicoob_acl_test;
+      CREATE TABLE IF NOT EXISTS sicoob_acl_test.probe_schema_migrations(version text PRIMARY KEY);
+      TRUNCATE sicoob_acl_test.probe_schema_migrations;
     `);
-    await client.query("DROP FUNCTION IF EXISTS public.cleanup_old_notifications()");
-    await client.query("DROP FUNCTION IF EXISTS public.is_dnd_active(uuid)");
-    await client.query("DROP FUNCTION IF EXISTS public.is_dnd_active()");
+    if (!bancoProprio) {
+      for (const funcao of FUNCOES) await client.query(`DROP FUNCTION IF EXISTS ${funcao}`);
+    }
     await client.query(ACL_LEGADA);
     await executar(client);
   } finally {
-    await client.query("DROP FUNCTION IF EXISTS public.cleanup_old_notifications()").catch(() => {});
-    await client.query("DROP FUNCTION IF EXISTS public.is_dnd_active(uuid)").catch(() => {});
-    await client.query("DROP FUNCTION IF EXISTS public.is_dnd_active()").catch(() => {});
-    await client.end();
+    if (client) {
+      if (!bancoProprio) {
+        for (const funcao of FUNCOES) {
+          await client.query(`DROP FUNCTION IF EXISTS ${funcao}`).catch(() => {});
+        }
+      }
+      await client.end().catch(() => {});
+    }
+    if (bancoProprio) {
+      await admin.query(`DROP DATABASE IF EXISTS ${nome} WITH (FORCE)`).catch(() => {});
+    }
+    await admin.end().catch(() => {});
   }
 }
 
@@ -130,15 +168,31 @@ function extrairAssercao(sql) {
   return sql.slice(inicio, fim);
 }
 
-test("vazamento reintroduzido derruba o lote atômico com o nome da assinatura", async (t) => {
+test("vazamento reintroduzido aborta o lote, desfaz o grant e não registra a migration", async (t) => {
   if (!databaseUrl) return t.skip("SICOOB_TEST_DATABASE_URL ausente");
   await comBancoDescartavel(async (client) => {
     await client.query(MIGRATION.sql);
+    // Lote atômico, como o apply real: migration aplicada e registrada na mesma transação.
+    await client.query("BEGIN");
+    await client.query(
+      "INSERT INTO sicoob_acl_test.probe_schema_migrations(version) VALUES ($1)",
+      [VERSION],
+    );
     // Simula o caso em que o REVOKE não surte efeito (grant explícito posterior).
     await client.query("GRANT EXECUTE ON FUNCTION public.is_dnd_active(uuid) TO anon");
     await assert.rejects(
       client.query(extrairAssercao(MIGRATION.sql)),
       /ACL de helper de notificacao ainda exposta: public.is_dnd_active\(p_user_id uuid\)/,
     );
+    await client.query("ROLLBACK");
+
+    const { rows } = await client.query(
+      "SELECT count(*)::int AS total FROM sicoob_acl_test.probe_schema_migrations",
+    );
+    assert.equal(rows[0].total, 0, "o registro da migration não pode sobreviver ao aborto");
+
+    const apos = await aclEfetiva(client);
+    assert.equal(apos.get("is_dnd_active(p_user_id uuid)").anon, false,
+      "o aborto precisa desfazer o grant vazado");
   });
 });
