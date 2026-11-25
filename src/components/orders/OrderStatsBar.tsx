@@ -56,6 +56,26 @@ function StatsUnavailable({ onRetry }: { onRetry?: () => void }) {
   </Card>;
 }
 
+/** Cartões da última consulta boa mais o aviso quando a atualização falha. */
+function CartoesDeEstatisticas({
+  statCards,
+  isError,
+}: {
+  statCards: React.ComponentProps<typeof StatCard>[];
+  isError: boolean;
+}) {
+  return <div className="space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {statCards.map((stat) => <StatCard key={stat.label} {...stat} />)}
+    </div>
+    {isError && (
+      <p role="status" className="text-xs text-muted-foreground">
+        Estatísticas da última consulta bem-sucedida — a atualização falhou.
+      </p>
+    )}
+  </div>;
+}
+
 export function OrderStatsBar() {
   const { user } = useAuth();
   const scope = useSalesScope();
@@ -72,7 +92,9 @@ export function OrderStatsBar() {
 
   if (falhou.current && !isError) return <StatsReloading />;
 
-  if (isError)
+  // Com números da última consulta boa a falha de atualização não apaga a
+  // barra: os cartões ficam e o aviso diz de onde eles vêm.
+  if (isError && orders.length === 0)
     return (
       <StatsUnavailable
         onRetry={() => {
@@ -115,9 +137,5 @@ export function OrderStatsBar() {
     },
   ];
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat) => <StatCard key={stat.label} {...stat} />)}
-    </div>
-  );
+  return <CartoesDeEstatisticas statCards={statCards} isError={isError} />;
 }

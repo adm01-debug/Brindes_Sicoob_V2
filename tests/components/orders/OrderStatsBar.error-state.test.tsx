@@ -41,6 +41,24 @@ describe("OrderStatsBar", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("mantém os números já medidos quando só a atualização falha", () => {
+    // Carga boa seguida de falha de atualização: o React Query mantém `data`
+    // e liga `isError` -- apagar os cartões aqui esconderia número real.
+    mocks.useOrdersList.mockReturnValue({
+      data: { data: [{ status: "rascunho" }, { status: "concluido" }] },
+      isError: true,
+      refetch: mocks.refetch,
+    });
+
+    render(<OrderStatsBar />);
+
+    expect(screen.getByText("Total de Pedidos").parentElement).toHaveTextContent("2");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Estatísticas da última consulta bem-sucedida",
+    );
+    expect(screen.queryByText("Estatísticas de pedidos indisponíveis")).toBeNull();
+  });
+
   it("conta os pedidos quando a consulta responde", () => {
     mocks.useOrdersList.mockReturnValue({
       data: {
