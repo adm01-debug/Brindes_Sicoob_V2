@@ -107,7 +107,7 @@ function OrdersToolbar({
   );
 }
 
-function OrdersContent({
+export function OrdersContent({
   orders,
   isLoading,
   isError,
@@ -130,13 +130,38 @@ function OrdersContent({
       </div>
     );
   // Sem esta separação, falha de consulta virava "você ainda não tem pedidos".
-  if (isError) return <OrdersErrorState onRetry={onRetry} />;
+  // Com pedidos já em tela a falha é de atualização: avisa e mantém a lista,
+  // em vez de trocar dado bom por tela de erro.
+  if (isError && !orders.length) return <OrdersErrorState onRetry={onRetry} />;
   if (!orders.length) return <OrdersEmptyState search={search} />;
   return (
     <div className="grid gap-3">
+      {isError && <OrdersStaleNotice onRetry={onRetry} />}
       {orders.map((order) => (
         <OrderCard key={order.id} order={order} onClick={() => navigate(`/pedidos/${order.id}`)} />
       ))}
+    </div>
+  );
+}
+
+function OrdersStaleNotice({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3"
+    >
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Não foi possível atualizar a lista.</span> Os
+          pedidos abaixo são da última consulta bem-sucedida.
+        </p>
+      </div>
+      {onRetry && (
+        <Button size="sm" variant="outline" onClick={() => void onRetry()}>
+          Tentar novamente
+        </Button>
+      )}
     </div>
   );
 }
