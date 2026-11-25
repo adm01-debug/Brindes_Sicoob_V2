@@ -23,11 +23,23 @@ function StatCard(props: {
   </Card>;
 }
 
+/** Consulta falhou: nenhum número sai daqui, para não parecer fila vazia. */
+function StatsUnavailable() {
+  return <Card className="border-destructive/40 bg-destructive/5">
+    <CardContent className="p-5" role="alert">
+      <p className="text-sm font-medium text-destructive">Estatísticas de pedidos indisponíveis</p>
+      <p className="text-xs text-muted-foreground">A consulta falhou. Nenhum número foi estimado.</p>
+    </CardContent>
+  </Card>;
+}
+
 export function OrderStatsBar() {
   const { user } = useAuth();
   const scope = useSalesScope();
-  const { data: response } = useOrdersList(user?.id, scope);
+  const { data: response, isError } = useOrdersList(user?.id, scope);
   const orders = response?.data || [];
+
+  if (isError) return <StatsUnavailable />;
 
   const stats = {
     total: orders.length,

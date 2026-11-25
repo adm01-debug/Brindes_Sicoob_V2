@@ -73,14 +73,24 @@ describe('Indicadores na tela de Gestão de Compras', () => {
   });
 
   it('falha na consulta avisa e não inventa estimativa', async () => {
-    getCooperativeDashboardStats.mockRejectedValue(new Error('indisponível'));
+    let foraDoAr = true;
+    getCooperativeDashboardStats.mockImplementation(() =>
+      foraDoAr
+        ? Promise.reject(new Error('indisponível'))
+        : Promise.resolve(statsCompletas),
+    );
 
     renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
 
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(screen.getByText('Os valores não foram substituídos por estimativas.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
     expect(screen.queryByRole('progressbar')).toBeNull();
+
+    foraDoAr = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    await waitFor(() => expect(screen.queryByText('Os valores não foram substituídos por estimativas.')).toBeNull());
+    expect(await screen.findByText('3')).toBeTruthy();
   });
 
   it('cooperativa sem verba cadastrada diz isso, em vez de mostrar zero', async () => {
@@ -138,17 +148,27 @@ describe('Indicadores na tela de Gestão de Compras', () => {
     // A retentativa da verba não cobre estes dois números: a falha da fila precisa
     // da própria saída, senão o gestor fica sem SLA e sem total do mês.
     getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
-    loadPurchasingOrders.mockRejectedValueOnce(new Error('fila indisponível'));
-    loadPurchasingOrders.mockResolvedValue(pedidos(0, 0));
+    // A fila faz duas consultas em paralelo ('pending' e 'monthly'): contar chamadas
+    // não prova nada, porque o número já passa de 1 antes de qualquer clique.
+    let filaForaDoAr = true;
+    loadPurchasingOrders.mockImplementation(() =>
+      filaForaDoAr
+        ? Promise.reject(new Error('fila indisponível'))
+        : Promise.resolve(pedidos(0, 0)),
+    );
 
     renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
 
     expect(await screen.findByText('SLA e totais do mês indisponíveis')).toBeTruthy();
     expect(screen.getByText('A consulta falhou. Nenhum valor foi estimado.')).toBeTruthy();
 
+    // O alerta só sai se a retentativa realmente buscar de novo: o botão precisa ter efeito.
+    filaForaDoAr = false;
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
 
-    await waitFor(() => expect(loadPurchasingOrders.mock.calls.length).toBeGreaterThan(1));
+    await waitFor(() =>
+      expect(screen.queryByText('SLA e totais do mês indisponíveis')).toBeNull(),
+    );
   });
 
   it('consulta só a cooperativa do perfil', async () => {
