@@ -112,8 +112,8 @@ function ErrorCard() {
   return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p></CardContent></Card>;
 }
 
-function EmptyCard() {
-  return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-2 text-center"><Package className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium text-foreground">Sem movimentações de mercado no período</p><p className="text-xs text-muted-foreground max-w-[280px]">Nenhuma compra registrada no período selecionado. Amplie o período para ver a movimentação real do mercado.</p></CardContent></Card>;
+function EmptyCard({ model }: { model: MarketChartModel }) {
+  return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-3 text-center"><Package className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium text-foreground">Sem movimentações de mercado no período selecionado</p><p className="text-xs text-muted-foreground">Amplie o período para procurar registros anteriores.</p><ChartControls model={model} /></CardContent></Card>;
 }
 
 function demandMetrics(average: number) {
@@ -204,7 +204,7 @@ export function MarketIntelligenceChart({ days: defaultDays = 30, supplierId }: 
 
   if (model.isLoading) return <LoadingCard />;
   if (model.error && !model.hasRealData) return <ErrorCard />;
-  if (!model.hasRealData) return <EmptyCard />;
+  if (!model.hasRealData) return <EmptyCard model={model} />;
   return <MarketChartReady model={model} />;
 }
 

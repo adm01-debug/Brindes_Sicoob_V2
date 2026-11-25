@@ -161,7 +161,11 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
         select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
         filters,
         limit: 5000,
-        orderBy: { column: 'summary_date', ascending: true },
+        // Descendente de proposito: o filtro por `cutoffStr` acontece DEPOIS do
+        // limit. Buscando os mais antigos primeiro, uma base grande empurrava os
+        // registros do periodo para fora da pagina e a tela anunciava "sem
+        // movimentacoes" com dado existindo.
+        orderBy: { column: 'summary_date', ascending: false },
       });
 
       // Aggregate by date (for chart)

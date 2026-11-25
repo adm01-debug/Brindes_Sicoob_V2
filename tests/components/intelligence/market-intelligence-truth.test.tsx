@@ -19,7 +19,7 @@ describe("inteligencia de mercado sem dados reais", () => {
 
     render(<MarketIntelligenceChart />);
 
-    expect(screen.getByText("Sem movimentações de mercado no período")).toBeTruthy();
+    expect(screen.getByText("Sem movimentações de mercado no período selecionado")).toBeTruthy();
     expect(screen.queryByText(/dados ilustrativos/i)).toBeNull();
     expect(screen.queryByText("Brasil Brindes")).toBeNull();
     expect(screen.queryByText("Master Promo")).toBeNull();
@@ -49,6 +49,17 @@ describe("inteligencia de mercado sem dados reais", () => {
 
     render(<MarketIntelligenceChart />);
 
-    expect(screen.getByText("Sem movimentações de mercado no período")).toBeTruthy();
+    expect(screen.getByText("Sem movimentações de mercado no período selecionado")).toBeTruthy();
+  });
+
+  it("mantem o seletor de periodo no estado vazio para procurar registros anteriores", () => {
+    mocks.market.mockReturnValue({ data: undefined, isLoading: false, error: null });
+    mocks.supplierNames.mockReturnValue({ data: new Map<string, string>() });
+    mocks.market.mockClear();
+
+    render(<MarketIntelligenceChart />);
+
+    expect(screen.getByText("360d")).toBeTruthy();
+    expect(screen.getByText("Amplie o período para procurar registros anteriores.")).toBeTruthy();
   });
 });
