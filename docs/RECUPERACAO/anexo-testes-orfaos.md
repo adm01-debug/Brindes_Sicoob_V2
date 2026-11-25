@@ -12,24 +12,23 @@ Para cada uma das 133 branches locais (todas exceto `main`):
 
 Resultado: **178 arquivos criados em branches que não existem em `main`** — 82 sob `tests/` e `e2e/`, e o restante em `scripts/`, `docs/` e `supabase/`.
 
-Os 70 arquivos `*.test.ts(x)` foram copiados para um worktree limpo de `main` e executados com `vitest run --reporter=json`. Resultado:
+Os 70 arquivos `*.test.ts(x)` órfãos foram copiados para um worktree limpo de `main` e executados com `vitest run --reporter=json`. Resultado:
 
 | veredito | arquivos | significado |
 | --- | --- | --- |
-| `passa em main` | 6 | o teste passa sem nenhuma alteração — cobertura perdida, custo zero para recuperar |
+| `passa em main` | 5 | o teste passa sem nenhuma alteração — cobertura perdida, custo zero para recuperar |
 | `modulo-ausente` | 10 | o módulo testado não existe em `main` — o teste só roda se o módulo for recuperado |
 | `export-ausente` | 19 | o módulo existe, mas não exporta a função que o teste importa |
 | `comportamento-divergente` | 36 | o módulo existe e roda, mas o comportamento/texto/estado esperado não está em `main` |
 
 ## Vereditos por classe
 
-**`passa em main` (6)** — passam hoje sem tocar em código de produção. A revisão da PR #444 mostrou que três deles eram redundantes e foram descartados:
+**`passa em main` (5)** — passam hoje sem tocar em código de produção. Recuperados 3 na PR #444 (`catalog-readonly-rpc.test.ts`, `useCategoryRanking.errors.test.tsx`, `useClientBI.real-data.test.tsx` — 10 testes); 2 foram descartados na revisão:
 
 - `tests/edge-functions/health-check.liveness.test.ts` repete, teste por teste, os dois primeiros casos de `tests/edge-functions/public-health-and-bi-share.test.ts` (já na `main`);
-- `tests/e2e/user-credentials.test.ts` + `e2e/helpers/user-credentials.ts` validam um helper sem consumidor, enquanto o setup real (`e2e/fixtures/auth.setup.ts`) usa o par `E2E_USER_*` — o teste passaria sem detectar e-mail e senha de contas diferentes;
-- `tests/edge-functions/catalog-readonly-rpc.test.ts` foi mantido, mas passou a importar `CATALOG_ORIGIN` em vez de fixar a URL do catálogo.
+- `tests/e2e/user-credentials.test.ts` + `e2e/helpers/user-credentials.ts` validam um helper sem consumidor, enquanto o setup real (`e2e/fixtures/auth.setup.ts`) usa o par `E2E_USER_*` — o teste passaria sem detectar e-mail e senha de contas diferentes.
 
-Recuperados de fato na PR #444: `catalog-readonly-rpc.test.ts`, `useCategoryRanking.errors.test.tsx` e `useClientBI.real-data.test.tsx` (10 testes).
+`tests/edge-functions/catalog-readonly-rpc.test.ts` foi mantido com uma correção: importa `CATALOG_ORIGIN` em vez de fixar a URL do catálogo.
 
 **`modulo-ausente` (10)** — dois grupos distintos:
 
@@ -58,7 +57,6 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/edge-functions/health-check.liveness.test.ts` | `fix/hermes-bi-share-hardening-20261028` | passa em `main` | recuperado na PR #444 |
 | `tests/hooks/useCategoryRanking.errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | passa em `main` | recuperado na PR #444 |
 | `tests/hooks/useClientBI.real-data.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | passa em `main` | recuperado na PR #444 |
-| `tests/pages/GestorCompras.metrics.test.tsx` | `?` | passa em `main` | recuperado na PR #444 |
 | `tests/edge-functions/health-check-consumers.test.ts` | `fix/hermes-bi-share-hardening-20261028` | modulo-ausente | ../../scripts/health-check-contract.mjs |
 | `tests/lib/error-reporter-bootstrap.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | modulo-ausente | @/lib/error-reporter-bootstrap |
 | `tests/lib/navigation/filter-query.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | modulo-ausente | @/lib/navigation/filter-query |
