@@ -61,8 +61,14 @@ describe('PublicFavoriteListPage', () => {
   });
 
   it('regete falha transitoria e mostra a lista quando o link publico responde', async () => {
+    // Tres falhas 503 seguidas: a politica generica de pararia na 3a chamada
+    // (`failureCount < 2`), so a regra de 5xx chega na 4a. Sucesso so na 4a
+    // prova que e a regra de 503 que sustenta a reentrega.
+    const erro503 = { data: null, error: new Error('503 Service Unavailable') };
     mocks.rpc
-      .mockResolvedValueOnce({ data: null, error: new Error('503 Service Unavailable') })
+      .mockResolvedValueOnce(erro503)
+      .mockResolvedValueOnce(erro503)
+      .mockResolvedValueOnce(erro503)
       .mockResolvedValueOnce({ data: { list: LISTA, items: [] }, error: null });
 
     renderWithProductionPolicy();
@@ -70,7 +76,7 @@ describe('PublicFavoriteListPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Seleção recuperada' }, { timeout: 4000 }),
     ).toBeInTheDocument();
-    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    expect(mocks.rpc).toHaveBeenCalledTimes(4);
   });
 
   it('nao regete erro 4xx deterministico: uma chamada e a tela de erro', async () => {
