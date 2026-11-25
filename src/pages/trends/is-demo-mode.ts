@@ -4,9 +4,10 @@
  * sem puxar a massa de dados fictícios para o chunk principal.
  *
  * Dados reais são o padrão. Para avaliação visual com dados fictícios,
- * acesse /tendencias?demo=1.
+ * acesse /tendencias?demo=1 (ou `?demo=true`).
  */
 export function isDemoMode(): boolean {
   if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('demo') === '1';
+  const demo = new URLSearchParams(window.location.search).get('demo');
+  return demo === '1' || demo === 'true';
 }

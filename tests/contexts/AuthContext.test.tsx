@@ -39,7 +39,11 @@ vi.mock('@/integrations/supabase/client', () => {
 
 // Dynamic import to get the mocked module
 import { supabase } from '@/integrations/supabase/client';
+
+type RespostaDeSessao = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { getUxMetrics, trackUx } from '@/lib/uxMetrics';
 
 // Also mock the prewarm import
 vi.mock('@/lib/external-db-prewarm', () => ({
@@ -59,6 +63,11 @@ function AuthConsumer() {
       <span data-testid="isSeller">{String(auth.isVendedor)}</span>
     </div>
   );
+}
+
+function AuthSignOutConsumer() {
+  const auth = useAuth();
+  return <button onClick={() => void auth.signOut()}>sair</button>;
 }
 
 describe('AuthContext', () => {
@@ -197,6 +206,51 @@ describe('AuthContext', () => {
     }, { timeout: 3000 });
   });
 
+  it('limpa os KPIs de navegação no logout, para não irem para o próximo login', async () => {
+    const mockSession = { user: { id: 'user-ux', email: 'ux@test.com' } };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+
+    await act(async () => {
+      render(<AuthProvider><AuthSignOutConsumer /></AuthProvider>);
+    });
+
+    trackUx('guard.shown');
+    expect(Object.keys(getUxMetrics())).toContain('guard.shown');
+
+    await act(async () => {
+      screen.getByRole('button', { name: 'sair' }).click();
+    });
+
+    await waitFor(() => expect(getUxMetrics()).toEqual({}));
+  });
+
+  it('limpa os KPIs de navegação quando a sessão encerra por evento', async () => {
+    // Sem sessão inicial o teste não provaria a limpeza: é a passagem
+    // autenticado -> sem sessão que precisa zerar os contadores.
+    const mockSession = { user: { id: 'user-evento', email: 'evento@test.com' } };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(
+      { data: { session: mockSession } } as unknown as RespostaDeSessao,
+    );
+
+    await act(async () => {
+      render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated').textContent).toBe('true');
+    });
+
+    trackUx('nav.scroll-restore');
+    expect(Object.keys(getUxMetrics())).toContain('nav.scroll-restore');
+
+    await act(async () => {
+      const cb = (globalThis as any).__authCb;
+      cb?.('SIGNED_OUT', null);
+    });
+
+    await waitFor(() => expect(getUxMetrics()).toEqual({}));
+  });
+
   it('encerra a sessão local quando o vínculo foi revogado', async () => {
     const mockUser = { id: 'user-revoked', email: 'revoked@test.com' };
     const mockSession = { user: mockUser };
@@ -206,6 +260,10 @@ describe('AuthContext', () => {
       error: null,
     } as any);
 
+    // A revogação não passa pelo logout da interface, então é ela que precisa
+    // limpar os contadores de navegação da sessão revogada.
+    trackUx('guard.shown');
+
     await act(async () => {
       render(<AuthProvider><AuthConsumer /></AuthProvider>);
     });
@@ -214,5 +272,6 @@ describe('AuthContext', () => {
       expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
     });
     expect(supabase.from).not.toHaveBeenCalledWith('user_roles');
+    expect(getUxMetrics()).toEqual({});
   });
 });

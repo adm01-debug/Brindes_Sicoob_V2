@@ -20,6 +20,10 @@ export function trackUx(metric: UxMetric, data?: Record<string, unknown>): void 
   diagnostics.log('event', 'ux-nav', metric, data);
 }
 
+export function resetUxMetrics(): void {
+  counters.clear();
+}
+
 export function getUxMetrics(): Record<string, number> {
   return Object.fromEntries(counters);
 }
