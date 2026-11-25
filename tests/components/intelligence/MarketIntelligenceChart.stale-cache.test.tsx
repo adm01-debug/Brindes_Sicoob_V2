@@ -1,10 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
-const mocks = vi.hoisted(() => ({ market: vi.fn() }));
+const mocks = vi.hoisted(() => ({ invoke: vi.fn() }));
 
-vi.mock('@/hooks/useMarketIntelligenceMacro', () => ({ useMarketIntelligenceMacro: mocks.market }));
+vi.mock('@/lib/external-db', () => ({ invokeExternalDb: mocks.invoke }));
 vi.mock('@/hooks/useSupplierNames', () => ({ useSupplierNames: () => ({ data: new Map() }) }));
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: ReactNode }) => <div data-testid="market-chart">{children}</div>,
@@ -20,34 +21,69 @@ vi.mock('recharts', () => ({
 
 import { MarketIntelligenceChart } from '@/components/intelligence/MarketIntelligenceChart';
 
+const ONTEM = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+
+const PAGINA = {
+  records: [{
+    id: 1,
+    summary_date: ONTEM,
+    stock_close: 80,
+    units_depleted: 10,
+    units_restocked: 3,
+    supplier_id: 'forn-1',
+  }],
+  count: 1,
+  meta: {},
+};
+
+function montar() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, retryDelay: 0 } },
+  });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MarketIntelligenceChart />
+    </QueryClientProvider>,
+  );
+  return queryClient;
+}
+
+const avisoStale = () => screen.queryByText(/Exibindo o último gráfico disponível/);
+
 describe('cache de inteligência de mercado após falha de atualização', () => {
   beforeEach(() => {
-    mocks.market.mockReset();
+    mocks.invoke.mockReset();
   });
 
-  it('mantém o gráfico e sinaliza cache desatualizado com retry', () => {
-    const refetch = vi.fn();
-    mocks.market.mockReturnValue({
-      data: {
-        daily: [{ date: '2026-10-14', stockClose: 80, depleted: 10, restocked: 3 }],
-        suppliers: [], supplierIds: [],
-        kpis: {
-          totalDepleted7d: 10, totalDepleted30d: 10, totalRestocked30d: 3,
-          totalCurrentStock: 80, avgDailyDepletion: 10, supplierCount: 0,
-          topDepletionDay: { date: '2026-10-14', value: 10 },
-        },
-      },
-      isLoading: false,
-      error: new Error('refetch falhou'),
-      refetch,
-    });
+  it('mantém o gráfico, desabilita o retry durante a busca e limpa o aviso no sucesso', async () => {
+    mocks.invoke.mockResolvedValue(PAGINA);
+    const queryClient = montar();
+    await screen.findByTestId('market-chart');
+    expect(screen.getByLabelText(/Vendas no mercado: 10\.0/)).toBeTruthy();
+    expect(avisoStale()).toBeNull();
 
-    render(<MarketIntelligenceChart />);
+    // Atualização falha: React Query mantém os dados anteriores e expõe o erro.
+    mocks.invoke.mockRejectedValue(new Error('bridge fora do ar'));
+    await queryClient.refetchQueries({ queryKey: ['market-intelligence-macro'] });
 
-    expect(screen.getByText(/Exibindo o último gráfico disponível/).closest('[role="status"]')).toBeTruthy();
+    await waitFor(() => expect(avisoStale()).not.toBeNull());
     expect(screen.getByTestId('market-chart')).toBeTruthy();
     expect(screen.getByLabelText(/Vendas no mercado: 10\.0/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/ }));
-    expect(refetch).toHaveBeenCalledOnce();
+
+    // Retentativa em voo: o botão fica bloqueado e o aviso continua visível.
+    let liberar: (valor: typeof PAGINA) => void = () => {};
+    mocks.invoke.mockImplementation(() => new Promise((resolve) => { liberar = resolve; }));
+    const botao = screen.getByRole('button', { name: /Tentar novamente/ });
+    fireEvent.click(botao);
+    await waitFor(() => expect(botao).toBeDisabled());
+    expect(avisoStale()).not.toBeNull();
+
+    // Sucesso: dados novos entram e o aviso sai.
+    liberar({
+      ...PAGINA,
+      records: [{ ...PAGINA.records[0], units_depleted: 14 }],
+    });
+    await waitFor(() => expect(avisoStale()).toBeNull());
+    expect(screen.getByLabelText(/Vendas no mercado: 14\.0/)).toBeTruthy();
   });
 });
