@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
+/** Trecho entre dois marcadores; falha cedo se o marcador sumir numa refatoração. */
+function sliceBetween(source: string, from: string, to: string): string {
+  const start = source.indexOf(from);
+  const end = source.indexOf(to, start + from.length);
+  if (start === -1 || end === -1) return "";
+  return source.slice(start, end);
+}
+
 /** Linha do `</Route>` que fecha o bloco `<Route element={<AdminRoute />}>`, contando aninhamento. */
 function adminBlockEnd(lines: string[]): number {
   const start = lines.findIndex((line) => line.trim() === "<Route element={<AdminRoute />}>");
@@ -140,10 +148,29 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     expect(companyContactSelector).toContain("fetchQuoteDirectoryContacts");
     expect(companyContactSelector).not.toContain("contact_emails");
     expect(companyContactSelector).not.toContain("contact_phones");
-    expect(crmBridge).toContain('.eq("is_customer", true)');
-    expect(crmBridge).toContain('.is("deleted_at", null)');
-    expect(crmBridge).toContain('.in("contact_id", contactIds)');
-    expect(crmBridge).toContain('"cnpj", "ramo_atividade"');
+    // Filtros repetidos em varias consultas escondem regressao: cada bloco e verificado sozinho.
+    const companies = sliceBetween(
+      crmBridge,
+      "async function handleQuoteCompanies(",
+      "async function handleQuoteContacts(",
+    );
+    const contacts = sliceBetween(
+      crmBridge,
+      "async function handleQuoteContacts(",
+      "async function handleIndustryPeers(",
+    );
+
+    expect(companies).not.toBe("");
+    expect(contacts).not.toBe("");
+    expect(companies).toContain('.eq("is_customer", true)');
+    expect(companies).toContain('.is("deleted_at", null)');
+    expect(companies).toContain('"cnpj", "ramo_atividade"');
+    expect(contacts).toContain('.eq("is_customer", true)');
+    expect(contacts).toContain('.is("deleted_at", null)');
+    expect(contacts).toContain('.in("contact_id", contactIds)');
+    // O DTO de empresa nao carrega e-mail nem telefone.
+    expect(companies).not.toMatch(/contact_(emails|phones)/);
+    expect(companies).not.toContain("contact_id");
   });
 
   it("seletores de carrinho usam o diretorio restrito e nao o CRM generico", () => {
