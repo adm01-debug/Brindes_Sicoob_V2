@@ -36,6 +36,7 @@ import { useMarketIntelligenceMacro, type MacroSupplierMetrics, type MacroMarket
 import { useSupplierNames } from "@/hooks/useSupplierNames";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 import { SupplierChartFilter } from "@/components/products/SupplierChartFilter";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   days?: number;
@@ -92,7 +93,7 @@ function useMarketChartModel(defaultDays: number, supplierId?: string | null) {
   const [period, setPeriod] = useState<string>(String(defaultDays));
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const days = Number(period);
-  const { data: realData, isLoading, error } = useMarketIntelligenceMacro(days, supplierId);
+  const { data: realData, isLoading, error, isFetching, refetch } = useMarketIntelligenceMacro(days, supplierId);
   const hasRealData = Boolean(realData?.daily?.length);
   const effectiveData: MacroMarketData = hasRealData && realData ? realData : EMPTY_MARKET_DATA;
   const { data: realSupplierNamesMap } = useSupplierNames(supplierIdsForQuery(hasRealData, realData));
@@ -100,13 +101,30 @@ function useMarketChartModel(defaultDays: number, supplierId?: string | null) {
   const supplierOptions = useMemo(() => buildSupplierOptions(effectiveData, supplierNamesMap), [effectiveData, supplierNamesMap]);
   const chartData = useMemo(() => buildChartData(effectiveData.daily), [effectiveData.daily]);
   return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData,
-    effectiveData, supplierNamesMap, supplierOptions, chartData };
+    isRetrying: Boolean(isFetching), onRetry: refetch, effectiveData, supplierNamesMap, supplierOptions, chartData };
 }
 
 type MarketChartModel = ReturnType<typeof useMarketChartModel>;
 
 function LoadingCard() {
   return <Card><CardContent className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardContent></Card>;
+}
+
+// Falha de atualização com dados em cache: o gráfico continua, mas precisa dizer que
+// os números podem estar velhos e oferecer a retentativa.
+function StaleCacheNotice({ onRetry, isRetrying }: { onRetry: () => void; isRetrying: boolean }) {
+  return (
+    <div
+      role="status"
+      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs"
+    >
+      <p>Exibindo o último gráfico disponível: a atualização falhou, então os números podem estar desatualizados.</p>
+      <Button variant="outline" size="sm" onClick={onRetry} disabled={isRetrying}>
+        {isRetrying && <Loader2 className="h-3 w-3 animate-spin" />}
+        Tentar novamente
+      </Button>
+    </div>
+  );
 }
 
 function ErrorCard() {
@@ -194,6 +212,7 @@ function MarketInsight({ kpis }: { kpis: MacroMarketKpis }) {
 function MarketChartReady({ model }: { model: MarketChartModel }) {
   const trend = trendMetrics(model.effectiveData.kpis, model.days);
   return <Card><MarketHeader days={model.days} trendRatio={trend.ratio} /><CardContent className="space-y-4">
+    {model.error && <StaleCacheNotice onRetry={model.onRetry} isRetrying={model.isRetrying} />}
     <MarketKpis kpis={model.effectiveData.kpis} days={model.days} /><ChartControls model={model} /><MarketChartPlot data={model.chartData} />
     {model.effectiveData.suppliers.length > 1 && model.supplierNamesMap && <MacroSupplierComparison suppliers={model.effectiveData.suppliers} supplierNames={model.supplierNamesMap} />}
     <MarketInsight kpis={model.effectiveData.kpis} />

@@ -92,7 +92,7 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/components/OrderBudgetIntelligence.no-fallback.test.tsx` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  |
 | `tests/components/common/IntelligenceBadges.errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/components/favorites/FavoritesClientPicker.directory.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
-| `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
+| `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente | Recuperado em [#450](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/450). |
 | `tests/components/intelligence/analytics-query-errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/components/operational-data-truth.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/components/pricing/QuantityComparisonTable.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
@@ -139,6 +139,7 @@ de fechamento deste diretório, a branch de origem só pode ser fechada depois q
 | `tests/hooks/bi/useIndustryTrends.test.tsx` | [#446](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/446) — amostra mínima de 3 empresas com orçamento no ramo, `trend: null` para agregado de 90 dias, janela de 60 linhas no RPC + corte de 10 depois do filtro. |
 | `tests/pages/PublicFavoriteListPage.test.tsx` | [#451](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/451) — a lista pública herda a política de retry do `QueryClient` (`src/lib/query-config.ts:80-96`): falha transitória deixa de derrubar o link compartilhado. |
 | `tests/components/intelligence/analytics-query-errors.test.tsx` | [#445](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/445) — falha de consulta deixa de virar funil zerado; alerta, retentativa e contagens preservadas. |
+| `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | [#450](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/450) — falha de atualização com cache em mãos não some: aviso `role="status"` "Exibindo o último gráfico disponível" + **Tentar novamente**, gráfico mantido. |
 
 ### Já incorporado pela `main` por outra via (não recuperar)
 
@@ -155,7 +156,6 @@ que precisa ser reintegrado (e testado) antes de a branch de origem ser fechada.
 
 | Teste órfão | Estado que falta na `main` |
 | --- | --- |
-| `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | Aviso "Exibindo o último gráfico disponível" quando o `refetch` falha com cache em mãos: hoje a tela não distingue dado velho de dado atual. |
 | `tests/components/common/IntelligenceBadges.errors.test.tsx` | Aviso de falha parcial ("Não foi possível atualizar todos os…") nos selos de inteligência. |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `role="alert"` + "Tentar novamente" nos indicadores; texto "dados disponíveis continuam exibidos"; `role="status"` para o vazio confirmado. `src/pages/ProductDetail.tsx` hoje não consome `useProductIntelligenceData`/`useStockVelocity` nesse nível. |
 | `tests/pages/GestorCompras.error-state.test.tsx` | O teste é de outra árvore de página: abas com `OrdersKanbanPage`/`OrdersPage` e três consultas com um alerta único e retentativa que repete **só** as consultas afetadas. A `main` tem alerta + retentativa apenas para `useManagerDashboardStats` (`src/components/sicoob/GestorComprasMetrics.tsx:125-136`); `MetricasDaFila` (`:80-85`) mostra a falha de `usePurchasingMetrics` **sem** retentativa. Faltam: (a) **retentativa seletiva das métricas da fila**; (b) **falha das abas** — `src/components/orders/ApprovalKanbanBoard.tsx:29` lê `useOrdersList` sem `isError` e `src/pages/OrdersPage.tsx:128` devolve `OrdersEmptyState`, tornando consulta falha indistinguível de "sem pedidos". |
