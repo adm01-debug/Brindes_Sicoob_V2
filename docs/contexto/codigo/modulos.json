@@ -4854,7 +4854,7 @@
    "modulo": "components/orders",
    "arquivos": 32,
    "testes": 0,
-   "linhas": 2972,
+   "linhas": 3064,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -4998,12 +4998,14 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dev",
     "dialog",
     "gestor_pa",
     "gestor_singular",
     "manager",
     "owner",
+    "status",
     "supervisor"
    ],
    "diretos": {
@@ -6476,7 +6478,7 @@
    "modulo": "components/sicoob",
    "arquivos": 22,
    "testes": 0,
-   "linhas": 2945,
+   "linhas": 2954,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11810,7 +11812,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19456,
+   "linhas": 19519,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

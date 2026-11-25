@@ -3234,7 +3234,7 @@
     "src/pages/OrderDetailPage.tsx",
     "src/pages/OrdersPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",

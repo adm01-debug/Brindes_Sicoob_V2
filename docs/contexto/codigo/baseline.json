@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
+  "commit": "50898b575613e48cff91b117db3c467d9601deec",
   "branch": "main",
-  "data_commit": "2026-11-25T21:35:25Z",
+  "data_commit": "2026-11-25T22:10:24Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "50898b5",
+    "data": "2026-11-25",
+    "assunto": "fix: falha de consulta nao pode parecer fila vazia (#452)"
+   },
    {
     "sha": "2701a09",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "3c5882b",
     "data": "2026-11-24",
     "assunto": "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)"
-   },
-   {
-    "sha": "dffd62e",
-    "data": "2026-11-24",
-    "assunto": "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)"
    }
   ],
-  "arquivos_mudados_7d": 1208,
+  "arquivos_mudados_7d": 1211,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -173,7 +173,7 @@
    },
    {
     "pasta": "src/components/sicoob",
-    "mudancas": 15
+    "mudancas": 16
    },
    {
     "pasta": "src/pages/admin",
@@ -218,11 +218,11 @@
     "mudancas": 20
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 18
+    "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 17
    },
    {
-    "arquivo": ".github/workflows/ci.yml",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 17
    },
    {
@@ -246,15 +246,15 @@
     "mudancas": 12
    },
    {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 12
-   },
-   {
     "arquivo": ".github/workflows/bundle-check.yml",
     "mudancas": 11
    },
    {
     "arquivo": "scripts/automation.config.json",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 11
    },
    {
@@ -294,14 +294,14 @@
     "mudancas": 8
    },
    {
-    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "arquivo": "docs/RECUPERACAO/anexo-testes-orfaos.md",
     "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 228
+    "commits": 229
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5322,
-  "arquivos_codigo": 3211,
-  "linhas_codigo": 508601,
+  "arquivos_total": 5327,
+  "arquivos_codigo": 3216,
+  "linhas_codigo": 509121,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 943,
+  "testes": 948,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 168019
+   "linhas": 168120
   },
   "src/constants": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51537
+   "linhas": 51600
   },
   "src/routes": {
    "arquivos": 9,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 167,
-   "linhas": 29811
+   "arquivos": 169,
+   "linhas": 29946
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -947,8 +947,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 32,
-   "linhas": 3720
+   "arquivos": 35,
+   "linhas": 3941
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

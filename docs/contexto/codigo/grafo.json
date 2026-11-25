@@ -2,11 +2,11 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2268,
- "arestas": 9219,
+ "arestas": 9222,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 638
+   "importado_por": 640
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -118,7 +118,7 @@
   },
   {
    "arquivo": "src/components/ui/alert.tsx",
-   "importado_por": 37
+   "importado_por": 38
   },
   {
    "arquivo": "src/hooks/use-toast.ts",

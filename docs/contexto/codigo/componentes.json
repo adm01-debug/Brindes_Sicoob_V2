@@ -9936,7 +9936,7 @@
     "ApprovalKanbanBoard"
    ],
    "export_default": null,
-   "linhas": 126,
+   "linhas": 145,
    "dominio": "components/orders",
    "hooks_locais": [
     "useAuth",
@@ -10299,7 +10299,7 @@
     "OrderStatsBar"
    ],
    "export_default": null,
-   "linhas": 72,
+   "linhas": 145,
    "dominio": "components/orders",
    "hooks_locais": [
     "useAuth",
@@ -14165,7 +14165,7 @@
     "GestorComprasMetrics"
    ],
    "export_default": null,
-   "linhas": 161,
+   "linhas": 170,
    "dominio": "components/sicoob",
    "hooks_locais": [
     "useManagerDashboardStats",
@@ -14891,7 +14891,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 37,
+   "usado_por": 38,
    "orfao": false
   },
   {
@@ -14957,7 +14957,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 634,
+   "usado_por": 636,
    "orfao": false
   },
   {
@@ -17651,10 +17651,11 @@
   {
    "arquivo": "src/pages/OrdersPage.tsx",
    "exports": [
+    "OrdersContent",
     "OrdersPage"
    ],
    "export_default": null,
-   "linhas": 340,
+   "linhas": 403,
    "dominio": "pages",
    "hooks_locais": [
     "useAuth",

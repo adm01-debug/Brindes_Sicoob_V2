@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `2701a09b27` · branch `main` · 2026-11-25 21:37 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `50898b5756` · branch `main` · 2026-11-25 22:16 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5639,7 +5639,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1019 linhas — lista completa em `context.json` | |
+| … +1023 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7361 testes em 756 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7380 testes em 761 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5986,6 +5986,7 @@ _nenhum item encontrado_
 | `tests/lib/format.test.ts` | 9 | formatCurrency · should format positive values in BRL · should format zero · should format negative values … |
 | `tests/lib/secret-validators.test.ts` | 9 | validateSecret — guarda de sufixo mínimo (4 chars) · expõe MIN_SUFFIX_LENGTH = 4 · rejeita valor vazio sem mensagem (apenas hint) · rejeita 1 char com mensagem específica de sufixo (singular) … |
 | `tests/p0/external-integrations.test.ts` | 9 | P0 — integrações externas · catálogo: mantém referências já obtidas disponíveis no cache local · catálogo: sinaliza indisponibilidade confirmada sem tratar falha como lista vazia · consulta CNPJ: valida entrada, autentica e usa fetch externo com timeout/circuit breaker … |
+| `tests/pages/GestorCompras.metrics.test.tsx` | 9 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
 | `tests/rls/personas.test.ts` | 9 | cannot SELECT quotes · cannot SELECT user_roles · cannot SELECT login_attempts · logs in … |
 | `tests/scripts/rules-rotina-diff.test.ts` | 9 | rules/diff — comparação entre execuções · detecta novos e resolvidos · primeira execução não tem base: nada novo nem resolvido · regra que ERROU hoje não vira  … |
 | `tests/stores/useComparisonStore.test.ts` | 9 | useComparisonStore — variant selection · stores variant when adding to compare · persists variant to localStorage · retrieves variant via getCompareVariant … |
@@ -6022,7 +6023,6 @@ _nenhum item encontrado_
 | `tests/lib/textUtils.test.ts` | 8 | toTitleCase · should capitalize first letter of each word · should keep prepositions lowercase (except first word) · should capitalize first word even if preposition … |
 | `tests/p0/auth-recovery.test.ts` | 8 | P0 — recuperação de autenticação · login: uma falha do Auth sempre libera novamente o formulário · sessão expirada: preserva a rota solicitada e aceita somente retorno interno · logout global: exige papel privilegiado e confirmação antes de revogar sessões … |
 | `tests/pages/AdminLoginAttemptsPage.test.tsx` | 8 | AdminLoginAttemptsPage · renders the page title · renders stats cards · renders stat values … |
-| `tests/pages/GestorCompras.metrics.test.tsx` | 8 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
 | `tests/pages/kit-builder-guarda-saida.test.tsx` | 8 | guarda de saída do montador de kit · segura a saída quando o autosave falhou · nao atrapalha quando tudo esta salvo · para de segurar assim que o estado deixa de ter pendencia … |
 | `tests/pages/orders-filtros-na-url.test.ts` | 8 | filtros de pedidos na URL · lê busca, status, empresa e página · sem query, devolve o padrão e a primeira página · data é lida como dia local — fuso negativo não pode andar um dia … |
 | `tests/scripts/check-codeql-sarif.test.ts` | 8 | gate SARIF do CodeQL · aceita uma análise válida sem achados · expõe regra, severidade e localização de cada achado · rejeita diretório sem SARIF e SARIF sem execução … |
@@ -6048,7 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
-| … +456 linhas — lista completa em `context.json` | | |
+| … +461 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

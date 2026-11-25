@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
+  "sha": "50898b575613e48cff91b117db3c467d9601deec",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 21:37 UTC",
-  "files_total": 5325,
-  "code_files": 3885,
-  "code_lines": 573178
+  "generated_at": "2026-11-25 22:16 UTC",
+  "files_total": 5330,
+  "code_files": 3890,
+  "code_lines": 573698
  },
  "version": "1.3.2",
- "facts_hash": "105b099098c532f8",
+ "facts_hash": "4432fc72fc1aa1bf",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1507,
-   ".tsx": 1481,
+   ".tsx": 1486,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -58023,6 +58023,159 @@
    },
    {
     "path": "",
+    "file": "tests/pages/OrdersPage.content.test.tsx",
+    "component": "OrdersPage.content.test",
+    "tables_transitive": [
+     "access_blocked_log",
+     "access_security_settings",
+     "audit_log",
+     "cart_items",
+     "cart_templates",
+     "city_whitelist",
+     "export_jobs",
+     "ip_whitelist",
+     "notification_preferences",
+     "notifications",
+     "order_approval_history",
+     "order_audit_events",
+     "order_comments",
+     "order_invoices",
+     "order_items",
+     "order_logistics",
+     "order_pilot_approvals",
+     "order_templates",
+     "orders",
+     "pa_budgets",
+     "pa_category_thresholds",
+     "profiles",
+     "quotes",
+     "scheduled_exports",
+     "seller_cart_items",
+     "seller_carts",
+     "sicoob_order_invoices",
+     "user_onboarding",
+     "user_roles"
+    ],
+    "invokes_transitive": [
+     "crm-db-bridge",
+     "log-login-attempt"
+    ],
+    "rpc_transitive": [
+     "add_sicoob_order_invoice",
+     "bulk_update_quote_status_atomic",
+     "convert_quote_to_sicoob_order",
+     "duplicate_order_atomic",
+     "get_sicoob_access_state",
+     "log_order_audit_event",
+     "log_rls_denial",
+     "retry_own_sicoob_export_job"
+    ],
+    "deps_count": 103
+   },
+   {
+    "path": "",
+    "file": "tests/pages/OrdersPage.page.test.tsx",
+    "component": "OrdersPage.page.test",
+    "tables_transitive": [
+     "access_blocked_log",
+     "access_security_settings",
+     "audit_log",
+     "cart_items",
+     "cart_templates",
+     "city_whitelist",
+     "export_jobs",
+     "ip_whitelist",
+     "notification_preferences",
+     "notifications",
+     "order_approval_history",
+     "order_audit_events",
+     "order_comments",
+     "order_invoices",
+     "order_items",
+     "order_logistics",
+     "order_pilot_approvals",
+     "order_templates",
+     "orders",
+     "pa_budgets",
+     "pa_category_thresholds",
+     "profiles",
+     "quotes",
+     "scheduled_exports",
+     "seller_cart_items",
+     "seller_carts",
+     "sicoob_order_invoices",
+     "user_onboarding",
+     "user_roles"
+    ],
+    "invokes_transitive": [
+     "crm-db-bridge",
+     "log-login-attempt"
+    ],
+    "rpc_transitive": [
+     "add_sicoob_order_invoice",
+     "bulk_update_quote_status_atomic",
+     "convert_quote_to_sicoob_order",
+     "duplicate_order_atomic",
+     "get_sicoob_access_state",
+     "log_order_audit_event",
+     "log_rls_denial",
+     "retry_own_sicoob_export_job"
+    ],
+    "deps_count": 102
+   },
+   {
+    "path": "",
+    "file": "tests/pages/OrdersPage.retry-names.test.tsx",
+    "component": "OrdersPage.retry-names.test",
+    "tables_transitive": [
+     "access_blocked_log",
+     "access_security_settings",
+     "audit_log",
+     "cart_items",
+     "cart_templates",
+     "city_whitelist",
+     "export_jobs",
+     "ip_whitelist",
+     "notification_preferences",
+     "notifications",
+     "order_approval_history",
+     "order_audit_events",
+     "order_comments",
+     "order_invoices",
+     "order_items",
+     "order_logistics",
+     "order_pilot_approvals",
+     "order_templates",
+     "orders",
+     "pa_budgets",
+     "pa_category_thresholds",
+     "profiles",
+     "quotes",
+     "scheduled_exports",
+     "seller_cart_items",
+     "seller_carts",
+     "sicoob_order_invoices",
+     "user_onboarding",
+     "user_roles"
+    ],
+    "invokes_transitive": [
+     "crm-db-bridge",
+     "log-login-attempt"
+    ],
+    "rpc_transitive": [
+     "add_sicoob_order_invoice",
+     "bulk_update_quote_status_atomic",
+     "convert_quote_to_sicoob_order",
+     "duplicate_order_atomic",
+     "get_sicoob_access_state",
+     "log_order_audit_event",
+     "log_rls_denial",
+     "retry_own_sicoob_export_job"
+    ],
+    "deps_count": 102
+   },
+   {
+    "path": "",
     "file": "tests/pages/PWAInstallPage.test.tsx",
     "component": "PWAInstallPage.test",
     "tables_transitive": [
@@ -62620,7 +62773,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1303,
+  "components_count": 1305,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65444,7 +65597,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 168019,
+   "lines": 168120,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66223,7 +66376,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51537,
+   "lines": 51600,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -66317,7 +66470,7 @@
     "NoveltiesPage.tsx: NoveltiesPage",
     "OrderAuditPage.tsx: OrderAuditPage",
     "OrderDetailPage.tsx: OrderDetailPage",
-    "OrdersPage.tsx: filtersFromSearchParams, filtersToSearchParams, OrdersPage",
+    "OrdersPage.tsx: OrdersContent, filtersFromSearchParams, filtersToSearchParams, OrdersPage",
     "PWAInstallPage.tsx: PWAInstallPage",
     "PermissionsPage.tsx: PermissionsPage",
     "PersonalizationSimulator.tsx: PersonalizationSimulator",
@@ -67222,8 +67375,8 @@
   },
   {
    "module": "tests",
-   "files": 712,
-   "lines": 95625,
+   "files": 717,
+   "lines": 95981,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -77556,6 +77709,14 @@
    },
    {
     "file": "src/components/orders/ApprovalKanbanBoard.tsx",
+    "msg": ";\nimport { Button } from "
+   },
+   {
+    "file": "src/components/orders/ApprovalKanbanBoard.tsx",
+    "msg": ">\n        <AlertCircle className="
+   },
+   {
+    "file": "src/components/orders/ApprovalKanbanBoard.tsx",
     "msg": "Transição inválida de ${ORDER_STATUS_LABELS[order.status]} para ${ORDER_STATUS_LABELS[targetStatus]}"
    },
    {
@@ -77569,6 +77730,10 @@
    {
     "file": "src/components/orders/OrderConsolidationPanel.tsx",
     "msg": "Selecione ao menos 2 orçamentos para consolidar"
+   },
+   {
+    "file": "src/components/orders/OrderStatsBar.tsx",
+    "msg": ">\n      <div>\n        <p className="
    },
    {
     "file": "src/components/orders/PilotApprovalPanel.tsx",
@@ -79129,6 +79294,10 @@
    {
     "file": "src/pages/MockupHistoryPage.tsx",
     "msg": "Erro ao remover mockup"
+   },
+   {
+    "file": "src/pages/OrdersPage.tsx",
+    "msg": "\n      className="
    },
    {
     "file": "src/pages/PublicCollectionPage.tsx",
@@ -123024,6 +123193,14 @@
     "name": "o diálogo mantém o foco depois de avançar"
    },
    {
+    "file": "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
+    "name": "ApprovalKanbanBoard — falha de consulta"
+   },
+   {
+    "file": "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
+    "name": "distingue falha de fila vazia e oferece retentativa"
+   },
+   {
     "file": "tests/components/orders/OrderAuditTimeline.test.tsx",
     "name": "OrderAuditTimeline"
    },
@@ -123034,6 +123211,34 @@
    {
     "file": "tests/components/orders/OrderAuditTimeline.test.tsx",
     "name": "não apresenta violações automáticas de acessibilidade no estado vazio"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "OrderStatsBar"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "não mostra zeros quando a consulta falha"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "a retentativa do alerta refaz a consulta das estatísticas"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "mostra recarga, não zeros, enquanto a retentativa está em curso"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "mantém os números já medidos quando só a atualização falha"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "mantém zeros confirmados quando só a atualização falha"
+   },
+   {
+    "file": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+    "name": "conta os pedidos quando a consulta responde"
    },
    {
     "file": "tests/components/pages/AdvancedPriceSearchPage.test.tsx",
@@ -138425,6 +138630,10 @@
    },
    {
     "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "falha das métricas da fila avisa e oferece retentativa própria"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
     "name": "consulta só a cooperativa do perfil"
    },
    {
@@ -138498,6 +138707,42 @@
    {
     "file": "tests/pages/NotFound.test.tsx",
     "name": "logs 404 error on mount"
+   },
+   {
+    "file": "tests/pages/OrdersPage.content.test.tsx",
+    "name": "OrdersContent"
+   },
+   {
+    "file": "tests/pages/OrdersPage.content.test.tsx",
+    "name": "falha sem pedidos carregados diz que a consulta falhou, e não que a lista está vazia"
+   },
+   {
+    "file": "tests/pages/OrdersPage.content.test.tsx",
+    "name": "falha de atualização não apaga os pedidos já carregados"
+   },
+   {
+    "file": "tests/pages/OrdersPage.content.test.tsx",
+    "name": "consulta bem-sucedida não mostra aviso nenhum"
+   },
+   {
+    "file": "tests/pages/OrdersPage.page.test.tsx",
+    "name": "OrdersPage"
+   },
+   {
+    "file": "tests/pages/OrdersPage.page.test.tsx",
+    "name": "mantém a lista na falha de atualização e remove o aviso quando a retentativa responde"
+   },
+   {
+    "file": "tests/pages/OrdersPage.page.test.tsx",
+    "name": "sem pedidos e com falha mostra a tela de erro, não a lista vazia"
+   },
+   {
+    "file": "tests/pages/OrdersPage.retry-names.test.tsx",
+    "name": "OrdersPage — dois botões de retentativa"
+   },
+   {
+    "file": "tests/pages/OrdersPage.retry-names.test.tsx",
+    "name": "dá nome próprio ao botão das estatísticas e ao da lista"
    },
    {
     "file": "tests/pages/PWAInstallPage.test.tsx",
@@ -200478,11 +200723,13 @@
   },
   "src/components/orders/ApprovalKanbanBoard.tsx": {
    "path": "src/components/orders/ApprovalKanbanBoard.tsx",
-   "lines": 126,
+   "lines": 145,
    "exports": [
     "function ApprovalKanbanBoard"
    ],
    "errors": [
+    ";\nimport { Button } from ",
+    ">\n        <AlertCircle className=",
     "Transição inválida de ${ORDER_STATUS_LABELS[order.status]} para ${ORDER_STATUS_LABELS[targetStatus]}"
    ]
   },
@@ -200779,9 +201026,12 @@
   },
   "src/components/orders/OrderStatsBar.tsx": {
    "path": "src/components/orders/OrderStatsBar.tsx",
-   "lines": 72,
+   "lines": 145,
    "exports": [
     "function OrderStatsBar"
+   ],
+   "errors": [
+    ">\n      <div>\n        <p className="
    ],
    "status_values": [
     {
@@ -205854,7 +206104,7 @@
   },
   "src/components/sicoob/GestorComprasMetrics.tsx": {
    "path": "src/components/sicoob/GestorComprasMetrics.tsx",
-   "lines": 161,
+   "lines": 170,
    "exports": [
     "function GestorComprasMetrics"
    ],
@@ -223933,8 +224183,9 @@
   },
   "src/pages/OrdersPage.tsx": {
    "path": "src/pages/OrdersPage.tsx",
-   "lines": 340,
+   "lines": 403,
    "exports": [
+    "function OrdersContent",
     "function filtersFromSearchParams",
     "function filtersToSearchParams",
     "function OrdersPage"
@@ -223942,6 +224193,9 @@
    "navigates": [
     "/filtros",
     "/pedidos/"
+   ],
+   "errors": [
+    "\n      className="
    ],
    "status_values": [
     {
@@ -249177,6 +249431,18 @@
     "o diálogo mantém o foco depois de avançar"
    ]
   },
+  "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx": {
+   "path": "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
+   "lines": 36,
+   "is_test": true,
+   "errors": [
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "ApprovalKanbanBoard — falha de consulta",
+    "distingue falha de fila vazia e oferece retentativa"
+   ]
+  },
   "tests/components/orders/OrderAuditTimeline.test.tsx": {
    "path": "tests/components/orders/OrderAuditTimeline.test.tsx",
    "lines": 37,
@@ -249185,6 +249451,25 @@
     "OrderAuditTimeline",
     "nomeia os controles de filtro e ordenação e comunica a próxima ordenação",
     "não apresenta violações automáticas de acessibilidade no estado vazio"
+   ]
+  },
+  "tests/components/orders/OrderStatsBar.error-state.test.tsx": {
+   "path": "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+   "lines": 99,
+   "is_test": true,
+   "errors": [
+    ")).toBeNull();\n    expect(screen.getByText(",
+    ")).toBeNull();\n  });\n\n  it(",
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "OrderStatsBar",
+    "não mostra zeros quando a consulta falha",
+    "a retentativa do alerta refaz a consulta das estatísticas",
+    "mostra recarga, não zeros, enquanto a retentativa está em curso",
+    "mantém os números já medidos quando só a atualização falha",
+    "mantém zeros confirmados quando só a atualização falha",
+    "conta os pedidos quando a consulta responde"
    ]
   },
   "tests/components/pages/AdvancedPriceSearchPage.test.tsx": {
@@ -256681,7 +256966,7 @@
   },
   "tests/pages/GestorCompras.metrics.test.tsx": {
    "path": "tests/pages/GestorCompras.metrics.test.tsx",
-   "lines": 152,
+   "lines": 189,
    "is_test": true,
    "errors": [
     ")).toBeTruthy();\n    expect(screen.getByText("
@@ -256695,6 +256980,7 @@
     "perfil sem cooperativa não dispara consulta nenhuma",
     "mostra travessão no SLA e no total do mês quando a consulta trunca",
     "mostra o SLA medido quando o universo está completo",
+    "falha das métricas da fila avisa e oferece retentativa própria",
     "consulta só a cooperativa do perfil"
    ]
   },
@@ -256745,6 +257031,49 @@
     "renders return to home link",
     "has full screen height",
     "logs 404 error on mount"
+   ]
+  },
+  "tests/pages/OrdersPage.content.test.tsx": {
+   "path": "tests/pages/OrdersPage.content.test.tsx",
+   "lines": 55,
+   "is_test": true,
+   "errors": [
+    ")).toHaveTextContent("
+   ],
+   "rule_comments": [
+    "* Falha de consulta na tela de Pedidos não pode virar lista vazia nem apagar"
+   ],
+   "doc": "Falha de consulta na tela de Pedidos não pode virar lista vazia nem apagar os pedidos que já estão na tela: a falha de atualização é aviso, não tela de erro.",
+   "tests": [
+    "OrdersContent",
+    "falha sem pedidos carregados diz que a consulta falhou, e não que a lista está vazia",
+    "falha de atualização não apaga os pedidos já carregados",
+    "consulta bem-sucedida não mostra aviso nenhum"
+   ]
+  },
+  "tests/pages/OrdersPage.page.test.tsx": {
+   "path": "tests/pages/OrdersPage.page.test.tsx",
+   "lines": 86,
+   "is_test": true,
+   "errors": [
+    ")).toBeNull();\n    expect(screen.getByText(",
+    ")).toHaveTextContent("
+   ],
+   "doc": "Fluxo real da tela de Pedidos: a falha de atualização tem de manter os pedidos em tela e o aviso tem de sumir quando a retentativa dá certo. Aqui a página é renderizada de verdade; só os filhos pesados são trocados.",
+   "tests": [
+    "OrdersPage",
+    "mantém a lista na falha de atualização e remove o aviso quando a retentativa responde",
+    "sem pedidos e com falha mostra a tela de erro, não a lista vazia"
+   ]
+  },
+  "tests/pages/OrdersPage.retry-names.test.tsx": {
+   "path": "tests/pages/OrdersPage.retry-names.test.tsx",
+   "lines": 43,
+   "is_test": true,
+   "doc": "Quando a lista e as estatísticas falham juntas existem dois \"Tentar novamente\" em tela: os nomes acessíveis precisam dizer qual consulta cada botão refaz.",
+   "tests": [
+    "OrdersPage — dois botões de retentativa",
+    "dá nome próprio ao botão das estatísticas e ao da lista"
    ]
   },
   "tests/pages/PWAInstallPage.test.tsx": {
@@ -260184,10 +260513,29 @@
   }
  },
  "git": {
-  "sha": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
+  "sha": "50898b575613e48cff91b117db3c467d9601deec",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "50898b5",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: falha de consulta nao pode parecer fila vazia (#452)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "src/components/orders/ApprovalKanbanBoard.tsx",
+     "src/components/orders/OrderStatsBar.tsx",
+     "src/components/sicoob/GestorComprasMetrics.tsx",
+     "src/pages/OrdersPage.tsx",
+     "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
+     "tests/components/orders/OrderStatsBar.error-state.test.tsx",
+     "tests/pages/GestorCompras.metrics.test.tsx",
+     "tests/pages/OrdersPage.content.test.tsx",
+     "tests/pages/OrdersPage.page.test.tsx",
+     "tests/pages/OrdersPage.retry-names.test.tsx"
+    ]
+   },
    {
     "sha": "2701a09",
     "date": "2026-11-25",
@@ -260529,26 +260877,12 @@
      "inventario/estado/edges.json",
      "inventario/estado/rotas.json"
     ]
-   },
-   {
-    "sha": "667250f",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    7
-   ],
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
-    3
+    8
    ],
    [
     "src/pages/QuoteBuilderPage.tsx",
@@ -260556,6 +260890,10 @@
    ],
    [
     "src/components/intelligence/MarketIntelligenceChart.tsx",
+    2
+   ],
+   [
+    "scripts/db/apply-sicoob-migrations.mjs",
     2
    ],
    [
@@ -260591,35 +260929,35 @@
     2
    ],
    [
-    "src/components/common/IntelligenceBadges.tsx",
+    "src/components/orders/ApprovalKanbanBoard.tsx",
     1
    ],
    [
-    "src/hooks/useProductIntelligenceBadges.ts",
+    "src/components/orders/OrderStatsBar.tsx",
     1
    ],
    [
-    "src/pages/ProductDetail.tsx",
+    "src/components/sicoob/GestorComprasMetrics.tsx",
     1
    ],
    [
-    "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "src/pages/OrdersPage.tsx",
     1
    ],
    [
-    "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
     1
    ],
    [
-    "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    "tests/components/orders/OrderStatsBar.error-state.test.tsx",
     1
    ],
    [
-    "src/components/bi/ClientSeasonalityHeatmap.tsx",
+    "tests/pages/GestorCompras.metrics.test.tsx",
     1
    ],
    [
-    "src/hooks/bi/useClientSeasonality.ts",
+    "tests/pages/OrdersPage.content.test.tsx",
     1
    ]
   ]

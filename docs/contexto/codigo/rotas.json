@@ -5643,6 +5643,7 @@
     "menu",
     "owner",
     "progressbar",
+    "status",
     "supervisor",
     "tooltip"
    ],
@@ -8689,6 +8690,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "alertdialog",
     "dev",
     "dialog",
@@ -8696,6 +8698,7 @@
     "manager",
     "menu",
     "owner",
+    "status",
     "supervisor",
     "tooltip"
    ],
