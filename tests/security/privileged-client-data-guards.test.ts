@@ -32,7 +32,33 @@ type RouteToken = { kind: "open" | "close"; index: number };
  * contam como rota.
  */
 function commentRanges(source: string): Array<[number, number]> {
-  return [...source.matchAll(/\/\*[\s\S]*?\*\//g)].map((match) => [match.index ?? 0, (match.index ?? 0) + match[0].length]);
+  const ranges: Array<[number, number]> = [];
+  let cursor = 0;
+  while (cursor < source.length) {
+    const char = source[cursor];
+    // String literal: `//` dentro de URL nao abre comentario.
+    if (char === '"' || char === "'" || char === "`") {
+      cursor += 1;
+      while (cursor < source.length && source[cursor] !== char) {
+        cursor += source[cursor] === "\\" ? 2 : 1;
+      }
+      cursor += 1;
+      continue;
+    }
+    if (char === "/" && (source[cursor + 1] === "/" || source[cursor + 1] === "*")) {
+      const start = cursor;
+      if (source[cursor + 1] === "/") {
+        while (cursor < source.length && source[cursor] !== "\n") cursor += 1;
+      } else {
+        const end = source.indexOf("*/", cursor + 2);
+        cursor = end === -1 ? source.length : end + 2;
+      }
+      ranges.push([start, cursor]);
+      continue;
+    }
+    cursor += 1;
+  }
+  return ranges;
 }
 
 const insideComment = (ranges: Array<[number, number]>, index: number) =>
@@ -145,6 +171,24 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     expect(callSites.length).toBeGreaterThan(1);
     expect(callSites[callSites.length - 1].index).toBeGreaterThan(authorization);
     expect(crmBridge).toContain("const parsed = CrmRequestSchema.safeParse(rawBody)");
+  });
+
+  it("ignora comentario que cita a tag de rota ao medir o bloco", () => {
+    const fonte = [
+      "const toque = 1;",
+      "// <Route element={<RouteSuspense><AuthenticatedShell /></RouteSuspense>}>",
+      "<Route element={<RouteSuspense><AuthenticatedShell /></RouteSuspense>}>",
+      "  <Route element={<ProtectedRoute />}>",
+      "  </Route>",
+      "</Route>",
+      'const link = "https://exemplo.test/x"; <Route element={<AdminRoute />}>',
+      "</Route>",
+    ].join("\n");
+
+    // A abertura citada dentro do comentario nao conta: o bloco comeca na tag real.
+    expect(routeBlockRange(fonte, SHELL_BLOCK)).toEqual({ start: 2, end: 5 });
+    // `//` dentro de string nao engole o resto da linha (a tag na mesma linha continua valendo).
+    expect(routeBlockRange(fonte, ADMIN_BLOCK)).toEqual({ start: 6, end: 7 });
   });
 
   it("protege diagnosticos detalhados e mantem ping agregado", () => {
