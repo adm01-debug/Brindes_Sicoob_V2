@@ -60,6 +60,8 @@ export interface AIChatProps {
   onProductMention?: (product: ProductMention) => void;
   /** Classe extra para o container raiz. */
   className?: string;
+  /** Ref do textarea, para o host controlar o foco (abrir/fechar por teclado). */
+  inputRef?: RefObject<HTMLTextAreaElement>;
 }
 
 // ============================================
@@ -205,6 +207,33 @@ interface SendTurnOptions {
   onProductMention?: (product: ProductMention) => void;
 }
 
+interface RunTurnArgs {
+  messages: ChatMessage[];
+  options: SendTurnOptions;
+  signal: AbortSignal;
+  isCurrentTurn: () => boolean;
+  setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
+  setStreaming: Dispatch<SetStateAction<string>>;
+}
+
+/** Executa o stream de um turno; turno cancelado nao escreve no historico. */
+async function runTurn({ messages, options, signal, isCurrentTurn, setMessages, setStreaming }: RunTurnArgs) {
+  const assistantContent = await streamAssistantContent(
+    messages,
+    { assistantMode: options.assistantMode, assistantContext: options.assistantContext },
+    (partial) => {
+      if (isCurrentTurn()) setStreaming(partial);
+    },
+    signal,
+  );
+  if (!isCurrentTurn()) return;
+  setMessages((prev) => [
+    ...prev,
+    { id: makeId(), role: "assistant", content: assistantContent, createdAt: Date.now() },
+  ]);
+  if (options.onProductMention) extractProductMentions(assistantContent).forEach(options.onProductMention);
+}
+
 /** Dispara o turno (streaming + erros) fora do componente para manter a complexidade baixa. */
 function useSendTurn(
   messages: ChatMessage[],
@@ -215,13 +244,26 @@ function useSendTurn(
   options: SendTurnOptions,
 ) {
   const abortRef = useRef<AbortController | null>(null);
+  // Cada turno recebe um numero. `cancel` avanca o contador, entao deltas,
+  // conclusao e erro de um turno cancelado (ou substituido) sao descartados.
+  const turnRef = useRef(0);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
 
-  return useCallback(
+  const cancel = useCallback(() => {
+    turnRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
+
+  const sendTurn = useCallback(
     async (content: string) => {
+      const turn = turnRef.current + 1;
+      turnRef.current = turn;
+      const isCurrentTurn = () => turnRef.current === turn;
+
       const userMsg: ChatMessage = { id: makeId(), role: "user", content, createdAt: Date.now() };
       const nextMessages = [...messages, userMsg];
       setMessages(nextMessages);
@@ -232,32 +274,33 @@ function useSendTurn(
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
-      const { assistantMode, assistantContext, onProductMention } = options;
 
       try {
-        const assistantContent = await streamAssistantContent(
-          nextMessages,
-          { assistantMode, assistantContext },
+        await runTurn({
+          messages: nextMessages,
+          options,
+          signal: controller.signal,
+          isCurrentTurn,
+          setMessages,
           setStreaming,
-          controller.signal,
-        );
-        setMessages((prev) => [
-          ...prev,
-          { id: makeId(), role: "assistant", content: assistantContent, createdAt: Date.now() },
-        ]);
-        if (onProductMention) extractProductMentions(assistantContent).forEach(onProductMention);
+        });
       } catch (err) {
+        if (!isCurrentTurn()) return;
         if (err instanceof DOMException && err.name === "AbortError") return;
         const msg = chatErrorMessage(err);
         setError(msg);
         toast.error(msg);
       } finally {
-        setStreaming("");
-        if (!controller.signal.aborted) setIsLoading(false);
+        if (isCurrentTurn()) {
+          setStreaming("");
+          setIsLoading(false);
+        }
       }
     },
     [messages, setMessages, setStreaming, setError, setIsLoading, options],
   );
+
+  return useMemo(() => ({ sendTurn, cancel }), [sendTurn, cancel]);
 }
 
 interface ChatLogProps {
@@ -360,6 +403,7 @@ export function AIChat({
   maxHeight = "500px",
   onProductMention,
   className,
+  inputRef,
 }: AIChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     greeting
@@ -372,14 +416,16 @@ export function AIChat({
   const [streaming, setStreaming] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  // O host pode passar a ref para mover o foco ao abrir/fechar o chat.
+  const textareaRef = inputRef ?? internalTextareaRef;
 
   // Auto-scroll para a última mensagem
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, streaming]);
 
-  const sendTurn = useSendTurn(messages, setMessages, setStreaming, setError, setIsLoading, {
+  const { sendTurn, cancel } = useSendTurn(messages, setMessages, setStreaming, setError, setIsLoading, {
     assistantMode,
     assistantContext,
     onProductMention,
@@ -403,6 +449,9 @@ export function AIChat({
   );
 
   const handleReset = useCallback(() => {
+    // Cancela o turno em andamento antes de limpar: senao a resposta antiga
+    // entraria no historico novo e seguiria como contexto da proxima pergunta.
+    cancel();
     setMessages(
       greeting
         ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
@@ -412,7 +461,7 @@ export function AIChat({
     setStreaming("");
     setIsLoading(false);
     textareaRef.current?.focus();
-  }, [greeting]);
+  }, [cancel, greeting, textareaRef]);
 
   return (
     <div

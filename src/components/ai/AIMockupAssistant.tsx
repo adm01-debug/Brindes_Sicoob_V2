@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { Bot, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,15 @@ interface AIMockupAssistantProps {
   className?: string;
 }
 
-function AssistantLauncher({ onOpen, className }: { onOpen: () => void; className?: string }) {
+function AssistantLauncher({
+  onOpen,
+  className,
+  buttonRef,
+}: {
+  onOpen: () => void;
+  className?: string;
+  buttonRef: RefObject<HTMLButtonElement>;
+}) {
   return (
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
@@ -20,6 +28,7 @@ function AssistantLauncher({ onOpen, className }: { onOpen: () => void; classNam
         className={cn("fixed bottom-24 right-4 z-50 md:bottom-6", className)}
       >
         <Button
+          ref={buttonRef}
           size="lg"
           className="h-14 w-14 rounded-full shadow-lg gap-0 p-0 relative overflow-hidden group bg-primary hover:bg-primary/90 text-primary-foreground border-0"
           onClick={onOpen}
@@ -87,10 +96,12 @@ function AssistantChat({
   productName,
   techniqueName,
   minimized,
+  inputRef,
 }: {
   productName?: string;
   techniqueName?: string;
   minimized: boolean;
+  inputRef: RefObject<HTMLTextAreaElement>;
 }) {
   return (
     <div data-testid="assistant-chat-slot" className={cn("flex-1 min-h-0", minimized && "hidden")}>
@@ -99,6 +110,7 @@ function AssistantChat({
         maxHeight="100%"
         assistantMode="layout"
         assistantContext={buildAssistantContext(productName, techniqueName)}
+        inputRef={inputRef}
         greeting="Olá! Sou o Matheus, seu expert em layouts. Posso ajudar com posicionamento, técnicas e sugestões para este mockup."
         placeholder="Pergunte sobre o mockup..."
       />
@@ -124,6 +136,26 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const shouldRestoreFocusRef = useRef(false);
+
+  // Abrir/fechar pelo teclado precisa levar o foco para o chat e devolve-lo ao botao.
+  useEffect(() => {
+    if (isOpen) {
+      chatInputRef.current?.focus();
+      return;
+    }
+    if (shouldRestoreFocusRef.current) {
+      shouldRestoreFocusRef.current = false;
+      launcherRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  const closeAssistant = () => {
+    shouldRestoreFocusRef.current = true;
+    setIsOpen(false);
+  };
 
   const openAssistant = () => {
     setHasOpened(true);
@@ -133,7 +165,9 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
 
   return (
     <>
-      {!isOpen && <AssistantLauncher onOpen={openAssistant} className={className} />}
+      {!isOpen && (
+        <AssistantLauncher onOpen={openAssistant} className={className} buttonRef={launcherRef} />
+      )}
       {hasOpened && (
         <motion.div
           data-testid="assistant-panel"
@@ -150,9 +184,14 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
           <AssistantHeader
             minimized={isMinimized}
             onToggle={() => setIsMinimized((current) => !current)}
-            onClose={() => setIsOpen(false)}
+            onClose={closeAssistant}
           />
-          <AssistantChat productName={productName} techniqueName={techniqueName} minimized={isMinimized} />
+          <AssistantChat
+            productName={productName}
+            techniqueName={techniqueName}
+            minimized={isMinimized}
+            inputRef={chatInputRef}
+          />
         </motion.div>
       )}
     </>

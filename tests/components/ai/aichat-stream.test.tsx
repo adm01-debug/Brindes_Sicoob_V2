@@ -72,4 +72,42 @@ describe("AIChat consome o stream real do expert-chat", () => {
 
     await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("Resposta vazia"));
   });
+
+  it("descarta a resposta antiga quando o chat e reiniciado durante a geracao", async () => {
+    const encoder = new TextEncoder();
+    const pushRef: { push: (chunk: string) => void; finish: () => void } = {
+      push: () => {},
+      finish: () => {},
+    };
+    const stream = new ReadableStream({
+      start(controller) {
+        pushRef.push = (chunk: string) => {
+          const payload = JSON.stringify({ choices: [{ delta: { content: chunk } }] });
+          controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+        };
+        pushRef.finish = () => {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        };
+      },
+    });
+    mocks.fetch.mockResolvedValue(
+      new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+    );
+
+    render(<AIChat />);
+    fireEvent.change(input(), { target: { value: "Onde coloco a arte?" } });
+    fireEvent.keyDown(input(), { key: "Enter" });
+
+    pushRef.push("Resposta antiga");
+    await waitFor(() => expect(screen.getByText(/Resposta antiga/)).toBeTruthy());
+
+    fireEvent.click(screen.getByRole("button", { name: /reiniciar conversa/i }));
+    pushRef.push(" que nao pode voltar");
+    pushRef.finish();
+
+    await waitFor(() => expect(screen.queryByText("Onde coloco a arte?")).toBeNull());
+    expect(screen.queryByText(/Resposta antiga/)).toBeNull();
+    expect(screen.queryByText(/nao pode voltar/)).toBeNull();
+  });
 });
