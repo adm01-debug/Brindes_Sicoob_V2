@@ -9,12 +9,23 @@
  *   (memory: features/ai/flow-product-integration-spec)
  * - Tokens de design semânticos (Outfit, var(--primary), border-[1.5px], rounded-xl)
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type KeyboardEvent,
+  type RefObject,
+  type SetStateAction,
+} from "react";
 import { Send, Loader2, Bot, User as UserIcon, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 import { selectExpertChatMessages } from "@/lib/assistant-message-window";
+import { readExpertStream } from "@/lib/assistant-stream";
 import { toast } from "sonner";
 
 // ============================================
@@ -35,8 +46,10 @@ export interface ProductMention {
 }
 
 export interface AIChatProps {
-  /** Prompt de sistema enviado a cada requisição. */
-  systemPrompt?: string;
+  /** Modo do assistente no backend (`sales` por padrão, `layout` no gerador de mockup). */
+  assistantMode?: "sales" | "layout";
+  /** Dados de catálogo (somente rótulos) usados pelo modo `layout`. */
+  assistantContext?: string;
   /** Placeholder do input. */
   placeholder?: string;
   /** Mensagem inicial do assistente (opcional). */
@@ -47,8 +60,8 @@ export interface AIChatProps {
   onProductMention?: (product: ProductMention) => void;
   /** Classe extra para o container raiz. */
   className?: string;
-  /** Identificador do contexto (ex: cliente, orçamento) — usado para metadata. */
-  contextId?: string;
+  /** Ref do textarea, para o host controlar o foco (abrir/fechar por teclado). */
+  inputRef?: RefObject<HTMLTextAreaElement>;
 }
 
 // ============================================
@@ -79,10 +92,19 @@ async function responseError(response: Response) {
   return new Error(`Erro ${response.status}: ${text || "falha ao consultar IA"}`);
 }
 
-async function fetchAssistantContent(
+interface AssistantStreamOptions {
+  assistantMode?: "sales" | "layout";
+  assistantContext?: string;
+}
+
+/**
+ * `expert-chat` responde em SSE (`text/event-stream`), não em JSON: a resposta é
+ * lida linha a linha e devolvida por `onUpdate` conforme chega.
+ */
+async function streamAssistantContent(
   messages: ChatMessage[],
-  systemPrompt: string | undefined,
-  contextId: string | undefined,
+  options: AssistantStreamOptions,
+  onUpdate: (content: string) => void,
   signal: AbortSignal,
 ) {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -99,15 +121,15 @@ async function fetchAssistantContent(
       messages: selectExpertChatMessages(
         messages.map(message => ({ role: message.role, content: message.content })),
       ),
-      systemPrompt,
-      contextId,
+      assistantMode: options.assistantMode ?? "sales",
+      assistantContext: options.assistantContext,
     }),
     signal,
   });
   if (!response.ok) throw await responseError(response);
-  const data = await response.json() as { message?: { content?: string }; content?: string; reply?: string };
-  const content = data.message?.content ?? data.content ?? data.reply ?? "";
-  if (!content) throw new Error("Resposta vazia do assistente");
+  if (!response.body) throw new Error("Resposta vazia do assistente");
+  const content = await readExpertStream(response.body.getReader(), onUpdate);
+  if (!content.trim()) throw new Error("Resposta vazia do assistente");
   return content;
 }
 
@@ -179,18 +201,211 @@ function TypingIndicator() {
   );
 }
 
+interface SendTurnOptions {
+  assistantMode?: "sales" | "layout";
+  assistantContext?: string;
+  onProductMention?: (product: ProductMention) => void;
+}
+
+interface RunTurnArgs {
+  messages: ChatMessage[];
+  options: SendTurnOptions;
+  signal: AbortSignal;
+  isCurrentTurn: () => boolean;
+  setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
+  setStreaming: Dispatch<SetStateAction<string>>;
+}
+
+/** Executa o stream de um turno; turno cancelado nao escreve no historico. */
+async function runTurn({ messages, options, signal, isCurrentTurn, setMessages, setStreaming }: RunTurnArgs) {
+  const assistantContent = await streamAssistantContent(
+    messages,
+    { assistantMode: options.assistantMode, assistantContext: options.assistantContext },
+    (partial) => {
+      if (isCurrentTurn()) setStreaming(partial);
+    },
+    signal,
+  );
+  if (!isCurrentTurn()) return;
+  setMessages((prev) => [
+    ...prev,
+    { id: makeId(), role: "assistant", content: assistantContent, createdAt: Date.now() },
+  ]);
+  if (options.onProductMention) extractProductMentions(assistantContent).forEach(options.onProductMention);
+}
+
+/** Dispara o turno (streaming + erros) fora do componente para manter a complexidade baixa. */
+function useSendTurn(
+  messages: ChatMessage[],
+  setMessages: Dispatch<SetStateAction<ChatMessage[]>>,
+  setStreaming: Dispatch<SetStateAction<string>>,
+  setError: Dispatch<SetStateAction<string | null>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+  options: SendTurnOptions,
+) {
+  const abortRef = useRef<AbortController | null>(null);
+  // Cada turno recebe um numero. `cancel` avanca o contador, entao deltas,
+  // conclusao e erro de um turno cancelado (ou substituido) sao descartados.
+  const turnRef = useRef(0);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
+
+  const cancel = useCallback(() => {
+    turnRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
+
+  const sendTurn = useCallback(
+    async (content: string) => {
+      const turn = turnRef.current + 1;
+      turnRef.current = turn;
+      const isCurrentTurn = () => turnRef.current === turn;
+
+      const userMsg: ChatMessage = { id: makeId(), role: "user", content, createdAt: Date.now() };
+      const nextMessages = [...messages, userMsg];
+      setMessages(nextMessages);
+      setError(null);
+      setStreaming("");
+      setIsLoading(true);
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        await runTurn({
+          messages: nextMessages,
+          options,
+          signal: controller.signal,
+          isCurrentTurn,
+          setMessages,
+          setStreaming,
+        });
+      } catch (err) {
+        if (!isCurrentTurn()) return;
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        const msg = chatErrorMessage(err);
+        setError(msg);
+        toast.error(msg);
+      } finally {
+        if (isCurrentTurn()) {
+          setStreaming("");
+          setIsLoading(false);
+        }
+      }
+    },
+    [messages, setMessages, setStreaming, setError, setIsLoading, options],
+  );
+
+  return useMemo(() => ({ sendTurn, cancel }), [sendTurn, cancel]);
+}
+
+interface ChatLogProps {
+  messages: ChatMessage[];
+  streaming: string;
+  isLoading: boolean;
+  maxHeight: string;
+  scrollRef: RefObject<HTMLDivElement>;
+  onScroll: () => void;
+}
+
+function ChatLog({ messages, streaming, isLoading, maxHeight, scrollRef, onScroll }: ChatLogProps) {
+  const empty = messages.length === 0 && !isLoading;
+  return (
+    <div
+      ref={scrollRef}
+      onScroll={onScroll}
+      className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+      style={{ maxHeight }}
+      role="log"
+      aria-live="polite"
+      aria-atomic="false"
+    >
+      {empty && (
+        <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" />
+          <p className="font-display text-sm">Inicie uma conversa com o assistente</p>
+        </div>
+      )}
+      {messages.map((m) => (
+        <MessageBubble key={m.id} message={m} />
+      ))}
+      {streaming !== "" && (
+        <MessageBubble message={{ id: "streaming", role: "assistant", content: streaming, createdAt: 0 }} />
+      )}
+      {isLoading && streaming === "" && <TypingIndicator />}
+    </div>
+  );
+}
+
+interface ChatComposerProps {
+  input: string;
+  onInput: (value: string) => void;
+  onSend: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
+  isLoading: boolean;
+  placeholder: string;
+  textareaRef: RefObject<HTMLTextAreaElement>;
+}
+
+function ChatComposer({ input, onInput, onSend, onKeyDown, isLoading, placeholder, textareaRef }: ChatComposerProps) {
+  return (
+    <div className="border-t-[1.5px] border-border bg-muted/20 p-3">
+      <div className="flex items-end gap-2">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => onInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder}
+          rows={1}
+          disabled={isLoading}
+          aria-label="Mensagem para o assistente"
+          className={cn(
+            "flex-1 resize-none rounded-xl border-[1.5px] border-input bg-background px-3 py-2 text-sm",
+            "font-display ring-offset-background transition-all duration-200",
+            "placeholder:text-muted-foreground",
+            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:border-primary",
+            "hover:border-primary/50",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "min-h-[40px] max-h-32"
+          )}
+        />
+        <Button
+          type="button"
+          onClick={onSend}
+          disabled={!input.trim() || isLoading}
+          size="icon"
+          aria-label="Enviar mensagem"
+          className="h-10 w-10 shrink-0 rounded-xl"
+        >
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        </Button>
+      </div>
+      <p className="mt-1.5 text-[11px] text-muted-foreground/70 font-display">
+        Pressione <kbd className="px-1 rounded border border-border bg-background">Enter</kbd> para enviar •{" "}
+        <kbd className="px-1 rounded border border-border bg-background">Shift+Enter</kbd> para quebrar linha
+      </p>
+    </div>
+  );
+}
+
 // ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
 export function AIChat({
-  systemPrompt,
+  assistantMode,
+  assistantContext,
   placeholder = "Digite sua mensagem...",
   greeting,
   maxHeight = "500px",
   onProductMention,
   className,
-  contextId,
+  inputRef,
 }: AIChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     greeting
@@ -200,61 +415,62 @@ export function AIChat({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [streaming, setStreaming] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  // O host pode passar a ref para mover o foco ao abrir/fechar o chat.
+  const textareaRef = inputRef ?? internalTextareaRef;
 
-  // Auto-scroll para a última mensagem
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isLoading]);
+  // Acompanha a resposta so enquanto a pessoa estiver no fim da conversa:
+  // rolar por cima de quem esta lendo uma mensagem anterior tira o texto da tela.
+  const nearBottomRef = useRef(true);
+  const lastScrollTopRef = useRef(0);
+  // Rolagem suave tambem emite eventos: sem esta marca, a propria animacao
+  // desligaria o acompanhamento antes de chegar ao fim da conversa.
+  const animatingRef = useRef(false);
 
-  // Cleanup ao desmontar
-  useEffect(() => {
-    return () => abortRef.current?.abort();
+  const handleLogScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const wentUp = el.scrollTop < lastScrollTopRef.current;
+    lastScrollTopRef.current = el.scrollTop;
+    if (distance <= 48) {
+      nearBottomRef.current = true;
+      animatingRef.current = false;
+      return;
+    }
+    if (wentUp) {
+      nearBottomRef.current = false;
+      animatingRef.current = false;
+      return;
+    }
+    if (animatingRef.current) return;
+    nearBottomRef.current = false;
   }, []);
 
-  const sendMessage = useCallback(async () => {
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !nearBottomRef.current) return;
+    animatingRef.current = true;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading, streaming]);
+
+  const { sendTurn, cancel } = useSendTurn(messages, setMessages, setStreaming, setError, setIsLoading, {
+    assistantMode,
+    assistantContext,
+    onProductMention,
+  });
+
+  const sendMessage = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
-
-    const userMsg: ChatMessage = {
-      id: makeId(),
-      role: "user",
-      content: trimmed,
-      createdAt: Date.now(),
-    };
-
-    const nextMessages = [...messages, userMsg];
-    setMessages(nextMessages);
     setInput("");
-    setError(null);
-    setIsLoading(true);
-
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    try {
-      const assistantContent = await fetchAssistantContent(nextMessages, systemPrompt, contextId, controller.signal);
-      const assistantMsg: ChatMessage = {
-        id: makeId(),
-        role: "assistant",
-        content: assistantContent,
-        createdAt: Date.now(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
-      if (onProductMention) extractProductMentions(assistantContent).forEach(onProductMention);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      const msg = chatErrorMessage(err);
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      if (!controller.signal.aborted) setIsLoading(false);
-    }
-  }, [input, isLoading, messages, systemPrompt, contextId, onProductMention]);
+    // Mandar mensagem e pedido explicito para ver o fim da conversa.
+    nearBottomRef.current = true;
+    void sendTurn(trimmed);
+  }, [input, isLoading, sendTurn]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -267,16 +483,19 @@ export function AIChat({
   );
 
   const handleReset = useCallback(() => {
-    abortRef.current?.abort();
+    // Cancela o turno em andamento antes de limpar: senao a resposta antiga
+    // entraria no historico novo e seguiria como contexto da proxima pergunta.
+    cancel();
     setMessages(
       greeting
         ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
         : []
     );
     setError(null);
+    setStreaming("");
     setIsLoading(false);
     textareaRef.current?.focus();
-  }, [greeting]);
+  }, [cancel, greeting, textareaRef]);
 
   return (
     <div
@@ -307,25 +526,14 @@ export function AIChat({
       </div>
 
       {/* Mensagens */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-        style={{ maxHeight }}
-        role="log"
-        aria-live="polite"
-        aria-atomic="false"
-      >
-        {messages.length === 0 && !isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" />
-            <p className="font-display text-sm">Inicie uma conversa com o assistente</p>
-          </div>
-        )}
-        {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} />
-        ))}
-        {isLoading && <TypingIndicator />}
-      </div>
+      <ChatLog
+        messages={messages}
+        streaming={streaming}
+        isLoading={isLoading}
+        maxHeight={maxHeight}
+        scrollRef={scrollRef}
+        onScroll={handleLogScroll}
+      />
 
       {/* Erro */}
       {error && (
@@ -339,47 +547,15 @@ export function AIChat({
       )}
 
       {/* Input */}
-      <div className="border-t-[1.5px] border-border bg-muted/20 p-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            rows={1}
-            disabled={isLoading}
-            aria-label="Mensagem para o assistente"
-            className={cn(
-              "flex-1 resize-none rounded-xl border-[1.5px] border-input bg-background px-3 py-2 text-sm",
-              "font-display ring-offset-background transition-all duration-200",
-              "placeholder:text-muted-foreground",
-              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:border-primary",
-              "hover:border-primary/50",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              "min-h-[40px] max-h-32"
-            )}
-          />
-          <Button
-            type="button"
-            onClick={sendMessage}
-            disabled={!input.trim() || isLoading}
-            size="icon"
-            aria-label="Enviar mensagem"
-            className="h-10 w-10 shrink-0 rounded-xl"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-        <p className="mt-1.5 text-[11px] text-muted-foreground/70 font-display">
-          Pressione <kbd className="px-1 rounded border border-border bg-background">Enter</kbd> para enviar •{" "}
-          <kbd className="px-1 rounded border border-border bg-background">Shift+Enter</kbd> para quebrar linha
-        </p>
-      </div>
+      <ChatComposer
+        input={input}
+        onInput={setInput}
+        onSend={sendMessage}
+        onKeyDown={handleKeyDown}
+        isLoading={isLoading}
+        placeholder={placeholder}
+        textareaRef={textareaRef}
+      />
     </div>
   );
 }
