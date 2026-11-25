@@ -5,11 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ chat: vi.fn() }));
 
 vi.mock("@/components/ai/AIChat", () => ({
-  AIChat: (props: { systemPrompt?: string; className?: string; greeting?: string }) => {
+  AIChat: (props: { assistantMode?: string; assistantContext?: string; className?: string }) => {
     mocks.chat(props);
     return (
       <div data-testid="chat-real" className={props.className}>
-        {props.systemPrompt}
+        {props.assistantContext}
       </div>
     );
   },
@@ -18,15 +18,27 @@ vi.mock("@/components/ai/AIChat", () => ({
 import { AIMockupAssistant } from "@/components/ai/AIMockupAssistant";
 
 describe("assistente de layouts entrega a conversa para a IA real", () => {
-  it("abre o chat real com o contexto do produto e da tecnica", () => {
+  it("abre o chat real no modo layout com o contexto do produto e da tecnica", () => {
     render(<AIMockupAssistant productName="Caneca Sicoob" techniqueName="Laser" />);
     fireEvent.click(screen.getByRole("button", { name: /assistente de layouts/i }));
 
     expect(screen.getByTestId("chat-real")).toBeTruthy();
     const props = mocks.chat.mock.calls.at(-1)?.[0];
-    expect(props?.systemPrompt).toContain("Caneca Sicoob");
-    expect(props?.systemPrompt).toContain("Laser");
-    expect(props?.systemPrompt).toContain("Não invente preços");
+    // `expert-chat` ignora systemPrompt do cliente: o modo layout e o contexto sao o contrato real.
+    expect(props?.assistantMode).toBe("layout");
+    expect(props?.assistantContext).toContain("Caneca Sicoob");
+    expect(props?.assistantContext).toContain("Laser");
+  });
+
+  it("tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto", () => {
+    render(<AIMockupAssistant />);
+    fireEvent.click(screen.getByRole("button", { name: /assistente de layouts/i }));
+
+    expect(screen.queryByRole("button", { name: /abrir matheus/i })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+
+    expect(screen.getByRole("button", { name: /abrir matheus/i })).toBeTruthy();
   });
 
   it("preserva a conversa ao minimizar e reabrir", () => {

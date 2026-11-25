@@ -97,23 +97,22 @@ function AssistantChat({
       <AIChat
         className="h-full rounded-none border-0"
         maxHeight="100%"
-        systemPrompt={buildSystemPrompt(productName, techniqueName)}
+        assistantMode="layout"
+        assistantContext={buildAssistantContext(productName, techniqueName)}
         greeting="Olá! Sou o Matheus, seu expert em layouts. Posso ajudar com posicionamento, técnicas e sugestões para este mockup."
         placeholder="Pergunte sobre o mockup..."
-        contextId="mockup-generator"
       />
     </div>
   );
 }
 
-function buildSystemPrompt(productName?: string, techniqueName?: string) {
-  return [
-    "Você é o Matheus, especialista em criação de mockups de brindes personalizados.",
-    `Produto em edição: ${productName?.trim() || "não definido"}.`,
-    `Técnica de personalização: ${techniqueName?.trim() || "não definida"}.`,
-    "Responda em português do Brasil, de forma curta e prática, cobrindo posição da arte, tamanho, contraste e legibilidade.",
-    "Não invente preços, prazos, estoque nem disponibilidade: se o dado não foi informado, diga que é preciso confirmar.",
-  ].join(" ");
+/** Rótulos do mockup em edição — o backend limita `assistantContext` a 500 caracteres. */
+function buildAssistantContext(productName?: string, techniqueName?: string) {
+  const context = [
+    `Produto: ${productName?.trim() || "não definido"}`,
+    `Técnica: ${techniqueName?.trim() || "não definida"}`,
+  ].join("; ");
+  return context.slice(0, 500);
 }
 
 /**
@@ -134,7 +133,7 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
 
   return (
     <>
-      <AssistantLauncher onOpen={openAssistant} className={className} />
+      {!isOpen && <AssistantLauncher onOpen={openAssistant} className={className} />}
       {hasOpened && (
         <motion.div
           data-testid="assistant-panel"
