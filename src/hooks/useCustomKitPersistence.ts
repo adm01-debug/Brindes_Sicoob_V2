@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { KitState } from '@/lib/kit-builder';
 import { buildCustomKitPayload } from '@/lib/kit-builder/custom-kit-payload';
+import { updateWithOptimisticLock } from '@/hooks/useKitAutoSave';
 
 // ============================================
 // TYPES
@@ -46,17 +47,13 @@ async function persistCustomKit(
   userId: string,
   kitId: string | undefined,
   payload: ReturnType<typeof buildCustomKitPayload>,
+  expectedUpdatedAt: string | null = null,
 ) {
   if (kitId) {
-    const { data, error } = await supabase
-      .from('custom_kits')
-      .update(payload)
-      .eq('id', kitId)
-      .eq('user_id', userId)
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
+    // Mesma trava do autosave: se a linha saiu da versão que esta aba conhece,
+    // a gravação é recusada em vez de apagar em silêncio o que a outra aba fez.
+    const { updatedAt } = await updateWithOptimisticLock(payload, kitId, userId, expectedUpdatedAt);
+    return { id: kitId, updated_at: updatedAt };
   }
   const { data, error } = await supabase.from('custom_kits').insert(payload).select().single();
   if (error) throw error;
@@ -91,14 +88,20 @@ export function useCustomKitPersistence() {
 
   // Salvar kit (insert ou update)
   const saveMutation = useMutation({
-    mutationFn: async ({ kitId, kitState, kitQuantity }: {
+    mutationFn: async ({ kitId, kitState, kitQuantity, expectedUpdatedAt }: {
       kitId?: string;
       kitState: KitState;
       kitQuantity: number;
+      expectedUpdatedAt?: string | null;
     }) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      return persistCustomKit(user.id, kitId, buildCustomKitPayload(user.id, kitState, kitQuantity));
+      return persistCustomKit(
+        user.id,
+        kitId,
+        buildCustomKitPayload(user.id, kitState, kitQuantity),
+        expectedUpdatedAt ?? null,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -130,8 +133,8 @@ export function useCustomKitPersistence() {
   });
 
   const saveKit = useCallback(
-    (kitState: KitState, kitQuantity: number, kitId?: string) =>
-      saveMutation.mutateAsync({ kitId, kitState, kitQuantity }),
+    (kitState: KitState, kitQuantity: number, kitId?: string, expectedUpdatedAt?: string | null) =>
+      saveMutation.mutateAsync({ kitId, kitState, kitQuantity, expectedUpdatedAt }),
     [saveMutation]
   );
 

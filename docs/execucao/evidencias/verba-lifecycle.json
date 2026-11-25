@@ -1,0 +1,133 @@
+{
+  "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
+  "producao_verificada": false,
+  "backfill": {
+    "agregado": "150.00",
+    "livro_sem_pedido": "1|90.00",
+    "livro_do_pedido_legado": "consumido|60.00"
+  },
+  "ciclo": {
+    "apos_reservar": {
+      "planejado": "1000.00",
+      "reservado": "100.00",
+      "comprometido": "0.00",
+      "consumido": "150.00"
+    },
+    "comprometido": {
+      "planejado": "1000.00",
+      "reservado": "0.00",
+      "comprometido": "100.00",
+      "consumido": "150.00"
+    },
+    "consumido": {
+      "planejado": "1000.00",
+      "reservado": "0.00",
+      "comprometido": "0.00",
+      "consumido": "250.00"
+    }
+  },
+  "pedido_consumido": {
+    "alterar_valor": "ERROR:  Pedido com verba consumida não permite alterar PA, valor ou período.",
+    "alterar_pa": "ERROR:  Pedido com verba consumida não permite alterar PA, valor ou período."
+  },
+  "livro_imutavel": "ERROR:  O livro de verba é imutável; registre um evento de estorno ou ajuste.",
+  "saldo_insuficiente": "ERROR:  Saldo insuficiente na competência 11/2026: disponível 750.00, solicitado 900.00.",
+  "competencia_fechada": {
+    "motivo": "ERROR:  Competência 11/2026 fechada; não é possível movimentar verba.",
+    "apos_reabrir": "reservado"
+  },
+  "isolamento": {
+    "verba_de_outra_cooperativa": "ERROR:  Sem permissao para consultar a verba do pedido 00000000-0000-4000-8000-000000000203.",
+    "conciliar_pa_alheio": "ERROR:  Sem permissao para conciliar a verba do PA 00000000-0000-4000-8000-000000000002.",
+    "centro_de_custo_alheio": null
+  },
+  "rateio": {
+    "rateio_defasado": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000204 soma 150.00, mas o pedido vale 200.00.",
+    "reservado": "200.00"
+  },
+  "reconciliacao": "agregado igual ao livro",
+  "rls": {
+    "centros_visiveis_gestor_a": "CC-01",
+    "centros_visiveis_gestor_b": "CC-02"
+  },
+  "rateio_atomico": {
+    "linhas": "1",
+    "duplicado": "ERROR:  Cada centro de custo pode aparecer uma unica vez no rateio.",
+    "preservado": "1|120.00",
+    "rollback_apos_delete": "1|120.00",
+    "erro_insercao": "ERROR:  invalid input syntax for type numeric: \"nao-e-numero\""
+  },
+  "rascunho_defasado": {
+    "edita_item": "permitido",
+    "motivo_entrada_na_verba": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000206 soma 200.00, mas o pedido vale 350.00."
+  },
+  "livro_escopo": {
+    "pa_de_outro_gestor": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\"",
+    "competencia_divergente": "ERROR:  new row violates row-level security policy for table \"pa_budget_entries\"",
+    "competencia_correta": "gravado"
+  },
+  "rateio_rls": {
+    "leitor_apaga": "1|100.00",
+    "gestor_substitui": "1"
+  },
+  "centro_custo_singular": {
+    "propria_cooperativa": "criado",
+    "outra_cooperativa": "ERROR:  new row violates row-level security policy for table \"cost_centers\""
+  },
+  "rateio_centro_alheio": "ERROR:  Centro de custo 0b42cb4b-b64c-45a4-ae7b-a69c50e17cdb nao pertence a cooperativa do pedido.",
+  "rateio_oraculo": {
+    "inexistente": "ERROR:  Pedido 00000000-0000-4000-8000-0000000002ff nao encontrado ou sem permissao para ratear.",
+    "fora_do_escopo": "ERROR:  Pedido 00000000-0000-4000-8000-000000000208 nao encontrado ou sem permissao para ratear."
+  },
+  "livro_por_centro": {
+    "reservado_por_centro": "CC-01=120.00,CC-05=80.00",
+    "reservado_apos_comprometer": "0.00",
+    "comprometido_por_centro": "CC-01=120.00,CC-05=80.00"
+  },
+  "cota_arredondada": {
+    "percentual_100": "100.00",
+    "percentual_0_aceito": "0.00"
+  },
+  "rateio_reemitido": {
+    "antes": "CC-01=200.00",
+    "depois": "CC-01=50.00,CC-06=150.00",
+    "total": "200.00"
+  },
+  "rateio_estrito": "ERROR:  Rateio do pedido 00000000-0000-4000-8000-000000000212 soma 199.99, mas o pedido vale 200.00.",
+  "legado_sem_debito_duplo": {
+    "agregado_antes": "260.00",
+    "agregado_depois": "260.00",
+    "eventos_do_pedido": "1|60.00"
+  },
+  "rateio_concorrente": {
+    "linhas": "1|200.00|CC-06",
+    "centro_do_primeiro_envio": "CC-01",
+    "centro_do_ultimo_envio": "CC-06"
+  },
+  "cota_zero_reserva": {
+    "rateio_aceito": "100%+0%",
+    "cotas_gravadas": "2|CC-01=100.00%/100.00,CC-06=0.00%/0.00",
+    "lancamentos": "CC-01=100.00",
+    "centro_zero_sem_lancamento": "0"
+  },
+  "backfill_cap_idempotencia": {
+    "pedidos_entregues": "80.00+80.00",
+    "consumo_registrado": "100.00",
+    "lancado_na_primeira": "2|100.00|00000000-0000-4000-8000-000000000281=80.00,00000000-0000-4000-8000-000000000282=20.00",
+    "lancado_na_reaplicacao": "2|100.00|00000000-0000-4000-8000-000000000281=80.00,00000000-0000-4000-8000-000000000282=20.00",
+    "agregado_apos_reaplicar": "100.00"
+  },
+  "conclusao_legado_sem_consumo": {
+    "pedido_concluido": "valor 80, livro 20",
+    "saldo_disponivel_ao_concluir": "-50.00",
+    "gasto_novo_barrado_no_mesmo_saldo": "ERROR:  Saldo insuficiente na competência 11/2026: disponível -50.00, solicitado 40.00.",
+    "consumo_apos_concluir": "100.00",
+    "consumo_apos_concluir_dois": "100.00",
+    "pedido_capado_a_zero_concluido": "00000000-0000-4000-8000-000000000283",
+    "consumo_apos_concluir_capado": "100.00",
+    "lancamentos_preservados": "2|100.00|00000000-0000-4000-8000-000000000281=80.00,00000000-0000-4000-8000-000000000282=20.00",
+    "consumido_no_agregado": "100.00"
+  },
+  "resultado": "aprovado"
+}

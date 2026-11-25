@@ -41,6 +41,7 @@ jobs:
           supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json > /tmp/functions-before.json
           for function_name in \
             expert-chat \
+            send-transactional-email \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
@@ -53,7 +54,14 @@ jobs:
             get-visitor-info \
             secure-upload \
             auth-integrity-check \
-            crm-db-bridge
+            crm-db-bridge \
+            webhook-dispatcher \
+            connections-auto-test \
+            sicoob-approval-notifications \
+            process-batch-export \
+            send-scheduled-reports \
+            connections-health-check \
+            webhook-inbound
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done

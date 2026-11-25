@@ -14,6 +14,8 @@ interface UnsavedChangesDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   message?: string;
+  /** O verbo do botão diz o que a saída faz com o trabalho: grava ou descarta. */
+  confirmLabel?: string;
 }
 
 export function UnsavedChangesDialog({
@@ -21,6 +23,7 @@ export function UnsavedChangesDialog({
   onConfirm,
   onCancel,
   message = "Você tem alterações não salvas. Deseja realmente sair?",
+  confirmLabel = "Sair sem salvar",
 }: UnsavedChangesDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
@@ -32,7 +35,7 @@ export function UnsavedChangesDialog({
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>Continuar editando</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Sair sem salvar
+            {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useAutoSave } from '@/hooks/useAutoSave';
+import { descartarRascunho, useAutoSave } from '@/hooks/useAutoSave';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline';
 
@@ -32,6 +32,41 @@ export function createQuoteDraftId(): string {
     return crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+/** Lê o id do rascunho novo sem criar um (ao contrário de `getQuoteDraftIdForScope`). */
+function lerRascunhoNovoDaSessao(scopeId: string): string | null {
+  try {
+    return sessionStorage.getItem(`quote-new-draft:${scopeId}`);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Apaga o rascunho local deste orçamento.
+ *
+ * Usado quando o usuário confirma "sair sem salvar": sem isto, a edição que ele
+ * descartou é restaurada por cima do que veio do servidor na próxima abertura.
+ */
+export function limparRascunhoDoOrcamento(args: {
+  scopeId?: string | null;
+  quoteId?: string | null;
+  data: unknown;
+}): void {
+  const { scopeId, quoteId, data } = args;
+  if (!scopeId) return;
+  const chave = quoteId
+    ? `quote:${scopeId}:${quoteId}`
+    : (() => {
+        const id = lerRascunhoNovoDaSessao(scopeId);
+        return id ? `draft:${scopeId}:${id}` : null;
+      })();
+  if (!chave) return;
+  // Só o rascunho que guarda exatamente este conteúdo: o mesmo orçamento aberto
+  // em duas abas tem a mesma chave, e o descarte de uma não pode apagar o
+  // trabalho mais novo da outra.
+  descartarRascunho(chave, data);
 }
 
 export function getQuoteDraftIdForScope(scopeId: string): string {
@@ -213,12 +248,16 @@ function useQuoteAutoSaveState({
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const draftId = useScopedQuoteDraftId(enabled, scopeId, quoteId);
+  // A chave de um orçamento já gravado não depende de `enabled`: quando a tela
+  // deixa de ser editável, a última gravação local ainda precisa cair no mesmo
+  // rascunho (o que foi digitado durante o envio). Um rascunho novo só existe
+  // enquanto a persistência está ligada.
   const storageKey =
-    enabled && scopeId && (quoteId || draftId)
-      ? quoteId
-        ? `quote:${scopeId}:${quoteId}`
-        : `draft:${scopeId}:${draftId}`
-      : '';
+    scopeId && quoteId
+      ? `quote:${scopeId}:${quoteId}`
+      : enabled && scopeId && draftId
+        ? `draft:${scopeId}:${draftId}`
+        : '';
   const persistenceEnabled = enabled && Boolean(storageKey);
 
   const { restore, lastError } = useAutoSave({

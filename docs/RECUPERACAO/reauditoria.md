@@ -767,3 +767,204 @@ AFIRMAÇÃO 5 (identidade do kit no UPDATE) — NÃO SE SUSTENTA, o revisor esta
 </details>
 
 
+
+---
+
+## Re-auditoria de 24/11 — descartes medidos um a um (PR fechada por PR fechada)
+
+Escopo: as 10 branches remotas restantes e as 50 PRs fechadas sem merge. Objetivo: separar
+"trabalho parcial de outro agente que precisa ser terminado" de "já incorporado / artefato".
+
+**Método.** `git cherry` não serve neste repo: a `main` foi re-rooted e 56 dos 89 refs antigos
+não têm ancestral comum com ela (ver `cobertura-refs.md`). A prova usada é conteúdo:
+`git fetch origin refs/pull/N/head:refs/audit/prN`, `mb=$(git merge-base origin/main refs/audit/prN)`,
+`git diff --shortstat $mb refs/audit/prN` e verificação linha a linha. Para branch sem PR, mesmo
+procedimento em `origin/<branch>`.
+
+O comando exato da verificação linha a linha: o cabeçalho do diff e o marcador `+` **não** entram na
+busca — o texto comparado é a linha original do arquivo.
+
+```bash
+git diff -U0 $mb <ref> -- <path> | grep -E '^\+' | grep -v '^\+\+\+ ' | cut -c2- > /tmp/ref-lines.txt
+while IFS= read -r line; do git show origin/main:<path> | grep -Fqx -- "$line"; done < /tmp/ref-lines.txt
+```
+
+Linhas em branco adicionadas pelo ref (`+` sozinho) viram string vazia e casam com qualquer arquivo:
+por isso elas são contadas à parte e não entram no quociente.
+
+**Refs sem ancestral comum (56 das 89).** Nesses refs `mb` é vazio e não existe base histórica: um
+`git diff $mb <ref>` degeneraria para comparação com a árvore de trabalho, o que produz falso
+positivo. O procedimento nesses casos é comparação de árvore, sem ancestralidade:
+
+1. `git diff --quiet origin/main <ref> -- <path>` — compara as duas árvores direto (o git usa base
+   virtual vazia e não precisa de ancestral). Status `0` = arquivo idêntico; `1` = há diferença. Para
+   medir o tamanho da diferença, `git diff --shortstat origin/main <ref> -- <path>` (sem `--quiet`).
+2. Extração das linhas só do ref: `git diff -U0 origin/main <ref> -- <path> | grep -E '^\+'`, e para
+   cada linha `git show origin/main:<path> | grep -Fqx -- "<linha>"`. O quociente `linhas do ref
+   presentes na main / linhas do ref` mede o quanto a main já cobre aquele arquivo.
+3. Classificação por arquivo: quociente total → suspeita de cópia velha, confirmada apenas pelo
+   diff vazio (passo 1 com status `0`); quociente parcial → leitura do hunk completo para decidir se
+   o que sobra é trabalho de outro agente ou apenas uma versão anterior da mesma ideia.
+
+O quociente é **triagem, não prova**: ele aceita as linhas em qualquer ordem e ignora as remoções.
+Um arquivo pode marcar 100% de linhas presentes e o ref ainda ter apagado linhas que a `main` mantém
+(ou tê-las em contexto diferente). Quem decide descarte é `git diff --quiet origin/main <ref> -- <path>`
+com status de saída `0` para **todos** os arquivos do ref (árvore idêntica). O critério é o status, não
+o texto: em diff vazio o `--shortstat` não imprime nada, e em arquivo binário alterado ele imprime
+`0 insertions, 0 deletions`. Quociente total com diff não vazio = ler o hunk antes de qualquer conclusão.
+
+Medição de 24/11 sobre os 91 refs de auditoria deste clone: **nenhum** tem árvore idêntica à `main`
+(`git diff --quiet origin/main <ref>` devolve `1` para todos os 91). Pelo critério estrito, portanto,
+**nenhum ref está liberado para exclusão** — o quociente de linhas só diz onde olhar primeiro.
+
+Os dois exemplos que estavam aqui (`useGlobalSearch.ts` "15 de 88" e `e2e/helpers/auth.ts` "1 de 15")
+**não se reproduzem** com os refs atuais e foram retirados. Medição linha a linha feita agora:
+
+- `src/components/search/useGlobalSearch.ts` — todo ref que contém o caminho difere da `main`
+  (`status=1`): 0/4 linhas presentes em `refs/audit/pr100`, 7/20 em `refs/audit/pr145`, 1/16 na família
+  `pr75..pr97`. Nenhum ref é idêntico nesse caminho.
+- `e2e/helpers/auth.ts` — **idêntico à `main`** (`status=0`, sem linhas exclusivas) em `pr326`, `pr346`,
+  `pr348`, `pr350`, `pr360`, `pr374`, `pr385`, `pr392` e `pr394`: nesses refs não há nada a recuperar
+  neste arquivo. Nos antigos difere: 7 linhas do ref com 0 presentes na `main` (`pr3`, `pr4`, `pr75..pr97`),
+  6 linhas com 2 presentes (`pr308`, `pr318`).
+
+O que sustenta a classificação dos refs antigos é a leitura do hunk, não a igualdade de árvore — e por
+isso eles seguem no conjunto "não descartável por prova".
+
+**A regra de exclusão não exige árvore idêntica.** O que a exclusão de um ref exige é que **todo** o
+trabalho dele esteja já incorporado à `main` ou comprovadamente obsoleto. A igualdade de árvore é apenas
+a prova mais barata (e nenhum ref atual passa por ela), então a prova tem de ser feita arquivo a arquivo:
+`git diff --quiet origin/main <ref> -- <path>` com status `0` em cada caminho, ou leitura do hunk quando
+o status é `1` mostrando que o que sobra já está na `main` de forma equivalente ou foi substituído.
+Sem essa prova por caminho, o ref fica — mesmo que a PR esteja fechada e o assunto pareça resolvido.
+
+### Recuperado nesta rodada
+
+| Unidade | Arquivos | Prova da ausência na `main` | Ação |
+| --- | --- | --- | --- |
+| `automation/inventario-estado` | `inventario/estado/{banco,edges,rotas}.json` | único commit exclusivo é `190da39e2 chore(inventario): estado real do banco e do codigo [auto]`; 6217 linhas geradas | artefato de automação — não é trabalho de produto, não precisa ser recuperado |
+
+### Trabalho parcial real, ainda ausente da `main` (recuperar)
+
+Recuperação **proposta** (PR aberta) não é recuperação **integrada**: o item só sai desta tabela quando
+a PR que o recupera entra na `main`.
+
+| Unidade | Arquivos | Prova da ausência | Observação |
+| --- | --- | --- | --- |
+| **PR #116** — motor Copilot/Sussurro (F06/F07/F08) | `supabase/functions/copilot-analyze/`, `copilot-suggest/`, `copilot-quote-context/`, `src/hooks/useCopilotQuote.ts`, `supabase/migrations/20261016154200_copilot_engine_tables.sql` | `git grep -l 'cooper_state\|copilot_conversations' origin/main -- src supabase` → vazio; `supabase/functions/` da main (101 funções) não tem as três | feature inteira, zero equivalente. Precisa de decisão de escopo do dono (produto novo) |
+| **PR #119/#100/#308/#318** — coordenação de persistência do Kit + guarda global de navegação | `src/hooks/useKitPersistenceCoordinator.ts`, `src/lib/kit-builder/persistence-coordinator.ts`, `src/components/navigation/NavigationBlockerBridge.tsx`, `src/hooks/useDirtyGuard.ts`, `src/stores/useNavigationGuardStore.ts`, `src/components/navigation/NavigationGuardDialog.tsx`, `src/app-router.tsx` | `git cat-file -e origin/main:<arquivo>` → AUSENTE nos 7; `git grep` pelos nomes equivalentes → vazio | envolve trocar o roteador para data router (arquitetura) — `kit-builder.md:185,393` registra que a fila única global foi medida e reprovada; o que sobra de valor é `isDirty`/`markPersisted` em `useKitAutoSave.ts` (`markPersisted`: 0 ocorrências na main) e o aviso de saída |
+| **PR #119** — redes de segurança em teste | `tests/security/privileged-client-data-guards.test.ts`, `tests/e2e/auth-role-contract.test.ts`, `tests/components/operational-data-truth.test.tsx` | arquivos AUSENTES | exigem reancoragem: o teste original afirma sobre `app-router.tsx` e `CartCompanyDirectoryResults.tsx`, que não existem na `main` |
+
+### Integrado na `main` em 24/11 (recuperação concluída)
+
+| Unidade | Entrou na `main` por | Commit |
+| --- | --- | --- |
+| **PR #112** — ranking de categoria truncado e falha de mercado silenciosa | PR #429 (squash) | `dffd62ed6` |
+| **PR #145** — favorito indisponível deixa de sumir da lista | PR #431 (squash) | `3c5882b0e` |
+| Este ledger — método de descarte, tabela de refs e regra de exclusão | PR #430 (squash) | `617dc9f73` |
+
+As duas linhas correspondentes saíram de "Trabalho parcial real, ainda ausente da `main`". Os refs
+antigos (`refs/audit/pr112`, `refs/audit/pr145`) continuam no clone e **não foram apagados**: ter
+recuperado o trabalho na `main` não é a prova de que o ref inteiro está coberto — ver "Regra de
+exclusão" abaixo.
+
+
+### Confirmado incorporado / descartável (com prova)
+
+| Unidade | Prova |
+| --- | --- |
+| PR #176/#157/#150 — estados de dado do BI e assinatura HMAC do dossiê | ver "Varredura por símbolo" abaixo: `bi.dataStatus/isUnavailable` da ref é subconjunto do que a `main` já renderiza (`ClientOverview360.tsx` com 4 estados, `aria-label="Comparar período"` idêntico); `bi-share-dossier` assina em `index.ts:46-81` (`hmac`/`signToken`/`verifyToken`); 13 testes `tests/components/bi/*availability*` já na `main` |
+| PR #288/#289 (hardening) | migrations renomeadas para `20261118130000`…`20261118130400_*` na `main` |
+| PR #157 (migration de retry) | substituída por `20261030210000_require_active_actor_for_quote_status_retry.sql` |
+| PR #179 (edges) | `supabase/functions/_shared/ilike-pattern.ts` e `supabase/functions/sicoob-document-ingest/registration-state.ts` EXISTEM na `main`; `crm-db-bridge/index.ts` já consome `ilike-pattern` |
+| PR #75 (relatórios Sicoob) | `src/pages/sicoob/reports/SicoobReportsPage.tsx` foi reescrito na `main` (versão da PR: 299+/531− contra a main) e `tests/pages/SicoobReportsPage.budgetHistory.test.ts` existe |
+| PR #119 (`CartCompanyDirectoryResults`) | `src/components/cart/CartCompanyPicker.tsx:24,29,38` e `CartCompanyPickerDialog.tsx:38,43,52` já renderizam `role="alert"` + "Tentar novamente" |
+| PR #105, #85, #117, #118, #154, #158, #161, #149 | docs/inventário (`PENDENCIAS.md`, `RELATORIO_CI.md`, `fontes-sha256.json`, JSON de inventário) — não é produto |
+| `devin/1791201000-ux-onda2` | subconjunto byte a byte de ux-onda1 (PR #100), conforme `branches.md` |
+
+### Varredura por símbolo — todas as refs de auditoria (24/11)
+
+Método novo, mais forte que o quociente de linhas: compara **nomes declarados**, não texto solto.
+
+1. Universo da `main`:
+   `git grep -h -o -E '(export (async )?(function|const|class|interface|type|enum) [A-Za-z0-9_]+|^(async )?function [A-Za-z0-9_]+)' origin/main -- src supabase scripts tests`
+   → **11.017** nomes.
+2. Por ref: só os caminhos que **também existem na `main`** (caminho que só existe na ref é outro caso, já coberto pela tabela de refs); os nomes declarados nesses caminhos que **não aparecem em lugar nenhum da `main`**.
+3. Filtro de ancestralidade: `mb=$(git merge-base origin/main <ref>)`. Nome **ausente no `mb`** e ausente na `main` só pode ter nascido na branch — é candidato real; nome que existe no `mb` é conteúdo antigo da própria `main`, removido depois por decisão, não trabalho de outro agente.
+4. Filtro de uso: nome que aparece **uma única vez** na branch (só a própria definição) é código morto da branch, não capacidade entregue.
+
+Resultado: **107** arquivos da `main` com algum nome só das refs; **61** arquivos com nome nascido na branch; desses, **60** não têm o nome em nenhum ponto da história da `main` (`git log -S <nome> origin/main -- <path>` vazio) e **144** nomes são usados dentro da própria branch (13 são definidos e nunca chamados).
+
+Triagem dos candidatos de maior contagem, nome a nome, contra o que a `main` tem hoje:
+
+| Caminho (`main`) | Nomes só nas refs | Equivalente na `main` | Veredito |
+| --- | --- | --- | --- |
+| `src/components/ai/AIChat.tsx` | `AI_CHAT_MAX_MESSAGES`, `AI_CHAT_MAX_CONTENT_LENGTH`, `ChatError`, `EmptyConversationState` | `src/lib/assistant-message-window.ts:41` `selectExpertChatMessages` com `EXPERT_CHAT_MAX_MESSAGES/_CONTENT_LENGTH/_MESSAGE_LENGTH`, consumido por `AIChat.tsx:99` e `useExpertChat.ts:158`; `role="alert"` em `AIChat.tsx:333` | substituído (promovido a lib compartilhada) |
+| `src/hooks/useCrmCompanies.ts` | `CrmClientsPageResult`, `CrmClientsSortMode`, `clientOrder` | `useCrmCompanies`/`useCrmCompanySelector`/`useCrmCompaniesLegacy` + `DIRECTORY_PAGE/_CAP`; a `main` manda o termo ao servidor (`fetchDirectoryPages(term)`) | substituído (ver limitação nova abaixo) |
+| `src/lib/crm-db.ts` | `listQuoteDirectoryCompanies`, `selectCrmByIdStrict`, `CrmUnavailableError` | `fetchQuoteDirectoryCompanies:332`, `fetchQuoteDirectoryContacts:396`, `selectCrmById:412`, `throwFinalCrmError:204`, `getCrmHttpStatus:200` | substituído (renomeado) |
+| `src/pages/QuoteBuilderPage.tsx` | `QuoteLoadFailure`, `buildQuoteDraftData`, `draftString/draftNumber` | edição gateada por `state.canEdit` (`:97,122,126`), rascunho em `QuoteAutoSave`/`limparRascunhoDoOrcamento` | **parcial** — `QuoteLoadFailure` continuava ausente: nem rejeição de `fetchQuote` nem retorno nulo eram tratados, e a tela ficava no spinner infinito ou abria editor vazio (recuperado na PR #436) |
+| `src/pages/GestorCompras.tsx` / `GestorComprasMetrics.tsx` | `ApprovalSlaCard`, `CooperativeSummary`, `calculatePendingSla` | `src/components/sicoob/GestorComprasMetrics.tsx` (160 linhas: verba da competência, carregando/erro/sem verba/sem cooperativa) usado em `GestorCompras.tsx:65` | substituído (a afirmação de 18/11 “não existe na `main`” ficou velha) |
+| `src/components/search/useGlobalSearch.ts` | `createLocalFallback`, `executeSemanticSearch`, `groupSearchResults` | `createLocalSearchFallback:139`, `useSemanticSearch:230` com timeout de 8s, agrupamento por tipo, atalho de voz | substituído |
+| `src/components/bi/ClientVsIndustryComparison.tsx` | `ComparisonError`, `ComparisonStaleNotice`, `InsufficientSampleCard` | `ComparativoIndisponivel` + `AvisoDeCacheDesatualizado` + `OrigemDoDado` (`:346` linhas) | substituído |
+| `src/hooks/bi/useClientHealthScore.ts` | `buildUnknownHealthResult`, `insufficientHealthResult` | `unavailableReason: "source-error" \| "insufficient-data"` | substituído |
+| `src/hooks/bi/useClientSeasonality.ts`, `useClientVsIndustry.ts`, `useClientCategoryAffinity.ts`, `useIndustryCategoryTrends.ts` | `buildSeasonalityResult`, `emptyComparison`, `hasPositiveEvidence` | equivalentes no arquivo da `main` do mesmo caminho (todos maiores que a ref) | substituído |
+| `src/hooks/useScrollRestoration.ts` | `resetScrollRestoration`, `trimOldest` | `MAX_ENTRIES = 50` com poda de `scrollPositions` e `containerPositions` (`:33-48`) | **parcial** — a poda cobre `trimOldest`, mas não a limpeza na troca de sessão/logout: `grep -rn resetScrollRestoration src/` na `main` não devolve nada |
+| `src/hooks/useQuoteBuilderState.ts` | `quoteBuilderCanEdit`, `isValidQuoteRowVersion` | `canPersistQuoteVersion` + `expectedRowVersion` + snapshot enviado ao servidor (`:1123` linhas) | substituído (o “BUG ATIVO NA MAIN” de 18/11 não se reproduz) |
+| `src/hooks/useProductAnalytics.ts` | `buildSearchAnalyticsInsert`, `serializeSearchContext` | `trackSearch` + insert silencioso em `product_views` | substituído |
+| `src/hooks/quotes/useQuotes.ts` | `requiresBulkApprovalPermission`, `hasValidExpectedVersions` | `statusPermissionError:26` + RPC `bulk_update_quote_status_atomic` | substituído |
+| `src/lib/quote-status-config.ts` | `QUOTE_PENDING_STATUSES`, `QUOTE_STATUS_FILTER_ORDER` | config central de status (`pending`, `pending_approval`, …) | substituído |
+| `src/components/common/IntelligenceBadges.tsx` | `MarketIntelligenceStatus`, `TurnoverScoreBadge` | `IntelligenceBadges` com `Tooltip`/`turnoverScore` (`:63-102`) | substituído |
+| `src/components/pricing/*/types.ts`, `src/components/inventory/risk/ProductRiskDetail.tsx`, `src/components/quotes/company-contact/ContactSelector.tsx`, `src/components/favorites/FavoritesClientPicker.tsx`, `src/pages/admin/AdminTelemetriaPage.tsx`, `src/pages/filters/filters-page-helpers.ts`, `src/hooks/useFavoriteLists.ts`, `src/hooks/useKitAutoSave.ts`, `src/pages/PublicFavoriteListPage.tsx`, `src/components/common/PersistentBreadcrumbs.tsx` | 1 a 2 nomes cada | equivalentes no mesmo caminho da `main` (arquivo da `main` sempre maior) | nada a recuperar; refactor interno |
+| `supabase/functions/product-webhook/index.ts` | `upsertProducts` | arquivo da `main` é 410 Gone explícito (“sincronização de produtos foi desativada”) | obsoleto por decisão |
+| `supabase/functions/quote-approval/index.ts` | `publicQuoteProjection` | RPC `get_public_quote_approval` + rate limit por token/origem (“projeção pública sem custos, margens, documentos”) | substituído (mais restritivo) |
+| `supabase/functions/bi-share-dossier/contract.ts` | `signBiSharePayload`, `verifyBiSharePayloadSignature`, `constantTimeEqual` | `index.ts:46-81` `hmac`/`signToken`/`verifyToken` | substituído |
+| `scripts/check-critical-test-skip-budget.mjs`, `scripts/db/apply-sicoob-migrations.mjs` | `collectCriticalSkips`, `validateRecentSecurityMigrationContract` | `apply-sicoob-migrations.mjs` é o único caso em que o nome **existiu** na `main` e foi removido (`git log -S` com 1 commit) | obsoleto por decisão |
+
+**Limites declarados deste método.** Nome novo na branch é prova de trabalho da branch, não prova de perda: a
+`main` pode ter entregado a mesma ideia com outro nome (foi o caso em quase todas as linhas acima) e o método
+não enxerga mudança de **texto de UI** nem de valor de constante dentro de nome igual. Também não cobre o que
+nasceu **antes** do `mb` e foi removido da `main` — para isso vale a leitura de hunk já descrita.
+
+**Cegueiras do filtro textual** (apontadas na revisão da PR #432): a expressão
+`export (async )?(function|const|class|interface|type|enum) <nome>` não captura `export default function`
+(ex.: `BusinessIntelligencePage`, `src/pages/BusinessIntelligencePage.tsx:421`), nem declaração sem `export`;
+um nome citado dentro de comentário passa pelo filtro de uso; e `git log -S` restrito ao caminho atual não
+enxerga a ocorrência do mesmo nome em outro arquivo. Nenhum veredito desta seção depende só desse filtro —
+cada célula foi reconferida lendo o símbolo na `main` —, mas a lista de candidatos pode estar incompleta.
+
+**Duas limitações novas achadas nesta varredura (não são trabalho de outro agente, são lacunas da `main`):**
+
+- `src/hooks/useCrmCompanies.ts:36` — `DIRECTORY_CAP = 200`: a tela de Clientes carrega no máximo 200
+  clientes e a ordenação por razão social/mês (`CrmClientsSortMode`) saiu na reescrita do #98 (`git show
+  dc08200bc^:src/pages/ClientsPage.tsx` **tem** “Ordenar por”; a `main` de hoje não tem). Busca continua
+  indo ao servidor (`fetchDirectoryPages(term)`), então cliente além do 200 só aparece buscando pelo nome.
+- `src/pages/QuoteBuilderPage.tsx` não tem estado de **falha de carga** (nenhum `role="alert"`/retry na
+  página; a ref tinha `QuoteLoadFailure` com retry). Abrir “editar orçamento” com falha de rede hoje não
+  oferece caminho de recuperação na tela.
+- `src/components/intelligence/MarketIntelligenceChart.tsx:1-5` declara “Inclui mock data quando não há
+  dados reais” sem selo visível de dado simulado (a ref tinha `MarketIntelligenceStatus` para isso).
+
+### Não verificado nesta rodada
+
+- Se `20261122180000_schedule_scheduled_reports_worker.sql` e
+  `20261122210000_allow_worker_deactivate_revoked_report.sql` estão aplicadas em produção: a
+  Management API do Supabase devolve 403 para esta conta e não há connection string no ambiente.
+  A allowlist de `scripts/db/apply-sicoob-migrations.mjs` cobre 53 das 627 migrations da `main` —
+  condição pré-existente do repo (`local_sem_ledger: 465` em
+  `scripts/db/migration-ledger-baseline.json`), não regressão isolada dessas duas.
+
+### Regra de exclusão que sai desta rodada
+
+Só pode ser apagada a ref cuja PR aparece em "confirmado incorporado" **por inteiro**. Incorporação
+parcial não libera exclusão: se qualquer parte da PR continuar em "trabalho parcial real, ainda ausente",
+a ref fica. Exemplos vivos nesta rodada: **#119** está em "confirmado incorporado" pelo que a `main`
+já absorveu, mas segue pendente pela guarda de navegação e pelos testes de segurança; **#157** está
+incorporada pela migration de retry (a tela de relatórios pertence à **#75**, tabela acima), mas segue
+pendente pelos selos de dado do BI — e essa pendência é menor do que a tabela sugere: o selo "dados
+ilustrativos" já existia no cabeçalho do gráfico (`MarketIntelligenceChart.tsx:174-177`) e o resumo do pico já
+dizia "(demo)" (`:226-229`); o que faltava era o dado fabricado em si, removido na PR #434 (série vazia e
+estado "Sem movimentações de mercado no período"). Cobertura de estados ≠ cobertura da ref inteira. Nos dois casos, o veredito é "conservar a ref até a parte pendente
+ser recuperada ou declarada obsoleta por escrito".
+
+As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
+escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.

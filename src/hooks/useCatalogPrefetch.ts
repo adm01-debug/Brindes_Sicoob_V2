@@ -24,6 +24,7 @@ export function useCatalogPrefetch() {
         // completude do batch antes de preencher o cache compartilhado.
         queryKey: ['promobrind-products-catalog', ''],
         queryFn: ({ pageParam }) => fetchCatalogPage(pageParam as number),
+        getNextPageParam: (lastPage: Awaited<ReturnType<typeof fetchCatalogPage>>) => lastPage.nextOffset,
         initialPageParam: 0,
         staleTime: 15 * 60 * 1000, // Aumentado para 15 min
       });

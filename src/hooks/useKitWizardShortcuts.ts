@@ -24,6 +24,17 @@ function isEditableTarget(target: EventTarget | null) {
   return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable;
 }
 
+/**
+ * Diálogo aberto: o atalho ouve o `document`, e o diálogo leva o foco para os
+ * próprios botões — não para um campo editável. Sem isto, a seta esquerda
+ * trocava de etapa por baixo da confirmação de saída e, ao escolher "Continuar
+ * aqui", o vendedor voltava para a etapa anterior em vez da que editava.
+ */
+function isDialogTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest('[role="dialog"], [role="alertdialog"]'));
+}
+
 function resolveArrowAction(
   key: string,
   currentStep: KitBuilderStep,
@@ -61,7 +72,7 @@ export function useKitWizardShortcuts({
   useEffect(() => {
     if (!enabled) return;
     const handler = (e: KeyboardEvent) => {
-      if (isEditableTarget(e.target)) return;
+      if (isEditableTarget(e.target) || isDialogTarget(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const action = resolveArrowAction(e.key, currentStep, canProceed, onPrev, onNext)
         ?? resolveJumpAction(e.key, currentStep, completedSteps, onJump);

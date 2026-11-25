@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 
 export const requiredFunctions = [
   'expert-chat',
+  'send-transactional-email',
   'external-db-bridge',
   'sicoob-approval-reconciliation',
   'sicoob-artwork-register',
@@ -16,6 +17,18 @@ export const requiredFunctions = [
   'secure-upload',
   'auth-integrity-check',
   'crm-db-bridge',
+  // Trabalhadores chamados por pg_cron (migrations 20260429163414,
+  // 20260922225500, 20260923111000, 20260923140000, 20261122180000): estão no
+  // ar, mas fora da allowlist não seriam remedidos nem republicados.
+  'webhook-dispatcher',
+  'connections-auto-test',
+  'sicoob-approval-notifications',
+  'process-batch-export',
+  'send-scheduled-reports',
+  'connections-health-check',
+  // Recebe webhook externo: fora da allowlist nunca seria republicado nem
+  // remedido, e a URL anunciada em `WebhooksTab` ficaria sem verificacao.
+  'webhook-inbound',
 ];
 
 function getFunctions(payload, label) {

@@ -115,17 +115,7 @@ export async function syncQuoteToBitrix({
   await markQuoteAsSent(quote, quoteId);
   await logSuccessfulSync(quoteId, bitrixQuoteId, logQuoteHistory);
   toast.success(result?.message || 'Orçamento sincronizado com Bitrix24!');
-  if (quote.client_email) {
-    void sendTransactionalEmail({
-      event_type: 'quote_sent',
-      recipient_email: quote.client_email,
-      recipient_name: quote.client_name,
-      data: {
-        quote_number: quote.quote_number,
-        total: quote.total,
-        action_url: window.location.href,
-      },
-    });
-  }
+  // O servidor resolve destinatário e o link público (/proposta/:token) do orçamento.
+  void sendTransactionalEmail({ event_type: 'quote_sent', quote_id: quoteId });
   return { success: true, updatedQuote: updatedQuote(bitrixQuoteId) };
 }

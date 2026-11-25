@@ -9,7 +9,24 @@ interface StoredAutoSave<T> {
   version: typeof AUTO_SAVE_VERSION;
   savedAt: string;
   data: T;
+  /** Documento que gravou: evita que o descarte de uma aba apague o rascunho de outra. */
+  tab?: string;
 }
+
+/**
+ * Identidade deste documento (carregamento da pagina).
+ *
+ * Fica em memoria de proposito: duplicar a aba cria um documento novo com id
+ * proprio, enquanto a comparacao por conteudo cobre o recarregamento, em que o
+ * rascunho restaurado e exatamente o que a tela tem.
+ */
+const AUTOSAVE_ID_DOCUMENTO = (() => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+})();
 
 const CONCURRENT_DRAFT_MESSAGE =
   'Este rascunho foi alterado em outra aba. Recarregue o orçamento antes de continuar.';
@@ -40,6 +57,33 @@ async function withDraftWriteLock<T>(key: string, operation: () => Promise<T>): 
     return navigator.locks.request(`sicoob-autosave:${key}`, operation);
   }
   return operation();
+}
+
+/**
+ * Apaga o rascunho desta chave que pertence a esta tela.
+ *
+ * O rascunho e compartilhado entre abas do mesmo usuario e orcamento, entao o
+ * descarte nao pode apagar o que outra aba gravou. Duas origens contam como
+ * desta tela:
+ *
+ * - o documento que gravou (aba ou janela atual), mesmo que a copia guardada
+ *   seja anterior a ultima edicao, que ainda nao passou pelo intervalo de
+ *   gravacao;
+ * - um rascunho com exatamente o conteudo informado, o que cobre o
+ *   recarregamento: o rascunho restaurado e o que a tela tem.
+ */
+export function descartarRascunho(key: string, data: unknown): void {
+  const storageKey = `autosave_${key}`;
+  try {
+    const atual = localStorage.getItem(storageKey);
+    if (!atual) return;
+    const gravadoPorEstaTela =
+      (JSON.parse(atual) as { tab?: string }).tab === AUTOSAVE_ID_DOCUMENTO;
+    if (!gravadoPorEstaTela && JSON.stringify(readStoredData(atual)) !== JSON.stringify(data)) return;
+    localStorage.removeItem(storageKey);
+  } catch {
+    // Armazenamento bloqueado ou rascunho ilegivel: nada a apagar.
+  }
 }
 
 function parseStoredAutoSave<T>(value: string): T | null {
@@ -92,7 +136,11 @@ async function persistDraft<T>({
 
     const storageKey = `autosave_${key}`;
     const currentStoredValue = localStorage.getItem(storageKey);
-    if (currentStoredValue !== storageSnapshot.current) {
+    if (currentStoredValue === null && storageSnapshot.current !== null) {
+      // Rascunho apagado por outra sessao (descarte confirmado): nao ha dado de
+      // outra aba a proteger, e gravar de novo e a resposta certa.
+      storageSnapshot.current = null;
+    } else if (currentStoredValue !== storageSnapshot.current) {
       const externalData = JSON.stringify(readStoredData(currentStoredValue));
       if (externalData !== serializedData) {
         conflict.current = true;
@@ -104,6 +152,7 @@ async function persistDraft<T>({
       version: AUTO_SAVE_VERSION,
       savedAt: new Date().toISOString(),
       data,
+      tab: AUTOSAVE_ID_DOCUMENTO,
     };
     const serialized = JSON.stringify(stored);
     localStorage.setItem(storageKey, serialized);
@@ -138,6 +187,13 @@ function useCrossTabDraftGuard<T>(args: {
         return;
       }
       storageSnapshot.current = event.newValue;
+      if (event.newValue === null) {
+        // A outra sessao apagou o rascunho (descarte confirmado). Nao ha versao
+        // dela a proteger: a proxima gravacao desta aba volta a escrever.
+        conflict.current = false;
+        setLastError(null);
+        return;
+      }
       if (JSON.stringify(readStoredData(event.newValue)) === JSON.stringify(dataRef.current))
         return;
 
@@ -163,23 +219,43 @@ function useDraftPersistence<T>(args: {
 }) {
   const { key, dataRef, lastSavedData, storageSnapshot, conflict, onSave, onError, setLastError } =
     args;
+  // A comparacao e com o que ja foi enfileirado, nao com o que ja terminou: com
+  // uma gravacao em curso, a edicao mais nova precisa entrar na fila mesmo que
+  // coincida com a ultima versao confirmada. A fila garante que a ultima
+  // gravacao a chegar ao armazenamento seja a que reflete a tela.
+  const ultimoEnfileirado = useRef<string>(JSON.stringify(dataRef.current));
+  const fila = useRef<Promise<void>>(Promise.resolve());
+
+  useEffect(() => {
+    ultimoEnfileirado.current = lastSavedData.current;
+  }, [key, lastSavedData]);
+
   return useCallback(async () => {
     const data = dataRef.current;
     const serializedData = JSON.stringify(data);
-    if (serializedData === lastSavedData.current) return;
+    if (serializedData === ultimoEnfileirado.current) return;
+    ultimoEnfileirado.current = serializedData;
 
-    try {
-      await persistDraft({ key, data, serializedData, storageSnapshot, conflict, onSave });
-      lastSavedData.current = serializedData;
-      setLastError(null);
-      log.info('saved', { key });
-    } catch (error) {
+    const execucao = fila.current.then(async () => {
+      try {
+        await persistDraft({ key, data, serializedData, storageSnapshot, conflict, onSave });
+        lastSavedData.current = serializedData;
+        setLastError(null);
+        log.info('saved', { key });
+      } catch (error) {
+        // Falhou: libera a mesma versao para nova tentativa.
+        if (ultimoEnfileirado.current === serializedData) {
+          ultimoEnfileirado.current = lastSavedData.current;
+        }
       const saveError =
         error instanceof Error ? error : new Error('Não foi possível salvar o rascunho.');
       setLastError(saveError);
       onError?.(saveError);
-      log.error('save_failed', { key, error: saveError });
-    }
+        log.error('save_failed', { key, error: saveError });
+      }
+    });
+    fila.current = execucao;
+    await execucao;
   }, [key, dataRef, lastSavedData, storageSnapshot, conflict, onSave, onError, setLastError]);
 }
 
@@ -201,6 +277,17 @@ function useDebouncedSave<T>(args: {
       if (timeout.current) clearTimeout(timeout.current);
     };
   }, [data, enabled, interval, save]);
+
+  const estavaAtivo = useRef(enabled);
+  useEffect(() => {
+    // Desligar a persistência cancela o temporizador pendente. Se o usuário
+    // editou enquanto uma chamada em curso tornava o orçamento imutável (envio,
+    // aprovação), a alteração ficaria só na tela e se perderia ao fechar a aba:
+    // grava o rascunho uma última vez antes de parar. `save()` não escreve nada
+    // quando nada mudou.
+    if (estavaAtivo.current && !enabled) void save();
+    estavaAtivo.current = enabled;
+  }, [enabled, save]);
 }
 
 function useRestoreDraft<T>(key: string, storageSnapshot: { current: string | null }) {
