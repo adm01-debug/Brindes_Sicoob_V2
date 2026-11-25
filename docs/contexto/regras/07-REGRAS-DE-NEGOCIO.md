@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `50898b5756` · branch `main` · 2026-11-25 22:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `76245cc5de` · branch `main` · 2026-11-25 23:22 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4902,7 +4902,7 @@ _nenhum item encontrado_
 | `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
 | `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
 | `CRM_DB_BRIDGE_FUNCTION` | `"crm-db-bridge"` | `src/lib/crm-db.ts` |
-| … +181 linhas — lista completa em `context.json` | | |
+| … +182 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -6536,4 +6536,4 @@ _nenhum item encontrado_
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
 | Sem dependências externas; apenas Canvas API. | `src/lib/kit-og-image.ts` |
 | Se já estourou o limite de reloads na janela, propaga o erro para | `src/lib/lazyWithRetry.ts` |
-| … +334 linhas — lista completa em `context.json` | |
+| … +337 linhas — lista completa em `context.json` | |

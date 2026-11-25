@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (695)",
+   "tests/ (696)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)",
    "fix: falha de consulta nao pode parecer fila vazia (#452)",
    "fix: erro e vazio nos selos de inteligencia do produto (#448)",
    "fix: exige tres empresas com historico para usar o setor como amostra (#449)",
-   "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)",
-   "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)"
+   "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

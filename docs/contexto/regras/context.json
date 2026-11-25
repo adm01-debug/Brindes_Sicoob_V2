@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "50898b575613e48cff91b117db3c467d9601deec",
+  "sha": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 22:16 UTC",
-  "files_total": 5330,
-  "code_files": 3890,
-  "code_lines": 573698
+  "generated_at": "2026-11-25 23:22 UTC",
+  "files_total": 5332,
+  "code_files": 3892,
+  "code_lines": 574012
  },
  "version": "1.3.2",
- "facts_hash": "4432fc72fc1aa1bf",
+ "facts_hash": "e9df0086ecce0a95",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -357,8 +357,8 @@
   "languages": {
    ".ts": 1507,
    ".tsx": 1486,
-   ".sql": 692,
-   ".mjs": 143,
+   ".sql": 693,
+   ".mjs": 144,
    ".py": 69,
    ".cjs": 7,
    ".js": 6
@@ -48538,6 +48538,7 @@
    "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
    "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
    "supabase/migrations/20261125100000_notification_functions_contract.sql",
+   "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -65361,7 +65362,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40490,
+   "lines": 40494,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67270,8 +67271,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 629,
-   "lines": 56720,
+   "files": 630,
+   "lines": 56831,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -67375,8 +67376,8 @@
   },
   {
    "module": "tests",
-   "files": 717,
-   "lines": 95981,
+   "files": 718,
+   "lines": 96180,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -71743,7 +71744,8 @@
    ],
    "SICOOB_TEST_DATABASE_URL": [
     "tests/scenarios/contract-guard-postgres.scenario.mjs",
-    "tests/scenarios/notification-guard-postgres.scenario.mjs"
+    "tests/scenarios/notification-guard-postgres.scenario.mjs",
+    "tests/scenarios/notification-helpers-acl.scenario.mjs"
    ],
    "SICOOB_TEST_EMAIL_CENTRAL": [
     "supabase/functions/sicoob-seed/index.ts"
@@ -83814,6 +83816,18 @@
    {
     "file": "tests/scenarios/email-transacional-legado.mjs",
     "text": "é checada depois dela. O que não pode acontecer é o e-mail sair."
+   },
+   {
+    "file": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+    "text": "documentado no corpo da migration (exigência do CONTRIBUTING: \"toda migration deve"
+   },
+   {
+    "file": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+    "text": "derrubariam. Sem permissão de CREATE DATABASE o cenário cai para o banco da URL e"
+   },
+   {
+    "file": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+    "text": "(PUBLIC não é papel, não pode ir em has_function_privilege)."
    },
    {
     "file": "tests/scenarios/relatorios-agendados-cron.mjs",
@@ -97276,6 +97290,11 @@
     "file": "tests/scenarios/edge-runtime-contract.scenario.mjs",
     "name": "MANIFEST",
     "value": "'supabase/functions/_shared/edge-authz-manifest.ts'"
+   },
+   {
+    "file": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+    "name": "VERSION",
+    "value": "\"20261125193000\""
    },
    {
     "file": "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -170265,6 +170284,7 @@
    "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
    "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
    "supabase/migrations/20261125100000_notification_functions_contract.sql",
+   "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
    "tests/e2e/cleanup-name-filter-guard.test.ts",
@@ -170278,6 +170298,7 @@
    "tests/scenarios/core-rls-audit.scenario.mjs",
    "tests/scenarios/notificacoes-aprovacao.mjs",
    "tests/scenarios/notification-guard-postgres.scenario.mjs",
+   "tests/scenarios/notification-helpers-acl.scenario.mjs",
    "tests/scenarios/operacoes-internas-seguras.mjs",
    "tests/scenarios/relatorios-agendados-cron.mjs",
    "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
@@ -185238,7 +185259,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1791,
+   "lines": 1795,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -245787,6 +245808,11 @@
    "lines": 56,
    "uses_service_role": true
   },
+  "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql": {
+   "path": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+   "lines": 111,
+   "uses_service_role": true
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -258062,6 +258088,26 @@
    "doc": "Executado pelo node:test. Precisa de um PostgreSQL descartável em SICOOB_TEST_DATABASE_URL; sem a variável o caso é pulado, para não exigir servidor de banco no runner padrão.",
    "uses_service_role": true
   },
+  "tests/scenarios/notification-helpers-acl.scenario.mjs": {
+   "path": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+   "lines": 199,
+   "env": [
+    "SICOOB_TEST_DATABASE_URL"
+   ],
+   "params": [
+    {
+     "name": "VERSION",
+     "value": "\"20261125193000\""
+    }
+   ],
+   "rule_comments": [
+    "documentado no corpo da migration (exigência do CONTRIBUTING: \"toda migration deve",
+    "derrubariam. Sem permissão de CREATE DATABASE o cenário cai para o banco da URL e",
+    "(PUBLIC não é papel, não pode ir em has_function_privilege)."
+   ],
+   "doc": "Executado pelo node:test. Precisa de um PostgreSQL descartável em SICOOB_TEST_DATABASE_URL; sem a variável os casos são pulados, para não exigir servidor de banco no runner padrão. Cobre a migration 20261125193000_revoke_execute_legacy_notification_helpers.sql: as duas assinaturas de is_dnd_active, …",
+   "uses_service_role": true
+  },
   "tests/scenarios/operacoes-internas-seguras.mjs": {
    "path": "tests/scenarios/operacoes-internas-seguras.mjs",
    "lines": 158,
@@ -260513,10 +260559,21 @@
   }
  },
  "git": {
-  "sha": "50898b575613e48cff91b117db3c467d9601deec",
+  "sha": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "76245cc",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)",
+    "files": [
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+     "tests/scenarios/notification-helpers-acl.scenario.mjs"
+    ]
+   },
    {
     "sha": "50898b5",
     "date": "2026-11-25",
@@ -260866,17 +260923,6 @@
      "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
      "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
     ]
-   },
-   {
-    "sha": "1aa0068",
-    "date": "2026-11-24",
-    "author": "github-actions[bot]",
-    "subject": "chore(inventario): estado real do banco e do codigo [auto] (#425)",
-    "files": [
-     "inventario/estado/banco.json",
-     "inventario/estado/edges.json",
-     "inventario/estado/rotas.json"
-    ]
    }
   ],
   "hot_files": [
@@ -260885,15 +260931,15 @@
     8
    ],
    [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    3
+   ],
+   [
     "src/pages/QuoteBuilderPage.tsx",
     2
    ],
    [
     "src/components/intelligence/MarketIntelligenceChart.tsx",
-    2
-   ],
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
     2
    ],
    [
@@ -260909,24 +260955,20 @@
     2
    ],
    [
-    "inventario/estado/banco.json",
-    2
-   ],
-   [
-    "inventario/estado/edges.json",
-    2
-   ],
-   [
-    "inventario/estado/rotas.json",
-    2
-   ],
-   [
     "docs/RECUPERACAO/reauditoria.md",
     2
    ],
    [
     "src/pages/KitBuilderPage.tsx",
     2
+   ],
+   [
+    "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+    1
+   ],
+   [
+    "tests/scenarios/notification-helpers-acl.scenario.mjs",
+    1
    ],
    [
     "src/components/orders/ApprovalKanbanBoard.tsx",
@@ -260958,6 +261000,10 @@
    ],
    [
     "tests/pages/OrdersPage.content.test.tsx",
+    1
+   ],
+   [
+    "tests/pages/OrdersPage.page.test.tsx",
     1
    ]
   ]

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "50898b575613e48cff91b117db3c467d9601deec",
+  "commit": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
   "branch": "main",
-  "data_commit": "2026-11-25T22:10:24Z",
+  "data_commit": "2026-11-25T23:14:53Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "76245cc",
+    "data": "2026-11-25",
+    "assunto": "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)"
+   },
    {
     "sha": "50898b5",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "617dc9f",
     "data": "2026-11-24",
     "assunto": "docs: re-auditoria dos descartes medida PR por PR (#430)"
-   },
-   {
-    "sha": "3c5882b",
-    "data": "2026-11-24",
-    "assunto": "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)"
    }
   ],
-  "arquivos_mudados_7d": 1211,
+  "arquivos_mudados_7d": 1195,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -153,7 +153,7 @@
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 20
+    "mudancas": 21
    },
    {
     "pasta": "src/hooks/bi",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 27
+    "mudancas": 28
    },
    {
     "arquivo": "package.json",
@@ -222,15 +222,15 @@
     "mudancas": 17
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 17
-   },
-   {
     "arquivo": ".github/workflows/codeql.yml",
     "mudancas": 16
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
+    "mudancas": 16
+   },
+   {
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 16
    },
    {
@@ -254,10 +254,6 @@
     "mudancas": 11
    },
    {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 11
-   },
-   {
     "arquivo": ".github/workflows/migration-ledger-drift.yml",
     "mudancas": 10
    },
@@ -274,7 +270,7 @@
     "mudancas": 10
    },
    {
-    "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 10
    },
    {
@@ -286,7 +282,7 @@
     "mudancas": 9
    },
    {
-    "arquivo": "src/services/QuoteService.ts",
+    "arquivo": "src/pages/QuoteBuilderPage.tsx",
     "mudancas": 9
    },
    {
@@ -296,12 +292,16 @@
    {
     "arquivo": "docs/RECUPERACAO/anexo-testes-orfaos.md",
     "mudancas": 8
+   },
+   {
+    "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
+    "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 229
+    "commits": 230
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5327,
-  "arquivos_codigo": 3216,
-  "linhas_codigo": 509121,
+  "arquivos_total": 5329,
+  "arquivos_codigo": 3217,
+  "linhas_codigo": 509324,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -326,9 +326,9 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 629,
+  "migrations": 630,
   "cron_jobs": 28,
-  "testes": 948,
+  "testes": 949,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3479
+   "linhas": 3483
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -967,8 +967,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 35,
-   "linhas": 2855
+   "arquivos": 36,
+   "linhas": 3054
   },
   "tests/scripts": {
    "arquivos": 35,
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1791
+   "linhas": 1795
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

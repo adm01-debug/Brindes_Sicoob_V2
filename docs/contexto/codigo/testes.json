@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 948,
+ "total": 949,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 714
+  "unit": 715
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 695
+   "arquivos": 696
   },
   {
    "padrao": "e2e/",
@@ -7182,6 +7182,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/scenarios/notification-helpers-acl.scenario.mjs",
+   "tipo": "unit",
+   "linhas": 199,
+   "testa": [
+    "scripts/db/apply-sicoob-migrations.mjs"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/scenarios/operacoes-internas-seguras.mjs",
    "tipo": "unit",
    "linhas": 158,
@@ -8295,7 +8304,7 @@
   "scripts/check-seller-scope.mjs": 1,
   "scripts/check-smoke-tags.mjs": 1,
   "scripts/ci/verify-supabase-functions-published.mjs": 2,
-  "scripts/db/apply-sicoob-migrations.mjs": 4,
+  "scripts/db/apply-sicoob-migrations.mjs": 5,
   "scripts/db/audit-core-rls.mjs": 1,
   "scripts/db/check-live-api-inventory.mjs": 1,
   "scripts/db/check-migration-ledger-drift.mjs": 2,
