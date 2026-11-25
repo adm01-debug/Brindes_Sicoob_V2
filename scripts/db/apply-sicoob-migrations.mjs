@@ -1499,7 +1499,7 @@ ${notificationGuard}COMMIT;`;
 // Os corpos de função embutidos (dollar-quoted) também têm "OR" indentado igual: por isso o
 // corte segue o mesmo léxico de stripNonCode (strings, E-strings, identificadores e dollar
 // quotes) e só separa fora de aspas e fora de parênteses.
-function sanitizeContractChain(chain) {
+export function sanitizeContractChain(chain) {
   let clean = "";
   let index = 0;
   while (index < chain.length) {

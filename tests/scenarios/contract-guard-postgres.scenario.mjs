@@ -7,6 +7,7 @@ import {
   extractContractGuardClauses,
   loadAuthorizedTargets,
   renderContractGuard,
+  sanitizeContractChain,
 } from "../../scripts/db/apply-sicoob-migrations.mjs";
 
 const databaseUrl = process.env.SICOOB_TEST_DATABASE_URL;
@@ -130,18 +131,20 @@ test("a guarda do lote real lista o inventário de cláusulas e reverte a transa
 });
 
 test("a guarda roda dentro da transação do lote real, antes do COMMIT", () => {
-  // Comparação por linha inteira: um literal como SELECT $$COMMIT;$$; não conta como
-  // controle de transação, e é isso que o lote precisa garantir.
-  const linhas = loteReal.split("\n");
-  const marcadas = linhas.map((linha) => linha.trim());
-  const iBegin = marcadas.indexOf("BEGIN;");
-  const commits = marcadas.reduce((total, linha) => total + (linha === "COMMIT;" ? 1 : 0), 0);
-  const iCommit = marcadas.lastIndexOf("COMMIT;");
+  // Comparação por linha inteira sobre o SQL sem comentários (strings e dollar quotes
+  // preservados): um COMMIT; em literal ou seguido de comentário não conta como controle
+  // de transação, e um COMMIT; entre a guarda e o fim do lote é detectado.
+  const linhas = sanitizeContractChain(loteReal)
+    .split("\n")
+    .map((linha) => linha.trim());
+  const iBegin = linhas.indexOf("BEGIN;");
+  const totalCommits = linhas.filter((linha) => linha === "COMMIT;").length;
+  const iCommit = linhas.lastIndexOf("COMMIT;");
   const iGuarda = linhas.findIndex((linha) => linha.includes("DO $sicoob_contract_guard$"));
 
   assert.equal(iBegin, 0, "o lote precisa abrir com BEGIN;");
   assert.notEqual(iGuarda, -1, "guarda de contrato ausente no lote");
-  assert.equal(commits, 1, "o lote precisa ter um único COMMIT;");
+  assert.equal(totalCommits, 1, "o lote precisa ter um único COMMIT;");
   assert.ok(iGuarda > iBegin, "a guarda precisa rodar depois do BEGIN");
   assert.ok(iGuarda < iCommit, "o COMMIT precisa vir depois da guarda");
 });
