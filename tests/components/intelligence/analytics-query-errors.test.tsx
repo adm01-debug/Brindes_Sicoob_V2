@@ -122,7 +122,14 @@ describe("estados de consulta da inteligência comercial", () => {
     await queryClient.refetchQueries({ queryKey: ["conversion-funnel"] }).catch(() => undefined);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("permanecem visíveis");
-    expect(screen.getByText("Buscas")).toBeInTheDocument();
+
+    const etapa = (rotulo: string, valor: number) =>
+      expect(screen.getByText(rotulo).parentElement).toHaveTextContent(String(valor));
+    etapa("Buscas", 100);
+    etapa("Visualizações", 40);
+    etapa("Orçamentos", 8);
+    etapa("Pedidos", 2);
+
     expect(screen.queryByText("0")).not.toBeInTheDocument();
     queryClient.clear();
   });
