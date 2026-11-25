@@ -11,20 +11,75 @@ function sliceBetween(source: string, from: string, to: string): string {
   return source.slice(start, end);
 }
 
+/** Remove espacos (inclusive quebras de linha) mantendo o mapa para o indice original. */
+function normalize(source: string): { text: string; toSource: number[] } {
+  const chars: string[] = [];
+  const toSource: number[] = [];
+  for (let i = 0; i < source.length; i += 1) {
+    if (/\s/.test(source[i])) continue;
+    chars.push(source[i]);
+    toSource.push(i);
+  }
+  return { text: chars.join(""), toSource };
+}
+
+type RouteToken = { kind: "open" | "close"; index: number };
+
+/**
+ * Tokeniza as tags `<Route ...>` do arquivo. O fim da tag e achado no nivel zero de
+ * chaves, porque os atributos contem JSX (`element={<AdminRoute />}`) e arrow
+ * functions — o primeiro `>` cru nao serve. `<RouteSuspense>`/`</RouteSuspense>` nao
+ * contam como rota.
+ */
+function routeTokens(source: string): RouteToken[] {
+  const tokens: RouteToken[] = [];
+  const re = /<\/?Route(?![A-Za-z])/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(source)) !== null) {
+    if (match[0] === "</Route") {
+      tokens.push({ kind: "close", index: match.index });
+      continue;
+    }
+    let depth = 0;
+    let cursor = match.index + match[0].length;
+    for (; cursor < source.length; cursor += 1) {
+      const char = source[cursor];
+      if (char === "{") depth += 1;
+      else if (char === "}") depth -= 1;
+      else if (char === ">" && depth === 0) break;
+    }
+    const selfClosing = source.slice(match.index, cursor).trimEnd().endsWith("/");
+    if (!selfClosing) tokens.push({ kind: "open", index: match.index });
+    re.lastIndex = cursor;
+  }
+  return tokens;
+}
+
+const lineIndex = (source: string, index: number) => source.slice(0, index).split("\n").length - 1;
+
 /**
  * Faixa [abertura, fechamento] de um `<Route ...>` de layout, contando aninhamento.
  * A guarda de rota so vale para os filhos: por isso o teste precisa do range, nao
- * apenas da linha de abertura.
+ * apenas da linha de abertura. A busca do marcador ignora espacos e quebras de
+ * linha, entao reformatar a tag de abertura (um atributo por linha) nao reprova o
+ * teste sem mudanca de comportamento.
  */
-function routeBlockRange(lines: string[], opener: string): { start: number; end: number } {
-  const start = lines.findIndex((line) => line.trim() === opener);
-  if (start === -1) return { start: -1, end: -1 };
+function routeBlockRange(source: string, opener: string): { start: number; end: number } {
+  const { text, toSource } = normalize(source);
+  const at = text.indexOf(opener.replace(/\s+/g, ""));
+  if (at === -1) return { start: -1, end: -1 };
+  const startIndex = toSource[at];
+  const tokens = routeTokens(source);
+  const opened = tokens.findIndex((token) => token.kind === "open" && token.index >= startIndex);
+  if (opened === -1) return { start: -1, end: -1 };
+  const start = lineIndex(source, tokens[opened].index);
   let depth = 0;
-  for (let i = start; i < lines.length; i += 1) {
-    const trimmed = lines[i].trim();
-    if (trimmed.startsWith("<Route") && !trimmed.endsWith("/>")) depth += 1;
-    else if (trimmed === "</Route>") depth -= 1;
-    if (depth === 0 && i > start) return { start, end: i };
+  for (let i = opened; i < tokens.length; i += 1) {
+    if (tokens[i].kind === "open") depth += 1;
+    else if (tokens[i].kind === "close") {
+      depth -= 1;
+      if (depth === 0) return { start, end: lineIndex(source, tokens[i].index) };
+    }
   }
   return { start, end: -1 };
 }
@@ -72,11 +127,11 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     // alimentado pelas credenciais resolvidas depois da autorização.
     expect(code).not.toMatch(/createClient\(\s*["'`]/);
     expect(serviceClient).toBeGreaterThan(-1);
-    // A ordem acima vale para o processamento da requisicao. O aquecimento no boot
-    // (`warmupCrmClient` -> `getCrmClient`) usa o mesmo helper interno, entao tambem
-    // nao existe `createClient` com literal — proibicao checada no arquivo inteiro
-    // logo acima, nao apenas no handler.
-    expect(crmBridge).toContain("const client = await getCrmClient();");
+    // O caminho de dados obtem o client cacheado do helper de credencial DEPOIS da
+    // autorizacao; o aquecimento do boot usa o mesmo helper (sem dado de tenant) e
+    // roda antes — por isso a assercao mira a ultima chamada, no handler, e nao a
+    // declaracao do warm-up (renomear a variavel do pre-aquecimento nao invalida nada).
+    expect(code.lastIndexOf("await getCrmClient()")).toBeGreaterThan(authorization);
     expect(crmBridge).toContain("const parsed = CrmRequestSchema.safeParse(rawBody)");
   });
 
@@ -118,8 +173,8 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
 
   it("monta as rotas de clientes uma unica vez, na area autenticada e fora do bloco AdminRoute", () => {
     const lines = appRoutes.split(/\r?\n/);
-    const admin = routeBlockRange(lines, ADMIN_BLOCK);
-    const shell = routeBlockRange(lines, SHELL_BLOCK);
+    const admin = routeBlockRange(appRoutes, ADMIN_BLOCK);
+    const shell = routeBlockRange(appRoutes, SHELL_BLOCK);
     const clientsRoutes = lines.filter((line) => line.includes('path="/clientes"'));
     const detailRoutes = lines.filter((line) => line.includes("path={CLIENT_DETAIL_ROUTE}"));
     const clientsRoute = lines.indexOf(clientsRoutes[0] ?? "");
@@ -146,9 +201,9 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
 
   it("mantem a criacao de orcamento dentro do shell autenticado", () => {
     const lines = appRoutes.split(/\r?\n/);
-    const protectedRange = routeBlockRange(lines, PROTECTED_BLOCK);
-    const shell = routeBlockRange(lines, SHELL_BLOCK);
-    const admin = routeBlockRange(lines, ADMIN_BLOCK);
+    const protectedRange = routeBlockRange(appRoutes, PROTECTED_BLOCK);
+    const shell = routeBlockRange(appRoutes, SHELL_BLOCK);
+    const admin = routeBlockRange(appRoutes, ADMIN_BLOCK);
     const quoteRoutesMount = lines.findIndex((line) => line.includes("{quoteRoutes.map"));
 
     expect(quoteRoutes).toContain('path: "/orcamentos/novo"');
