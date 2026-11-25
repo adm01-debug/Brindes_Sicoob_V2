@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `8747cf212a21666820fedb7a2995291a08733a03` (2026-11-25T12:26:52-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `bc1b6c53884500fdb64c1e7289f549df2fdc6436` (2026-11-25T13:48:44-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2974), Markdown (973), SQL (692), JSON (295), JavaScript (155), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2977), Markdown (974), SQL (692), JSON (295), JavaScript (155), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5305 |
-| arquivos_codigo | 3195 |
-| linhas_codigo | 506780 |
+| arquivos_total | 5309 |
+| arquivos_codigo | 3198 |
+| linhas_codigo | 507076 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,17 +48,17 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 295 |
 | migrations | 629 |
 | cron_jobs | 28 |
-| testes | 927 |
+| testes | 930 |
 | workflows | 17 |
 | scripts | 121 |
-| docs_md | 973 |
+| docs_md | 974 |
 
 ## Onde ficam as coisas
 - telas: src/pages (117)
 - componentes: src/components (1003), src/pages (160), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (170), src/utils (37), src/services (24)
-- testes: tests/ (674), e2e/ (150), outro (54)
+- testes: tests/ (677), e2e/ (150), outro (54)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -473,8 +473,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37048 nós · 61726 arestas · 2732 comunidades · grafo do commit `8747cf21`
-- comunidades maiores: ref_hooks (598), ref_components (432), ref_lib (320), ref_integrations (268), sonner (240), ref_node_fs (237), ref_contexts (219), react-router-dom (206), framer-motion (200), getCorsHeaders (198), date-fns (193), react (180)
+- 37060 nós · 61760 arestas · 2800 comunidades · grafo do commit `bc1b6c53`
+- comunidades maiores: ref_hooks (642), ref_integrations (527), ref_components (464), ref_lib (324), react (250), react-router-dom (223), ref_node_fs (215), framer-motion (209), getCorsHeaders (169), ai-usage.ts (162), ref_stores (155), ref_node_path (145)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -491,7 +491,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/e2e.yml (15)
 - src/integrations/supabase/types.ts (15)
 - .github/workflows/lighthouse.yml (14)
-- src/hooks/useQuoteBuilderState.ts (14)
+- src/hooks/useQuoteBuilderState.ts (13)
 - .github/workflows/bundle-check.yml (11)
 - docs/execucao/validacao-do-plano.md (11)
 
@@ -693,10 +693,11 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
 - `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
-- subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/pesquisa (11), docs/RECUPERACAO (10), docs/adr (10), docs/audits (9), docs/agentes (6), docs/qa (3), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
+- subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/RECUPERACAO (11), docs/pesquisa (11), docs/adr (10), docs/audits (9), docs/agentes (6), docs/qa (3), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-25 `bc1b6c5` chore: recupera 21 testes de branches nao incorporadas (#444)
 - 2026-11-25 `8747cf2` fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)
 - 2026-11-25 `8f7aeeb` chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)
 - 2026-11-25 `afdb894` chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-24 `8152263` docs: ledger reflete as recuperacoes ja integradas na main (#432)
 - 2026-11-24 `617dc9f` docs: re-auditoria dos descartes medida PR por PR (#430)
 - 2026-11-24 `3c5882b` fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)
-- 2026-11-24 `dffd62e` fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

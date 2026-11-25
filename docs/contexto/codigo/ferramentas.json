@@ -3,8 +3,8 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2974)",
-   "Markdown (973)",
+   "TypeScript (2977)",
+   "Markdown (974)",
    "SQL (692)",
    "JSON (295)",
    "JavaScript (155)",
@@ -1236,12 +1236,12 @@
    "arquivos_md": 24
   },
   {
-   "pasta": "docs/pesquisa",
+   "pasta": "docs/RECUPERACAO",
    "arquivos_md": 11
   },
   {
-   "pasta": "docs/RECUPERACAO",
-   "arquivos_md": 10
+   "pasta": "docs/pesquisa",
+   "arquivos_md": 11
   },
   {
    "pasta": "docs/adr",

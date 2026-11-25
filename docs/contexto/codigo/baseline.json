@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "8747cf212a21666820fedb7a2995291a08733a03",
+  "commit": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
   "branch": "main",
-  "data_commit": "2026-11-25T12:26:52-03:00",
+  "data_commit": "2026-11-25T13:48:44-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "bc1b6c5",
+    "data": "2026-11-25",
+    "assunto": "chore: recupera 21 testes de branches nao incorporadas (#444)"
+   },
    {
     "sha": "8747cf2",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "dc6bdc0",
     "data": "2026-11-24",
     "assunto": "chore: workers de cron entram na allowlist de publicação das edges (#420)"
-   },
-   {
-    "sha": "4e35f67",
-    "data": "2026-11-23",
-    "assunto": "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)"
    }
   ],
-  "arquivos_mudados_7d": 1206,
+  "arquivos_mudados_7d": 1210,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -247,7 +247,7 @@
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 14
+    "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
@@ -259,10 +259,6 @@
    },
    {
     "arquivo": "scripts/automation.config.json",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 11
    },
    {
@@ -286,6 +282,10 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
    },
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 218
+    "commits": 219
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5305,
-  "arquivos_codigo": 3195,
-  "linhas_codigo": 506780,
+  "arquivos_total": 5309,
+  "arquivos_codigo": 3198,
+  "linhas_codigo": 507076,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,10 +328,10 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 927,
+  "testes": 930,
   "workflows": 17,
   "scripts": 121,
-  "docs_md": 973
+  "docs_md": 974
  },
  "por_pasta": {
   "docs/execucao": {
@@ -907,8 +907,8 @@
    "linhas": 60
   },
   "tests/edge-functions": {
-   "arquivos": 20,
-   "linhas": 1576
+   "arquivos": 21,
+   "linhas": 1616
   },
   "tests/fixtures": {
    "arquivos": 1,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 155,
-   "linhas": 17972
+   "arquivos": 157,
+   "linhas": 18228
   },
   "tests/integration": {
    "arquivos": 4,

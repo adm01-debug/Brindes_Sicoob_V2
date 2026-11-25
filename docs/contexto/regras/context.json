@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "8747cf212a21666820fedb7a2995291a08733a03",
+  "sha": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 16:20 UTC",
-  "files_total": 5308,
-  "code_files": 3869,
-  "code_lines": 571357
+  "generated_at": "2026-11-25 17:13 UTC",
+  "files_total": 5312,
+  "code_files": 3872,
+  "code_lines": 571653
  },
  "version": "1.3.2",
- "facts_hash": "9496e02376bc0106",
+ "facts_hash": "e699140468d27430",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1503,
-   ".tsx": 1469,
+   ".ts": 1504,
+   ".tsx": 1471,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -67181,8 +67181,8 @@
   },
   {
    "module": "tests",
-   "files": 696,
-   "lines": 94141,
+   "files": 699,
+   "lines": 94437,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -72135,6 +72135,7 @@
    ],
    "fn_get_product_customization_options": [
     "supabase/functions/quote-price-attestation/handler.ts",
+    "tests/edge-functions/catalog-readonly-rpc.test.ts",
     "tests/edge-functions/catalogo-rpc-get.test.ts"
    ],
    "get_active_commemorative_dates": [
@@ -127594,6 +127595,14 @@
     "name": "aceita a estrutura JWT bem formada sem afirmar que a assinatura é válida"
    },
    {
+    "file": "tests/edge-functions/catalog-readonly-rpc.test.ts",
+    "name": "RPCs somente leitura do catálogo"
+   },
+   {
+    "file": "tests/edge-functions/catalog-readonly-rpc.test.ts",
+    "name": "envia consulta de personalização via GET e mantém o bloqueio de POST"
+   },
+   {
     "file": "tests/edge-functions/catalogo-rpc-get.test.ts",
     "name": "RPC do catálogo passa pelo supabase-js sem virar POST"
    },
@@ -128894,6 +128903,30 @@
     "name": "generates slugs from category names"
    },
    {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "useCategoryRanking — integridade do score combinado"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "propaga falha de order_items em vez de produzir ranking vazio"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "preserva o ranking interno quando a consulta externa de mercado informa erro"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "mantém lista vazia apenas quando as consultas essenciais concluem sem erro"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "pagina todos os itens e conta pedidos distintos por categoria"
+   },
+   {
+    "file": "tests/hooks/useCategoryRanking.errors.test.tsx",
+    "name": "pagina catálogo e mercado além do limite de mil linhas"
+   },
+   {
     "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
     "name": "useCategoryRanking — paginação e contagem de pedidos"
    },
@@ -128920,6 +128953,26 @@
    {
     "file": "tests/hooks/useCategoryRanking.pagination.test.tsx",
     "name": "mantém a receita interna e sinaliza o erro quando o mercado falha"
+   },
+   {
+    "file": "tests/hooks/useClientBI.real-data.test.tsx",
+    "name": "useClientBI com dados confiáveis"
+   },
+   {
+    "file": "tests/hooks/useClientBI.real-data.test.tsx",
+    "name": "retorna estado vazio sem injetar números ou categorias fictícias"
+   },
+   {
+    "file": "tests/hooks/useClientBI.real-data.test.tsx",
+    "name": "distingue falha de consulta de um cliente sem compras"
+   },
+   {
+    "file": "tests/hooks/useClientBI.real-data.test.tsx",
+    "name": "mantém zeros como dados válidos apenas quando a consulta confirmou ausência de pedidos"
+   },
+   {
+    "file": "tests/hooks/useClientBI.real-data.test.tsx",
+    "name": "mantém dados fictícios somente no cliente de demonstração e não consulta histórico remoto"
    },
    {
     "file": "tests/hooks/useClientCategoryAffinity.error.test.tsx",
@@ -179579,6 +179632,7 @@
     "msg": "RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types",
     "where": [
      "supabase/functions/quote-price-attestation/handler.ts",
+     "tests/edge-functions/catalog-readonly-rpc.test.ts",
      "tests/edge-functions/catalogo-rpc-get.test.ts"
     ]
    },
@@ -250707,6 +250761,18 @@
     "aceita a estrutura JWT bem formada sem afirmar que a assinatura é válida"
    ]
   },
+  "tests/edge-functions/catalog-readonly-rpc.test.ts": {
+   "path": "tests/edge-functions/catalog-readonly-rpc.test.ts",
+   "lines": 40,
+   "is_test": true,
+   "rpc": [
+    "fn_get_product_customization_options"
+   ],
+   "tests": [
+    "RPCs somente leitura do catálogo",
+    "envia consulta de personalização via GET e mantém o bloqueio de POST"
+   ]
+  },
   "tests/edge-functions/catalogo-rpc-get.test.ts": {
    "path": "tests/edge-functions/catalogo-rpc-get.test.ts",
    "lines": 93,
@@ -251510,6 +251576,19 @@
     "generates slugs from category names"
    ]
   },
+  "tests/hooks/useCategoryRanking.errors.test.tsx": {
+   "path": "tests/hooks/useCategoryRanking.errors.test.tsx",
+   "lines": 149,
+   "is_test": true,
+   "tests": [
+    "useCategoryRanking — integridade do score combinado",
+    "propaga falha de order_items em vez de produzir ranking vazio",
+    "preserva o ranking interno quando a consulta externa de mercado informa erro",
+    "mantém lista vazia apenas quando as consultas essenciais concluem sem erro",
+    "pagina todos os itens e conta pedidos distintos por categoria",
+    "pagina catálogo e mercado além do limite de mil linhas"
+   ]
+  },
   "tests/hooks/useCategoryRanking.pagination.test.tsx": {
    "path": "tests/hooks/useCategoryRanking.pagination.test.tsx",
    "lines": 204,
@@ -251522,6 +251601,18 @@
     "aborta a paginação do mercado quando o bridge responde sem a ordem pedida",
     "aborta quando a ordenação se perde só na última página do mercado",
     "mantém a receita interna e sinaliza o erro quando o mercado falha"
+   ]
+  },
+  "tests/hooks/useClientBI.real-data.test.tsx": {
+   "path": "tests/hooks/useClientBI.real-data.test.tsx",
+   "lines": 107,
+   "is_test": true,
+   "tests": [
+    "useClientBI com dados confiáveis",
+    "retorna estado vazio sem injetar números ou categorias fictícias",
+    "distingue falha de consulta de um cliente sem compras",
+    "mantém zeros como dados válidos apenas quando a consulta confirmou ausência de pedidos",
+    "mantém dados fictícios somente no cliente de demonstração e não consulta histórico remoto"
    ]
   },
   "tests/hooks/useClientCategoryAffinity.error.test.tsx": {
@@ -259552,10 +259643,22 @@
   }
  },
  "git": {
-  "sha": "8747cf212a21666820fedb7a2995291a08733a03",
+  "sha": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "bc1b6c5",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "chore: recupera 21 testes de branches nao incorporadas (#444)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "tests/edge-functions/catalog-readonly-rpc.test.ts",
+     "tests/hooks/useCategoryRanking.errors.test.tsx",
+     "tests/hooks/useClientBI.real-data.test.tsx"
+    ]
+   },
    {
     "sha": "8747cf2",
     "date": "2026-11-25",
@@ -259950,28 +260053,6 @@
      "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
      "tests/components/cart/cart-header-scroll.test.tsx"
     ]
-   },
-   {
-    "sha": "a8dad98",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "fix: servidor resolve destinatario do email transacional (#411)",
-    "files": [
-     "AGENTS.md",
-     "docs/agentes/servicos.md",
-     "src/components/quotes/QuoteConvertToOrder.tsx",
-     "src/hooks/quotes/useQuotes.ts",
-     "src/hooks/useSicoobApprovals.ts",
-     "src/hooks/useTransactionalEmail.ts",
-     "src/pages/quote-view/QuoteBitrixSync.ts",
-     "src/services/OrderService.ts",
-     "supabase/functions/send-transactional-email/index.ts",
-     "supabase/functions/send-transactional-email/resolve.ts",
-     "supabase/functions/send-transactional-email/templates.ts",
-     "tests/hooks/useTransactionalEmail.test.ts",
-     "tests/scenarios/email-transacional-legado.mjs",
-     "tests/scenarios/email-transacional-resolve.test.mjs"
-    ]
    }
   ],
   "hot_files": [
@@ -259985,14 +260066,6 @@
    ],
    [
     "docs/agentes/banco.md",
-    3
-   ],
-   [
-    "AGENTS.md",
-    3
-   ],
-   [
-    "docs/agentes/servicos.md",
     3
    ],
    [
@@ -260053,6 +260126,14 @@
    ],
    [
     ".github/workflows/deploy-sicoob-functions.yml",
+    2
+   ],
+   [
+    "AGENTS.md",
+    2
+   ],
+   [
+    "docs/agentes/servicos.md",
     2
    ]
   ]

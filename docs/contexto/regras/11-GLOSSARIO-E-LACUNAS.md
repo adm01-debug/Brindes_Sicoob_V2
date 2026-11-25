@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8747cf212a` · branch `main` · 2026-11-25 16:20 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bc1b6c5388` · branch `main` · 2026-11-25 17:13 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -464,7 +464,7 @@ _nenhum item encontrado_
 | rpc | RPC `fixture_rpc` chamada mas não definida nas migrations/types | `scripts/ai-context/gerar.unit.mjs` |
 | rpc | RPC `fn` chamada mas não definida nas migrations/types | `scripts/supabase_snapshot/snapshot.py`<br>`supabase/functions/_shared/supabase-client-adapter.ts` |
 | rpc | RPC `fn_get_customization_price` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/handler.ts`<br>`tests/edge-functions/catalogo-rpc-get.test.ts` |
-| rpc | RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/handler.ts`<br>`tests/edge-functions/catalogo-rpc-get.test.ts` |
+| rpc | RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/handler.ts`<br>`tests/edge-functions/catalog-readonly-rpc.test.ts`<br>`tests/edge-functions/catalogo-rpc-get.test.ts` |
 | rpc | RPC `get_active_commemorative_dates` chamada mas não definida nas migrations/types | `supabase/functions/commemorative-dates/index.ts` |
 | rpc | RPC `get_all_material_groups_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |
 | rpc | RPC `get_all_material_types_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |

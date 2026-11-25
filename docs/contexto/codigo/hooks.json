@@ -2283,7 +2283,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 4
+   "coberto_por_testes": 5
   },
   {
    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
@@ -4775,7 +4775,7 @@
     "src/components/intelligence/TopClients.tsx",
     "src/components/intelligence/TrendingProducts.tsx"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useComparison.ts",
