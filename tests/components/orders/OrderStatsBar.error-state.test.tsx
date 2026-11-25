@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ useOrdersList: vi.fn() }));
+const mocks = vi.hoisted(() => ({ useOrdersList: vi.fn(), refetch: vi.fn() }));
 
 vi.mock("@/hooks/orders/useOrders", () => ({ useOrdersList: mocks.useOrdersList }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "vendedor-1" } }) }));
@@ -11,12 +11,21 @@ import { OrderStatsBar } from "@/components/orders/OrderStatsBar";
 
 describe("OrderStatsBar", () => {
   it("não mostra zeros quando a consulta falha", () => {
-    mocks.useOrdersList.mockReturnValue({ data: undefined, isError: true });
+    mocks.useOrdersList.mockReturnValue({ data: undefined, isError: true, refetch: mocks.refetch });
 
     render(<OrderStatsBar />);
 
     expect(screen.getByRole("alert")).toHaveTextContent("Estatísticas de pedidos indisponíveis");
     expect(screen.queryByText("Total de Pedidos")).toBeNull();
+  });
+
+  it("a retentativa do alerta refaz a consulta das estatísticas", () => {
+    mocks.useOrdersList.mockReturnValue({ data: undefined, isError: true, refetch: mocks.refetch });
+
+    render(<OrderStatsBar />);
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+
+    expect(mocks.refetch).toHaveBeenCalledTimes(1);
   });
 
   it("conta os pedidos quando a consulta responde", () => {

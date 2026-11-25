@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Package, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useOrdersList } from '@/hooks/orders/useOrders';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,11 +25,18 @@ function StatCard(props: {
 }
 
 /** Consulta falhou: nenhum número sai daqui, para não parecer fila vazia. */
-function StatsUnavailable() {
+function StatsUnavailable({ onRetry }: { onRetry?: () => void }) {
   return <Card className="border-destructive/40 bg-destructive/5">
-    <CardContent className="p-5" role="alert">
-      <p className="text-sm font-medium text-destructive">Estatísticas de pedidos indisponíveis</p>
-      <p className="text-xs text-muted-foreground">A consulta falhou. Nenhum número foi estimado.</p>
+    <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5" role="alert">
+      <div>
+        <p className="text-sm font-medium text-destructive">Estatísticas de pedidos indisponíveis</p>
+        <p className="text-xs text-muted-foreground">A consulta falhou. Nenhum número foi estimado.</p>
+      </div>
+      {onRetry && (
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          Tentar novamente
+        </Button>
+      )}
     </CardContent>
   </Card>;
 }
@@ -36,10 +44,19 @@ function StatsUnavailable() {
 export function OrderStatsBar() {
   const { user } = useAuth();
   const scope = useSalesScope();
-  const { data: response, isError } = useOrdersList(user?.id, scope);
+  // Só a lista se refaz no botão da página; a retentativa aqui evita que as
+  // estatísticas continuem em erro depois que a lista já voltou.
+  const { data: response, isError, refetch } = useOrdersList(user?.id, scope);
   const orders = response?.data || [];
 
-  if (isError) return <StatsUnavailable />;
+  if (isError)
+    return (
+      <StatsUnavailable
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
 
   const stats = {
     total: orders.length,
