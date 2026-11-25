@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from 'lucide-react';
+import { Package, Download, FileSpreadsheet, FileText, ShoppingBag, AlertCircle, } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useOrdersList, ORDER_STATUS_LABELS } from '@/hooks/orders/useOrders';
@@ -107,13 +107,17 @@ function OrdersToolbar({
   );
 }
 
-function OrdersContent({
+export function OrdersContent({
   orders,
   isLoading,
+  isError,
+  onRetry,
   search,
 }: {
   orders: Order[];
   isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   search: string;
 }) {
   const navigate = useNavigate();
@@ -125,12 +129,44 @@ function OrdersContent({
         ))}
       </div>
     );
+  // Sem esta separação, falha de consulta virava "você ainda não tem pedidos".
+  // Com pedidos já em tela a falha é de atualização: avisa e mantém a lista,
+  // em vez de trocar dado bom por tela de erro.
+  if (isError && !orders.length) return <OrdersErrorState onRetry={onRetry} />;
   if (!orders.length) return <OrdersEmptyState search={search} />;
   return (
     <div className="grid gap-3">
+      {isError && <OrdersStaleNotice onRetry={onRetry} />}
       {orders.map((order) => (
         <OrderCard key={order.id} order={order} onClick={() => navigate(`/pedidos/${order.id}`)} />
       ))}
+    </div>
+  );
+}
+
+function OrdersStaleNotice({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3"
+    >
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Não foi possível atualizar a lista.</span> Os
+          pedidos abaixo são da última consulta bem-sucedida.
+        </p>
+      </div>
+      {onRetry && (
+        <Button
+          size="sm"
+          variant="outline"
+          aria-label="Tentar novamente a atualização da lista"
+          onClick={() => void onRetry()}
+        >
+          Tentar novamente
+        </Button>
+      )}
     </div>
   );
 }
@@ -260,7 +296,7 @@ function useOrdersPageState() {
     },
   });
   const { filters, setFilters } = useFiltrosDePedidosNaUrl();
-  const { data: response, isLoading } = useOrdersList(user?.id, scope, {
+  const { data: response, isLoading, isError, refetch } = useOrdersList(user?.id, scope, {
     search: filters.search,
     status: filters.status,
     clientCompany: filters.clientCompany,
@@ -273,7 +309,7 @@ function useOrdersPageState() {
   const totalPages = Math.ceil((response?.count || 0) / 15);
   const applyFilters = (values: OrderFilterValues) => setFilters({ ...values, page: 1 });
   const setPage = (page: number) => setFilters((current) => ({ ...current, page }));
-  return { filters, orders, totalPages, isLoading, applyFilters, setPage };
+  return { filters, orders, totalPages, isLoading, isError, refetch, applyFilters, setPage };
 }
 
 export function OrdersPage() {
@@ -298,6 +334,8 @@ export function OrdersPage() {
         <OrdersContent
           orders={state.orders}
           isLoading={state.isLoading}
+          isError={state.isError}
+          onRetry={state.refetch}
           search={state.filters.search}
         />
         <OrdersPagination
@@ -307,6 +345,31 @@ export function OrdersPage() {
         />
       </div>
     </>
+  );
+}
+
+function OrdersErrorState({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <Card className="border-2 border-dashed border-destructive/40 bg-destructive/5">
+      <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <h3 className="font-display text-xl font-semibold text-foreground">
+          Não foi possível carregar seus pedidos
+        </h3>
+        <p className="max-w-xs text-sm text-muted-foreground">
+          A consulta falhou, então nenhum pedido foi listado — isto não é uma lista vazia.
+        </p>
+        {onRetry && (
+          <Button
+            variant="outline"
+            aria-label="Tentar novamente o carregamento dos pedidos"
+            onClick={() => void onRetry()}
+          >
+            Tentar novamente
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

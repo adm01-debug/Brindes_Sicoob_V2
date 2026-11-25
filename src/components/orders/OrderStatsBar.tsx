@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Package, CheckCircle2, Clock, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Package, CheckCircle2, Clock, FileText, RefreshCw } from 'lucide-react';
 import { useOrdersList } from '@/hooks/orders/useOrders';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
@@ -23,11 +24,87 @@ function StatCard(props: {
   </Card>;
 }
 
+/** Retentativa em curso: nem alerta repetido, nem contadores zerados. */
+function StatsReloading() {
+  return <Card className="border-muted bg-muted/30">
+    <CardContent className="flex items-center gap-3 p-5" role="status">
+      <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground">Recarregando estatísticas de pedidos…</p>
+    </CardContent>
+  </Card>;
+}
+
+/** Consulta falhou: nenhum número sai daqui, para não parecer fila vazia. */
+function StatsUnavailable({ onRetry }: { onRetry?: () => void }) {
+  return <Card className="border-destructive/40 bg-destructive/5">
+    <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5" role="alert">
+      <div>
+        <p className="text-sm font-medium text-destructive">Estatísticas de pedidos indisponíveis</p>
+        <p className="text-xs text-muted-foreground">A consulta falhou. Nenhum número foi estimado.</p>
+      </div>
+      {onRetry && (
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label="Tentar novamente as estatísticas"
+          onClick={onRetry}
+        >
+          Tentar novamente
+        </Button>
+      )}
+    </CardContent>
+  </Card>;
+}
+
+/** Cartões da última consulta boa mais o aviso quando a atualização falha. */
+function CartoesDeEstatisticas({
+  statCards,
+  isError,
+}: {
+  statCards: React.ComponentProps<typeof StatCard>[];
+  isError: boolean;
+}) {
+  return <div className="space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {statCards.map((stat) => <StatCard key={stat.label} {...stat} />)}
+    </div>
+    {isError && (
+      <p role="status" className="text-xs text-muted-foreground">
+        Estatísticas da última consulta bem-sucedida — a atualização falhou.
+      </p>
+    )}
+  </div>;
+}
+
 export function OrderStatsBar() {
   const { user } = useAuth();
   const scope = useSalesScope();
-  const { data: response } = useOrdersList(user?.id, scope);
+  // Só a lista se refaz no botão da página; a retentativa aqui evita que as
+  // estatísticas continuem em erro depois que a lista já voltou.
+  const { data: response, isError, refetch } = useOrdersList(user?.id, scope);
   const orders = response?.data || [];
+  // `response` definido = já houve uma consulta boa: `data: []` são zeros
+  // confirmados, não estimativa.
+  const temResposta = response !== undefined;
+
+  // Retentar tira a consulta do estado de erro e `data` continua indefinido:
+  // sem esta trava a barra mostraria todos os contadores zerados.
+  const falhou = useRef(false);
+  if (isError) falhou.current = true;
+  else if (response) falhou.current = false;
+
+  if (falhou.current && !isError) return <StatsReloading />;
+
+  // Com uma consulta boa anterior a falha de atualização não apaga a barra:
+  // os cartões ficam (inclusive zeros confirmados) e o aviso diz de onde vêm.
+  if (isError && !temResposta)
+    return (
+      <StatsUnavailable
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
 
   const stats = {
     total: orders.length,
@@ -63,9 +140,5 @@ export function OrderStatsBar() {
     },
   ];
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat) => <StatCard key={stat.label} {...stat} />)}
-    </div>
-  );
+  return <CartoesDeEstatisticas statCards={statCards} isError={isError} />;
 }

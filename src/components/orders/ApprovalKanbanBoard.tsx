@@ -12,8 +12,10 @@ import { toast } from "sonner";
 import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow, type OrderStatus } from "@/hooks";
 import { DroppableColumn, type DroppableColumnProps, DraggableCard, type DraggableCardProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { OrderDetailSheet } from "./OrderDetailSheet";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const COLUMNS = [
 
@@ -26,7 +28,7 @@ const COLUMNS = [
 
 export function ApprovalKanbanBoard() {
   const { user } = useAuth();
-  const { data: ordersResult, isLoading } = useOrdersList(user?.id, "all");
+  const { data: ordersResult, isLoading, isError, refetch } = useOrdersList(user?.id, "all");
   const orders = ordersResult?.data;
   const updateOrder = useUpdateOrder();
   
@@ -66,6 +68,23 @@ export function ApprovalKanbanBoard() {
   };
 
   if (isLoading) return <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>;
+
+  // Sem isto a falha aparecia como quadro de colunas vazias — indistinguível de
+  // "não há pedidos para aprovar".
+  if (isError) {
+    return (
+      <Alert variant="destructive" role="alert">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Não foi possível carregar os pedidos desta fila</AlertTitle>
+        <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+          <span>As colunas ficaram vazias por falha de consulta, não por ausência de pedidos.</span>
+          <Button size="sm" variant="outline" onClick={() => void refetch()}>
+            Tentar novamente
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <DndContext
