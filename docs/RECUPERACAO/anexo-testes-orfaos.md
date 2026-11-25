@@ -148,7 +148,7 @@ que precisa ser reintegrado (e testado) antes de a branch de origem ser fechada.
 | `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | Aviso "Exibindo o último gráfico disponível" quando o `refetch` falha com cache em mãos: hoje a tela não distingue dado velho de dado atual. |
 | `tests/components/common/IntelligenceBadges.errors.test.tsx` | Aviso de falha parcial ("Não foi possível atualizar todos os…") nos selos de inteligência. |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `role="alert"` + "Tentar novamente" nos indicadores; texto "dados disponíveis continuam exibidos"; `role="status"` para o vazio confirmado. `src/pages/ProductDetail.tsx` hoje não consome `useProductIntelligenceData`/`useStockVelocity` nesse nível. |
-| `tests/components/QuotesSelectors*` / `Seleção recuperada` | Confirmação "Seleção recuperada" ao restaurar seleção em memória depois de erro. |
+| `tests/pages/PublicFavoriteListPage.test.tsx` | Confirmação "Seleção recuperada" ao restaurar a seleção em memória depois de erro. |
 | `tests/components/AIMockupAssistant.history.test.tsx` | Entrada "Abrir assistente" e histórico da conversa. |
 | `tests/pages/GestorCompras.error-state.test.tsx` | Estado de erro da página canônica de Gestor de Compras (os textos existem em `GestorComprasMetrics.tsx:129`, mas não no fluxo da página). |
 | `tests/hooks/bi/useClientSeasonality.test.tsx` | Amostra setorial insuficiente no mapa de calor: `resolveSeasonalityResult` recebe `companiesCount` (`src/hooks/bi/useClientSeasonality.ts`) e **não usa**; um setor com 1 empresa é apresentado como mercado. Diferente de `useIndustryTrends`, que passou a ter essa regra na #446. |
