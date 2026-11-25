@@ -14,11 +14,16 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
+import { decidirTrocaDeTemplate, textoDaSaida } from '@/lib/kit-builder/saida-da-tela';
+import { autorizarSaida } from '@/lib/navigation/dirty-registry';
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import { useScreenDirtyState } from '@/hooks/useScreenDirtyState';
+import { useRBAC } from '@/hooks/useRBAC';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
 import { useKitAutoSave } from '@/hooks/useKitAutoSave';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
@@ -43,6 +48,7 @@ import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
 import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
 import { useCustomKitsRealtime } from '@/hooks/useCustomKitsRealtime';
 import { KitMobileSummaryBar } from '@/components/kit-builder/KitMobileSummaryBar';
+import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 import { KitHealthCard } from '@/components/kit-builder/KitHealthCard';
 import { KitOccasionSelector, OCCASIONS, type Occasion } from '@/components/kit-builder/KitOccasionSelector';
 import { KitVariantsManager } from '@/components/kit-builder/KitVariantsManager';
@@ -134,13 +140,32 @@ async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
   } catch { toast.error('Erro ao carregar kit'); }
 }
 
-async function loadKitTemplate(id: string, loadKit: KitBuilderState['loadKit']): Promise<void> {
+async function loadKitTemplate(
+  id: string, loadKit: KitBuilderState['loadKit'], edicaoDoTemplate: boolean,
+): Promise<void> {
   try {
     const { data, error } = await supabase.from('kit_templates').select('*').eq('id', id).maybeSingle();
     if (error || !data) { toast.error('Template não encontrado'); return; }
     loadKit(templatePayload(data as Record<string, unknown>));
-    toast.success('Template carregado para edição', { description: 'Ao salvar, atualizará o template do sistema.' });
+    // O vendedor que abre `?template=` (widget de kits semelhantes) usa o
+    // template como ponto de partida do kit dele, não edita a linha do
+    // sistema — prometer "atualizará o template" era falso nesse caso.
+    toast.success(
+      edicaoDoTemplate ? 'Template carregado para edição' : 'Template carregado como base do seu kit',
+      { description: edicaoDoTemplate ? 'Ao salvar, atualizará o template do sistema.' : 'Ao salvar, o kit fica na sua biblioteca.' },
+    );
   } catch { toast.error('Erro ao carregar template'); }
+}
+
+/**
+ * `?template=` só edita a linha de `kit_templates` para admin/supervisor. Para
+ * o vendedor vindo do widget de kits semelhantes o parâmetro é "usar como
+ * base": ele precisa do autosave pessoal e de "Salvar" criando kit próprio.
+ * Enquanto o papel não é conhecido o modo template segue ligado — liberar o
+ * autosave antes disso gravaria um kit pessoal com o conteúdo do template.
+ */
+function emEdicaoDeTemplate(templateId: string | null, isRoleLoading: boolean, isAdmin: boolean): boolean {
+  return Boolean(templateId) && (isRoleLoading || isAdmin);
 }
 
 export default function KitBuilderPage() {
@@ -153,7 +178,6 @@ export default function KitBuilderPage() {
   const [occasion, setOccasion] = useState<Occasion | null>(null);
   const hasLoadedRef = useRef(false);
   const hasLoadedProductRef = useRef(false);
-  const hasLoadedTemplateRef = useRef(false);
   const hasBumpedRef = useRef(false);
   // Abrir por ?kit= enche a tela depois do primeiro render, com o conteúdo
   // lido de custom_kits. Até essa leitura chegar, mudança de estado é dado
@@ -163,6 +187,14 @@ export default function KitBuilderPage() {
   // ser sobrescrita, e nos dois casos o que chega à tela é material novo que
   // o autosave deve mesmo persistir.
   const [isHydrated, setIsHydrated] = useState(!kitIdParam);
+  // ?template= lê uma linha de `kit_templates` depois do primeiro render. Até
+  // ela chegar, o conteúdo na tela é dado lido, não edição — sem isto o
+  // template recém-aberto entrava como alteração pendente. Guardar QUAL id já
+  // chegou (e não um booleano) cobre a troca de template sem desmontar a
+  // página: a leitura do template novo volta a contar como leitura.
+  const [loadedTemplateId, setLoadedTemplateId] = useState<string | null>(null);
+  const templateEmCargaRef = useRef<string | null>(null);
+  const isTemplateLoading = Boolean(templateIdParam) && !kitIdParam && loadedTemplateId !== templateIdParam;
   // `updated_at` da linha que está na tela. A trava otimista do autosave só
   // grava se a linha continuar nessa versão.
   const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | null>(null);
@@ -177,16 +209,24 @@ export default function KitBuilderPage() {
   } = useKitBuilder();
 
   const { saveKit, isSaving, bumpLastUsed } = useCustomKitPersistence();
-  const { saveAsTemplate } = useTemplateSnapshot();
+  const { saveAsTemplate, isSavingTemplate } = useTemplateSnapshot();
+  const { isAdmin, isLoading: isRoleLoading } = useRBAC();
+  const editandoTemplate = emEdicaoDeTemplate(templateIdParam, isRoleLoading, isAdmin);
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
   const {
-    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
+    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict, isDirty,
     retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
-    capturarSnapshotAtual,
+    capturarSnapshotAtual, desvincularKitPessoal, gravarPendente, capturarVersaoPersistida,
+    registrarConflitoDeEdicao,
   } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
+    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
+    isHydrated && !isTemplateLoading, loadedUpdatedAt,
+    // Editando um template do sistema: o destino é `kit_templates`, gravado
+    // pelo "Atualizar template". O autosave aqui só criava kits pessoais
+    // paralelos com o conteúdo do template.
+    !editandoTemplate,
   );
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
@@ -244,10 +284,21 @@ export default function KitBuilderPage() {
 
   // Template mode: load a kit_templates row for admin editing
   useEffect(() => {
-    if (!templateIdParam || hasLoadedTemplateRef.current || kitIdParam) return;
-    hasLoadedTemplateRef.current = true;
-    void loadKitTemplate(templateIdParam, loadKit);
-  }, [templateIdParam, kitIdParam, loadKit]);
+    if (!templateIdParam || kitIdParam || loadedTemplateId === templateIdParam) return;
+    if (templateEmCargaRef.current === templateIdParam) return;
+    templateEmCargaRef.current = templateIdParam;
+    // O conteúdo está prestes a ser trocado pelo template: o vínculo com o kit
+    // pessoal que estava aberto não pode sobreviver. Era por ele que "Salvar"
+    // (e o autosave seguinte) atualizava o kit da biblioteca com o conteúdo do
+    // template, em vez de começar um kit novo.
+    setCurrentKitId(undefined);
+    setLoadedUpdatedAt(null);
+    desvincularKitPessoal();
+    // Fecha o ciclo pelo id carregado (deu certo ou não): é o que faz a troca de
+    // template sem desmontar a página voltar a contar a leitura como leitura.
+    void loadKitTemplate(templateIdParam, loadKit, editandoTemplate)
+      .finally(() => setLoadedTemplateId(templateIdParam));
+  }, [templateIdParam, kitIdParam, loadedTemplateId, editandoTemplate, loadKit, desvincularKitPessoal]);
 
   useEffect(() => {
     if (!productIdParam || hasLoadedProductRef.current || kitIdParam) return;
@@ -283,10 +334,31 @@ export default function KitBuilderPage() {
     });
   };
 
+  /**
+   * Grava o template do sistema (admin/supervisor). O retrato tirado antes da
+   * chamada é o que separa o que foi para o banco do que o usuário digitar
+   * durante a requisição — isso continua pendente, e não é perdido.
+   */
+  const handleSaveAsTemplate = async () => {
+    if (!isAdmin) return;
+    // Sem `?template=` o cabeçalho cria um template novo a partir do kit: o que
+    // está na tela continua sendo o kit pessoal, então o autosave segue com o
+    // trabalho dele — sincronizar aqui daria o kit por salvo sem estar.
+    if (!editandoTemplate) {
+      try { await saveAsTemplate({ kitState }); } catch { return; }
+      return;
+    }
+    const snapshotEnviado = capturarSnapshotAtual();
+    try {
+      await saveAsTemplate({ kitState, templateId: templateIdParam ?? undefined });
+    } catch { return; }
+    syncPersistedVersion(null, snapshotEnviado);
+  };
+
   const handleSaveKit = async () => {
     try {
-      if (templateIdParam) {
-        await saveAsTemplate({ kitState, templateId: templateIdParam });
+      if (editandoTemplate) {
+        await handleSaveAsTemplate();
         return;
       }
       // Espera o salvamento automático em voo antes de decidir entre criar e
@@ -299,7 +371,7 @@ export default function KitBuilderPage() {
       const idDoAutosave = await flushAutoSave();
       const editingId = currentKitId || idDoAutosave || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
-      const result = await saveKit(kitState, kitQuantity, editingId);
+      const result = await saveKit(kitState, kitQuantity, editingId, capturarVersaoPersistida());
       if (result && 'id' in result) {
         setCurrentKitId((result as { id: string }).id);
         // O "Salvar" acabou de mudar `updated_at`. Sem avisar o autosave, a
@@ -309,7 +381,13 @@ export default function KitBuilderPage() {
         setLoadedUpdatedAt(versao);
         syncPersistedVersion(versao, snapshotEnviado);
       }
-    } catch { /* handled by hook */ }
+    } catch (err) {
+      // O aviso ao usuário quem mostra é o hook de persistência. O conflito,
+      // porém, tem de chegar à guarda de saída: sem isto o aviso de saída
+      // prometia "Sair e gravar" e a navegação era liberada, enquanto a trava
+      // recusava a gravação — a edição ia embora junto com a tela.
+      registrarConflitoDeEdicao(err);
+    }
   };
 
   const handleExportPDF = () => {
@@ -369,12 +447,41 @@ export default function KitBuilderPage() {
    * apaga o trabalho do vendedor sem aviso. Só `QuoteBuilderPage` registrava
    * essa guarda; `/montar-kit` ficava de fora.
    */
-  useUnsavedChangesGuard({
-    hasUnsavedChanges: hasContent && (Boolean(lastSaveError) || lastSaveConflict || isAutoSaving),
-    message: lastSaveConflict
-      ? 'Este kit foi alterado em outro lugar e as suas alterações ainda não foram salvas. Sair agora as descarta.'
-      : 'O kit ainda não terminou de ser salvo. Sair agora pode descartar as últimas alterações.',
+  const temAlteracaoPendente = hasContent
+    && (isDirty || Boolean(lastSaveError) || lastSaveConflict || isAutoSaving);
+  const saidaDaTela = textoDaSaida(editandoTemplate, lastSaveError, lastSaveConflict);
+  // O aviso guarda a ação no clique e mostra o rótulo do render atual: a
+  // política tem de ser lida na confirmação, senão o botão pode dizer "Sair e
+  // gravar" enquanto a ação programada descarta.
+  const saidaAtualRef = useRef(saidaDaTela);
+  saidaAtualRef.current = saidaDaTela;
+  const mensagemSaida = saidaDaTela.mensagem;
+  const guardaDeSaida = useUnsavedChangesGuard({
+    hasUnsavedChanges: temAlteracaoPendente,
+    message: mensagemSaida,
   });
+
+  /**
+   * Troca de template a partir do widget de kits semelhantes.
+   *
+   * A troca substitui a composição sem desmontar a página, então o flush de
+   * desmonte do autosave não roda: gravar o pendente aqui é o que faz o "Sair e
+   * gravar" do aviso ser verdade. Se a gravação falhar, a tela fica como está
+   * — trocar de template apagaria a única cópia do trabalho.
+   */
+  async function trocarDeTemplate(templateId: string) {
+    // A política é lida agora: com o aviso aberto o estado pode ter mudado.
+    const podeTrocar = await decidirTrocaDeTemplate(saidaAtualRef.current, gravarPendente);
+    if (!podeTrocar) return;
+    // A decisão foi tomada aqui (e a gravação pode ter levado segundos): o
+    // portão global não pode perguntar de novo sobre a mesma troca.
+    autorizarSaida();
+    navigate(`/montar-kit?template=${templateId}`);
+  }
+  // "Biblioteca" e o voltar do app navegam por dentro do SPA, onde o
+  // `beforeunload` acima não alcança: o registro de rota responde por essas
+  // saídas.
+  useScreenDirtyState(temAlteracaoPendente, mensagemSaida, saidaDaTela.rotulo);
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
@@ -389,22 +496,31 @@ export default function KitBuilderPage() {
   // Recarregar busca a versao de quem gravou do outro lado e descarta o que
   // esta na tela — e o conflito so aparece porque a gravacao automatica falhou,
   // ou seja, sempre ha alteracao nao salva aqui. Perguntar antes.
-  function recarregarAposConflito() {
-    const confirmado = window.confirm(
-      'Recarregar traz a versao salva em outro lugar e descarta as alteracoes desta tela, '
-      + 'que nao foram salvas. Deseja recarregar?',
-    );
+  async function recarregarAposConflito() {
+    const confirmado = await askConfirm({
+      title: 'Recarregar e descartar as alterações desta tela?',
+      description: 'Recarregar traz a versão salva em outro lugar e descarta as alterações '
+        + 'desta tela, que não foram salvas.',
+      variant: 'warning',
+      confirmLabel: 'Recarregar',
+      cancelLabel: 'Continuar aqui',
+    });
     if (confirmado) window.location.reload();
   }
 
   function BuilderHeader() {
+    // Só admin/supervisor edita a linha do sistema: o cabeçalho anuncia edição
+    // quando é edição de verdade.
+    const templateDoCabecalho = () => (isAdmin ? templateIdParam || undefined : undefined);
     return <><KitBuilderHeader kitName={kitState.name} onKitNameChange={setKitName} isValid={kitState.isValid}
       isSaving={isSaving} isAutoSaving={isAutoSaving} lastSavedAt={lastSavedAt} autoSaveError={lastSaveError}
       autoSaveConflict={lastSaveConflict} onReloadAfterConflict={recarregarAposConflito}
       onRetryAutoSave={retryAutoSave} hasContent={hasContent} isExistingKit={isExistingKit} canUndo={canUndo}
       canRedo={canRedo} identity={kitState.identity} onIdentityChange={setIdentity} onSave={handleSaveKit}
       onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit} kitState={kitState}
-      templateId={templateIdParam || undefined} currentKitId={resolvedKitId} onAIApply={applyAISuggestion} />
+      templateId={templateDoCabecalho()} currentKitId={resolvedKitId}
+      onAIApply={applyAISuggestion} isSavingTemplate={isSavingTemplate} onSaveAsTemplate={handleSaveAsTemplate}
+      onOpenLibrary={() => guardaDeSaida.guardNavigation(() => navigate('/meus-kits'))} />
       <div className="border-b bg-card/40 backdrop-blur-sm"><div className="container py-4">
         <WizardSteps currentStep={wizardState.currentStep} completedSteps={wizardState.completedSteps}
           onStepClick={goToStep} kitState={kitState} />
@@ -532,8 +648,11 @@ export default function KitBuilderPage() {
     return <><IdentitySuggestionButton kitName={kitState.name} items={kitState.items.map((item) => ({ name: item.name, sku: item.sku }))}
       description={kitState.identity?.description ?? null} current={kitState.identity}
       onApply={(partial) => setIdentity({ color: '#3B82F6', icon: 'Package', ...(kitState.identity ?? {}), ...partial })} />
+      {/* Trocar de template substitui o conteúdo na mesma montagem: sem a
+          guarda, a edição não salva do template aberto ia embora sem pergunta. */}
       <SimilarKitsWidget currentSkus={kitState.items.map((item) => String(item.sku ?? '').toLowerCase()).filter(Boolean)}
-        excludeId={templateIdParam ?? undefined} /></>;
+        excludeId={templateIdParam ?? undefined}
+        onSelectTemplate={(id) => guardaDeSaida.guardNavigation(() => { void trocarDeTemplate(id); })} /></>;
   }
 
   function formattedWeight(): string {
@@ -610,6 +729,8 @@ export default function KitBuilderPage() {
       radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.08), transparent),
       radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04), transparent),
       hsl(var(--background))` }}>
+      <UnsavedChangesDialog open={guardaDeSaida.showDialog} onConfirm={guardaDeSaida.confirmLeave}
+        onCancel={guardaDeSaida.cancelLeave} message={guardaDeSaida.message} confirmLabel={saidaDaTela.rotulo} />
       <PageSEO title="Kit Maker" description="Monte kits personalizados de brindes promocionais." path="/montar-kit" noIndex />
       <BuilderHeader /><div className="container py-6"><div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <BuilderSteps /><BuilderSidebar /></div></div><div className="h-20 lg:hidden" aria-hidden />

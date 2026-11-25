@@ -50,9 +50,74 @@ const GRID_COLS_KEY = "favorites-grid-cols";
 const SELECTED_LIST_KEY = "favorites-selected-list-id";
 const SORT_KEY = "favorites-sort";
 const PRICE_DROP_FILTER_KEY = "favorites-only-drops";
+const UNAVAILABLE_FAVORITE_NAME = "Produto salvo";
 
 type FavoritePriceMeta = { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string };
 type FavoriteNoteMeta = { itemId: string; note: string | null };
+
+// Detalhe salvo da variante: sem ele dois cartões do mesmo produto ficam idênticos
+// e não há como saber qual registro está sendo removido.
+function variantDetailOf(
+  info: FavoriteVariantInfo | null | undefined,
+  variantId: string | null,
+): string | null {
+  const parts: string[] = [];
+  if (info?.color_name) parts.push(`Cor: ${info.color_name}`);
+  if (info?.size_code) parts.push(`Tam: ${info.size_code}`);
+  if (parts.length) return parts.join(" · ");
+  return variantId ? `Variante: ${variantId.slice(0, 8)}` : null;
+}
+
+function UnavailableFavoriteCard({
+  productId,
+  variantDetail,
+  onRetry,
+  onRemove,
+}: {
+  productId: string;
+  variantDetail?: string | null;
+  onRetry: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <article
+      data-testid="favorite-item"
+      data-product-id={productId}
+      data-product-name={UNAVAILABLE_FAVORITE_NAME}
+      className="flex min-h-44 flex-col justify-between rounded-xl border border-dashed border-border bg-card p-4"
+      aria-label="Favorito salvo; detalhes do produto indisponíveis"
+    >
+      <div>
+        <Package className="mb-3 h-6 w-6 text-muted-foreground" aria-hidden="true" />
+        <h3 className="font-semibold text-foreground">{UNAVAILABLE_FAVORITE_NAME}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Não foi possível carregar os detalhes agora.
+        </p>
+        <p className="mt-1 break-all text-xs text-muted-foreground">ID: {productId}</p>
+        {variantDetail && (
+          <p className="mt-1 text-xs text-muted-foreground" data-testid="favorite-variant">
+            {variantDetail}
+          </p>
+        )}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          Tentar novamente
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          data-testid="favorite-remove"
+          aria-label="Remover favorito indisponível"
+          onClick={onRemove}
+        >
+          Remover
+        </Button>
+      </div>
+    </article>
+  );
+}
 
 function matchesFavoriteSearch(product: Product, searchQuery: string): boolean {
   const query = searchQuery.toLowerCase();
@@ -181,7 +246,7 @@ export default function FavoritesPage() {
   }, [selectedListId]);
 
   // Items enriquecidos da lista remota selecionada
-  const { enriched, rawItems, removeItem, updateItem } = useEnrichedFavoriteItems(selectedListId);
+  const { enriched, rawItems, removeItem, updateItem, isLoading: itemsLoading } = useEnrichedFavoriteItems(selectedListId);
   const isRemoteListView = !!selectedListId && !showTrash;
 
   const { getProductsByIds, products: _cacheSignal } = useProductsContext();
@@ -280,6 +345,52 @@ export default function FavoritesPage() {
         });
   }, [enriched, legacyFavoriteProducts, variantMap, isRemoteListView]);
 
+  const resolvedProductIds = useMemo(
+    () => new Set(productsWithVariant.map((product) => product.id)),
+    [productsWithVariant],
+  );
+  // Um favorito por item (não por produto): duas variantes do mesmo produto geram
+  // dois cartões, cada um com o próprio itemId para remover o registro certo.
+  const unavailableFavorites = useMemo(() => {
+    if (itemsLoading) return [];
+    if (isRemoteListView) {
+      return rawItems
+        .filter((item) => !resolvedProductIds.has(item.product_id))
+        .map((item) => ({
+          key: item.id,
+          itemId: item.id as string | null,
+          productId: item.product_id,
+          variantId: item.variant_id ?? null,
+          variantInfo: (item.variant_info ?? null) as FavoriteVariantInfo | null,
+        }));
+    }
+    return favorites
+      .filter((favorite) => !resolvedProductIds.has(favorite.productId))
+      .map((favorite) => ({
+        key: favorite.productId,
+        itemId: null as string | null,
+        productId: favorite.productId,
+        variantId: favorite.variant?.variant_id ?? null,
+        variantInfo: favorite.variant ?? null,
+      }));
+  }, [itemsLoading, isRemoteListView, rawItems, favorites, resolvedProductIds]);
+
+  // A busca também vale para os cartões sem detalhe: nada de mostrar indisponível
+  // quando o termo procurado não corresponde.
+  const visibleUnavailableFavorites = useMemo(() => {
+    // Sem detalhe do produto não há queda de preço confirmada: o filtro "Quedas"
+    // não pode listar cartões de indisponíveis. Em "Todos os favoritos" não existe o
+    // chip do filtro, então esconder os cartões deixaria a lista sem como voltar.
+    if (onlyPriceDrops && isRemoteListView) return [];
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return unavailableFavorites;
+    return unavailableFavorites.filter((item) =>
+      `${UNAVAILABLE_FAVORITE_NAME} ${item.productId} ${variantDetailOf(item.variantInfo, item.variantId) ?? ""}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [unavailableFavorites, searchQuery, onlyPriceDrops, isRemoteListView]);
+
   const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
     searchQuery,
     onlyPriceDrops,
@@ -332,7 +443,15 @@ export default function FavoritesPage() {
     if (isRemoteListView) {
       ids.forEach((pid) => {
         const meta = noteMap.get(pid);
-        if (meta) removeItem.mutate(meta.itemId);
+        if (meta) {
+          const productName = productsWithVariant.find((product) => product.id === pid)?.name ?? UNAVAILABLE_FAVORITE_NAME;
+          removeItem.mutate({
+            id: meta.itemId,
+            productName,
+            productId: pid,
+            variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+          });
+        }
       });
     } else {
       ids.forEach((id) => toggleFavorite(id));
@@ -345,7 +464,14 @@ export default function FavoritesPage() {
   const handleRemoveFavorite = (productId: string, productName: string) => {
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate(meta.itemId);
+      if (meta) {
+        removeItem.mutate({
+          id: meta.itemId,
+          productName,
+          productId,
+          variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+        });
+      }
     } else {
       toggleFavorite(productId);
       toast.success(`"${productName}" removido dos favoritos`);
@@ -357,7 +483,14 @@ export default function FavoritesPage() {
     const product = (isRemoteListView ? productsWithVariant : legacyFavoriteProducts).find((p) => p.id === productId);
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate(meta.itemId);
+      if (meta) {
+        removeItem.mutate({
+          id: meta.itemId,
+          productName: product?.name ?? UNAVAILABLE_FAVORITE_NAME,
+          productId,
+          variantId: rawItems.find((item) => item.id === meta.itemId)?.variant_id ?? null,
+        });
+      }
     } else {
       toggleFavorite(productId);
       if (product) toast.success(`"${product.name}" removido dos favoritos`);
@@ -462,7 +595,9 @@ export default function FavoritesPage() {
   }
 
   function FavoritesSearch() {
-    if (productsWithVariant.length === 0) return null;
+    // Lista só com favoritos indisponíveis também precisa da busca: o termo pode ter
+    // vindo de outra lista e não haveria como limpar nem procurar pela variante salva.
+    if (productsWithVariant.length === 0 && unavailableFavorites.length === 0) return null;
     return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input placeholder="Buscar nos favoritos..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="pl-9" />
     </div>;
@@ -551,7 +686,10 @@ export default function FavoritesPage() {
   }
 
   function EmptyFavoriteResults() {
-    if (productsWithVariant.length > 0 && searchQuery) return <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
+    // Lista só com favoritos indisponíveis também tem busca: com termo ativo o aviso é
+    // "nenhum resultado", não a sugestão de produtos do catálogo.
+    const hasAnyFavorite = productsWithVariant.length > 0 || unavailableFavorites.length > 0;
+    if (hasAnyFavorite && searchQuery) return <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
       <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><h3 className="font-display text-lg font-semibold text-foreground mb-1">
         Nenhum favorito encontrado</h3><p className="text-muted-foreground text-sm">Nenhum produto corresponde a "{searchQuery}"</p>
     </div>;
@@ -562,14 +700,41 @@ export default function FavoritesPage() {
   }
 
   function FavoriteProducts() {
-    if (filteredProducts.length === 0) return <EmptyFavoriteResults />;
-    if (viewMode === 'table') return <ProductTableView products={filteredProducts}
-      onProductClick={(productId) => navigate(`/produto/${productId}`)} isFavorite={isFavorite}
-      onToggleFavorite={handleToggleFavorite} selectionMode={selectionMode} selectedIds={selectedIds} onToggleSelect={sel.toggleSelect} />;
+    if (filteredProducts.length === 0 && visibleUnavailableFavorites.length === 0) return <EmptyFavoriteResults />;
+    const unavailableCards = visibleUnavailableFavorites.map((favorite) => (
+      <UnavailableFavoriteCard
+        key={`unavailable-${favorite.key}`}
+        productId={favorite.productId}
+        variantDetail={variantDetailOf(favorite.variantInfo, favorite.variantId)}
+        onRetry={() => getProductsByIds([favorite.productId])}
+        onRemove={() => {
+          if (isRemoteListView && favorite.itemId) {
+            removeItem.mutate({
+              id: favorite.itemId,
+              productName: UNAVAILABLE_FAVORITE_NAME,
+              productId: favorite.productId,
+              variantId: favorite.variantId,
+            });
+            setAriaAnnouncement(`${UNAVAILABLE_FAVORITE_NAME} removido dos favoritos`);
+            return;
+          }
+          handleRemoveFavorite(favorite.productId, UNAVAILABLE_FAVORITE_NAME);
+        }}
+      />
+    ));
+    if (viewMode === 'table') return <>
+      {filteredProducts.length > 0 && <ProductTableView products={filteredProducts}
+        onProductClick={(productId) => navigate(`/produto/${productId}`)} isFavorite={isFavorite}
+        onToggleFavorite={handleToggleFavorite} selectionMode={selectionMode} selectedIds={selectedIds} onToggleSelect={sel.toggleSelect} />}
+      {unavailableCards.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{unavailableCards}</div>}
+    </>;
     if (viewMode === 'list') return <div className="space-y-1.5">
-      {filteredProducts.map((product) => <FavoriteListRow key={product.id} product={product} />)}</div>;
+      {filteredProducts.map((product) => <FavoriteListRow key={product.id} product={product} />)}
+      {unavailableCards}
+    </div>;
     return <div data-testid="favorites-list" className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
       {filteredProducts.map((product, index) => <FavoriteGridItem key={product.id} product={product} index={index} />)}
+      {unavailableCards}
     </div>;
   }
 

@@ -724,6 +724,14 @@
       "reason": "Legado mantido no fluxo existente; simulador local de destinatarios da aprovacao singular"
     },
     {
+      "id": "legacy-0dda56ca44940592",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-notificacao-decisao-singular.py"],
+      "manual": ["python3", "scripts/qa/simular-notificacao-decisao-singular.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; simulador local da notificacao de decisao singular"
+    },
+    {
       "id": "legacy-fbe59bc80ad5778d",
       "kind": "legacy",
       "files": ["scripts/qa/simular-reacoes-favoritos-rls.py"],
@@ -928,6 +936,14 @@
       "kind": "legacy",
       "files": ["scripts/qa/simular-verba-legada.py"],
       "manual": ["python3", "scripts/qa/simular-verba-legada.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
+    },
+    {
+      "id": "legacy-9c995025fe4f4292",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-verba-lifecycle.py"],
+      "manual": ["python3", "scripts/qa/simular-verba-lifecycle.py"],
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },

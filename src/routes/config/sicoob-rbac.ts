@@ -6,6 +6,9 @@ import { defineRoute } from "@/lib/router-utils";
  * Implementando lacunas de rotas administrativas e dashboards de gestão.
  */
 export const sicoobRbacRoutes = [
+  // Centros de custo e rateio da verba
+  defineRoute({ path: "/gestor/centros-custo", component: lazyWithRetry(() => import("@/pages/sicoob/admin/CostCentersPage")) }),
+
   // Gestão de Verba e Dashboards PA
   defineRoute({ path: "/pa/verba", component: lazyWithRetry(() => import("@/pages/sicoob/PAWalletPage")) }),
   defineRoute({ path: "/dashboard-pa", component: lazyWithRetry(() => import("@/pages/sicoob/PADashboardPage")) }),

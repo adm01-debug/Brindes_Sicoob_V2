@@ -1,4 +1,6 @@
+import { expect } from "@playwright/test";
 import { buildAuthedRouteSuite } from "../_factories";
+import { mockRestTable } from "../_shared";
 import { SAMPLE_ID } from "../_catalog";
 
 const quote = {
@@ -22,6 +24,17 @@ buildAuthedRouteSuite({
   primary: {
     kind: "rest",
     key: "quotes",
-    successBody: quote,
+    successBodyForRequest: (request) =>
+      request.headers()["accept"]?.includes("application/vnd.pgrst.object+json")
+        ? quote
+        : [quote],
+  },
+  setupSuccessMocks: async (page) => {
+    await mockRestTable(page, "quote_items", 200, []);
+  },
+  happyAssert: async (page) => {
+    await expect(
+      page.getByRole("heading", { name: `Orçamento ${quote.quote_number}`, level: 1 }),
+    ).toBeVisible();
   },
 });

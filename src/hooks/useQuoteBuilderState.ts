@@ -26,6 +26,7 @@ import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+import { autorizarSaida } from "@/lib/navigation/dirty-registry";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -337,31 +338,84 @@ interface TransitionQuoteParams {
   updateQuoteStatus: (quoteId: string, status: Quote['status']) => Promise<boolean>;
 }
 
-async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
-  const quoteId = params.quote.id;
-  if (!quoteId) return false;
-  let effectiveStatus = params.persistedStatus;
-  if (quoteStatusRequiresDraftReset(effectiveStatus)) {
-    const reopened = await params.updateQuoteStatus(quoteId, 'draft');
-    if (!reopened) return false;
-    effectiveStatus = 'draft';
-  }
+interface TransicaoAplicada {
+  aplicada: boolean;
+  /**
+   * Quantas vezes a versão da linha subiu na transição. As RPCs de status
+   * (`bulk_update_quote_status_atomic`, `request_discount_approval_atomic`)
+   * fazem `row_version = row_version + 1`, então quem permanece na tela depois
+   * de salvar precisa somar esses saltos: sem isso o próximo salvamento sairia
+   * com versão defasada e seria recusado pelo lock otimista.
+   */
+  saltosDeVersao: number;
+  /**
+   * Status que a tela deve passar a considerar vigente, ou `null` quando nada
+   * mudou no banco. A gravação seguinte envia o status da tela
+   * (`buildQuoteData`), e a RPC recusa divergência com
+   * `42501 / Use o fluxo formal para alterar o status`: quem fica na tela
+   * depois de salvar precisa acompanhar a reabertura e o pedido de aprovação.
+   */
+  statusVigente: string | null;
+}
+
+type AcaoDaTransicao =
+  | { tipo: "aprovar"; requested: number; allowed: number; notes?: string }
+  | { tipo: "status"; status: Quote["status"] }
+  | { tipo: "nada" };
+
+function decidirAcaoDaTransicao(
+  params: TransitionQuoteParams,
+  effectiveStatus: string,
+): AcaoDaTransicao {
   if (
-    params.finalStatus === 'pending_approval' &&
+    params.finalStatus === "pending_approval" &&
     params.maxDiscountPercent !== null &&
     params.maxDiscountPercent !== undefined
   ) {
-    return params.requestApproval(
-      quoteId,
-      params.realDiscountPercent,
-      params.maxDiscountPercent,
-      params.sellerNotes,
-    );
+    return {
+      tipo: "aprovar",
+      requested: params.realDiscountPercent,
+      allowed: params.maxDiscountPercent,
+      notes: params.sellerNotes,
+    };
   }
   if (params.finalStatus !== effectiveStatus) {
-    return params.updateQuoteStatus(quoteId, params.finalStatus);
+    return { tipo: "status", status: params.finalStatus };
   }
-  return true;
+  return { tipo: "nada" };
+}
+
+export async function applyQuoteTransition(
+  params: TransitionQuoteParams,
+): Promise<TransicaoAplicada> {
+  const quoteId = params.quote.id;
+  if (!quoteId) return { aplicada: false, saltosDeVersao: 0, statusVigente: null };
+
+  let saltosDeVersao = 0;
+  let statusVigente: string | null = null;
+  let effectiveStatus = params.persistedStatus;
+  if (quoteStatusRequiresDraftReset(effectiveStatus)) {
+    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    if (!reopened) return { aplicada: false, saltosDeVersao, statusVigente };
+    effectiveStatus = "draft";
+    saltosDeVersao = 1;
+    statusVigente = "draft";
+  }
+
+  const acao = decidirAcaoDaTransicao(params, effectiveStatus);
+  if (acao.tipo === "nada") return { aplicada: true, saltosDeVersao, statusVigente };
+
+  const aplicada =
+    acao.tipo === "aprovar"
+      ? await params.requestApproval(quoteId, acao.requested, acao.allowed, acao.notes)
+      : await params.updateQuoteStatus(quoteId, acao.status);
+
+  const statusAlcancado = acao.tipo === "aprovar" ? "pending_approval" : acao.status;
+  return {
+    aplicada,
+    saltosDeVersao: aplicada ? saltosDeVersao + 1 : saltosDeVersao,
+    statusVigente: aplicada ? statusAlcancado : statusVigente,
+  };
 }
 
 function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote['status'] {
@@ -382,25 +436,53 @@ interface CompleteSaveParams {
   expectedRowVersion: number | null;
   finalStatus: SaveStatus;
   transitionApplied: boolean;
+  saltosDeVersao: number;
+  statusVigente: string | null;
   setExpectedRowVersion: (version: number | null) => void;
+  setStatusDaTela: (status: string) => void;
+  /**
+   * Alguém editou a tela enquanto o servidor gravava? O snapshot enviado é a
+   * referência do que está salvo, então edição posterior a ele continua sendo
+   * trabalho não salvo e não pode ser levada embora na saída para o detalhe.
+   */
+  haEdicaoPosteriorAoEnvio: () => boolean;
   navigate: (path: string) => void;
 }
 
-function completeQuoteSave(params: CompleteSaveParams): void {
+export function completeQuoteSave(params: CompleteSaveParams): void {
   const { result, finalStatus, transitionApplied } = params;
   if (params.isEditMode) {
-    params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
+    const versaoDoServidor = result.row_version ?? params.expectedRowVersion;
+    // Soma os saltos da transição de status: quem edita durante a gravação fica
+    // na tela e salvaria de novo com a versão de antes da reabertura.
+    params.setExpectedRowVersion(
+      typeof versaoDoServidor === 'number'
+        ? versaoDoServidor + params.saltosDeVersao
+        : versaoDoServidor,
+    );
+  }
+  if (params.statusVigente) {
+    // A reabertura e o pedido de aprovação mudam o status no banco. A tela
+    // continua enviando `currentStatus`, então sem acompanhar aqui a próxima
+    // gravação é recusada com "use o fluxo formal para alterar o status".
+    params.setStatusDaTela(params.statusVigente);
   }
   if (!transitionApplied) {
     toast.warning(
       'O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.',
     );
+    // O orcamento ja esta gravado: ir para o detalhe nao perde nada e nao pode
+    // cair no aviso de "alteracoes nao salvas" (o snapshot limpo chega um
+    // render depois da navegacao). Edicao feita durante a chamada fica de fora
+    // da autorizacao: ela nao esta no orcamento gravado.
+    if (!params.haEdicaoPosteriorAoEnvio()) autorizarSaida();
     params.navigate(`/orcamentos/${result.id}`);
     return;
   }
   if (finalStatus === 'pending_singular_approval') {
     toast.success('Solicitação enviada para aprovação da Singular!');
   }
+  if (!params.haEdicaoPosteriorAoEnvio()) autorizarSaida();
   params.navigate(`/orcamentos/${result.id}`);
 }
 
@@ -451,6 +533,7 @@ export function useQuoteBuilderState() {
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
+  const [quoteLoadError, setQuoteLoadError] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
@@ -494,6 +577,7 @@ export function useQuoteBuilderState() {
       setItemsIfEmpty,
       setTags,
       setLoadingQuote,
+      setQuoteLoadError,
       setActiveItemIndex,
       setActiveItemIndexIfUnset,
       setExpandedItems,
@@ -830,6 +914,12 @@ export function useQuoteBuilderState() {
       }
       if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
       if (!validateFreshPrices(status, items)) return;
+      // Fotografa o formulário antes de qualquer espera: o que vai ao servidor
+      // são os valores desta closure (os do clique), então a referência de
+      // "está gravado" precisa ser a mesma foto. Lendo depois do await da verba
+      // de PA, uma edição feita durante a espera entraria na foto sem ter sido
+      // enviada e seria dada como salva.
+      const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
       const isPaUser = isPaPurchaser(isGerentePa, userRoles);
       const validBudget = await validatePaBudget({
         status,
@@ -860,8 +950,6 @@ export function useQuoteBuilderState() {
         shippingType,
         shippingCost,
       });
-      // Fotografa o formulário como ele vai para o servidor, antes da chamada.
-      const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
       const result = await persistQuote({
         isEditMode,
         quoteId,
@@ -881,7 +969,7 @@ export function useQuoteBuilderState() {
       // "alterações não salvas" ao sair de um orçamento que acabara de salvar.
       setBaselineSalvo(submittedFormSnapshot);
       createIdempotencyKeyRef.current = null;
-      const transitionApplied = await applyQuoteTransition({
+      const transicao = await applyQuoteTransition({
         quote: result,
         finalStatus,
         persistedStatus,
@@ -892,12 +980,16 @@ export function useQuoteBuilderState() {
         updateQuoteStatus,
       });
       completeQuoteSave({
+        haEdicaoPosteriorAoEnvio: () => JSON.stringify(formSnapshotRef.current) !== submittedFormSnapshot,
         result,
         isEditMode,
         expectedRowVersion,
         finalStatus,
-        transitionApplied,
+        transitionApplied: transicao.aplicada,
+        saltosDeVersao: transicao.saltosDeVersao,
+        statusVigente: transicao.statusVigente,
         setExpectedRowVersion,
+        setStatusDaTela: setCurrentStatus,
         navigate,
       });
     },
@@ -943,7 +1035,7 @@ export function useQuoteBuilderState() {
   );
 
   return {
-    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user, draftScopeId,
+    navigate, quoteId, isEditMode, loadingQuote, quoteLoadError, hasUnsavedData, user, draftScopeId,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,

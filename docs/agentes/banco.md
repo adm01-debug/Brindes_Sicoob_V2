@@ -92,6 +92,10 @@ Regras:
 1. **Nome:** `YYYYMMDDHHMMSS_verbo_objeto.sql`, descritivo — nunca o UUID que algumas ferramentas geram
    (`CONTRIBUTING.md:90`). Há nomes legados fora do padrão (`001_notification_system.sql`, arquivos com
    UUID); não os imite.
+   Exceção registrada: `000_notification_functions_replay_guard.sql` usa versão `000` porque precisa rodar
+   **antes** da `004` legada, para o replay não bater no contrato de `cleanup_old_notifications`
+   (`RETURNS INT` x `RETURNS VOID`, A-028). É bootstrap puro — não cria DDL próprio e só remove a
+   assinatura conflitante — e sai junto com o histórico `00x`.
 2. **Migration mesclada é imutável.** O Supabase rastreia por *nome de arquivo*: editar o arquivo não
    reaplica nada e cria drift silencioso. Precisa corrigir? Migration nova com o delta.
    `node scripts/check-migration-immutability.mjs` bloqueia no CI comparando com `origin/main`
@@ -169,12 +173,21 @@ Regras:
   funções).
 - Deploy: `.github/workflows/deploy-sicoob-functions.yml` — **manual, nunca automático no merge**: só
   `workflow_dispatch` com `confirmar = PUBLICAR` e `github.ref == 'refs/heads/main'` (`:16`),
-  `environment: construction` (`:20`), Supabase CLI pinada `2.120.0` (`:29-31`). Publica **13 funções
-  nomeadas** (`:42-58`): `expert-chat`, `external-db-bridge`, `sicoob-approval-reconciliation`,
-  `sicoob-artwork-register`, `sicoob-document-ingest`, `sicoob-kit-quote`, `sicoob-reorder`, `bi-copilot`,
-  `comparison-ai-advisor`, `get-app-logs`, `get-visitor-info`, `secure-upload`, `auth-integrity-check`.
-  Confirmação por diff antes/depois em `scripts/ci/verify-supabase-functions-published.mjs` (`:60-66`).
-  As outras ~93 funções **não sobem por esse workflow**.
+  `environment: construction` (`:20`), Supabase CLI pinada `2.120.0` (`:29-31`). Publica **22 funções
+  nomeadas** (`:42-64`): `expert-chat`, `send-transactional-email`, `external-db-bridge`,
+  `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-document-ingest`,
+  `sicoob-kit-quote`, `sicoob-reorder`, `bi-copilot`, `comparison-ai-advisor`, `get-app-logs`,
+  `get-visitor-info`, `secure-upload`, `auth-integrity-check`, `crm-db-bridge` e os 6 workers de
+  `pg_cron` (`webhook-dispatcher`, `connections-auto-test`, `sicoob-approval-notifications`,
+  `process-batch-export`, `send-scheduled-reports`, `connections-health-check`) e o recebedor de
+  webhook externo `webhook-inbound`.
+  Confirmação por diff antes/depois em `scripts/ci/verify-supabase-functions-published.mjs`
+  (`requiredFunctions` em `:4-32`): exige `status ACTIVE` e versão não regressiva para cada uma.
+  As outras ~86 funções **não sobem por esse workflow**.
+- **Depois de republicar:** o diff antes/depois prova que a versão subiu, não que o agendamento rodou.
+  Rode `scripts/inventario/banco.sql` (seção `cron`) e confira `execucoes_24h` e `falhas_24h` dos 6 workers
+  de `pg_cron`; republicar uma função cron não perde a agenda (`cron.job`), mas só a execução seguinte
+  mostra se ela voltou saudável.
 - `verify_jwt` é por função em `supabase/config.toml:5-82`. Onde é `false`, a validação está no handler;
   cron e chamadas internas autenticam por `INTERNAL_FUNCTION_SECRET` e **falham fechado** se o segredo
   não existir (`supabase/config.toml:32-34`, `supabase/functions/_shared/internal-service-auth.ts:34`).

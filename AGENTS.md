@@ -114,7 +114,8 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
   Vercel é o publicador oficial (decidido 08/11/2026); nenhum workflow publica o front. CSP
   duplicada em `vercel.json` e `public/_headers` — mexeu em uma, mexa na outra.
 - **Edge functions** — deploy só por `deploy-sicoob-functions.yml` (dispatch com `PUBLICAR`, allowlist de
-  13 funções); as outras ~93 não sobem por ali. Confirme o run; nunca deploy manual.
+  22 funções, incluindo os 6 workers de `pg_cron`); as outras ~86 não sobem por ali. Confirme o run;
+  nunca deploy manual.
 - **GitHub/CI** — ler `docs/agentes/github-ci.md` ao mexer em settings, branch protection ou workflows
   (10 required checks, `strict=true`, `enforce_admins=true`, conversas resolvidas). Mudou perímetro →
   atualize a tabela desse doc na mesma PR.

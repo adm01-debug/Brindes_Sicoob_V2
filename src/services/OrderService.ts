@@ -418,29 +418,12 @@ export class OrderService {
     });
 
     try {
-      // Safe origin detection for both browser and SSR/Deno
-      const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      
-      const { data: order } = await supabase
-        // rls-allow: lookup por UUID para compor o e-mail de status; a RLS valida ownership/org.
-        .from("orders")
-        .select("client_email, client_name")
-        .eq("id", params.orderId)
-        .maybeSingle();
-      const recipientEmail = order?.client_email || params.userEmail;
-      const recipientName = order?.client_name || params.userEmail.split('@')[0];
-
+      // O servidor resolve destinatário, número e status a partir do pedido.
       await invokeEdgeFunction('send-transactional-email', {
         body: {
           event_type: 'sicoob_order_status_change',
-          recipient_email: recipientEmail,
-          recipient_name: recipientName,
-          data: {
-            order_number: params.orderId.slice(0, 8),
-            new_status: statusLabel,
-            notes: params.notes,
-            action_url: `${origin}/pedidos/${params.orderId}`
-          }
+          order_id: params.orderId,
+          notes: params.notes,
         }
       });
     } catch (e) {

@@ -15,6 +15,11 @@ import { Sparkles } from 'lucide-react';
 interface Props {
   currentSkus: string[];
   excludeId?: string;
+  /**
+   * Quem decide a troca é a página: ela sabe se há edição pendente e pergunta
+   * antes de substituir o conteúdo do editor por outro template.
+   */
+  onSelectTemplate?: (id: string) => void;
 }
 
 function getIcon(name: string) {
@@ -40,9 +45,10 @@ function SimilarKitButton({ item, onSelect }: { item: SimilarKit; onSelect: (id:
   </button>;
 }
 
-export function SimilarKitsWidget({ currentSkus, excludeId }: Props) {
+export function SimilarKitsWidget({ currentSkus, excludeId, onSelectTemplate }: Props) {
   const navigate = useNavigate();
   const { data, isLoading } = useSimilarKits({ currentSkus, excludeId });
+  const escolherTemplate = onSelectTemplate ?? ((id: string) => navigate(`/montar-kit?template=${id}`));
 
   if (currentSkus.length === 0) return null;
 
@@ -67,7 +73,7 @@ export function SimilarKitsWidget({ currentSkus, excludeId }: Props) {
           </p>
         )}
         {(data ?? []).map((item) => <SimilarKitButton key={item.template.id} item={item}
-          onSelect={(id) => navigate(`/montar-kit?template=${id}`)} />)}
+          onSelect={escolherTemplate} />)}
       </CardContent>
     </Card>
   );
