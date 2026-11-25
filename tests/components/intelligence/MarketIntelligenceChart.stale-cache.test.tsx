@@ -49,6 +49,11 @@ function montar() {
 }
 
 const avisoStale = () => screen.queryByText(/Exibindo o último gráfico disponível/);
+/** O aviso precisa ser anunciado por leitor de tela, não só pintado na tela. */
+const regiaoDeStatus = () =>
+  screen
+    .queryAllByRole('status')
+    .find((el) => /Exibindo o último gráfico disponível/.test(el.textContent ?? '')) ?? null;
 
 describe('cache de inteligência de mercado após falha de atualização', () => {
   beforeEach(() => {
@@ -60,13 +65,15 @@ describe('cache de inteligência de mercado após falha de atualização', () =>
     const queryClient = montar();
     await screen.findByTestId('market-chart');
     expect(screen.getByLabelText(/Vendas no mercado: 10\.0/)).toBeTruthy();
-    expect(avisoStale()).toBeNull();
+    expect(regiaoDeStatus()).toBeNull();
 
     // Atualização falha: React Query mantém os dados anteriores e expõe o erro.
     mocks.invoke.mockRejectedValue(new Error('bridge fora do ar'));
     await queryClient.refetchQueries({ queryKey: ['market-intelligence-macro'] });
 
-    await waitFor(() => expect(avisoStale()).not.toBeNull());
+    // O aviso precisa estar numa regiao `status` (anunciada) e conter o texto.
+    await waitFor(() => expect(regiaoDeStatus()).not.toBeNull());
+    expect(regiaoDeStatus()).toHaveTextContent(/Exibindo o último gráfico disponível/);
     expect(screen.getByTestId('market-chart')).toBeTruthy();
     expect(screen.getByLabelText(/Vendas no mercado: 10\.0/)).toBeTruthy();
 
@@ -76,14 +83,15 @@ describe('cache de inteligência de mercado após falha de atualização', () =>
     const botao = screen.getByRole('button', { name: /Tentar novamente/ });
     fireEvent.click(botao);
     await waitFor(() => expect(botao).toBeDisabled());
-    expect(avisoStale()).not.toBeNull();
+    expect(regiaoDeStatus()).not.toBeNull();
+    expect(regiaoDeStatus()).toHaveTextContent(/Exibindo o último gráfico disponível/);
 
     // Sucesso: dados novos entram e o aviso sai.
     liberar({
       ...PAGINA,
       records: [{ ...PAGINA.records[0], units_depleted: 14 }],
     });
-    await waitFor(() => expect(avisoStale()).toBeNull());
+    await waitFor(() => expect(regiaoDeStatus()).toBeNull());
     expect(screen.getByLabelText(/Vendas no mercado: 14\.0/)).toBeTruthy();
   });
 });
