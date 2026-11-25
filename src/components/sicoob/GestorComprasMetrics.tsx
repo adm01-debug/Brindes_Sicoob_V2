@@ -66,7 +66,7 @@ function ConsumoDaVerba({ consumida, total }: { consumida: number; total: number
  * completo: um agregado parcial apresentado como total vira decisão errada.
  */
 function MetricasDaFila({ cooperativeId }: { cooperativeId: string }) {
-  const { data: metrics, isLoading, isError } = usePurchasingMetrics(cooperativeId);
+  const { data: metrics, isLoading, isError, refetch } = usePurchasingMetrics(cooperativeId);
 
   if (isLoading) {
     return (
@@ -77,11 +77,20 @@ function MetricasDaFila({ cooperativeId }: { cooperativeId: string }) {
     );
   }
 
+  // Falha da fila precisa de retentativa própria: antes só o bloco de verba
+  // oferecia "Tentar novamente" e estes dois números ficavam sem saída.
   if (isError) {
     return (
-      <p className="rounded-xl border border-dashed border-border/60 p-4 text-xs text-muted-foreground">
-        SLA e totais do mês indisponíveis: a consulta falhou. Nenhum valor foi estimado.
-      </p>
+      <Alert variant="destructive" role="alert">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>SLA e totais do mês indisponíveis</AlertTitle>
+        <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+          <span>A consulta falhou. Nenhum valor foi estimado.</span>
+          <Button size="sm" variant="outline" onClick={() => void refetch()}>
+            Tentar novamente
+          </Button>
+        </AlertDescription>
+      </Alert>
     );
   }
 

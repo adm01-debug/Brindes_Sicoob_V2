@@ -5,7 +5,7 @@
  * removidos por serem falsos e nada entrou no lugar — o gestor ficou sem
  * nenhum indicador na própria tela. Recupera os cenários da PR #157.
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
@@ -132,6 +132,23 @@ describe('Indicadores na tela de Gestão de Compras', () => {
     renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
 
     expect(await screen.findByText('50%')).toBeTruthy();
+  });
+
+  it('falha das métricas da fila avisa e oferece retentativa própria', async () => {
+    // A retentativa da verba não cobre estes dois números: a falha da fila precisa
+    // da própria saída, senão o gestor fica sem SLA e sem total do mês.
+    getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
+    loadPurchasingOrders.mockRejectedValueOnce(new Error('fila indisponível'));
+    loadPurchasingOrders.mockResolvedValue(pedidos(0, 0));
+
+    renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
+
+    expect(await screen.findByText('SLA e totais do mês indisponíveis')).toBeTruthy();
+    expect(screen.getByText('A consulta falhou. Nenhum valor foi estimado.')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    await waitFor(() => expect(loadPurchasingOrders.mock.calls.length).toBeGreaterThan(1));
   });
 
   it('consulta só a cooperativa do perfil', async () => {
