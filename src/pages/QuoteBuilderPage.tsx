@@ -127,7 +127,7 @@ function QuoteSummaryColumn({ state }: { state: QuoteBuilderState }) {
 }
 
 function QuoteBuilderDialogs({ state }: { state: QuoteBuilderState }) {
-  return <QuoteProductSelector open={state.productSearchOpen} onOpenChange={state.setProductSearchOpen} productSearch={state.productSearch} setProductSearch={state.setProductSearch} filteredProducts={state.filteredProducts} selectedProductForColor={state.selectedProductForColor} setSelectedProductForColor={state.setSelectedProductForColor} onProductClick={state.handleProductClick} onAddWithColor={state.addProductWithColor} formatCurrency={state.formatCurrency} />;
+  return <QuoteProductSelector canEdit={state.canEdit} open={state.productSearchOpen} onOpenChange={state.setProductSearchOpen} productSearch={state.productSearch} setProductSearch={state.setProductSearch} filteredProducts={state.filteredProducts} selectedProductForColor={state.selectedProductForColor} setSelectedProductForColor={state.setSelectedProductForColor} onProductClick={state.handleProductClick} onAddWithColor={state.addProductWithColor} formatCurrency={state.formatCurrency} />;
 }
 
 export default function QuoteBuilderPage() {
