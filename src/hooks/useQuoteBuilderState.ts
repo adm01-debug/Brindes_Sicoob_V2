@@ -533,6 +533,7 @@ export function useQuoteBuilderState() {
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
+  const [quoteLoadError, setQuoteLoadError] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
@@ -576,6 +577,7 @@ export function useQuoteBuilderState() {
       setItemsIfEmpty,
       setTags,
       setLoadingQuote,
+      setQuoteLoadError,
       setActiveItemIndex,
       setActiveItemIndexIfUnset,
       setExpandedItems,
@@ -1033,7 +1035,7 @@ export function useQuoteBuilderState() {
   );
 
   return {
-    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user, draftScopeId,
+    navigate, quoteId, isEditMode, loadingQuote, quoteLoadError, hasUnsavedData, user, draftScopeId,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,
