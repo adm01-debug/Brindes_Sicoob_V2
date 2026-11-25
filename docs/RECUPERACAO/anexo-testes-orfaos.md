@@ -116,13 +116,14 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/pages/GestorCompras.error-state.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
-| `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  | A correção é do contrato do esquema: `salesGoalSchema` é exportado por `src/lib/validations/index.ts:10-11` e **nenhum formulário o consome hoje** (a tela de metas salva por `useSalesGoals`), então este item vale como catraca de API, não como correção de tela.
-
+| `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  |
 | `tests/scripts/e2e-workflow-preflight.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
 | `tests/scripts/healthcheck.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/scripts/scheduled-edge-deploy-parity.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
 | `tests/scripts/scheduled-report-seller-scope.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
 | `tests/unit/e2e-cleanup-client.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
+
+Nota de `tests/pages/is-demo-mode.test.ts`: A correção é do contrato do esquema: `salesGoalSchema` é exportado por `src/lib/validations/index.ts:10-11` e **nenhum formulário o consome hoje** (a tela de metas salva por `useSalesGoals`), então este item vale como catraca de API, não como correção de tela.
 
 ## Reavaliação dos 36 `comportamento-divergente`
 
@@ -188,7 +189,7 @@ Medido: o teste roda na `main` e a API/comportamento que ele exige não existe. 
 | `tests/components/pricing/simulator/ProductSearch.test.tsx` | `priceAvailable` não existe em `src/` (`grep -rn priceAvailable src` = 0) e `ProductSearch` mapeia `price: p.sale_price ?? 0` (`:103`): produto com preço 0, negativo, NaN ou infinito entra no simulador como preço zero sem aviso. |
 | `tests/hooks/bi/useClientCategoryAffinity.test.tsx` | O hook devolve `isMock`/contagens, mas nenhum `status` (`insufficient`/`available`/`unavailable`): afinidade de categoria calculada com amostra pequena é apresentada como se fosse do mercado. Mesma regra que a #449 aplicou à sazonalidade. |
 | `tests/hooks/useCrmCompanies.pagination.test.ts` | `useAllCrmCompanies` não existe (`grep export src/hooks/useCrmCompanies.ts`): não há busca paginada de **toda** a base de clientes com ordenação estável nem falha explícita ao passar de 10.000 registros. |
-| `tests/hooks/useCrmClientsPage.test.ts` | `useCrmClientsPage` também não existe e não há contagem exata do filtrado: o total da tela de Clientes é `clients.length` (`src/pages/ClientsPage.tsx:127`) vindo de `useCrmCompanies`, cuja consulta limita a 200 linhas (`src/hooks/useCrmCompanies.ts:118-124`). Ou seja, o KPI trava em 200 clientes e não representa o total filtrado. |
+| `tests/hooks/useCrmClientsPage.test.ts` | `useCrmClientsPage` também não existe e não há contagem exata do filtrado: a tela de Clientes consome o **diretório paginado** `useCrmCompanies({ is_customer: true })` (`src/pages/ClientsPage.tsx:112`), que pagina o diretório do portal (`src/hooks/useCrmCompanies.ts:35-49`, `DIRECTORY_PAGE = 100` / `DIRECTORY_CAP = 200`) e por isso também trava em 200 linhas. O indicador recebe `clients.length` (`src/pages/ClientsPage.tsx:127`) **antes** do filtro local de busca (`:114-125`), então nem é o total da base nem o total filtrado. |
 | `tests/components/BackButton.overlay-pointer.test.tsx` | Não há mecanismo de "navigation overlay": `grep -rn data-navigation-overlay src` = 0 e `BackButton` não consome o clique que fecha o menu. |
 | `tests/hooks/useIndustryTrends.errors.test.ts` + `useIndustryCategoryTrends.errors.test.tsx` | Os hooks importam `fetchIndustryPeerIds` de `@/lib/crm-db`, mas não existe em `src/` a mensagem de falha de CRM que o teste exige (o teste também precisa de uma linha de mock a mais). |
 | `tests/hooks/useClientBI.no-fallback.test.ts` | `useClientBI` não expõe `hasError` (o teste recebe `undefined`), então falha de origem não é distinguível de "cliente sem dados"; `recentOrders[].productPreview` também não existe. |
@@ -216,15 +217,16 @@ O teste roda na `main` e falha por dependência de ambiente (`process.exit`, `sp
 | `tests/hooks/useExternalCategoriesQuery.test.ts` | A `main` resolve por consulta única em cache e filtra localmente (`useCategoriesByIds`), em vez de uma consulta por lista de ids com `enabled`. Resultado equivalente; adotar o teste exigiria reescrever o hook. |
 | `tests/scripts/scheduled-edge-deploy-parity.test.ts` | Esperava 2 workers de cron; a `main` publica 22 funções, **6 delas workers de cron** (`scripts/ci/verify-supabase-functions-published.mjs:19-32`). A paridade hoje é verificada pelo próprio workflow de deploy. |
 
-### Ainda sem veredito (0 de 36)
+### Situação dos 36: 2 ainda sem veredito
 
-Os 11 da reavaliação anterior mais os 25 desta seção fecham os 36 `comportamento-divergente`. Dos 25:
+Dos 36 `comportamento-divergente` (11 da reavaliação anterior + 25 desta seção), **34 têm veredito** e
+**2 continuam sem** — os dois inconclusivos por ambiente abaixo. Dos 25 desta seção:
 
 - **3** recuperados nesta leva (PR #453), com o teste órfão rodando verde;
 - **1** recuperado em PR aberta (`QuoteProductSelector`, PR #454) — o código ainda não está na `main`;
-- **2** inconclusivos por ambiente de teste (`e2e-workflow-preflight`, `healthcheck`) — fora da fila: só um ambiente adequado dá veredito;
+- **2** inconclusivos por ambiente de teste (`e2e-workflow-preflight`, `healthcheck`) — **seguem na fila**: o veredito depende de rodar em ambiente adequado, então a branch de origem deles não pode ser excluída;
 - **14** com lacuna confirmada — continuam na fila de recuperação, cada um com PR próprio;
 - **5** com comportamento já presente na `main` (teste obsoleto ou de API renomeada).
 
-Nenhuma branch de origem destes 25 pode ser excluída antes do veredito da sua linha virar código na
-`main` (ou de a linha ser marcada como obsoleta aqui).
+Nenhuma branch de origem destes 25 — inclusive as dos 2 inconclusivos — pode ser excluída antes do
+veredito da sua linha virar código na `main` (ou de a linha ser marcada como obsoleta aqui).

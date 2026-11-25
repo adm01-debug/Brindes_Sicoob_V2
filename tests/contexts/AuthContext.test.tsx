@@ -221,6 +221,22 @@ describe('AuthContext', () => {
     await waitFor(() => expect(getUxMetrics()).toEqual({}));
   });
 
+  it('limpa os KPIs de navegação quando a sessão encerra por evento', async () => {
+    await act(async () => {
+      render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    trackUx('nav.scroll-restore');
+    expect(Object.keys(getUxMetrics())).toContain('nav.scroll-restore');
+
+    await act(async () => {
+      const cb = (globalThis as any).__authCb;
+      cb?.('SIGNED_OUT', null);
+    });
+
+    await waitFor(() => expect(getUxMetrics()).toEqual({}));
+  });
+
   it('encerra a sessão local quando o vínculo foi revogado', async () => {
     const mockUser = { id: 'user-revoked', email: 'revoked@test.com' };
     const mockSession = { user: mockUser };
@@ -230,6 +246,10 @@ describe('AuthContext', () => {
       error: null,
     } as any);
 
+    // A revogação não passa pelo logout da interface, então é ela que precisa
+    // limpar os contadores de navegação da sessão revogada.
+    trackUx('guard.shown');
+
     await act(async () => {
       render(<AuthProvider><AuthConsumer /></AuthProvider>);
     });
@@ -238,5 +258,6 @@ describe('AuthContext', () => {
       expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
     });
     expect(supabase.from).not.toHaveBeenCalledWith('user_roles');
+    expect(getUxMetrics()).toEqual({});
   });
 });

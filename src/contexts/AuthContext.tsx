@@ -82,6 +82,9 @@ async function closeRevokedLocalSession(reason: string): Promise<void> {
   } catch {
     // O encerramento da sessão não depende do armazenamento do navegador.
   }
+  // O vínculo revogado encerra a sessão sem passar pelo logout da interface:
+  // os KPIs de navegação precisam morrer aqui também.
+  resetUxMetrics();
   await supabase.auth.signOut({ scope: "local" });
   void import("sonner").then(({ toast }) => {
     toast.error("Seu vínculo de acesso não está mais ativo. Entre novamente ou fale com o gestor.");
@@ -141,6 +144,9 @@ function handleAnonymousState(deps: AuthStateDependencies): void {
   deps.setIsLoading(false);
   useRecentlyViewedStore.getState().reset();
   clearSensitiveBrowserData();
+  // Sessão encerrada por expiração/token também não pode levar os contadores
+  // de navegação para o próximo login na mesma aba.
+  resetUxMetrics();
 }
 
 function handleAuthStateChange(
