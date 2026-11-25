@@ -318,6 +318,9 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
 
   const getCurrentStep = () => {
     if (!selectedProduct) return 1;
+    // Preço inválido: as etapas 2+ ficam ocultas, então a barra não pode
+    // apontar para uma etapa que o usuário não consegue acessar.
+    if (selectedProduct.priceAvailable === false) return 1;
     if (visibility.needsVariantSelection) return 2;
     if (mode === 'adding') {
       if (!currentTechnique) return 3;

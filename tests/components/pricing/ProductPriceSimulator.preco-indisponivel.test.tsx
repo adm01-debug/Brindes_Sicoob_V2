@@ -20,7 +20,7 @@ vi.mock("@/components/pricing/simulator/ProductSearch", () => ({
   ),
 }));
 
-function produto(salePrice: number, priceAvailable: boolean) {
+function produto(salePrice: number, priceAvailable: boolean, comCor = false) {
   return {
     id: "produto-teste",
     name: "Caneca Personalizada",
@@ -28,6 +28,7 @@ function produto(salePrice: number, priceAvailable: boolean) {
     price: salePrice,
     priceAvailable,
     images: [],
+    colors: comCor ? [{ code: "AZ", name: "Azul", hex: "#0000ff" }] : undefined,
   };
 }
 
@@ -50,6 +51,21 @@ describe("ProductPriceSimulator — preço de venda inválido", () => {
     expect(await screen.findByText("Produto sem preço de venda no catálogo")).toBeTruthy();
     expect(screen.queryByText(/Personalizações/)).toBeNull();
     expect(screen.queryByText("Criar Orçamento a partir desta Simulação")).toBeNull();
+  });
+
+  it("bloqueia também a seleção de cor quando o produto tem variantes", async () => {
+    await selecionar(produto(0, false, true));
+
+    expect(await screen.findByText("Produto sem preço de venda no catálogo")).toBeTruthy();
+    expect(screen.queryByText(/Selecione a Cor do Produto/)).toBeNull();
+    expect(screen.queryByText("Criar Orçamento a partir desta Simulação")).toBeNull();
+  });
+
+  it("libera a seleção de cor com preço válido em produto com variantes", async () => {
+    await selecionar(produto(12.5, true, true));
+
+    expect(await screen.findByText(/Selecione a Cor do Produto/)).toBeTruthy();
+    expect(screen.queryByText("Produto sem preço de venda no catálogo")).toBeNull();
   });
 
   it("mantém a simulação normal quando o preço é válido", async () => {
