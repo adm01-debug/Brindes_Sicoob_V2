@@ -234,7 +234,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
-    sha256: "d227b94985df825052921172b74bf7f2ffdf4ecda4db9dd12b793b718666ec7b",
+    sha256: "db796e80a4dd50ec30eb997a933bf1e048e1895cb2a3ec9ed18607fb6e964110",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

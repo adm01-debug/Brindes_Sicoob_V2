@@ -91,3 +91,20 @@ BEGIN
     RAISE EXCEPTION 'is_dnd_active() perdeu EXECUTE do authenticated';
   END IF;
 END $sicoob_acl_assert$;
+
+-- =====================================================
+-- Down (reversao)
+-- =====================================================
+-- A ACL anterior, medida em producao antes desta migration, era PUBLIC EXECUTE
+-- (default de CREATE FUNCTION) mais GRANT para anon/authenticated. Para reverter
+-- basta devolver esses grants; nenhum objeto foi criado ou removido, entao nao ha
+-- dado a restaurar:
+--
+--   GRANT EXECUTE ON FUNCTION public.cleanup_old_notifications() TO PUBLIC, anon, authenticated;
+--   GRANT EXECUTE ON FUNCTION public.is_dnd_active(uuid)   TO PUBLIC, anon, authenticated;
+--   GRANT EXECUTE ON FUNCTION public.is_dnd_active()       TO PUBLIC, anon;
+--
+-- A reversao e exercitada por
+-- tests/scenarios/notification-helpers-acl.scenario.mjs (caso "reversao devolve a
+-- ACL anterior"), que aplica esta migration, roda o Down acima e confere que
+-- anon/PUBLIC voltam a ter EXECUTE.
