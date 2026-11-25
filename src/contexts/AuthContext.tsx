@@ -10,6 +10,7 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { resetUxMetrics } from "@/lib/uxMetrics";
 import { limparRegistroDeRotas } from '@/lib/navigation/dirty-registry';
 
 
@@ -81,6 +82,9 @@ async function closeRevokedLocalSession(reason: string): Promise<void> {
   } catch {
     // O encerramento da sessão não depende do armazenamento do navegador.
   }
+  // O vínculo revogado encerra a sessão sem passar pelo logout da interface:
+  // os KPIs de navegação precisam morrer aqui também.
+  resetUxMetrics();
   await supabase.auth.signOut({ scope: "local" });
   void import("sonner").then(({ toast }) => {
     toast.error("Seu vínculo de acesso não está mais ativo. Entre novamente ou fale com o gestor.");
@@ -140,6 +144,9 @@ function handleAnonymousState(deps: AuthStateDependencies): void {
   deps.setIsLoading(false);
   useRecentlyViewedStore.getState().reset();
   clearSensitiveBrowserData();
+  // Sessão encerrada por expiração/token também não pode levar os contadores
+  // de navegação para o próximo login na mesma aba.
+  resetUxMetrics();
 }
 
 function handleAuthStateChange(
@@ -385,6 +392,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       useRecentlyViewedStore.getState().reset();
       // O estado sujo de quem saiu não pode interrogar o próximo login.
       limparRegistroDeRotas();
+      // KPIs de navegação são por sessão: os contadores de quem saiu não podem
+      // entrar na conta do próximo login na mesma aba.
+      resetUxMetrics();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');
