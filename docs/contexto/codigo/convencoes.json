@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)",
    "fix: prefetch do catalogo declara getNextPageParam (#440)",
    "chore(inventario): estado real do banco e do codigo [auto] (#438)",
    "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)",
-   "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
-   "feat: assistente de layouts passa a usar a IA real (#435)"
+   "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

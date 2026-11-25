@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "a07c4e7499bbf834d777b046c65d3846956ebfaa",
+  "commit": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
   "branch": "main",
-  "data_commit": "2026-11-25T08:26:33-03:00",
+  "data_commit": "2026-11-25T11:42:31Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "7bf44fc",
+    "data": "2026-11-25",
+    "assunto": "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)"
+   },
    {
     "sha": "a07c4e7",
     "data": "2026-11-25",
@@ -126,11 +131,6 @@
     "sha": "aef4f10",
     "data": "2026-11-23",
     "assunto": "feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)"
-   },
-   {
-    "sha": "40abb0a",
-    "data": "2026-11-23",
-    "assunto": "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)"
    }
   ],
   "arquivos_mudados_7d": 1299,
@@ -164,16 +164,16 @@
     "mudancas": 16
    },
    {
+    "pasta": "package.json",
+    "mudancas": 15
+   },
+   {
     "pasta": "src/components/sicoob",
     "mudancas": 15
    },
    {
     "pasta": "src/pages/admin",
     "mudancas": 15
-   },
-   {
-    "pasta": "package.json",
-    "mudancas": 14
    },
    {
     "pasta": "src/components/bi",
@@ -192,7 +192,7 @@
     "mudancas": 11
    },
    {
-    "pasta": "scripts/automation.config.json",
+    "pasta": "package-lock.json",
     "mudancas": 11
    }
   ],
@@ -203,7 +203,7 @@
    },
    {
     "arquivo": "package.json",
-    "mudancas": 22
+    "mudancas": 23
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -219,7 +219,7 @@
    },
    {
     "arquivo": "package-lock.json",
-    "mudancas": 18
+    "mudancas": 19
    },
    {
     "arquivo": ".github/workflows/ci.yml",
@@ -305,7 +305,7 @@
    },
    {
     "autor": "dependabot[bot]",
-    "commits": 13
+    "commits": 14
    },
    {
     "autor": "github-actions[bot]",

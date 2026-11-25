@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "a07c4e7499bbf834d777b046c65d3846956ebfaa",
+  "sha": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 11:27 UTC",
+  "generated_at": "2026-11-25 11:43 UTC",
   "files_total": 5306,
   "code_files": 3867,
   "code_lines": 570786
  },
  "version": "1.3.2",
- "facts_hash": "883286892d76cb8d",
+ "facts_hash": "9535cca86203620f",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -22,12 +22,12 @@
     "in": "package.json"
    },
    "@supabase/supabase-js": {
-    "version": "^2.119.0",
+    "version": "^2.119.2",
     "role": "Supabase (DB/Auth/Storage/Functions)",
     "in": "package.json"
    },
    "@tanstack/react-query": {
-    "version": "^5.107.1",
+    "version": "^5.108.1",
     "role": "Cache/fetch de dados (TanStack Query)",
     "in": "package.json"
    },
@@ -57,7 +57,7 @@
     "in": "package.json"
    },
    "react-router-dom": {
-    "version": "7.18.5",
+    "version": "7.18.6",
     "role": "Roteamento (React Router)",
     "in": "package.json"
    },
@@ -259489,10 +259489,20 @@
   }
  },
  "git": {
-  "sha": "a07c4e7499bbf834d777b046c65d3846956ebfaa",
+  "sha": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "7bf44fc",
+    "date": "2026-11-25",
+    "author": "dependabot[bot]",
+    "subject": "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)",
+    "files": [
+     "package-lock.json",
+     "package.json"
+    ]
+   },
    {
     "sha": "a07c4e7",
     "date": "2026-11-25",
@@ -259897,18 +259907,6 @@
      "docs/qa/01-INVENTARIO.md",
      "docs/qa/02-CENARIOS.md",
      "docs/qa/04-PLANO.md"
-    ]
-   },
-   {
-    "sha": "54e7819",
-    "date": "2026-11-22",
-    "author": "adm01-debug",
-    "subject": "fix: extrai parser de moeda e validação do componente de notas (#404)",
-    "files": [
-     "src/components/sicoob/orders/OrderInvoicesTab.tsx",
-     "src/components/sicoob/orders/utils/amount.ts",
-     "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
-     "tests/scenarios/relatorios-agendados-cron.mjs"
     ]
    }
   ],
