@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ff48a63203826ec6874cfc7d71883bf8165a096b",
+  "commit": "a07c4e7499bbf834d777b046c65d3846956ebfaa",
   "branch": "main",
-  "data_commit": "2026-11-25T10:56:44Z",
+  "data_commit": "2026-11-25T08:26:33-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "a07c4e7",
+    "data": "2026-11-25",
+    "assunto": "fix: prefetch do catalogo declara getNextPageParam (#440)"
+   },
    {
     "sha": "ff48a63",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "40abb0a",
     "data": "2026-11-23",
     "assunto": "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)"
-   },
-   {
-    "sha": "a8dad98",
-    "data": "2026-11-23",
-    "assunto": "fix: servidor resolve destinatario do email transacional (#411)"
    }
   ],
-  "arquivos_mudados_7d": 1298,
+  "arquivos_mudados_7d": 1299,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 215
+    "commits": 216
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5303,
   "arquivos_codigo": 3193,
-  "linhas_codigo": 506208,
+  "linhas_codigo": 506209,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48554
+   "linhas": 48555
   },
   "src/integrations": {
    "arquivos": 3,

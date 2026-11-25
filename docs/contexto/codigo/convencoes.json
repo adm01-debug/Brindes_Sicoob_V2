@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: prefetch do catalogo declara getNextPageParam (#440)",
    "chore(inventario): estado real do banco e do codigo [auto] (#438)",
    "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)",
    "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
-   "feat: assistente de layouts passa a usar a IA real (#435)",
-   "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)"
+   "feat: assistente de layouts passa a usar a IA real (#435)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

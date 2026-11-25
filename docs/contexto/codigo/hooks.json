@@ -4281,7 +4281,7 @@
    "hooks_exportados": [
     "useCatalogPrefetch"
    ],
-   "linhas": 35,
+   "linhas": 36,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
