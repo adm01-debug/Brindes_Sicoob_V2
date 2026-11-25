@@ -256,6 +256,20 @@ describe('janela de consulta do mercado macro', () => {
     expect(result.current.data?.truncated).toBe(true);
   });
 
+  it('encerra a leitura de paginas quando o bridge recusa o deslocamento', async () => {
+    invoke.mockImplementation(async (request: { offset?: number }) => {
+      if ((request.offset ?? 0) >= 10000) throw erroDoBridge('PGRST103: Requested range not satisfiable');
+      return { records: Array.from({ length: 5000 }, () => ({ summary_date: data(), stock_close: 4, units_depleted: 1, units_restocked: 0, supplier_id: 'fornecedor-1' })) };
+    });
+
+    const { result } = renderHook(() => useMarketIntelligenceMacro(360), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.isError).toBe(false);
+    expect(invoke).toHaveBeenCalledTimes(3);
+    expect(result.current.data?.truncated).toBe(false);
+  });
+
   it('trata deslocamento recusado na sonda como fim de leitura de verdade', async () => {
     invoke.mockImplementation(async (request: { limit?: number }) => {
       // Formato real do bridge: 400 com `{ error }` no corpo e mensagem generica no Error.
