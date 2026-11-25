@@ -139,15 +139,37 @@ function buildClientCells(rows: ClientRow[]): {
   return { cells, monthsCovered: monthsSet.size };
 }
 
-function buildIndustryCells(rows: IndustryRow[]): IndustryMonthCell[] {
-  const acc: Record<number, { q: number; r: number; n: number }> = {};
+/** `companies_active` é quantas empresas têm histórico naquele mês. */
+function hasIndustrySample(row: IndustryRow): boolean {
+  return (Number(row.companies_active) || 0) >= MIN_SECTOR_COMPANIES;
+}
+
+type IndustryMonthAcc = { q: number; r: number; n: number };
+
+/**
+ * Soma as médias mês a mês. Um mês com uma empresa só faz a compra de um
+ * cliente virar "sazonalidade do setor"; esses meses ficam fora da amostra.
+ */
+function accumulateIndustryMonths(
+  rows: IndustryRow[],
+): Record<number, IndustryMonthAcc> {
+  const acc: Record<number, IndustryMonthAcc> = {};
   for (const r of rows) {
+    if (!hasIndustrySample(r)) continue;
     const m = r.month;
     if (!acc[m]) acc[m] = { q: 0, r: 0, n: 0 };
     acc[m].q += Number(r.avg_quotes_per_company) || 0;
     acc[m].r += Number(r.avg_revenue_per_company) || 0;
     acc[m].n += 1;
   }
+  return acc;
+}
+
+function buildIndustryCells(rows: IndustryRow[]): {
+  cells: IndustryMonthCell[];
+  hasSample: boolean;
+} {
+  const acc = accumulateIndustryMonths(rows);
   // Média sobre os anos cobertos
   const monthly: Record<number, { q: number; r: number }> = {};
   for (let m = 1; m <= 12; m++) {
@@ -161,7 +183,7 @@ function buildIndustryCells(rows: IndustryRow[]): IndustryMonthCell[] {
   for (let m = 1; m <= 12; m++) {
     cells.push(industryMonthCell(m, monthly[m] ?? { q: 0, r: 0 }, totalQ, maxQ));
   }
-  return cells;
+  return { cells, hasSample: Object.keys(acc).length > 0 };
 }
 
 function industryMonthCell(
@@ -190,17 +212,18 @@ function resolveDataStatus(hasClientData: boolean, hasIndustryData: boolean): Se
 }
 
 /**
- * Setor só vira comparação de mercado com amostra mínima: `companiesCount` era recebido
- * e ignorado, então a média de uma ou duas empresas aparecia como "sazonalidade do setor".
+ * Setor só vira comparação de mercado com amostra mínima de empresas **com
+ * histórico**. O gate era `companiesCount` (cadastros do ramo): três cadastros e
+ * um único comprador bastavam para o histórico desse comprador ser apresentado
+ * como sazonalidade setorial.
  */
 function resolveIndustrySample(
   rows: IndustryRow[] | undefined,
-  companiesCount: number | undefined,
 ): { industry: IndustryMonthCell[]; hasIndustryData: boolean } {
-  if ((companiesCount ?? 0) < MIN_SECTOR_COMPANIES) return { industry: zeroIndustryCells(), hasIndustryData: false };
   const measured = buildIndustryCells(rows ?? []);
-  if (!measured.some((c) => c.avgQuotesPerCompany > 0)) return { industry: zeroIndustryCells(), hasIndustryData: false };
-  return { industry: measured, hasIndustryData: true };
+  if (!measured.hasSample || !measured.cells.some((c) => c.avgQuotesPerCompany > 0))
+    return { industry: zeroIndustryCells(), hasIndustryData: false };
+  return { industry: measured.cells, hasIndustryData: true };
 }
 
 function zeroIndustryCells(): IndustryMonthCell[] {
@@ -241,7 +264,7 @@ function peakResult(
  * com `hasEnoughData: false`; simulado é só o cliente de demonstração.
  */
 export function resolveSeasonalityResult(
-  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number; industryError?: unknown } | undefined,
+  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; industryError?: unknown } | undefined,
   isLoading: boolean,
   useDemoData = false,
 ) {
@@ -262,7 +285,7 @@ export function resolveSeasonalityResult(
 
   const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
   const hasClientData = hasClientActivity(client);
-  const { industry, hasIndustryData } = resolveIndustrySample(data?.industryRows, data?.companiesCount);
+  const { industry, hasIndustryData } = resolveIndustrySample(data?.industryRows);
   const base = {
     isLoading,
     monthsCovered,
@@ -378,7 +401,6 @@ export function useClientSeasonality(
 
       // 2) Sazonalidade do setor (se houver ramo)
       let industryRows: IndustryRow[] = [];
-      let companiesCount = 0;
       // A falha do setor passa a ser devolvida, não engolida: sem isso a tela
       // não tinha como distinguir "setor sem dado" de "consulta do setor caiu".
       let industryError: unknown;
@@ -388,7 +410,6 @@ export function useClientSeasonality(
           // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
           const peerIds = await fetchIndustryPeerIds(ramoAtividade);
           const ids = peerIds.filter((id) => id && id !== clientId);
-          companiesCount = ids.length;
           if (ids.length > 0) {
             const { data: indData, error: indErr } = await supabase.rpc(
               "get_industry_seasonality",
@@ -402,7 +423,7 @@ export function useClientSeasonality(
         }
       }
 
-      return { clientRows, industryRows, companiesCount, industryError };
+      return { clientRows, industryRows, industryError };
     },
   });
 
