@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn() }));
@@ -33,11 +33,13 @@ function sseResponse(chunks: string[]) {
 }
 
 const input = () => screen.getByLabelText(/mensagem para o assistente/i);
+let scrollSpy: ReturnType<typeof vi.fn>;
 
 describe("AIChat consome o stream real do expert-chat", () => {
   beforeEach(() => {
     // jsdom não implementa scrollTo; o componente usa para auto-scroll.
-    Element.prototype.scrollTo = vi.fn();
+    scrollSpy = vi.fn();
+    Element.prototype.scrollTo = scrollSpy;
     mocks.fetch.mockReset();
     vi.stubGlobal("fetch", mocks.fetch);
   });
@@ -103,11 +105,60 @@ describe("AIChat consome o stream real do expert-chat", () => {
     await waitFor(() => expect(screen.getByText(/Resposta antiga/)).toBeTruthy());
 
     fireEvent.click(screen.getByRole("button", { name: /reiniciar conversa/i }));
-    pushRef.push(" que nao pode voltar");
-    pushRef.finish();
+
+    // Entrega os trechos finais dentro do act: sem isso o teste pode medir antes
+    // de o chat processar o resto da resposta antiga.
+    await act(async () => {
+      pushRef.push(" que nao pode voltar");
+      pushRef.finish();
+      await Promise.resolve();
+    });
 
     await waitFor(() => expect(screen.queryByText("Onde coloco a arte?")).toBeNull());
     expect(screen.queryByText(/Resposta antiga/)).toBeNull();
     expect(screen.queryByText(/nao pode voltar/)).toBeNull();
+  });
+
+  it("nao puxa a rolagem quando a pessoa esta lendo uma mensagem anterior", async () => {
+    const encoder = new TextEncoder();
+    const pushRef: { push: (chunk: string) => void; finish: () => void } = { push: () => {}, finish: () => {} };
+    const stream = new ReadableStream({
+      start(controller) {
+        pushRef.push = (chunk: string) => {
+          const payload = JSON.stringify({ choices: [{ delta: { content: chunk } }] });
+          controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+        };
+        pushRef.finish = () => {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        };
+      },
+    });
+    mocks.fetch.mockResolvedValue(
+      new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+    );
+
+    render(<AIChat />);
+    fireEvent.change(input(), { target: { value: "Onde coloco a arte?" } });
+    fireEvent.keyDown(input(), { key: "Enter" });
+
+    pushRef.push("Primeira resposta");
+    await waitFor(() => expect(screen.getByText(/Primeira resposta/)).toBeTruthy());
+
+    const log = screen.getByRole("log");
+    // Pessoa rolou para cima: 600px longe do fim da conversa.
+    Object.defineProperty(log, "scrollHeight", { value: 1000, configurable: true });
+    Object.defineProperty(log, "clientHeight", { value: 300, configurable: true });
+    Object.defineProperty(log, "scrollTop", { value: 100, configurable: true, writable: true });
+    fireEvent.scroll(log);
+    scrollSpy.mockClear();
+
+    await act(async () => {
+      pushRef.push(" e continua chegando");
+      pushRef.finish();
+    });
+
+    expect(screen.getByText(/continua chegando/)).toBeTruthy();
+    expect(scrollSpy).not.toHaveBeenCalled();
   });
 });

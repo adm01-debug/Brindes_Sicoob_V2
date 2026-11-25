@@ -309,13 +309,15 @@ interface ChatLogProps {
   isLoading: boolean;
   maxHeight: string;
   scrollRef: RefObject<HTMLDivElement>;
+  onScroll: () => void;
 }
 
-function ChatLog({ messages, streaming, isLoading, maxHeight, scrollRef }: ChatLogProps) {
+function ChatLog({ messages, streaming, isLoading, maxHeight, scrollRef, onScroll }: ChatLogProps) {
   const empty = messages.length === 0 && !isLoading;
   return (
     <div
       ref={scrollRef}
+      onScroll={onScroll}
       className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
       style={{ maxHeight }}
       role="log"
@@ -420,8 +422,17 @@ export function AIChat({
   // O host pode passar a ref para mover o foco ao abrir/fechar o chat.
   const textareaRef = inputRef ?? internalTextareaRef;
 
-  // Auto-scroll para a última mensagem
+  // Acompanha a resposta so enquanto a pessoa estiver no fim da conversa:
+  // rolar por cima de quem esta lendo uma mensagem anterior tira o texto da tela.
+  const nearBottomRef = useRef(true);
+  const handleLogScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 48;
+  }, []);
+
   useEffect(() => {
+    if (!nearBottomRef.current) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading, streaming]);
 
@@ -435,6 +446,8 @@ export function AIChat({
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
     setInput("");
+    // Mandar mensagem e pedido explicito para ver o fim da conversa.
+    nearBottomRef.current = true;
     void sendTurn(trimmed);
   }, [input, isLoading, sendTurn]);
 
@@ -498,6 +511,7 @@ export function AIChat({
         isLoading={isLoading}
         maxHeight={maxHeight}
         scrollRef={scrollRef}
+        onScroll={handleLogScroll}
       />
 
       {/* Erro */}

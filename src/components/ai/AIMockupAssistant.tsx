@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type Ref, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { Bot, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,10 +53,12 @@ function AssistantHeader({
   minimized,
   onToggle,
   onClose,
+  closeButtonRef,
 }: {
   minimized: boolean;
   onToggle: () => void;
   onClose: () => void;
+  closeButtonRef?: Ref<HTMLButtonElement>;
 }) {
   return (
       <div
@@ -78,6 +80,7 @@ function AssistantHeader({
           Beta
         </Badge>
         <Button
+          ref={closeButtonRef}
           variant="ghost"
           size="icon" aria-label="Fechar"
           className="h-7 w-7"
@@ -138,12 +141,17 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
   const [hasOpened, setHasOpened] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldRestoreFocusRef = useRef(false);
 
   // Abrir/fechar pelo teclado precisa levar o foco para o chat e devolve-lo ao botao.
   useEffect(() => {
     if (isOpen) {
-      chatInputRef.current?.focus();
+      // Durante a geracao o campo fica desabilitado e nao aceita foco; nesse caso
+      // o foco vai para o botao Fechar, ainda dentro do painel.
+      const field = chatInputRef.current;
+      if (field && !field.disabled) field.focus();
+      else closeButtonRef.current?.focus();
       return;
     }
     if (shouldRestoreFocusRef.current) {
@@ -185,6 +193,7 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
             minimized={isMinimized}
             onToggle={() => setIsMinimized((current) => !current)}
             onClose={closeAssistant}
+            closeButtonRef={closeButtonRef}
           />
           <AssistantChat
             productName={productName}
