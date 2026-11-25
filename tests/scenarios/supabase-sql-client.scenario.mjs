@@ -7,6 +7,7 @@ import {
   buildManagementApiBatch,
   extractContractGuardClauses,
   loadAuthorizedTargets,
+  renderContractGuard,
   validateLedger,
 } from "../../scripts/db/apply-sicoob-migrations.mjs";
 
@@ -79,11 +80,11 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
   assert.match(batch, /O contrato crítico não foi produzido/);
   assert.doesNotMatch(
     batch,
-    /OR NOT has_function_privilege\('authenticated', 'public\.assert_quote_transition/,
+    /NOT has_function_privilege\('authenticated', 'public\.assert_quote_transition/,
   );
   assert.match(
     batch,
-    /OR has_function_privilege\('service_role', 'public\.assert_quote_transition/,
+    /has_function_privilege\('service_role', 'public\.assert_quote_transition/,
   );
   assert.match(batch, /COMMIT;$/);
 });
@@ -99,6 +100,47 @@ test("isola as cláusulas da guarda de contrato para apontar qual derrubou o lot
   assert.equal(clauses.filter((clause) => /^jsonb_typeof\b/.test(clause)).length, 0);
   assert.equal(clauses.filter((clause) => clause.startsWith("v_discount")).length, 0);
   assert.deepEqual(extractContractGuardClauses("SELECT 1"), []);
+});
+
+test("a guarda de contrato nomeia cada cláusula que derrubou o lote", () => {
+  const batch = buildManagementApiBatch(loadAuthorizedTargets(), new Map());
+  const clauses = extractContractGuardClauses(batch);
+  const guard = batch.slice(
+    batch.indexOf("DO $sicoob_contract_guard$"),
+    batch.indexOf("$sicoob_contract_guard$;"),
+  );
+
+  assert.ok(clauses.length > 40, `cláusulas extraídas: ${clauses.length}`);
+  assert.match(guard, /falhas text\[\] := ARRAY\[\]::text\[\];/);
+  assert.match(
+    guard,
+    /RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado\. Cláusulas falhando: %\.'/,
+  );
+  assert.match(guard, /array_to_string\(falhas, ', '\)/);
+  // Um IF e um registro de falha por cláusula, na mesma ordem da extração.
+  assert.equal((guard.match(/falhas := falhas \|\| 'c\d{2}'::text;/g) ?? []).length, clauses.length);
+  assert.match(guard, /falhas := falhas \|\| 'c01'::text;/);
+  assert.equal(clauses.length, new Set(clauses).size);
+
+  // Cada cláusula roda em subtransação: erro de avaliação entra na lista com o SQLSTATE em
+  // vez de abortar o lote no primeiro problema e esconder o restante do diagnóstico.
+  assert.equal(
+    (guard.match(/falhas := falhas \|\| \('c\d{2}:' \|\| SQLSTATE\)::text;/g) ?? []).length,
+    clauses.length,
+  );
+  assert.throws(() => renderContractGuard("   "), /sem cláusulas/);
+});
+
+test("corta a cadeia de cláusulas mesmo com comentário entre elas", () => {
+  const guard = renderContractGuard(`
+     relrowsecurity = true -- primeira cláusula
+     OR pg_get_indexdef(oid) = 'x'
+  `);
+
+  assert.equal((guard.match(/falhas := falhas \|\| 'c\d{2}'::text;/g) ?? []).length, 2);
+  assert.equal((guard.match(/EXCEPTION WHEN OTHERS THEN/g) ?? []).length, 2);
+  assert.doesNotMatch(guard, /primeira cláusula/);
+  assert.match(guard, /IF \(relrowsecurity = true\) THEN/);
 });
 
 test("confirma o contrato de cleanup_old_notifications dentro do lote atômico", () => {
