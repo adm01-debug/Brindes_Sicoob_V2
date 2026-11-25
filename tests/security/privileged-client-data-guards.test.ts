@@ -252,10 +252,9 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     expect(admin.end).toBeGreaterThan(admin.start);
     expect(shell.start).toBeGreaterThan(-1);
     expect(shell.end).toBeGreaterThan(shell.start);
-    // Contrato preservado: `/clientes` e `/clientes/:id` sao rotas compartilhadas
-    // (MainLayout): ficam DENTRO do shell autenticado e NUNCA dentro do bloco
-    // exclusivo de AdminRoute. Duplicar a rota criaria um segundo caminho sem a
-    // guarda aplicada ao primeiro.
+    // Contrato: `/clientes` e `/clientes/:id` NAO pertencem ao bloco AdminRoute.
+    // Sao rotas compartilhadas (MainLayout) e vivem dentro do shell autenticado;
+    // duplicar a rota criaria um segundo caminho sem a guarda aplicada ao primeiro.
     expect(clientsRoutes.length).toBe(1);
     expect(detailRoutes.length).toBe(1);
     expect(clientsRoute).toBeGreaterThan(shell.start);
