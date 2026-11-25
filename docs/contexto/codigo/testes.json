@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 923,
+ "total": 925,
  "por_tipo": {
   "contrato": 11,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 690
+  "unit": 692
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 670
+   "arquivos": 672
   },
   {
    "padrao": "e2e/",
@@ -2676,9 +2676,18 @@
   {
    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
    "tipo": "unit",
-   "linhas": 1079,
+   "linhas": 1006,
    "testa": [],
-   "casos": 111
+   "casos": 105
+  },
+  {
+   "arquivo": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+   "tipo": "unit",
+   "linhas": 137,
+   "testa": [
+    "src/components/intelligence/MarketIntelligenceChart.tsx"
+   ],
+   "casos": 5
   },
   {
    "arquivo": "tests/components/intelligence/market-signals-error-states.test.tsx",
@@ -4936,6 +4945,15 @@
     "src/pages/magic-up/magicUpStrategy.ts"
    ],
    "casos": 4
+  },
+  {
+   "arquivo": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+   "tipo": "unit",
+   "linhas": 289,
+   "testa": [
+    "src/hooks/useMarketIntelligenceMacro.ts"
+   ],
+   "casos": 13
   },
   {
    "arquivo": "tests/hooks/useMockupGenerator.test.ts",
@@ -8151,6 +8169,7 @@
   "src/components/filters/filter-panel/sections/SizeFilter.tsx": 1,
   "src/components/intelligence/CategoryRanking.tsx": 1,
   "src/components/intelligence/HotSearchesCard.tsx": 1,
+  "src/components/intelligence/MarketIntelligenceChart.tsx": 1,
   "src/components/intelligence/TopProductFamiliesCard.tsx": 1,
   "src/components/intelligence/TrendsForecastChart.tsx": 1,
   "src/components/intelligence/TrendsHeatmap.tsx": 1,
@@ -8337,6 +8356,7 @@
   "src/hooks/useLoginRateLimit.ts": 1,
   "src/hooks/useMagicUpGeneration.ts": 1,
   "src/hooks/useMagicUpState.ts": 2,
+  "src/hooks/useMarketIntelligenceMacro.ts": 1,
   "src/hooks/useMockupGenerator.ts": 1,
   "src/hooks/useOnboarding.ts": 1,
   "src/hooks/usePWAInstall.ts": 2,
@@ -8873,7 +8893,6 @@
    "src/hooks/useKitTemplates.ts",
    "src/hooks/useKitVariants.ts",
    "src/hooks/useLogoColorAnalysis.ts",
-   "src/hooks/useMarketIntelligenceMacro.ts",
    "src/hooks/useMaterialFilter.ts",
    "src/hooks/useMaterialGroups.ts",
    "src/hooks/useMaterialTypes.ts",

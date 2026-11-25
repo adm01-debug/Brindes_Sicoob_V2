@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
+  "sha": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 01:33 UTC",
-  "files_total": 5302,
-  "code_files": 3863,
-  "code_lines": 570243
+  "generated_at": "2026-11-25 01:49 UTC",
+  "files_total": 5304,
+  "code_files": 3865,
+  "code_lines": 570700
  },
  "version": "1.3.2",
- "facts_hash": "dedcfdf44ecf1d13",
+ "facts_hash": "2ff537e70fa13644",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1503,
-   ".tsx": 1467,
+   ".tsx": 1469,
    ".sql": 690,
    ".mjs": 141,
    ".py": 69,
@@ -56279,14 +56279,16 @@
      "user_onboarding"
     ],
     "invokes_transitive": [
+     "crm-db-bridge",
      "log-login-attempt",
-     "market-intelligence-insights"
+     "market-intelligence-insights",
+     "system-healthcheck"
     ],
     "rpc_transitive": [
      "create_organization_with_owner",
      "get_sicoob_access_state"
     ],
-    "deps_count": 112
+    "deps_count": 117
    },
    {
     "path": "",
@@ -62551,7 +62553,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1297,
+  "components_count": 1298,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65375,7 +65377,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167930,
+   "lines": 167898,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65708,7 +65710,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48418,
+   "lines": 48554,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67153,8 +67155,8 @@
   },
   {
    "module": "tests",
-   "files": 692,
-   "lines": 93466,
+   "files": 694,
+   "lines": 93819,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -78129,6 +78131,10 @@
     "msg": "Selecione uma imagem válida"
    },
    {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "msg": "Consulta de estoque sem ordenação garantida pelo bridge"
+   },
+   {
     "file": "src/hooks/useMockupGenerator.ts",
     "msg": "A imagem deve ter no máximo 5MB"
    },
@@ -81863,6 +81869,18 @@
    {
     "file": "src/hooks/useMagicUpState.ts",
     "text": "Edge devolve já é title || nome_fantasia || razao_social, a mesma regra"
+   },
+   {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "text": "* true quando a janela tem mais registros do que o limite de leitura do painel. */"
+   },
+   {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "text": "Depois de um timeout o bridge reduz o limite da pagina e marca"
+   },
+   {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "text": "* Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */"
    },
    {
     "file": "src/hooks/useMockupGenerator.ts",
@@ -95720,6 +95738,16 @@
     "value": "\"id, updated_at\""
    },
    {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "name": "PAGE_SIZE",
+    "value": "5000"
+   },
+   {
+    "file": "src/hooks/useMarketIntelligenceMacro.ts",
+    "name": "MAX_ROWS",
+    "value": "60000"
+   },
+   {
     "file": "src/hooks/useMockupDraft.ts",
     "name": "AUTO_SAVE_DELAY",
     "value": "2000"
@@ -108890,12 +108918,6 @@
     "name": "formatCurrency",
     "params": "v: number",
     "body": ""
-   },
-   {
-    "file": "src/components/intelligence/MarketIntelligenceChart.tsx",
-    "name": "generateMockMarketData",
-    "params": "days: number",
-    "body": "const daily: MacroMarketPoint[] = []; const now = new Date(); let stock = 3200 + Math.floor(Math.random() * 800); for (let i = days - 1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0] ?? \"\"; const dayOfWeek = d.getDay(); const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; const baseDepleted = isWeekend ? 15 : 45; const depleted = Math.max(0, Math.round(baseDepleted + (Math.random() - 0.4) * 30)); const restocked = Math.random() …"
    },
    {
     "file": "src/components/intelligence/ProductRankingSearch.tsx",
@@ -122454,6 +122476,30 @@
     "name": "rounding: 2/3 → 67%"
    },
    {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "inteligencia de mercado sem dados reais"
+   },
+   {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "mostra ausencia de movimentacoes em vez de inventar mercado"
+   },
+   {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "mostra ausencia de movimentacoes quando o periodo volta vazio"
+   },
+   {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "mantem o seletor de periodo no estado vazio para procurar registros anteriores"
+   },
+   {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "recupera os registros ao ampliar do periodo vazio para 360 dias"
+   },
+   {
+    "file": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+    "name": "avisa quando a janela excede o teto de leitura do painel"
+   },
+   {
     "file": "tests/components/intelligence/market-signals-error-states.test.tsx",
     "name": "cartões de sinais de mercado — estado centralizado"
    },
@@ -130416,6 +130462,62 @@
    {
     "file": "tests/hooks/useMagicUpGeneration-onda5.test.tsx",
     "name": "alteração de status atualiza estado local e metadata.curation"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "janela de consulta do mercado macro"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "pagina por id (ordem total) para não repetir nem omitir dias empatados"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "entrega a série em ordem cronológica mesmo paginando por id"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "amplia a janela no servidor: 360 dias pede um corte anterior ao de 30 dias"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "acumula as paginas ate a ultima incompleta, sem truncar o historico"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "encerra a leitura quando o PostgREST recusa o deslocamento igual ao total"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "sinaliza resultado parcial quando existe registro acima do teto"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "nao avisa parcial quando o total coincide exatamente com o teto"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "marca parcial quando o bridge degrade a pagina (timeout reduz o limite)"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "usa a contagem exata do bridge e dispensa a sonda quando o teto passa"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "usa a contagem exata do bridge e nao avisa quanto o total e o teto"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "nao trata falha da sonda do teto como fim de leitura"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "encerra a leitura de paginas quando o bridge recusa o deslocamento"
+   },
+   {
+    "file": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+    "name": "trata deslocamento recusado na sonda como fim de leitura de verdade"
    },
    {
     "file": "tests/hooks/useMockupGenerator.test.ts",
@@ -197285,7 +197387,7 @@
   },
   "src/components/intelligence/MarketIntelligenceChart.tsx": {
    "path": "src/components/intelligence/MarketIntelligenceChart.tsx",
-   "lines": 317,
+   "lines": 285,
    "exports": [
     "function MarketIntelligenceChart"
    ],
@@ -197299,14 +197401,7 @@
      "value": "\"text-destructive\""
     }
    ],
-   "doc": "MarketIntelligenceChart — Visão MACRO de mercado Replica o layout do StockHistoryChart (página de produto) mas com dados agregados de todos os produtos. Inclui mock data quando não há dados reais.",
-   "calc_fns": [
-    {
-     "name": "generateMockMarketData",
-     "params": "days: number",
-     "body": "const daily: MacroMarketPoint[] = []; const now = new Date(); let stock = 3200 + Math.floor(Math.random() * 800); for (let i = days - 1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0] ?? \"\"; const dayOfWeek = d.getDay(); const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; const baseDepleted = isWeekend ? 15 : 45; const depleted = Math.max(0, Math.round(baseDepleted + (Math.random() - 0.4) * 30)); const restocked = Math.random() …"
-    }
-   ]
+   "doc": "MarketIntelligenceChart — Visão MACRO de mercado Replica o layout do StockHistoryChart (página de produto) mas com dados agregados de todos os produtos. Nunca inventa dados: sem registros reais, mostra estado vazio."
   },
   "src/components/intelligence/MarketIntelligenceInsightsCard.tsx": {
    "path": "src/components/intelligence/MarketIntelligenceInsightsCard.tsx",
@@ -210947,13 +211042,31 @@
   },
   "src/hooks/useMarketIntelligenceMacro.ts": {
    "path": "src/hooks/useMarketIntelligenceMacro.ts",
-   "lines": 214,
+   "lines": 350,
    "exports": [
     "interface MacroMarketPoint",
     "interface MacroSupplierMetrics",
     "interface MacroMarketKpis",
     "interface MacroMarketData",
     "function useMarketIntelligenceMacro"
+   ],
+   "errors": [
+    "Consulta de estoque sem ordenação garantida pelo bridge"
+   ],
+   "params": [
+    {
+     "name": "PAGE_SIZE",
+     "value": "5000"
+    },
+    {
+     "name": "MAX_ROWS",
+     "value": "60000"
+    }
+   ],
+   "rule_comments": [
+    "* true quando a janela tem mais registros do que o limite de leitura do painel. */",
+    "Depois de um timeout o bridge reduz o limite da pagina e marca",
+    "* Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */"
    ],
    "doc": "Hook para Inteligência de Mercado MACRO (agregada por todos os produtos). Consome stock_daily_summary via external-db-bridge. Retorna dados agregados + breakdown por fornecedor para comparação.",
    "hooks": [
@@ -248181,7 +248294,7 @@
   },
   "tests/components/intelligence/commercial-intelligence.test.ts": {
    "path": "tests/components/intelligence/commercial-intelligence.test.ts",
-   "lines": 1079,
+   "lines": 1006,
    "is_test": true,
    "rule_comments": [
     "1. Lógica de negócio dos hooks (getSinceDate, filterByProductIds, aggregation)",
@@ -248198,11 +248311,6 @@
      "name": "generateDateMap",
      "params": "days: number",
      "body": "date: string; revenue: number; orders: number; quotes: number"
-    },
-    {
-     "name": "generateMockMarketData",
-     "params": "days: number",
-     "body": "const daily: any[] = []; const now = new Date(); let stock = 3200 + Math.floor(Math.random() * 800); for (let i = days - 1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0]; const dayOfWeek = d.getDay(); const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; const baseDepleted = isWeekend ? 15 : 45; const depleted = Math.max(0, Math.round(baseDepleted + (Math.random() - 0.4) * 30)); const restocked = Math.random() > 0.85 ? Math.roun …"
     },
     {
      "name": "formatCurrency",
@@ -248296,6 +248404,22 @@
     "0 orders out of 10 quotes → 0%",
     "rounding: 1/3 → 33%",
     "rounding: 2/3 → 67%"
+   ]
+  },
+  "tests/components/intelligence/market-intelligence-truth.test.tsx": {
+   "path": "tests/components/intelligence/market-intelligence-truth.test.tsx",
+   "lines": 137,
+   "is_test": true,
+   "rule_comments": [
+    "O aviso nao pode atribuir a causa a um limite de registros: pagina degradada"
+   ],
+   "tests": [
+    "inteligencia de mercado sem dados reais",
+    "mostra ausencia de movimentacoes em vez de inventar mercado",
+    "mostra ausencia de movimentacoes quando o periodo volta vazio",
+    "mantem o seletor de periodo no estado vazio para procurar registros anteriores",
+    "recupera os registros ao ampliar do periodo vazio para 360 dias",
+    "avisa quando a janela excede o teto de leitura do painel"
    ]
   },
   "tests/components/intelligence/market-signals-error-states.test.tsx": {
@@ -252109,6 +252233,33 @@
     "mantém a geração salva com fallback heurístico quando o score IA falha",
     "reanálise atualiza quality_score e metadata.qualityDiagnosis sem perder metadados",
     "alteração de status atualiza estado local e metadata.curation"
+   ]
+  },
+  "tests/hooks/useMarketIntelligenceMacro.order.test.tsx": {
+   "path": "tests/hooks/useMarketIntelligenceMacro.order.test.tsx",
+   "lines": 289,
+   "is_test": true,
+   "errors": [
+    "statement timeout"
+   ],
+   "rule_comments": [
+    "A sonda (limit 1 no offset do teto) encontra uma linha: existe dado alem do teto."
+   ],
+   "tests": [
+    "janela de consulta do mercado macro",
+    "pagina por id (ordem total) para não repetir nem omitir dias empatados",
+    "entrega a série em ordem cronológica mesmo paginando por id",
+    "amplia a janela no servidor: 360 dias pede um corte anterior ao de 30 dias",
+    "acumula as paginas ate a ultima incompleta, sem truncar o historico",
+    "encerra a leitura quando o PostgREST recusa o deslocamento igual ao total",
+    "sinaliza resultado parcial quando existe registro acima do teto",
+    "nao avisa parcial quando o total coincide exatamente com o teto",
+    "marca parcial quando o bridge degrade a pagina (timeout reduz o limite)",
+    "usa a contagem exata do bridge e dispensa a sonda quando o teto passa",
+    "usa a contagem exata do bridge e nao avisa quanto o total e o teto",
+    "nao trata falha da sonda do teto como fim de leitura",
+    "encerra a leitura de paginas quando o bridge recusa o deslocamento",
+    "trata deslocamento recusado na sonda como fim de leitura de verdade"
    ]
   },
   "tests/hooks/useMockupGenerator.test.ts": {
@@ -259278,10 +259429,23 @@
   }
  },
  "git": {
-  "sha": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
+  "sha": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e8fcd27",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
+    "files": [
+     "src/components/intelligence/MarketIntelligenceChart.tsx",
+     "src/hooks/useMarketIntelligenceMacro.ts",
+     "tests/components/intelligence/commercial-intelligence.test.ts",
+     "tests/components/intelligence/market-intelligence-truth.test.tsx",
+     "tests/hooks/useMarketIntelligenceMacro.order.test.tsx"
+    ]
+   },
    {
     "sha": "b71a077",
     "date": "2026-11-24",
@@ -259698,19 +259862,6 @@
      "src/components/cart/CartCompanyPickerDialog.tsx",
      "src/lib/crm-db.ts",
      "tests/components/cart/cart-company-picker-dialog.error.test.tsx"
-    ]
-   },
-   {
-    "sha": "b591559",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)",
-    "files": [
-     "docs/pendencias/SIC-021-rls-de-pa-budgets-permite-autoaltera-o-e-acesso-.md",
-     "docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md",
-     "docs/pendencias/SIC-041-or-amento-aprovado-n-o-congela-itens-nem-valores.md",
-     "docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md",
-     "docs/pendencias/_ordem.md"
     ]
    }
   ],

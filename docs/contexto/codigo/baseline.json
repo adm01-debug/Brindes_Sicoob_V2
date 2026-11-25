@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "b71a077d43001b2ab0f1ce1249f044b91bbfb75a",
+  "commit": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
   "branch": "main",
-  "data_commit": "2026-11-24T22:32:46-03:00",
+  "data_commit": "2026-11-24T22:48:59-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e8fcd27",
+    "data": "2026-11-24",
+    "assunto": "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)"
+   },
    {
     "sha": "b71a077",
     "data": "2026-11-24",
@@ -126,14 +131,9 @@
     "sha": "b7680fb",
     "data": "2026-11-23",
     "assunto": "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)"
-   },
-   {
-    "sha": "2466761",
-    "data": "2026-11-23",
-    "assunto": "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)"
    }
   ],
-  "arquivos_mudados_7d": 1290,
+  "arquivos_mudados_7d": 1295,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -286,22 +286,22 @@
     "mudancas": 10
    },
    {
-    "arquivo": "supabase/config.toml",
-    "mudancas": 10
-   },
-   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
    },
    {
     "arquivo": "docs/README.md",
     "mudancas": 9
+   },
+   {
+    "arquivo": "src/pages/KitBuilderPage.tsx",
+    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 213
+    "commits": 214
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5299,
-  "arquivos_codigo": 3191,
-  "linhas_codigo": 505751,
+  "arquivos_total": 5301,
+  "arquivos_codigo": 3193,
+  "linhas_codigo": 506208,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 627,
   "cron_jobs": 28,
-  "testes": 923,
+  "testes": 925,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167930
+   "linhas": 167898
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48418
+   "linhas": 48554
   },
   "src/integrations": {
    "arquivos": 3,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 161,
-   "linhas": 29268
+   "arquivos": 162,
+   "linhas": 29332
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 154,
-   "linhas": 17683
+   "arquivos": 155,
+   "linhas": 17972
   },
   "tests/integration": {
    "arquivos": 4,
@@ -1154,7 +1154,7 @@
   }
  ],
  "qualidade": {
-  "any": 522,
+  "any": 521,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

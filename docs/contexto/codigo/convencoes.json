@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (670)",
+   "tests/ (672)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
    "feat: assistente de layouts passa a usar a IA real (#435)",
    "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)",
    "fix: orcamento existente avisa quando nao carrega (#436)",
-   "docs: ledger reflete as recuperacoes ja integradas na main (#432)",
-   "docs: re-auditoria dos descartes medida PR por PR (#430)"
+   "docs: ledger reflete as recuperacoes ja integradas na main (#432)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

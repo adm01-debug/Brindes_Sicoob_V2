@@ -6496,7 +6496,7 @@
    "hooks_exportados": [
     "useMarketIntelligenceMacro"
    ],
-   "linhas": 214,
+   "linhas": 350,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -6509,7 +6509,7 @@
    "usado_por_arquivos": [
     "src/components/intelligence/MarketIntelligenceChart.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/useMaterialFilter.ts",

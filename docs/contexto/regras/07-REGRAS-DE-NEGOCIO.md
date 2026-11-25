@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `b71a077d43` · branch `main` · 2026-11-25 01:33 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e8fcd27598` · branch `main` · 2026-11-25 01:49 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -2421,10 +2421,6 @@ _nenhum item encontrado_
   ```
   
   ```
-- **generateMockMarketData(days: number)** — `src/components/intelligence/MarketIntelligenceChart.tsx`
-  ```
-  const daily: MacroMarketPoint[] = []; const now = new Date(); let stock = 3200 + Math.floor(Math.random() * 800); for (let i = days - 1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0] ?? ""; const dayOfWeek = d.getDay(); const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; const baseDepleted = isWeekend ? 15 : 45; const depleted = Math.max(0, Math.round(baseDepleted + (Math.random() - 0.4) * 30)); const restocked = Math.random() …
-  ```
 - **RankingSummary({ summary, formatCurrency }: { summary: { totalRev: number; totalQty: number; totalOrders: number; avgTicket: number } |)** — `src/components/intelligence/ProductRankingSearch.tsx`
   ```
   string }) {
@@ -4839,6 +4835,8 @@ _nenhum item encontrado_
 | `MAX_ATTEMPTS` | `5` | `src/hooks/useLoginRateLimit.ts` |
 | `LOCKOUT_MS` | `5` | `src/hooks/useLoginRateLimit.ts` |
 | `ID_AND_UPDATED_AT_SELECT` | `"id, updated_at"` | `src/hooks/useMagicUpState.ts` |
+| `PAGE_SIZE` | `5000` | `src/hooks/useMarketIntelligenceMacro.ts` |
+| `MAX_ROWS` | `60000` | `src/hooks/useMarketIntelligenceMacro.ts` |
 | `AUTO_SAVE_DELAY` | `2000` | `src/hooks/useMockupDraft.ts` |
 | `NOVELTY_WINDOW_DAYS` | `30` | `src/hooks/useNovelties.ts` |
 | `UNKNOWN_ERROR_MESSAGE` | `'Erro desconhecido'` | `src/hooks/usePasswordResetRequests.ts` |
@@ -4904,9 +4902,7 @@ _nenhum item encontrado_
 | `INITIAL_BACKOFF_MS` | `600` | `src/lib/crm-db.ts` |
 | `INDUSTRY_PEERS_FALLBACK_LIMIT` | `500` | `src/lib/crm-db.ts` |
 | `FLUSH_INTERVAL` | `5000` | `src/lib/error-reporter.ts` |
-| `MAX_QUEUE` | `20` | `src/lib/error-reporter.ts` |
-| `COLD_START_DEFER_MS` | `8000` | `src/lib/error-reporter.ts` |
-| … +175 linhas — lista completa em `context.json` | | |
+| … +177 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5643,7 +5639,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1010 linhas — lista completa em `context.json` | |
+| … +1011 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5748,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7274 testes em 738 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7294 testes em 740 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5880,6 +5876,7 @@ _nenhum item encontrado_
 | `tests/components/BulkSelectionBar.test.tsx` | 14 | BulkSelectionBar · renders when isActive is true · does not render when isActive is false · shows selected count badge … |
 | `tests/components/kit-builder/DashboardAndManagement.test.tsx` | 14 | RecentKitsWidget · renders empty state when no kits · renders component without errors · MeusKitsPage Filters Logic … |
 | `tests/hooks/useCollections.test.ts` | 14 | useCollections — variant architecture · creates a collection with empty productItems · stores variant info when adding product to collection · stores product without variant when none is provided … |
+| `tests/hooks/useMarketIntelligenceMacro.order.test.tsx` | 14 | janela de consulta do mercado macro · pagina por id (ordem total) para não repetir nem omitir dias empatados · entrega a série em ordem cronológica mesmo paginando por id · amplia a janela no servidor: 360 dias pede um corte anterior ao de 30 dias … |
 | `tests/lib/theme-radius-smoke.test.ts` | 14 | Smoke E2E — boot fresh com defaults pós-bump · boot fresh sem localStorage usa defaults novos (corporate, radius=14) · botões (rounded-md = --radius - 2px) ficam com 12px no estado padrão · cards (rounded-lg = --radius) ficam com 14px no estado padrão … |
 | `tests/pages/trends-queries.test.ts` | 14 | consultas de tendências · alinha as janelas aos dias civis, incluindo o dia atual · alinha o papel %s às capacidades comprovadas pela RLS · filtra cada evento pela coluna de autoria observada no banco … |
 | `tests/scripts/autofix-colors.test.ts` | 14 | autofix colors-map · texto: qualquer tom vira o token · fundo claro vira /10 (ou /5 quando já tinha opacidade) · fundo forte vira sólido … |
@@ -6051,8 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
-| `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
-| … +438 linhas — lista completa em `context.json` | | |
+| … +440 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6454,6 +6450,9 @@ _nenhum item encontrado_
 | * Exportada para que a regra de disponibilidade seja testada sem rede. */ | `src/hooks/useKitStockForecast.ts` |
 | * Hook para validação de estoque dos itens do Kit Builder | `src/hooks/useKitStockValidation.ts` |
 | Edge devolve já é title \|\| nome_fantasia \|\| razao_social, a mesma regra | `src/hooks/useMagicUpState.ts` |
+| * true quando a janela tem mais registros do que o limite de leitura do painel. */ | `src/hooks/useMarketIntelligenceMacro.ts` |
+| Depois de um timeout o bridge reduz o limite da pagina e marca | `src/hooks/useMarketIntelligenceMacro.ts` |
+| * Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */ | `src/hooks/useMarketIntelligenceMacro.ts` |
 | * useMockupGenerator — Core business logic hook for MockupGenerator page | `src/hooks/useMockupGenerator.ts` |
 | 1024 * 1024) { toast.error("A imagem deve ter no máximo 5MB"); return; } | `src/hooks/useMockupGenerator.ts` |
 | * Máximo de cores suportadas pela técnica nessa área */ | `src/hooks/useMockupTechniques.ts` |
@@ -6537,7 +6536,4 @@ _nenhum item encontrado_
 | conta anterior e nao pode ser cacheada nem devolvida. | `src/lib/private-storage.ts` |
 | Variante tolerante: um objeto removido ou sem permissão de leitura devolve | `src/lib/private-storage.ts` |
 | * Re-export do ErrorBoundary do Sentry (apenas após o load assíncrono). | `src/lib/sentry.ts` |
-| * Deve ser chamado no main.tsx após setupLocale() | `src/lib/sw-register.ts` |
-| * Solicita permissão para notificações (para futura implementação) | `src/lib/sw-register.ts` |
-| * Score = (recente / baseline) * decay temporal * peso de volume mínimo | `src/lib/trending-score.ts` |
-| … +323 linhas — lista completa em `context.json` | |
+| … +326 linhas — lista completa em `context.json` | |

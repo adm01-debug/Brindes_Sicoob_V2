@@ -8855,7 +8855,8 @@
   ],
   "src/hooks/useMarketIntelligenceMacro.ts": [
    "src/hooks/useStockHistory.ts",
-   "src/lib/external-db/index.ts"
+   "src/lib/external-db/index.ts",
+   "src/lib/external-db/invoke.ts"
   ],
   "src/hooks/useMaterialFilter.ts": [
    "src/hooks/useMaterialGroups.ts",
