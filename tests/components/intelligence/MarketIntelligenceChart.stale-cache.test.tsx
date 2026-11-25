@@ -66,6 +66,8 @@ describe('cache de inteligência de mercado após falha de atualização', () =>
     await screen.findByTestId('market-chart');
     expect(screen.getByLabelText(/Vendas no mercado: 10\.0/)).toBeTruthy();
     expect(regiaoDeStatus()).toBeNull();
+    // Nenhum aviso visível fora de região de status pode passar batido.
+    expect(avisoStale()).toBeNull();
 
     // Atualização falha: React Query mantém os dados anteriores e expõe o erro.
     mocks.invoke.mockRejectedValue(new Error('bridge fora do ar'));
@@ -92,6 +94,8 @@ describe('cache de inteligência de mercado após falha de atualização', () =>
       records: [{ ...PAGINA.records[0], units_depleted: 14 }],
     });
     await waitFor(() => expect(regiaoDeStatus()).toBeNull());
+    // O aviso precisa sumir por inteiro, não só da região anunciada.
+    expect(avisoStale()).toBeNull();
     expect(screen.getByLabelText(/Vendas no mercado: 14\.0/)).toBeTruthy();
   });
 });
