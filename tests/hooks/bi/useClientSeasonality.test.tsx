@@ -27,6 +27,11 @@ const SETOR_UMA_EMPRESA = [
 const SETOR_TRES_EMPRESAS = [
   { year: 2025, month: 5, avg_quotes_per_company: 4, avg_revenue_per_company: 400, companies_active: 3 },
 ];
+/** Amostra só em parte dos picos: mar tem três empresas, fev tem duas, jan não tem linha. */
+const SETOR_AMOSTRA_PARCIAL = [
+  { year: 2025, month: 2, avg_quotes_per_company: 9, avg_revenue_per_company: 900, companies_active: 2 },
+  { year: 2025, month: 3, avg_quotes_per_company: 4, avg_revenue_per_company: 400, companies_active: 3 },
+];
 /** Setor com amostra exatamente nos meses de pico do cliente (jan, fev, mar). */
 const SETOR_COBRE_PICOS = [1, 2, 3].map((month) => ({
   year: 2025, month, avg_quotes_per_company: 4, avg_revenue_per_company: 400, companies_active: 3,
@@ -116,6 +121,21 @@ describe("useClientSeasonality", () => {
     // Existe setor, mas nenhum dos picos tem amostra: o texto não pode afirmar
     // padrão diferente nem alinhado.
     expect(result.current.insight).toContain("Setor sem amostra em Mar-Fev-Jan");
+    expect(result.current.insight).toContain("comparação com o mercado não conclusiva");
+    expect(result.current.insight).not.toMatch(/diferente do mercado|Padrão alinhado/);
+  });
+
+  it("segue inconclusivo quando só parte dos picos tem amostra de setor", async () => {
+    fetchIndustryPeerIds.mockResolvedValue(["a", "b", "c"]);
+    // Mar tem três empresas com histórico; fev tem duas e jan nem aparece.
+    seasonalityRpc(SETOR_AMOSTRA_PARCIAL);
+
+    const { result } = renderSeasonality();
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasIndustryData).toBe(true);
+    // Um pico coincide com o setor, e nem por isso o texto afirma alinhamento.
+    expect(result.current.insight).toContain("Setor sem amostra em Fev-Jan");
     expect(result.current.insight).toContain("comparação com o mercado não conclusiva");
     expect(result.current.insight).not.toMatch(/diferente do mercado|Padrão alinhado/);
   });
