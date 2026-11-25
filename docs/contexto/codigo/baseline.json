@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
+  "commit": "ff48a63203826ec6874cfc7d71883bf8165a096b",
   "branch": "main",
-  "data_commit": "2026-11-25T07:42:40-03:00",
+  "data_commit": "2026-11-25T10:56:44Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ff48a63",
+    "data": "2026-11-25",
+    "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#438)"
+   },
    {
     "sha": "ba511bb",
     "data": "2026-11-25",
@@ -126,11 +131,6 @@
     "sha": "a8dad98",
     "data": "2026-11-23",
     "assunto": "fix: servidor resolve destinatario do email transacional (#411)"
-   },
-   {
-    "sha": "e0b7520",
-    "data": "2026-11-23",
-    "assunto": "infra: incluir send-transactional-email na publicação de edge functions (#409)"
    }
   ],
   "arquivos_mudados_7d": 1298,
@@ -309,7 +309,7 @@
    },
    {
     "autor": "github-actions[bot]",
-    "commits": 1
+    "commits": 2
    }
   ]
  },

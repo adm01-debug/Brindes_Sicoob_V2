@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ba511bbdb04ec57990dd6e7645dcd744b624696d` (2026-11-25T07:42:40-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ff48a63203826ec6874cfc7d71883bf8165a096b` (2026-11-25T10:56:44Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -473,7 +473,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37031 nós · 61683 arestas · 2775 comunidades · grafo do commit `ba511bbd`
+- 37031 nós · 61683 arestas · 2775 comunidades · grafo do commit `ff48a632`
 - comunidades maiores: ref_components (702), ref_integrations (425), ref_lib (305), lucide-react (235), react (231), framer-motion (227), sonner (192), ref_contexts (186), getCorsHeaders (184), date-fns (179), ref_stores (163), ai-usage.ts (162)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-25 `ff48a63` chore(inventario): estado real do banco e do codigo [auto] (#438)
 - 2026-11-25 `ba511bb` fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)
 - 2026-11-24 `e8fcd27` fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)
 - 2026-11-24 `b71a077` feat: assistente de layouts passa a usar a IA real (#435)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-24 `a409d6d` chore: alinha status do indice de lacunas aos vereditos verificados (#426)
 - 2026-11-24 `1aa0068` chore(inventario): estado real do banco e do codigo [auto] (#425)
 - 2026-11-24 `667250f` fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)
-- 2026-11-24 `4621e75` fix: estabiliza os dois testes que reprovavam PRs verdes (#423)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

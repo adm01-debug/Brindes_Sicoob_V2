@@ -23779,6 +23779,136 @@
         "nullable": false,
         "position": 1,
         "schema": "public",
+        "table": "push_subscriptions",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "user_id",
+        "nullable": true,
+        "position": 2,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "uuid"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "endpoint",
+        "nullable": false,
+        "position": 3,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "p256dh",
+        "nullable": false,
+        "position": 4,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "auth",
+        "nullable": false,
+        "position": 5,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "user_agent",
+        "nullable": true,
+        "position": 6,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "device_type",
+        "nullable": true,
+        "position": 7,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": "true",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "is_active",
+        "nullable": true,
+        "position": 8,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "boolean"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "last_used_at",
+        "nullable": true,
+        "position": 9,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "created_at",
+        "nullable": true,
+        "position": 10,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "id",
+        "nullable": false,
+        "position": 1,
+        "schema": "public",
         "table": "qa_release_evidences",
         "type": "uuid"
       },
@@ -44298,6 +44428,60 @@
         ],
         "deferrable": false,
         "definition": "PRIMARY KEY (id)",
+        "name": "push_subscriptions_pkey",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "PRIMARY KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "user_id"
+        ],
+        "deferrable": false,
+        "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+        "name": "push_subscriptions_user_id_fkey",
+        "on_delete": "CASCADE",
+        "on_update": "NO ACTION",
+        "ref_columns": [
+          "id"
+        ],
+        "ref_schema": "auth",
+        "ref_table": "users",
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "FOREIGN KEY",
+        "validated": true
+      },
+      {
+        "columns": [
+          "user_id",
+          "endpoint"
+        ],
+        "deferrable": false,
+        "definition": "UNIQUE (user_id, endpoint)",
+        "name": "unique_subscription",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "push_subscriptions",
+        "type": "UNIQUE",
+        "validated": true
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "deferrable": false,
+        "definition": "PRIMARY KEY (id)",
         "name": "qa_release_evidences_pkey",
         "on_delete": null,
         "on_update": null,
@@ -53140,15 +53324,23 @@
               "hits": 1
             },
             {
+              "file": "supabase/migrations/000_notification_functions_replay_guard.sql",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260301000000_fix_cleanup_old_notifications_drop.sql",
               "hits": 1
             },
             {
               "file": "supabase/migrations/20260916120000_admin_audit_log_operations.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261125100000_notification_functions_contract.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 4,
+          "code_total_files": 6,
           "cron": [
             "8:cleanup-old-notifications"
           ],
@@ -53157,20 +53349,18 @@
           "views": []
         },
         "comment": null,
-        "config": [
-          "search_path=public"
-        ],
+        "config": null,
         "definition": null,
-        "definition_sha": "b895e197beb6ece5",
-        "execute_api_roles": "service_role",
-        "execute_public": false,
+        "definition_sha": "6d82dce7b8f857da",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
         "is_trigger_fn": false,
         "kind": "function",
         "language": "plpgsql",
         "leakproof": false,
         "name": "cleanup_old_notifications",
         "owner": "postgres",
-        "returns": "void",
+        "returns": "integer",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -56736,11 +56926,9 @@
           "views": []
         },
         "comment": null,
-        "config": [
-          "search_path=public"
-        ],
+        "config": null,
         "definition": null,
-        "definition_sha": "4859e096d521415c",
+        "definition_sha": "079ff897e3a04ae1",
         "execute_api_roles": "authenticated, service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -56753,7 +56941,7 @@
         "schema": "public",
         "security_definer": true,
         "strict": false,
-        "volatility": "stable"
+        "volatility": "volatile"
       },
       {
         "args": "",
@@ -58399,6 +58587,34 @@
         "volatility": "stable"
       },
       {
+        "args": "p_user_id uuid",
+        "callers": {
+          "code": [],
+          "code_total_files": 0,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": null,
+        "definition": null,
+        "definition_sha": "7e217a57d22c1414",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "is_dnd_active",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "_user_id uuid",
         "callers": {
           "code": [
@@ -59536,11 +59752,9 @@
           "views": []
         },
         "comment": null,
-        "config": [
-          "search_path=public"
-        ],
+        "config": null,
         "definition": null,
-        "definition_sha": "391f95197d2e42b2",
+        "definition_sha": "6d374640c3d12e24",
         "execute_api_roles": "authenticated, service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -59566,11 +59780,9 @@
           "views": []
         },
         "comment": null,
-        "config": [
-          "search_path=public"
-        ],
+        "config": null,
         "definition": null,
-        "definition_sha": "81203a5a8344c427",
+        "definition_sha": "a7a279653cbda60b",
         "execute_api_roles": "authenticated, service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -75094,6 +75306,64 @@
       },
       {
         "columns": [
+          "user_id",
+          "is_active"
+        ],
+        "definition": "CREATE INDEX idx_push_subscriptions_active ON public.push_subscriptions USING btree (user_id, is_active) WHERE is_active",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_push_subscriptions_active",
+        "predicate": "is_active",
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "columns": [
+          "user_id"
+        ],
+        "definition": "CREATE INDEX idx_push_subscriptions_user ON public.push_subscriptions USING btree (user_id)",
+        "is_primary": false,
+        "is_unique": false,
+        "is_valid": true,
+        "method": "btree",
+        "name": "idx_push_subscriptions_user",
+        "predicate": null,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "columns": [
+          "id"
+        ],
+        "definition": "CREATE UNIQUE INDEX push_subscriptions_pkey ON public.push_subscriptions USING btree (id)",
+        "is_primary": true,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "push_subscriptions_pkey",
+        "predicate": null,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "columns": [
+          "user_id",
+          "endpoint"
+        ],
+        "definition": "CREATE UNIQUE INDEX unique_subscription ON public.push_subscriptions USING btree (user_id, endpoint)",
+        "is_primary": false,
+        "is_unique": true,
+        "is_valid": true,
+        "method": "btree",
+        "name": "unique_subscription",
+        "predicate": null,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "columns": [
           "release_id"
         ],
         "definition": "CREATE INDEX idx_fk_qa_release_evidences_release_id_fkey ON public.qa_release_evidences USING btree (release_id)",
@@ -79436,6 +79706,36 @@
     ],
     "lints": [
       {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.cleanup_old_notifications()",
+        "severity": "ALTA"
+      },
+      {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.get_unread_count()",
+        "severity": "ALTA"
+      },
+      {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.is_dnd_active(p_user_id uuid)",
+        "severity": "ALTA"
+      },
+      {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.mark_all_notifications_read()",
+        "severity": "ALTA"
+      },
+      {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.mark_notification_read(p_notification_id uuid)",
+        "severity": "ALTA"
+      },
+      {
         "code": "fk_without_index",
         "detail": "FK sem índice nas colunas ['actor_id']: joins e DELETE/UPDATE na tabela pai ficam lentos.",
         "object": "public.pa_budget_entries.pa_budget_entries_actor_id_fkey",
@@ -79511,6 +79811,12 @@
         "code": "policy_auth_fn_not_wrapped",
         "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
         "object": "public.admin_audit_log_y2027_m02.Admins can view audit logs",
+        "severity": "BAIXA"
+      },
+      {
+        "code": "policy_auth_fn_not_wrapped",
+        "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
+        "object": "public.push_subscriptions.Users can manage own subscriptions",
         "severity": "BAIXA"
       },
       {
@@ -79726,6 +80032,12 @@
       {
         "code": "rpc_anon_executable",
         "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
+        "object": "public.cleanup_old_notifications()",
+        "severity": "INFO"
+      },
+      {
+        "code": "rpc_anon_executable",
+        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
         "object": "public.get_public_favorite_list(_token text)",
         "severity": "INFO"
       },
@@ -79740,9 +80052,21 @@
         "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
         "object": "public.get_sicoob_invitation(p_token text)",
         "severity": "INFO"
+      },
+      {
+        "code": "rpc_anon_executable",
+        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
+        "object": "public.is_dnd_active(p_user_id uuid)",
+        "severity": "INFO"
       }
     ],
     "migrations": [
+      {
+        "name": "notification_functions_replay_guard",
+        "statements": 1,
+        "statements_sha": "b2468b2f5ce316e2",
+        "version": "000"
+      },
       {
         "name": "notification_system",
         "statements": 18,
@@ -79760,6 +80084,18 @@
         "statements": 4,
         "statements_sha": "65465eb8120ad4bb",
         "version": "003"
+      },
+      {
+        "name": "notification_functions",
+        "statements": 5,
+        "statements_sha": "fdbd7cb4f29d0cfd",
+        "version": "004"
+      },
+      {
+        "name": "push_subscriptions",
+        "statements": 6,
+        "statements_sha": "3ce2fffcf6e57a85",
+        "version": "005"
       },
       {
         "name": null,
@@ -86135,6 +86471,18 @@
         "with_check": "true"
       },
       {
+        "cmd": "ALL",
+        "name": "Users can manage own subscriptions",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "public"
+        ],
+        "schema": "public",
+        "table": "push_subscriptions",
+        "using": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
         "cmd": "SELECT",
         "name": "sicoob_merged_08d546e37e47a1a7_select",
         "permissive": "PERMISSIVE",
@@ -91919,6 +92267,21 @@
         "is_partition": false,
         "kind": "table",
         "name": "public_token_failures",
+        "owner": "postgres",
+        "parent": null,
+        "partition_bound": null,
+        "partition_key": null,
+        "replica_identity": "default",
+        "rls_enabled": true,
+        "rls_forced": false,
+        "schema": "public"
+      },
+      {
+        "comment": null,
+        "from_extension": false,
+        "is_partition": false,
+        "kind": "table",
+        "name": "push_subscriptions",
         "owner": "postgres",
         "parent": null,
         "partition_bound": null,

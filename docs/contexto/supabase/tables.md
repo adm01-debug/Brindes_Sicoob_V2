@@ -164,6 +164,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.product_views](tables/public/product_views.md) | table | sim | 2 | 7 | sim |  |
 | [public.profiles](tables/public/profiles.md) | table | sim | 3 | 20 | não |  |
 | [public.public_token_failures](tables/public/public_token_failures.md) | table | sim | 2 | 8 | não |  |
+| [public.push_subscriptions](tables/public/push_subscriptions.md) | table | sim | 1 | 10 | não |  |
 | [public.qa_release_evidences](tables/public/qa_release_evidences.md) | table | sim | 4 | 8 | não |  |
 | [public.qa_releases](tables/public/qa_releases.md) | table | sim | 4 | 8 | não |  |
 | [public.qa_rls_audits](tables/public/qa_rls_audits.md) | table | sim | 1 | 8 | não |  |

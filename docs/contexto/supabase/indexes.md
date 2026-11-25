@@ -613,6 +613,10 @@ Uso e tamanho em `stats.md`.
 | public.public_token_failures | idx_public_token_failures_ip | btree | ip_address, created_at | não | sim |  |
 | public.public_token_failures | idx_public_token_failures_resource | btree | resource_type, resource_id, created_at | não | sim |  |
 | public.public_token_failures | public_token_failures_pkey | btree | id | sim | sim |  |
+| public.push_subscriptions | idx_push_subscriptions_active | btree | user_id, is_active | não | sim | `is_active` |
+| public.push_subscriptions | idx_push_subscriptions_user | btree | user_id | não | sim |  |
+| public.push_subscriptions | push_subscriptions_pkey | btree | id | sim | sim |  |
+| public.push_subscriptions | unique_subscription | btree | user_id, endpoint | sim | sim |  |
 | public.qa_release_evidences | idx_fk_qa_release_evidences_release_id_fkey | btree | release_id | não | sim |  |
 | public.qa_release_evidences | idx_fk_qa_release_evidences_uploaded_by_fkey | btree | uploaded_by | não | sim |  |
 | public.qa_release_evidences | qa_release_evidences_pkey | btree | id | sim | sim |  |

@@ -3,6 +3,15 @@
   "db": {
     "cron_runs": [
       {
+        "end_time": "2026-11-25T11:00:00.266662+00:00",
+        "jobid": 2,
+        "return_message": "1 row",
+        "runid": 263979,
+        "seconds": 0.06,
+        "start_time": "2026-11-25T11:00:00.208859+00:00",
+        "status": "succeeded"
+      },
+      {
         "end_time": "2026-11-25T10:00:00.371530+00:00",
         "jobid": 2,
         "return_message": "1 row",
@@ -21,39 +30,30 @@
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T08:00:00.215985+00:00",
-        "jobid": 2,
-        "return_message": "1 row",
-        "runid": 263442,
-        "seconds": 0.05,
-        "start_time": "2026-11-25T08:00:00.161388+00:00",
-        "status": "succeeded"
-      },
-      {
-        "end_time": "2026-11-25T10:15:00.194505+00:00",
+        "end_time": "2026-11-25T11:15:00.093604+00:00",
         "jobid": 3,
         "return_message": "1 row",
-        "runid": 263846,
+        "runid": 264025,
         "seconds": 0.02,
-        "start_time": "2026-11-25T10:15:00.171548+00:00",
+        "start_time": "2026-11-25T11:15:00.069562+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:00:00.350741+00:00",
+        "end_time": "2026-11-25T11:00:00.249874+00:00",
         "jobid": 3,
         "return_message": "1 row",
-        "runid": 263803,
+        "runid": 263982,
         "seconds": 0.03,
-        "start_time": "2026-11-25T10:00:00.320256+00:00",
+        "start_time": "2026-11-25T11:00:00.222132+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T09:45:00.828492+00:00",
+        "end_time": "2026-11-25T10:45:00.929704+00:00",
         "jobid": 3,
         "return_message": "1 row",
-        "runid": 263757,
-        "seconds": 0.05,
-        "start_time": "2026-11-25T09:45:00.780031+00:00",
+        "runid": 263936,
+        "seconds": 0.06,
+        "start_time": "2026-11-25T10:45:00.874470+00:00",
         "status": "succeeded"
       },
       {
@@ -246,30 +246,39 @@
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:18:00.302074+00:00",
+        "end_time": "2026-11-25T11:18:00.296539+00:00",
         "jobid": 17,
         "return_message": "1 row",
-        "runid": 263857,
+        "runid": 264036,
+        "seconds": 0.06,
+        "start_time": "2026-11-25T11:18:00.240402+00:00",
+        "status": "succeeded"
+      },
+      {
+        "end_time": "2026-11-25T11:17:00.089265+00:00",
+        "jobid": 17,
+        "return_message": "1 row",
+        "runid": 264032,
         "seconds": 0.02,
-        "start_time": "2026-11-25T10:18:00.279632+00:00",
+        "start_time": "2026-11-25T11:17:00.071115+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:17:00.237484+00:00",
+        "end_time": "2026-11-25T11:16:00.284033+00:00",
         "jobid": 17,
         "return_message": "1 row",
-        "runid": 263853,
-        "seconds": 0.04,
-        "start_time": "2026-11-25T10:17:00.200329+00:00",
+        "runid": 264030,
+        "seconds": 0.07,
+        "start_time": "2026-11-25T11:16:00.211569+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:16:00.211043+00:00",
-        "jobid": 17,
+        "end_time": "2026-11-25T11:17:00.103242+00:00",
+        "jobid": 18,
         "return_message": "1 row",
-        "runid": 263851,
-        "seconds": 0.05,
-        "start_time": "2026-11-25T10:16:00.164348+00:00",
+        "runid": 264033,
+        "seconds": 0.03,
+        "start_time": "2026-11-25T11:17:00.075191+00:00",
         "status": "succeeded"
       },
       {
@@ -288,15 +297,6 @@
         "runid": 263675,
         "seconds": 0.03,
         "start_time": "2026-11-25T09:17:00.195250+00:00",
-        "status": "succeeded"
-      },
-      {
-        "end_time": "2026-11-25T08:17:00.368376+00:00",
-        "jobid": 18,
-        "return_message": "1 row",
-        "runid": 263496,
-        "seconds": 0.02,
-        "start_time": "2026-11-25T08:17:00.343820+00:00",
         "status": "succeeded"
       },
       {
@@ -327,138 +327,138 @@
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:18:01.734493+00:00",
+        "end_time": "2026-11-25T11:18:00.377603+00:00",
         "jobid": 20,
         "return_message": "1 row",
-        "runid": 263855,
-        "seconds": 1.49,
-        "start_time": "2026-11-25T10:18:00.248963+00:00",
+        "runid": 264034,
+        "seconds": 0.14,
+        "start_time": "2026-11-25T11:18:00.237329+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:16:00.312878+00:00",
+        "end_time": "2026-11-25T11:16:00.334040+00:00",
         "jobid": 20,
         "return_message": "1 row",
-        "runid": 263849,
-        "seconds": 0.15,
-        "start_time": "2026-11-25T10:16:00.161902+00:00",
+        "runid": 264028,
+        "seconds": 0.13,
+        "start_time": "2026-11-25T11:16:00.208896+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:14:05.297312+00:00",
+        "end_time": "2026-11-25T11:14:00.348593+00:00",
         "jobid": 20,
         "return_message": "1 row",
-        "runid": 263841,
-        "seconds": 4.16,
-        "start_time": "2026-11-25T10:14:01.134030+00:00",
+        "runid": 264020,
+        "seconds": 0.11,
+        "start_time": "2026-11-25T11:14:00.233609+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:18:00.296955+00:00",
+        "end_time": "2026-11-25T11:18:00.286002+00:00",
         "jobid": 23,
         "return_message": "1 row",
-        "runid": 263856,
+        "runid": 264035,
         "seconds": 0.05,
-        "start_time": "2026-11-25T10:18:00.249645+00:00",
+        "start_time": "2026-11-25T11:18:00.238626+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:17:00.229350+00:00",
+        "end_time": "2026-11-25T11:17:00.084745+00:00",
         "jobid": 23,
         "return_message": "1 row",
-        "runid": 263852,
-        "seconds": 0.03,
-        "start_time": "2026-11-25T10:17:00.199245+00:00",
+        "runid": 264031,
+        "seconds": 0.02,
+        "start_time": "2026-11-25T11:17:00.069724+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:16:00.200459+00:00",
+        "end_time": "2026-11-25T11:16:00.278265+00:00",
         "jobid": 23,
         "return_message": "1 row",
-        "runid": 263850,
-        "seconds": 0.04,
-        "start_time": "2026-11-25T10:16:00.163155+00:00",
-        "status": "succeeded"
-      },
-      {
-        "end_time": "2026-11-25T10:16:00.208026+00:00",
-        "jobid": 26,
-        "return_message": "1 row",
-        "runid": 263848,
-        "seconds": 0.05,
-        "start_time": "2026-11-25T10:16:00.160698+00:00",
-        "status": "succeeded"
-      },
-      {
-        "end_time": "2026-11-25T10:12:00.264230+00:00",
-        "jobid": 26,
-        "return_message": "1 row",
-        "runid": 263835,
-        "seconds": 0.04,
-        "start_time": "2026-11-25T10:12:00.229034+00:00",
-        "status": "succeeded"
-      },
-      {
-        "end_time": "2026-11-25T10:08:00.325037+00:00",
-        "jobid": 26,
-        "return_message": "1 row",
-        "runid": 263824,
+        "runid": 264029,
         "seconds": 0.07,
-        "start_time": "2026-11-25T10:08:00.254005+00:00",
+        "start_time": "2026-11-25T11:16:00.210211+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:15:00.216903+00:00",
-        "jobid": 27,
+        "end_time": "2026-11-25T11:16:00.272965+00:00",
+        "jobid": 26,
         "return_message": "1 row",
-        "runid": 263845,
-        "seconds": 0.05,
-        "start_time": "2026-11-25T10:15:00.167886+00:00",
+        "runid": 264027,
+        "seconds": 0.07,
+        "start_time": "2026-11-25T11:16:00.207538+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:00:00.363520+00:00",
+        "end_time": "2026-11-25T11:12:00.678022+00:00",
+        "jobid": 26,
+        "return_message": "1 row",
+        "runid": 264014,
+        "seconds": 0.1,
+        "start_time": "2026-11-25T11:12:00.578002+00:00",
+        "status": "succeeded"
+      },
+      {
+        "end_time": "2026-11-25T11:08:00.204889+00:00",
+        "jobid": 26,
+        "return_message": "1 row",
+        "runid": 264003,
+        "seconds": 0.02,
+        "start_time": "2026-11-25T11:08:00.184265+00:00",
+        "status": "succeeded"
+      },
+      {
+        "end_time": "2026-11-25T11:15:00.083529+00:00",
         "jobid": 27,
         "return_message": "1 row",
-        "runid": 263802,
+        "runid": 264024,
+        "seconds": 0.02,
+        "start_time": "2026-11-25T11:15:00.068295+00:00",
+        "status": "succeeded"
+      },
+      {
+        "end_time": "2026-11-25T11:00:00.262287+00:00",
+        "jobid": 27,
+        "return_message": "1 row",
+        "runid": 263981,
         "seconds": 0.04,
-        "start_time": "2026-11-25T10:00:00.319047+00:00",
+        "start_time": "2026-11-25T11:00:00.220988+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T09:45:00.863010+00:00",
+        "end_time": "2026-11-25T10:45:00.982223+00:00",
         "jobid": 27,
         "return_message": "1 row",
-        "runid": 263756,
-        "seconds": 0.09,
-        "start_time": "2026-11-25T09:45:00.775781+00:00",
+        "runid": 263935,
+        "seconds": 0.11,
+        "start_time": "2026-11-25T10:45:00.871809+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T10:07:00.119285+00:00",
+        "end_time": "2026-11-25T11:07:00.076251+00:00",
         "jobid": 35,
         "return_message": "1 row",
-        "runid": 263823,
-        "seconds": 0.03,
-        "start_time": "2026-11-25T10:07:00.092703+00:00",
+        "runid": 264002,
+        "seconds": 0.01,
+        "start_time": "2026-11-25T11:07:00.066460+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T09:52:00.176535+00:00",
+        "end_time": "2026-11-25T10:52:00.200080+00:00",
         "jobid": 35,
         "return_message": "1 row",
-        "runid": 263779,
-        "seconds": 0.03,
-        "start_time": "2026-11-25T09:52:00.147808+00:00",
+        "runid": 263958,
+        "seconds": 0.04,
+        "start_time": "2026-11-25T10:52:00.164364+00:00",
         "status": "succeeded"
       },
       {
-        "end_time": "2026-11-25T09:37:00.232017+00:00",
+        "end_time": "2026-11-25T10:37:00.119784+00:00",
         "jobid": 35,
         "return_message": "1 row",
-        "runid": 263734,
+        "runid": 263913,
         "seconds": 0.03,
-        "start_time": "2026-11-25T09:37:00.197786+00:00",
+        "start_time": "2026-11-25T10:37:00.084876+00:00",
         "status": "succeeded"
       }
     ],
@@ -483,7 +483,7 @@
       },
       "connections": [
         {
-          "n": 7,
+          "n": 4,
           "state": "idle",
           "usename": "authenticator"
         },
@@ -504,11 +504,6 @@
         },
         {
           "n": 1,
-          "state": "active",
-          "usename": "supabase_admin"
-        },
-        {
-          "n": 7,
           "state": "idle",
           "usename": "supabase_admin"
         },
@@ -518,11 +513,11 @@
           "usename": "supabase_admin"
         }
       ],
-      "database_bytes": 245517459,
+      "database_bytes": 245607571,
       "queues": [],
       "schema_bytes": [
         {
-          "bytes": 161570816,
+          "bytes": 161619968,
           "schema": "public"
         },
         {
@@ -533,36 +528,36 @@
       "storage": [],
       "top_queries": [
         {
-          "calls": 34739,
-          "mean_ms": 776.34,
+          "calls": 34769,
+          "mean_ms": 776.05,
           "query": "SELECT public.monitor_sicoob_approval_worker()",
           "role": "postgres",
-          "rows": 34739,
-          "total_ms": 26969148
+          "rows": 34769,
+          "total_ms": 26982489
         },
         {
-          "calls": 64952,
-          "mean_ms": 94.58,
+          "calls": 65012,
+          "mean_ms": 94.53,
           "query": "SELECT public.dispatch_sicoob_approval_worker()",
           "role": "postgres",
-          "rows": 64952,
-          "total_ms": 6143033
+          "rows": 65012,
+          "total_ms": 6145327
         },
         {
-          "calls": 69644,
-          "mean_ms": 74.44,
+          "calls": 69704,
+          "mean_ms": 74.4,
           "query": "SELECT public.dispatch_sicoob_export_worker()",
           "role": "postgres",
-          "rows": 69644,
-          "total_ms": 5184080
+          "rows": 69704,
+          "total_ms": 5185988
         },
         {
-          "calls": 105359,
+          "calls": 105370,
           "mean_ms": 40.79,
           "query": "WITH pgrst_source AS (UPDATE \"public\".\"profiles\" SET \"last_login_at\" = \"pgrst_body\".\"last_login_at\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"last_login_at\" FROM json_to_record(pgrst_payload.json_data",
           "role": "authenticated",
-          "rows": 105359,
-          "total_ms": 4297389
+          "rows": 105370,
+          "total_ms": 4297865
         },
         {
           "calls": 2642,
@@ -581,20 +576,20 @@
           "total_ms": 2580419
         },
         {
-          "calls": 646,
-          "mean_ms": 3801.34,
+          "calls": 647,
+          "mean_ms": 3801.75,
           "query": "SELECT jobid, runid, status, start_time, end_time, EXTRACT($2 FROM (end_time - start_time))::numeric(10,2) AS seconds, left(return_message, $3) AS return_message FROM (SELECT *, row_number() OVER (PARTITION BY jobid ORDE",
           "role": "postgres",
-          "rows": 31502,
-          "total_ms": 2455668
+          "rows": 31553,
+          "total_ms": 2459735
         },
         {
-          "calls": 58744,
-          "mean_ms": 39.4,
+          "calls": 58804,
+          "mean_ms": 39.37,
           "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_request_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_request_id\" uuid) LIMIT $4) pgrst_body , LATERA",
           "role": "service_role",
-          "rows": 58744,
-          "total_ms": 2314620
+          "rows": 58804,
+          "total_ms": 2315309
         },
         {
           "calls": 6572,
@@ -605,12 +600,12 @@
           "total_ms": 2127879
         },
         {
-          "calls": 62449,
-          "mean_ms": 27.97,
+          "calls": 62493,
+          "mean_ms": 27.95,
           "query": "WITH pgrst_source AS ( SELECT \"public\".\"workspace_notifications\".* FROM \"public\".\"workspace_notifications\" WHERE \"public\".\"workspace_notifications\".\"user_id\" = $1 ORDER BY \"public\".\"workspace_notifications\".\"created_at\" ",
           "role": "authenticated",
-          "rows": 62449,
-          "total_ms": 1746845
+          "rows": 62493,
+          "total_ms": 1746904
         },
         {
           "calls": 2027,
@@ -629,20 +624,20 @@
           "total_ms": 1529689
         },
         {
-          "calls": 116322,
+          "calls": 116360,
           "mean_ms": 12.2,
           "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM \"public\".\"get_sicoob_access_state\"() pgrst_call) SELECT $3::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), $4) ",
           "role": "authenticated",
-          "rows": 116322,
-          "total_ms": 1419007
+          "rows": 116360,
+          "total_ms": 1419397
         },
         {
-          "calls": 73366,
+          "calls": 73371,
           "mean_ms": 18.36,
           "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"telemetry_events\"(\"event_type\", \"metadata\", \"severity\", \"url\", \"user_agent\") SELECT \"pgrst_body\".\"event_type\", \"pgrst_body\".\"metadata\", \"pgrst_body\".\"severity\", \"pgrst_body\".\"u",
           "role": "authenticated",
-          "rows": 73366,
-          "total_ms": 1347143
+          "rows": 73371,
+          "total_ms": 1347215
         },
         {
           "calls": 2674,
@@ -1794,7 +1789,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "admin_audit_log_y2026_m10_action_idx",
-        "scans": 287,
+        "scans": 289,
         "schema": "public",
         "table": "admin_audit_log_y2026_m10"
       },
@@ -2622,7 +2617,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_bot_log_created",
-        "scans": 1784,
+        "scans": 1785,
         "schema": "public",
         "table": "bot_detection_log"
       },
@@ -2631,7 +2626,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_bot_log_ip",
-        "scans": 2,
+        "scans": 3,
         "schema": "public",
         "table": "bot_detection_log"
       },
@@ -2964,7 +2959,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_collections_user_id",
-        "scans": 75271,
+        "scans": 75281,
         "schema": "public",
         "table": "collections"
       },
@@ -3018,7 +3013,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_connection_test_history_conn_time",
-        "scans": 11603,
+        "scans": 11624,
         "schema": "public",
         "table": "connection_test_history"
       },
@@ -3027,7 +3022,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_cth_triggered_by",
-        "scans": 0,
+        "scans": 1,
         "schema": "public",
         "table": "connection_test_history"
       },
@@ -3072,7 +3067,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "cooperativas_pkey",
-        "scans": 598,
+        "scans": 635,
         "schema": "public",
         "table": "cooperativas"
       },
@@ -3234,7 +3229,7 @@
         "is_primary": false,
         "is_unique": true,
         "name": "discount_approval_one_pending_per_quote_idx",
-        "scans": 16992,
+        "scans": 16996,
         "schema": "public",
         "table": "discount_approval_requests"
       },
@@ -3306,7 +3301,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_e2e_cleanup_audit_created_at",
-        "scans": 2,
+        "scans": 3,
         "schema": "public",
         "table": "e2e_cleanup_audit"
       },
@@ -3360,7 +3355,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_expert_conversations_seller_id",
-        "scans": 57808,
+        "scans": 57827,
         "schema": "public",
         "table": "expert_conversations"
       },
@@ -3423,7 +3418,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_export_jobs_pending_claim",
-        "scans": 63444,
+        "scans": 63504,
         "schema": "public",
         "table": "export_jobs"
       },
@@ -3810,7 +3805,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_integration_credentials_name",
-        "scans": 1211193,
+        "scans": 1211253,
         "schema": "public",
         "table": "integration_credentials"
       },
@@ -4089,7 +4084,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "login_attempts_pkey",
-        "scans": 2,
+        "scans": 3,
         "schema": "public",
         "table": "login_attempts"
       },
@@ -5268,7 +5263,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_org_members_user_id",
-        "scans": 69010,
+        "scans": 69020,
         "schema": "public",
         "table": "organization_members"
       },
@@ -5691,7 +5686,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_pas_coop",
-        "scans": 71,
+        "scans": 72,
         "schema": "public",
         "table": "postos_atendimento"
       },
@@ -5718,7 +5713,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "postos_atendimento_pkey",
-        "scans": 1214,
+        "scans": 1250,
         "schema": "public",
         "table": "postos_atendimento"
       },
@@ -6069,7 +6064,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_profiles_cooperativa_id",
-        "scans": 49,
+        "scans": 50,
         "schema": "public",
         "table": "profiles"
       },
@@ -6087,7 +6082,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_profiles_user_id",
-        "scans": 631744,
+        "scans": 631856,
         "schema": "public",
         "table": "profiles"
       },
@@ -6096,7 +6091,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "profiles_pkey",
-        "scans": 752,
+        "scans": 764,
         "schema": "public",
         "table": "profiles"
       },
@@ -6135,6 +6130,42 @@
         "scans": 0,
         "schema": "public",
         "table": "public_token_failures"
+      },
+      {
+        "bytes": 8192,
+        "is_primary": false,
+        "is_unique": false,
+        "name": "idx_push_subscriptions_active",
+        "scans": 0,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "bytes": 8192,
+        "is_primary": false,
+        "is_unique": false,
+        "name": "idx_push_subscriptions_user",
+        "scans": 0,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "bytes": 8192,
+        "is_primary": true,
+        "is_unique": true,
+        "name": "push_subscriptions_pkey",
+        "scans": 0,
+        "schema": "public",
+        "table": "push_subscriptions"
+      },
+      {
+        "bytes": 8192,
+        "is_primary": false,
+        "is_unique": true,
+        "name": "unique_subscription",
+        "scans": 0,
+        "schema": "public",
+        "table": "push_subscriptions"
       },
       {
         "bytes": 8192,
@@ -6285,7 +6316,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_query_telemetry_request_id",
-        "scans": 2316,
+        "scans": 2317,
         "schema": "public",
         "table": "query_telemetry"
       },
@@ -6726,7 +6757,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_quotes_seller_status_updated_at",
-        "scans": 19159,
+        "scans": 19163,
         "schema": "public",
         "table": "quotes"
       },
@@ -7275,7 +7306,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_approval_delivery_expired_lease",
-        "scans": 58840,
+        "scans": 58900,
         "schema": "public",
         "table": "sicoob_approval_deliveries"
       },
@@ -7284,7 +7315,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_approval_delivery_pending",
-        "scans": 152233,
+        "scans": 152383,
         "schema": "public",
         "table": "sicoob_approval_deliveries"
       },
@@ -7293,7 +7324,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_approval_delivery_request_event",
-        "scans": 57866,
+        "scans": 57926,
         "schema": "public",
         "table": "sicoob_approval_deliveries"
       },
@@ -7419,7 +7450,7 @@
         "is_primary": false,
         "is_unique": true,
         "name": "ux_sicoob_approval_one_pending_per_order",
-        "scans": 58816,
+        "scans": 58876,
         "schema": "public",
         "table": "sicoob_approval_requests"
       },
@@ -7428,7 +7459,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_approval_worker_dispatch_state",
-        "scans": 74864,
+        "scans": 74954,
         "schema": "public",
         "table": "sicoob_approval_worker_dispatches"
       },
@@ -7446,7 +7477,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "sicoob_approval_worker_dispatches_pkey",
-        "scans": 111716,
+        "scans": 111837,
         "schema": "public",
         "table": "sicoob_approval_worker_dispatches"
       },
@@ -8112,7 +8143,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_order_shipments_order_id",
-        "scans": 8,
+        "scans": 10,
         "schema": "public",
         "table": "sicoob_order_shipments"
       },
@@ -8202,7 +8233,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_orders_id_text",
-        "scans": 3452,
+        "scans": 3524,
         "schema": "public",
         "table": "sicoob_orders"
       },
@@ -8220,7 +8251,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_sicoob_orders_status",
-        "scans": 208,
+        "scans": 212,
         "schema": "public",
         "table": "sicoob_orders"
       },
@@ -8490,7 +8521,7 @@
         "is_primary": true,
         "is_unique": true,
         "name": "system_settings_pkey",
-        "scans": 1601,
+        "scans": 1605,
         "schema": "public",
         "table": "system_settings"
       },
@@ -8499,7 +8530,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_fk_telemetry_events_user_id_fkey",
-        "scans": 335,
+        "scans": 336,
         "schema": "public",
         "table": "telemetry_events"
       },
@@ -8625,7 +8656,7 @@
         "is_primary": false,
         "is_unique": true,
         "name": "user_onboarding_user_id_key",
-        "scans": 69321,
+        "scans": 69340,
         "schema": "public",
         "table": "user_onboarding"
       },
@@ -8652,7 +8683,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_user_roles_user_id",
-        "scans": 453786,
+        "scans": 453864,
         "schema": "public",
         "table": "user_roles"
       },
@@ -8670,7 +8701,7 @@
         "is_primary": false,
         "is_unique": true,
         "name": "user_roles_user_id_role_key",
-        "scans": 6447576,
+        "scans": 6447586,
         "schema": "public",
         "table": "user_roles"
       },
@@ -8850,7 +8881,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_notifications_created",
-        "scans": 39224,
+        "scans": 39241,
         "schema": "public",
         "table": "workspace_notifications"
       },
@@ -8859,7 +8890,7 @@
         "is_primary": false,
         "is_unique": false,
         "name": "idx_workspace_notifications_user_unread",
-        "scans": 41860,
+        "scans": 41904,
         "schema": "public",
         "table": "workspace_notifications"
       },
@@ -8877,21 +8908,21 @@
       {
         "dead_rows": 14,
         "est_rows": 98452,
-        "heap_bytes": 44720128,
-        "idx_scan": 635,
+        "heap_bytes": 44728320,
+        "idx_scan": 636,
         "index_bytes": 5292032,
         "last_autoanalyze": "2026-10-30T23:06:43.137589+00:00",
         "last_autovacuum": "2026-10-30T13:23:38.646339+00:00",
         "name": "telemetry_events",
         "schema": "public",
         "seq_scan": 3,
-        "total_bytes": 50061312
+        "total_bytes": 50069504
       },
       {
         "dead_rows": 3,
         "est_rows": 63693,
         "heap_bytes": 9674752,
-        "idx_scan": 78786,
+        "idx_scan": 78787,
         "index_bytes": 17948672,
         "last_autoanalyze": "2026-10-31T00:18:14.539125+00:00",
         "last_autovacuum": "2026-10-30T23:49:09.866033+00:00",
@@ -8904,7 +8935,7 @@
         "dead_rows": 18,
         "est_rows": 20334,
         "heap_bytes": 9535488,
-        "idx_scan": 21115,
+        "idx_scan": 21117,
         "index_bytes": 9240576,
         "last_autoanalyze": "2026-10-30T11:15:28.676638+00:00",
         "last_autovacuum": "2026-10-28T22:07:46.307616+00:00",
@@ -8914,23 +8945,23 @@
         "total_bytes": 18817024
       },
       {
-        "dead_rows": 7680,
+        "dead_rows": 7800,
         "est_rows": 41495,
         "heap_bytes": 10715136,
-        "idx_scan": 205370,
+        "idx_scan": 205581,
         "index_bytes": 5775360,
         "last_autoanalyze": "2026-11-25T04:18:03.802770+00:00",
         "last_autovacuum": "2026-11-22T18:18:24.113606+00:00",
         "name": "sicoob_approval_worker_dispatches",
         "schema": "public",
-        "seq_scan": 61308,
+        "seq_scan": 61354,
         "total_bytes": 16531456
       },
       {
         "dead_rows": 7,
         "est_rows": 10451,
         "heap_bytes": 3768320,
-        "idx_scan": 2,
+        "idx_scan": 3,
         "index_bytes": 3096576,
         "last_autoanalyze": "2026-10-30T13:09:47.714696+00:00",
         "last_autovacuum": "2026-10-30T12:17:34.970096+00:00",
@@ -8943,7 +8974,7 @@
         "dead_rows": 7,
         "est_rows": 9417,
         "heap_bytes": 4464640,
-        "idx_scan": 81084,
+        "idx_scan": 81145,
         "index_bytes": 1630208,
         "last_autoanalyze": "2026-10-30T23:35:13.412244+00:00",
         "last_autovacuum": "2026-10-18T13:58:48.664358+00:00",
@@ -8956,7 +8987,7 @@
         "dead_rows": 0,
         "est_rows": 7666,
         "heap_bytes": 2220032,
-        "idx_scan": 6520,
+        "idx_scan": 6521,
         "index_bytes": 1007616,
         "last_autoanalyze": "2026-10-30T12:43:40.775144+00:00",
         "last_autovacuum": "2026-10-18T15:19:52.965105+00:00",
@@ -8975,7 +9006,7 @@
         "last_autovacuum": "2026-10-27T12:21:46.355806+00:00",
         "name": "mcp_access_violations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 1040384
       },
       {
@@ -8988,33 +9019,33 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m09",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 516096
       },
       {
         "dead_rows": 14,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 45553,
+        "idx_scan": 45557,
         "index_bytes": 294912,
         "last_autoanalyze": null,
         "last_autovacuum": "2026-11-07T14:30:27.333778+00:00",
         "name": "quotes",
         "schema": "public",
-        "seq_scan": 1332,
+        "seq_scan": 1333,
         "total_bytes": 327680
       },
       {
-        "dead_rows": 104,
-        "est_rows": 274,
+        "dead_rows": 3,
+        "est_rows": 297,
         "heap_bytes": 49152,
-        "idx_scan": 11603,
+        "idx_scan": 11625,
         "index_bytes": 139264,
         "last_autoanalyze": "2026-11-25T04:46:05.127842+00:00",
-        "last_autovacuum": "2026-10-11T09:30:48.821871+00:00",
+        "last_autovacuum": "2026-11-25T10:30:21.552473+00:00",
         "name": "connection_test_history",
         "schema": "public",
-        "seq_scan": 5469,
+        "seq_scan": 5476,
         "total_bytes": 229376
       },
       {
@@ -9027,20 +9058,20 @@
         "last_autovacuum": null,
         "name": "sicoob_invitations",
         "schema": "public",
-        "seq_scan": 23,
+        "seq_scan": 25,
         "total_bytes": 188416
       },
       {
         "dead_rows": 5,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 5654,
+        "idx_scan": 5730,
         "index_bytes": 155648,
         "last_autoanalyze": null,
         "last_autovacuum": "2026-10-16T16:22:40.663458+00:00",
         "name": "sicoob_orders",
         "schema": "public",
-        "seq_scan": 956,
+        "seq_scan": 961,
         "total_bytes": 188416
       },
       {
@@ -9053,7 +9084,7 @@
         "last_autovacuum": null,
         "name": "orders",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 163840
       },
       {
@@ -9066,7 +9097,7 @@
         "last_autovacuum": "2026-11-01T00:00:32.997227+00:00",
         "name": "request_rate_limits",
         "schema": "public",
-        "seq_scan": 1163,
+        "seq_scan": 1165,
         "total_bytes": 163840
       },
       {
@@ -9079,7 +9110,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_default",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 155648
       },
       {
@@ -9092,7 +9123,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m05",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 155648
       },
       {
@@ -9105,20 +9136,20 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m08",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 155648
       },
       {
-        "dead_rows": 29,
+        "dead_rows": 20,
         "est_rows": 14,
         "heap_bytes": 24576,
-        "idx_scan": 632555,
+        "idx_scan": 632680,
         "index_bytes": 81920,
         "last_autoanalyze": "2026-11-24T11:40:17.916551+00:00",
         "last_autovacuum": "2026-10-28T23:09:54.041498+00:00",
         "name": "profiles",
         "schema": "public",
-        "seq_scan": 41705478,
+        "seq_scan": 41706039,
         "total_bytes": 147456
       },
       {
@@ -9131,20 +9162,20 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m11",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 139264
       },
       {
         "dead_rows": 22,
         "est_rows": 22,
         "heap_bytes": 24576,
-        "idx_scan": 1786,
+        "idx_scan": 1788,
         "index_bytes": 65536,
         "last_autoanalyze": "2026-11-13T00:00:27.706070+00:00",
         "last_autovacuum": "2026-11-13T00:01:27.853173+00:00",
         "name": "bot_detection_log",
         "schema": "public",
-        "seq_scan": 304,
+        "seq_scan": 305,
         "total_bytes": 131072
       },
       {
@@ -9157,7 +9188,7 @@
         "last_autovacuum": null,
         "name": "search_analytics",
         "schema": "public",
-        "seq_scan": 16,
+        "seq_scan": 17,
         "total_bytes": 131072
       },
       {
@@ -9170,7 +9201,7 @@
         "last_autovacuum": "2026-10-29T22:27:50.642393+00:00",
         "name": "e2e_cleanup_rate_limit",
         "schema": "public",
-        "seq_scan": 217,
+        "seq_scan": 218,
         "total_bytes": 114688
       },
       {
@@ -9183,20 +9214,20 @@
         "last_autovacuum": null,
         "name": "product_views",
         "schema": "public",
-        "seq_scan": 800,
+        "seq_scan": 801,
         "total_bytes": 114688
       },
       {
         "dead_rows": 5,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 58916,
+        "idx_scan": 58976,
         "index_bytes": 98304,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "sicoob_approval_requests",
         "schema": "public",
-        "seq_scan": 40,
+        "seq_scan": 41,
         "total_bytes": 114688
       },
       {
@@ -9209,11 +9240,11 @@
         "last_autovacuum": null,
         "name": "admin_config_audit",
         "schema": "public",
-        "seq_scan": 9,
+        "seq_scan": 10,
         "total_bytes": 106496
       },
       {
-        "dead_rows": 16,
+        "dead_rows": 4,
         "est_rows": 2,
         "heap_bytes": 8192,
         "idx_scan": 102,
@@ -9222,20 +9253,20 @@
         "last_autovacuum": null,
         "name": "external_connections",
         "schema": "public",
-        "seq_scan": 15802,
+        "seq_scan": 15831,
         "total_bytes": 106496
       },
       {
         "dead_rows": 2,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 605,
+        "idx_scan": 642,
         "index_bytes": 81920,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "cooperativas",
         "schema": "public",
-        "seq_scan": 213,
+        "seq_scan": 215,
         "total_bytes": 98304
       },
       {
@@ -9248,7 +9279,7 @@
         "last_autovacuum": null,
         "name": "favorite_items",
         "schema": "public",
-        "seq_scan": 4042,
+        "seq_scan": 4043,
         "total_bytes": 98304
       },
       {
@@ -9261,7 +9292,7 @@
         "last_autovacuum": null,
         "name": "favorite_lists",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 98304
       },
       {
@@ -9274,7 +9305,7 @@
         "last_autovacuum": null,
         "name": "order_consolidations",
         "schema": "public",
-        "seq_scan": 10,
+        "seq_scan": 11,
         "total_bytes": 98304
       },
       {
@@ -9287,7 +9318,7 @@
         "last_autovacuum": null,
         "name": "pa_budget_entries",
         "schema": "public",
-        "seq_scan": 9,
+        "seq_scan": 10,
         "total_bytes": 98304
       },
       {
@@ -9300,7 +9331,7 @@
         "last_autovacuum": null,
         "name": "pa_budgets",
         "schema": "public",
-        "seq_scan": 26,
+        "seq_scan": 27,
         "total_bytes": 98304
       },
       {
@@ -9313,7 +9344,7 @@
         "last_autovacuum": null,
         "name": "password_reset_requests",
         "schema": "public",
-        "seq_scan": 3296,
+        "seq_scan": 3297,
         "total_bytes": 98304
       },
       {
@@ -9326,7 +9357,7 @@
         "last_autovacuum": null,
         "name": "sicoob_invitation_events",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 98304
       },
       {
@@ -9339,20 +9370,20 @@
         "last_autovacuum": null,
         "name": "inbound_webhook_endpoints",
         "schema": "public",
-        "seq_scan": 7,
+        "seq_scan": 8,
         "total_bytes": 90112
       },
       {
         "dead_rows": 30,
         "est_rows": 10,
         "heap_bytes": 8192,
-        "idx_scan": 6901363,
+        "idx_scan": 6901451,
         "index_bytes": 49152,
         "last_autoanalyze": "2026-10-14T00:33:50.624314+00:00",
         "last_autovacuum": "2026-10-14T00:34:50.602260+00:00",
         "name": "user_roles",
         "schema": "public",
-        "seq_scan": 52093010,
+        "seq_scan": 52093588,
         "total_bytes": 90112
       },
       {
@@ -9365,7 +9396,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2024",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9378,7 +9409,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2025",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9391,7 +9422,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m01",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9404,7 +9435,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m02",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9417,7 +9448,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m03",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9430,7 +9461,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m04",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9443,7 +9474,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m06",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9456,7 +9487,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m07",
         "schema": "public",
-        "seq_scan": 306,
+        "seq_scan": 308,
         "total_bytes": 81920
       },
       {
@@ -9469,7 +9500,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2026_m12",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 81920
       },
       {
@@ -9482,7 +9513,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2027_m01",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 81920
       },
       {
@@ -9495,7 +9526,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2027_m02",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 81920
       },
       {
@@ -9508,7 +9539,7 @@
         "last_autovacuum": null,
         "name": "admin_audit_log_y2027_m03",
         "schema": "public",
-        "seq_scan": 157,
+        "seq_scan": 159,
         "total_bytes": 81920
       },
       {
@@ -9521,7 +9552,7 @@
         "last_autovacuum": null,
         "name": "catalog_marketing_terms",
         "schema": "public",
-        "seq_scan": 34,
+        "seq_scan": 35,
         "total_bytes": 81920
       },
       {
@@ -9534,20 +9565,20 @@
         "last_autovacuum": null,
         "name": "order_audit_events",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 81920
       },
       {
         "dead_rows": 11,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 1318,
+        "idx_scan": 1355,
         "index_bytes": 65536,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "postos_atendimento",
         "schema": "public",
-        "seq_scan": 362,
+        "seq_scan": 364,
         "total_bytes": 81920
       },
       {
@@ -9560,7 +9591,7 @@
         "last_autovacuum": null,
         "name": "sicoob_delivery_destinations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 81920
       },
       {
@@ -9573,7 +9604,7 @@
         "last_autovacuum": null,
         "name": "sicoob_delivery_receipt_events",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 81920
       },
       {
@@ -9586,7 +9617,7 @@
         "last_autovacuum": null,
         "name": "sicoob_order_history",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 81920
       },
       {
@@ -9599,7 +9630,7 @@
         "last_autovacuum": null,
         "name": "sicoob_order_items",
         "schema": "public",
-        "seq_scan": 5,
+        "seq_scan": 6,
         "total_bytes": 81920
       },
       {
@@ -9612,7 +9643,7 @@
         "last_autovacuum": null,
         "name": "product_component_location_techniques",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 73728
       },
       {
@@ -9625,7 +9656,7 @@
         "last_autovacuum": null,
         "name": "product_group_location_techniques",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 73728
       },
       {
@@ -9638,7 +9669,7 @@
         "last_autovacuum": null,
         "name": "sicoob_delivery_allocations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 73728
       },
       {
@@ -9651,20 +9682,20 @@
         "last_autovacuum": null,
         "name": "sicoob_order_payments",
         "schema": "public",
-        "seq_scan": 1157,
+        "seq_scan": 1159,
         "total_bytes": 73728
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 73,
+        "idx_scan": 75,
         "index_bytes": 65536,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "sicoob_order_shipments",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 73728
       },
       {
@@ -9677,7 +9708,7 @@
         "last_autovacuum": null,
         "name": "bitrix_deals",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 65536
       },
       {
@@ -9690,20 +9721,20 @@
         "last_autovacuum": null,
         "name": "cooperativa_budgets",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 65536
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 32408,
+        "idx_scan": 32412,
         "index_bytes": 57344,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "discount_approval_requests",
         "schema": "public",
-        "seq_scan": 697,
+        "seq_scan": 698,
         "total_bytes": 65536
       },
       {
@@ -9716,20 +9747,20 @@
         "last_autovacuum": null,
         "name": "external_connections_sync_log",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 1211193,
+        "idx_scan": 1211253,
         "index_bytes": 49152,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "integration_credentials",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 65536
       },
       {
@@ -9742,7 +9773,7 @@
         "last_autovacuum": "2026-10-16T01:34:55.556729+00:00",
         "name": "notification_preferences",
         "schema": "public",
-        "seq_scan": 10,
+        "seq_scan": 11,
         "total_bytes": 65536
       },
       {
@@ -9755,7 +9786,7 @@
         "last_autovacuum": null,
         "name": "order_items",
         "schema": "public",
-        "seq_scan": 3240,
+        "seq_scan": 3241,
         "total_bytes": 65536
       },
       {
@@ -9768,7 +9799,7 @@
         "last_autovacuum": null,
         "name": "product_component_locations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9781,7 +9812,7 @@
         "last_autovacuum": null,
         "name": "product_group_components",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9794,7 +9825,7 @@
         "last_autovacuum": null,
         "name": "product_group_locations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9807,7 +9838,7 @@
         "last_autovacuum": null,
         "name": "quote_approval_evidence_keys",
         "schema": "public",
-        "seq_scan": 5,
+        "seq_scan": 6,
         "total_bytes": 65536
       },
       {
@@ -9820,7 +9851,7 @@
         "last_autovacuum": null,
         "name": "quote_approval_tokens",
         "schema": "public",
-        "seq_scan": 820,
+        "seq_scan": 821,
         "total_bytes": 65536
       },
       {
@@ -9833,20 +9864,20 @@
         "last_autovacuum": null,
         "name": "quote_history",
         "schema": "public",
-        "seq_scan": 618,
+        "seq_scan": 619,
         "total_bytes": 65536
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 268939,
+        "idx_scan": 269209,
         "index_bytes": 57344,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "sicoob_approval_deliveries",
         "schema": "public",
-        "seq_scan": 93531,
+        "seq_scan": 93622,
         "total_bytes": 65536
       },
       {
@@ -9859,7 +9890,7 @@
         "last_autovacuum": null,
         "name": "sicoob_approval_policies",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9872,7 +9903,7 @@
         "last_autovacuum": null,
         "name": "sicoob_order_artwork_versions",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9885,7 +9916,7 @@
         "last_autovacuum": null,
         "name": "step_up_audit_log",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 65536
       },
       {
@@ -9898,7 +9929,7 @@
         "last_autovacuum": null,
         "name": "bitrix_sync_logs",
         "schema": "public",
-        "seq_scan": 6,
+        "seq_scan": 7,
         "total_bytes": 57344
       },
       {
@@ -9911,7 +9942,7 @@
         "last_autovacuum": null,
         "name": "magic_up_generations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -9924,7 +9955,7 @@
         "last_autovacuum": null,
         "name": "mcp_api_keys",
         "schema": "public",
-        "seq_scan": 2168,
+        "seq_scan": 2169,
         "total_bytes": 57344
       },
       {
@@ -9937,7 +9968,7 @@
         "last_autovacuum": null,
         "name": "notifications",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -9950,7 +9981,7 @@
         "last_autovacuum": null,
         "name": "order_consolidation_orders",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -9963,7 +9994,7 @@
         "last_autovacuum": null,
         "name": "order_duplicate_requests",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -9976,7 +10007,7 @@
         "last_autovacuum": null,
         "name": "order_invoices",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -9989,7 +10020,7 @@
         "last_autovacuum": null,
         "name": "sicoob_approval_delegations",
         "schema": "public",
-        "seq_scan": 44,
+        "seq_scan": 46,
         "total_bytes": 57344
       },
       {
@@ -10002,7 +10033,7 @@
         "last_autovacuum": null,
         "name": "sicoob_order_invoices",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 57344
       },
       {
@@ -10015,7 +10046,7 @@
         "last_autovacuum": null,
         "name": "ai_usage_logs",
         "schema": "public",
-        "seq_scan": 9,
+        "seq_scan": 10,
         "total_bytes": 49152
       },
       {
@@ -10028,20 +10059,20 @@
         "last_autovacuum": null,
         "name": "bitrix_clients",
         "schema": "public",
-        "seq_scan": 8,
+        "seq_scan": 9,
         "total_bytes": 49152
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 75271,
+        "idx_scan": 75281,
         "index_bytes": 40960,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "collections",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10054,7 +10085,7 @@
         "last_autovacuum": null,
         "name": "custom_kits",
         "schema": "public",
-        "seq_scan": 1873,
+        "seq_scan": 1874,
         "total_bytes": 49152
       },
       {
@@ -10067,7 +10098,7 @@
         "last_autovacuum": null,
         "name": "favorite_item_reactions",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10080,7 +10111,7 @@
         "last_autovacuum": null,
         "name": "magic_up_public_shares",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10093,7 +10124,7 @@
         "last_autovacuum": null,
         "name": "mockup_drafts",
         "schema": "public",
-        "seq_scan": 592,
+        "seq_scan": 593,
         "total_bytes": 49152
       },
       {
@@ -10106,7 +10137,7 @@
         "last_autovacuum": null,
         "name": "newsletter_subscribers",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10119,7 +10150,7 @@
         "last_autovacuum": null,
         "name": "order_comments",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10132,7 +10163,7 @@
         "last_autovacuum": null,
         "name": "order_payments",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10145,7 +10176,7 @@
         "last_autovacuum": null,
         "name": "order_pilot_approvals",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10158,7 +10189,7 @@
         "last_autovacuum": null,
         "name": "ownership_audit_reports",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10171,7 +10202,7 @@
         "last_autovacuum": null,
         "name": "personalization_simulations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10184,7 +10215,7 @@
         "last_autovacuum": null,
         "name": "product_group_members",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10197,7 +10228,7 @@
         "last_autovacuum": null,
         "name": "qa_runs",
         "schema": "public",
-        "seq_scan": 35,
+        "seq_scan": 36,
         "total_bytes": 49152
       },
       {
@@ -10210,7 +10241,7 @@
         "last_autovacuum": null,
         "name": "quote_comments",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 49152
       },
       {
@@ -10223,7 +10254,7 @@
         "last_autovacuum": null,
         "name": "quote_items",
         "schema": "public",
-        "seq_scan": 10488,
+        "seq_scan": 10489,
         "total_bytes": 49152
       },
       {
@@ -10236,7 +10267,7 @@
         "last_autovacuum": null,
         "name": "quote_save_idempotency",
         "schema": "public",
-        "seq_scan": 11,
+        "seq_scan": 12,
         "total_bytes": 49152
       },
       {
@@ -10249,7 +10280,7 @@
         "last_autovacuum": null,
         "name": "sales_goals",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10262,7 +10293,7 @@
         "last_autovacuum": null,
         "name": "seller_cart_items",
         "schema": "public",
-        "seq_scan": 15988,
+        "seq_scan": 15989,
         "total_bytes": 49152
       },
       {
@@ -10275,7 +10306,7 @@
         "last_autovacuum": null,
         "name": "seller_carts",
         "schema": "public",
-        "seq_scan": 39098,
+        "seq_scan": 39100,
         "total_bytes": 49152
       },
       {
@@ -10288,7 +10319,7 @@
         "last_autovacuum": null,
         "name": "sicoob_centrais",
         "schema": "public",
-        "seq_scan": 18,
+        "seq_scan": 19,
         "total_bytes": 49152
       },
       {
@@ -10301,7 +10332,7 @@
         "last_autovacuum": null,
         "name": "sicoob_document_registry",
         "schema": "public",
-        "seq_scan": 6,
+        "seq_scan": 7,
         "total_bytes": 49152
       },
       {
@@ -10314,7 +10345,7 @@
         "last_autovacuum": null,
         "name": "sicoob_manager_audit",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10327,7 +10358,7 @@
         "last_autovacuum": null,
         "name": "step_up_tokens",
         "schema": "public",
-        "seq_scan": 4631,
+        "seq_scan": 4636,
         "total_bytes": 49152
       },
       {
@@ -10340,20 +10371,20 @@
         "last_autovacuum": null,
         "name": "user_comparisons",
         "schema": "public",
-        "seq_scan": 813,
+        "seq_scan": 814,
         "total_bytes": 49152
       },
       {
         "dead_rows": 18,
         "est_rows": 0,
         "heap_bytes": 8192,
-        "idx_scan": 69321,
+        "idx_scan": 69340,
         "index_bytes": 32768,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "user_onboarding",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 49152
       },
       {
@@ -10366,7 +10397,7 @@
         "last_autovacuum": null,
         "name": "webhook_delivery_metrics",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 49152
       },
       {
@@ -10379,7 +10410,7 @@
         "last_autovacuum": null,
         "name": "access_blocked_log",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 40960
       },
       {
@@ -10392,7 +10423,7 @@
         "last_autovacuum": null,
         "name": "access_security_settings",
         "schema": "public",
-        "seq_scan": 3315,
+        "seq_scan": 3316,
         "total_bytes": 40960
       },
       {
@@ -10405,7 +10436,7 @@
         "last_autovacuum": null,
         "name": "ai_usage_quotas",
         "schema": "public",
-        "seq_scan": 6,
+        "seq_scan": 7,
         "total_bytes": 40960
       },
       {
@@ -10418,7 +10449,7 @@
         "last_autovacuum": null,
         "name": "art_file_attachments",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 40960
       },
       {
@@ -10431,7 +10462,7 @@
         "last_autovacuum": null,
         "name": "audit_log",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 40960
       },
       {
@@ -10444,7 +10475,7 @@
         "last_autovacuum": null,
         "name": "city_whitelist",
         "schema": "public",
-        "seq_scan": 598,
+        "seq_scan": 599,
         "total_bytes": 40960
       },
       {
@@ -10457,7 +10488,7 @@
         "last_autovacuum": null,
         "name": "collection_item_reactions",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10470,7 +10501,7 @@
         "last_autovacuum": null,
         "name": "collection_items",
         "schema": "public",
-        "seq_scan": 1172,
+        "seq_scan": 1173,
         "total_bytes": 40960
       },
       {
@@ -10483,7 +10514,7 @@
         "last_autovacuum": null,
         "name": "collection_items_trash",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10496,7 +10527,7 @@
         "last_autovacuum": null,
         "name": "follow_up_reminders",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10509,7 +10540,7 @@
         "last_autovacuum": null,
         "name": "ip_access_control",
         "schema": "public",
-        "seq_scan": 50,
+        "seq_scan": 51,
         "total_bytes": 40960
       },
       {
@@ -10522,7 +10553,7 @@
         "last_autovacuum": null,
         "name": "ip_whitelist",
         "schema": "public",
-        "seq_scan": 604,
+        "seq_scan": 605,
         "total_bytes": 40960
       },
       {
@@ -10535,7 +10566,7 @@
         "last_autovacuum": null,
         "name": "kit_collaborators",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10548,7 +10579,7 @@
         "last_autovacuum": null,
         "name": "limit_increase_requests",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10561,7 +10592,7 @@
         "last_autovacuum": null,
         "name": "mockup_prompt_configs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10574,7 +10605,7 @@
         "last_autovacuum": null,
         "name": "order_logistics_tracking",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10587,7 +10618,7 @@
         "last_autovacuum": null,
         "name": "order_templates",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10600,7 +10631,7 @@
         "last_autovacuum": null,
         "name": "product_categories",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10613,7 +10644,20 @@
         "last_autovacuum": null,
         "name": "product_price_freshness_overrides",
         "schema": "public",
-        "seq_scan": 317,
+        "seq_scan": 318,
+        "total_bytes": 40960
+      },
+      {
+        "dead_rows": 0,
+        "est_rows": 0,
+        "heap_bytes": 0,
+        "idx_scan": 0,
+        "index_bytes": 32768,
+        "last_autoanalyze": null,
+        "last_autovacuum": null,
+        "name": "push_subscriptions",
+        "schema": "public",
+        "seq_scan": 5,
         "total_bytes": 40960
       },
       {
@@ -10626,7 +10670,7 @@
         "last_autovacuum": null,
         "name": "rls_denial_log",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10639,7 +10683,7 @@
         "last_autovacuum": null,
         "name": "role_migration_items",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10652,7 +10696,7 @@
         "last_autovacuum": null,
         "name": "sicoob_order_item_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10665,7 +10709,7 @@
         "last_autovacuum": null,
         "name": "sicoob_quote_reorder_requests",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 40960
       },
       {
@@ -10678,7 +10722,7 @@
         "last_autovacuum": null,
         "name": "sicoob_reorder_requests",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 40960
       },
       {
@@ -10691,7 +10735,7 @@
         "last_autovacuum": null,
         "name": "ai_insights_cache",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 32768
       },
       {
@@ -10704,7 +10748,7 @@
         "last_autovacuum": null,
         "name": "ai_usage_events",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 32768
       },
       {
@@ -10717,7 +10761,7 @@
         "last_autovacuum": null,
         "name": "blog_posts",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 32768
       },
       {
@@ -10730,7 +10774,7 @@
         "last_autovacuum": null,
         "name": "catalog_product_marketing",
         "schema": "public",
-        "seq_scan": 21,
+        "seq_scan": 22,
         "total_bytes": 32768
       },
       {
@@ -10743,7 +10787,7 @@
         "last_autovacuum": null,
         "name": "cms_banners",
         "schema": "public",
-        "seq_scan": 3541,
+        "seq_scan": 3542,
         "total_bytes": 32768
       },
       {
@@ -10756,7 +10800,7 @@
         "last_autovacuum": null,
         "name": "comparison_reactions",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10769,7 +10813,7 @@
         "last_autovacuum": null,
         "name": "cost_centers",
         "schema": "public",
-        "seq_scan": 8,
+        "seq_scan": 9,
         "total_bytes": 32768
       },
       {
@@ -10782,20 +10826,20 @@
         "last_autovacuum": null,
         "name": "export_audit_log",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 63998,
+        "idx_scan": 64058,
         "index_bytes": 24576,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "export_jobs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10808,7 +10852,7 @@
         "last_autovacuum": null,
         "name": "favorite_items_trash",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10821,7 +10865,7 @@
         "last_autovacuum": null,
         "name": "file_scan_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10834,7 +10878,7 @@
         "last_autovacuum": null,
         "name": "kit_comments",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10847,7 +10891,7 @@
         "last_autovacuum": null,
         "name": "kit_share_tokens",
         "schema": "public",
-        "seq_scan": 796,
+        "seq_scan": 797,
         "total_bytes": 32768
       },
       {
@@ -10860,7 +10904,7 @@
         "last_autovacuum": null,
         "name": "kit_templates",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10873,7 +10917,7 @@
         "last_autovacuum": null,
         "name": "magic_up_brand_kits",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10886,7 +10930,7 @@
         "last_autovacuum": null,
         "name": "magic_up_reactions",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10899,7 +10943,7 @@
         "last_autovacuum": null,
         "name": "mcp_key_auto_revocations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10912,7 +10956,7 @@
         "last_autovacuum": null,
         "name": "mockup_templates",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10925,20 +10969,20 @@
         "last_autovacuum": null,
         "name": "order_approval_history",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 69010,
+        "idx_scan": 69020,
         "index_bytes": 32768,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "organization_members",
         "schema": "public",
-        "seq_scan": 5,
+        "seq_scan": 6,
         "total_bytes": 32768
       },
       {
@@ -10951,7 +10995,7 @@
         "last_autovacuum": null,
         "name": "outbound_webhooks",
         "schema": "public",
-        "seq_scan": 12066,
+        "seq_scan": 12071,
         "total_bytes": 32768
       },
       {
@@ -10964,7 +11008,7 @@
         "last_autovacuum": null,
         "name": "ownership_repair_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -10977,7 +11021,7 @@
         "last_autovacuum": null,
         "name": "pa_budget_allocations",
         "schema": "public",
-        "seq_scan": 7,
+        "seq_scan": 8,
         "total_bytes": 32768
       },
       {
@@ -10990,7 +11034,7 @@
         "last_autovacuum": null,
         "name": "pa_singularidades",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11003,7 +11047,7 @@
         "last_autovacuum": null,
         "name": "pontos_atendimento",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11016,7 +11060,7 @@
         "last_autovacuum": null,
         "name": "product_components",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11029,7 +11073,7 @@
         "last_autovacuum": null,
         "name": "product_groups",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11042,7 +11086,7 @@
         "last_autovacuum": null,
         "name": "product_sync_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11055,7 +11099,7 @@
         "last_autovacuum": null,
         "name": "public_token_failures",
         "schema": "public",
-        "seq_scan": 50,
+        "seq_scan": 51,
         "total_bytes": 32768
       },
       {
@@ -11068,7 +11112,7 @@
         "last_autovacuum": null,
         "name": "qa_release_evidences",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11081,7 +11125,7 @@
         "last_autovacuum": null,
         "name": "qa_releases",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11094,7 +11138,7 @@
         "last_autovacuum": null,
         "name": "quote_audit_logs",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11107,7 +11151,7 @@
         "last_autovacuum": null,
         "name": "quote_consolidations",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11120,7 +11164,7 @@
         "last_autovacuum": null,
         "name": "quote_templates",
         "schema": "public",
-        "seq_scan": 3295,
+        "seq_scan": 3296,
         "total_bytes": 32768
       },
       {
@@ -11133,7 +11177,7 @@
         "last_autovacuum": null,
         "name": "role_migration_batches",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11146,7 +11190,7 @@
         "last_autovacuum": null,
         "name": "scheduled_notifications",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 6,
         "total_bytes": 32768
       },
       {
@@ -11159,7 +11203,7 @@
         "last_autovacuum": null,
         "name": "secret_rotation_log",
         "schema": "public",
-        "seq_scan": 2517,
+        "seq_scan": 2522,
         "total_bytes": 32768
       },
       {
@@ -11172,7 +11216,7 @@
         "last_autovacuum": null,
         "name": "seller_discount_limits",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 32768
       },
       {
@@ -11185,7 +11229,7 @@
         "last_autovacuum": null,
         "name": "sicoob_kit_quote_requests",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11198,7 +11242,7 @@
         "last_autovacuum": null,
         "name": "sicoob_temas",
         "schema": "public",
-        "seq_scan": 18,
+        "seq_scan": 19,
         "total_bytes": 32768
       },
       {
@@ -11211,7 +11255,7 @@
         "last_autovacuum": null,
         "name": "step_up_challenges",
         "schema": "public",
-        "seq_scan": 4631,
+        "seq_scan": 4636,
         "total_bytes": 32768
       },
       {
@@ -11224,7 +11268,7 @@
         "last_autovacuum": null,
         "name": "telemetry_logs",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 32768
       },
       {
@@ -11237,7 +11281,7 @@
         "last_autovacuum": null,
         "name": "webhook_deliveries",
         "schema": "public",
-        "seq_scan": 1909,
+        "seq_scan": 1910,
         "total_bytes": 32768
       },
       {
@@ -11250,7 +11294,7 @@
         "last_autovacuum": null,
         "name": "webhook_retry_claims",
         "schema": "public",
-        "seq_scan": 5,
+        "seq_scan": 6,
         "total_bytes": 32768
       },
       {
@@ -11276,7 +11320,7 @@
         "last_autovacuum": null,
         "name": "admin_settings",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 24576
       },
       {
@@ -11289,7 +11333,7 @@
         "last_autovacuum": null,
         "name": "cart_items",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 24576
       },
       {
@@ -11302,7 +11346,7 @@
         "last_autovacuum": null,
         "name": "cart_templates",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 24576
       },
       {
@@ -11315,7 +11359,7 @@
         "last_autovacuum": null,
         "name": "cooperativas_parceiras",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 24576
       },
       {
@@ -11328,7 +11372,7 @@
         "last_autovacuum": null,
         "name": "coupons",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11341,20 +11385,20 @@
         "last_autovacuum": null,
         "name": "device_login_notifications",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 57808,
+        "idx_scan": 57827,
         "index_bytes": 16384,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "expert_conversations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11367,7 +11411,7 @@
         "last_autovacuum": null,
         "name": "expert_messages",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11380,7 +11424,7 @@
         "last_autovacuum": null,
         "name": "hardening_health_snapshots",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11393,7 +11437,7 @@
         "last_autovacuum": null,
         "name": "inbound_webhook_events",
         "schema": "public",
-        "seq_scan": 5,
+        "seq_scan": 6,
         "total_bytes": 24576
       },
       {
@@ -11406,7 +11450,7 @@
         "last_autovacuum": null,
         "name": "kit_variants",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11419,7 +11463,7 @@
         "last_autovacuum": null,
         "name": "magic_up_campaigns",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11432,7 +11476,7 @@
         "last_autovacuum": null,
         "name": "magic_up_comments",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11445,7 +11489,7 @@
         "last_autovacuum": null,
         "name": "manager_notification_config",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11458,7 +11502,7 @@
         "last_autovacuum": null,
         "name": "mockup_prompt_history",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11471,7 +11515,7 @@
         "last_autovacuum": null,
         "name": "notification_channels",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11484,7 +11528,7 @@
         "last_autovacuum": null,
         "name": "notification_digests",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 6,
         "total_bytes": 24576
       },
       {
@@ -11497,7 +11541,7 @@
         "last_autovacuum": null,
         "name": "notification_logs",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 6,
         "total_bytes": 24576
       },
       {
@@ -11510,7 +11554,7 @@
         "last_autovacuum": null,
         "name": "notification_templates",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11523,7 +11567,7 @@
         "last_autovacuum": null,
         "name": "optimization_queue",
         "schema": "public",
-        "seq_scan": 3023,
+        "seq_scan": 3025,
         "total_bytes": 24576
       },
       {
@@ -11536,7 +11580,7 @@
         "last_autovacuum": null,
         "name": "optimization_queue_runs",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 6,
         "total_bytes": 24576
       },
       {
@@ -11549,7 +11593,7 @@
         "last_autovacuum": null,
         "name": "order_logistics",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11562,7 +11606,7 @@
         "last_autovacuum": null,
         "name": "order_template_items",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11575,7 +11619,7 @@
         "last_autovacuum": null,
         "name": "organizations",
         "schema": "public",
-        "seq_scan": 6,
+        "seq_scan": 7,
         "total_bytes": 24576
       },
       {
@@ -11588,7 +11632,7 @@
         "last_autovacuum": null,
         "name": "pa_category_thresholds",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11601,7 +11645,7 @@
         "last_autovacuum": null,
         "name": "pa_notification_settings",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11614,7 +11658,7 @@
         "last_autovacuum": null,
         "name": "permissions",
         "schema": "public",
-        "seq_scan": 316,
+        "seq_scan": 317,
         "total_bytes": 24576
       },
       {
@@ -11627,7 +11671,7 @@
         "last_autovacuum": null,
         "name": "price_history",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11640,7 +11684,7 @@
         "last_autovacuum": null,
         "name": "qa_run_steps",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11653,7 +11697,7 @@
         "last_autovacuum": null,
         "name": "quote_item_personalizations",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11666,7 +11710,7 @@
         "last_autovacuum": null,
         "name": "role_permissions",
         "schema": "public",
-        "seq_scan": 61604,
+        "seq_scan": 61606,
         "total_bytes": 24576
       },
       {
@@ -11679,7 +11723,7 @@
         "last_autovacuum": null,
         "name": "saved_filters",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 5,
         "total_bytes": 24576
       },
       {
@@ -11692,7 +11736,7 @@
         "last_autovacuum": null,
         "name": "saved_trends_views",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11705,7 +11749,7 @@
         "last_autovacuum": null,
         "name": "scheduled_exports",
         "schema": "public",
-        "seq_scan": 63473,
+        "seq_scan": 63534,
         "total_bytes": 24576
       },
       {
@@ -11718,7 +11762,7 @@
         "last_autovacuum": null,
         "name": "scheduled_reports",
         "schema": "public",
-        "seq_scan": 1333,
+        "seq_scan": 1334,
         "total_bytes": 24576
       },
       {
@@ -11731,7 +11775,7 @@
         "last_autovacuum": null,
         "name": "sensitive_access_logs",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 24576
       },
       {
@@ -11744,7 +11788,7 @@
         "last_autovacuum": null,
         "name": "sicoob_approval_delivery_archive",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11757,7 +11801,7 @@
         "last_autovacuum": null,
         "name": "singulares",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11770,7 +11814,7 @@
         "last_autovacuum": null,
         "name": "user_known_devices",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11783,7 +11827,7 @@
         "last_autovacuum": null,
         "name": "user_preferences",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11796,7 +11840,7 @@
         "last_autovacuum": null,
         "name": "video_variant_links",
         "schema": "public",
-        "seq_scan": 243,
+        "seq_scan": 244,
         "total_bytes": 24576
       },
       {
@@ -11809,7 +11853,7 @@
         "last_autovacuum": null,
         "name": "voice_command_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11822,7 +11866,7 @@
         "last_autovacuum": null,
         "name": "webhook_configs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 24576
       },
       {
@@ -11835,7 +11879,7 @@
         "last_autovacuum": null,
         "name": "webhook_logs",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 24576
       },
       {
@@ -11848,7 +11892,7 @@
         "last_autovacuum": null,
         "name": "campaigns",
         "schema": "public",
-        "seq_scan": 4,
+        "seq_scan": 5,
         "total_bytes": 16384
       },
       {
@@ -11861,7 +11905,7 @@
         "last_autovacuum": null,
         "name": "category_icons",
         "schema": "public",
-        "seq_scan": 7319,
+        "seq_scan": 7320,
         "total_bytes": 16384
       },
       {
@@ -11874,7 +11918,7 @@
         "last_autovacuum": null,
         "name": "cms_config",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11887,7 +11931,7 @@
         "last_autovacuum": null,
         "name": "cms_sections",
         "schema": "public",
-        "seq_scan": 3544,
+        "seq_scan": 3545,
         "total_bytes": 16384
       },
       {
@@ -11900,7 +11944,7 @@
         "last_autovacuum": null,
         "name": "component_media",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11913,7 +11957,7 @@
         "last_autovacuum": null,
         "name": "generated_mockups",
         "schema": "public",
-        "seq_scan": 8615,
+        "seq_scan": 8616,
         "total_bytes": 16384
       },
       {
@@ -11926,7 +11970,7 @@
         "last_autovacuum": null,
         "name": "mcp_full_grantors",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11939,7 +11983,7 @@
         "last_autovacuum": null,
         "name": "portfolio_items",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11952,7 +11996,7 @@
         "last_autovacuum": null,
         "name": "qa_rls_audits",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11965,7 +12009,7 @@
         "last_autovacuum": null,
         "name": "sicoob_performance_reports",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11978,7 +12022,7 @@
         "last_autovacuum": null,
         "name": "sicoob_rls_audit_logs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -11991,20 +12035,20 @@
         "last_autovacuum": null,
         "name": "simulator_wizard_drafts",
         "schema": "public",
-        "seq_scan": 894,
+        "seq_scan": 895,
         "total_bytes": 16384
       },
       {
         "dead_rows": 0,
         "est_rows": 0,
         "heap_bytes": 0,
-        "idx_scan": 1601,
+        "idx_scan": 1605,
         "index_bytes": 8192,
         "last_autoanalyze": null,
         "last_autovacuum": null,
         "name": "system_settings",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -12017,7 +12061,7 @@
         "last_autovacuum": null,
         "name": "test_suites_runs",
         "schema": "public",
-        "seq_scan": 2,
+        "seq_scan": 3,
         "total_bytes": 16384
       },
       {
@@ -12030,7 +12074,7 @@
         "last_autovacuum": null,
         "name": "_backup_custom_kits_pinned_20261118",
         "schema": "public",
-        "seq_scan": 3,
+        "seq_scan": 4,
         "total_bytes": 8192
       },
       {

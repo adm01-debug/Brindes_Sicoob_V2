@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
+  "sha": "ff48a63203826ec6874cfc7d71883bf8165a096b",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 10:49 UTC",
+  "generated_at": "2026-11-25 11:17 UTC",
   "files_total": 5306,
   "code_files": 3867,
   "code_lines": 570785
@@ -259489,10 +259489,21 @@
   }
  },
  "git": {
-  "sha": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
+  "sha": "ff48a63203826ec6874cfc7d71883bf8165a096b",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ff48a63",
+    "date": "2026-11-25",
+    "author": "github-actions[bot]",
+    "subject": "chore(inventario): estado real do banco e do codigo [auto] (#438)",
+    "files": [
+     "inventario/estado/banco.json",
+     "inventario/estado/edges.json",
+     "inventario/estado/rotas.json"
+    ]
+   },
    {
     "sha": "ba511bb",
     "date": "2026-11-25",
@@ -259913,16 +259924,6 @@
      "tests/hooks/scheduled-reports/toggle-patch.test.ts",
      "tests/scenarios/relatorios-agendados-cron.mjs"
     ]
-   },
-   {
-    "sha": "51dc1ef",
-    "date": "2026-11-22",
-    "author": "adm01-debug",
-    "subject": "docs: classificar os 683 registros de lacunas por evidencia real (#402)",
-    "files": [
-     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
-    ]
    }
   ],
   "hot_files": [
@@ -259932,10 +259933,6 @@
    ],
    [
     "docs/agentes/banco.md",
-    3
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     3
    ],
    [
@@ -259971,6 +259968,18 @@
     3
    ],
    [
+    "inventario/estado/banco.json",
+    2
+   ],
+   [
+    "inventario/estado/edges.json",
+    2
+   ],
+   [
+    "inventario/estado/rotas.json",
+    2
+   ],
+   [
     "src/hooks/useQuoteBuilderState.ts",
     2
    ],
@@ -259996,14 +260005,6 @@
    ],
    [
     "src/components/kit-builder/KitBuilderHeader.tsx",
-    2
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-    2
-   ],
-   [
-    "src/components/cart/CartHeaderButton.tsx",
     2
    ]
   ]

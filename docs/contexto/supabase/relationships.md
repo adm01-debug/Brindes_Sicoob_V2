@@ -126,6 +126,7 @@
 | public.profiles | cooperativa_id | public.cooperativas | id | SET NULL | NO ACTION |
 | public.profiles | pa_id | public.postos_atendimento | id | SET NULL | NO ACTION |
 | public.profiles | user_id | auth.users | id | CASCADE | NO ACTION |
+| public.push_subscriptions | user_id | auth.users | id | CASCADE | NO ACTION |
 | public.qa_release_evidences | release_id | public.qa_releases | id | CASCADE | NO ACTION |
 | public.qa_release_evidences | uploaded_by | auth.users | id | NO ACTION | NO ACTION |
 | public.qa_releases | approved_by | auth.users | id | NO ACTION | NO ACTION |

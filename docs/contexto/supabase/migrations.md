@@ -4,9 +4,12 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 
 | versão | nome | statements |
 |---|---|---|
+| 000 | [notification_functions_replay_guard](migrations/000_notification_functions_replay_guard.sql) | 1 |
 | 001 | [notification_system](migrations/001_notification_system.sql) | 18 |
 | 002 | [notification_preferences](migrations/002_notification_preferences.sql) | 7 |
 | 003 | [notification_templates](migrations/003_notification_templates.sql) | 4 |
+| 004 | [notification_functions](migrations/004_notification_functions.sql) | 5 |
+| 005 | [push_subscriptions](migrations/005_push_subscriptions.sql) | 6 |
 | 20251220181321 | [](migrations/20251220181321.sql) | 1 |
 | 20260827102000 | [guardrails_integration_secrets_mv_benchmark](migrations/20260827102000_guardrails_integration_secrets_mv_benchmark.sql) | 1 |
 | 20260911143000 | [sicoob_order_budget_atomicity](migrations/20260911143000_sicoob_order_budget_atomicity.sql) | 0 |
