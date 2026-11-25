@@ -140,8 +140,31 @@ function toSupplierMetrics(supplierId: string, data: SupplierAccumulator): Macro
   };
 }
 
+const PAGE_SIZE = 5000;
+const MAX_ROWS = 60000;
+
+/** Busca o resumo diario paginando ate a ultima pagina incompleta. */
+async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockDailySummary[]> {
+  const rows: StockDailySummary[] = [];
+  for (let offset = 0; offset < MAX_ROWS; offset += PAGE_SIZE) {
+    const page = await invokeExternalDb<StockDailySummary>({
+      table: 'stock_daily_summary',
+      operation: 'select',
+      select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
+      filters,
+      limit: PAGE_SIZE,
+      offset,
+      orderBy: { column: 'summary_date', ascending: false },
+    });
+    const batch = page.records ?? [];
+    rows.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 /**
- * Busca stock_daily_summary agregado (macro) para visão de mercado.
+ * Busca stock_daily_summary agregado (macro) para visao de mercado.
  * Filtra opcionalmente por supplier_id.
  */
 export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null) {
@@ -154,19 +177,12 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
 
       const filters: Record<string, unknown> = {};
       if (supplierId) filters.supplier_id = supplierId;
+      // Corte aplicado no servidor (`summary_date_gte` -> `.gte`): sem isso os
+      // registros do periodo ficavam fora da pagina quando a base crescia e
+      // ampliar o periodo nao recuperava os dias anteriores.
+      filters.summary_date_gte = cutoffStr;
 
-      const result = await invokeExternalDb<StockDailySummary>({
-        table: 'stock_daily_summary',
-        operation: 'select',
-        select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
-        filters,
-        limit: 5000,
-        // Descendente de proposito: o filtro por `cutoffStr` acontece DEPOIS do
-        // limit. Buscando os mais antigos primeiro, uma base grande empurrava os
-        // registros do periodo para fora da pagina e a tela anunciava "sem
-        // movimentacoes" com dado existindo.
-        orderBy: { column: 'summary_date', ascending: false },
-      });
+      const rows = await fetchStockSummaries(filters);
 
       // Aggregate by date (for chart)
       const dateMap = new Map<string, MacroMarketPoint>();
@@ -178,7 +194,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
       const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
       const d7Str = d7.toISOString().slice(0, 10);
 
-      for (const row of result.records ?? []) {
+      for (const row of rows) {
         if (row.summary_date < cutoffStr) continue;
         addMarketDay(dateMap, row);
         addSupplierDay(supplierDataMap, row, d7Str);
