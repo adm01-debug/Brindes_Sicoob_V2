@@ -10,14 +10,34 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calculator, Package, Paintbrush, Palette, Plus, X, FileText, Trophy } from 'lucide-react';
+import { AlertTriangle, Calculator, Package, Paintbrush, Palette, Plus, X, FileText, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch';
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
 import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
+
+function podeSimularPreco(produto: CalcProduct | null): boolean {
+  return produto !== null && produto.priceAvailable !== false;
+}
+
+function AvisoSemPreco({ produto }: { produto: CalcProduct | null }) {
+  if (produto?.priceAvailable !== false) return null;
+  return (
+    <Alert variant="destructive">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Produto sem preço de venda no catálogo</AlertTitle>
+      <AlertDescription>
+        {produto.name} está sem preço de venda válido no catálogo (zero, negativo,
+        infinito ou ausente). A simulação de técnicas e a criação de orçamento ficam
+        bloqueadas até o preço ser corrigido no cadastro do produto.
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 interface QuantityPriceCalculatorProps {
   productBasePrice?: number;
@@ -37,7 +57,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
 
   const handleProductSelect = useCallback((product: SearchProduct | null) => {
     if (!product) { setSelectedProduct(null); setSelectedConfigs([]); return; }
-    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, images: product.images, category_name: null });
+    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, priceAvailable: product.priceAvailable !== false, images: product.images, category_name: null });
     setSelectedConfigs([]);
   }, []);
 
@@ -67,6 +87,9 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
     navigate('/orcamentos', { state: { fromSimulator: true, product: selectedProduct, techniques: selectedConfigs, quantities: customQuantities } });
   }, [navigate, selectedProduct, selectedConfigs, customQuantities]);
 
+  const simula = podeSimularPreco(selectedProduct);
+  const compara = simula && selectedConfigs.length > 0;
+
   if (pricingLoading) return (
     <Card className={className}><CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-64 w-full" /></CardContent></Card>
   );
@@ -79,8 +102,10 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         <CardContent><UnifiedProductSearch onSelect={handleProductSelect} selectedProduct={selectedProduct} /></CardContent>
       </Card>
 
+      <AvisoSemPreco produto={selectedProduct} />
+
       {/* Step 2: Techniques */}
-      {selectedProduct && (
+      {simula && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Paintbrush className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">2. Selecione as Técnicas de Gravação</CardTitle></div><CardDescription>Escolha uma ou mais técnicas para comparar preços</CardDescription></CardHeader>
           <CardContent><TechniqueMultiSelector productId={selectedProduct.id} selectedTechniques={selectedConfigs} onToggleTechnique={handleToggleTechnique} /></CardContent>
@@ -88,7 +113,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       )}
 
       {/* Step 3: Configure */}
-      {selectedConfigs.length > 0 && (
+      {compara && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Palette className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">3. Configure as Opções</CardTitle></div><CardDescription>Defina cores e tamanho para cada técnica selecionada</CardDescription></CardHeader>
           <CardContent><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{selectedConfigs.map((config, index) => <TechniqueConfigCard key={config.technique.id} config={config} onUpdate={(u) => handleUpdateConfig(index, u)} onRemove={() => handleRemoveConfig(index)} />)}</div></CardContent>
@@ -96,7 +121,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       )}
 
       {/* Step 4: Compare */}
-      {selectedProduct && selectedConfigs.length > 0 && (
+      {compara && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Calculator className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">4. Compare Preços por Tiragem</CardTitle></div><CardDescription>Veja como o preço por unidade muda conforme a quantidade. <Trophy className="inline w-3 h-3 text-success" /> = melhor preço.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
