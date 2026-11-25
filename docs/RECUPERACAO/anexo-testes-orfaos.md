@@ -115,7 +115,7 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/migrations/storage-acl-hardening.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/GestorCompras.error-state.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
-| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
+| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente | Recuperado em [#451](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/451). |
 | `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  |
 | `tests/scripts/e2e-workflow-preflight.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
 | `tests/scripts/healthcheck.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
