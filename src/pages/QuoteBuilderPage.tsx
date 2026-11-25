@@ -126,8 +126,24 @@ function QuoteSummaryColumn({ state }: { state: QuoteBuilderState }) {
   return <QuoteBuilderSummaryColumn readOnly={!state.canEdit} items={state.items} activeItemIndex={state.activeItemIndex} setActiveItemIndex={state.setActiveItemIndex} removeItem={state.removeItem} discountType={state.discountType} setDiscountType={state.setDiscountType} discountValue={state.discountValue} setDiscountValue={state.setDiscountValue} discountAmount={state.discountAmount} total={state.total} isFormValid={state.isFormValid} isDraftValid={state.isDraftValid} validationErrors={state.validationErrors} quotesLoading={state.quotesLoading} isEditMode={state.isEditMode} formatCurrency={state.formatCurrency} calculateItemPersonalizationTotal={state.calculateItemPersonalizationTotal} calculateItemTotal={state.calculateItemTotal} onSave={state.handleSaveQuote} maxDiscountPercent={state.maxDiscountPercent} isDiscountExceeded={state.isDiscountExceeded} negotiationMarkup={state.negotiationMarkup} setNegotiationMarkup={state.setNegotiationMarkup} realSubtotal={state.realSubtotal} realDiscountPercent={state.realDiscountPercent} confirmItemPrice={state.confirmItemPrice} confirmAllStalePrices={state.confirmAllStalePrices} selectedIndexes={state.selectedItemIndexes} onToggleSelection={state.toggleItemSelection} onGroupItems={state.groupItemsIntoKit} onUngroup={state.ungroupItems} onClearSelection={() => state.setSelectedItemIndexes(new Set())} />;
 }
 
-function QuoteBuilderDialogs({ state }: { state: QuoteBuilderState }) {
-  return <QuoteProductSelector open={state.productSearchOpen} onOpenChange={state.setProductSearchOpen} productSearch={state.productSearch} setProductSearch={state.setProductSearch} filteredProducts={state.filteredProducts} selectedProductForColor={state.selectedProductForColor} setSelectedProductForColor={state.setSelectedProductForColor} onProductClick={state.handleProductClick} onAddWithColor={state.addProductWithColor} formatCurrency={state.formatCurrency} />;
+/** Só os campos que o seletor consome: o diálogo não precisa do estado inteiro. */
+type QuoteProductSelectorState = Pick<
+  QuoteBuilderState,
+  | "canEdit"
+  | "productSearchOpen"
+  | "setProductSearchOpen"
+  | "productSearch"
+  | "setProductSearch"
+  | "filteredProducts"
+  | "selectedProductForColor"
+  | "setSelectedProductForColor"
+  | "handleProductClick"
+  | "addProductWithColor"
+  | "formatCurrency"
+>;
+
+export function QuoteBuilderDialogs({ state }: { state: QuoteProductSelectorState }) {
+  return <QuoteProductSelector canEdit={state.canEdit} open={state.productSearchOpen} onOpenChange={state.setProductSearchOpen} productSearch={state.productSearch} setProductSearch={state.setProductSearch} filteredProducts={state.filteredProducts} selectedProductForColor={state.selectedProductForColor} setSelectedProductForColor={state.setSelectedProductForColor} onProductClick={state.handleProductClick} onAddWithColor={state.addProductWithColor} formatCurrency={state.formatCurrency} />;
 }
 
 export default function QuoteBuilderPage() {
