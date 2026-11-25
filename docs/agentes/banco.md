@@ -92,6 +92,10 @@ Regras:
 1. **Nome:** `YYYYMMDDHHMMSS_verbo_objeto.sql`, descritivo — nunca o UUID que algumas ferramentas geram
    (`CONTRIBUTING.md:90`). Há nomes legados fora do padrão (`001_notification_system.sql`, arquivos com
    UUID); não os imite.
+   Exceção registrada: `000_notification_functions_replay_guard.sql` usa versão `000` porque precisa rodar
+   **antes** da `004` legada, para o replay não bater no contrato de `cleanup_old_notifications`
+   (`RETURNS INT` x `RETURNS VOID`, A-028). É bootstrap puro — não cria DDL próprio e só remove a
+   assinatura conflitante — e sai junto com o histórico `00x`.
 2. **Migration mesclada é imutável.** O Supabase rastreia por *nome de arquivo*: editar o arquivo não
    reaplica nada e cria drift silencioso. Precisa corrigir? Migration nova com o delta.
    `node scripts/check-migration-immutability.mjs` bloqueia no CI comparando com `origin/main`
