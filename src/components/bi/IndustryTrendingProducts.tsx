@@ -64,8 +64,12 @@ interface IndustryHeaderProps {
 
 function industrySampleDescription(props: IndustryHeaderProps): string {
   if (!props.ramoAtividade) return "Ramo de atividade não informado no cadastro do cliente";
-  if (props.totalCount === 0) return "Sem amostra setorial suficiente nos últimos 90 dias";
-  return `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`;
+  if (props.totalCount === 0) {
+    return props.data?.dataStatus === "insufficient" && props.data.companiesInRamo > 0
+      ? `Amostra insuficiente: apenas ${props.data.companiesInRamo} empresa(s) do ramo com orçamento`
+      : "Sem amostra setorial suficiente nos últimos 90 dias";
+  }
+  return `${props.data?.companiesInRamo} empresas do mesmo ramo · orçamentos dos últimos 90 dias`;
 }
 
 function IndustryHeader(props: IndustryHeaderProps) {
@@ -135,8 +139,8 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
   return (
     <div className="space-y-1.5">
       {trends.map((trend, index) => {
-        const Trend = trendIcon[trend.trend];
-        return <div key={`${trend.productName}-${index}`} className={cn("flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/60 transition-colors group", trend.alreadyBuys && "opacity-90")}><div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center font-display font-bold text-xs text-muted-foreground shrink-0">{index + 1}</div><TrendImage trend={trend} size="row" /><div className="flex-1 min-w-0"><div className="font-medium text-sm truncate">{trend.productName}</div><div className="text-xs text-muted-foreground">{trend.category}</div></div><div className="shrink-0 hidden sm:flex items-center gap-1.5">{trend.alreadyBuys ? <Badge variant="outline" className="gap-1 border-success/40 text-success text-[10px]"><Check className="h-3 w-3" /> Já compra</Badge> : <Badge variant="outline" className="gap-1 border-warning/40 text-warning text-[10px]"><X className="h-3 w-3" /> Gap</Badge>}</div><div className="text-right shrink-0 hidden md:block"><div className="text-xs text-muted-foreground">unidades</div><div className="font-semibold text-sm">{trend.unitsSold.toLocaleString("pt-BR")}</div></div><div className="text-right shrink-0 hidden lg:block"><div className="text-xs text-muted-foreground">preço médio</div><div className="font-semibold text-sm">{fmtBRL(trend.avgPrice)}</div></div><Trend.icon className={cn("h-4 w-4 shrink-0", Trend.className)} /></div>;
+        const Trend = trend.trend ? trendIcon[trend.trend] : null;
+        return <div key={`${trend.productName}-${index}`} className={cn("flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/60 transition-colors group", trend.alreadyBuys && "opacity-90")}><div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center font-display font-bold text-xs text-muted-foreground shrink-0">{index + 1}</div><TrendImage trend={trend} size="row" /><div className="flex-1 min-w-0"><div className="font-medium text-sm truncate">{trend.productName}</div><div className="text-xs text-muted-foreground">{trend.category}</div></div><div className="shrink-0 hidden sm:flex items-center gap-1.5">{trend.alreadyBuys ? <Badge variant="outline" className="gap-1 border-success/40 text-success text-[10px]"><Check className="h-3 w-3" /> Já compra</Badge> : <Badge variant="outline" className="gap-1 border-warning/40 text-warning text-[10px]"><X className="h-3 w-3" /> Gap</Badge>}</div><div className="text-right shrink-0 hidden md:block"><div className="text-xs text-muted-foreground">unidades</div><div className="font-semibold text-sm">{trend.unitsSold.toLocaleString("pt-BR")}</div></div><div className="text-right shrink-0 hidden lg:block"><div className="text-xs text-muted-foreground">preço médio</div><div className="font-semibold text-sm">{fmtBRL(trend.avgPrice)}</div></div>{Trend ? <Trend.icon className={cn("h-4 w-4 shrink-0", Trend.className)} /> : <span className="h-4 w-4 shrink-0 text-center text-sm text-muted-foreground" title="Sem variação medida">—</span>}</div>;
       })}
     </div>
   );
