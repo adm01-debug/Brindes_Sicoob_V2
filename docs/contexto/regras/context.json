@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
+  "sha": "afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 11:43 UTC",
+  "generated_at": "2026-11-25 11:55 UTC",
   "files_total": 5306,
   "code_files": 3867,
   "code_lines": 570786
@@ -259489,10 +259489,20 @@
   }
  },
  "git": {
-  "sha": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
+  "sha": "afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "afdb894",
+    "date": "2026-11-25",
+    "author": "dependabot[bot]",
+    "subject": "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)",
+    "files": [
+     "package-lock.json",
+     "package.json"
+    ]
+   },
    {
     "sha": "7bf44fc",
     "date": "2026-11-25",
@@ -259897,17 +259907,6 @@
     "files": [
      "src/components/sicoob/orders/OrderInvoicesTab.tsx"
     ]
-   },
-   {
-    "sha": "2466761",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "docs(qa): auditoria de QA do sistema e plano de correção em etapas (#405)",
-    "files": [
-     "docs/qa/01-INVENTARIO.md",
-     "docs/qa/02-CENARIOS.md",
-     "docs/qa/04-PLANO.md"
-    ]
    }
   ],
   "hot_files": [
@@ -259942,6 +259941,14 @@
    [
     "tests/scripts/verify-supabase-functions-published.test.ts",
     3
+   ],
+   [
+    "package-lock.json",
+    2
+   ],
+   [
+    "package.json",
+    2
    ],
    [
     "inventario/estado/banco.json",
@@ -259981,14 +259988,6 @@
    ],
    [
     "src/components/kit-builder/KitBuilderHeader.tsx",
-    2
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    2
-   ],
-   [
-    "src/components/cart/CartHeaderButton.tsx",
     2
    ]
   ]

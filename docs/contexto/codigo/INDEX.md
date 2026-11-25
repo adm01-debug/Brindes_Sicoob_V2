@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `7bf44fc988d0e20b2ae41ae798aa21beac703876` (2026-11-25T11:42:31Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5` (2026-11-25T11:54:14Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -473,18 +473,18 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37031 nós · 61683 arestas · 2775 comunidades · grafo do commit `7bf44fc9`
+- 37031 nós · 61683 arestas · 2775 comunidades · grafo do commit `afdb8943`
 - comunidades maiores: ref_components (702), ref_integrations (425), ref_lib (305), lucide-react (235), react (231), framer-motion (227), sonner (192), ref_contexts (186), getCorsHeaders (184), date-fns (179), ref_stores (163), ai-usage.ts (162)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
 - scripts/db/apply-sicoob-migrations.mjs (25)
-- package.json (23)
+- package.json (24)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
+- package-lock.json (20)
 - .github/workflows/sicoob-ci.yml (19)
-- package-lock.json (19)
 - .github/workflows/ci.yml (17)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/deploy-sicoob-functions.yml (16)
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-25 `afdb894` chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)
 - 2026-11-25 `7bf44fc` chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)
 - 2026-11-25 `a07c4e7` fix: prefetch do catalogo declara getNextPageParam (#440)
 - 2026-11-25 `ff48a63` chore(inventario): estado real do banco e do codigo [auto] (#438)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-24 `dffd62e` fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)
 - 2026-11-24 `bc7da67` fix: trava otimista também no salvamento manual do kit (#428)
 - 2026-11-24 `7630297` fix: unifica o último confirm nativo do Kit Builder no diálogo global (#427)
-- 2026-11-24 `a409d6d` chore: alinha status do indice de lacunas aos vereditos verificados (#426)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

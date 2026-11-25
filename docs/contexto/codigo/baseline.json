@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "7bf44fc988d0e20b2ae41ae798aa21beac703876",
+  "commit": "afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5",
   "branch": "main",
-  "data_commit": "2026-11-25T11:42:31Z",
+  "data_commit": "2026-11-25T11:54:14Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "afdb894",
+    "data": "2026-11-25",
+    "assunto": "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)"
+   },
    {
     "sha": "7bf44fc",
     "data": "2026-11-25",
@@ -126,11 +131,6 @@
     "sha": "87316fe",
     "data": "2026-11-23",
     "assunto": "chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)"
-   },
-   {
-    "sha": "aef4f10",
-    "data": "2026-11-23",
-    "assunto": "feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)"
    }
   ],
   "arquivos_mudados_7d": 1299,
@@ -160,12 +160,12 @@
     "mudancas": 17
    },
    {
-    "pasta": "tests/components/bi",
+    "pasta": "package.json",
     "mudancas": 16
    },
    {
-    "pasta": "package.json",
-    "mudancas": 15
+    "pasta": "tests/components/bi",
+    "mudancas": 16
    },
    {
     "pasta": "src/components/sicoob",
@@ -188,11 +188,11 @@
     "mudancas": 13
    },
    {
-    "pasta": "PENDENCIAS.md",
-    "mudancas": 11
+    "pasta": "package-lock.json",
+    "mudancas": 12
    },
    {
-    "pasta": "package-lock.json",
+    "pasta": "PENDENCIAS.md",
     "mudancas": 11
    }
   ],
@@ -203,7 +203,7 @@
    },
    {
     "arquivo": "package.json",
-    "mudancas": 23
+    "mudancas": 24
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -214,11 +214,11 @@
     "mudancas": 20
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 19
+    "arquivo": "package-lock.json",
+    "mudancas": 20
    },
    {
-    "arquivo": "package-lock.json",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 19
    },
    {
@@ -305,7 +305,7 @@
    },
    {
     "autor": "dependabot[bot]",
-    "commits": 14
+    "commits": 15
    },
    {
     "autor": "github-actions[bot]",
