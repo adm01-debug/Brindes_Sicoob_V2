@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "project_ref": "cfmzkthhgliqelozlmwu",
-  "captured_at": "2026-10-22",
+  "captured_at": "2026-11-25",
   "ledger_count": 135,
-  "local_count": 608,
-  "finding_count": 506,
+  "local_count": 610,
+  "finding_count": 508,
   "status_counts": {
     "nome_divergente": 9,
     "conteudo_nao_verificado": 19,
     "conteudo_divergente": 1,
-    "local_sem_ledger": 465,
+    "local_sem_ledger": 467,
     "remota_sem_arquivo": 12
   },
   "policy": "Fotografia revisada do passivo histórico; não autoriza replay nem reparo artificial do ledger.",
@@ -519,6 +519,8 @@
     "20261016173000": "597f3e01a56be453696267f95980d6d1e66cfa6372778a2f44758bc07d000b41",
     "20261022120000": "e2815b0275479b6f91b3859f14b72e708b9521cf98a616a00b335679afccf20c",
     "20260301000000": "8ed13d22f5201132c385e5dca9cfa49ddab2b571df7c42447daf825e5f2243d7",
-    "20261031204500": "fb67fcd4e022a7d7fcb04e1e9d08b269040134c3d3f90895e43a86423e73ae47"
+    "20261031204500": "fb67fcd4e022a7d7fcb04e1e9d08b269040134c3d3f90895e43a86423e73ae47",
+    "000": "4e4189c7a8c21ede7380d8c2ebba0304e4369ce4e5b8f3e26c419a87e2c17026",
+    "20261125100000": "8f86a4c9b93b6796a836fa8b6b0acf358bc0a98f85bff51cc00af12a6e458de2"
   }
 }
