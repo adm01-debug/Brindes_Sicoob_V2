@@ -2,7 +2,7 @@
   "alertas": [
     {
       "detalhe": [
-        "230844 linhas com mais de 7 dias"
+        "233791 linhas com mais de 7 dias"
       ],
       "tipo": "historico_cron_sem_limpeza"
     },
@@ -27,10 +27,10 @@
     },
     "disponivel": true,
     "historico": {
-      "bytes": 53067776,
-      "linhas": 260893,
+      "bytes": 53657600,
+      "linhas": 263907,
       "mais_antigo": "2026-09-16T14:15:00Z",
-      "mais_de_7_dias": 230844
+      "mais_de_7_dias": 233791
     },
     "horas_paradas_7d": [],
     "jobs": [
@@ -202,7 +202,7 @@
         ],
         "duracao_max_s_7d": 0,
         "execucoes_24h": 96,
-        "execucoes_7d": 593,
+        "execucoes_7d": 660,
         "falhas_24h": 0,
         "falhas_7d": 0,
         "nome": "connections-health-check",
@@ -358,18 +358,18 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "auth-integrity-check",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 14
+        "versao": 15
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "bi-copilot",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 14
+        "versao": 15
       },
       {
         "atualizada_em": "2026-09-28T13:29Z",
@@ -442,11 +442,11 @@
         "versao": 8
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "comparison-ai-advisor",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 14
+        "versao": 15
       },
       {
         "atualizada_em": "2026-09-28T13:24Z",
@@ -470,18 +470,18 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "connections-auto-test",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 8
+        "versao": 9
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:22Z",
         "slug": "connections-health-check",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 8
+        "versao": 9
       },
       {
         "atualizada_em": "2026-09-28T13:24Z",
@@ -491,11 +491,11 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "crm-db-bridge",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 16
+        "versao": 17
       },
       {
         "atualizada_em": "2026-09-28T13:29Z",
@@ -533,11 +533,11 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "expert-chat",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 21
+        "versao": 22
       },
       {
         "atualizada_em": "2026-09-28T13:30Z",
@@ -547,11 +547,11 @@
         "versao": 4
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "external-db-bridge",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 20
+        "versao": 21
       },
       {
         "atualizada_em": "2026-10-15T10:06Z",
@@ -617,11 +617,11 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "get-app-logs",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 14
+        "versao": 15
       },
       {
         "atualizada_em": "2026-11-19T10:26Z",
@@ -778,11 +778,11 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:22Z",
         "slug": "process-batch-export",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 9
+        "versao": 10
       },
       {
         "atualizada_em": "2026-09-28T13:25Z",
@@ -869,11 +869,11 @@
         "versao": 8
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "secure-upload",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 15
+        "versao": 16
       },
       {
         "atualizada_em": "2026-09-28T13:32Z",
@@ -897,60 +897,60 @@
         "versao": 8
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:22Z",
         "slug": "send-scheduled-reports",
-        "status": "ACTIVE",
-        "verify_jwt": false,
-        "versao": 8
-      },
-      {
-        "atualizada_em": "2026-11-24T10:41Z",
-        "slug": "send-transactional-email",
         "status": "ACTIVE",
         "verify_jwt": false,
         "versao": 9
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
+        "slug": "send-transactional-email",
+        "status": "ACTIVE",
+        "verify_jwt": false,
+        "versao": 10
+      },
+      {
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "sicoob-approval-notifications",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 8
+        "versao": 9
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "sicoob-approval-reconciliation",
         "status": "ACTIVE",
         "verify_jwt": true,
-        "versao": 12
+        "versao": 13
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "sicoob-artwork-register",
         "status": "ACTIVE",
         "verify_jwt": true,
-        "versao": 12
+        "versao": 13
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "sicoob-document-ingest",
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "versao": 15
+      },
+      {
+        "atualizada_em": "2026-11-25T10:21Z",
+        "slug": "sicoob-kit-quote",
         "status": "ACTIVE",
         "verify_jwt": true,
         "versao": 14
       },
       {
-        "atualizada_em": "2026-11-24T10:41Z",
-        "slug": "sicoob-kit-quote",
-        "status": "ACTIVE",
-        "verify_jwt": true,
-        "versao": 13
-      },
-      {
-        "atualizada_em": "2026-11-24T10:41Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "sicoob-reorder",
         "status": "ACTIVE",
         "verify_jwt": true,
-        "versao": 13
+        "versao": 14
       },
       {
         "atualizada_em": "2026-09-28T13:26Z",
@@ -1023,25 +1023,25 @@
         "versao": 7
       },
       {
-        "atualizada_em": "2026-11-24T10:42Z",
+        "atualizada_em": "2026-11-25T10:21Z",
         "slug": "webhook-dispatcher",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 8
+        "versao": 9
       },
       {
-        "atualizada_em": "2026-11-24T15:53Z",
+        "atualizada_em": "2026-11-25T10:22Z",
         "slug": "webhook-inbound",
         "status": "ACTIVE",
         "verify_jwt": false,
-        "versao": 8
+        "versao": 9
       }
     ],
     "publicadas_sem_codigo_no_repo": []
   },
   "fonte": "scripts/inventario/banco.sql + GET /functions + .from() em src/ e supabase/functions/ (scripts/inventario/gerar-banco.mjs)",
   "format_version": 1,
-  "medido_em": "2026-11-24T17:58:26Z",
+  "medido_em": "2026-11-25T10:45:14Z",
   "operacao": {
     "filas": [
       {
@@ -1141,8 +1141,8 @@
         "tabela": "webhook_retry_claims"
       },
       {
-        "bytes": 6127616,
-        "linhas": 9538,
+        "bytes": 6135808,
+        "linhas": 9546,
         "por_status": null,
         "tabela": "workspace_notifications"
       }
@@ -1150,7 +1150,7 @@
   },
   "origem": {
     "fonte": "src/integrations/supabase/types.ts",
-    "migrations_no_repo": 627,
+    "migrations_no_repo": 629,
     "tabelas_em_comum_com_types": 242,
     "tabelas_em_types": 242
   },
@@ -1158,15 +1158,15 @@
   "resumo": {
     "cron_ativos": 18,
     "cron_jobs": 18,
-    "funcoes_public": 378,
-    "ledger_registros": 162,
+    "funcoes_public": 379,
+    "ledger_registros": 165,
     "ledger_versao_max": "20261124142500",
     "max_connections": 60,
-    "policies": 621,
+    "policies": 622,
     "postgres": "17.6",
-    "tabelas_public": 243,
+    "tabelas_public": 244,
     "tabelas_sem_rls": 0,
-    "tamanho_bytes": 244853907,
+    "tamanho_bytes": 245582995,
     "triggers_public": 201,
     "views_public": 5
   },
@@ -1937,9 +1937,9 @@
       }
     },
     {
-      "bytes": 196608,
+      "bytes": 229376,
       "citada_no_banco": true,
-      "linhas": 230,
+      "linhas": 298,
       "linhas_exatas": true,
       "nome": "connection_test_history",
       "policies": 3,
@@ -2038,7 +2038,7 @@
       "triggers": 2,
       "uso_no_codigo": {
         "edges": 1,
-        "src": 19
+        "src": 18
       }
     },
     {
@@ -2968,7 +2968,7 @@
       "triggers": 1,
       "uso_no_codigo": {
         "edges": 1,
-        "src": 15
+        "src": 14
       }
     },
     {
@@ -3557,6 +3557,21 @@
       }
     },
     {
+      "bytes": 40960,
+      "citada_no_banco": false,
+      "linhas": 0,
+      "linhas_exatas": true,
+      "nome": "push_subscriptions",
+      "policies": 1,
+      "rls": true,
+      "rls_forcado": false,
+      "triggers": 0,
+      "uso_no_codigo": {
+        "edges": 0,
+        "src": 0
+      }
+    },
+    {
       "bytes": 32768,
       "citada_no_banco": false,
       "linhas": 0,
@@ -3632,9 +3647,9 @@
       }
     },
     {
-      "bytes": 45785088,
+      "bytes": 45801472,
       "citada_no_banco": true,
-      "linhas": 64934,
+      "linhas": 64965,
       "linhas_exatas": true,
       "nome": "query_telemetry",
       "policies": 3,
@@ -4577,9 +4592,9 @@
       }
     },
     {
-      "bytes": 50044928,
+      "bytes": 50069504,
       "citada_no_banco": false,
-      "linhas": 100600,
+      "linhas": 100659,
       "linhas_exatas": true,
       "nome": "telemetry_events",
       "policies": 2,
@@ -4802,9 +4817,9 @@
       }
     },
     {
-      "bytes": 6127616,
+      "bytes": 6135808,
       "citada_no_banco": true,
-      "linhas": 9538,
+      "linhas": 9546,
       "linhas_exatas": true,
       "nome": "workspace_notifications",
       "policies": 4,
@@ -4851,6 +4866,7 @@
       "pa_singularidades",
       "pontos_atendimento",
       "portfolio_items",
+      "push_subscriptions",
       "singulares",
       "telemetry_logs",
       "test_suites_runs",

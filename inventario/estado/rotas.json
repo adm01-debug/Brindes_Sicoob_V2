@@ -8847,7 +8847,7 @@
       "importado": "@/pages/KitLibraryPage",
       "redireciona": null,
       "menu": null,
-      "arquivos_lidos": 42,
+      "arquivos_lidos": 43,
       "hooks": [
         "useAuth",
         "useAuthAAL",
@@ -9165,7 +9165,7 @@
           "cabecalho": false
         }
       ],
-      "arquivos_lidos": 351,
+      "arquivos_lidos": 352,
       "hooks": [
         "useAdvancedPriceSearch",
         "useAIRecommendations",
