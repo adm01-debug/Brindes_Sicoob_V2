@@ -3027,7 +3027,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 79,
+   "usado_por": 80,
    "usado_por_modulos": [
     "components/admin",
     "components/compare",
@@ -3039,6 +3039,7 @@
     "hooks",
     "hooks/catalog",
     "hooks/infrastructure",
+    "hooks/quote",
     "hooks/simulation",
     "hooks/simulator",
     "hooks/stock",

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8152263f35` · branch `main` · 2026-11-25 00:36 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `97166578de` · branch `main` · 2026-11-25 01:02 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4885,6 +4885,7 @@ _nenhum item encontrado_
 | `SICOOB_FINANCIAL_TIME_ZONE` | `'America/Sao_Paulo'` | `src/hooks/orders/extensions/useOrderPayments.ts` |
 | `ARTWORK_BUCKET` | `'sicoob-order-documents'` | `src/hooks/orders/extensions/useOrderPilotApprovals.ts` |
 | `MAX_ARTWORK_BYTES` | `20` | `src/hooks/orders/extensions/useOrderPilotApprovals.ts` |
+| `QUOTE_LOAD_NOT_FOUND` | `"Orçamento não encontrado ou sem permissão de acesso."` | `src/hooks/quote/useQuoteInitialization.ts` |
 | `MAX_SUGGESTED_PRODUCTS` | `20` | `src/hooks/quote/useQuoteInitialization.ts` |
 | `MAX_HISTORY` | `30` | `src/hooks/simulator/useUndoRedo.ts` |
 | `SESSION_TTL` | `2` | `src/hooks/simulator/useWizardPersistence.ts` |
@@ -4906,8 +4907,7 @@ _nenhum item encontrado_
 | `FLUSH_INTERVAL` | `5000` | `src/lib/error-reporter.ts` |
 | `MAX_QUEUE` | `20` | `src/lib/error-reporter.ts` |
 | `COLD_START_DEFER_MS` | `8000` | `src/lib/error-reporter.ts` |
-| `PREWARM_COOLDOWN_MS` | `5` | `src/lib/external-db-prewarm.ts` |
-| … +174 linhas — lista completa em `context.json` | | |
+| … +175 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5644,7 +5644,7 @@ _nenhum item encontrado_
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1009 linhas — lista completa em `context.json` | |
+| … +1010 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5750,7 +5750,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7241 testes em 732 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7247 testes em 734 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6054,7 +6054,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/cleanup-name-filter-guard.test.ts` | 7 | cleanup E2E escopado pelo prefixo de nome · nasce com o filtro de nome ligado, sem precisar de configuração · honra o prefixo customizado do rodízio de testes · manda o prefixo em TODA requisição de purge, persona por persona … |
 | `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
-| … +432 linhas — lista completa em `context.json` | | |
+| … +434 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

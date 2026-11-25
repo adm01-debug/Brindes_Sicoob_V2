@@ -7704,6 +7704,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dev",
     "dialog",
     "gestor_pa",
@@ -8349,6 +8350,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "dev",
     "dialog",
     "gestor_pa",

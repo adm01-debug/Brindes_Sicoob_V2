@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "8152263f352026f32d338dd9c505b0d98a172ad0",
+  "commit": "97166578de642a7833fa4a2b1eb36d4480011167",
   "branch": "main",
-  "data_commit": "2026-11-24T21:23:46-03:00",
+  "data_commit": "2026-11-24T22:01:32-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "9716657",
+    "data": "2026-11-24",
+    "assunto": "fix: orcamento existente avisa quando nao carrega (#436)"
+   },
    {
     "sha": "8152263",
     "data": "2026-11-24",
@@ -126,14 +131,9 @@
     "sha": "0a70249",
     "data": "2026-11-22",
     "assunto": "feat: agenda os relatórios agendados e cobre os cinco tipos (#403)"
-   },
-   {
-    "sha": "51dc1ef",
-    "data": "2026-11-22",
-    "assunto": "docs: classificar os 683 registros de lacunas por evidencia real (#402)"
    }
   ],
-  "arquivos_mudados_7d": 1281,
+  "arquivos_mudados_7d": 1284,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -247,7 +247,7 @@
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 13
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
@@ -282,6 +282,10 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": "supabase/config.toml",
     "mudancas": 10
    },
@@ -292,16 +296,12 @@
    {
     "arquivo": "docs/README.md",
     "mudancas": 9
-   },
-   {
-    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
-    "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 210
+    "commits": 211
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5292,
-  "arquivos_codigo": 3184,
-  "linhas_codigo": 504828,
+  "arquivos_total": 5294,
+  "arquivos_codigo": 3186,
+  "linhas_codigo": 504946,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 627,
   "cron_jobs": 28,
-  "testes": 917,
+  "testes": 919,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48402
+   "linhas": 48418
   },
   "src/integrations": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51489
+   "linhas": 51499
   },
   "src/routes": {
    "arquivos": 9,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 153,
-   "linhas": 17611
+   "arquivos": 154,
+   "linhas": 17683
   },
   "tests/integration": {
    "arquivos": 4,
@@ -953,6 +953,10 @@
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
    "linhas": 1054
+  },
+  "tests/pwa": {
+   "arquivos": 1,
+   "linhas": 20
   },
   "tests/rls": {
    "arquivos": 6,
@@ -1078,7 +1082,7 @@
   },
   {
    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-   "linhas": 1124
+   "linhas": 1126
   },
   {
    "arquivo": "scripts/graphify-local.mjs",

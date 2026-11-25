@@ -3241,7 +3241,7 @@
    "hooks_exportados": [
     "useQuoteInitialization"
    ],
-   "linhas": 446,
+   "linhas": 460,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
@@ -3257,7 +3257,7 @@
    "usado_por_arquivos": [
     "src/hooks/useQuoteBuilderState.ts"
    ],
-   "coberto_por_testes": 3
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/hooks/quote/useQuoteProductSearch.ts",
@@ -7598,7 +7598,7 @@
    "hooks_exportados": [
     "useQuoteBuilderState"
    ],
-   "linhas": 1124,
+   "linhas": 1126,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"

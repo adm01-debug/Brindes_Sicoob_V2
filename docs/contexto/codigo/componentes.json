@@ -17997,7 +17997,7 @@
     "QuoteBuilderPage"
    ],
    "export_default": "QuoteBuilderPage",
-   "linhas": 163,
+   "linhas": 173,
    "dominio": "pages",
    "hooks_locais": [
     "useDescartarRascunhoAoDesmontar",

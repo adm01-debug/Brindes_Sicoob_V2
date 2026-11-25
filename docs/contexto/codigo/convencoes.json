@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (664)",
+   "tests/ (666)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: orcamento existente avisa quando nao carrega (#436)",
    "docs: ledger reflete as recuperacoes ja integradas na main (#432)",
    "docs: re-auditoria dos descartes medida PR por PR (#430)",
    "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)",
-   "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)",
-   "fix: trava otimista também no salvamento manual do kit (#428)"
+   "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -8246,6 +8246,7 @@
    "src/hooks/quote/useQuoteProductSearch.ts",
    "src/hooks/quote/useQuoteUrlPrefill.ts",
    "src/hooks/quotes/quoteTypes.ts",
+   "src/lib/logger.ts",
    "src/types/quote-builder.ts"
   ],
   "src/hooks/quote/useQuoteProductSearch.ts": [

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 917,
+ "total": 919,
  "por_tipo": {
   "contrato": 11,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 684
+  "unit": 686
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 664
+   "arquivos": 666
   },
   {
    "padrao": "e2e/",
@@ -4214,6 +4214,15 @@
    "casos": 8
   },
   {
+   "arquivo": "tests/hooks/quote/useQuoteInitialization.load-error.test.tsx",
+   "tipo": "unit",
+   "linhas": 72,
+   "testa": [
+    "src/hooks/quote/useQuoteInitialization.ts"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/hooks/quote/useQuoteInitialization.url.test.tsx",
    "tipo": "unit",
    "linhas": 121,
@@ -6653,6 +6662,13 @@
    "casos": 119
   },
   {
+   "arquivo": "tests/pwa/offline-fallback.test.ts",
+   "tipo": "unit",
+   "linhas": 20,
+   "testa": [],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/rls/critical-tables-rls.test.ts",
    "tipo": "unit",
    "linhas": 484,
@@ -8218,7 +8234,7 @@
   "src/hooks/orders/extensions/useOrderInvoices.ts": 1,
   "src/hooks/orders/extensions/useOrderPayments.ts": 1,
   "src/hooks/quote/quote-url-prefill.ts": 1,
-  "src/hooks/quote/useQuoteInitialization.ts": 3,
+  "src/hooks/quote/useQuoteInitialization.ts": 4,
   "src/hooks/quote/useQuoteProductSearch.ts": 1,
   "src/hooks/quote/useQuotesStockStatus.ts": 1,
   "src/hooks/quotes/quoteHelpers.ts": 2,
