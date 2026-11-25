@@ -22,6 +22,7 @@ import {
 import { EngravingList } from './simulator/EngravingList';
 import { MultiEngravingResult } from './simulator/MultiEngravingResult';
 import { invokeExternalDb } from '@/lib/external-db';
+import { PrecoIndisponivelAlert } from './PrecoIndisponivelAlert';
 
 interface ProductPriceSimulatorProps {
   className?: string;
@@ -173,7 +174,9 @@ interface SimulatorVisibilityOptions {
 }
 
 function simulatorVisibility({ product, hasVariants, selectedVariant, hasEngravings, mode }: SimulatorVisibilityOptions) {
-  const productReady = Boolean(product);
+  // Preco invalido (zero/negativo/infinito/ausente) mantem o produto selecionado apenas
+  // para exibir o aviso: sem isso o item seguiria para a gravacao e o total sairia em R$ 0,00.
+  const productReady = Boolean(product) && product?.priceAvailable !== false;
   const variantReady = !hasVariants || Boolean(selectedVariant);
   return {
     needsVariantSelection: hasVariants && !selectedVariant,
@@ -363,6 +366,7 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
         <StepProgressBar steps={steps} currentStep={currentStep} />
 
         <ProductStep product={selectedProduct} onSelect={handleProductSelect} />
+        {selectedProduct?.priceAvailable === false && <PrecoIndisponivelAlert nome={selectedProduct.name} />}
         <VariantStep visible={visibility.showVariantStep} hasSizes={hasSizes} variants={productVariants} selected={selectedVariant} onSelect={handleVariantSelect} />
         <EngravingStep product={selectedProduct} visible={visibility.showEngravingStep} hasVariants={hasVariants} mode={mode} engravings={engravings} canAddMore={canAddMore} currentTechnique={currentTechnique} currentColors={currentColors} currentSizeOption={currentSizeOption} onRemove={handleRemoveEngraving} onStartAdd={handleStartAddEngraving} onCancel={handleCancelAddEngraving} onTechniqueSelect={handleTechniqueSelect} onColorsChange={setCurrentColors} onSizeChange={setCurrentSizeOption} onTableCodeChange={setCurrentTableCode} onConfirm={handleConfirmEngraving} />
         <ResultStep visible={visibility.showResults} product={selectedProduct} hasVariants={hasVariants} engravings={engravings} quantity={quantity} onQuantityChange={setQuantity} onCreateQuote={handleCreateQuote} />

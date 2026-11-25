@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Calculator, Package, Paintbrush, Palette, Plus, X, FileText, Trophy } from 'lucide-react';
+import { Calculator, Package, Paintbrush, Palette, Plus, X, FileText, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PrecoIndisponivelAlert } from './PrecoIndisponivelAlert';
 import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch';
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
@@ -22,21 +22,6 @@ import type { Product as SearchProduct } from './simulator/types';
 
 function podeSimularPreco(produto: CalcProduct | null): produto is CalcProduct {
   return produto !== null && produto.priceAvailable !== false;
-}
-
-function AvisoSemPreco({ produto }: { produto: CalcProduct | null }) {
-  if (produto?.priceAvailable !== false) return null;
-  return (
-    <Alert variant="destructive">
-      <AlertTriangle className="h-4 w-4" />
-      <AlertTitle>Produto sem preço de venda no catálogo</AlertTitle>
-      <AlertDescription>
-        {produto.name} está sem preço de venda válido no catálogo (zero, negativo,
-        infinito ou ausente). A simulação de técnicas e a criação de orçamento ficam
-        bloqueadas até o preço ser corrigido no cadastro do produto.
-      </AlertDescription>
-    </Alert>
-  );
 }
 
 interface QuantityPriceCalculatorProps {
@@ -99,7 +84,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         <CardContent><UnifiedProductSearch onSelect={handleProductSelect} selectedProduct={selectedProduct} /></CardContent>
       </Card>
 
-      <AvisoSemPreco produto={selectedProduct} />
+      {selectedProduct?.priceAvailable === false && <PrecoIndisponivelAlert nome={selectedProduct.name} />}
 
       {/* Step 2: Techniques */}
       {podeSimularPreco(selectedProduct) && (
