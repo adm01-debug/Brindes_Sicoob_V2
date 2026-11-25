@@ -5,6 +5,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
+import { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
 import type { StockDailySummary } from './useStockHistory';
 
 export interface MacroMarketPoint {
@@ -39,6 +40,8 @@ export interface MacroMarketData {
   kpis: MacroMarketKpis;
   suppliers: MacroSupplierMetrics[];
   supplierIds: string[];
+  /** true quando a janela tem mais registros do que o limite de leitura do painel. */
+  truncated: boolean;
 }
 
 interface SupplierAccumulator {
@@ -140,8 +143,143 @@ function toSupplierMetrics(supplierId: string, data: SupplierAccumulator): Macro
   };
 }
 
+const PAGE_SIZE = 5000;
+const MAX_ROWS = 60000;
+
+type StockRow = StockDailySummary & { id?: string | number };
+interface StockRowsPage { rows: StockRow[]; truncated: boolean }
+
+// O bridge pode repetir a consulta SEM a ordem pedida quando a coluna nao existe
+// (`meta.orderBy_fallback`). Sem ordem total o deslocamento repete/omite linhas,
+// entao a paginacao e abortada em vez de agregar dado incompleto.
+function hasOrderFallback(meta: unknown): boolean {
+  return (
+    typeof meta === 'object' && meta !== null &&
+    typeof (meta as { orderBy_fallback?: unknown }).orderBy_fallback === 'string'
+  );
+}
+
+// Depois de um timeout o bridge reduz o limite da pagina e marca
+// `meta.pagination_degraded`: a pagina curta NAO significa fim da leitura.
+function hasDegradedPage(meta: unknown): boolean {
+  return (
+    typeof meta === 'object' && meta !== null &&
+    (meta as { pagination_degraded?: unknown }).pagination_degraded === true
+  );
+}
+
+// Offset igual ao total exato faz o PostgREST responder PGRST103 em vez de uma
+// pagina vazia; isso encerra a leitura em vez de derrubar o painel.
+const RANGE_ERROR = /PGRST103|range not satisfiable|requested range/i;
+
 /**
- * Busca stock_daily_summary agregado (macro) para visão de mercado.
+ * O bridge recusa o deslocamento com 400 e `{ error: "PGRST103 ..." }` no corpo; a
+ * mensagem do erro do supabase-js e so "non-2xx", entao o detalhe vem do `context`.
+ */
+async function isRangeError(error: unknown): Promise<boolean> {
+  return RANGE_ERROR.test(await extractFunctionErrorMessage(error));
+}
+
+/** Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */
+async function hasRowsBeyondCap(filters: Record<string, unknown>): Promise<boolean> {
+  const probe = await invokeExternalDb<StockRow>({
+    table: 'stock_daily_summary',
+    operation: 'select',
+    select: 'id',
+    filters,
+    limit: 1,
+    offset: MAX_ROWS,
+    orderBy: { column: 'id', ascending: true },
+  });
+  return (probe.records ?? []).length > 0;
+}
+
+/**
+ * Decide se a leitura que parou no teto deixou dado para tras. A contagem exata da
+ * ultima pagina cheia responde de graca quando o bridge a devolve; sem ela, uma
+ * sonda no offset do teto responde. Sonda que falha (timeout, 5xx) nao prova fim de
+ * dado: nesse caso o painel avisa que o total pode estar incompleto.
+ */
+async function capTruncated(
+  rowsLength: number,
+  total: number | null,
+  filters: Record<string, unknown>,
+): Promise<boolean> {
+  if (total !== null) return total > rowsLength;
+  try {
+    return await hasRowsBeyondCap(filters);
+  } catch (error) {
+    return !(await isRangeError(error));
+  }
+}
+
+interface StockPage {
+  records?: StockRow[];
+  count?: number | null;
+  meta?: unknown;
+}
+
+/** `null` = PostgREST recusou o deslocamento (PGRST103): o dado acabou, nao e erro. */
+async function readStockPage(
+  filters: Record<string, unknown>,
+  offset: number,
+): Promise<StockPage | null> {
+  try {
+    return await invokeExternalDb<StockRow>({
+      table: 'stock_daily_summary',
+      operation: 'select',
+      select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
+      filters,
+      limit: PAGE_SIZE,
+      offset,
+      orderBy: { column: 'id', ascending: true },
+    });
+  } catch (error) {
+    // Offset 0 recusado nao e fim de dado: e falha real da consulta.
+    if (offset > 0 && (await isRangeError(error))) return null;
+    throw error;
+  }
+}
+
+type PageStop = 'continue' | 'short' | 'degraded';
+
+/** Pagina curta encerra a leitura; degradada encerra e ja sinaliza parcial. */
+function pageStop(meta: unknown, received: number): PageStop {
+  if (hasDegradedPage(meta)) return 'degraded';
+  return received < PAGE_SIZE ? 'short' : 'continue';
+}
+
+/**
+ * Pagina `stock_daily_summary` por `id` (ordem total: sem repetir nem omitir
+ * linhas empatadas na mesma data) ate a ultima pagina incompleta.
+ */
+async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockRowsPage> {
+  const rows: StockRow[] = [];
+  let truncated = false;
+  let total: number | null = null;
+  for (let offset = 0; offset < MAX_ROWS; offset += PAGE_SIZE) {
+    const page = await readStockPage(filters, offset);
+    // `null` = deslocamento recusado: o dado acabou aqui.
+    if (!page) break;
+    const batch = page.records ?? [];
+    rows.push(...batch);
+    // Contagem exata do bridge (quando devolvida) evita a sonda do teto.
+    if (typeof page.count === 'number') total = page.count;
+    const stop = pageStop(page.meta, batch.length);
+    if (stop !== 'continue') {
+      truncated = stop === 'degraded';
+      break;
+    }
+    if (hasOrderFallback(page.meta)) throw new Error('Consulta de estoque sem ordenação garantida pelo bridge');
+  }
+  // Saiu do laco com todas as paginas cheias = bateu no teto; so entao vale
+  // confirmar se existe registro alem dele (60 mil exatos nao e resultado parcial).
+  if (rows.length >= MAX_ROWS) truncated = await capTruncated(rows.length, total, filters);
+  return { rows, truncated };
+}
+
+/**
+ * Busca stock_daily_summary agregado (macro) para visao de mercado.
  * Filtra opcionalmente por supplier_id.
  */
 export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null) {
@@ -154,15 +292,12 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
 
       const filters: Record<string, unknown> = {};
       if (supplierId) filters.supplier_id = supplierId;
+      // Corte aplicado no servidor (`summary_date_gte` -> `.gte`): sem isso os
+      // registros do periodo ficavam fora da pagina quando a base crescia e
+      // ampliar o periodo nao recuperava os dias anteriores.
+      filters.summary_date_gte = cutoffStr;
 
-      const result = await invokeExternalDb<StockDailySummary>({
-        table: 'stock_daily_summary',
-        operation: 'select',
-        select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
-        filters,
-        limit: 5000,
-        orderBy: { column: 'summary_date', ascending: true },
-      });
+      const { rows, truncated } = await fetchStockSummaries(filters);
 
       // Aggregate by date (for chart)
       const dateMap = new Map<string, MacroMarketPoint>();
@@ -174,7 +309,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
       const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
       const d7Str = d7.toISOString().slice(0, 10);
 
-      for (const row of result.records ?? []) {
+      for (const row of rows) {
         if (row.summary_date < cutoffStr) continue;
         addMarketDay(dateMap, row);
         addSupplierDay(supplierDataMap, row, d7Str);
@@ -206,6 +341,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
         },
         suppliers,
         supplierIds: Array.from(uniqueSuppliers),
+        truncated,
       };
     },
     staleTime: 10 * 60 * 1000,
