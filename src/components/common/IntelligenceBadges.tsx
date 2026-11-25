@@ -163,21 +163,27 @@ export function IntelligenceBadges({
     ? <BadgesErrorAlert hasMarketData={Boolean(hasMarketData)} onRetry={onRetry} isRetrying={isRetrying} />
     : null;
 
-  // Falha sem nada medido: antes o componente devolvia `null` e o erro ficava
-  // invisível, indistinguível de "produto sem indicadores".
-  if (isError && !hasMarketData) return <div className={className}>{alertaDeErro}</div>;
-
   // Ausência confirmada (as duas consultas responderam sem dado) tem texto próprio,
   // para não ser lida como falha.
-  if (!badges.length && isEmpty) {
-    return <p role="status" className={cn("text-sm text-muted-foreground", className)}>Sem indicadores de mercado disponíveis para este produto.</p>;
+  const semIndicadores = isEmpty
+    ? <p role="status" className="text-sm text-muted-foreground">Sem indicadores de mercado disponíveis para este produto.</p>
+    : null;
+
+  // Sem selo algum o erro não pode sumir: parte das consultas pode ter falhado com a
+  // outra respondida, caso em que `hasMarketData` é verdadeiro e o aviso (com
+  // "Tentar novamente") sumia por falta de selos.
+  if (!badges.length) {
+    if (isError) return <div className={className}>{alertaDeErro}</div>;
+    if (semIndicadores) return <p role="status" className={cn("text-sm text-muted-foreground", className)}>Sem indicadores de mercado disponíveis para este produto.</p>;
+    return null;
   }
 
-  if (!badges.length) return null;
-
+  // Com selos (inclusive os de cadastro, que não dependem de mercado) o aviso e a
+  // ausência acompanham a lista em vez de escondê-la.
   return (
     <div className={cn("space-y-2", className)}>
       {alertaDeErro}
+      {semIndicadores}
       <BadgesList badges={badges} turnoverScore={turnoverScore} />
     </div>
   );
