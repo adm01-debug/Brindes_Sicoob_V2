@@ -35,13 +35,13 @@ async function comBancoDescartavel(executar) {
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
       END $$;
-      CREATE SCHEMA IF NOT EXISTS sicoob_guard_test;
-      CREATE TABLE IF NOT EXISTS sicoob_guard_test.probe_schema_migrations(version text PRIMARY KEY);
-      TRUNCATE sicoob_guard_test.probe_schema_migrations;
+      CREATE SCHEMA IF NOT EXISTS sicoob_contract_guard_test;
+      CREATE TABLE IF NOT EXISTS sicoob_contract_guard_test.probe_schema_migrations(version text PRIMARY KEY);
+      TRUNCATE sicoob_contract_guard_test.probe_schema_migrations;
     `);
     await executar(client);
   } finally {
-    await client.query("DROP SCHEMA IF EXISTS sicoob_guard_test CASCADE").catch(() => {});
+    await client.query("DROP SCHEMA IF EXISTS sicoob_contract_guard_test CASCADE").catch(() => {});
     await client.end();
   }
 }
@@ -72,18 +72,18 @@ test("guarda de contrato aceita cláusulas satisfeitas e mantém o lote", async 
   if (!databaseUrl) return t.skip("SICOOB_TEST_DATABASE_URL ausente");
   await comBancoDescartavel(async (client) => {
     const guarda = renderContractGuard(`
-     to_regclass('sicoob_guard_test.probe_schema_migrations') IS NULL
+     to_regclass('sicoob_contract_guard_test.probe_schema_migrations') IS NULL
      OR NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'probe_schema_migrations')
     `);
 
     await client.query("BEGIN");
     await client.query(
-      "INSERT INTO sicoob_guard_test.probe_schema_migrations(version) VALUES ('20261125100000')",
+      "INSERT INTO sicoob_contract_guard_test.probe_schema_migrations(version) VALUES ('20261125100000')",
     );
     await client.query(guarda);
     await client.query("COMMIT");
     const { rows } = await client.query(
-      "SELECT count(*)::int AS total FROM sicoob_guard_test.probe_schema_migrations",
+      "SELECT count(*)::int AS total FROM sicoob_contract_guard_test.probe_schema_migrations",
     );
     assert.equal(rows[0].total, 1, "cláusulas satisfeitas não podem derrubar o lote");
   });
@@ -98,7 +98,7 @@ test("a guarda do lote real lista o inventário de cláusulas e reverte a transa
     let mensagem = "";
     await client.query("BEGIN");
     await client.query(
-      "INSERT INTO sicoob_guard_test.probe_schema_migrations(version) VALUES ('20261125100000')",
+      "INSERT INTO sicoob_contract_guard_test.probe_schema_migrations(version) VALUES ('20261125100000')",
     );
     await assert.rejects(client.query(extrairGuarda(loteReal)), (error) => {
       mensagem = error.message;
@@ -123,8 +123,22 @@ test("a guarda do lote real lista o inventário de cláusulas e reverte a transa
 
     await client.query("ROLLBACK");
     const { rows } = await client.query(
-      "SELECT count(*)::int AS total FROM sicoob_guard_test.probe_schema_migrations",
+      "SELECT count(*)::int AS total FROM sicoob_contract_guard_test.probe_schema_migrations",
     );
     assert.equal(rows[0].total, 0, "o registro do lote não pode sobreviver ao aborto da guarda");
   });
+});
+
+test("a guarda roda dentro da transação do lote real, antes do COMMIT", () => {
+  assert.match(loteReal, /^BEGIN;/, "o lote precisa abrir uma transação");
+  const inicioTransacao = loteReal.indexOf("BEGIN;");
+  const inicioGuarda = loteReal.indexOf("DO $sicoob_contract_guard$");
+  const fimTransacao = loteReal.lastIndexOf("COMMIT;");
+  assert.notEqual(inicioGuarda, -1, "guarda de contrato ausente no lote");
+  assert.ok(inicioGuarda > inicioTransacao, "a guarda precisa rodar depois do BEGIN");
+  assert.ok(fimTransacao > inicioGuarda, "o COMMIT precisa vir depois da guarda");
+  assert.ok(
+    loteReal.indexOf("COMMIT;") === fimTransacao,
+    "a guarda não pode ficar depois de um COMMIT — o lote inteiro precisa ser uma transação só",
+  );
 });
