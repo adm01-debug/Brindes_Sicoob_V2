@@ -53,6 +53,12 @@ describe("useIndustryTrends", () => {
     const { result } = renderTrends();
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
+    // Contrato com a API: o hook precisa pedir folga suficiente para o filtro local enxergar
+    // produtos que o ORDER BY total_quantity DESC joga para o fim da lista.
+    expect(rpc).toHaveBeenCalledWith(
+      "get_industry_top_products",
+      expect.objectContaining({ _days: 90, _limit: 1000 }),
+    );
     expect(result.current.data?.trends.map((t) => t.productName)).toEqual(["Garrafa"]);
   });
 
