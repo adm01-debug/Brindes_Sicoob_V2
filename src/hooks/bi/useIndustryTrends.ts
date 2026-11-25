@@ -31,14 +31,20 @@ export interface IndustryTrendItem {
   unitsSold: number;
   ordersCount: number;
   avgPrice: number;
-  trend: "up" | "stable" | "down";
+  /** `null` = o RPC devolve agregado de 90 dias, sem série temporal: não há variação medida. */
+  trend: "up" | "stable" | "down" | null;
 }
 
 export interface IndustryTrendsResult {
   isMock: boolean;
   companiesInRamo: number;
+  /** Amostra setorial insuficiente (`companiesInRamo` abaixo do mínimo) não vira tendência. */
+  dataStatus: "insufficient" | "available";
   trends: IndustryTrendItem[];
 }
+
+/** Abaixo disso o "setor" é uma empresa ou duas: não é mercado. */
+const MIN_SECTOR_COMPANIES = 3;
 
 function deriveCategory(name: string): string {
   const lower = name.toLowerCase();
@@ -72,12 +78,13 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       if (demo) {
         return {
           isMock: true,
+          dataStatus: "available",
           companiesInRamo: 24,
           trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
         };
       }
       if (!ramoAtividade) {
-        return { isMock: false, companiesInRamo: 0, trends: [] };
+        return { isMock: false, companiesInRamo: 0, dataStatus: "insufficient", trends: [] };
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
@@ -88,6 +95,10 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       // sobre um setor que nenhuma consulta mediu.
       const peerIds = await fetchIndustryPeerIds(ramoAtividade);
       const companyIds = peerIds.filter(Boolean);
+
+      if (companyIds.length > 0 && companyIds.length < MIN_SECTOR_COMPANIES) {
+        return { isMock: false, companiesInRamo: companyIds.length, dataStatus: "insufficient", trends: [] };
+      }
 
       // 2) Se temos IDs, tenta RPC
       if (companyIds.length > 0) {
@@ -101,11 +112,14 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
         // ter "tendências" que ninguém mediu.
         if (error) throw error;
         const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
-        if (real.length > 0) {
+        // Produto comprado por uma ou duas empresas é compra isolada, não tendência setorial.
+        const sample = real.filter((p) => (Number(p.unique_clients) || 0) >= MIN_SECTOR_COMPANIES);
+        if (sample.length > 0) {
           return {
             isMock: false,
+            dataStatus: "available",
             companiesInRamo: companyIds.length,
-            trends: real.map((p) => ({
+            trends: sample.map((p) => ({
               productName: p.product_name,
               productId: p.product_id,
               imageUrl: p.product_image_url,
@@ -113,7 +127,7 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
               unitsSold: Number(p.total_quantity) || 0,
               ordersCount: Number(p.unique_clients) || 0,
               avgPrice: Number(p.avg_unit_price) || 0,
-              trend: "stable" as const,
+              trend: null,
             })),
           };
         }
@@ -122,6 +136,7 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       return {
         isMock: false,
         companiesInRamo: companyIds.length,
+        dataStatus: "insufficient",
         trends: [],
       };
     },

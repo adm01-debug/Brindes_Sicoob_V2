@@ -148,6 +148,7 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
         industryTrends: trendsQ.data ?? {
           isMock: false,
           companiesInRamo: 0,
+          dataStatus: "insufficient",
           trends: [],
         },
         empiricalRec: resolveIndustryRecommendation(ramo),
