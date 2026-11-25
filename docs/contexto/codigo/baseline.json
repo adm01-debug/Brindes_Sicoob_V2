@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
+  "commit": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
   "branch": "main",
-  "data_commit": "2026-11-24T22:48:59-03:00",
+  "data_commit": "2026-11-25T07:42:40-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ba511bb",
+    "data": "2026-11-25",
+    "assunto": "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)"
+   },
    {
     "sha": "e8fcd27",
     "data": "2026-11-24",
@@ -126,14 +131,9 @@
     "sha": "e0b7520",
     "data": "2026-11-23",
     "assunto": "infra: incluir send-transactional-email na publicação de edge functions (#409)"
-   },
-   {
-    "sha": "b7680fb",
-    "data": "2026-11-23",
-    "assunto": "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)"
    }
   ],
-  "arquivos_mudados_7d": 1295,
+  "arquivos_mudados_7d": 1298,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 214
+    "commits": 215
    },
    {
     "autor": "dependabot[bot]",
@@ -314,7 +314,7 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5301,
+  "arquivos_total": 5303,
   "arquivos_codigo": 3193,
   "linhas_codigo": 506208,
   "rotas": 140,
@@ -326,7 +326,7 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 627,
+  "migrations": 629,
   "cron_jobs": 28,
   "testes": 925,
   "workflows": 17,

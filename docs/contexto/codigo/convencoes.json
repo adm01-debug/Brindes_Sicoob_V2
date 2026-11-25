@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)",
    "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
    "feat: assistente de layouts passa a usar a IA real (#435)",
    "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)",
-   "fix: orcamento existente avisa quando nao carrega (#436)",
-   "docs: ledger reflete as recuperacoes ja integradas na main (#432)"
+   "fix: orcamento existente avisa quando nao carrega (#436)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
+  "sha": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 01:49 UTC",
-  "files_total": 5304,
-  "code_files": 3865,
-  "code_lines": 570700
+  "generated_at": "2026-11-25 10:49 UTC",
+  "files_total": 5306,
+  "code_files": 3867,
+  "code_lines": 570785
  },
  "version": "1.3.2",
- "facts_hash": "2ff537e70fa13644",
+ "facts_hash": "f397c2af598c7fcc",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -357,7 +357,7 @@
   "languages": {
    ".ts": 1503,
    ".tsx": 1469,
-   ".sql": 690,
+   ".sql": 692,
    ".mjs": 141,
    ".py": 69,
    ".cjs": 7,
@@ -47909,6 +47909,7 @@
   },
   "sources": [
    "supabase/cron/cron-config.sql",
+   "supabase/migrations/000_notification_functions_replay_guard.sql",
    "supabase/migrations/001_notification_system.sql",
    "supabase/migrations/002_notification_preferences.sql",
    "supabase/migrations/003_notification_templates.sql",
@@ -48536,6 +48537,7 @@
    "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
    "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
    "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
+   "supabase/migrations/20261125100000_notification_functions_contract.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -55244,6 +55246,30 @@
     "objkind": "function",
     "roles": "PUBLIC, anon, authenticated",
     "src": "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "PUBLIC",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "anon, authenticated",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
    }
   ],
   "raises": [
@@ -67050,14 +67076,15 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 627,
-   "lines": 56635,
+   "files": 629,
+   "lines": 56720,
    "tables": [],
    "exports": [],
    "docs": [],
    "deps": [],
    "imports_modules": [],
    "file_list": [
+    "supabase/migrations/000_notification_functions_replay_guard.sql",
     "supabase/migrations/001_notification_system.sql",
     "supabase/migrations/002_notification_preferences.sql",
     "supabase/migrations/003_notification_templates.sql",
@@ -67136,8 +67163,7 @@
     "supabase/migrations/20260110114839_48fa4504-ae04-470a-9359-70e65814a682.sql",
     "supabase/migrations/20260110122053_76b9a5d8-add2-4fb9-a27f-dceca92cf817.sql",
     "supabase/migrations/20260201155941_b988554d-1888-42e4-badc-ae2300cabd1c.sql",
-    "supabase/migrations/20260208141021_e00ee7e7-b3de-48ee-a167-1d5676607369.sql",
-    "supabase/migrations/20260211135257_4a3fb7a6-12f6-4264-a3b6-8e6ce61f3196.sql"
+    "supabase/migrations/20260208141021_e00ee7e7-b3de-48ee-a167-1d5676607369.sql"
    ]
   },
   {
@@ -169595,6 +169621,7 @@
    "supabase/migrations/20261119140000_fix_compliance_rls_scan.sql",
    "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
    "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+   "supabase/migrations/20261125100000_notification_functions_contract.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
    "tests/e2e/cleanup-name-filter-guard.test.ts",
@@ -176429,6 +176456,30 @@
     "objkind": "function",
     "roles": "PUBLIC, anon, authenticated",
     "src": "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "PUBLIC",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "anon, authenticated",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
    }
   ],
   "guards": [
@@ -242082,6 +242133,10 @@
    "doc": "webhook-inbound: receives external webhooks at /webhook-inbound?slug=<slug> Validates HMAC signature using the secret stored in env (referenced by the endpoint row), records every event in inbound_webhook_events.",
    "uses_service_role": true
   },
+  "supabase/migrations/000_notification_functions_replay_guard.sql": {
+   "path": "supabase/migrations/000_notification_functions_replay_guard.sql",
+   "lines": 29
+  },
   "supabase/migrations/001_notification_system.sql": {
    "path": "supabase/migrations/001_notification_system.sql",
    "lines": 96
@@ -245008,6 +245063,11 @@
   "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql": {
    "path": "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
    "lines": 52
+  },
+  "supabase/migrations/20261125100000_notification_functions_contract.sql": {
+   "path": "supabase/migrations/20261125100000_notification_functions_contract.sql",
+   "lines": 56,
+   "uses_service_role": true
   },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
@@ -259429,10 +259489,22 @@
   }
  },
  "git": {
-  "sha": "e8fcd27598f6281c48de97827b7f24ec8bce12d1",
+  "sha": "ba511bbdb04ec57990dd6e7645dcd744b624696d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ba511bb",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)",
+    "files": [
+     "docs/agentes/banco.md",
+     "scripts/db/migration-ledger-baseline.json",
+     "supabase/migrations/000_notification_functions_replay_guard.sql",
+     "supabase/migrations/20261125100000_notification_functions_contract.sql"
+    ]
+   },
    {
     "sha": "e8fcd27",
     "date": "2026-11-24",
@@ -259851,24 +259923,16 @@
      "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
      "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
     ]
-   },
-   {
-    "sha": "88dc17b",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)",
-    "files": [
-     "src/components/cart/CartCompanyPicker.tsx",
-     "src/components/cart/CartCompanyPickerDialog.tsx",
-     "src/lib/crm-db.ts",
-     "tests/components/cart/cart-company-picker-dialog.error.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "src/pages/KitBuilderPage.tsx",
     4
+   ],
+   [
+    "docs/agentes/banco.md",
+    3
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -259939,11 +260003,7 @@
     2
    ],
    [
-    "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
-    2
-   ],
-   [
-    "docs/agentes/banco.md",
+    "src/components/cart/CartHeaderButton.tsx",
     2
    ]
   ]

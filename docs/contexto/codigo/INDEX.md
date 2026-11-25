@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `e8fcd27598f6281c48de97827b7f24ec8bce12d1` (2026-11-24T22:48:59-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `ba511bbdb04ec57990dd6e7645dcd744b624696d` (2026-11-25T07:42:40-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2974), Markdown (973), SQL (690), JSON (295), JavaScript (153), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2974), Markdown (973), SQL (692), JSON (295), JavaScript (153), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,7 +34,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5301 |
+| arquivos_total | 5303 |
 | arquivos_codigo | 3193 |
 | linhas_codigo | 506208 |
 | rotas | 140 |
@@ -46,7 +46,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
-| migrations | 627 |
+| migrations | 629 |
 | cron_jobs | 28 |
 | testes | 925 |
 | workflows | 17 |
@@ -473,8 +473,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37028 nós · 61682 arestas · 2783 comunidades · grafo do commit `e8fcd275`
-- comunidades maiores: ref_hooks (641), ref_components (442), ref_lib (273), sonner (255), ref_integrations (235), getCorsHeaders (227), ref_contexts (209), react-router-dom (197), framer-motion (191), ref_node_path (177), date-fns (175), react (169)
+- 37031 nós · 61683 arestas · 2775 comunidades · grafo do commit `ba511bbd`
+- comunidades maiores: ref_components (702), ref_integrations (425), ref_lib (305), lucide-react (235), react (231), framer-motion (227), sonner (192), ref_contexts (186), getCorsHeaders (184), date-fns (179), ref_stores (163), ai-usage.ts (162)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-25 `ba511bb` fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)
 - 2026-11-24 `e8fcd27` fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)
 - 2026-11-24 `b71a077` feat: assistente de layouts passa a usar a IA real (#435)
 - 2026-11-24 `ca1b482` test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-24 `1aa0068` chore(inventario): estado real do banco e do codigo [auto] (#425)
 - 2026-11-24 `667250f` fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)
 - 2026-11-24 `4621e75` fix: estabiliza os dois testes que reprovavam PRs verdes (#423)
-- 2026-11-24 `092f7ee` infra: webhook-inbound declarado publico e incluido na publicacao das edges (#422)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
