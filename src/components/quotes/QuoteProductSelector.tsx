@@ -14,6 +14,8 @@ interface Product {
 
 interface QuoteProductSelectorProps {
   open: boolean;
+  /** Quando a cotação não aceita mais edição (salvando/enviada), o seletor não pode reabrir. */
+  canEdit?: boolean;
   onOpenChange: (open: boolean) => void;
   productSearch: string;
   setProductSearch: (v: string) => void;
@@ -29,6 +31,6 @@ interface QuoteProductSelectorProps {
  * Seletor de produtos para orçamentos.
  * Interface unificada para busca e seleção de variantes/cores.
  */
-export function QuoteProductSelector(props: QuoteProductSelectorProps) {
-  return <QuoteBuilderProductSearch {...props} />;
+export function QuoteProductSelector({ canEdit = true, ...props }: QuoteProductSelectorProps) {
+  return <QuoteBuilderProductSearch {...props} open={props.open && canEdit} />;
 }
