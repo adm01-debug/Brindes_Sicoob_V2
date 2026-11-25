@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (685)",
+   "tests/ (687)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: exige tres empresas com historico para usar o setor como amostra (#449)",
    "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)",
    "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)",
    "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)",
-   "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)",
-   "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)"
+   "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

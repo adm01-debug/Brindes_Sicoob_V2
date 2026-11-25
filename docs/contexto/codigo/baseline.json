@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "f0354ac2a33680e528a4a03ec39691dc4e62febf",
+  "commit": "e42cc6ac4580485df62187879ca7b2aa15e1786e",
   "branch": "main",
-  "data_commit": "2026-11-25T20:51:23Z",
+  "data_commit": "2026-11-25T21:08:34Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e42cc6a",
+    "data": "2026-11-25",
+    "assunto": "fix: exige tres empresas com historico para usar o setor como amostra (#449)"
+   },
    {
     "sha": "f0354ac",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "bc7da67",
     "data": "2026-11-24",
     "assunto": "fix: trava otimista também no salvamento manual do kit (#428)"
-   },
-   {
-    "sha": "7630297",
-    "data": "2026-11-24",
-    "assunto": "fix: unifica o último confirm nativo do Kit Builder no diálogo global (#427)"
    }
   ],
-  "arquivos_mudados_7d": 1206,
+  "arquivos_mudados_7d": 1204,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -157,19 +157,19 @@
    },
    {
     "pasta": "src/hooks/bi",
-    "mudancas": 19
+    "mudancas": 20
+   },
+   {
+    "pasta": "tests/components/bi",
+    "mudancas": 17
    },
    {
     "pasta": "package.json",
     "mudancas": 16
    },
    {
-    "pasta": "tests/components/bi",
-    "mudancas": 16
-   },
-   {
     "pasta": "src/components/bi",
-    "mudancas": 15
+    "mudancas": 16
    },
    {
     "pasta": "src/components/sicoob",
@@ -219,7 +219,7 @@
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 19
+    "mudancas": 18
    },
    {
     "arquivo": ".github/workflows/ci.yml",
@@ -282,10 +282,6 @@
     "mudancas": 9
    },
    {
-    "arquivo": "docs/execucao/validacao-do-plano.md",
-    "mudancas": 9
-   },
-   {
     "arquivo": "src/pages/KitBuilderPage.tsx",
     "mudancas": 9
    },
@@ -296,12 +292,16 @@
    {
     "arquivo": "AGENTS.md",
     "mudancas": 8
+   },
+   {
+    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 226
+    "commits": 227
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5317,
-  "arquivos_codigo": 3206,
-  "linhas_codigo": 507834,
+  "arquivos_total": 5319,
+  "arquivos_codigo": 3208,
+  "linhas_codigo": 508161,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 938,
+  "testes": 940,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167946
+   "linhas": 167953
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48588
+   "linhas": 48682
   },
   "src/integrations": {
    "arquivos": 3,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 165,
-   "linhas": 29655
+   "arquivos": 166,
+   "linhas": 29728
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 158,
-   "linhas": 18304
+   "arquivos": 159,
+   "linhas": 18457
   },
   "tests/integration": {
    "arquivos": 4,

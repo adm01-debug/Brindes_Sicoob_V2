@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `f0354ac2a3` · branch `main` · 2026-11-25 20:52 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e42cc6ac45` · branch `main` · 2026-11-25 21:09 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4871,6 +4871,7 @@ _nenhum item encontrado_
 | `PREFETCH_MIN_INTERVAL_MS` | `5` | `src/hooks/useWorkspaceNotifications.tsx` |
 | `DAY_MS` | `86400000` | `src/hooks/bi/useClientBI.ts` |
 | `WINDOW_MONTHS` | `24` | `src/hooks/bi/useClientSeasonality.ts` |
+| `MIN_SECTOR_COMPANIES` | `3` | `src/hooks/bi/useClientSeasonality.ts` |
 | `THRESHOLD` | `15` | `src/hooks/bi/useClientVsIndustry.ts` |
 | `MIN_SAMPLE` | `3` | `src/hooks/bi/useClientVsIndustry.ts` |
 | `DAYS_WINDOW` | `180` | `src/hooks/bi/useClientVsIndustry.ts` |
@@ -4901,8 +4902,7 @@ _nenhum item encontrado_
 | `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
 | `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
 | `CRM_DB_BRIDGE_FUNCTION` | `"crm-db-bridge"` | `src/lib/crm-db.ts` |
-| `MAX_RETRIES` | `2` | `src/lib/crm-db.ts` |
-| … +180 linhas — lista completa em `context.json` | | |
+| … +181 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7338 testes em 751 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7349 testes em 753 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6015,6 +6015,7 @@ _nenhum item encontrado_
 | `tests/hooks/useSmartNavigation.registro-sujo.test.tsx` | 8 | voltar x registro de estado sujo · tela LIMPA que declarou estado sai sem perguntar, mesmo em rota crítica · tela ALTERADA pergunta, e  · a tela escolhe o texto do aviso, em vez do genérico … |
 | `tests/hooks/useWorkspaceNotifications-cache-invalidation.test.tsx` | 8 | useWorkspaceNotifications — cache invalidation after mutations · markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch · clearAll removes the sessionStorage cache entry and triggers a silent re-fetch · re-fetch after markAllAsRead bypasses the 5s prefetch TTL window … |
 | `tests/hooks/useWorkspaceNotifications-prefetch.test.tsx` | 8 | useWorkspaceNotifications — prefetch TTL idempotency · does not refetch when prefetch is called within 5s of last fetch · refetches when prefetch is called after the 5s TTL window · never toggles isLoading=true during a silent prefetch … |
+| `tests/hooks/bi/useClientSeasonality.test.tsx` | 8 | useClientSeasonality · não classifica setor sem atividade e sem três compradores como amostra real · não transforma a média de duas empresas em sazonalidade do setor · cadastro no ramo não é histórico: três cadastros com um comprador não viram setor … |
 | `tests/lib/format-utils.test.ts` | 8 | formatCurrency · formats zero · formats positive values · formats negative values … |
 | `tests/lib/overlay.test.tsx` | 8 | overlay — detecção com componentes Radix reais · tooltip aberto NÃO conta como overlay · popover aberto conta como overlay · dialog Radix real fecha com dismissTopmostOverlay … |
 | `tests/lib/product-record-images.test.ts` | 8 | resolveProductRecordImages · assina as referencias privadas guardadas no proprio registro do produto · mantem o valor original quando o storage nao consegue assinar · resolveProductImageRecords … |
@@ -6047,8 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
-| `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
-| … +451 linhas — lista completa em `context.json` | | |
+| … +453 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6500,6 +6500,7 @@ _nenhum item encontrado_
 | * Falha de consulta nunca deve ser serializada como um cliente sem compras. */ | `src/hooks/bi/useClientBI.ts` |
 | * Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */ | `src/hooks/bi/useClientHealthScore.ts` |
 | A falha do histórico não pode ser interpretada como zero compras/risco. | `src/hooks/bi/useClientHealthScore.ts` |
+| * Empresas do ramo com histórico mínimo para o setor virar comparação de mercado. | `src/hooks/bi/useClientSeasonality.ts` |
 | apenas contra a carteira — o contrato não aplica `is_customer` aqui. | `src/hooks/bi/useClientVsIndustry.ts` |
 | (industryError/CRM) nao pode esconder um numero que foi medido. O aviso e o | `src/hooks/bi/useClientsComparison.ts` |
 | * Amostra setorial insuficiente (`companiesInRamo` abaixo do mínimo) não vira tendência. */ | `src/hooks/bi/useIndustryTrends.ts` |
@@ -6535,5 +6536,4 @@ _nenhum item encontrado_
 | - >4 chars → mantém apenas os últimos 4 (ex: "abcdef" → "cdef") | `src/lib/masked-suffix.ts` |
 | e fornece uma mensagem orientando o que o usuário deve fazer. | `src/lib/masked-suffix.ts` |
 | Conteúdo em animação de fechamento já não deve segurar a navegação. | `src/lib/overlay.ts` |
-| O evento vai marcado: quem tem atalho destrutivo em Escape deve | `src/lib/overlay.ts` |
-| … +330 linhas — lista completa em `context.json` | |
+| … +331 linhas — lista completa em `context.json` | |

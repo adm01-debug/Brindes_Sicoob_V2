@@ -2373,7 +2373,7 @@
    "hooks_exportados": [
     "useClientSeasonality"
    ],
-   "linhas": 371,
+   "linhas": 465,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [
@@ -2397,7 +2397,7 @@
     "src/lib/bi/pptxGenerator.ts",
     "src/pages/BusinessIntelligencePage.tsx"
    ],
-   "coberto_por_testes": 4
+   "coberto_por_testes": 6
   },
   {
    "arquivo": "src/hooks/bi/useClientVsIndustry.ts",
