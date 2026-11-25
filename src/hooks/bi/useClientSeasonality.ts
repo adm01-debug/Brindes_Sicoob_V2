@@ -49,6 +49,11 @@ export interface SeasonalityResult {
   industryError: unknown;
   isMock: boolean;
   hasEnoughData: boolean;
+  /** O cliente tem compras medidas na janela. */
+  hasClientData: boolean;
+  /** O setor tem pelo menos `MIN_SECTOR_COMPANIES` empresas com histórico: só aí vira mercado. */
+  hasIndustryData: boolean;
+  dataStatus: "available" | "insufficient";
   monthsCovered: number;
   windowMonths: number;
   client: ClientMonthCell[]; // sempre 12 posições, Jan→Dez
@@ -76,6 +81,12 @@ interface IndustryRow {
 }
 
 const WINDOW_MONTHS = 24;
+/**
+ * Empresas do ramo com histórico mínimo para o setor virar comparação de mercado.
+ * Abaixo disso a média é de uma ou duas empresas, não do setor: a tela chamava
+ * isso de sazonalidade do mercado.
+ */
+const MIN_SECTOR_COMPANIES = 3;
 
 interface ClientAccumulator {
   q: number;
@@ -169,6 +180,33 @@ function industryMonthCell(
   };
 }
 
+function hasClientActivity(cells: ClientMonthCell[]): boolean {
+  return cells.some((c) => c.quotesCount > 0);
+}
+
+function resolveDataStatus(hasClientData: boolean, hasIndustryData: boolean): SeasonalityResult["dataStatus"] {
+  if (hasClientData && hasIndustryData) return "available";
+  return "insufficient";
+}
+
+/**
+ * Setor só vira comparação de mercado com amostra mínima: `companiesCount` era recebido
+ * e ignorado, então a média de uma ou duas empresas aparecia como "sazonalidade do setor".
+ */
+function resolveIndustrySample(
+  rows: IndustryRow[] | undefined,
+  companiesCount: number | undefined,
+): { industry: IndustryMonthCell[]; hasIndustryData: boolean } {
+  if ((companiesCount ?? 0) < MIN_SECTOR_COMPANIES) return { industry: zeroIndustryCells(), hasIndustryData: false };
+  const measured = buildIndustryCells(rows ?? []);
+  if (!measured.some((c) => c.avgQuotesPerCompany > 0)) return { industry: zeroIndustryCells(), hasIndustryData: false };
+  return { industry: measured, hasIndustryData: true };
+}
+
+function zeroIndustryCells(): IndustryMonthCell[] {
+  return Array.from({ length: 12 }, (_, i) => industryMonthCell(i + 1, { q: 0, r: 0 }, 0, 0));
+}
+
 function peakResult(
   client: ClientMonthCell[],
   industry: IndustryMonthCell[],
@@ -213,6 +251,9 @@ export function resolveSeasonalityResult(
       isLoading: false,
       isMock: true,
       hasEnoughData: true,
+      hasClientData: true,
+      hasIndustryData: true,
+      dataStatus: "available",
       monthsCovered: WINDOW_MONTHS,
       windowMonths: WINDOW_MONTHS,
       industryError: undefined,
@@ -220,9 +261,16 @@ export function resolveSeasonalityResult(
   }
 
   const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
-  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
+  const hasClientData = hasClientActivity(client);
+  const { industry, hasIndustryData } = resolveIndustrySample(data?.industryRows, data?.companiesCount);
   const base = {
-    isLoading, monthsCovered, windowMonths: WINDOW_MONTHS, industryError: data?.industryError,
+    isLoading,
+    monthsCovered,
+    windowMonths: WINDOW_MONTHS,
+    industryError: data?.industryError,
+    hasClientData,
+    hasIndustryData,
+    dataStatus: resolveDataStatus(hasClientData, hasIndustryData),
   };
   if (monthsCovered < 3) {
     return {
@@ -230,7 +278,7 @@ export function resolveSeasonalityResult(
       isMock: false,
       hasEnoughData: false,
       client,
-      industry: realIndustry,
+      industry,
       topClientMonths: [],
       topIndustryMonths: [],
       nextPeakMonth: null,
@@ -238,7 +286,7 @@ export function resolveSeasonalityResult(
       insight: null,
     };
   }
-  return peakResult(client, realIndustry, { ...base, isMock: false, hasEnoughData: true });
+  return peakResult(client, industry, { ...base, isMock: false, hasEnoughData: true });
 }
 
 function pickTop<T extends { quotesCount?: number; avgQuotesPerCompany?: number }>(
