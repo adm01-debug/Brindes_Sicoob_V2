@@ -53316,6 +53316,10 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/db/apply-sicoob-migrations.mjs",
+              "hits": 8
+            },
+            {
               "file": "supabase/functions/cleanup-notifications/index.ts",
               "hits": 1
             },
@@ -53340,7 +53344,7 @@
               "hits": 1
             }
           ],
-          "code_total_files": 6,
+          "code_total_files": 7,
           "cron": [
             "8:cleanup-old-notifications"
           ],

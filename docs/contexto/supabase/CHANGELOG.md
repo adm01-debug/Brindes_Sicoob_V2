@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-25 13:19 UTC
+
+- **functions** alterado (1): `public.cleanup_old_notifications()`
+
 ## 2026-11-25 11:18 UTC
 
 - **colunas** adicionado (10): `public.push_subscriptions.auth`, `public.push_subscriptions.created_at`, `public.push_subscriptions.device_type`, `public.push_subscriptions.endpoint`, `public.push_subscriptions.id`, `public.push_subscriptions.is_active`, `public.push_subscriptions.last_used_at`, `public.push_subscriptions.p256dh`, `public.push_subscriptions.user_agent`, `public.push_subscriptions.user_id`

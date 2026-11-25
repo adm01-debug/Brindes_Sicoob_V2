@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5",
+  "sha": "8f7aeebac6dd7ae2017da5c51b0d0d1ecd1fe4f0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 11:55 UTC",
-  "files_total": 5306,
-  "code_files": 3867,
-  "code_lines": 570786
+  "generated_at": "2026-11-25 13:17 UTC",
+  "files_total": 5307,
+  "code_files": 3868,
+  "code_lines": 570958
  },
  "version": "1.3.2",
- "facts_hash": "9535cca86203620f",
+ "facts_hash": "7a0757318e20e21f",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -358,7 +358,7 @@
    ".ts": 1503,
    ".tsx": 1469,
    ".sql": 692,
-   ".mjs": 141,
+   ".mjs": 142,
    ".py": 69,
    ".cjs": 7,
    ".js": 6
@@ -65167,7 +65167,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40241,
+   "lines": 40298,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67181,8 +67181,8 @@
   },
   {
    "module": "tests",
-   "files": 694,
-   "lines": 93819,
+   "files": 695,
+   "lines": 93934,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -71547,6 +71547,9 @@
    "SICOOB_QA_USER_PASSWORD": [
     "supabase/functions/sicoob-seed-qa/index.ts"
    ],
+   "SICOOB_TEST_DATABASE_URL": [
+    "tests/scenarios/notification-guard-postgres.scenario.mjs"
+   ],
    "SICOOB_TEST_EMAIL_CENTRAL": [
     "supabase/functions/sicoob-seed/index.ts"
    ],
@@ -75675,6 +75678,10 @@
    {
     "file": "scripts/db/apply-sicoob-migrations.mjs",
     "msg": "Conteúdo divergente no ledger para ${target.version}."
+   },
+   {
+    "file": "scripts/db/apply-sicoob-migrations.mjs",
+    "msg": "Contrato de cleanup_old_notifications violado: ${falhas.join("
    },
    {
     "file": "scripts/db/apply-sicoob-migrations.mjs",
@@ -169633,6 +169640,7 @@
    "tests/scenarios/access-log-marketing-acl.scenario.mjs",
    "tests/scenarios/core-rls-audit.scenario.mjs",
    "tests/scenarios/notificacoes-aprovacao.mjs",
+   "tests/scenarios/notification-guard-postgres.scenario.mjs",
    "tests/scenarios/operacoes-internas-seguras.mjs",
    "tests/scenarios/relatorios-agendados-cron.mjs",
    "tests/scenarios/sql/access-log-marketing-acl-fixture.sql",
@@ -184592,7 +184600,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1542,
+   "lines": 1599,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -184611,6 +184619,7 @@
     "Allowlist incompleta para validar os corpos das funções críticas.",
     "Bloco $${marker}$ não encontrado no patch do monitor.",
     "Conteúdo divergente no ledger para ${target.version}.",
+    "Contrato de cleanup_old_notifications violado: ${falhas.join(",
     "Corpo autorizado não encontrado para public.${functionName}.",
     "Hash não autorizado para ${filename}: ${actualHash}",
     "Ledger não registrou: ${missing.map((item) => item.version).join(",
@@ -184634,7 +184643,8 @@
     "* Aplica somente migrations explicitamente autorizadas no banco de construção.",
     "A conexão efetiva sempre usa validação completa do certificado, mesmo se",
     "o secret legado omitir sslmode ou declarar apenas `require`.",
-    "guardar o corpo copiado e mantém a validação por igualdade total (hash)."
+    "guardar o corpo copiado e mantém a validação por igualdade total (hash).",
+    "no banco, em vez de aceitar apenas a linha do ledger."
    ],
    "doc": "!/usr/bin/env node",
    "calc_fns": [
@@ -184657,6 +184667,11 @@
      "name": "validateLedger",
      "params": "targets, applied",
      "body": "for (const target of targets) { const row = applied.get(target.version); if (!row) continue; if (row.name !== target.name) { throw new Error(`Nome divergente no ledger para ${target.version}: ${row.name}.`); } if (!Array.isArray(row.statements)) { throw new Error(`Statements ausentes no ledger para ${target.version}.`); } const hashMarker = row.statements.length === 1 ? LEDGER_HASH_MARKER.exec(row.statements[0].trim()) : null; if (hashMarker) { if (hashMarker[1] !== target.sha256) { throw new Er …"
+    },
+    {
+     "name": "validateNotificationFunctionContract",
+     "params": "client",
+     "body": "const { rows } = await client.query(` SELECT to_regprocedure('public.cleanup_old_notifications()') IS NOT NULL AS funcao_existe, COALESCE((SELECT p.prorettype = 'void'::regtype FROM pg_proc p WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')), false) AS retorna_void, COALESCE((SELECT p.prosecdef FROM pg_proc p WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')), false) AS security_definer, COALESCE((SELECT p.proconfig @> ARRAY['search_path=public']::text[] FROM …"
     },
     {
      "name": "validateContract",
@@ -257038,6 +257053,15 @@
    ],
    "uses_service_role": true
   },
+  "tests/scenarios/notification-guard-postgres.scenario.mjs": {
+   "path": "tests/scenarios/notification-guard-postgres.scenario.mjs",
+   "lines": 96,
+   "env": [
+    "SICOOB_TEST_DATABASE_URL"
+   ],
+   "doc": "Executado pelo node:test. Precisa de um PostgreSQL descartável em SICOOB_TEST_DATABASE_URL; sem a variável o caso é pulado, para não exigir servidor de banco no runner padrão.",
+   "uses_service_role": true
+  },
   "tests/scenarios/operacoes-internas-seguras.mjs": {
    "path": "tests/scenarios/operacoes-internas-seguras.mjs",
    "lines": 158,
@@ -257075,7 +257099,7 @@
   },
   "tests/scenarios/supabase-sql-client.scenario.mjs": {
    "path": "tests/scenarios/supabase-sql-client.scenario.mjs",
-   "lines": 111,
+   "lines": 130,
    "errors": [
     "permissão insuficiente"
    ],
@@ -259489,10 +259513,21 @@
   }
  },
  "git": {
-  "sha": "afdb894348e0b664d7348bc6b62ce8f2d1e3dbb5",
+  "sha": "8f7aeebac6dd7ae2017da5c51b0d0d1ecd1fe4f0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "8f7aeeb",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)",
+    "files": [
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "tests/scenarios/notification-guard-postgres.scenario.mjs",
+     "tests/scenarios/supabase-sql-client.scenario.mjs"
+    ]
+   },
    {
     "sha": "afdb894",
     "date": "2026-11-25",
@@ -259898,28 +259933,19 @@
      "scripts/ci/verify-supabase-functions-published.mjs",
      "tests/scripts/verify-supabase-functions-published.test.ts"
     ]
-   },
-   {
-    "sha": "b7680fb",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "fix: reduz complexidade do OrderInvoicesTab para dentro do limite (#408)",
-    "files": [
-     "src/components/sicoob/orders/OrderInvoicesTab.tsx"
-    ]
    }
   ],
   "hot_files": [
+   [
+    "scripts/db/apply-sicoob-migrations.mjs",
+    4
+   ],
    [
     "src/pages/KitBuilderPage.tsx",
     4
    ],
    [
     "docs/agentes/banco.md",
-    3
-   ],
-   [
-    "scripts/db/apply-sicoob-migrations.mjs",
     3
    ],
    [

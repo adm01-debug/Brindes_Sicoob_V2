@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `afdb894348` · branch `main` · 2026-11-25 11:55 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8f7aeebac6` · branch `main` · 2026-11-25 13:17 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5408,6 +5408,7 @@ _nenhum item encontrado_
 | Allowlist incompleta para validar os corpos das funções críticas. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Bloco $${marker}$ não encontrado no patch do monitor. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Conteúdo divergente no ledger para ${target.version}. | `scripts/db/apply-sicoob-migrations.mjs` |
+| Contrato de cleanup_old_notifications violado: ${falhas.join( | `scripts/db/apply-sicoob-migrations.mjs` |
 | Corpo autorizado não encontrado para public.${functionName}. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Hash não autorizado para ${filename}: ${actualHash} | `scripts/db/apply-sicoob-migrations.mjs` |
 | Ledger não registrou: ${missing.map((item) => item.version).join( | `scripts/db/apply-sicoob-migrations.mjs` |
@@ -5638,8 +5639,7 @@ _nenhum item encontrado_
 | Erro ao atualizar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao remover localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1011 linhas — lista completa em `context.json` | |
+| … +1012 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
