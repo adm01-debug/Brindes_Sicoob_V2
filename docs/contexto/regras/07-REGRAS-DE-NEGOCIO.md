@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e42cc6ac45` · branch `main` · 2026-11-25 21:09 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `2701a09b27` · branch `main` · 2026-11-25 21:37 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5639,7 +5639,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1017 linhas — lista completa em `context.json` | |
+| … +1019 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7349 testes em 753 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7361 testes em 756 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6048,7 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
-| … +453 linhas — lista completa em `context.json` | | |
+| … +456 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6308,6 +6308,7 @@ _nenhum item encontrado_
 | Uma imagem remota inválida não deve interromper a exportação dos demais produtos. | `src/components/collections/ExportCollectionButton.tsx` |
 | * Ctrl/Cmd+K não pode roubar o foco de quem está digitando: em campo de | `src/components/command/GlobalCommandBar.tsx` |
 | Recents — também filtrados por permissão (recente pode ter sido | `src/components/command/GlobalCommandBar.tsx` |
+| Sem selo algum o erro não pode sumir: parte das consultas pode ter falhado com a | `src/components/common/IntelligenceBadges.tsx` |
 | permissão. Ações puramente locais (toggle de tema, abrir help) podem | `src/components/common/spotlight/SpotlightItems.ts` |
 | Admin (visível apenas a admin/dev — filtrado em runtime) | `src/components/common/spotlight/SpotlightItems.ts` |
 | Dev / Técnico (visível apenas a dev — filtrado em runtime) | `src/components/common/spotlight/SpotlightItems.ts` |
@@ -6469,6 +6470,8 @@ _nenhum item encontrado_
 | Resolucao tolerante por campo: um original removido nao pode descartar as | `src/hooks/useProductImages.ts` |
 | * Busca apenas a imagem principal de um produto | `src/hooks/useProductImages.ts` |
 | * Hook para buscar apenas a imagem principal | `src/hooks/useProductImages.ts` |
+| Falha de uma das consultas não pode virar "produto sem indicadores": o painel | `src/hooks/useProductIntelligenceBadges.ts` |
+| só vale quando há selo/valor na tela — e isso vem apenas da inteligência. | `src/hooks/useProductIntelligenceBadges.ts` |
 | campos depois do snapshot inicial e isso não pode contar como "alteração | `src/hooks/useQuoteBuilderState.ts` |
 | * Status que a tela deve passar a considerar vigente, ou `null` quando nada | `src/hooks/useQuoteBuilderState.ts` |
 | trabalho não salvo e não pode ser levada embora na saída para o detalhe. | `src/hooks/useQuoteBuilderState.ts` |
@@ -6533,7 +6536,4 @@ _nenhum item encontrado_
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
 | Sem dependências externas; apenas Canvas API. | `src/lib/kit-og-image.ts` |
 | Se já estourou o limite de reloads na janela, propaga o erro para | `src/lib/lazyWithRetry.ts` |
-| - >4 chars → mantém apenas os últimos 4 (ex: "abcdef" → "cdef") | `src/lib/masked-suffix.ts` |
-| e fornece uma mensagem orientando o que o usuário deve fazer. | `src/lib/masked-suffix.ts` |
-| Conteúdo em animação de fechamento já não deve segurar a navegação. | `src/lib/overlay.ts` |
-| … +331 linhas — lista completa em `context.json` | |
+| … +334 linhas — lista completa em `context.json` | |

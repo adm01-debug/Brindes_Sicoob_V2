@@ -3163,7 +3163,9 @@
    "src/utils/image-utils.ts"
   ],
   "src/components/common/IntelligenceBadges.tsx": [
+   "src/components/ui/alert.tsx",
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/tooltip.tsx",
    "src/hooks/useProductIntelligenceBadges.ts",
    "src/lib/utils.ts"

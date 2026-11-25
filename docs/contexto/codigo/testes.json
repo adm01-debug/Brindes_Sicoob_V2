@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 940,
+ "total": 943,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 706
+  "unit": 709
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 687
+   "arquivos": 690
   },
   {
    "padrao": "e2e/",
@@ -2514,6 +2514,17 @@
     "src/components/common/EnhancedSpotlight.tsx"
    ],
    "casos": 6
+  },
+  {
+   "arquivo": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+   "tipo": "unit",
+   "linhas": 83,
+   "testa": [
+    "src/components/common/IntelligenceBadges.tsx",
+    "src/components/ui/tooltip.tsx",
+    "src/hooks/useProductIntelligenceBadges.ts"
+   ],
+   "casos": 4
   },
   {
    "arquivo": "tests/components/data-trust-indicators.test.tsx",
@@ -5135,6 +5146,16 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+   "tipo": "unit",
+   "linhas": 92,
+   "testa": [
+    "src/hooks/useProductIntelligenceBadges.ts",
+    "src/hooks/useStockHistory.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/hooks/useProductMatch-gaps.test.ts",
    "tipo": "unit",
    "linhas": 140,
@@ -6677,6 +6698,16 @@
     "src/pages/OrdersPage.tsx"
    ],
    "casos": 7
+  },
+  {
+   "arquivo": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+   "tipo": "unit",
+   "linhas": 143,
+   "testa": [
+    "src/components/ui/tooltip.tsx",
+    "src/pages/ProductDetail.tsx"
+   ],
+   "casos": 2
   },
   {
    "arquivo": "tests/pages/ProductDetail.test.ts",
@@ -8297,6 +8328,7 @@
   "src/components/common/EnhancedSpotlight.tsx": 1,
   "src/components/common/ErrorBoundary.tsx": 1,
   "src/components/common/GlobalConfirmDialog.tsx": 2,
+  "src/components/common/IntelligenceBadges.tsx": 1,
   "src/components/common/NavigationHistoryMenu.tsx": 1,
   "src/components/common/SocialProof.tsx": 2,
   "src/components/common/UnsavedChangesDialog.tsx": 1,
@@ -8406,7 +8438,7 @@
   "src/components/ui/label.tsx": 1,
   "src/components/ui/popover.tsx": 2,
   "src/components/ui/scroll-area.tsx": 1,
-  "src/components/ui/tooltip.tsx": 30,
+  "src/components/ui/tooltip.tsx": 32,
   "src/components/workflows/WorkflowEditDialog.tsx": 1,
   "src/constants/filters.ts": 1,
   "src/contexts/AuthContext.tsx": 11,
@@ -8508,7 +8540,7 @@
   "src/hooks/usePrintAreas.ts": 1,
   "src/hooks/useProductAnalytics.ts": 1,
   "src/hooks/useProductCustomizationOptions.ts": 1,
-  "src/hooks/useProductIntelligenceBadges.ts": 2,
+  "src/hooks/useProductIntelligenceBadges.ts": 4,
   "src/hooks/useProductMatch.ts": 1,
   "src/hooks/useProducts.ts": 7,
   "src/hooks/useProductsByCategory.ts": 1,
@@ -8539,7 +8571,7 @@
   "src/hooks/useSmartNavigation.ts": 2,
   "src/hooks/useSparklineSales.tsx": 1,
   "src/hooks/useSpeechRecognition.ts": 1,
-  "src/hooks/useStockHistory.ts": 1,
+  "src/hooks/useStockHistory.ts": 2,
   "src/hooks/useSupplierComparison.ts": 2,
   "src/hooks/useTechniquePricing.ts": 1,
   "src/hooks/useTemplateSnapshot.ts": 1,
@@ -8648,6 +8680,7 @@
   "src/pages/NotFound.tsx": 2,
   "src/pages/OrdersPage.tsx": 1,
   "src/pages/PWAInstallPage.tsx": 1,
+  "src/pages/ProductDetail.tsx": 1,
   "src/pages/PublicFavoriteListPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
   "src/pages/QuoteBuilderPage.tsx": 1,
@@ -8802,7 +8835,6 @@
    "src/pages/OrderDetailPage.tsx",
    "src/pages/PermissionsPage.tsx",
    "src/pages/PriceSimulatorPage.tsx",
-   "src/pages/ProductDetail.tsx",
    "src/pages/ProductMatchPage.tsx",
    "src/pages/PublicCollectionPage.tsx",
    "src/pages/PublicComparisonPage.tsx",

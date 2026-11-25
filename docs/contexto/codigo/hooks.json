@@ -7094,12 +7094,13 @@
    "hooks_exportados": [
     "useProductIntelligenceBadges"
    ],
-   "linhas": 172,
+   "linhas": 208,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
    "edges": [],
    "hooks_internos": [
+    "useCallback",
     "useMemo",
     "useProductIntelligenceData",
     "useStockVelocity"
@@ -7110,7 +7111,7 @@
     "src/components/common/IntelligenceBadges.tsx",
     "src/pages/ProductDetail.tsx"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 4
   },
   {
    "arquivo": "src/hooks/useProductMatch.ts",
@@ -8750,7 +8751,7 @@
     "src/hooks/useProductIntelligenceBadges.ts",
     "src/lib/stock-chart-utils.ts"
    ],
-   "coberto_por_testes": 1
+   "coberto_por_testes": 2
   },
   {
    "arquivo": "src/hooks/useSupplierComparison.ts",

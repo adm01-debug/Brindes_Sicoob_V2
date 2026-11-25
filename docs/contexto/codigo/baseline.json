@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e42cc6ac4580485df62187879ca7b2aa15e1786e",
+  "commit": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
   "branch": "main",
-  "data_commit": "2026-11-25T21:08:34Z",
+  "data_commit": "2026-11-25T21:35:25Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "2701a09",
+    "data": "2026-11-25",
+    "assunto": "fix: erro e vazio nos selos de inteligencia do produto (#448)"
+   },
    {
     "sha": "e42cc6a",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "dffd62e",
     "data": "2026-11-24",
     "assunto": "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)"
-   },
-   {
-    "sha": "bc7da67",
-    "data": "2026-11-24",
-    "assunto": "fix: trava otimista também no salvamento manual do kit (#428)"
    }
   ],
-  "arquivos_mudados_7d": 1204,
+  "arquivos_mudados_7d": 1208,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 227
+    "commits": 228
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5319,
-  "arquivos_codigo": 3208,
-  "linhas_codigo": 508161,
+  "arquivos_total": 5322,
+  "arquivos_codigo": 3211,
+  "linhas_codigo": 508601,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 940,
+  "testes": 943,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167953
+   "linhas": 168019
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48682
+   "linhas": 48718
   },
   "src/integrations": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51517
+   "linhas": 51537
   },
   "src/routes": {
    "arquivos": 9,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 166,
-   "linhas": 29728
+   "arquivos": 167,
+   "linhas": 29811
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 159,
-   "linhas": 18457
+   "arquivos": 160,
+   "linhas": 18549
   },
   "tests/integration": {
    "arquivos": 4,
@@ -947,8 +947,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 31,
-   "linhas": 3577
+   "arquivos": 32,
+   "linhas": 3720
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

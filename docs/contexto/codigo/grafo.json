@@ -2,11 +2,11 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2268,
- "arestas": 9217,
+ "arestas": 9219,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 637
+   "importado_por": 638
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -30,7 +30,7 @@
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
-   "importado_por": 184
+   "importado_por": 186
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
@@ -117,12 +117,12 @@
    "importado_por": 39
   },
   {
-   "arquivo": "src/hooks/use-toast.ts",
+   "arquivo": "src/components/ui/alert.tsx",
    "importado_por": 37
   },
   {
-   "arquivo": "src/components/ui/alert.tsx",
-   "importado_por": 36
+   "arquivo": "src/hooks/use-toast.ts",
+   "importado_por": 37
   },
   {
    "arquivo": "src/components/ui/alert-dialog.tsx",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e42cc6ac4580485df62187879ca7b2aa15e1786e",
+  "sha": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 21:09 UTC",
-  "files_total": 5322,
-  "code_files": 3882,
-  "code_lines": 572738
+  "generated_at": "2026-11-25 21:37 UTC",
+  "files_total": 5325,
+  "code_files": 3885,
+  "code_lines": 573178
  },
  "version": "1.3.2",
- "facts_hash": "59d446d5b9ffe729",
+ "facts_hash": "105b099098c532f8",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1507,
-   ".tsx": 1478,
+   ".tsx": 1481,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -57171,7 +57171,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 177
+    "deps_count": 178
    },
    {
     "path": "",
@@ -58033,6 +58033,31 @@
     "invokes_transitive": [],
     "rpc_transitive": [],
     "deps_count": 40
+   },
+   {
+    "path": "",
+    "file": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    "component": "ProductDetail.intelligence-errors.test",
+    "tables_transitive": [
+     "order_items",
+     "orders",
+     "product_price_freshness_overrides",
+     "product_views",
+     "profiles",
+     "quote_items",
+     "quotes",
+     "seller_cart_items",
+     "seller_carts",
+     "user_onboarding"
+    ],
+    "invokes_transitive": [
+     "external-db-bridge",
+     "log-login-attempt"
+    ],
+    "rpc_transitive": [
+     "get_sicoob_access_state"
+    ],
+    "deps_count": 149
    },
    {
     "path": "",
@@ -62595,7 +62620,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1302,
+  "components_count": 1303,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65419,7 +65444,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167953,
+   "lines": 168019,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65752,7 +65777,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48682,
+   "lines": 48718,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66198,7 +66223,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51517,
+   "lines": 51537,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67197,8 +67222,8 @@
   },
   {
    "module": "tests",
-   "files": 709,
-   "lines": 95307,
+   "files": 712,
+   "lines": 95625,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -77262,6 +77287,14 @@
     "msg": "Erro ao revogar: ${(e as Error).message}"
    },
    {
+    "file": "src/components/common/IntelligenceBadges.tsx",
+    "msg": ";\nimport { Button } from "
+   },
+   {
+    "file": "src/components/common/IntelligenceBadges.tsx",
+    "msg": ">\n      <AlertCircle className="
+   },
+   {
     "file": "src/components/compare/AIComparisonAdvisor.tsx",
     "msg": "Créditos de IA esgotados. Contate o administrador."
    },
@@ -81374,6 +81407,10 @@
     "text": "Recents — também filtrados por permissão (recente pode ter sido"
    },
    {
+    "file": "src/components/common/IntelligenceBadges.tsx",
+    "text": "Sem selo algum o erro não pode sumir: parte das consultas pode ter falhado com a"
+   },
+   {
     "file": "src/components/common/spotlight/SpotlightItems.ts",
     "text": "permissão. Ações puramente locais (toggle de tema, abrir help) podem"
    },
@@ -82016,6 +82053,14 @@
    {
     "file": "src/hooks/useProductImages.ts",
     "text": "* Hook para buscar apenas a imagem principal"
+   },
+   {
+    "file": "src/hooks/useProductIntelligenceBadges.ts",
+    "text": "Falha de uma das consultas não pode virar \"produto sem indicadores\": o painel"
+   },
+   {
+    "file": "src/hooks/useProductIntelligenceBadges.ts",
+    "text": "só vale quando há selo/valor na tela — e isso vem apenas da inteligência."
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
@@ -122179,6 +122224,26 @@
     "name": "abre a impressão do navegador ao salvar a página como PDF"
    },
    {
+    "file": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "name": "IntelligenceBadges — erro e dados de mercado"
+   },
+   {
+    "file": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "name": "mostra erro, mantém indicador em cache e dispara retry"
+   },
+   {
+    "file": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "name": "distingue falha sem cache de ausência de dados confirmada"
+   },
+   {
+    "file": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "name": "não perde aviso e retentativa quando a falha não deixa selo algum"
+   },
+   {
+    "file": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    "name": "acompanha os selos de cadastro com o aviso de falha e com a ausência de mercado"
+   },
+   {
     "file": "tests/components/expert/ExpertChatDialog.test.tsx",
     "name": "ExpertChatDialog"
    },
@@ -130907,6 +130972,22 @@
     "name": "adapta payload PT canônico em estrutura normalizada"
    },
    {
+    "file": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    "name": "useProductIntelligenceBadges — o que conta como indicador de mercado"
+   },
+   {
+    "file": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    "name": "velocidade sozinha nao autoriza o aviso de "
+   },
+   {
+    "file": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    "name": "velocidade respondida com inteligência vazia não é ausência de dados"
+   },
+   {
+    "file": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    "name": "inteligência presente mantém o aviso de dado já medido mesmo com falha"
+   },
+   {
     "file": "tests/hooks/useProductMatch-gaps.test.ts",
     "name": "FIX 1: useSupplierComparison — price zero guard"
    },
@@ -138433,6 +138514,18 @@
    {
     "file": "tests/pages/PWAInstallPage.test.tsx",
     "name": "já instalado, não repete a oferta de instalação"
+   },
+   {
+    "file": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    "name": "ProductDetail — falhas dos indicadores de inteligência"
+   },
+   {
+    "file": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    "name": "mostra indisponibilidade e retry sem declarar vazio quando não há cache"
+   },
+   {
+    "file": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    "name": "mantém badges stale e informa falha parcial; vazio só aparece após resposta confirmada"
    },
    {
     "file": "tests/pages/ProductDetail.test.ts",
@@ -195572,9 +195665,13 @@
   },
   "src/components/common/IntelligenceBadges.tsx": {
    "path": "src/components/common/IntelligenceBadges.tsx",
-   "lines": 125,
+   "lines": 191,
    "exports": [
     "function IntelligenceBadges"
+   ],
+   "errors": [
+    ";\nimport { Button } from ",
+    ">\n      <AlertCircle className="
    ],
    "params": [
     {
@@ -195588,6 +195685,9 @@
      "value": "spring",
      "kind": "escreve"
     }
+   ],
+   "rule_comments": [
+    "Sem selo algum o erro não pode sumir: parte das consultas pode ter falhado com a"
    ],
    "doc": "IntelligenceBadges — renders market intelligence badges on product pages. Data-driven from useProductIntelligenceBadges hook.",
    "percents": [
@@ -212215,11 +212315,12 @@
   },
   "src/hooks/useProductIntelligenceBadges.ts": {
    "path": "src/hooks/useProductIntelligenceBadges.ts",
-   "lines": 172,
+   "lines": 208,
    "exports": [
     "type IntelligenceBadgeType",
     "interface IntelligenceBadge",
     "interface CatalogFlags",
+    "interface ProductIntelligenceBadgesData",
     "interface ProductIntelligenceBadgesResult",
     "function buildBadgeResult",
     "function useProductIntelligenceBadges"
@@ -212265,6 +212366,10 @@
      "value": "last-units",
      "kind": "escreve"
     }
+   ],
+   "rule_comments": [
+    "Falha de uma das consultas não pode virar \"produto sem indicadores\": o painel",
+    "só vale quando há selo/valor na tela — e isso vem apenas da inteligência."
    ],
    "doc": "Hook that derives visual badges from market intelligence data + catalog flags. Uses real data from mv_product_intelligence + mv_stock_velocity. Market badges are omitted until the source views return real data. Also incorporates catalog flags (featured, newArrival, onSale) from product data.",
    "hooks": [
@@ -223926,7 +224031,7 @@
   },
   "src/pages/ProductDetail.tsx": {
    "path": "src/pages/ProductDetail.tsx",
-   "lines": 418,
+   "lines": 438,
    "exports": [
     "function ProductDetail"
    ],
@@ -248632,6 +248737,22 @@
     "abre a impressão do navegador ao salvar a página como PDF"
    ]
   },
+  "tests/components/common/IntelligenceBadges.errors.test.tsx": {
+   "path": "tests/components/common/IntelligenceBadges.errors.test.tsx",
+   "lines": 83,
+   "is_test": true,
+   "errors": [
+    ")).not.toBeInTheDocument();\n    expect(screen.getByRole(",
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "IntelligenceBadges — erro e dados de mercado",
+    "mostra erro, mantém indicador em cache e dispara retry",
+    "distingue falha sem cache de ausência de dados confirmada",
+    "não perde aviso e retentativa quando a falha não deixa selo algum",
+    "acompanha os selos de cadastro com o aviso de falha e com a ausência de mercado"
+   ]
+  },
   "tests/components/expert/ExpertChatDialog.test.tsx": {
    "path": "tests/components/expert/ExpertChatDialog.test.tsx",
    "lines": 50,
@@ -252902,6 +253023,21 @@
     "adapta payload PT canônico em estrutura normalizada"
    ]
   },
+  "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx": {
+   "path": "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+   "lines": 92,
+   "is_test": true,
+   "rule_comments": [
+    "Nada de mercado é renderizado sem inteligência: o aviso não pode prometer dado.",
+    "histórico. Não há aviso de erro, então `isEmpty` não pode ser falso por causa"
+   ],
+   "tests": [
+    "useProductIntelligenceBadges — o que conta como indicador de mercado",
+    "velocidade sozinha nao autoriza o aviso de ",
+    "velocidade respondida com inteligência vazia não é ausência de dados",
+    "inteligência presente mantém o aviso de dado já medido mesmo com falha"
+   ]
+  },
   "tests/hooks/useProductMatch-gaps.test.ts": {
    "path": "tests/hooks/useProductMatch-gaps.test.ts",
    "lines": 140,
@@ -256626,6 +256762,19 @@
     "já instalado, não repete a oferta de instalação"
    ]
   },
+  "tests/pages/ProductDetail.intelligence-errors.test.tsx": {
+   "path": "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+   "lines": 143,
+   "is_test": true,
+   "errors": [
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "ProductDetail — falhas dos indicadores de inteligência",
+    "mostra indisponibilidade e retry sem declarar vazio quando não há cache",
+    "mantém badges stale e informa falha parcial; vazio só aparece após resposta confirmada"
+   ]
+  },
   "tests/pages/ProductDetail.test.ts": {
    "path": "tests/pages/ProductDetail.test.ts",
    "lines": 240,
@@ -260035,10 +260184,25 @@
   }
  },
  "git": {
-  "sha": "e42cc6ac4580485df62187879ca7b2aa15e1786e",
+  "sha": "2701a09b27b299ba6cd86d6783576b9b4b1c17cd",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "2701a09",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: erro e vazio nos selos de inteligencia do produto (#448)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "src/components/common/IntelligenceBadges.tsx",
+     "src/hooks/useProductIntelligenceBadges.ts",
+     "src/pages/ProductDetail.tsx",
+     "tests/components/common/IntelligenceBadges.errors.test.tsx",
+     "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+     "tests/pages/ProductDetail.intelligence-errors.test.tsx"
+    ]
+   },
    {
     "sha": "e42cc6a",
     "date": "2026-11-25",
@@ -260375,22 +260539,12 @@
      "scripts/db/apply-sicoob-migrations.mjs",
      "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql"
     ]
-   },
-   {
-    "sha": "4621e75",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)",
-    "files": [
-     "tests/components/cart/cart-company-picker-dialog.error.test.tsx",
-     "tests/components/quotes/ReopenExpiredQuoteButton.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    6
+    7
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
@@ -260437,35 +260591,35 @@
     2
    ],
    [
+    "src/components/common/IntelligenceBadges.tsx",
+    1
+   ],
+   [
+    "src/hooks/useProductIntelligenceBadges.ts",
+    1
+   ],
+   [
+    "src/pages/ProductDetail.tsx",
+    1
+   ],
+   [
+    "tests/components/common/IntelligenceBadges.errors.test.tsx",
+    1
+   ],
+   [
+    "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
+    1
+   ],
+   [
+    "tests/pages/ProductDetail.intelligence-errors.test.tsx",
+    1
+   ],
+   [
     "src/components/bi/ClientSeasonalityHeatmap.tsx",
     1
    ],
    [
     "src/hooks/bi/useClientSeasonality.ts",
-    1
-   ],
-   [
-    "tests/components/bi/ClientSeasonalityHeatmap.industry-error.test.tsx",
-    1
-   ],
-   [
-    "tests/hooks/bi/useClientSeasonality.test.tsx",
-    1
-   ],
-   [
-    "tests/hooks/useClientSeasonality.real-data.test.ts",
-    1
-   ],
-   [
-    "src/components/quotes/QuoteProductSelector.tsx",
-    1
-   ],
-   [
-    "tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx",
-    1
-   ],
-   [
-    "src/contexts/AuthContext.tsx",
     1
    ]
   ]

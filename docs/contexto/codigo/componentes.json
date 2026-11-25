@@ -5519,7 +5519,7 @@
     "IntelligenceBadges"
    ],
    "export_default": null,
-   "linhas": 125,
+   "linhas": 191,
    "dominio": "components/common",
    "hooks_locais": [],
    "tabelas": [],
@@ -14891,7 +14891,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 36,
+   "usado_por": 37,
    "orfao": false
   },
   {
@@ -14957,7 +14957,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 633,
+   "usado_por": 634,
    "orfao": false
   },
   {
@@ -17803,7 +17803,7 @@
     "ProductDetail"
    ],
    "export_default": "ProductDetail",
-   "linhas": 418,
+   "linhas": 438,
    "dominio": "pages",
    "hooks_locais": [
     "useFavoritesStore",
