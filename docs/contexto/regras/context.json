@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
+  "sha": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 18:08 UTC",
-  "files_total": 5314,
-  "code_files": 3874,
-  "code_lines": 571926
+  "generated_at": "2026-11-25 20:04 UTC",
+  "files_total": 5315,
+  "code_files": 3875,
+  "code_lines": 572029
  },
  "version": "1.3.2",
- "facts_hash": "b4b8b2a6d88eeaa0",
+ "facts_hash": "1db31301ba013e83",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1504,
-   ".tsx": 1473,
+   ".tsx": 1474,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -58049,6 +58049,22 @@
    },
    {
     "path": "",
+    "file": "tests/pages/PublicFavoriteListPage.test.tsx",
+    "component": "PublicFavoriteListPage.test",
+    "tables_transitive": [
+     "favorite_item_reactions"
+    ],
+    "invokes_transitive": [
+     "external-db-bridge"
+    ],
+    "rpc_transitive": [
+     "get_public_favorite_list",
+     "get_public_favorite_reactions"
+    ],
+    "deps_count": 11
+   },
+   {
+    "path": "",
     "file": "tests/pages/QuoteApprovalPage.test.tsx",
     "component": "QuoteApprovalPage.test",
     "tables_transitive": [],
@@ -66182,7 +66198,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51499,
+   "lines": 51500,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67181,8 +67197,8 @@
   },
   {
    "module": "tests",
-   "files": 701,
-   "lines": 94650,
+   "files": 702,
+   "lines": 94752,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -138440,6 +138456,22 @@
    {
     "file": "tests/pages/ProductDetailHero.priceFreshness.test.tsx",
     "name": "uses the per-product threshold coming from the external DB"
+   },
+   {
+    "file": "tests/pages/PublicFavoriteListPage.test.tsx",
+    "name": "PublicFavoriteListPage"
+   },
+   {
+    "file": "tests/pages/PublicFavoriteListPage.test.tsx",
+    "name": "regete falha transitoria e mostra a lista quando o link publico responde"
+   },
+   {
+    "file": "tests/pages/PublicFavoriteListPage.test.tsx",
+    "name": "nao regete erro 4xx deterministico: uma chamada e a tela de erro"
+   },
+   {
+    "file": "tests/pages/PublicFavoriteListPage.test.tsx",
+    "name": "erro sem codigo conhecido segue o fallback da politica (2 reentregas)"
    },
    {
     "file": "tests/pages/QuoteApprovalPage.test.tsx",
@@ -223973,7 +224005,7 @@
   },
   "src/pages/PublicFavoriteListPage.tsx": {
    "path": "src/pages/PublicFavoriteListPage.tsx",
-   "lines": 375,
+   "lines": 376,
    "exports": [
     "function PublicFavoriteListPage"
    ],
@@ -256428,6 +256460,28 @@
     "uses the per-product threshold coming from the external DB"
    ]
   },
+  "tests/pages/PublicFavoriteListPage.test.tsx": {
+   "path": "tests/pages/PublicFavoriteListPage.test.tsx",
+   "lines": 102,
+   "is_test": true,
+   "errors": [
+    ")).toHaveTextContent("
+   ],
+   "rule_comments": [
+    "(`failureCount < 2`), so a regra de 5xx chega na 4a. Sucesso so na 4a",
+    "prova que e a regra de 503 que sustenta a reentrega."
+   ],
+   "temporal": [
+    "await screen.findByRole('heading', { name: 'Seleção recuperada' }, { timeout: 4000 }),",
+    "expect(await screen.findByRole('alert', {}, { timeout: 4000 })).toBeInTheDocument();"
+   ],
+   "tests": [
+    "PublicFavoriteListPage",
+    "regete falha transitoria e mostra a lista quando o link publico responde",
+    "nao regete erro 4xx deterministico: uma chamada e a tela de erro",
+    "erro sem codigo conhecido segue o fallback da politica (2 reentregas)"
+   ]
+  },
   "tests/pages/QuoteApprovalPage.test.tsx": {
    "path": "tests/pages/QuoteApprovalPage.test.tsx",
    "lines": 64,
@@ -259753,10 +259807,21 @@
   }
  },
  "git": {
-  "sha": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
+  "sha": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "3f6b0e0",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "src/pages/PublicFavoriteListPage.tsx",
+     "tests/pages/PublicFavoriteListPage.test.tsx"
+    ]
+   },
    {
     "sha": "950c2f5",
     "date": "2026-11-25",
@@ -260119,17 +260184,6 @@
      "tests/lib/saida-da-tela.test.ts",
      "tests/pages/kit-builder-guarda-saida.test.tsx"
     ]
-   },
-   {
-    "sha": "aac38a4",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "fix: busca global cai para o catálogo local quando a semântica falha (#414)",
-    "files": [
-     "src/components/search/GlobalSearchPaletteView.tsx",
-     "src/components/search/useGlobalSearch.ts",
-     "tests/components/search/useGlobalSearch-fallback.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -260138,16 +260192,16 @@
     4
    ],
    [
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
+    3
+   ],
+   [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
    ],
    [
     "docs/agentes/banco.md",
     3
-   ],
-   [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    2
    ],
    [
     "tests/scenarios/supabase-sql-client.scenario.mjs",

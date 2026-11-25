@@ -17913,7 +17913,7 @@
     "PublicFavoriteListPage"
    ],
    "export_default": "PublicFavoriteListPage",
-   "linhas": 375,
+   "linhas": 376,
    "dominio": "pages",
    "hooks_locais": [
     "useFavoriteReactions"

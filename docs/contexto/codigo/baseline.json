@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "950c2f51f63f7a02d0fdd89edf375c2bd003d26c",
+  "commit": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
   "branch": "main",
-  "data_commit": "2026-11-25T15:07:38-03:00",
+  "data_commit": "2026-11-25T20:01:09Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "3f6b0e0",
+    "data": "2026-11-25",
+    "assunto": "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)"
+   },
    {
     "sha": "950c2f5",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "667250f",
     "data": "2026-11-24",
     "assunto": "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)"
-   },
-   {
-    "sha": "4621e75",
-    "data": "2026-11-24",
-    "assunto": "fix: estabiliza os dois testes que reprovavam PRs verdes (#423)"
    }
   ],
-  "arquivos_mudados_7d": 1212,
+  "arquivos_mudados_7d": 1200,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 222
+    "commits": 223
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5311,
-  "arquivos_codigo": 3200,
-  "linhas_codigo": 507349,
+  "arquivos_total": 5312,
+  "arquivos_codigo": 3201,
+  "linhas_codigo": 507452,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 932,
+  "testes": 933,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51499
+   "linhas": 51500
   },
   "src/routes": {
    "arquivos": 9,
@@ -947,8 +947,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 29,
-   "linhas": 3446
+   "arquivos": 30,
+   "linhas": 3548
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

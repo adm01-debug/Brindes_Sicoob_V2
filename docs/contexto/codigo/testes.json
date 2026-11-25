@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 932,
+ "total": 933,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 698
+  "unit": 699
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 679
+   "arquivos": 680
   },
   {
    "padrao": "e2e/",
@@ -6633,6 +6633,16 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/pages/PublicFavoriteListPage.test.tsx",
+   "tipo": "unit",
+   "linhas": 102,
+   "testa": [
+    "src/lib/query-config.ts",
+    "src/pages/PublicFavoriteListPage.tsx"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/pages/PWAInstallPage.test.tsx",
    "tipo": "unit",
    "linhas": 68,
@@ -8531,7 +8541,7 @@
   "src/lib/print-area-grouping.ts": 1,
   "src/lib/private-storage.ts": 1,
   "src/lib/qa-seed.ts": 1,
-  "src/lib/query-config.ts": 2,
+  "src/lib/query-config.ts": 3,
   "src/lib/quote-status-config.ts": 1,
   "src/lib/quotes/quote-draft-scope.ts": 1,
   "src/lib/rbac/route-matrix.ts": 3,
@@ -8570,6 +8580,7 @@
   "src/pages/NotFound.tsx": 2,
   "src/pages/OrdersPage.tsx": 1,
   "src/pages/PWAInstallPage.tsx": 1,
+  "src/pages/PublicFavoriteListPage.tsx": 1,
   "src/pages/QuoteApprovalPage.tsx": 1,
   "src/pages/QuotesListPage.tsx": 1,
   "src/pages/TrendsPage.tsx": 1,
@@ -8727,7 +8738,6 @@
    "src/pages/PublicCollectionPage.tsx",
    "src/pages/PublicComparisonPage.tsx",
    "src/pages/PublicDossierPage.tsx",
-   "src/pages/PublicFavoriteListPage.tsx",
    "src/pages/PublicKitViewPage.tsx",
    "src/pages/QuoteBuilderPage.tsx",
    "src/pages/QuoteTemplatesPage.tsx",
