@@ -24,7 +24,7 @@ describe('janela de consulta do mercado macro', () => {
     invoke.mockReset();
   });
 
-  it('pede os registros mais recentes primeiro, porque o corte por periodo vem depois do limite', async () => {
+  it('pede os registros mais recentes primeiro, de forma paginada', async () => {
     invoke.mockResolvedValue({ records: [] });
 
     const { result } = renderHook(() => useMarketIntelligenceMacro(30), { wrapper });
