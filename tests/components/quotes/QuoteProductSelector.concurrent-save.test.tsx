@@ -31,7 +31,7 @@ function estadoDoBuilder(canEdit: boolean): EstadoDoBuilder {
     handleProductClick: vi.fn(),
     addProductWithColor: vi.fn(),
     formatCurrency: (value: number) => `R$ ${value}`,
-  } as unknown as EstadoDoBuilder;
+  };
 }
 
 describe('QuoteProductSelector durante salvamento', () => {
