@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb` (2026-11-24T20:20:31-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `8152263f352026f32d338dd9c505b0d98a172ad0` (2026-11-24T21:23:46-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -473,8 +473,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 36953 nós · 61525 arestas · 2726 comunidades · grafo do commit `3c5882b0`
-- comunidades maiores: ref_hooks (542), ref_components (400), ref_integrations (346), ref_lib (287), framer-motion (212), react-router-dom (205), getCorsHeaders (198), react (189), sonner (183), ref_contexts (174), ref_stores (169), ref_types (167)
+- 36961 nós · 61553 arestas · 2770 comunidades · grafo do commit `8152263f`
+- comunidades maiores: ref_components (689), ref_integrations (527), ref_lib (338), lucide-react (268), react (267), framer-motion (225), react-router-dom (206), getCorsHeaders (190), expert-chat/index.ts (176), ref_utils (159), external-db-bridge/index.ts (158), ref_stores (149)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -697,6 +697,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-24 `8152263` docs: ledger reflete as recuperacoes ja integradas na main (#432)
+- 2026-11-24 `617dc9f` docs: re-auditoria dos descartes medida PR por PR (#430)
 - 2026-11-24 `3c5882b` fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)
 - 2026-11-24 `dffd62e` fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)
 - 2026-11-24 `bc7da67` fix: trava otimista também no salvamento manual do kit (#428)
@@ -710,8 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-24 `dc6bdc0` chore: workers de cron entram na allowlist de publicação das edges (#420)
 - 2026-11-23 `4e35f67` fix: autosave nao grava em custom_kits ao editar template do sistema (#415)
 - 2026-11-23 `aac38a4` fix: busca global cai para o catálogo local quando a semântica falha (#414)
-- 2026-11-23 `87316fe` chore: vereditos reais de 9 lacunas do indice (7 resolvidas, 1 parcial, 1 ja resolvida) (#413)
-- 2026-11-23 `aef4f10` feat: verba PA em quatro estados, centro de custo e rateio (PLB-29/PLB-32) (#401)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

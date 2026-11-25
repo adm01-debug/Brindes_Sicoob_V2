@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb",
+  "commit": "8152263f352026f32d338dd9c505b0d98a172ad0",
   "branch": "main",
-  "data_commit": "2026-11-24T20:20:31-03:00",
+  "data_commit": "2026-11-24T21:23:46-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "8152263",
+    "data": "2026-11-24",
+    "assunto": "docs: ledger reflete as recuperacoes ja integradas na main (#432)"
+   },
+   {
+    "sha": "617dc9f",
+    "data": "2026-11-24",
+    "assunto": "docs: re-auditoria dos descartes medida PR por PR (#430)"
+   },
    {
     "sha": "3c5882b",
     "data": "2026-11-24",
@@ -121,16 +131,6 @@
     "sha": "51dc1ef",
     "data": "2026-11-22",
     "assunto": "docs: classificar os 683 registros de lacunas por evidencia real (#402)"
-   },
-   {
-    "sha": "88dc17b",
-    "data": "2026-11-21",
-    "assunto": "fix: resgata tratamento de erro/retry do diretório de cooperativas no carrinho (#400)"
-   },
-   {
-    "sha": "b591559",
-    "data": "2026-11-21",
-    "assunto": "chore: atualiza vereditos reais dos P0 SIC e FE no backlog (pg_policies em producao) (#399)"
    }
   ],
   "arquivos_mudados_7d": 1281,
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 208
+    "commits": 210
    },
    {
     "autor": "dependabot[bot]",

@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb",
+  "sha": "8152263f352026f32d338dd9c505b0d98a172ad0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-24 23:21 UTC",
+  "generated_at": "2026-11-25 00:36 UTC",
   "files_total": 5295,
   "code_files": 3856,
   "code_lines": 569320
@@ -259044,10 +259044,29 @@
   }
  },
  "git": {
-  "sha": "3c5882b0e63ba8e87aa5d71478a9e29266ed0ebb",
+  "sha": "8152263f352026f32d338dd9c505b0d98a172ad0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "8152263",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "docs: ledger reflete as recuperacoes ja integradas na main (#432)",
+    "files": [
+     "docs/RECUPERACAO/prs.md",
+     "docs/RECUPERACAO/reauditoria.md"
+    ]
+   },
+   {
+    "sha": "617dc9f",
+    "date": "2026-11-24",
+    "author": "adm01-debug",
+    "subject": "docs: re-auditoria dos descartes medida PR por PR (#430)",
+    "files": [
+     "docs/RECUPERACAO/reauditoria.md"
+    ]
+   },
    {
     "sha": "3c5882b",
     "date": "2026-11-24",
@@ -259454,34 +259473,6 @@
      "src/pages/CollectionDetailPage.tsx",
      "src/pages/collections/useCollectionsPageState.ts"
     ]
-   },
-   {
-    "sha": "ca1fccc",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "fix: coleção → orçamento agora pré-carrega produtos e cliente (FE-060) (#395)",
-    "files": [
-     "src/hooks/quote/useQuoteInitialization.ts"
-    ]
-   },
-   {
-    "sha": "e324c64",
-    "date": "2026-11-21",
-    "author": "adm01-debug",
-    "subject": "feat: e-mail transacional via Resend na edge send-transactional-email (#393)",
-    "files": [
-     "src/components/quotes/QuoteConvertToOrder.tsx",
-     "src/hooks/quotes/useQuotes.ts",
-     "src/hooks/useSicoobApprovals.ts",
-     "src/hooks/useTransactionalEmail.ts",
-     "src/pages/quote-view/QuoteBitrixSync.ts",
-     "src/services/OrderService.ts",
-     "supabase/functions/send-transactional-email/deliver.ts",
-     "supabase/functions/send-transactional-email/index.test.ts",
-     "supabase/functions/send-transactional-email/index.ts",
-     "supabase/functions/send-transactional-email/templates.ts",
-     "tests/scenarios/email-transacional-legado.mjs"
-    ]
    }
   ],
   "hot_files": [
@@ -259526,6 +259517,10 @@
     3
    ],
    [
+    "docs/RECUPERACAO/reauditoria.md",
+    2
+   ],
+   [
     "docs/RECUPERACAO/kit-builder.md",
     2
    ],
@@ -259559,10 +259554,6 @@
    ],
    [
     "src/hooks/useQuoteBuilderState.ts",
-    2
-   ],
-   [
-    "tests/pages/kit-builder-guarda-saida.test.tsx",
     2
    ]
   ]
