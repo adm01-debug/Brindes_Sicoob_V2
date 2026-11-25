@@ -38,6 +38,12 @@ function paginasCheias(count?: number | null) {
   };
 }
 
+function erroDoBridge(mensagem: string): Error {
+  const erro = new Error('Edge Function returned a non-2xx status code') as Error & { context: Response };
+  erro.context = new Response(JSON.stringify({ error: mensagem }), { status: 400 });
+  return erro;
+}
+
 describe('janela de consulta do mercado macro', () => {
   beforeEach(() => {
     client = novoCliente();
@@ -252,7 +258,8 @@ describe('janela de consulta do mercado macro', () => {
 
   it('trata deslocamento recusado na sonda como fim de leitura de verdade', async () => {
     invoke.mockImplementation(async (request: { limit?: number }) => {
-      if (request.limit === 1) throw new Error('PGRST103: Requested range not satisfiable');
+      // Formato real do bridge: 400 com `{ error }` no corpo e mensagem generica no Error.
+      if (request.limit === 1) throw erroDoBridge('PGRST103: Requested range not satisfiable');
       return { records: Array.from({ length: 5000 }, () => ({ summary_date: data(), stock_close: 4, units_depleted: 1, units_restocked: 0, supplier_id: 'fornecedor-1' })) };
     });
 

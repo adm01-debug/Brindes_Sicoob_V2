@@ -5,6 +5,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
+import { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
 import type { StockDailySummary } from './useStockHistory';
 
 export interface MacroMarketPoint {
@@ -169,9 +170,14 @@ function hasDegradedPage(meta: unknown): boolean {
 
 // Offset igual ao total exato faz o PostgREST responder PGRST103 em vez de uma
 // pagina vazia; isso encerra a leitura em vez de derrubar o painel.
-function isRangeError(error: unknown): boolean {
-  const msg = error instanceof Error ? error.message : String(error ?? '');
-  return /PGRST103|range not satisfiable|requested range/i.test(msg);
+const RANGE_ERROR = /PGRST103|range not satisfiable|requested range/i;
+
+/**
+ * O bridge recusa o deslocamento com 400 e `{ error: "PGRST103 ..." }` no corpo; a
+ * mensagem do erro do supabase-js e so "non-2xx", entao o detalhe vem do `context`.
+ */
+async function isRangeError(error: unknown): Promise<boolean> {
+  return RANGE_ERROR.test(await extractFunctionErrorMessage(error));
 }
 
 /** Sonda se ha registros depois do teto de leitura (limit 1 no offset do teto). */
@@ -203,7 +209,7 @@ async function capTruncated(
   try {
     return await hasRowsBeyondCap(filters);
   } catch (error) {
-    return !isRangeError(error);
+    return !(await isRangeError(error));
   }
 }
 
@@ -230,7 +236,7 @@ async function readStockPage(
     });
   } catch (error) {
     // Offset 0 recusado nao e fim de dado: e falha real da consulta.
-    if (offset > 0 && isRangeError(error)) return null;
+    if (offset > 0 && (await isRangeError(error))) return null;
     throw error;
   }
 }
