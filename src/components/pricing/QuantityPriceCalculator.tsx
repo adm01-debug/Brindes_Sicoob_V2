@@ -20,7 +20,7 @@ import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
 import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
 
-function podeSimularPreco(produto: CalcProduct | null): boolean {
+function podeSimularPreco(produto: CalcProduct | null): produto is CalcProduct {
   return produto !== null && produto.priceAvailable !== false;
 }
 
@@ -87,9 +87,6 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
     navigate('/orcamentos', { state: { fromSimulator: true, product: selectedProduct, techniques: selectedConfigs, quantities: customQuantities } });
   }, [navigate, selectedProduct, selectedConfigs, customQuantities]);
 
-  const simula = podeSimularPreco(selectedProduct);
-  const compara = simula && selectedConfigs.length > 0;
-
   if (pricingLoading) return (
     <Card className={className}><CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-64 w-full" /></CardContent></Card>
   );
@@ -105,7 +102,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       <AvisoSemPreco produto={selectedProduct} />
 
       {/* Step 2: Techniques */}
-      {simula && (
+      {podeSimularPreco(selectedProduct) && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Paintbrush className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">2. Selecione as Técnicas de Gravação</CardTitle></div><CardDescription>Escolha uma ou mais técnicas para comparar preços</CardDescription></CardHeader>
           <CardContent><TechniqueMultiSelector productId={selectedProduct.id} selectedTechniques={selectedConfigs} onToggleTechnique={handleToggleTechnique} /></CardContent>
@@ -113,7 +110,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       )}
 
       {/* Step 3: Configure */}
-      {compara && (
+      {podeSimularPreco(selectedProduct) && selectedConfigs.length > 0 && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Palette className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">3. Configure as Opções</CardTitle></div><CardDescription>Defina cores e tamanho para cada técnica selecionada</CardDescription></CardHeader>
           <CardContent><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{selectedConfigs.map((config, index) => <TechniqueConfigCard key={config.technique.id} config={config} onUpdate={(u) => handleUpdateConfig(index, u)} onRemove={() => handleRemoveConfig(index)} />)}</div></CardContent>
@@ -121,7 +118,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       )}
 
       {/* Step 4: Compare */}
-      {compara && (
+      {podeSimularPreco(selectedProduct) && selectedConfigs.length > 0 && (
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Calculator className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">4. Compare Preços por Tiragem</CardTitle></div><CardDescription>Veja como o preço por unidade muda conforme a quantidade. <Trophy className="inline w-3 h-3 text-success" /> = melhor preço.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
