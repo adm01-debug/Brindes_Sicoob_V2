@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
+  "sha": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 20:04 UTC",
-  "files_total": 5315,
-  "code_files": 3875,
-  "code_lines": 572029
+  "generated_at": "2026-11-25 20:23 UTC",
+  "files_total": 5316,
+  "code_files": 3876,
+  "code_lines": 572150
  },
  "version": "1.3.2",
- "facts_hash": "1db31301ba013e83",
+ "facts_hash": "c53f9851f01893c9",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1504,
-   ".tsx": 1474,
+   ".tsx": 1475,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -62595,7 +62595,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1299,
+  "components_count": 1300,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65419,7 +65419,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167925,
+   "lines": 167944,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -67197,8 +67197,8 @@
   },
   {
    "module": "tests",
-   "files": 702,
-   "lines": 94752,
+   "files": 703,
+   "lines": 94854,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -122216,6 +122216,14 @@
    {
     "file": "tests/components/intelligence/CategoryRanking.errors.test.tsx",
     "name": "mantém a receita interna e desabilita os modos externos quando o mercado falha"
+   },
+   {
+    "file": "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx",
+    "name": "cache de inteligência de mercado após falha de atualização"
+   },
+   {
+    "file": "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx",
+    "name": "mantém o gráfico, desabilita o retry durante a busca e limpa o aviso no sucesso"
    },
    {
     "file": "tests/components/intelligence/TrendsHeatmap.errors.test.tsx",
@@ -197635,7 +197643,7 @@
   },
   "src/components/intelligence/MarketIntelligenceChart.tsx": {
    "path": "src/components/intelligence/MarketIntelligenceChart.tsx",
-   "lines": 285,
+   "lines": 304,
    "exports": [
     "function MarketIntelligenceChart"
    ],
@@ -248540,6 +248548,15 @@
     "mantém a receita interna e desabilita os modos externos quando o mercado falha"
    ]
   },
+  "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx": {
+   "path": "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx",
+   "lines": 102,
+   "is_test": true,
+   "tests": [
+    "cache de inteligência de mercado após falha de atualização",
+    "mantém o gráfico, desabilita o retry durante a busca e limpa o aviso no sucesso"
+   ]
+  },
   "tests/components/intelligence/TrendsHeatmap.errors.test.tsx": {
    "path": "tests/components/intelligence/TrendsHeatmap.errors.test.tsx",
    "lines": 44,
@@ -259807,10 +259824,21 @@
   }
  },
  "git": {
-  "sha": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
+  "sha": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "4ec46e6",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "src/components/intelligence/MarketIntelligenceChart.tsx",
+     "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx"
+    ]
+   },
    {
     "sha": "3f6b0e0",
     "date": "2026-11-25",
@@ -260164,36 +260192,12 @@
      "scripts/ci/verify-supabase-functions-published.mjs",
      "tests/scripts/verify-supabase-functions-published.test.ts"
     ]
-   },
-   {
-    "sha": "4e35f67",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)",
-    "files": [
-     "docs/RECUPERACAO/kit-builder.md",
-     "src/components/common/UnsavedChangesDialog.tsx",
-     "src/components/kit-builder/KitBuilderHeader.tsx",
-     "src/components/kit-builder/SimilarKitsWidget.tsx",
-     "src/hooks/useKitAutoSave.ts",
-     "src/lib/kit-builder/saida-da-tela.ts",
-     "src/pages/KitBuilderPage.tsx",
-     "tests/components/SimilarKitsWidget.test.tsx",
-     "tests/components/UnsavedChangesDialog.test.tsx",
-     "tests/hooks/useKitAutoSave.test.tsx",
-     "tests/lib/saida-da-tela.test.ts",
-     "tests/pages/kit-builder-guarda-saida.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
-    "src/pages/KitBuilderPage.tsx",
-    4
-   ],
-   [
     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    3
+    4
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
@@ -260202,6 +260206,14 @@
    [
     "docs/agentes/banco.md",
     3
+   ],
+   [
+    "src/pages/KitBuilderPage.tsx",
+    3
+   ],
+   [
+    "src/components/intelligence/MarketIntelligenceChart.tsx",
+    2
    ],
    [
     "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -260240,22 +260252,6 @@
     2
    ],
    [
-    "docs/RECUPERACAO/kit-builder.md",
-    2
-   ],
-   [
-    "src/hooks/useKitAutoSave.ts",
-    2
-   ],
-   [
-    "tests/hooks/useKitAutoSave.test.tsx",
-    2
-   ],
-   [
-    "src/components/kit-builder/KitBuilderHeader.tsx",
-    2
-   ],
-   [
     ".github/workflows/deploy-sicoob-functions.yml",
     2
    ],
@@ -260266,6 +260262,18 @@
    [
     "docs/agentes/servicos.md",
     2
+   ],
+   [
+    "scripts/ci/verify-supabase-functions-published.mjs",
+    2
+   ],
+   [
+    "tests/scripts/verify-supabase-functions-published.test.ts",
+    2
+   ],
+   [
+    "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx",
+    1
    ]
   ]
  }

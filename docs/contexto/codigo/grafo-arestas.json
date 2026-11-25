@@ -3932,6 +3932,7 @@
    "src/components/products/SupplierChartFilter.tsx",
    "src/components/ui/KpiCard.tsx",
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/tabs.tsx",
    "src/hooks/useMarketIntelligenceMacro.ts",

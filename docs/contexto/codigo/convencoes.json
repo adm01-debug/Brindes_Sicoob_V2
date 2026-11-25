@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (680)",
+   "tests/ (681)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)",
    "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)",
    "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)",
    "docs: reavalia os vereditos dos testes divergentes (#447)",
-   "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)",
-   "chore: recupera 21 testes de branches nao incorporadas (#444)"
+   "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

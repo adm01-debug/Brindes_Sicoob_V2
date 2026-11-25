@@ -7308,7 +7308,7 @@
     "MarketIntelligenceChart"
    ],
    "export_default": null,
-   "linhas": 285,
+   "linhas": 304,
    "dominio": "components/intelligence",
    "hooks_locais": [
     "useMarketIntelligenceMacro",
@@ -14957,7 +14957,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 632,
+   "usado_por": 633,
    "orfao": false
   },
   {

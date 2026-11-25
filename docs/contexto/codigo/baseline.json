@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "3f6b0e0a0092593951aa06baa3437f7bb83ff905",
+  "commit": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
   "branch": "main",
-  "data_commit": "2026-11-25T20:01:09Z",
+  "data_commit": "2026-11-25T20:22:06Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "4ec46e6",
+    "data": "2026-11-25",
+    "assunto": "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)"
+   },
    {
     "sha": "3f6b0e0",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "1aa0068",
     "data": "2026-11-24",
     "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#425)"
-   },
-   {
-    "sha": "667250f",
-    "data": "2026-11-24",
-    "assunto": "fix: revoga EXECUTE das 7 funções de trigger do ciclo de verba (#424)"
    }
   ],
-  "arquivos_mudados_7d": 1200,
+  "arquivos_mudados_7d": 1201,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -192,8 +192,8 @@
     "mudancas": 12
    },
    {
-    "pasta": "PENDENCIAS.md",
-    "mudancas": 11
+    "pasta": "src/components/intelligence",
+    "mudancas": 12
    }
   ],
   "arquivos_mais_mudados_90d": [
@@ -242,11 +242,11 @@
     "mudancas": 14
    },
    {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 13
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 12
    },
    {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 12
    },
    {
@@ -278,10 +278,6 @@
     "mudancas": 10
    },
    {
-    "arquivo": "src/services/QuoteService.ts",
-    "mudancas": 10
-   },
-   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
    },
@@ -294,6 +290,10 @@
     "mudancas": 9
    },
    {
+    "arquivo": "src/services/QuoteService.ts",
+    "mudancas": 9
+   },
+   {
     "arquivo": "AGENTS.md",
     "mudancas": 8
    }
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 223
+    "commits": 224
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5312,
-  "arquivos_codigo": 3201,
-  "linhas_codigo": 507452,
+  "arquivos_total": 5313,
+  "arquivos_codigo": 3202,
+  "linhas_codigo": 507573,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 933,
+  "testes": 934,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167925
+   "linhas": 167944
   },
   "src/constants": {
    "arquivos": 3,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 163,
-   "linhas": 29469
+   "arquivos": 164,
+   "linhas": 29571
   },
   "tests/contexts": {
    "arquivos": 3,
