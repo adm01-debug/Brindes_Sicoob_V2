@@ -5,9 +5,9 @@
   "vitest",
   "playwright"
  ],
- "total": 926,
+ "total": 927,
  "por_tipo": {
-  "contrato": 11,
+  "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
@@ -16,7 +16,7 @@
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 673
+   "arquivos": 674
   },
   {
    "padrao": "e2e/",
@@ -6835,6 +6835,15 @@
    "casos": 12
   },
   {
+   "arquivo": "tests/scenarios/contract-guard-postgres.scenario.mjs",
+   "tipo": "contrato",
+   "linhas": 151,
+   "testa": [
+    "scripts/db/apply-sicoob-migrations.mjs"
+   ],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/scenarios/core-rls-audit.scenario.mjs",
    "tipo": "unit",
    "linhas": 76,
@@ -7020,12 +7029,12 @@
   {
    "arquivo": "tests/scenarios/supabase-sql-client.scenario.mjs",
    "tipo": "unit",
-   "linhas": 130,
+   "linhas": 186,
    "testa": [
     "scripts/db/apply-sicoob-migrations.mjs",
     "scripts/db/supabase-sql-client.mjs"
    ],
-   "casos": 6
+   "casos": 10
   },
   {
    "arquivo": "tests/scenarios/view-notification-hardening.scenario.mjs",
@@ -8086,7 +8095,7 @@
   "scripts/check-seller-scope.mjs": 1,
   "scripts/check-smoke-tags.mjs": 1,
   "scripts/ci/verify-supabase-functions-published.mjs": 2,
-  "scripts/db/apply-sicoob-migrations.mjs": 3,
+  "scripts/db/apply-sicoob-migrations.mjs": 4,
   "scripts/db/audit-core-rls.mjs": 1,
   "scripts/db/check-live-api-inventory.mjs": 1,
   "scripts/db/check-migration-ledger-drift.mjs": 2,

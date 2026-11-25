@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "8f7aeebac6dd7ae2017da5c51b0d0d1ecd1fe4f0",
+  "commit": "8747cf212a21666820fedb7a2995291a08733a03",
   "branch": "main",
-  "data_commit": "2026-11-25T12:40:18Z",
+  "data_commit": "2026-11-25T12:26:52-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "8747cf2",
+    "data": "2026-11-25",
+    "assunto": "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)"
+   },
    {
     "sha": "8f7aeeb",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "4e35f67",
     "data": "2026-11-23",
     "assunto": "fix: autosave nao grava em custom_kits ao editar template do sistema (#415)"
-   },
-   {
-    "sha": "aac38a4",
-    "data": "2026-11-23",
-    "assunto": "fix: busca global cai para o catálogo local quando a semântica falha (#414)"
    }
   ],
-  "arquivos_mudados_7d": 1295,
+  "arquivos_mudados_7d": 1206,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -153,7 +153,7 @@
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 19
+    "mudancas": 20
    },
    {
     "pasta": "src/hooks/bi",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 26
+    "mudancas": 27
    },
    {
     "arquivo": "package.json",
@@ -227,7 +227,7 @@
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 17
+    "mudancas": 16
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
@@ -235,10 +235,6 @@
    },
    {
     "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 16
-   },
-   {
-    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 15
    },
    {
@@ -246,12 +242,16 @@
     "mudancas": 15
    },
    {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 14
+   },
+   {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 12
+    "mudancas": 11
    },
    {
     "arquivo": "docs/execucao/validacao-do-plano.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 217
+    "commits": 218
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5304,
-  "arquivos_codigo": 3194,
-  "linhas_codigo": 506381,
+  "arquivos_total": 5305,
+  "arquivos_codigo": 3195,
+  "linhas_codigo": 506780,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 926,
+  "testes": 927,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 973
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3287
+   "linhas": 3479
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -967,8 +967,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 34,
-   "linhas": 2648
+   "arquivos": 35,
+   "linhas": 2855
   },
   "tests/scripts": {
    "arquivos": 35,
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1599
+   "linhas": 1791
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8f7aeebac6` · branch `main` · 2026-11-25 13:17 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8747cf212a` · branch `main` · 2026-11-25 16:20 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5407,9 +5407,13 @@ _nenhum item encontrado_
 | Allowlist incompleta para montar a validação transacional. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Allowlist incompleta para validar os corpos das funções críticas. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Bloco $${marker}$ não encontrado no patch do monitor. | `scripts/db/apply-sicoob-migrations.mjs` |
+| Cláusula c${matched[2]} repetida na guarda de contrato. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Conteúdo divergente no ledger para ${target.version}. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Contrato de cleanup_old_notifications violado: ${falhas.join( | `scripts/db/apply-sicoob-migrations.mjs` |
 | Corpo autorizado não encontrado para public.${functionName}. | `scripts/db/apply-sicoob-migrations.mjs` |
+| Guarda de contrato fora de sequência; lote inválido. | `scripts/db/apply-sicoob-migrations.mjs` |
+| Guarda de contrato ilegível: ${declaradas.length} cláusulas declaradas, ${found.size} extraídas. | `scripts/db/apply-sicoob-migrations.mjs` |
+| Guarda de contrato sem cláusulas; lote não pode ser montado. | `scripts/db/apply-sicoob-migrations.mjs` |
 | Hash não autorizado para ${filename}: ${actualHash} | `scripts/db/apply-sicoob-migrations.mjs` |
 | Ledger não registrou: ${missing.map((item) => item.version).join( | `scripts/db/apply-sicoob-migrations.mjs` |
 | Migrations autorizadas ainda pendentes: ${pending.map((item) => item.version).join( | `scripts/db/apply-sicoob-migrations.mjs` |
@@ -5635,11 +5639,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao atualizar modo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao atualizar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao copiar regras do grupo | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao remover componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1012 linhas — lista completa em `context.json` | |
+| … +1016 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 

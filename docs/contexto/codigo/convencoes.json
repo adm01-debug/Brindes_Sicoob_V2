@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (673)",
+   "tests/ (674)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)",
    "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)",
    "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)",
    "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)",
-   "fix: prefetch do catalogo declara getNextPageParam (#440)",
-   "chore(inventario): estado real do banco e do codigo [auto] (#438)"
+   "fix: prefetch do catalogo declara getNextPageParam (#440)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
