@@ -11,19 +11,27 @@ function sliceBetween(source: string, from: string, to: string): string {
   return source.slice(start, end);
 }
 
-/** Linha do `</Route>` que fecha o bloco `<Route element={<AdminRoute />}>`, contando aninhamento. */
-function adminBlockEnd(lines: string[]): number {
-  const start = lines.findIndex((line) => line.trim() === "<Route element={<AdminRoute />}>");
-  if (start === -1) return -1;
+/**
+ * Faixa [abertura, fechamento] de um `<Route ...>` de layout, contando aninhamento.
+ * A guarda de rota so vale para os filhos: por isso o teste precisa do range, nao
+ * apenas da linha de abertura.
+ */
+function routeBlockRange(lines: string[], opener: string): { start: number; end: number } {
+  const start = lines.findIndex((line) => line.trim() === opener);
+  if (start === -1) return { start: -1, end: -1 };
   let depth = 0;
   for (let i = start; i < lines.length; i += 1) {
     const trimmed = lines[i].trim();
     if (trimmed.startsWith("<Route") && !trimmed.endsWith("/>")) depth += 1;
     else if (trimmed === "</Route>") depth -= 1;
-    if (depth === 0 && i > start) return i;
+    if (depth === 0 && i > start) return { start, end: i };
   }
-  return -1;
+  return { start, end: -1 };
 }
+
+const ADMIN_BLOCK = "<Route element={<AdminRoute />}>";
+const SHELL_BLOCK = "<Route element={<RouteSuspense><AuthenticatedShell /></RouteSuspense>}>";
+const PROTECTED_BLOCK = "<Route element={<ProtectedRoute />}>";
 
 const crmBridge = read("supabase/functions/crm-db-bridge/index.ts");
 const expertChat = read("supabase/functions/expert-chat/index.ts");
@@ -64,6 +72,11 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     // alimentado pelas credenciais resolvidas depois da autorização.
     expect(code).not.toMatch(/createClient\(\s*["'`]/);
     expect(serviceClient).toBeGreaterThan(-1);
+    // A ordem acima vale para o processamento da requisicao. O aquecimento no boot
+    // (`warmupCrmClient` -> `getCrmClient`) usa o mesmo helper interno, entao tambem
+    // nao existe `createClient` com literal — proibicao checada no arquivo inteiro
+    // logo acima, nao apenas no handler.
+    expect(crmBridge).toContain("const client = await getCrmClient();");
     expect(crmBridge).toContain("const parsed = CrmRequestSchema.safeParse(rawBody)");
   });
 
@@ -103,42 +116,53 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     expect(expertChat).toContain("hasActivePortalMembership(membershipProfile, auth.userRoles)");
   });
 
-  it("monta as rotas de clientes uma unica vez, fora do bloco AdminRoute", () => {
+  it("monta as rotas de clientes uma unica vez, na area autenticada e fora do bloco AdminRoute", () => {
     const lines = appRoutes.split(/\r?\n/);
-    const adminStart = lines.findIndex((line) => line.trim() === "<Route element={<AdminRoute />}>");
-    const adminEnd = adminBlockEnd(lines);
+    const admin = routeBlockRange(lines, ADMIN_BLOCK);
+    const shell = routeBlockRange(lines, SHELL_BLOCK);
     const clientsRoutes = lines.filter((line) => line.includes('path="/clientes"'));
     const detailRoutes = lines.filter((line) => line.includes("path={CLIENT_DETAIL_ROUTE}"));
     const clientsRoute = lines.indexOf(clientsRoutes[0] ?? "");
     const clientDetailRoute = lines.findIndex((line) => line.includes("path={CLIENT_DETAIL_ROUTE}"));
 
-    expect(adminStart).toBeGreaterThan(-1);
-    expect(adminEnd).toBeGreaterThan(adminStart);
-    // Realidade verificada: clientes vivem na area autenticada compartilhada (MainLayout),
-    // nao no bloco exclusivo de admin. O risco estatico e duplicacao de rota, que criaria
-    // um segundo caminho sem a guarda aplicada ao primeiro.
+    expect(admin.start).toBeGreaterThan(-1);
+    expect(admin.end).toBeGreaterThan(admin.start);
+    expect(shell.start).toBeGreaterThan(-1);
+    expect(shell.end).toBeGreaterThan(shell.start);
+    // Contrato preservado: `/clientes` e `/clientes/:id` sao rotas compartilhadas
+    // (MainLayout): ficam DENTRO do shell autenticado e NUNCA dentro do bloco
+    // exclusivo de AdminRoute. Duplicar a rota criaria um segundo caminho sem a
+    // guarda aplicada ao primeiro.
     expect(clientsRoutes.length).toBe(1);
     expect(detailRoutes.length).toBe(1);
-    expect(clientsRoute).toBeGreaterThan(adminEnd);
-    expect(clientDetailRoute).toBeGreaterThan(adminEnd);
+    expect(clientsRoute).toBeGreaterThan(shell.start);
+    expect(clientsRoute).toBeLessThan(shell.end);
+    expect(clientDetailRoute).toBeGreaterThan(shell.start);
+    expect(clientDetailRoute).toBeLessThan(shell.end);
+    expect(clientsRoute > admin.start && clientsRoute < admin.end).toBe(false);
+    expect(clientDetailRoute > admin.start && clientDetailRoute < admin.end).toBe(false);
     expect(clientRoutes).toContain('CLIENT_DETAIL_ROUTE = "/clientes/:id"');
   });
 
-  it("mantem a criacao de orcamento na area autenticada compartilhada", () => {
+  it("mantem a criacao de orcamento dentro do shell autenticado", () => {
     const lines = appRoutes.split(/\r?\n/);
-    const adminStart = lines.findIndex((line) => line.trim() === "<Route element={<AdminRoute />}>");
-    const adminEnd = adminBlockEnd(lines);
-    const authenticatedShell = lines.findIndex((line) => line.includes("<AuthenticatedShell />"));
+    const protectedRange = routeBlockRange(lines, PROTECTED_BLOCK);
+    const shell = routeBlockRange(lines, SHELL_BLOCK);
+    const admin = routeBlockRange(lines, ADMIN_BLOCK);
     const quoteRoutesMount = lines.findIndex((line) => line.includes("{quoteRoutes.map"));
 
     expect(quoteRoutes).toContain('path: "/orcamentos/novo"');
     expect(quoteRoutesMount).toBeGreaterThan(-1);
-    expect(adminStart).toBeGreaterThan(-1);
-    expect(adminEnd).toBeGreaterThan(adminStart);
-    // Area autenticada compartilhada: fora do bloco exclusivo de admin e dentro do shell.
-    expect(quoteRoutesMount < adminStart || quoteRoutesMount > adminEnd).toBe(true);
-    expect(authenticatedShell).toBeGreaterThan(-1);
-    expect(authenticatedShell).toBeLessThan(quoteRoutesMount);
+    expect(admin.start).toBeGreaterThan(-1);
+    expect(admin.end).toBeGreaterThan(admin.start);
+    expect(protectedRange.start).toBeGreaterThan(-1);
+    expect(shell.start).toBeGreaterThan(protectedRange.start);
+    expect(shell.end).toBeLessThan(protectedRange.end);
+    // A protecao vem do aninhamento: a montagem precisa ficar entre a abertura e o
+    // fechamento do shell autenticado — e nunca dentro do bloco exclusivo de admin.
+    expect(quoteRoutesMount).toBeGreaterThan(shell.start);
+    expect(quoteRoutesMount).toBeLessThan(shell.end);
+    expect(quoteRoutesMount > admin.start && quoteRoutesMount < admin.end).toBe(false);
   });
 
   it("seletores de orcamento usam somente o DTO dedicado do bridge", () => {
