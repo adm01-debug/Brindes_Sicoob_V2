@@ -3,8 +3,10 @@
  * Data-driven from useProductIntelligenceBadges hook.
  */
 import { motion } from "framer-motion";
-import { Flame, Zap, Package, Rocket, AlertTriangle, Sparkles, Star, Tag } from "lucide-react";
+import { Flame, Zap, Package, Rocket, AlertTriangle, AlertCircle, Sparkles, Star, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { IntelligenceBadge, IntelligenceBadgeType } from "@/hooks/useProductIntelligenceBadges";
@@ -58,13 +60,44 @@ interface IntelligenceBadgesProps {
   badges: IntelligenceBadge[];
   turnoverScore?: number | null;
   className?: string;
+  /** Alguma consulta de mercado falhou. */
+  isError?: boolean;
+  /** As consultas responderam sem dado de mercado: ausência confirmada. */
+  isEmpty?: boolean;
+  /** Existe dado de mercado medido, mesmo que a atualização tenha falhado. */
+  hasMarketData?: boolean;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 }
 
-export function IntelligenceBadges({ badges, turnoverScore, className }: IntelligenceBadgesProps) {
-  if (!badges.length) return null;
+interface BadgesErrorAlertProps {
+  hasMarketData: boolean;
+  onRetry?: () => void;
+  isRetrying?: boolean;
+}
 
+function BadgesErrorAlert({ hasMarketData, onRetry, isRetrying }: BadgesErrorAlertProps) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+    <Alert variant="destructive" role="alert">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>
+        {hasMarketData ? "Não foi possível atualizar todos os indicadores" : "Não foi possível carregar os indicadores"}
+      </AlertTitle>
+      <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+        <span>{hasMarketData ? "Os dados disponíveis continuam exibidos." : "Os valores não foram substituídos por estimativas."}</span>
+        {onRetry && (
+          <Button size="sm" variant="outline" onClick={onRetry} disabled={isRetrying}>
+            Tentar novamente
+          </Button>
+        )}
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function BadgesList({ badges, turnoverScore }: Pick<IntelligenceBadgesProps, "badges" | "turnoverScore">) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
       {badges.map((badge, i) => {
         const config = badgeConfig[badge.type];
         const Icon = config.icon;
@@ -119,6 +152,39 @@ export function IntelligenceBadges({ badges, turnoverScore, className }: Intelli
           </TooltipContent>
         </Tooltip>
       )}
+    </div>
+  );
+}
+
+export function IntelligenceBadges({
+  badges, turnoverScore, className, isError, isEmpty, hasMarketData, onRetry, isRetrying,
+}: IntelligenceBadgesProps) {
+  const alertaDeErro = isError
+    ? <BadgesErrorAlert hasMarketData={Boolean(hasMarketData)} onRetry={onRetry} isRetrying={isRetrying} />
+    : null;
+
+  // Ausência confirmada (as duas consultas responderam sem dado) tem texto próprio,
+  // para não ser lida como falha.
+  const semIndicadores = isEmpty
+    ? <p role="status" className="text-sm text-muted-foreground">Sem indicadores de mercado disponíveis para este produto.</p>
+    : null;
+
+  // Sem selo algum o erro não pode sumir: parte das consultas pode ter falhado com a
+  // outra respondida, caso em que `hasMarketData` é verdadeiro e o aviso (com
+  // "Tentar novamente") sumia por falta de selos.
+  if (!badges.length) {
+    if (isError) return <div className={className}>{alertaDeErro}</div>;
+    if (semIndicadores) return <p role="status" className={cn("text-sm text-muted-foreground", className)}>Sem indicadores de mercado disponíveis para este produto.</p>;
+    return null;
+  }
+
+  // Com selos (inclusive os de cadastro, que não dependem de mercado) o aviso e a
+  // ausência acompanham a lista em vez de escondê-la.
+  return (
+    <div className={cn("space-y-2", className)}>
+      {alertaDeErro}
+      {semIndicadores}
+      <BadgesList badges={badges} turnoverScore={turnoverScore} />
     </div>
   );
 }

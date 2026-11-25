@@ -4,7 +4,7 @@
  * Market badges are omitted until the source views return real data.
  * Also incorporates catalog flags (featured, newArrival, onSale) from product data.
  */
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useProductIntelligenceData, useStockVelocity } from '@/hooks/useStockHistory';
 
 export type IntelligenceBadgeType =
@@ -31,11 +31,25 @@ export interface CatalogFlags {
   onSale?: boolean;
 }
 
-export interface ProductIntelligenceBadgesResult {
+export interface ProductIntelligenceBadgesData {
   badges: IntelligenceBadge[];
   turnoverScore: number | null;
   demandLevel: 'muito-alta' | 'alta' | 'moderada' | 'baixa' | null;
   isLoading: boolean;
+}
+
+export interface ProductIntelligenceBadgesResult extends ProductIntelligenceBadgesData {
+  /** Alguma consulta de mercado falhou; o dado já medido continua exibido. */
+  isError: boolean;
+  /**
+   * Existe indicador de mercado na tela. Só a inteligência gera selo, potencial e
+   * nível de demanda; velocidade sozinha não exibe número nenhum, então não conta.
+   */
+  hasMarketData: boolean;
+  /** As duas consultas responderam sem dado de mercado: ausência confirmada, não falha. */
+  isEmpty: boolean;
+  isFetching: boolean;
+  retry: () => void;
 }
 
 function catalogBadges(flags: CatalogFlags | undefined) {
@@ -87,7 +101,7 @@ function classificationBadge(classification: string): IntelligenceBadge {
   };
 }
 
-function demandLevel(avgDaily: number): ProductIntelligenceBadgesResult['demandLevel'] {
+function demandLevel(avgDaily: number): ProductIntelligenceBadgesData['demandLevel'] {
   if (avgDaily >= 20) return 'muito-alta';
   if (avgDaily >= 10) return 'alta';
   if (avgDaily >= 3) return 'moderada';
@@ -140,7 +154,7 @@ export function buildBadgeResult(
   intelligence: IntelligenceData | null | undefined,
   velocity: VelocityData | undefined,
   ...state: [catalogFlags: CatalogFlags | undefined, isLoading: boolean]
-): ProductIntelligenceBadgesResult {
+): ProductIntelligenceBadgesData {
   const [catalogFlags, isLoading] = state;
   const badges = catalogBadges(catalogFlags);
   if (!intelligence) {
@@ -161,11 +175,33 @@ export function useProductIntelligenceBadges(
   productId?: string,
   catalogFlags?: CatalogFlags,
 ): ProductIntelligenceBadgesResult {
-  const { data: intelligence, isLoading: loadingIntel } = useProductIntelligenceData(productId);
-  const { data: velocity, isLoading: loadingVel } = useStockVelocity(productId);
+  const intel = useProductIntelligenceData(productId);
+  const vel = useStockVelocity(productId);
+
+  const base = useMemo(
+    () => buildBadgeResult(intel.data, vel.data, catalogFlags, intel.isLoading || vel.isLoading),
+    [intel.data, vel.data, intel.isLoading, vel.isLoading, catalogFlags],
+  );
+
+  // Falha de uma das consultas não pode virar "produto sem indicadores": o painel
+  // precisa dizer que falhou e oferecer retentativa, mantendo o que já foi medido.
+  // `hasMarketData` alimenta o texto do aviso ("os dados continuam exibidos"), então
+  // só vale quando há selo/valor na tela — e isso vem apenas da inteligência.
+  const hasMarketData = Boolean(intel.data);
+  const hasAnyData = hasMarketData || (vel.data?.length ?? 0) > 0;
+  const isError = intel.isError || vel.isError;
+  // "Vazio confirmado" = as duas consultas terminaram (sem carregar, sem erro) e sem dado.
+  const isEmpty = !isError && !intel.isLoading && !vel.isLoading && !hasAnyData;
+
+  const refetchIntel = intel.refetch;
+  const refetchVel = vel.refetch;
+  const retry = useCallback(() => {
+    void refetchIntel();
+    void refetchVel();
+  }, [refetchIntel, refetchVel]);
 
   return useMemo(
-    () => buildBadgeResult(intelligence, velocity, catalogFlags, loadingIntel || loadingVel),
-    [intelligence, velocity, loadingIntel, loadingVel, catalogFlags],
+    () => ({ ...base, isError, hasMarketData, isEmpty, isFetching: intel.isFetching || vel.isFetching, retry }),
+    [base, isError, hasMarketData, isEmpty, intel.isFetching, vel.isFetching, retry],
   );
 }
