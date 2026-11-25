@@ -56,6 +56,24 @@ describe('useProductIntelligenceBadges — o que conta como indicador de mercado
     expect(result.current.turnoverScore).toBeNull();
   });
 
+  it('velocidade respondida com inteligência vazia não é ausência de dados', () => {
+    // As duas consultas responderam: inteligência sem linha e velocidade com
+    // histórico. Não há aviso de erro, então `isEmpty` não pode ser falso por causa
+    // da falha — aqui ele depende só de haver algum dado medido.
+    mocks.intel.mockReturnValue({
+      data: null, isLoading: false, isError: false, isFetching: false, refetch,
+    });
+    mocks.velocity.mockReturnValue({
+      data: [VELOCIDADE], isLoading: false, isError: false, isFetching: false, refetch,
+    });
+
+    const { result } = renderHook(() => useProductIntelligenceBadges('product-1'));
+
+    expect(result.current.isError).toBe(false);
+    expect(result.current.isEmpty).toBe(false);
+    expect(result.current.hasMarketData).toBe(false);
+  });
+
   it('inteligência presente mantém o aviso de dado já medido mesmo com falha', () => {
     mocks.intel.mockReturnValue({
       data: { abc_classification: 'B', turnover_score: 55, is_stockout_risk: false, total_current_stock: 10, avg_velocity_7d: 4 },
