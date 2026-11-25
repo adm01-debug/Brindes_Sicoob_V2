@@ -115,7 +115,7 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/migrations/storage-acl-hardening.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/GestorCompras.error-state.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
-| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
+| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente | Recuperado em [#451](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/451). |
 | `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  |
 | `tests/scripts/e2e-workflow-preflight.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
 | `tests/scripts/healthcheck.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
@@ -131,12 +131,13 @@ que a `main` substituiu por outro melhor, e essa parte não deve ser reintroduzi
 
 ### Recuperado em PR aberta (ainda não está na `main`)
 
-Estes dois itens já têm código e teste prontos, mas continuam fora da `main` até o merge: pela regra
+Os itens abaixo já têm código e teste prontos, mas continuam fora da `main` até o merge: pela regra
 de fechamento deste diretório, a branch de origem só pode ser fechada depois que o merge entrar.
 
 | Teste órfão | PR |
 | --- | --- |
 | `tests/hooks/bi/useIndustryTrends.test.tsx` | [#446](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/446) — amostra mínima de 3 empresas com orçamento no ramo, `trend: null` para agregado de 90 dias, janela de 60 linhas no RPC + corte de 10 depois do filtro. |
+| `tests/pages/PublicFavoriteListPage.test.tsx` | [#451](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/451) — a lista pública herda a política de retry do `QueryClient` (`src/lib/query-config.ts:80-96`): falha transitória deixa de derrubar o link compartilhado. |
 | `tests/components/intelligence/analytics-query-errors.test.tsx` | [#445](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/445) — falha de consulta deixa de virar funil zerado; alerta, retentativa e contagens preservadas. |
 
 ### Já incorporado pela `main` por outra via (não recuperar)
@@ -157,7 +158,6 @@ que precisa ser reintegrado (e testado) antes de a branch de origem ser fechada.
 | `tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx` | Aviso "Exibindo o último gráfico disponível" quando o `refetch` falha com cache em mãos: hoje a tela não distingue dado velho de dado atual. |
 | `tests/components/common/IntelligenceBadges.errors.test.tsx` | Aviso de falha parcial ("Não foi possível atualizar todos os…") nos selos de inteligência. |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `role="alert"` + "Tentar novamente" nos indicadores; texto "dados disponíveis continuam exibidos"; `role="status"` para o vazio confirmado. `src/pages/ProductDetail.tsx` hoje não consome `useProductIntelligenceData`/`useStockVelocity` nesse nível. |
-| `tests/pages/PublicFavoriteListPage.test.tsx` | Confirmação "Seleção recuperada" ao restaurar a seleção em memória depois de erro. |
 | `tests/pages/GestorCompras.error-state.test.tsx` | O teste é de outra árvore de página: abas com `OrdersKanbanPage`/`OrdersPage` e três consultas com um alerta único e retentativa que repete **só** as consultas afetadas. A `main` tem alerta + retentativa apenas para `useManagerDashboardStats` (`src/components/sicoob/GestorComprasMetrics.tsx:125-136`); `MetricasDaFila` (`:80-85`) mostra a falha de `usePurchasingMetrics` **sem** retentativa. Faltam: (a) **retentativa seletiva das métricas da fila**; (b) **falha das abas** — `src/components/orders/ApprovalKanbanBoard.tsx:29` lê `useOrdersList` sem `isError` e `src/pages/OrdersPage.tsx:128` devolve `OrdersEmptyState`, tornando consulta falha indistinguível de "sem pedidos". |
 | `tests/hooks/bi/useClientSeasonality.test.tsx` | Amostra setorial insuficiente no mapa de calor: `resolveSeasonalityResult` recebe `companiesCount` (`src/hooks/bi/useClientSeasonality.ts`) e **não usa**; um setor com 1 empresa é apresentado como mercado. Diferente de `useIndustryTrends`, que passou a ter essa regra na #446. |
 

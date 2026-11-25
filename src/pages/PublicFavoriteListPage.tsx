@@ -185,7 +185,8 @@ function usePublicFavoriteListData(token?: string) {
     queryKey: ['public-favorite-list', token],
     queryFn: () => fetchPublicFavoriteList(token),
     enabled: Boolean(token),
-    retry: false,
+    // Sem `retry: false` a consulta herda a politica do QueryClient (4xx nao repete,
+    // 5xx/rede ate 3): uma falha transitoria deixa de condenar o link publico.
   });
   const list = listQuery.data?.list ?? null;
   const items = listQuery.data?.items ?? [];
