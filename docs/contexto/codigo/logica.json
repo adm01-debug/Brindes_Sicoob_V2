@@ -5619,10 +5619,11 @@
    "exports": [
     "UxMetric",
     "getUxMetrics",
+    "resetUxMetrics",
     "trackUx"
    ],
    "export_default": null,
-   "linhas": 32,
+   "linhas": 36,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -5631,13 +5632,14 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 4,
+   "usado_por": 5,
    "usado_por_modulos": [
     "components/common",
     "components/routing",
+    "contexts",
     "hooks"
    ],
-   "coberto_por_testes": 2,
+   "coberto_por_testes": 4,
    "orfao": false
   },
   {
@@ -5680,7 +5682,7 @@
     "salesGoalSchema"
    ],
    "export_default": null,
-   "linhas": 28,
+   "linhas": 29,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -5695,7 +5697,7 @@
    "usado_por_modulos": [
     "lib/validations"
    ],
-   "coberto_por_testes": 1,
+   "coberto_por_testes": 2,
    "orfao": false
   },
   {

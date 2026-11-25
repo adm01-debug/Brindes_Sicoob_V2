@@ -449,7 +449,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 271
+   "arquivos_puxados": 272
   },
   {
    "protegida": false,
@@ -716,7 +716,7 @@
     "img",
     "manager"
    ],
-   "arquivos_puxados": 159
+   "arquivos_puxados": 160
   },
   {
    "protegida": true,
@@ -803,7 +803,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 48
+   "arquivos_puxados": 51
   },
   {
    "protegida": true,
@@ -1273,7 +1273,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 41
+   "arquivos_puxados": 44
   },
   {
    "protegida": true,
@@ -1436,7 +1436,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 45
+   "arquivos_puxados": 48
   },
   {
    "protegida": true,
@@ -1819,7 +1819,7 @@
     "manager",
     "public"
    ],
-   "arquivos_puxados": 35
+   "arquivos_puxados": 38
   },
   {
    "protegida": true,
@@ -2070,7 +2070,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 72
+   "arquivos_puxados": 73
   },
   {
    "protegida": true,
@@ -2313,7 +2313,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 50
+   "arquivos_puxados": 53
   },
   {
    "protegida": true,
@@ -2578,7 +2578,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 78
+   "arquivos_puxados": 81
   },
   {
    "protegida": true,
@@ -2765,7 +2765,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 38
+   "arquivos_puxados": 41
   },
   {
    "protegida": false,
@@ -2981,7 +2981,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 102
+   "arquivos_puxados": 103
   },
   {
    "protegida": true,
@@ -3071,7 +3071,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 102
+   "arquivos_puxados": 103
   },
   {
    "protegida": true,
@@ -3161,7 +3161,7 @@
     "manager",
     "tab"
    ],
-   "arquivos_puxados": 102
+   "arquivos_puxados": 103
   },
   {
    "protegida": true,
@@ -3234,7 +3234,7 @@
     "presentation",
     "supervisor"
    ],
-   "arquivos_puxados": 46
+   "arquivos_puxados": 49
   },
   {
    "protegida": false,
@@ -3611,7 +3611,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 175
+   "arquivos_puxados": 176
   },
   {
    "protegida": true,
@@ -3775,7 +3775,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 157
+   "arquivos_puxados": 158
   },
   {
    "protegida": true,
@@ -3973,7 +3973,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 31
+   "arquivos_puxados": 34
   },
   {
    "protegida": true,
@@ -4089,7 +4089,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 110
+   "arquivos_puxados": 111
   },
   {
    "protegida": true,
@@ -4145,7 +4145,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 41
+   "arquivos_puxados": 44
   },
   {
    "protegida": false,
@@ -4619,7 +4619,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 174
+   "arquivos_puxados": 175
   },
   {
    "protegida": true,
@@ -4727,7 +4727,7 @@
     "status",
     "user"
    ],
-   "arquivos_puxados": 92
+   "arquivos_puxados": 95
   },
   {
    "protegida": true,
@@ -5187,7 +5187,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 255
+   "arquivos_puxados": 256
   },
   {
    "protegida": true,
@@ -5244,7 +5244,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 39
+   "arquivos_puxados": 42
   },
   {
    "protegida": true,
@@ -5305,7 +5305,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 38
+   "arquivos_puxados": 41
   },
   {
    "protegida": true,
@@ -5426,7 +5426,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 39
+   "arquivos_puxados": 42
   },
   {
    "protegida": true,
@@ -5709,7 +5709,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 37
+   "arquivos_puxados": 40
   },
   {
    "protegida": true,
@@ -5874,7 +5874,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 132
+   "arquivos_puxados": 133
   },
   {
    "protegida": true,
@@ -6074,7 +6074,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 111
+   "arquivos_puxados": 112
   },
   {
    "protegida": false,
@@ -6155,7 +6155,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 34
+   "arquivos_puxados": 37
   },
   {
    "protegida": false,
@@ -6262,7 +6262,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 44
+   "arquivos_puxados": 45
   },
   {
    "protegida": false,
@@ -6325,7 +6325,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 44
+   "arquivos_puxados": 45
   },
   {
    "protegida": false,
@@ -6452,7 +6452,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 112
+   "arquivos_puxados": 113
   },
   {
    "protegida": true,
@@ -6575,7 +6575,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 58
+   "arquivos_puxados": 61
   },
   {
    "protegida": true,
@@ -6701,7 +6701,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 119
+   "arquivos_puxados": 120
   },
   {
    "protegida": true,
@@ -6849,7 +6849,7 @@
     "tooltip",
     "user"
    ],
-   "arquivos_puxados": 166
+   "arquivos_puxados": 167
   },
   {
    "protegida": true,
@@ -6900,7 +6900,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 33
+   "arquivos_puxados": 36
   },
   {
    "protegida": true,
@@ -7119,7 +7119,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 50
+   "arquivos_puxados": 53
   },
   {
    "protegida": true,
@@ -7263,7 +7263,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 143
+   "arquivos_puxados": 144
   },
   {
    "protegida": true,
@@ -7376,7 +7376,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 113
+   "arquivos_puxados": 114
   },
   {
    "protegida": true,
@@ -7546,7 +7546,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 155
+   "arquivos_puxados": 156
   },
   {
    "protegida": true,
@@ -7716,7 +7716,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 161
+   "arquivos_puxados": 162
   },
   {
    "protegida": true,
@@ -7886,7 +7886,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 155
+   "arquivos_puxados": 156
   },
   {
    "protegida": true,
@@ -7983,7 +7983,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 87
+   "arquivos_puxados": 88
   },
   {
    "protegida": true,
@@ -8079,7 +8079,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 95
+   "arquivos_puxados": 96
   },
   {
    "protegida": true,
@@ -8192,7 +8192,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 113
+   "arquivos_puxados": 114
   },
   {
    "protegida": true,
@@ -8362,7 +8362,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 161
+   "arquivos_puxados": 162
   },
   {
    "protegida": true,
@@ -8458,7 +8458,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 103
+   "arquivos_puxados": 104
   },
   {
    "protegida": true,
@@ -8521,7 +8521,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 43
+   "arquivos_puxados": 46
   },
   {
    "protegida": true,
@@ -8886,7 +8886,7 @@
     "owner",
     "supervisor"
    ],
-   "arquivos_puxados": 134
+   "arquivos_puxados": 135
   },
   {
    "protegida": true,
@@ -8988,7 +8988,7 @@
     "all",
     "manager"
    ],
-   "arquivos_puxados": 52
+   "arquivos_puxados": 55
   },
   {
    "protegida": false,
@@ -9187,7 +9187,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 186
+   "arquivos_puxados": 187
   },
   {
    "protegida": true,
@@ -9577,7 +9577,7 @@
     "tab",
     "tablist"
    ],
-   "arquivos_puxados": 255
+   "arquivos_puxados": 256
   },
   {
    "protegida": false,
@@ -9910,7 +9910,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 39
+   "arquivos_puxados": 42
   },
   {
    "protegida": true,
@@ -10052,7 +10052,7 @@
     "tablist",
     "toolbar"
    ],
-   "arquivos_puxados": 147
+   "arquivos_puxados": 148
   },
   {
    "protegida": false,
@@ -10248,7 +10248,7 @@
     "gestor_singular",
     "manager"
    ],
-   "arquivos_puxados": 43
+   "arquivos_puxados": 46
   },
   {
    "protegida": true,
@@ -10410,7 +10410,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 138
+   "arquivos_puxados": 139
   },
   {
    "protegida": true,
@@ -10483,7 +10483,7 @@
     "gestor_singular",
     "manager"
    ],
-   "arquivos_puxados": 37
+   "arquivos_puxados": 40
   },
   {
    "protegida": true,
@@ -10565,7 +10565,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 35
+   "arquivos_puxados": 38
   },
   {
    "protegida": true,
@@ -10786,7 +10786,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 27
+   "arquivos_puxados": 30
   },
   {
    "protegida": false,
@@ -10837,7 +10837,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 27
+   "arquivos_puxados": 30
   },
   {
    "protegida": true,
@@ -10949,7 +10949,7 @@
     "status",
     "supervisor"
    ],
-   "arquivos_puxados": 65
+   "arquivos_puxados": 68
   },
   {
    "protegida": true,
@@ -11004,7 +11004,7 @@
     "admin",
     "manager"
    ],
-   "arquivos_puxados": 35
+   "arquivos_puxados": 38
   },
   {
    "protegida": false,

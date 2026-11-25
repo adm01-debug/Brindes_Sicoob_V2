@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `4ec46e6fa5` · branch `main` · 2026-11-25 20:23 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bebc2c9692` · branch `main` · 2026-11-25 20:38 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1611,7 +1611,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
   ```
 - **salesGoalSchema** (`src/lib/validations/goalSchema.ts`, z.object, encadeia refine):
   ```ts
-  { title: z.string() .min(2, "Título deve ter pelo menos 2 caracteres") .max(100, "Título deve ter no máximo 100 caracteres"), target_value: z.number() .positive("Meta deve ser um valor positivo") .max(999999999, "Valor máximo excedido"), goal_type: z.enum(["revenue", "quotes", "orders", "conversion"], { error: "Tipo de meta é obrigatório", }), period: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly"], { error: "Período é obrigatório", }), start_date: z.string().min(1, "Data de início é obrigatória"), end_date: z.string().min(1, "Data de fim é obrigatória"), notes: z.string().max(500, "Notas devem ter no máximo 500 caracteres").optional().or(z.literal("")), }
+  { title: z.string() .min(2, "Título deve ter pelo menos 2 caracteres") .max(100, "Título deve ter no máximo 100 caracteres"), target_value: z.number() .positive("Meta deve ser um valor positivo") .max(999999999, "Valor máximo excedido"), goal_type: z.enum(["revenue", "quotes", "orders", "conversion"], { // Só ausência é "obrigatório"; valor inválido mantém a mensagem padrão do zod. error: (issue) => (issue.input === undefined ? "Tipo de meta é obrigatório" : undefined), }), period: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly"], { error: (issue) => (issue.input === undefined ? "Período é obrigatório" : undefined), }), start_date: z.string().min(1, "Data de início é obrigatória"), end_date: z.string().min(1, "Data de fim é obrigatória"), notes: z.string().max(500, "Notas devem …
   ```
   - Regras cruzadas (refine): “Data de fim deve ser posterior à data de início”
 - **profileSchema** (`src/lib/validations/profileSchema.ts`, z.object):
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7322 testes em 747 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7333 testes em 750 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5973,6 +5973,7 @@ _nenhum item encontrado_
 | `tests/components/products/ProductSparkline.labels.test.tsx` | 9 | ProductSparkline — origem dos dados · renders the sparkline SVG when real data is available · does NOT show old  · identifica as saídas de estoque na grade de métricas … |
 | `tests/components/quotes/QuoteAutoSave.transicao.test.tsx` | 9 | QuoteAutoSave quando o orçamento deixa de ser editável · grava no mesmo rascunho a edição feita durante o envio · apaga o rascunho do orçamento que o usuário descartou · não apaga o rascunho que outra aba gravou … |
 | `tests/components/quotes/QuoteShareDialog.test.tsx` | 9 | QuoteShareDialog · reutiliza o token ativo e compartilha somente a rota pública · gera um novo token pelo fluxo canônico quando não há link · oferece novo link quando o token está %s … |
+| `tests/contexts/AuthContext.test.tsx` | 9 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
 | `tests/edge-functions/parseAiResponse.test.ts` | 9 | parseAiResponse · parses tool call arguments correctly · falls back to content parsing when no tool calls · returns fallback for invalid JSON in tool call args … |
 | `tests/hooks/useClientVsIndustry.reliable-data.test.tsx` | 9 | useClientVsIndustry — dados confiáveis · cliente real sem histórico não vira simulado nem desempenho zero contra o setor · distingue indisponibilidade técnica do histórico de ausência legítima de pedidos · calcula métricas somente quando cliente e amostra do ramo têm dado medido … |
@@ -6047,8 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
-| `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
-| … +447 linhas — lista completa em `context.json` | | |
+| … +450 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6403,6 +6403,7 @@ _nenhum item encontrado_
 | Row 2: Location (only if single group) + Specs */} | `src/components/simulator/wizard/PersonalizationSummary.tsx` |
 | * Mostra apenas o ícone (modo compacto, ex.: sidebar colapsada). */ | `src/components/ui/RoleBadge.tsx` |
 | de habilitar rolagem: `h-full` não resolve quando o pai tem apenas | `src/components/ui/scroll-area.tsx` |
+| Sessão encerrada por expiração/token também não pode levar os contadores | `src/contexts/AuthContext.tsx` |
 | máximo, no próximo intervalo. | `src/contexts/AuthContext.tsx` |
 | O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
 | O estado sujo de quem saiu não pode interrogar o próximo login. | `src/contexts/AuthContext.tsx` |
@@ -6535,5 +6536,4 @@ _nenhum item encontrado_
 | Conteúdo em animação de fechamento já não deve segurar a navegação. | `src/lib/overlay.ts` |
 | O evento vai marcado: quem tem atalho destrutivo em Escape deve | `src/lib/overlay.ts` |
 | permitir renovação sem ampliar indefinidamente o prazo do bearer token. | `src/lib/private-storage.ts` |
-| conta anterior e nao pode ser cacheada nem devolvida. | `src/lib/private-storage.ts` |
-| … +328 linhas — lista completa em `context.json` | |
+| … +329 linhas — lista completa em `context.json` | |

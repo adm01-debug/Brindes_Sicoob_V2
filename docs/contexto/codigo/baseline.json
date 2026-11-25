@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
+  "commit": "bebc2c9692601c0b0f281120c44b10ea1a2e1884",
   "branch": "main",
-  "data_commit": "2026-11-25T20:22:06Z",
+  "data_commit": "2026-11-25T20:37:20Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "bebc2c9",
+    "data": "2026-11-25",
+    "assunto": "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)"
+   },
    {
     "sha": "4ec46e6",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "a409d6d",
     "data": "2026-11-24",
     "assunto": "chore: alinha status do indice de lacunas aos vereditos verificados (#426)"
-   },
-   {
-    "sha": "1aa0068",
-    "data": "2026-11-24",
-    "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#425)"
    }
   ],
-  "arquivos_mudados_7d": 1201,
+  "arquivos_mudados_7d": 1204,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -254,10 +254,6 @@
     "mudancas": 11
    },
    {
-    "arquivo": "docs/execucao/validacao-do-plano.md",
-    "mudancas": 11
-   },
-   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
@@ -271,6 +267,10 @@
    },
    {
     "arquivo": ".github/workflows/security.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": "docs/execucao/validacao-do-plano.md",
     "mudancas": 10
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 224
+    "commits": 225
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5313,
-  "arquivos_codigo": 3202,
-  "linhas_codigo": 507573,
+  "arquivos_total": 5316,
+  "arquivos_codigo": 3205,
+  "linhas_codigo": 507732,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 934,
+  "testes": 937,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -792,7 +792,7 @@
   },
   "src/contexts": {
    "arquivos": 10,
-   "linhas": 1548
+   "linhas": 1558
   },
   "src/data": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/lib": {
    "arquivos": 170,
-   "linhas": 23000
+   "linhas": 23005
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 196,
-   "linhas": 51500
+   "linhas": 51501
   },
   "src/routes": {
    "arquivos": 9,
@@ -888,7 +888,7 @@
   },
   "tests/contexts": {
    "arquivos": 3,
-   "linhas": 440
+   "linhas": 499
   },
   "tests/contract": {
    "arquivos": 1,
@@ -931,8 +931,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 78,
-   "linhas": 9506
+   "arquivos": 80,
+   "linhas": 9561
   },
   "tests/load": {
    "arquivos": 1,
@@ -947,8 +947,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 30,
-   "linhas": 3548
+   "arquivos": 31,
+   "linhas": 3577
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,
@@ -1154,12 +1154,12 @@
   }
  ],
  "qualidade": {
-  "any": 521,
+  "any": 523,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 73
+  "arquivos_acima_500_linhas": 74
  },
  "todos": [
   {

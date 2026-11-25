@@ -39,6 +39,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -689,6 +690,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -764,6 +766,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SICOOB_TEST_EMAIL_CENTRAL",
     "VITE_SICOOB_TEST_EMAIL_GESTOR",
@@ -876,6 +879,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -970,6 +974,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -1558,6 +1563,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -2597,6 +2603,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -3024,6 +3031,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -4619,6 +4627,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -4806,6 +4815,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -5305,6 +5315,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -6063,6 +6074,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -6773,6 +6785,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -7050,7 +7063,7 @@
    "modulo": "contexts",
    "arquivos": 10,
    "testes": 0,
-   "linhas": 1548,
+   "linhas": 1558,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8486,6 +8499,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -8564,6 +8578,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -8665,6 +8680,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -8746,6 +8762,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -9318,6 +9335,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -9767,6 +9785,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -10265,7 +10284,7 @@
    "modulo": "lib",
    "arquivos": 61,
    "testes": 0,
-   "linhas": 8414,
+   "linhas": 8418,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11008,6 +11027,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -11266,6 +11286,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -11675,6 +11696,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -11755,7 +11777,7 @@
    "modulo": "lib/validations",
    "arquivos": 5,
    "testes": 0,
-   "linhas": 214,
+   "linhas": 215,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -14246,6 +14268,7 @@
     "DEV",
     "MODE",
     "PROD",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"
@@ -14715,7 +14738,7 @@
    "modulo": "pages/trends",
    "arquivos": 7,
    "testes": 0,
-   "linhas": 1333,
+   "linhas": 1334,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15693,6 +15716,7 @@
     "MODE",
     "PROD",
     "VITE_APP_ENCRYPTION_KEY",
+    "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "VITE_SUPABASE_URL"

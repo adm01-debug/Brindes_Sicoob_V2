@@ -15865,7 +15865,7 @@
     "AuthProvider"
    ],
    "export_default": null,
-   "linhas": 497,
+   "linhas": 507,
    "dominio": "contexts",
    "hooks_locais": [
     "useAuth",

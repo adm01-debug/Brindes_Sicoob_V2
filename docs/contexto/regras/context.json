@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
+  "sha": "bebc2c9692601c0b0f281120c44b10ea1a2e1884",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 20:23 UTC",
-  "files_total": 5316,
-  "code_files": 3876,
-  "code_lines": 572150
+  "generated_at": "2026-11-25 20:38 UTC",
+  "files_total": 5319,
+  "code_files": 3879,
+  "code_lines": 572309
  },
  "version": "1.3.2",
- "facts_hash": "c53f9851f01893c9",
+ "facts_hash": "b395931b15be582f",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1504,
+   ".ts": 1507,
    ".tsx": 1475,
    ".sql": 692,
    ".mjs": 143,
@@ -56253,7 +56253,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 131
+    "deps_count": 132
    },
    {
     "path": "",
@@ -56651,7 +56651,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 34
+    "deps_count": 36
    },
    {
     "path": "",
@@ -56686,7 +56686,7 @@
      "ensure_default_favorite_list",
      "get_sicoob_access_state"
     ],
-    "deps_count": 222
+    "deps_count": 224
    },
    {
     "path": "",
@@ -56738,7 +56738,7 @@
      "increment_kit_template_usage",
      "set_custom_kit_pinned"
     ],
-    "deps_count": 54
+    "deps_count": 56
    },
    {
     "path": "",
@@ -56855,7 +56855,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 29
+    "deps_count": 31
    },
    {
     "path": "",
@@ -57292,7 +57292,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 34
+    "deps_count": 36
    },
    {
     "path": "",
@@ -57405,7 +57405,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 77
+    "deps_count": 79
    },
    {
     "path": "",
@@ -57603,7 +57603,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 91
+    "deps_count": 93
    },
    {
     "path": "",
@@ -57797,7 +57797,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 36
+    "deps_count": 38
    },
    {
     "path": "",
@@ -58001,7 +58001,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 34
+    "deps_count": 36
    },
    {
     "path": "",
@@ -58138,7 +58138,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 82
+    "deps_count": 84
    },
    {
     "path": "/entrar, /login",
@@ -58156,7 +58156,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 35
+    "deps_count": 37
    },
    {
     "path": "/reset-password",
@@ -58182,7 +58182,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 23
+    "deps_count": 25
    },
    {
     "path": "/verificacao",
@@ -65677,7 +65677,7 @@
   {
    "module": "src/contexts",
    "files": 10,
-   "lines": 1548,
+   "lines": 1558,
    "tables": [
     "organization_members",
     "organizations"
@@ -66030,7 +66030,7 @@
   {
    "module": "src/lib",
    "files": 170,
-   "lines": 23000,
+   "lines": 23005,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -66198,7 +66198,7 @@
   {
    "module": "src/pages",
    "files": 196,
-   "lines": 51500,
+   "lines": 51501,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67197,8 +67197,8 @@
   },
   {
    "module": "tests",
-   "files": 703,
-   "lines": 94854,
+   "files": 706,
+   "lines": 94997,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -73449,7 +73449,7 @@
     "file": "src/lib/validations/goalSchema.ts",
     "name": "salesGoalSchema",
     "kind": "object",
-    "body": "{ title: z.string() .min(2, \"Título deve ter pelo menos 2 caracteres\") .max(100, \"Título deve ter no máximo 100 caracteres\"), target_value: z.number() .positive(\"Meta deve ser um valor positivo\") .max(999999999, \"Valor máximo excedido\"), goal_type: z.enum([\"revenue\", \"quotes\", \"orders\", \"conversion\"], { error: \"Tipo de meta é obrigatório\", }), period: z.enum([\"daily\", \"weekly\", \"monthly\", \"quarterly\", \"yearly\"], { error: \"Período é obrigatório\", }), start_date: z.string().min(1, \"Data de início é obrigatória\"), end_date: z.string().min(1, \"Data de fim é obrigatória\"), notes: z.string().max(500, \"Notas devem ter no máximo 500 caracteres\").optional().or(z.literal(\"\")), }",
+    "body": "{ title: z.string() .min(2, \"Título deve ter pelo menos 2 caracteres\") .max(100, \"Título deve ter no máximo 100 caracteres\"), target_value: z.number() .positive(\"Meta deve ser um valor positivo\") .max(999999999, \"Valor máximo excedido\"), goal_type: z.enum([\"revenue\", \"quotes\", \"orders\", \"conversion\"], { // Só ausência é \"obrigatório\"; valor inválido mantém a mensagem padrão do zod. error: (issue) => (issue.input === undefined ? \"Tipo de meta é obrigatório\" : undefined), }), period: z.enum([\"daily\", \"weekly\", \"monthly\", \"quarterly\", \"yearly\"], { error: (issue) => (issue.input === undefined ? \"Período é obrigatório\" : undefined), }), start_date: z.string().min(1, \"Data de início é obrigatória\"), end_date: z.string().min(1, \"Data de fim é obrigatória\"), notes: z.string().max(500, \"Notas devem …",
     "refines": [
      "Data de fim deve ser posterior à data de início"
     ],
@@ -81752,6 +81752,10 @@
    {
     "file": "src/components/ui/scroll-area.tsx",
     "text": "de habilitar rolagem: `h-full` não resolve quando o pai tem apenas"
+   },
+   {
+    "file": "src/contexts/AuthContext.tsx",
+    "text": "Sessão encerrada por expiração/token também não pode levar os contadores"
    },
    {
     "file": "src/contexts/AuthContext.tsx",
@@ -124379,6 +124383,14 @@
    },
    {
     "file": "tests/contexts/AuthContext.test.tsx",
+    "name": "limpa os KPIs de navegação no logout, para não irem para o próximo login"
+   },
+   {
+    "file": "tests/contexts/AuthContext.test.tsx",
+    "name": "limpa os KPIs de navegação quando a sessão encerra por evento"
+   },
+   {
+    "file": "tests/contexts/AuthContext.test.tsx",
     "name": "encerra a sessão local quando o vínculo foi revogado"
    },
    {
@@ -136106,6 +136118,18 @@
     "name": "no kit pessoal nao troca quando a gravacao falha"
    },
    {
+    "file": "tests/lib/sales-goal-schema.test.ts",
+    "name": "salesGoalSchema"
+   },
+   {
+    "file": "tests/lib/sales-goal-schema.test.ts",
+    "name": "mantém mensagens específicas quando os enums obrigatórios estão ausentes"
+   },
+   {
+    "file": "tests/lib/sales-goal-schema.test.ts",
+    "name": "preserva mensagens padrão para valores de enum inválidos"
+   },
+   {
     "file": "tests/lib/secret-validators.test.ts",
     "name": "validateSecret — guarda de sufixo mínimo (4 chars)"
    },
@@ -137044,6 +137068,14 @@
    {
     "file": "tests/lib/utils.test.ts",
     "name": "should handle arrays"
+   },
+   {
+    "file": "tests/lib/uxMetrics.test.ts",
+    "name": "métricas de navegação e guarda"
+   },
+   {
+    "file": "tests/lib/uxMetrics.test.ts",
+    "name": "conta eventos por sessão e expõe uma cópia serializável"
    },
    {
     "file": "tests/lib/validate.test.ts",
@@ -138660,6 +138692,22 @@
    {
     "file": "tests/pages/filters-page-helpers.test.ts",
     "name": "normaliza gênero sem depender de caixa"
+   },
+   {
+    "file": "tests/pages/is-demo-mode.test.ts",
+    "name": "modo de demonstração de Tendências"
+   },
+   {
+    "file": "tests/pages/is-demo-mode.test.ts",
+    "name": "usa dados reais por padrão"
+   },
+   {
+    "file": "tests/pages/is-demo-mode.test.ts",
+    "name": "ativa dados de demonstração apenas por opt-in explícito"
+   },
+   {
+    "file": "tests/pages/is-demo-mode.test.ts",
+    "name": "aceita o valor textual true e ignora outros valores"
    },
    {
     "file": "tests/pages/kit-builder-guarda-saida.test.tsx",
@@ -207054,7 +207102,7 @@
   },
   "src/contexts/AuthContext.tsx": {
    "path": "src/contexts/AuthContext.tsx",
-   "lines": 497,
+   "lines": 507,
    "exports": [
     "const AuthProvider",
     "function useAuth"
@@ -207080,6 +207128,7 @@
     }
    ],
    "rule_comments": [
+    "Sessão encerrada por expiração/token também não pode levar os contadores",
     "máximo, no próximo intervalo.",
     "O estado sujo de quem saiu não pode interrogar o próximo login.",
     "O estado sujo de quem saiu não pode interrogar o próximo login."
@@ -219653,10 +219702,11 @@
   },
   "src/lib/uxMetrics.ts": {
    "path": "src/lib/uxMetrics.ts",
-   "lines": 32,
+   "lines": 36,
    "exports": [
     "type UxMetric",
     "function trackUx",
+    "function resetUxMetrics",
     "function getUxMetrics"
    ]
   },
@@ -222925,7 +222975,7 @@
   },
   "src/lib/validations/goalSchema.ts": {
    "path": "src/lib/validations/goalSchema.ts",
-   "lines": 28,
+   "lines": 29,
    "exports": [
     "const salesGoalSchema",
     "type SalesGoalFormData"
@@ -222934,7 +222984,7 @@
     {
      "name": "salesGoalSchema",
      "kind": "object",
-     "body": "{ title: z.string() .min(2, \"Título deve ter pelo menos 2 caracteres\") .max(100, \"Título deve ter no máximo 100 caracteres\"), target_value: z.number() .positive(\"Meta deve ser um valor positivo\") .max(999999999, \"Valor máximo excedido\"), goal_type: z.enum([\"revenue\", \"quotes\", \"orders\", \"conversion\"], { error: \"Tipo de meta é obrigatório\", }), period: z.enum([\"daily\", \"weekly\", \"monthly\", \"quarterly\", \"yearly\"], { error: \"Período é obrigatório\", }), start_date: z.string().min(1, \"Data de início é obrigatória\"), end_date: z.string().min(1, \"Data de fim é obrigatória\"), notes: z.string().max(500, \"Notas devem ter no máximo 500 caracteres\").optional().or(z.literal(\"\")), }",
+     "body": "{ title: z.string() .min(2, \"Título deve ter pelo menos 2 caracteres\") .max(100, \"Título deve ter no máximo 100 caracteres\"), target_value: z.number() .positive(\"Meta deve ser um valor positivo\") .max(999999999, \"Valor máximo excedido\"), goal_type: z.enum([\"revenue\", \"quotes\", \"orders\", \"conversion\"], { // Só ausência é \"obrigatório\"; valor inválido mantém a mensagem padrão do zod. error: (issue) => (issue.input === undefined ? \"Tipo de meta é obrigatório\" : undefined), }), period: z.enum([\"daily\", \"weekly\", \"monthly\", \"quarterly\", \"yearly\"], { error: (issue) => (issue.input === undefined ? \"Período é obrigatório\" : undefined), }), start_date: z.string().min(1, \"Data de início é obrigatória\"), end_date: z.string().min(1, \"Data de fim é obrigatória\"), notes: z.string().max(500, \"Notas devem …",
      "refines": [
       "Data de fim deve ser posterior à data de início"
      ],
@@ -228639,11 +228689,11 @@
   },
   "src/pages/trends/is-demo-mode.ts": {
    "path": "src/pages/trends/is-demo-mode.ts",
-   "lines": 13,
+   "lines": 14,
    "exports": [
     "function isDemoMode"
    ],
-   "doc": "Flag leve de modo demo do módulo Tendências. Fica fora do trends-mock para que páginas possam checar o modo sem puxar a massa de dados fictícios para o chunk principal. Dados reais são o padrão. Para avaliação visual com dados fictícios, acesse /tendencias?demo=1."
+   "doc": "Flag leve de modo demo do módulo Tendências. Fica fora do trends-mock para que páginas possam checar o modo sem puxar a massa de dados fictícios para o chunk principal. Dados reais são o padrão. Para avaliação visual com dados fictícios, acesse /tendencias?demo=1 (ou `?demo=true`)."
   },
   "src/pages/trends/trends-mock.ts": {
    "path": "src/pages/trends/trends-mock.ts",
@@ -249615,7 +249665,7 @@
   },
   "tests/contexts/AuthContext.test.tsx": {
    "path": "tests/contexts/AuthContext.test.tsx",
-   "lines": 219,
+   "lines": 278,
    "is_test": true,
    "rule_comments": [
     "── Supabase mock — must be defined inside vi.mock factory ───────────────────"
@@ -249630,6 +249680,8 @@
     "sets up auth listener and calls getSession",
     "authenticates and loads admin role",
     "falha de forma fechada quando a consulta de papéis falha",
+    "limpa os KPIs de navegação no logout, para não irem para o próximo login",
+    "limpa os KPIs de navegação quando a sessão encerra por evento",
     "encerra a sessão local quando o vínculo foi revogado"
    ]
   },
@@ -255316,6 +255368,16 @@
     "no kit pessoal nao troca quando a gravacao falha"
    ]
   },
+  "tests/lib/sales-goal-schema.test.ts": {
+   "path": "tests/lib/sales-goal-schema.test.ts",
+   "lines": 36,
+   "is_test": true,
+   "tests": [
+    "salesGoalSchema",
+    "mantém mensagens específicas quando os enums obrigatórios estão ausentes",
+    "preserva mensagens padrão para valores de enum inválidos"
+   ]
+  },
   "tests/lib/secret-validators.test.ts": {
    "path": "tests/lib/secret-validators.test.ts",
    "lines": 57,
@@ -255675,6 +255737,15 @@
     "should handle undefined/null",
     "should handle empty call",
     "should handle arrays"
+   ]
+  },
+  "tests/lib/uxMetrics.test.ts": {
+   "path": "tests/lib/uxMetrics.test.ts",
+   "lines": 19,
+   "is_test": true,
+   "tests": [
+    "métricas de navegação e guarda",
+    "conta eventos por sessão e expõe uma cópia serializável"
    ]
   },
   "tests/lib/validate.test.ts": {
@@ -256631,6 +256702,17 @@
     "aplicação dos filtros do catálogo",
     "aplica a opção rápida %s",
     "normaliza gênero sem depender de caixa"
+   ]
+  },
+  "tests/pages/is-demo-mode.test.ts": {
+   "path": "tests/pages/is-demo-mode.test.ts",
+   "lines": 29,
+   "is_test": true,
+   "tests": [
+    "modo de demonstração de Tendências",
+    "usa dados reais por padrão",
+    "ativa dados de demonstração apenas por opt-in explícito",
+    "aceita o valor textual true e ignora outros valores"
    ]
   },
   "tests/pages/kit-builder-guarda-saida.test.tsx": {
@@ -259824,10 +259906,27 @@
   }
  },
  "git": {
-  "sha": "4ec46e6fa54d6cf7c32b9cad723d7bc76bcdc6b8",
+  "sha": "bebc2c9692601c0b0f281120c44b10ea1a2e1884",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "bebc2c9",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)",
+    "files": [
+     "docs/RECUPERACAO/anexo-testes-orfaos.md",
+     "src/contexts/AuthContext.tsx",
+     "src/lib/uxMetrics.ts",
+     "src/lib/validations/goalSchema.ts",
+     "src/pages/trends/is-demo-mode.ts",
+     "tests/contexts/AuthContext.test.tsx",
+     "tests/lib/sales-goal-schema.test.ts",
+     "tests/lib/uxMetrics.test.ts",
+     "tests/pages/is-demo-mode.test.ts"
+    ]
+   },
    {
     "sha": "4ec46e6",
     "date": "2026-11-25",
@@ -260178,33 +260277,15 @@
      "tests/lib/navigation-dirty-registry.test.ts",
      "tests/pages/kit-builder-guarda-saida.test.tsx"
     ]
-   },
-   {
-    "sha": "dc6bdc0",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "chore: workers de cron entram na allowlist de publicação das edges (#420)",
-    "files": [
-     ".github/workflows/deploy-sicoob-functions.yml",
-     "AGENTS.md",
-     "docs/agentes/banco.md",
-     "docs/agentes/servicos.md",
-     "scripts/ci/verify-supabase-functions-published.mjs",
-     "tests/scripts/verify-supabase-functions-published.test.ts"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    4
+    5
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    3
-   ],
-   [
-    "docs/agentes/banco.md",
     3
    ],
    [
@@ -260240,6 +260321,10 @@
     2
    ],
    [
+    "docs/agentes/banco.md",
+    2
+   ],
+   [
     "src/hooks/useQuoteBuilderState.ts",
     2
    ],
@@ -260252,27 +260337,27 @@
     2
    ],
    [
-    ".github/workflows/deploy-sicoob-functions.yml",
-    2
+    "src/contexts/AuthContext.tsx",
+    1
    ],
    [
-    "AGENTS.md",
-    2
+    "src/lib/uxMetrics.ts",
+    1
    ],
    [
-    "docs/agentes/servicos.md",
-    2
+    "src/lib/validations/goalSchema.ts",
+    1
    ],
    [
-    "scripts/ci/verify-supabase-functions-published.mjs",
-    2
+    "src/pages/trends/is-demo-mode.ts",
+    1
    ],
    [
-    "tests/scripts/verify-supabase-functions-published.test.ts",
-    2
+    "tests/contexts/AuthContext.test.tsx",
+    1
    ],
    [
-    "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx",
+    "tests/lib/sales-goal-schema.test.ts",
     1
    ]
   ]

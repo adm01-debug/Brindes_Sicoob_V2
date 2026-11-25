@@ -7942,6 +7942,7 @@
    "src/lib/external-db-prewarm.ts",
    "src/lib/navigation/dirty-registry.ts",
    "src/lib/telemetry/structuredLogger.ts",
+   "src/lib/uxMetrics.ts",
    "src/stores/useRecentlyViewedStore.ts",
    "src/types/users.ts"
   ],
