@@ -24,7 +24,9 @@ describe('OrdersContent', () => {
     expect(screen.getByText('Não foi possível carregar seus pedidos')).toBeTruthy();
     expect(screen.getByText(/isto não é uma lista vazia/)).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tentar novamente o carregamento dos pedidos' }),
+    );
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
@@ -39,7 +41,7 @@ describe('OrdersContent', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível atualizar a lista');
     expect(screen.queryByText('Não foi possível carregar seus pedidos')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente a atualização da lista' }));
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
