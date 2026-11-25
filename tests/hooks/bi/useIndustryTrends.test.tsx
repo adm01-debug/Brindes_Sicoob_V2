@@ -37,13 +37,13 @@ describe("useIndustryTrends", () => {
     expect(result.current.data?.trends[0]).toMatchObject({ productName: "Garrafa", trend: null });
   });
 
-  it("não perde produto elegível que fica fora das dez primeiras posições por volume", async () => {
+  it("não perde produto elegível além da 60ª posição por volume (teto de linhas do RPC)", async () => {
     fetchIndustryPeerIds.mockResolvedValue(["a", "b", "c", "d"]);
     const linhas = [
-      ...Array.from({ length: 10 }, (_, i) => ({
+      ...Array.from({ length: 60 }, (_, i) => ({
         product_name: `Isolado ${i}`,
         unique_clients: 1,
-        total_quantity: 100 - i,
+        total_quantity: 200 - i,
         total_revenue: 100,
       })),
       { product_name: "Garrafa", unique_clients: 3, total_quantity: 60, total_revenue: 300 },

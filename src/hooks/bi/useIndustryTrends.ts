@@ -50,8 +50,13 @@ export interface IndustryTrendsResult {
  */
 const MIN_SECTOR_COMPANIES = 3;
 
-/** Linhas pedidas ao RPC: a elegibilidade é aplicada aqui, depois do ORDER BY/LIMIT do banco. */
-const RPC_ROW_LIMIT = 60;
+/**
+ * Linhas pedidas ao RPC. A elegibilidade (`unique_clients >= MIN_SECTOR_COMPANIES`) é aplicada aqui,
+ * depois do `ORDER BY total_quantity DESC LIMIT` do banco: com um teto curto, produto elegível que cai
+ * depois do corte some da tela e o setor aparece como "amostra insuficiente". O corte definitivo tem de
+ * filtrar dentro do RPC (migration); até lá o teto local é folgado.
+ */
+const RPC_ROW_LIMIT = 1000;
 
 /** Teto do ranking, aplicado depois do filtro de amostra. */
 const MAX_TRENDS = 10;
