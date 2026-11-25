@@ -31,11 +31,21 @@ type RouteToken = { kind: "open" | "close"; index: number };
  * functions — o primeiro `>` cru nao serve. `<RouteSuspense>`/`</RouteSuspense>` nao
  * contam como rota.
  */
+function commentRanges(source: string): Array<[number, number]> {
+  return [...source.matchAll(/\/\*[\s\S]*?\*\//g)].map((match) => [match.index ?? 0, (match.index ?? 0) + match[0].length]);
+}
+
+const insideComment = (ranges: Array<[number, number]>, index: number) =>
+  ranges.some(([start, end]) => index >= start && index < end);
+
 function routeTokens(source: string): RouteToken[] {
   const tokens: RouteToken[] = [];
+  const comments = commentRanges(source);
   const re = /<\/?Route(?![A-Za-z])/g;
   let match: RegExpExecArray | null;
   while ((match = re.exec(source)) !== null) {
+    // Comentario que cita a tag nao e rota: sem isso o teste contaria uma abertura fantasma.
+    if (insideComment(comments, match.index)) continue;
     if (match[0] === "</Route") {
       tokens.push({ kind: "close", index: match.index });
       continue;
@@ -131,7 +141,9 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     // autorizacao; o aquecimento do boot usa o mesmo helper (sem dado de tenant) e
     // roda antes — por isso a assercao mira a ultima chamada, no handler, e nao a
     // declaracao do warm-up (renomear a variavel do pre-aquecimento nao invalida nada).
-    expect(code.lastIndexOf("await getCrmClient()")).toBeGreaterThan(authorization);
+    const callSites = [...code.matchAll(/await\s+getCrmClient\s*\(\)/g)];
+    expect(callSites.length).toBeGreaterThan(1);
+    expect(callSites[callSites.length - 1].index).toBeGreaterThan(authorization);
     expect(crmBridge).toContain("const parsed = CrmRequestSchema.safeParse(rawBody)");
   });
 
