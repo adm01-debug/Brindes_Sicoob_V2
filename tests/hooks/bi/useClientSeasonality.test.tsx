@@ -27,6 +27,10 @@ const SETOR_UMA_EMPRESA = [
 const SETOR_TRES_EMPRESAS = [
   { year: 2025, month: 5, avg_quotes_per_company: 4, avg_revenue_per_company: 400, companies_active: 3 },
 ];
+/** Setor com amostra exatamente nos meses de pico do cliente (jan, fev, mar). */
+const SETOR_COBRE_PICOS = [1, 2, 3].map((month) => ({
+  year: 2025, month, avg_quotes_per_company: 4, avg_revenue_per_company: 400, companies_active: 3,
+}));
 
 function seasonalityRpc(industryRows: unknown[]) {
   rpc.mockImplementation(async (name: string) => {
@@ -96,5 +100,35 @@ describe("useClientSeasonality", () => {
     expect(result.current.hasIndustryData).toBe(true);
     expect(result.current.dataStatus).toBe("available");
     expect(result.current.topIndustryMonths.map((mes) => mes.month)).toEqual([5]);
+  });
+
+  it("não conclui divergência com o mercado quando o pico do cliente cai em mês sem amostra", async () => {
+    fetchIndustryPeerIds.mockResolvedValue(["a", "b", "c"]);
+    // Amostra aprovada só em maio; os picos do cliente são jan, fev e mar.
+    seasonalityRpc(SETOR_TRES_EMPRESAS);
+
+    const { result } = renderSeasonality();
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const picos = result.current.topClientMonths.map((mes) => mes.month);
+    expect(picos).toEqual([3, 2, 1]);
+    expect(result.current.hasIndustryData).toBe(true);
+    // Existe setor, mas nenhum dos picos tem amostra: o texto não pode afirmar
+    // padrão diferente nem alinhado.
+    expect(result.current.insight).toContain("Setor sem amostra em Mar-Fev-Jan");
+    expect(result.current.insight).toContain("comparação com o mercado não conclusiva");
+    expect(result.current.insight).not.toMatch(/diferente do mercado|Padrão alinhado/);
+  });
+
+  it("compara com o mercado quando a amostra cobre os picos do cliente", async () => {
+    fetchIndustryPeerIds.mockResolvedValue(["a", "b", "c"]);
+    seasonalityRpc(SETOR_COBRE_PICOS);
+
+    const { result } = renderSeasonality();
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasIndustryData).toBe(true);
+    expect(result.current.insight).toContain("Padrão alinhado com a sazonalidade do setor");
+    expect(result.current.insight).not.toMatch(/sem amostra|diferente do mercado/);
   });
 });
