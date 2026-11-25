@@ -6,7 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Filter, Search, Eye, FileText, ShoppingBag, ArrowDown } from "lucide-react";
+import { AlertCircle, Filter, Search, Eye, FileText, ShoppingBag, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { buildCivilTrendWindow } from "@/pages/trends/trends-projections";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySellerScope, shouldShortCircuitForSelf } from "@/lib/auth/apply-seller-scope";
@@ -54,6 +55,7 @@ const STAGE_STYLES = {
 
 interface CountQueryResult {
   count: number | null;
+  error?: unknown;
 }
 
 interface AnalyticsClient {
@@ -80,6 +82,9 @@ async function fetchFunnel(since: string, scope: SalesScope, userId: string | nu
     quotesQuery.gte("created_at", since),
     ordersQuery.gte("created_at", since),
   ]);
+  const failed = [searches, views, quotes, orders].find((result) => result.error);
+  if (failed?.error) throw failed.error;
+
   return { searches: searches.count ?? 0, views: views.count ?? 0, quotes: quotes.count ?? 0, orders: orders.count ?? 0 };
 }
 
@@ -135,7 +140,7 @@ function TotalConversion({ data, isLoading }: { data?: FunnelData; isLoading: bo
 }
 
 export function ConversionFunnel({ days, referenceDate }: ConversionFunnelProps) {
-  const { data, isLoading } = useConversionData(days, referenceDate);
+  const { data, isLoading, isError, isFetching, refetch } = useConversionData(days, referenceDate);
   const stages = buildStages(data);
 
   return (
@@ -150,8 +155,26 @@ export function ConversionFunnel({ days, referenceDate }: ConversionFunnelProps)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? <LoadingRows /> : <FunnelRows stages={stages} />}
-        <TotalConversion data={data} isLoading={isLoading} />
+        {isError && (
+          <div
+            role="alert"
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm"
+          >
+            <div className="flex items-start gap-2 text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>
+                {data
+                  ? "Falha ao atualizar o funil. Os últimos dados carregados permanecem visíveis."
+                  : "Não foi possível carregar os dados do funil."}
+              </p>
+            </div>
+            <Button size="sm" variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+              {isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
+          </div>
+        )}
+        {isLoading ? <LoadingRows /> : data ? <FunnelRows stages={stages} /> : null}
+        <TotalConversion data={data} isLoading={isLoading || (isError && !data)} />
       </CardContent>
     </Card>
   );
