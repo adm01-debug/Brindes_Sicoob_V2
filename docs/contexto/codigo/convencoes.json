@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (677)",
+   "tests/ (678)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)",
    "chore: recupera 21 testes de branches nao incorporadas (#444)",
    "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)",
    "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)",
-   "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)",
-   "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)"
+   "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

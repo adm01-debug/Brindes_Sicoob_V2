@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
+  "commit": "1e59beb0d00998c2a58c625415cd3342d2624c60",
   "branch": "main",
-  "data_commit": "2026-11-25T13:48:44-03:00",
+  "data_commit": "2026-11-25T14:17:44-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "1e59beb",
+    "data": "2026-11-25",
+    "assunto": "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)"
+   },
    {
     "sha": "bc1b6c5",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "947f1af",
     "data": "2026-11-24",
     "assunto": "feat: navegacao interna avisa antes de perder formulario preenchido (#421)"
-   },
-   {
-    "sha": "dc6bdc0",
-    "data": "2026-11-24",
-    "assunto": "chore: workers de cron entram na allowlist de publicação das edges (#420)"
    }
   ],
-  "arquivos_mudados_7d": 1210,
+  "arquivos_mudados_7d": 1212,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -238,11 +238,11 @@
     "mudancas": 15
    },
    {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 15
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 14
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 14
    },
    {
@@ -282,15 +282,15 @@
     "mudancas": 10
    },
    {
-    "arquivo": "src/hooks/quotes/useQuotes.ts",
-    "mudancas": 10
-   },
-   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
    },
    {
     "arquivo": "docs/README.md",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
     "mudancas": 9
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 219
+    "commits": 220
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5309,
-  "arquivos_codigo": 3198,
-  "linhas_codigo": 507076,
+  "arquivos_total": 5310,
+  "arquivos_codigo": 3199,
+  "linhas_codigo": 507236,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 629,
   "cron_jobs": 28,
-  "testes": 930,
+  "testes": 931,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1135,
-   "linhas": 167898
+   "linhas": 167921
   },
   "src/constants": {
    "arquivos": 3,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 162,
-   "linhas": 29332
+   "arquivos": 163,
+   "linhas": 29469
   },
   "tests/contexts": {
    "arquivos": 3,

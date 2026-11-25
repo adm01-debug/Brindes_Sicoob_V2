@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
+  "sha": "1e59beb0d00998c2a58c625415cd3342d2624c60",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 17:13 UTC",
-  "files_total": 5312,
-  "code_files": 3872,
-  "code_lines": 571653
+  "generated_at": "2026-11-25 17:18 UTC",
+  "files_total": 5313,
+  "code_files": 3873,
+  "code_lines": 571813
  },
  "version": "1.3.2",
- "facts_hash": "e699140468d27430",
+ "facts_hash": "458fb241c29b3c8e",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1504,
-   ".tsx": 1471,
+   ".tsx": 1472,
    ".sql": 692,
    ".mjs": 143,
    ".py": 69,
@@ -62579,7 +62579,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1298,
+  "components_count": 1299,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65403,7 +65403,7 @@
   {
    "module": "src/components",
    "files": 1135,
-   "lines": 167898,
+   "lines": 167921,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -67181,8 +67181,8 @@
   },
   {
    "module": "tests",
-   "files": 699,
-   "lines": 94437,
+   "files": 700,
+   "lines": 94574,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -77348,6 +77348,10 @@
    {
     "file": "src/components/intelligence/CategoryRanking.tsx",
     "msg": " className="
+   },
+   {
+    "file": "src/components/intelligence/ConversionFunnel.tsx",
+    "msg": "\n            className="
    },
    {
     "file": "src/components/intelligence/HotSearchesCard.tsx",
@@ -122205,6 +122209,26 @@
    {
     "file": "tests/components/intelligence/UnmetDemandCard.window.test.tsx",
     "name": "usa a referencia compartilhada pela pagina em vez do relogio atual"
+   },
+   {
+    "file": "tests/components/intelligence/analytics-query-errors.test.tsx",
+    "name": "estados de consulta da inteligência comercial"
+   },
+   {
+    "file": "tests/components/intelligence/analytics-query-errors.test.tsx",
+    "name": "distingue falha de consulta de demanda vazia e permite tentar novamente"
+   },
+   {
+    "file": "tests/components/intelligence/analytics-query-errors.test.tsx",
+    "name": "exibe no selo o total global, mantendo somente dez termos no ranking"
+   },
+   {
+    "file": "tests/components/intelligence/analytics-query-errors.test.tsx",
+    "name": "não converte erros de contagem em zero e permite reconsultar um funil realmente vazio"
+   },
+   {
+    "file": "tests/components/intelligence/analytics-query-errors.test.tsx",
+    "name": "mantem os ultimos numeros visiveis quando a atualizacao do funil falha"
    },
    {
     "file": "tests/components/intelligence/commercial-intelligence.test.ts",
@@ -197445,7 +197469,7 @@
   },
   "src/components/intelligence/ConversionFunnel.tsx": {
    "path": "src/components/intelligence/ConversionFunnel.tsx",
-   "lines": 159,
+   "lines": 182,
    "exports": [
     "function ConversionFunnel"
    ],
@@ -197483,6 +197507,9 @@
      "id"
     ]
    },
+   "errors": [
+    "\n            className="
+   ],
    "doc": "ConversionFunnel — Funil visual Search → View → Quote → Order. Mostra drop-off entre cada estágio.",
    "calc_fns": [
     {
@@ -248451,6 +248478,23 @@
     "usa a referencia compartilhada pela pagina em vez do relogio atual"
    ]
   },
+  "tests/components/intelligence/analytics-query-errors.test.tsx": {
+   "path": "tests/components/intelligence/analytics-query-errors.test.tsx",
+   "lines": 137,
+   "is_test": true,
+   "errors": [
+    ")).not.toBeInTheDocument();\n    expect(screen.getAllByText(",
+    ")).not.toBeInTheDocument();\n    queryClient.clear();\n  });\n\n  it(",
+    ")).toHaveTextContent("
+   ],
+   "tests": [
+    "estados de consulta da inteligência comercial",
+    "distingue falha de consulta de demanda vazia e permite tentar novamente",
+    "exibe no selo o total global, mantendo somente dez termos no ranking",
+    "não converte erros de contagem em zero e permite reconsultar um funil realmente vazio",
+    "mantem os ultimos numeros visiveis quando a atualizacao do funil falha"
+   ]
+  },
   "tests/components/intelligence/commercial-intelligence.test.ts": {
    "path": "tests/components/intelligence/commercial-intelligence.test.ts",
    "lines": 1006,
@@ -259643,10 +259687,20 @@
   }
  },
  "git": {
-  "sha": "bc1b6c53884500fdb64c1e7289f549df2fdc6436",
+  "sha": "1e59beb0d00998c2a58c625415cd3342d2624c60",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "1e59beb",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)",
+    "files": [
+     "src/components/intelligence/ConversionFunnel.tsx",
+     "tests/components/intelligence/analytics-query-errors.test.tsx"
+    ]
+   },
    {
     "sha": "bc1b6c5",
     "date": "2026-11-25",
@@ -260033,32 +260087,12 @@
      "tests/lib/sicoob/paBudgetAmounts.test.ts",
      "tests/scenarios/sql/verba-lifecycle-fixture.sql"
     ]
-   },
-   {
-    "sha": "40abb0a",
-    "date": "2026-11-23",
-    "author": "adm01-debug",
-    "subject": "feat: notificar decisão da Singular e exibir verba do PA no carrinho (#410)",
-    "files": [
-     "docs/execucao/evidencias/notificacao-decisao-singular.json",
-     "e2e/cart-scroll-janela-baixa.spec.ts",
-     "e2e/fixtures/selectors.ts",
-     "scripts/automation.config.json",
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "scripts/qa/simular-notificacao-decisao-singular.py",
-     "src/components/cart/CartHeaderButton.tsx",
-     "src/components/cart/CartPaBudgetBalance.tsx",
-     "src/components/cart/MiniCart.tsx",
-     "src/components/ui/scroll-area.tsx",
-     "supabase/migrations/20261123090000_notify_singular_quote_decision.sql",
-     "tests/components/cart/cart-header-scroll.test.tsx"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    5
+    4
    ],
    [
     "src/pages/KitBuilderPage.tsx",

@@ -3890,6 +3890,7 @@
    "src/lib/utils.ts"
   ],
   "src/components/intelligence/ConversionFunnel.tsx": [
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/skeleton.tsx",
    "src/contexts/AuthContext.tsx",

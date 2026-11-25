@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `bc1b6c5388` · branch `main` · 2026-11-25 17:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `1e59beb0d0` · branch `main` · 2026-11-25 17:18 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5639,7 +5639,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1016 linhas — lista completa em `context.json` | |
+| … +1017 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5744,7 +5744,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7307 testes em 743 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7312 testes em 744 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6048,7 +6048,7 @@ _nenhum item encontrado_
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
-| … +443 linhas — lista completa em `context.json` | | |
+| … +444 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

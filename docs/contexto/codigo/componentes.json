@@ -7223,7 +7223,7 @@
     "ConversionFunnel"
    ],
    "export_default": null,
-   "linhas": 159,
+   "linhas": 182,
    "dominio": "components/intelligence",
    "hooks_locais": [
     "useAuth",
@@ -14957,7 +14957,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 631,
+   "usado_por": 632,
    "orfao": false
   },
   {
