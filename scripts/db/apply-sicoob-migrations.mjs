@@ -228,6 +228,10 @@ const TARGETS = [
     file: "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
     sha256: "c635314adbcdde04f8c269b105cbe558ec6c1a00698b1af38559a854e23b20b8",
   },
+  {
+    file: "supabase/migrations/20261125100000_notification_functions_contract.sql",
+    sha256: "5975cf023451f3f9d843a04e5ff323ac1f4506517dd42ee0d08f8b20fe17f0f4",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
@@ -494,6 +498,37 @@ export function validateLedger(targets, applied) {
     if (remoteHash !== localHash) {
       throw new Error(`Conteúdo divergente no ledger para ${target.version}.`);
     }
+  }
+}
+
+// A-028: o replay de 004 devolve a funcao ao contrato de producao (VOID, SECURITY DEFINER,
+// search_path fixo, EXECUTE so para service_role). Aqui o pos-deploy confirma esse contrato
+// no banco, em vez de aceitar apenas a linha do ledger.
+async function validateNotificationFunctionContract(client) {
+  const { rows } = await client.query(`
+    SELECT
+      to_regprocedure('public.cleanup_old_notifications()') IS NOT NULL AS funcao_existe,
+      COALESCE((SELECT p.prorettype = 'void'::regtype FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')), false) AS retorna_void,
+      COALESCE((SELECT p.prosecdef FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')), false) AS security_definer,
+      COALESCE((SELECT p.proconfig @> ARRAY['search_path=public']::text[] FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')), false) AS search_path_fixo,
+      has_function_privilege('anon', 'public.cleanup_old_notifications()', 'EXECUTE') AS anon_executa,
+      has_function_privilege('authenticated', 'public.cleanup_old_notifications()', 'EXECUTE') AS authenticated_executa,
+      has_function_privilege('service_role', 'public.cleanup_old_notifications()', 'EXECUTE') AS service_role_executa
+  `);
+  const encontrado = rows[0];
+  const falhas = [];
+  if (!encontrado.funcao_existe) falhas.push("funcao ausente");
+  if (!encontrado.retorna_void) falhas.push("nao retorna void");
+  if (!encontrado.security_definer) falhas.push("nao e security definer");
+  if (!encontrado.search_path_fixo) falhas.push("search_path nao fixo em public");
+  if (encontrado.anon_executa) falhas.push("anon pode executar");
+  if (encontrado.authenticated_executa) falhas.push("authenticated pode executar");
+  if (!encontrado.service_role_executa) falhas.push("service_role nao pode executar");
+  if (falhas.length) {
+    throw new Error(`Contrato de cleanup_old_notifications violado: ${falhas.join("; ")}.`);
   }
 }
 
@@ -1030,6 +1065,9 @@ async function validateContract(client, targets) {
       monitor_source: typeof result?.monitor_source === "string" ? "exposed" : result?.monitor_source,
     })}`);
   }
+  if (targets.some((target) => target.version === "20261125100000")) {
+    await validateNotificationFunctionContract(client);
+  }
 }
 
 export function buildManagementApiBatch(targets, before) {
@@ -1084,6 +1122,25 @@ VALUES (
     extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     "quote_scope_body",
   );
+  const notificationGuard = targets.some((target) => target.version === "20261125100000") ? `
+DO $sicoob_notification_guard$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc AS p
+    WHERE p.oid = to_regprocedure('public.cleanup_old_notifications()')
+      AND p.prorettype = 'void'::regtype
+      AND p.prosecdef
+      AND p.proconfig @> ARRAY['search_path=public']::text[]
+      AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+      AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+      AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+  ) THEN
+    RAISE EXCEPTION 'Contrato de cleanup_old_notifications violado; lote cancelado.';
+  END IF;
+END;
+$sicoob_notification_guard$;
+` : "";
   return `BEGIN;
 SET LOCAL statement_timeout = '2min';
 SELECT pg_advisory_xact_lock(hashtext('sicoob-allowlisted-migrations'));
@@ -1437,7 +1494,7 @@ BEGIN
   END IF;
 END;
 $sicoob_contract_guard$;
-COMMIT;`;
+${notificationGuard}COMMIT;`;
 }
 
 async function main() {

@@ -87,6 +87,25 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
   assert.match(batch, /COMMIT;$/);
 });
 
+test("confirma o contrato de cleanup_old_notifications dentro do lote atômico", () => {
+  const batch = buildManagementApiBatch(loadAuthorizedTargets(), new Map());
+
+  assert.match(batch, /DO \$sicoob_notification_guard\$/);
+  assert.match(batch, /to_regprocedure\('public\.cleanup_old_notifications\(\)'\)/);
+  assert.match(batch, /p\.prorettype = 'void'::regtype/);
+  assert.match(batch, /Contrato de cleanup_old_notifications violado; lote cancelado\./);
+  assert.ok(
+    batch.indexOf("$sicoob_notification_guard$;") < batch.indexOf("COMMIT;"),
+    "a guarda precisa rodar antes do COMMIT para que a falha reverta o lote",
+  );
+
+  const semContrato = buildManagementApiBatch(
+    loadAuthorizedTargets().filter((target) => target.version !== "20261125100000"),
+    new Map(),
+  );
+  assert.doesNotMatch(semContrato, /sicoob_notification_guard/);
+});
+
 test("valida marcador criptográfico registrado pelo executor administrativo", () => {
   const sql = "select 1;";
   const sha256 = createHash("sha256").update(sql).digest("hex");
