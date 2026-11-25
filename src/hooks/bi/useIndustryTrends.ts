@@ -43,8 +43,18 @@ export interface IndustryTrendsResult {
   trends: IndustryTrendItem[];
 }
 
-/** Abaixo disso o "setor" é uma empresa ou duas: não é mercado. */
+/**
+ * Abaixo disso o "setor" é uma empresa ou duas com orçamento: não é mercado.
+ * O RPC conta empresas com orçamento (sent/viewed/approved/converted/pending),
+ * ou seja demanda, não compra fechada — por isso a UI fala em "com orçamento".
+ */
 const MIN_SECTOR_COMPANIES = 3;
+
+/** Linhas pedidas ao RPC: a elegibilidade é aplicada aqui, depois do ORDER BY/LIMIT do banco. */
+const RPC_ROW_LIMIT = 60;
+
+/** Teto do ranking, aplicado depois do filtro de amostra. */
+const MAX_TRENDS = 10;
 
 function deriveCategory(name: string): string {
   const lower = name.toLowerCase();
@@ -105,7 +115,7 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
         const { data, error } = await supabase.rpc("get_industry_top_products", {
           _company_ids: companyIds,
           _days: 90,
-          _limit: 10,
+          _limit: RPC_ROW_LIMIT,
         });
 
         // O erro deixa de virar lista vazia que cai no mock: o setor passava a
@@ -113,7 +123,9 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
         if (error) throw error;
         const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
         // Produto comprado por uma ou duas empresas é compra isolada, não tendência setorial.
-        const sample = real.filter((p) => (Number(p.unique_clients) || 0) >= MIN_SECTOR_COMPANIES);
+        const sample = real
+          .filter((p) => (Number(p.unique_clients) || 0) >= MIN_SECTOR_COMPANIES)
+          .slice(0, MAX_TRENDS);
         if (sample.length > 0) {
           return {
             isMock: false,

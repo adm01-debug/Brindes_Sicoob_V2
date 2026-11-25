@@ -37,6 +37,25 @@ describe("useIndustryTrends", () => {
     expect(result.current.data?.trends[0]).toMatchObject({ productName: "Garrafa", trend: null });
   });
 
+  it("não perde produto elegível que fica fora das dez primeiras posições por volume", async () => {
+    fetchIndustryPeerIds.mockResolvedValue(["a", "b", "c", "d"]);
+    const linhas = [
+      ...Array.from({ length: 10 }, (_, i) => ({
+        product_name: `Isolado ${i}`,
+        unique_clients: 1,
+        total_quantity: 100 - i,
+        total_revenue: 100,
+      })),
+      { product_name: "Garrafa", unique_clients: 3, total_quantity: 60, total_revenue: 300 },
+    ];
+    rpc.mockImplementation((_fn: string, args: { _limit: number }) => ({ data: linhas.slice(0, args._limit), error: null }));
+
+    const { result } = renderTrends();
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.data?.trends.map((t) => t.productName)).toEqual(["Garrafa"]);
+  });
+
   it("mantém amostra insuficiente quando o ramo tem menos de três empresas", async () => {
     fetchIndustryPeerIds.mockResolvedValue(["a"]);
 
