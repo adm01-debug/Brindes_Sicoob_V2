@@ -132,6 +132,9 @@ reavaliação feita lendo o código de produção atual: nem todo "divergente" �
 que a `main` substituiu por outro melhor, e essa parte não deve ser reintroduzida.
 
 ### Recuperado em PR aberta (ainda não está na `main`)
+
+| Teste órfão | PR |
+| --- | --- |
 | `tests/hooks/bi/useClientSeasonality.test.tsx` | [#449](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/449) — setor com menos de 3 empresas, ou sem nenhum mês com orçamento, não vira amostra de mercado; a linha do setor é zerada e o selo do mapa de calor avisa `setor sem amostra`. |
 | `tests/components/common/IntelligenceBadges.errors.test.tsx` | [#448](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/448) — falha parcial nos selos de inteligência: alerta com retentativa e dados já medidos preservados. |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | [#448](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/448) — `role="alert"` + "Tentar novamente" nos indicadores e `role="status"` para o vazio confirmado. |
