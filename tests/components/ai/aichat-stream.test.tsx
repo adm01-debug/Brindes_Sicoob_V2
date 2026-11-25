@@ -159,11 +159,15 @@ describe("AIChat consome o stream real do expert-chat", () => {
 
     await act(async () => {
       pushRef.push(" e continua chegando");
-      pushRef.finish();
     });
 
+    // Stream ainda aberto: a rolagem precisa acontecer durante a resposta.
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
     expect(screen.getByText(/continua chegando/)).toBeTruthy();
-    expect(scrollSpy).toHaveBeenCalled();
+
+    await act(async () => {
+      pushRef.finish();
+    });
   });
 
   it("nao puxa a rolagem quando a pessoa esta lendo uma mensagem anterior", async () => {
