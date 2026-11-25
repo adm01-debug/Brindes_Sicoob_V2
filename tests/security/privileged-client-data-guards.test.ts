@@ -11,16 +11,18 @@ function sliceBetween(source: string, from: string, to: string): string {
   return source.slice(start, end);
 }
 
-/** Remove espacos (inclusive quebras de linha) mantendo o mapa para o indice original. */
-function normalize(source: string): { text: string; toSource: number[] } {
-  const chars: string[] = [];
-  const toSource: number[] = [];
-  for (let i = 0; i < source.length; i += 1) {
+/**
+ * O trecho a partir de `index` comeca com `needle`? Compara ignorando espacos para
+ * a tag de abertura poder ser reformatada (um atributo por linha).
+ */
+function startsWithCollapsed(source: string, index: number, needle: string): boolean {
+  let matched = 0;
+  for (let i = index; i < source.length && matched < needle.length; i += 1) {
     if (/\s/.test(source[i])) continue;
-    chars.push(source[i]);
-    toSource.push(i);
+    if (source[i] !== needle[matched]) return false;
+    matched += 1;
   }
-  return { text: chars.join(""), toSource };
+  return matched === needle.length;
 }
 
 type RouteToken = { kind: "open" | "close"; index: number };
@@ -101,12 +103,13 @@ const lineIndex = (source: string, index: number) => source.slice(0, index).spli
  * teste sem mudanca de comportamento.
  */
 function routeBlockRange(source: string, opener: string): { start: number; end: number } {
-  const { text, toSource } = normalize(source);
-  const at = text.indexOf(opener.replace(/\s+/g, ""));
-  if (at === -1) return { start: -1, end: -1 };
-  const startIndex = toSource[at];
+  const needle = opener.replace(/\s+/g, "");
   const tokens = routeTokens(source);
-  const opened = tokens.findIndex((token) => token.kind === "open" && token.index >= startIndex);
+  // A abertura precisa ser uma tag de rota de verdade: comentario que cita a tag nao
+  // conta, senao a busca aceitaria a proxima rota — que pode ser outro bloco.
+  const opened = tokens.findIndex(
+    (token) => token.kind === "open" && startsWithCollapsed(source, token.index, needle),
+  );
   if (opened === -1) return { start: -1, end: -1 };
   const start = lineIndex(source, tokens[opened].index);
   let depth = 0;
@@ -189,6 +192,15 @@ describe("barreiras estaticas para dados privilegiados de clientes", () => {
     expect(routeBlockRange(fonte, SHELL_BLOCK)).toEqual({ start: 2, end: 5 });
     // `//` dentro de string nao engole o resto da linha (a tag na mesma linha continua valendo).
     expect(routeBlockRange(fonte, ADMIN_BLOCK)).toEqual({ start: 6, end: 7 });
+
+    // Abertura citada so em comentario nao pode virar "a proxima rota qualquer".
+    const soComentario = [
+      "// <Route element={<AdminRoute />}>",
+      "<Route element={<ProtectedRoute />}>",
+      "</Route>",
+    ].join("\n");
+    expect(routeBlockRange(soComentario, ADMIN_BLOCK)).toEqual({ start: -1, end: -1 });
+    expect(routeBlockRange(soComentario, PROTECTED_BLOCK)).toEqual({ start: 1, end: 2 });
   });
 
   it("protege diagnosticos detalhados e mantem ping agregado", () => {
