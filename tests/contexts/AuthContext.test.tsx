@@ -222,8 +222,17 @@ describe('AuthContext', () => {
   });
 
   it('limpa os KPIs de navegação quando a sessão encerra por evento', async () => {
+    // Sem sessão inicial o teste não provaria a limpeza: é a passagem
+    // autenticado -> sem sessão que precisa zerar os contadores.
+    const mockSession = { user: { id: 'user-evento', email: 'evento@test.com' } };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+
     await act(async () => {
       render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated').textContent).toBe('true');
     });
 
     trackUx('nav.scroll-restore');

@@ -123,7 +123,7 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/scripts/scheduled-report-seller-scope.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
 | `tests/unit/e2e-cleanup-client.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
 
-Nota de `tests/pages/is-demo-mode.test.ts`: A correção é do contrato do esquema: `salesGoalSchema` é exportado por `src/lib/validations/index.ts:10-11` e **nenhum formulário o consome hoje** (a tela de metas salva por `useSalesGoals`), então este item vale como catraca de API, não como correção de tela.
+Nota de `tests/lib/sales-goal-schema.test.ts`: A correção é do contrato do esquema: `salesGoalSchema` é exportado por `src/lib/validations/index.ts:10-11` e **nenhum formulário o consome hoje** (a tela de metas salva por `useSalesGoals`), então este item vale como catraca de API, não como correção de tela.
 
 ## Reavaliação dos 36 `comportamento-divergente`
 
