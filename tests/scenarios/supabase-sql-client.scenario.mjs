@@ -5,6 +5,7 @@ import test from "node:test";
 import { createManagementSqlClient } from "../../scripts/db/supabase-sql-client.mjs";
 import {
   buildManagementApiBatch,
+  extractContractGuardClauses,
   loadAuthorizedTargets,
   validateLedger,
 } from "../../scripts/db/apply-sicoob-migrations.mjs";
@@ -85,6 +86,19 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
     /OR has_function_privilege\('service_role', 'public\.assert_quote_transition/,
   );
   assert.match(batch, /COMMIT;$/);
+});
+
+test("isola as cláusulas da guarda de contrato para apontar qual derrubou o lote", () => {
+  const clauses = extractContractGuardClauses(buildManagementApiBatch(loadAuthorizedTargets(), new Map()));
+
+  assert.ok(clauses.length > 40, `cláusulas extraídas: ${clauses.length}`);
+  assert.ok(clauses.some((clause) => clause.includes("quote_save_idempotency")));
+  assert.ok(clauses.some((clause) => clause.includes("favorite_items_list_product_variant_key")));
+  // Os corpos de função embutidos também têm "IF ... THEN" e "OR" indentados: nenhum corte
+  // pode cair dentro deles, senão a cláusula vira fragmento inválido e o diagnóstico não roda.
+  assert.equal(clauses.filter((clause) => /^jsonb_typeof\b/.test(clause)).length, 0);
+  assert.equal(clauses.filter((clause) => clause.startsWith("v_discount")).length, 0);
+  assert.deepEqual(extractContractGuardClauses("SELECT 1"), []);
 });
 
 test("confirma o contrato de cleanup_old_notifications dentro do lote atômico", () => {

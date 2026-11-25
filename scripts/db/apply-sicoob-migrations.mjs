@@ -1497,6 +1497,99 @@ $sicoob_contract_guard$;
 ${notificationGuard}COMMIT;`;
 }
 
+const CONTRACT_GUARD_CLAUSES = /DO \$sicoob_contract_guard\$\nBEGIN\n {2}IF ([\s\S]*?) THEN\n {4}RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado\.'/;
+
+// A guarda do lote é um único IF com todas as cláusulas ligadas por "OR": quando ela
+// dispara, a mensagem não aponta qual cláusula derrubou o lote. Esta extração reaproveita
+// o próprio SQL gerado (e não uma cópia da lista) para reavaliar cada cláusula em separado.
+// Corta a cadeia de cláusulas nos "OR" de primeiro nível. O texto traz corpos de função
+// inteiros (dollar-quoted) que também têm "OR" indentado igual: por isso o corte segue o
+// mesmo léxico de stripNonCode (strings, E-strings, identificadores e dollar quotes) e só
+// separa fora de aspas e fora de parênteses.
+function splitContractClauses(chain) {
+  const clauses = [];
+  let start = 0;
+  let depth = 0;
+  let index = 0;
+  while (index < chain.length) {
+    const char = chain[index];
+    const pair = chain.slice(index, index + 2);
+    if (pair === "--") {
+      const next = chain.indexOf("\n", index);
+      index = next < 0 ? chain.length : next + 1;
+      continue;
+    }
+    if (pair === "/*") {
+      const end = chain.indexOf("*/", index + 2);
+      index = end < 0 ? chain.length : end + 2;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      const quote = char;
+      const isEscapeString = quote === "'"
+        && /[Ee]/.test(chain[index - 1] ?? "")
+        && !/[A-Za-z0-9_$]/.test(chain[index - 2] ?? " ");
+      index += 1;
+      while (index < chain.length) {
+        if (isEscapeString && chain[index] === "\\") { index += 2; continue; }
+        if (chain[index] === quote) {
+          if (chain[index + 1] === quote) { index += 2; continue; }
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      continue;
+    }
+    const dollarTag = chain.slice(index).match(/^\$[A-Za-z_]*[A-Za-z0-9_]*\$/);
+    if (dollarTag) {
+      const end = chain.indexOf(dollarTag[0], index + dollarTag[0].length);
+      index = end < 0 ? chain.length : end + dollarTag[0].length;
+      continue;
+    }
+    if (char === "(" || char === "[") { depth += 1; index += 1; continue; }
+    if (char === ")" || char === "]") { depth -= 1; index += 1; continue; }
+    if (depth === 0 && chain.startsWith("\n     OR ", index)) {
+      clauses.push(chain.slice(start, index));
+      index += "\n     OR ".length;
+      start = index;
+      continue;
+    }
+    index += 1;
+  }
+  clauses.push(chain.slice(start));
+  return clauses.map((clause) => clause.trim()).filter(Boolean);
+}
+
+export function extractContractGuardClauses(batchSql) {
+  const matched = CONTRACT_GUARD_CLAUSES.exec(batchSql);
+  if (!matched) return [];
+  return splitContractClauses(matched[1]);
+}
+
+async function diagnoseContractClauses(client, targets, before) {
+  const clauses = extractContractGuardClauses(buildManagementApiBatch(targets, before));
+  if (!clauses.length) {
+    console.log("[diagnostico] guarda de contrato ausente do lote; nada a reavaliar.");
+    return;
+  }
+  const projection = clauses
+    .map((clause, index) => `((${clause})) AS c${String(index + 1).padStart(2, "0")}`)
+    .join(",\n  ");
+  const { rows } = await client.query(`SELECT\n  ${projection}`);
+  const falhas = clauses
+    .map((clause, index) => ({
+      index: index + 1,
+      clause,
+      falhou: rows[0]?.[`c${String(index + 1).padStart(2, "0")}`] === true,
+    }))
+    .filter((item) => item.falhou);
+  console.log(`[diagnostico] guarda de contrato: ${clauses.length} cláusulas reavaliadas, ${falhas.length} falhando.`);
+  for (const falha of falhas) {
+    console.log(`[diagnostico] cláusula ${falha.index} falha: ${falha.clause.replace(/\s+/g, " ").slice(0, 700)}`);
+  }
+}
+
 async function main() {
   const mode = process.argv[2];
   if (!new Set(["--verify-files", "--check", "--apply", "--require-applied"]).has(mode)) {
@@ -1536,7 +1629,10 @@ async function main() {
       mutation: mode === "--apply",
     }, null, 2));
 
-    if (mode === "--check") return;
+    if (mode === "--check") {
+      await diagnoseContractClauses(client, targets, before);
+      return;
+    }
     if (mode === "--require-applied") {
       if (pending.length) throw new Error(`Migrations autorizadas ainda pendentes: ${pending.map((item) => item.version).join(", ")}`);
       await validateContract(client, targets);
