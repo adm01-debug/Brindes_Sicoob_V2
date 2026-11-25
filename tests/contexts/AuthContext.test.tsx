@@ -39,6 +39,9 @@ vi.mock('@/integrations/supabase/client', () => {
 
 // Dynamic import to get the mocked module
 import { supabase } from '@/integrations/supabase/client';
+
+type RespostaDeSessao = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { getUxMetrics, trackUx } from '@/lib/uxMetrics';
 
@@ -225,7 +228,9 @@ describe('AuthContext', () => {
     // Sem sessão inicial o teste não provaria a limpeza: é a passagem
     // autenticado -> sem sessão que precisa zerar os contadores.
     const mockSession = { user: { id: 'user-evento', email: 'evento@test.com' } };
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(
+      { data: { session: mockSession } } as unknown as RespostaDeSessao,
+    );
 
     await act(async () => {
       render(<AuthProvider><AuthConsumer /></AuthProvider>);
