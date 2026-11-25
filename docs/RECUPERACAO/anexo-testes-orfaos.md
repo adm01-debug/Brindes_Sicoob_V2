@@ -23,7 +23,13 @@ Os 70 arquivos `*.test.ts(x)` foram copiados para um worktree limpo de `main` e 
 
 ## Vereditos por classe
 
-**`passa em main` (6)** — recuperados na PR #444. São ganho puro: passam hoje, sem tocar em código de produção.
+**`passa em main` (6)** — passam hoje sem tocar em código de produção. A revisão da PR #444 mostrou que três deles eram redundantes e foram descartados:
+
+- `tests/edge-functions/health-check.liveness.test.ts` repete, teste por teste, os dois primeiros casos de `tests/edge-functions/public-health-and-bi-share.test.ts` (já na `main`);
+- `tests/e2e/user-credentials.test.ts` + `e2e/helpers/user-credentials.ts` validam um helper sem consumidor, enquanto o setup real (`e2e/fixtures/auth.setup.ts`) usa o par `E2E_USER_*` — o teste passaria sem detectar e-mail e senha de contas diferentes;
+- `tests/edge-functions/catalog-readonly-rpc.test.ts` foi mantido, mas passou a importar `CATALOG_ORIGIN` em vez de fixar a URL do catálogo.
+
+Recuperados de fato na PR #444: `catalog-readonly-rpc.test.ts`, `useCategoryRanking.errors.test.tsx` e `useClientBI.real-data.test.tsx` (10 testes).
 
 **`modulo-ausente` (10)** — dois grupos distintos:
 
