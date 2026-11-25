@@ -67,6 +67,7 @@ const EMPTY_MARKET_DATA: MacroMarketData = {
   },
   suppliers: [],
   supplierIds: [],
+  truncated: false,
 };
 
 function buildChartData(daily: MacroMarketPoint[]): MarketMacroChartDatum[] {
@@ -196,6 +197,11 @@ function MarketChartReady({ model }: { model: MarketChartModel }) {
     <MarketKpis kpis={model.effectiveData.kpis} days={model.days} /><ChartControls model={model} /><MarketChartPlot data={model.chartData} />
     {model.effectiveData.suppliers.length > 1 && model.supplierNamesMap && <MacroSupplierComparison suppliers={model.effectiveData.suppliers} supplierNames={model.supplierNamesMap} />}
     <MarketInsight kpis={model.effectiveData.kpis} />
+    {model.effectiveData.truncated && (
+      <p className="text-xs text-muted-foreground" role="status">
+        ⚠️ Resultados parciais: a janela selecionada tem mais registros do que o limite de leitura do painel. Reduza o período para ver os totais completos.
+      </p>
+    )}
   </CardContent></Card>;
 }
 

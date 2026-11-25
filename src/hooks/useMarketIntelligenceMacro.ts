@@ -39,6 +39,8 @@ export interface MacroMarketData {
   kpis: MacroMarketKpis;
   suppliers: MacroSupplierMetrics[];
   supplierIds: string[];
+  /** true quando a janela tem mais registros do que o limite de leitura do painel. */
+  truncated: boolean;
 }
 
 interface SupplierAccumulator {
@@ -143,24 +145,61 @@ function toSupplierMetrics(supplierId: string, data: SupplierAccumulator): Macro
 const PAGE_SIZE = 5000;
 const MAX_ROWS = 60000;
 
-/** Busca o resumo diario paginando ate a ultima pagina incompleta. */
-async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockDailySummary[]> {
-  const rows: StockDailySummary[] = [];
+type StockRow = StockDailySummary & { id?: string | number };
+interface StockRowsPage { rows: StockRow[]; truncated: boolean }
+
+// O bridge pode repetir a consulta SEM a ordem pedida quando a coluna nao existe
+// (`meta.orderBy_fallback`). Sem ordem total o deslocamento repete/omite linhas,
+// entao a paginacao e abortada em vez de agregar dado incompleto.
+function hasOrderFallback(meta: unknown): boolean {
+  return (
+    typeof meta === 'object' && meta !== null &&
+    typeof (meta as { orderBy_fallback?: unknown }).orderBy_fallback === 'string'
+  );
+}
+
+// Offset igual ao total exato faz o PostgREST responder PGRST103 em vez de uma
+// pagina vazia; isso encerra a leitura em vez de derrubar o painel.
+function isRangeError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error ?? '');
+  return /PGRST103|range not satisfiable|requested range/i.test(msg);
+}
+
+/**
+ * Pagina `stock_daily_summary` por `id` (ordem total: sem repetir nem omitir
+ * linhas empatadas na mesma data) ate a ultima pagina incompleta.
+ */
+async function fetchStockSummaries(filters: Record<string, unknown>): Promise<StockRowsPage> {
+  const rows: StockRow[] = [];
+  let truncated = true;
   for (let offset = 0; offset < MAX_ROWS; offset += PAGE_SIZE) {
-    const page = await invokeExternalDb<StockDailySummary>({
-      table: 'stock_daily_summary',
-      operation: 'select',
-      select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
-      filters,
-      limit: PAGE_SIZE,
-      offset,
-      orderBy: { column: 'summary_date', ascending: false },
-    });
+    let page;
+    try {
+      page = await invokeExternalDb<StockRow>({
+        table: 'stock_daily_summary',
+        operation: 'select',
+        select: 'summary_date, stock_close, units_depleted, units_restocked, supplier_id',
+        filters,
+        limit: PAGE_SIZE,
+        offset,
+        orderBy: { column: 'id', ascending: true },
+      });
+    } catch (error) {
+      if (offset > 0 && rows.length > 0 && isRangeError(error)) {
+        truncated = false;
+        break;
+      }
+      throw error;
+    }
     const batch = page.records ?? [];
     rows.push(...batch);
-    if (batch.length < PAGE_SIZE) break;
+    if (batch.length < PAGE_SIZE) {
+      truncated = false;
+      break;
+    }
+    if (hasOrderFallback(page.meta)) throw new Error('Consulta de estoque sem ordenação garantida pelo bridge');
   }
-  return rows;
+  return { rows, truncated };
 }
 
 /**
@@ -182,7 +221,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
       // ampliar o periodo nao recuperava os dias anteriores.
       filters.summary_date_gte = cutoffStr;
 
-      const rows = await fetchStockSummaries(filters);
+      const { rows, truncated } = await fetchStockSummaries(filters);
 
       // Aggregate by date (for chart)
       const dateMap = new Map<string, MacroMarketPoint>();
@@ -226,6 +265,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
         },
         suppliers,
         supplierIds: Array.from(uniqueSuppliers),
+        truncated,
       };
     },
     staleTime: 10 * 60 * 1000,

@@ -103,4 +103,30 @@ describe("inteligencia de mercado sem dados reais", () => {
     await waitFor(() => expect(screen.queryByText("Sem movimentações de mercado no período selecionado")).toBeNull());
     expect(screen.getByRole("group", { name: "Métricas de inteligência de mercado" })).toBeTruthy();
   });
+  it("avisa quando a janela excede o teto de leitura do painel", () => {
+    const completo = {
+      daily: [{ date: "2026-01-02", depleted: 40, restocked: 5, stockClose: 120 }],
+      kpis: {
+        totalDepleted7d: 120,
+        totalDepleted30d: 400,
+        totalRestocked30d: 60,
+        totalCurrentStock: 900,
+        avgDailyDepletion: 13.3,
+        supplierCount: 1,
+        topDepletionDay: null,
+      },
+      suppliers: [],
+      supplierIds: ["fornecedor-1"],
+    };
+    mocks.supplierNames.mockReturnValue({ data: new Map<string, string>() });
+
+    mocks.market.mockReturnValue({ data: { ...completo, truncated: true }, isLoading: false, error: null });
+    const truncado = render(<MarketIntelligenceChart />);
+    expect(screen.getByText(/Resultados parciais/)).toBeTruthy();
+    truncado.unmount();
+
+    mocks.market.mockReturnValue({ data: { ...completo, truncated: false }, isLoading: false, error: null });
+    render(<MarketIntelligenceChart />);
+    expect(screen.queryByText(/Resultados parciais/)).toBeNull();
+  });
 });
