@@ -83,6 +83,9 @@ export function OrderStatsBar() {
   // estatísticas continuem em erro depois que a lista já voltou.
   const { data: response, isError, refetch } = useOrdersList(user?.id, scope);
   const orders = response?.data || [];
+  // `response` definido = já houve uma consulta boa: `data: []` são zeros
+  // confirmados, não estimativa.
+  const temResposta = response !== undefined;
 
   // Retentar tira a consulta do estado de erro e `data` continua indefinido:
   // sem esta trava a barra mostraria todos os contadores zerados.
@@ -92,9 +95,9 @@ export function OrderStatsBar() {
 
   if (falhou.current && !isError) return <StatsReloading />;
 
-  // Com números da última consulta boa a falha de atualização não apaga a
-  // barra: os cartões ficam e o aviso diz de onde eles vêm.
-  if (isError && orders.length === 0)
+  // Com uma consulta boa anterior a falha de atualização não apaga a barra:
+  // os cartões ficam (inclusive zeros confirmados) e o aviso diz de onde vêm.
+  if (isError && !temResposta)
     return (
       <StatsUnavailable
         onRetry={() => {
