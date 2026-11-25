@@ -33,7 +33,7 @@ function clientRow(year: number, month: number, quotes: number) {
 describe('sazonalidade sem dados artificiais', () => {
   it('mantém a amostra vazia quando não há histórico', () => {
     const result = resolveSeasonalityResult(
-      { clientRows: [], industryRows: [], companiesCount: 0 },
+      { clientRows: [], industryRows: [] },
       false,
     );
 
@@ -74,7 +74,6 @@ describe('sazonalidade sem dados artificiais', () => {
       {
         clientRows: [clientRow(2026, 2, 4), clientRow(2026, 8, 2)],
         industryRows: [],
-        companiesCount: 0,
       },
       false,
     );
@@ -93,7 +92,6 @@ describe('sazonalidade sem dados artificiais', () => {
       {
         clientRows: [clientRow(2026, 3, 5), clientRow(2026, 7, 1), clientRow(2026, 11, 9)],
         industryRows: [],
-        companiesCount: 0,
       },
       false,
     );

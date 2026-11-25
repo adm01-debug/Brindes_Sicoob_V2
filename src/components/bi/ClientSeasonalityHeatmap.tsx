@@ -63,11 +63,18 @@ function HeatmapHeader({ data }: { data: SeasonalityData }) {
   // Sem o fallback fictício, amostra curta chega aqui vazia: chamá-la de
   // "Dados reais · 1 mês" afirmaria sazonalidade que ninguém mediu.
   const meses = `${data.monthsCovered} mês${data.monthsCovered === 1 ? "" : "es"}`;
-  const badge = data.isMock
+  const badgeBase = data.isMock
     ? "Dados simulados · modo demonstração"
     : data.hasEnoughData
       ? `Dados reais · ${meses}`
       : `Amostra insuficiente · ${meses}`;
+  // Setor com menos de 3 empresas com histórico é zerado pelo hook: o selo avisa
+  // em vez de a linha do setor aparecer vazia sem explicação. Falha de query não
+  // é ausência de amostra, então ela tem texto próprio.
+  const semSetor = !data.isMock && !data.hasIndustryData;
+  const badge = semSetor
+    ? `${badgeBase} · ${data.industryError ? "setor indisponível" : "setor sem amostra"}`
+    : badgeBase;
   const confiavel = data.hasEnoughData && !data.isMock;
   return <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" /></div><div><CardTitle className="text-base font-display">Sazonalidade Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Quando o cliente compra ao longo do ano · janela de {data.windowMonths} meses</p></div></div><Badge variant="outline" className={cn("text-[10px]", confiavel && "border-success/50 text-success")}>{badge}</Badge></div></CardHeader>;
 }
