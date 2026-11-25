@@ -12,18 +12,18 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
+| 2026-11-25 22:00:00 | succeeded | 0.06 | 1 row |
+| 2026-11-25 21:00:00 | succeeded | 0.05 | 1 row |
 | 2026-11-25 20:00:00 | succeeded | 0.04 | 1 row |
-| 2026-11-25 19:00:00 | succeeded | 0.05 | 1 row |
-| 2026-11-25 18:00:00 | succeeded | 0.06 | 1 row |
 
 
 ## 3 · cleanup-expired-step-up
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:15:00 | succeeded | 0.07 | 1 row |
-| 2026-11-25 20:00:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 19:45:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 22:15:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 22:00:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 21:45:00 | succeeded | 0.03 | 1 row |
 
 
 ## 5 · cleanup-expired-collection-trash
@@ -93,18 +93,18 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:19:00 | succeeded | 0.04 | 1 row |
-| 2026-11-25 20:18:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 20:17:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 22:18:00 | succeeded | 0.04 | 1 row |
+| 2026-11-25 22:17:00 | succeeded | 0.04 | 1 row |
+| 2026-11-25 22:16:00 | succeeded | 0.01 | 1 row |
 
 
 ## 18 · sicoob-materialize-overdue-payments
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
+| 2026-11-25 22:17:00 | succeeded | 0.04 | 1 row |
+| 2026-11-25 21:17:00 | succeeded | 0.03 | 1 row |
 | 2026-11-25 20:17:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 19:17:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 18:17:00 | succeeded | 0.03 | 1 row |
 
 
 ## 19 · sicoob-approval-outbox-retention
@@ -120,42 +120,42 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:18:00 | succeeded | 0.13 | 1 row |
-| 2026-11-25 20:16:00 | succeeded | 1.45 | 1 row |
-| 2026-11-25 20:14:00 | succeeded | 0.05 | 1 row |
+| 2026-11-25 22:18:00 | succeeded | 0.18 | 1 row |
+| 2026-11-25 22:16:00 | succeeded | 0.08 | 1 row |
+| 2026-11-25 22:14:00 | succeeded | 1.33 | 1 row |
 
 
 ## 23 · process-export-queue
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:19:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 20:18:00 | succeeded | 0.03 | 1 row |
-| 2026-11-25 20:17:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 22:18:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 22:17:00 | succeeded | 0.04 | 1 row |
+| 2026-11-25 22:16:00 | succeeded | 0.01 | 1 row |
 
 
 ## 26 · external-db-bridge-keepalive
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:16:00 | succeeded | 0.01 | 1 row |
-| 2026-11-25 20:12:00 | succeeded | 0.01 | 1 row |
-| 2026-11-25 20:08:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 22:16:00 | succeeded | 0.01 | 1 row |
+| 2026-11-25 22:12:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 22:08:00 | succeeded | 0.02 | 1 row |
 
 
 ## 27 · connections-auto-test
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:15:00 | succeeded | 0.12 | 1 row |
-| 2026-11-25 20:00:00 | succeeded | 0.02 | 1 row |
-| 2026-11-25 19:45:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 22:15:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 22:00:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 21:45:00 | succeeded | 0.03 | 1 row |
 
 
 ## 35 · connections-health-check
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-25 20:07:00 | succeeded | 0.04 | 1 row |
-| 2026-11-25 19:52:00 | succeeded | 0.01 | 1 row |
-| 2026-11-25 19:37:00 | succeeded | 0.03 | 1 row |
+| 2026-11-25 22:07:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 21:52:00 | succeeded | 0.02 | 1 row |
+| 2026-11-25 21:37:00 | succeeded | 0.03 | 1 row |
