@@ -115,8 +115,9 @@ Esses 36 não foram recuperados nesta rodada: cada um exige ler o componente na 
 | `tests/migrations/storage-acl-hardening.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/GestorCompras.error-state.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
-| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente | Recuperado em [#451](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/451). |
-| `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  |
+| `tests/pages/PublicFavoriteListPage.test.tsx` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
+| `tests/pages/is-demo-mode.test.ts` | `fix/hermes-20261029-budget-no-fallback` | comportamento-divergente |  | A correção é do contrato do esquema: `salesGoalSchema` é exportado por `src/lib/validations/index.ts:10-11` e **nenhum formulário o consome hoje** (a tela de metas salva por `useSalesGoals`), então este item vale como catraca de API, não como correção de tela.
+
 | `tests/scripts/e2e-workflow-preflight.test.ts` | `fix/ci-workflows-h369570` | comportamento-divergente |  |
 | `tests/scripts/healthcheck.test.ts` | `claude/fix-prod-cors-audit-261118-1034` | comportamento-divergente |  |
 | `tests/scripts/scheduled-edge-deploy-parity.test.ts` | `fix/hermes-h393620-inteligencia-real` | comportamento-divergente |  |
@@ -160,6 +161,7 @@ que precisa ser reintegrado (e testado) antes de a branch de origem ser fechada.
 | `tests/pages/ProductDetail.intelligence-errors.test.tsx` | `role="alert"` + "Tentar novamente" nos indicadores; texto "dados disponíveis continuam exibidos"; `role="status"` para o vazio confirmado. `src/pages/ProductDetail.tsx` hoje não consome `useProductIntelligenceData`/`useStockVelocity` nesse nível. |
 | `tests/pages/GestorCompras.error-state.test.tsx` | O teste é de outra árvore de página: abas com `OrdersKanbanPage`/`OrdersPage` e três consultas com um alerta único e retentativa que repete **só** as consultas afetadas. A `main` tem alerta + retentativa apenas para `useManagerDashboardStats` (`src/components/sicoob/GestorComprasMetrics.tsx:125-136`); `MetricasDaFila` (`:80-85`) mostra a falha de `usePurchasingMetrics` **sem** retentativa. Faltam: (a) **retentativa seletiva das métricas da fila**; (b) **falha das abas** — `src/components/orders/ApprovalKanbanBoard.tsx:29` lê `useOrdersList` sem `isError` e `src/pages/OrdersPage.tsx:128` devolve `OrdersEmptyState`, tornando consulta falha indistinguível de "sem pedidos". |
 | `tests/hooks/bi/useClientSeasonality.test.tsx` | Amostra setorial insuficiente no mapa de calor: `resolveSeasonalityResult` recebe `companiesCount` (`src/hooks/bi/useClientSeasonality.ts`) e **não usa**; um setor com 1 empresa é apresentado como mercado. Diferente de `useIndustryTrends`, que passou a ter essa regra na #446. |
+| `tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx` | Faltava a guarda de não-edição no seletor de produtos (`canEdit`/`open`): com o diálogo aberto, o mesmo item podia ser somado duas vezes. Recuperado na PR #454 com 3 casos, incluindo o fechamento quando o diálogo já estava aberto. |
 
 ### Medido e descartado
 
@@ -175,7 +177,7 @@ Os três tinham lacuna real, curta e verificada: cada um entrou com o teste órf
 | --- | --- |
 | `tests/lib/sales-goal-schema.test.ts` | Zod 4 aplica `error` a **todo** erro do enum: escolher um valor inválido mostrava "Tipo de meta é obrigatório" em vez da mensagem de valor inválido. Agora o texto de obrigatório só aparece quando o campo está ausente. |
 | `tests/pages/is-demo-mode.test.ts` | Só `?demo=1` ativava o modo demonstração; `?demo=true` era ignorado. |
-| `tests/lib/uxMetrics.test.ts` | Não existia `resetUxMetrics()`, então os contadores de UX não podiam ser isolados por sessão/teste. |
+| `tests/lib/uxMetrics.test.ts` | Não existia `resetUxMetrics()`. Agora o logout limpa os contadores (`src/contexts/AuthContext.tsx`, `signOut`) — os KPIs de navegação de quem saiu não entram na conta do próximo login na mesma aba — e o teste de `AuthContext` mede isso. |
 
 ### Lacuna confirmada — fila de recuperação (código inexistente na `main`)
 
@@ -184,10 +186,9 @@ Medido: o teste roda na `main` e a API/comportamento que ele exige não existe. 
 | Teste órfão | O que falta (evidência do que não existe) |
 | --- | --- |
 | `tests/components/pricing/simulator/ProductSearch.test.tsx` | `priceAvailable` não existe em `src/` (`grep -rn priceAvailable src` = 0) e `ProductSearch` mapeia `price: p.sale_price ?? 0` (`:103`): produto com preço 0, negativo, NaN ou infinito entra no simulador como preço zero sem aviso. |
-| `tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx` | `QuoteProductSelector` só repassa props para `QuoteBuilderProductSearch` e ignora `canEdit`/`open`: durante o salvamento o seletor pode reabrir e somar item duas vezes. |
 | `tests/hooks/bi/useClientCategoryAffinity.test.tsx` | O hook devolve `isMock`/contagens, mas nenhum `status` (`insufficient`/`available`/`unavailable`): afinidade de categoria calculada com amostra pequena é apresentada como se fosse do mercado. Mesma regra que a #449 aplicou à sazonalidade. |
 | `tests/hooks/useCrmCompanies.pagination.test.ts` | `useAllCrmCompanies` não existe (`grep export src/hooks/useCrmCompanies.ts`): não há busca paginada de **toda** a base de clientes com ordenação estável nem falha explícita ao passar de 10.000 registros. |
-| `tests/hooks/useCrmClientsPage.test.ts` | `useCrmClientsPage` também não existe; a contagem exata de clientes filtrados sai por outro caminho, não verificado. |
+| `tests/hooks/useCrmClientsPage.test.ts` | `useCrmClientsPage` também não existe e não há contagem exata do filtrado: o total da tela de Clientes é `clients.length` (`src/pages/ClientsPage.tsx:127`) vindo de `useCrmCompanies`, cuja consulta limita a 200 linhas (`src/hooks/useCrmCompanies.ts:118-124`). Ou seja, o KPI trava em 200 clientes e não representa o total filtrado. |
 | `tests/components/BackButton.overlay-pointer.test.tsx` | Não há mecanismo de "navigation overlay": `grep -rn data-navigation-overlay src` = 0 e `BackButton` não consome o clique que fecha o menu. |
 | `tests/hooks/useIndustryTrends.errors.test.ts` + `useIndustryCategoryTrends.errors.test.tsx` | Os hooks importam `fetchIndustryPeerIds` de `@/lib/crm-db`, mas não existe em `src/` a mensagem de falha de CRM que o teste exige (o teste também precisa de uma linha de mock a mais). |
 | `tests/hooks/useClientBI.no-fallback.test.ts` | `useClientBI` não expõe `hasError` (o teste recebe `undefined`), então falha de origem não é distinguível de "cliente sem dados"; `recentOrders[].productPreview` também não existe. |
@@ -195,8 +196,15 @@ Medido: o teste roda na `main` e a API/comportamento que ele exige não existe. 
 | `tests/components/pricing/QuantityComparisonTable.test.tsx` | Falha de contrato de props (`reading ''find''`): a tabela mudou de assinatura; o total combinado por quantidade não tem teste na `main`. |
 | `tests/hooks/useQuoteInitialization.loading.test.tsx` | Falha de contrato (chamadas com arrays vazios): o estado de carregamento da inicialização do orçamento não é medido hoje. |
 | `tests/migrations/search-analytics-reconciliation.test.ts` + `storage-acl-hardening.test.ts` | Leem migrations por nome que não existem na `main`; a intenção (grants/policies de search analytics e ACL de storage) precisa ser remapeada para os arquivos atuais antes de virar teste. |
-| `tests/scripts/e2e-workflow-preflight.test.ts`, `tests/scripts/healthcheck.test.ts` | Guardas de CI/harness: falham por ambiente de teste (`process.exit`, `spawn`), não por ausência de código; precisam de adaptação para rodar. |
 | `tests/unit/e2e-cleanup-client.test.ts` | O esquema de nomes divergiu: o teste exige `[E2E:t-…]`, a `main` usa prefixo `[E2E]` (`e2e/fixtures/test-user.ts:26`). Recuperar exige decidir qual formato vale. |
+
+### Inconclusivo — falha só do ambiente de teste (não é lacuna)
+
+O teste roda na `main` e falha por dependência de ambiente (`process.exit`, `spawn`, rede), não por ausência de código. Não entram na fila de recuperação: só um ambiente adequado dá veredito.
+
+| Teste órfão | Por que é inconclusivo |
+| --- | --- |
+| `tests/scripts/e2e-workflow-preflight.test.ts`, `tests/scripts/healthcheck.test.ts` | Guardas de CI/harness: falham por ambiente de teste (`process.exit`, `spawn`), não por ausência de código; precisam de adaptação para rodar. |
 
 ### Comportamento presente na `main` — teste obsoleto (não recuperar)
 
@@ -206,14 +214,16 @@ Medido: o teste roda na `main` e a API/comportamento que ele exige não existe. 
 | `tests/hooks/useProductIntelligenceBadges.no-fallback.test.ts` | A API foi renomeada: o hook devolve `isMock`, o teste pede `isDemo`. A regra de não inventar selo está no hook (`:147`, `:152`). |
 | `tests/components/favorites/FavoritesClientPicker.directory.test.tsx` | `src/components/favorites/FavoritesClientPicker.tsx:59` já chama `fetchQuoteDirectoryCompanies({ term, limit: 20 })`; a falha é de mock/timing do harness antigo. |
 | `tests/hooks/useExternalCategoriesQuery.test.ts` | A `main` resolve por consulta única em cache e filtra localmente (`useCategoriesByIds`), em vez de uma consulta por lista de ids com `enabled`. Resultado equivalente; adotar o teste exigiria reescrever o hook. |
-| `tests/scripts/scheduled-edge-deploy-parity.test.ts` | Esperava 2 workers de cron; a `main` tem 22. A paridade hoje é verificada pelo próprio workflow de deploy. |
+| `tests/scripts/scheduled-edge-deploy-parity.test.ts` | Esperava 2 workers de cron; a `main` publica 22 funções, **6 delas workers de cron** (`scripts/ci/verify-supabase-functions-published.mjs:19-32`). A paridade hoje é verificada pelo próprio workflow de deploy. |
 
 ### Ainda sem veredito (0 de 36)
 
 Os 11 da reavaliação anterior mais os 25 desta seção fecham os 36 `comportamento-divergente`. Dos 25:
 
 - **3** recuperados nesta leva (PR #453), com o teste órfão rodando verde;
-- **17** com lacuna confirmada — continuam na fila de recuperação, cada um com PR próprio;
+- **1** recuperado em PR aberta (`QuoteProductSelector`, PR #454) — o código ainda não está na `main`;
+- **2** inconclusivos por ambiente de teste (`e2e-workflow-preflight`, `healthcheck`) — fora da fila: só um ambiente adequado dá veredito;
+- **14** com lacuna confirmada — continuam na fila de recuperação, cada um com PR próprio;
 - **5** com comportamento já presente na `main` (teste obsoleto ou de API renomeada).
 
 Nenhuma branch de origem destes 25 pode ser excluída antes do veredito da sua linha virar código na

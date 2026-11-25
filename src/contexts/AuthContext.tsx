@@ -10,6 +10,7 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { resetUxMetrics } from "@/lib/uxMetrics";
 import { limparRegistroDeRotas } from '@/lib/navigation/dirty-registry';
 
 
@@ -385,6 +386,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       useRecentlyViewedStore.getState().reset();
       // O estado sujo de quem saiu não pode interrogar o próximo login.
       limparRegistroDeRotas();
+      // KPIs de navegação são por sessão: os contadores de quem saiu não podem
+      // entrar na conta do próximo login na mesma aba.
+      resetUxMetrics();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

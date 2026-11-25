@@ -40,6 +40,7 @@ vi.mock('@/integrations/supabase/client', () => {
 // Dynamic import to get the mocked module
 import { supabase } from '@/integrations/supabase/client';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { getUxMetrics, trackUx } from '@/lib/uxMetrics';
 
 // Also mock the prewarm import
 vi.mock('@/lib/external-db-prewarm', () => ({
@@ -59,6 +60,11 @@ function AuthConsumer() {
       <span data-testid="isSeller">{String(auth.isVendedor)}</span>
     </div>
   );
+}
+
+function AuthSignOutConsumer() {
+  const auth = useAuth();
+  return <button onClick={() => void auth.signOut()}>sair</button>;
 }
 
 describe('AuthContext', () => {
@@ -195,6 +201,24 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('role').textContent).toBe('none');
       expect(screen.getByTestId('isSeller').textContent).toBe('false');
     }, { timeout: 3000 });
+  });
+
+  it('limpa os KPIs de navegação no logout, para não irem para o próximo login', async () => {
+    const mockSession = { user: { id: 'user-ux', email: 'ux@test.com' } };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+
+    await act(async () => {
+      render(<AuthProvider><AuthSignOutConsumer /></AuthProvider>);
+    });
+
+    trackUx('guard.shown');
+    expect(Object.keys(getUxMetrics())).toContain('guard.shown');
+
+    await act(async () => {
+      screen.getByRole('button', { name: 'sair' }).click();
+    });
+
+    await waitFor(() => expect(getUxMetrics()).toEqual({}));
   });
 
   it('encerra a sessão local quando o vínculo foi revogado', async () => {
