@@ -17,11 +17,15 @@ interface DeliveryResult {
   providerId?: string;
 }
 
+// Quem recebe o aviso é o aprovador (gestor_compras/gerente_pa), que não abre
+// /admin/*: o link tem de cair na fila que ele realmente pode decidir.
+export const APPROVER_QUEUE_PATH = '/gestor/aprovacoes';
+
 // Aceitação pelo provedor não comprova leitura pelo destinatário.
 export async function deliverApprovalNotification(delivery: ApprovalDelivery): Promise<DeliveryResult> {
   let appUrl: URL;
   try {
-    appUrl = new URL('/admin/sicoob', Deno.env.get('PUBLIC_APP_URL') ?? '');
+    appUrl = new URL(APPROVER_QUEUE_PATH, Deno.env.get('PUBLIC_APP_URL') ?? '');
     if (appUrl.protocol !== 'https:' || appUrl.username || appUrl.password) throw new Error();
   } catch {
     return { outcome: 'retry', errorCode: 'app_url_not_configured' };

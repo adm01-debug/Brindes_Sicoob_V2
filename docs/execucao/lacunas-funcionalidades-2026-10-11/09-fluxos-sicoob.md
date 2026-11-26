@@ -668,10 +668,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P2
 
 ### SIC-111  Link do e-mail/Slack de alçada leva para /admin/sicoob
-- Status: PARCIAL
+- Status: RESOLVIDO no repositório (publicação da função pendente)
 - Origem: `docs/execucao/notificacoes-duraveis-20260922.md`; matriz P064-P068
-- Evidência no código: `supabase/functions/_shared/approval-delivery.ts:24` monta a URL fixa `/admin/sicoob`, inacessível ao `gestor_compras` (SIC-017) e sem link para o pedido
-- O que falta: edge — link profundo para `/sicoob/pedidos/:id` ou `/gestor/aprovacoes`.
+- Evidência no código: `supabase/functions/_shared/approval-delivery.ts:22` define `APPROVER_QUEUE_PATH = '/gestor/aprovacoes'` e `:28` monta `new URL(APPROVER_QUEUE_PATH, PUBLIC_APP_URL)`; antes era a literal `/admin/sicoob`, inacessível ao `gestor_compras` (`src/components/layout/AdminRoute.tsx`).
+- Testes que travam a regra: `tests/scenarios/notificacoes-aprovacao.mjs` (botão do Slack e corpo do e-mail apontam para `https://simulacao.invalid/gestor/aprovacoes` e o corpo não contém `/admin/`) e `tests/lib/approval-link-target.test.ts` (a rota é governada por `rolesForSicoobPath` e liberada por `canAccessSicoobPath` para `gestor_compras`, `gerente_pa`, `comprador_singular` e `comprador_pac`).
+- O que falta: publicar a função `sicoob-approval-notifications` — o link novo só vale em produção depois do deploy.
+- Não verificado: link *por pedido* (`/sicoob/pedidos/:id`). A carga do outbox de `enqueue_sicoob_approval_notifications` só leva `requester_name`, `amount`, `reason` e `event_kind` (sem id do pedido), então o destino é a fila de aprovações; o link profundo exigiria DDL.
 - Impacto no negócio: o aprovador clica no e-mail e cai numa tela proibida (403).
 - Esforço: P
 - Prioridade: P1
