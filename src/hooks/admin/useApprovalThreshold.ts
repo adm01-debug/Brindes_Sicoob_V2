@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatBudgetCompetence, pickBudgetForCompetence, resolveBudgetCompetence, type BudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 interface ApprovalItem {
   category_id?: string | null;
@@ -40,25 +41,47 @@ function approvalRequired(input: {
   return exceedsCategoryThreshold(input.items, input.categoryThresholds);
 }
 
-export const useApprovalThreshold = (items?: ApprovalItem[]) => {
+export interface ApprovalThresholdBudgetRow {
+  ano?: number | null;
+  mes?: number | null;
+  limite_alcada?: number | null;
+}
+
+export interface ApprovalThresholdOptions {
+  /**
+   * Data do pedido. A alcada vale a competencia dessa data; sem ela, a do mes
+   * corrente (fluxo de carrinho, que ainda nao tem pedido).
+   */
+  referenceDate?: string | Date;
+}
+
+async function loadApprovalThresholdBudget(
+  paId: string,
+  competence: BudgetCompetence,
+): Promise<ApprovalThresholdBudgetRow | null> {
+  const { data, error } = await supabase
+    .from("pa_budgets")
+    .select("ano, mes, limite_alcada")
+    .eq("pa_id", paId);
+
+  if (error) throw error;
+  return pickBudgetForCompetence(data as ApprovalThresholdBudgetRow[] | null, competence);
+}
+
+function thresholdQueryKey(paId?: string | null, competence?: BudgetCompetence | null) {
+  return ["pa_approval_threshold", paId, competence?.year, competence?.month];
+}
+
+export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalThresholdOptions) => {
   const { profile, isGestorCompras, isDev, isSupervisor } = useAuth();
+  const paId = profile?.pa_id;
+  const competence = resolveBudgetCompetence(options?.referenceDate);
+  const canLoadThreshold = Boolean(paId && competence);
 
   const { data: budget } = useQuery({
-    queryKey: ["pa_approval_threshold", profile?.pa_id],
-    queryFn: async () => {
-      if (!profile?.pa_id) return null;
-      const { data, error } = await supabase
-        .from("pa_budgets")
-        .select("limite_alcada")
-        .eq("pa_id", profile.pa_id)
-        .eq("ano", new Date().getFullYear())
-        .eq("mes", new Date().getMonth() + 1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!profile?.pa_id,
+    queryKey: thresholdQueryKey(paId, competence),
+    queryFn: () => (paId && competence ? loadApprovalThresholdBudget(paId, competence) : Promise.resolve(null)),
+    enabled: canLoadThreshold,
   });
 
   const { data: categoryThresholds } = useQuery({
@@ -75,6 +98,8 @@ export const useApprovalThreshold = (items?: ApprovalItem[]) => {
     enabled: !!profile?.pa_id,
   });
 
+  const budgetThreshold = budget?.limite_alcada ?? null;
+
   const needsApproval = (amount: number, currentItems?: ApprovalItem[]) => {
     return approvalRequired({
       amount,
@@ -83,13 +108,14 @@ export const useApprovalThreshold = (items?: ApprovalItem[]) => {
       isSupervisor,
       isGestorCompras,
       paId: profile?.pa_id,
-      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, budget?.limite_alcada),
+      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, budgetThreshold),
       categoryThresholds,
     });
   };
 
   return {
-    threshold: globalApprovalThreshold(undefined, budget?.limite_alcada),
+    threshold: globalApprovalThreshold(undefined, budgetThreshold),
+    competenceLabel: formatBudgetCompetence(competence),
     categoryThresholds,
     needsApproval,
   };

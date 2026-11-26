@@ -67,6 +67,50 @@ export function resolvePaBudgetState(input: {
   return input.hasBudget ? 'configured' : 'unconfigured';
 }
 
+export interface BudgetCompetence {
+  year: number;
+  month: number;
+}
+
+type CompetenceRow = { ano?: number | null; mes?: number | null };
+
+/** Competencia em UTC, o mesmo fuso usado nas colunas `ano`/`mes` da verba. */
+export function resolveBudgetCompetence(referenceDate?: string | Date): BudgetCompetence | null {
+  const date = referenceDate === undefined ? new Date() : new Date(referenceDate);
+  if (Number.isNaN(date.getTime())) return null;
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 };
+}
+
+export function formatBudgetCompetence(competence: BudgetCompetence | null | undefined): string | null {
+  if (!competence) return null;
+  return `${String(competence.month).padStart(2, '0')}/${competence.year}`;
+}
+
+/**
+ * A verba que vale para a competencia da data consultada: a linha exata e, se
+ * ela nao existir, a ultima competencia anterior. Competencia futura nunca vale
+ * — o gestor veria um limite que ainda nao foi aprovado para aquele mes.
+ */
+export function pickBudgetForCompetence<T extends CompetenceRow>(
+  rows: T[] | null | undefined,
+  competence: BudgetCompetence | null | undefined,
+): T | null {
+  if (!competence || !rows?.length) return null;
+  const limit = competence.year * 12 + competence.month;
+  let best: T | null = null;
+  let bestRank = -1;
+  for (const row of rows) {
+    const year = Number(row.ano);
+    const month = Number(row.mes);
+    if (!Number.isFinite(year) || !Number.isFinite(month)) continue;
+    const rank = year * 12 + month;
+    if (rank > limit || rank <= bestRank) continue;
+    best = row;
+    bestRank = rank;
+  }
+  return best;
+}
+
 /**
  * Quando o pedido ja esta num status que reserva, compromete ou consome verba,
  * o saldo recebido ja inclui esse debito. Comparar o total integral contra esse

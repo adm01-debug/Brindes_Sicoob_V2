@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { readPaBudgetAmounts } from "@/lib/sicoob/paBudgetState";
+import { pickBudgetForCompetence, readPaBudgetAmounts, resolveBudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 function assertQuery(error: { message?: string } | null, label: string): void {
   if (error) throw new Error(`Não foi possível carregar ${label}: ${error.message || 'erro de consulta'}`);
@@ -9,9 +9,9 @@ export const sicoobStatsService = {
   async getPaDashboardStats(paId: string) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const competence = resolveBudgetCompetence(now);
     const [budgetResult, activeResult, approvalResult, deliveredResult, recentResult] = await Promise.all([
-      supabase.from("pa_budgets").select("*").eq("pa_id", paId)
-        .order("ano", { ascending: false }).order("mes", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("pa_budgets").select("*").eq("pa_id", paId),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
         .in("status", ["pending", "waiting_approval", "confirmed", "logistic", "in_production", "in_separation", "in_transit", "delivered"]),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
@@ -28,7 +28,7 @@ export const sicoobStatsService = {
     assertQuery(deliveredResult.error, 'as entregas do mês do PA');
     assertQuery(recentResult.error, 'os pedidos recentes do PA');
 
-    const budget = budgetResult.data;
+    const budget = pickBudgetForCompetence(budgetResult.data, competence);
     // Saldo do PA desconta os quatro estados da verba (migration 20261122120000).
     const amounts = readPaBudgetAmounts(budget);
     return {
