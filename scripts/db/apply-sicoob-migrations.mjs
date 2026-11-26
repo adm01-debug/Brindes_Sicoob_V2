@@ -244,6 +244,10 @@ const TARGETS = [
     file: "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
     sha256: "7b3994348fcf23f474975f2200cd0d5dff508a82e264704d2aeeb7c2c784da0d",
   },
+  {
+    file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    sha256: "80675e973dcd12bdfcfa07fb20a5c72bff9e6512ebe3fedd4d634c216ee59480",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
