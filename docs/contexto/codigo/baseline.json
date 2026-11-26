@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "6f109c44e6b84da50ecca9a427054227c540e243",
+  "commit": "20deb103883264c6842035b96af888652c8abf47",
   "branch": "main",
-  "data_commit": "2026-11-26T11:23:04-03:00",
+  "data_commit": "2026-11-26T12:09:52-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "20deb10",
+    "data": "2026-11-26",
+    "assunto": "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)"
+   },
    {
     "sha": "6f109c4",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "e8fcd27",
     "data": "2026-11-24",
     "assunto": "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)"
-   },
-   {
-    "sha": "b71a077",
-    "data": "2026-11-24",
-    "assunto": "feat: assistente de layouts passa a usar a IA real (#435)"
    }
   ],
-  "arquivos_mudados_7d": 948,
+  "arquivos_mudados_7d": 949,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 234
+    "commits": 235
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5339,
   "arquivos_codigo": 3225,
-  "linhas_codigo": 510877,
+  "linhas_codigo": 510890,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -872,7 +872,7 @@
   },
   "tests/admin": {
    "arquivos": 13,
-   "linhas": 2379
+   "linhas": 2392
   },
   "tests/ai-usage.test.ts": {
    "arquivos": 1,

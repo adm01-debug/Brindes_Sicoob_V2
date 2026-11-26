@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)",
    "feat: tela de gestão das políticas de aprovação por Singular (#461)",
    "fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)",
    "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)",
-   "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)",
-   "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)"
+   "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

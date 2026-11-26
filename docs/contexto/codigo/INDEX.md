@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `6f109c44e6b84da50ecca9a427054227c540e243` (2026-11-26T11:23:04-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `20deb103883264c6842035b96af888652c8abf47` (2026-11-26T12:09:52-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5339 |
 | arquivos_codigo | 3225 |
-| linhas_codigo | 510877 |
+| linhas_codigo | 510890 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -473,7 +473,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37223 nós · 62082 arestas · 2748 comunidades · grafo do commit `6f109c44`
+- 37223 nós · 62082 arestas · 2748 comunidades · grafo do commit `20deb103`
 - comunidades maiores: ref_lib (574), ref_components (352), @tanstack/react-query (278), ref_integrations (261), lucide-react (260), react (237), getCorsHeaders (215), ref_node_fs (209), sonner (207), framer-motion (202), ref_contexts (201), react-router-dom (188)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-26 `20deb10` fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)
 - 2026-11-26 `6f109c4` feat: tela de gestão das políticas de aprovação por Singular (#461)
 - 2026-11-25 `ce42c9f` fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)
 - 2026-11-25 `d036bf1` fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `3f6b0e0` fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)
 - 2026-11-25 `950c2f5` fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)
 - 2026-11-25 `514293d` docs: reavalia os vereditos dos testes divergentes (#447)
-- 2026-11-25 `1e59beb` fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

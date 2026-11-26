@@ -2027,7 +2027,7 @@
   {
    "arquivo": "tests/admin/route-guards-ref-warning.test.tsx",
    "tipo": "unit",
-   "linhas": 345,
+   "linhas": 358,
    "testa": [
     "src/components/errors/EnhancedErrorBoundary.tsx",
     "src/components/layout/AdminRoute.tsx",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "6f109c44e6b84da50ecca9a427054227c540e243",
+  "sha": "20deb103883264c6842035b96af888652c8abf47",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 14:30 UTC",
+  "generated_at": "2026-11-26 15:19 UTC",
   "files_total": 5342,
   "code_files": 3902,
-  "code_lines": 575701
+  "code_lines": 575714
  },
  "version": "1.3.2",
- "facts_hash": "fc118ce155e1824b",
+ "facts_hash": "88e362c5b028777a",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -67382,7 +67382,7 @@
   {
    "module": "tests",
    "files": 723,
-   "lines": 96888,
+   "lines": 96901,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -246910,7 +246910,7 @@
   },
   "tests/admin/route-guards-ref-warning.test.tsx": {
    "path": "tests/admin/route-guards-ref-warning.test.tsx",
-   "lines": 345,
+   "lines": 358,
    "is_test": true,
    "routes": [
     {
@@ -260969,10 +260969,19 @@
   }
  },
  "git": {
-  "sha": "6f109c44e6b84da50ecca9a427054227c540e243",
+  "sha": "20deb103883264c6842035b96af888652c8abf47",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "20deb10",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)",
+    "files": [
+     "tests/admin/route-guards-ref-warning.test.tsx"
+    ]
+   },
    {
     "sha": "6f109c4",
     "date": "2026-11-26",
@@ -261322,22 +261331,6 @@
     "files": [
      "docs/RECUPERACAO/reauditoria.md"
     ]
-   },
-   {
-    "sha": "3c5882b",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: recupera favorito indisponivel e e2e de sessao/orcamento da PR #145 (#431)",
-    "files": [
-     "e2e/audit-validation.spec.ts",
-     "e2e/helpers/auth.ts",
-     "e2e/routes/quotes/view.spec.ts",
-     "src/components/favorites/FavoritesSortBar.tsx",
-     "src/hooks/useFavoriteLists.ts",
-     "src/pages/FavoritesPage.tsx",
-     "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
-     "tests/hooks/useFavoriteListItems.undo.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -261372,6 +261365,10 @@
    [
     "docs/RECUPERACAO/reauditoria.md",
     2
+   ],
+   [
+    "tests/admin/route-guards-ref-warning.test.tsx",
+    1
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
@@ -261415,10 +261412,6 @@
    ],
    [
     "src/components/pricing/PrecoIndisponivelAlert.tsx",
-    1
-   ],
-   [
-    "src/components/pricing/ProductPriceSimulator.tsx",
     1
    ]
   ]
