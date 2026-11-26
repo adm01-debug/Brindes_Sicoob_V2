@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { pickBudgetForCompetence, readPaBudgetAmounts, resolveBudgetCompetence } from "@/lib/sicoob/paBudgetState";
+import { pickBudgetForExactCompetence, readPaBudgetAmounts, resolveBudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 function assertQuery(error: { message?: string } | null, label: string): void {
   if (error) throw new Error(`Não foi possível carregar ${label}: ${error.message || 'erro de consulta'}`);
@@ -28,7 +28,7 @@ export const sicoobStatsService = {
     assertQuery(deliveredResult.error, 'as entregas do mês do PA');
     assertQuery(recentResult.error, 'os pedidos recentes do PA');
 
-    const budget = pickBudgetForCompetence(budgetResult.data, competence);
+    const budget = pickBudgetForExactCompetence(budgetResult.data, competence);
     // Saldo do PA desconta os quatro estados da verba (migration 20261122120000).
     const amounts = readPaBudgetAmounts(budget);
     return {

@@ -53,6 +53,17 @@ describe("sicoobStatsService.getPaDashboardStats", () => {
     expect(stats.hasConfiguredBudget).toBe(true);
   });
 
+  it("não herda a verba do mês anterior: saldo é mensal", async () => {
+    mocks.budgets = [
+      { ano: 2026, mes: 10, verba_total: 3000, verba_reservada: 0, verba_comprometida: 0, verba_consumida: 1000 },
+    ];
+
+    const stats = await sicoobStatsService.getPaDashboardStats("pa-1");
+
+    expect(stats.monthlyLimit).toBe(0);
+    expect(stats.hasConfiguredBudget).toBe(false);
+  });
+
   it("declara verba não configurada quando só existe competência futura", async () => {
     mocks.budgets = [
       { ano: 2026, mes: 12, verba_total: 9000, verba_reservada: 0, verba_comprometida: 0, verba_consumida: 0 },

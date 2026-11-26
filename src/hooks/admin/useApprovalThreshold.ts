@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatBudgetCompetence, pickBudgetForCompetence, resolveBudgetCompetence, type BudgetCompetence } from "@/lib/sicoob/paBudgetState";
+import { formatBudgetCompetence, isCarryOverCompetence, pickBudgetForCompetence, readBudgetCompetence, resolveBudgetCompetence, type BudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 interface ApprovalItem {
   category_id?: string | null;
@@ -49,6 +49,11 @@ export interface ApprovalThresholdBudgetRow {
 
 export interface ApprovalThresholdOptions {
   /**
+   * PA dono do pedido. Sem ele vale o PA de quem esta logado; num pedido de
+   * outro PA isso compararia o valor com a alcada errada.
+   */
+  paId?: string | null;
+  /**
    * Data do pedido. A alcada vale a competencia dessa data; sem ela, a do mes
    * corrente (fluxo de carrinho, que ainda nao tem pedido).
    */
@@ -74,7 +79,7 @@ function thresholdQueryKey(paId?: string | null, competence?: BudgetCompetence |
 
 export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalThresholdOptions) => {
   const { profile, isGestorCompras, isDev, isSupervisor } = useAuth();
-  const paId = profile?.pa_id;
+  const paId = options?.paId || profile?.pa_id;
   const competence = resolveBudgetCompetence(options?.referenceDate);
   const canLoadThreshold = Boolean(paId && competence);
 
@@ -85,20 +90,22 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
   });
 
   const { data: categoryThresholds } = useQuery({
-    queryKey: ["pa_category_thresholds", profile?.pa_id],
+    queryKey: ["pa_category_thresholds", paId],
     queryFn: async () => {
-      if (!profile?.pa_id) return [];
+      if (!paId) return [];
       const { data, error } = await supabase
         .from("pa_category_thresholds")
         .select("*")
-        .eq("pa_id", profile.pa_id);
+        .eq("pa_id", paId);
       if (error) throw error;
       return data;
     },
-    enabled: !!profile?.pa_id,
+    enabled: !!paId,
   });
 
   const budgetThreshold = budget?.limite_alcada ?? null;
+  const usedCompetence = readBudgetCompetence(budget);
+  const isCarryOver = isCarryOverCompetence(usedCompetence, competence);
 
   const needsApproval = (amount: number, currentItems?: ApprovalItem[]) => {
     return approvalRequired({
@@ -107,7 +114,7 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
       isDev,
       isSupervisor,
       isGestorCompras,
-      paId: profile?.pa_id,
+      paId,
       globalThreshold: globalApprovalThreshold(profile?.approval_threshold, budgetThreshold),
       categoryThresholds,
     });
@@ -115,7 +122,11 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
 
   return {
     threshold: globalApprovalThreshold(undefined, budgetThreshold),
-    competenceLabel: formatBudgetCompetence(competence),
+    /** Competencia da linha que realmente define a alcada (pode ser herdada). */
+    competenceLabel: formatBudgetCompetence(usedCompetence),
+    /** Competencia do pedido; igual a anterior quando nao ha heranca. */
+    requestedCompetenceLabel: formatBudgetCompetence(competence),
+    isCarryOver,
     categoryThresholds,
     needsApproval,
   };

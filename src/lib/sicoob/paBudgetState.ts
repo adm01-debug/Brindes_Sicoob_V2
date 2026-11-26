@@ -111,6 +111,37 @@ export function pickBudgetForCompetence<T extends CompetenceRow>(
   return best;
 }
 
+/** Competencia de uma linha de verba, ou null quando `ano`/`mes` nao sao numeros. */
+export function readBudgetCompetence(row: CompetenceRow | null | undefined): BudgetCompetence | null {
+  if (!row) return null;
+  const year = Number(row.ano);
+  const month = Number(row.mes);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return null;
+  return { year, month };
+}
+
+/** Verdadeiro quando a linha usada e de uma competencia anterior a pedida. */
+export function isCarryOverCompetence(
+  used: BudgetCompetence | null | undefined,
+  requested: BudgetCompetence | null | undefined,
+): boolean {
+  if (!used || !requested) return false;
+  return used.year !== requested.year || used.month !== requested.month;
+}
+
+/**
+ * A verba e mensal (docs/agentes/regras-dominio.md): saldo e disponibilidade so
+ * valem para a competencia exata. Herdar a linha anterior aqui liberaria verba
+ * de outro mes para compra, por isso o painel usa este picker e nao o de alcada.
+ */
+export function pickBudgetForExactCompetence<T extends CompetenceRow>(
+  rows: T[] | null | undefined,
+  competence: BudgetCompetence | null | undefined,
+): T | null {
+  if (!competence || !rows?.length) return null;
+  return rows.find((row) => Number(row.ano) === competence.year && Number(row.mes) === competence.month) ?? null;
+}
+
 /**
  * Quando o pedido ja esta num status que reserva, compromete ou consome verba,
  * o saldo recebido ja inclui esse debito. Comparar o total integral contra esse
