@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { cooperativaCeilingQueryKey } from "@/services/sicoob/cooperativaBudgetService";
 import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { askConfirm } from '@/stores/useConfirmDialogStore';
@@ -62,6 +63,7 @@ function usageBarClass(percent: number, warning: number, critical: number): stri
 }
 
 export default function AdminVerbasPage() {
+  const queryClient = useQueryClient();
   const [budgets, setBudgets] = useState<BudgetRow[]>([]);
   const [pas, setPas] = useState<PaOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,6 +177,7 @@ export default function AdminVerbasPage() {
       }
       setIsFormOpen(false);
       setEditingBudget(null);
+      await queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
       fetchData();
     } catch (error) {
       console.error("Error saving budget:", error);

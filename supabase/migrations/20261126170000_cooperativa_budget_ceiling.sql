@@ -8,7 +8,14 @@
 --   * a transferencia de um PA para outra Singular nao pode estourar o teto de
 --     destino, porque as verbas do PA passam a contar la;
 --   * duas gravacoes simultaneas na mesma competencia sao serializadas, para
---     que a soma lida por uma ja enxergue a verba confirmada pela outra.
+--     que a soma lida por uma ja enxergue a verba confirmada pela outra;
+--   * a gravacao da verba espera uma transferencia de PA em andamento
+--     (`FOR SHARE` em `postos_atendimento`) e a transferencia reavalia a soma
+--     ja com a verba confirmada, para que as duas operacoes sobre o mesmo PA
+--     nao se cruzem;
+--   * a soma agregada so e liberada para quem ja enxerga as verbas da
+--     Singular inteira (admin, gestor_compras ou comprador_singular do
+--     proprio vinculo) — comprador restrito a um PA nao ve o total.
 -- Sem linha de teto para a competencia, o comportamento anterior se mantem
 -- (verba do PA livre) para nao bloquear cooperativas que ainda nao configuraram.
 --
@@ -61,13 +68,17 @@ CREATE OR REPLACE FUNCTION public._pode_ver_verba_da_cooperativa(p_cooperativa_i
 RETURNS boolean
 LANGUAGE sql
 STABLE
-SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT auth.uid() IS NULL
-      OR public.is_admin(auth.uid())
-      OR (p_cooperativa_id IS NOT NULL
-          AND p_cooperativa_id = public.current_user_cooperativa_id());
+  SELECT COALESCE(
+    auth.uid() IS NULL
+    OR public.is_admin(auth.uid())
+    OR (p_cooperativa_id IS NOT NULL
+        AND p_cooperativa_id = public.current_user_cooperativa_id()
+        AND (public.has_role(auth.uid(), 'gestor_compras'::public.app_role)
+             OR public.has_role(auth.uid(), 'comprador_singular'::public.app_role))),
+    false
+  );
 $$;
 
 REVOKE ALL ON FUNCTION public._pode_ver_verba_da_cooperativa(uuid) FROM PUBLIC, anon, authenticated;
@@ -82,7 +93,6 @@ CREATE OR REPLACE FUNCTION public._trava_competencia_da_cooperativa(
 RETURNS void
 LANGUAGE sql
 VOLATILE
-SECURITY DEFINER
 SET search_path = public
 AS $$
   SELECT pg_advisory_xact_lock(
@@ -105,7 +115,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF NOT public._pode_ver_verba_da_cooperativa(p_cooperativa_id) THEN
+  IF public._pode_ver_verba_da_cooperativa(p_cooperativa_id) IS NOT TRUE THEN
     RAISE EXCEPTION 'Sem permissao para consultar a verba desta cooperativa.'
       USING ERRCODE = '42501';
   END IF;
@@ -134,9 +144,12 @@ DECLARE
   v_total              numeric(14,2);
   v_detalhado          boolean;
 BEGIN
+  -- FOR SHARE: espera uma transferencia de PA em andamento e o relê já no
+  -- destino, para nao validar a verba contra o teto da Singular de origem.
   SELECT pa.cooperativa_id INTO v_cooperativa_id
     FROM public.postos_atendimento pa
-   WHERE pa.id = NEW.pa_id;
+   WHERE pa.id = NEW.pa_id
+     FOR SHARE;
 
   IF v_cooperativa_id IS NULL THEN
     RETURN NEW;
@@ -163,7 +176,11 @@ BEGIN
       FROM public.postos_atendimento pa
      WHERE pa.id = OLD.pa_id;
 
-    IF v_cooperativa_antiga IS NOT DISTINCT FROM v_cooperativa_id THEN
+    -- O valor antigo so faz parte da soma da competencia de destino quando a
+    -- competencia nao mudou; ao mover entre meses ele pertence a outra soma.
+    IF v_cooperativa_antiga IS NOT DISTINCT FROM v_cooperativa_id
+       AND OLD.ano = NEW.ano
+       AND OLD.mes = NEW.mes THEN
       v_distribuido := v_distribuido - COALESCE(OLD.verba_total, 0);
     END IF;
   END IF;

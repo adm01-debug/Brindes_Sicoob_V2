@@ -129,10 +129,12 @@ function useTetoData(cooperativaId: string, ano: number, mes: number) {
   const tetoQuery = useQuery({
     queryKey: [COOPERATIVA_CEILING_QUERY_KEY, cooperativaId, ano, mes],
     queryFn: () => loadCeiling(cooperativaId, ano, mes),
+    refetchOnMount: "always",
   });
   const distribuidoQuery = useQuery({
     queryKey: [COOPERATIVA_CEILING_QUERY_KEY, cooperativaId, ano, mes, "distribuido"],
     queryFn: () => loadDistributedTotal(cooperativaId, ano, mes),
+    refetchOnMount: "always",
   });
 
   return {
