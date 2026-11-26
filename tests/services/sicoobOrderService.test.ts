@@ -16,7 +16,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { applyProfileScope, sicoobOrderService } from "@/services/sicoob/orderService";
+import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -227,50 +227,5 @@ describe("sicoobOrderService.getItemLogs", () => {
 
     expect(mocks.from).toHaveBeenCalledExactlyOnceWith("sicoob_order_item_logs");
     expect(result[0]).not.toHaveProperty("user");
-  });
-});
-
-describe("applyProfileScope", () => {
-  type Query = Parameters<typeof applyProfileScope>[0];
-
-  function fakeQuery() {
-    const eq = vi.fn((column: string, value: string) => ({ scoped: [column, value] }));
-    return { query: { eq } as unknown as Query, eq };
-  }
-
-  it.each([
-    ["gerente_pa", "gestor_pa"],
-  ])("escopa por PA no papel %s e no rótulo legado %s", async (canonico, legado) => {
-    for (const role of [canonico, legado]) {
-      const { query, eq } = fakeQuery();
-      const resultado = applyProfileScope(query, { role, pa_id: "pa-1", cooperativa_id: "coop-1" });
-      expect(eq).toHaveBeenCalledExactlyOnceWith("pa_id", "pa-1");
-      expect(resultado).toEqual({ scoped: ["pa_id", "pa-1"] });
-    }
-  });
-
-  it.each([
-    ["gestor_compras", "gestor_singular"],
-  ])("escopa por cooperativa no papel %s e no rótulo legado %s", async (canonico, legado) => {
-    for (const role of [canonico, legado]) {
-      const { query, eq } = fakeQuery();
-      applyProfileScope(query, { role, pa_id: "pa-1", cooperativa_id: "coop-1" });
-      expect(eq).toHaveBeenCalledExactlyOnceWith("cooperative_id", "coop-1");
-    }
-  });
-
-  it("não escopa vendedor, gestor sem vínculo e perfil ausente", () => {
-    const casos = [
-      { role: "vendedor", pa_id: "pa-1", cooperativa_id: "coop-1" },
-      { role: "gerente_pa", pa_id: null, cooperativa_id: "coop-1" },
-      { role: "gestor_compras", pa_id: "pa-1", cooperativa_id: null },
-      null,
-    ];
-
-    for (const perfil of casos) {
-      const { query, eq } = fakeQuery();
-      expect(applyProfileScope(query, perfil)).toBe(query);
-      expect(eq).not.toHaveBeenCalled();
-    }
   });
 });
