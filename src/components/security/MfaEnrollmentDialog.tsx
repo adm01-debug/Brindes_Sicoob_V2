@@ -25,7 +25,6 @@ interface MfaEnrollmentDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Quando true, fechar diálogo desloga o usuário (uso em gate de admin) */
   enforce?: boolean;
-  redirectOnSuccess?: boolean;
 }
 
 type EnrollmentStep = 'intro' | 'qr' | 'verify';
@@ -180,9 +179,8 @@ export function MfaEnrollmentDialog({
   open,
   onOpenChange,
   enforce = false,
-  redirectOnSuccess = true,
 }: MfaEnrollmentDialogProps) {
-  const enrollment = useMfaEnrollment({ open, onOpenChange, enforce, redirectOnSuccess });
+  const enrollment = useMfaEnrollment({ open, onOpenChange, enforce });
   return (
     <Dialog open={open} onOpenChange={enrollment.handleClose}>
       <DialogContent className="z-[120] max-w-md" overlayClassName="z-[110]">
@@ -207,11 +205,10 @@ function useMfaEnrollment({
   open,
   onOpenChange,
   enforce = false,
-  redirectOnSuccess = true,
 }: MfaEnrollmentDialogProps) {
   const state = useEnrollmentState(open);
   const startEnroll = useStartEnrollment(state);
-  const verifyCode = useVerifyEnrollment(state, { onOpenChange, redirectOnSuccess });
+  const verifyCode = useVerifyEnrollment(state, { onOpenChange });
   const handleClose = useEnrollmentClose({ onOpenChange, enforce });
 
   return {
@@ -255,10 +252,9 @@ function useStartEnrollment(state: EnrollmentState) {
 
 function useVerifyEnrollment(
   state: EnrollmentState,
-  options: Pick<MfaEnrollmentDialogProps, 'onOpenChange' | 'redirectOnSuccess'>,
+  options: Pick<MfaEnrollmentDialogProps, 'onOpenChange'>,
 ) {
   const { refreshAAL } = useAuth();
-  const navigate = useNavigate();
   return async () => {
     if (!state.factorId || state.code.length !== 6) return;
     state.setLoading(true);
@@ -267,9 +263,10 @@ function useVerifyEnrollment(
       toast.success('MFA ativado com sucesso!', {
         description: 'A partir de agora seu acesso administrativo está protegido.',
       });
+      // refreshAAL propaga hasMFA ao gate, que libera a tela em que o usuário
+      // já estava. Não navegar: "/admin" não é rota registrada (cai no 404).
       await refreshAAL();
       options.onOpenChange(false);
-      if (options.redirectOnSuccess) navigate('/admin', { replace: true });
     } catch (error) {
       toast.error('Código inválido', {
         description: error instanceof Error ? error.message : 'Tente novamente',

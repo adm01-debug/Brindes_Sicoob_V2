@@ -57,7 +57,6 @@ export function TwoFactorSetup({ targetUserId }: TwoFactorSetupProps) {
           setEnrollOpen(open);
           if (!open) void refetch();
         }}
-        redirectOnSuccess={false}
       />
       <DisableMfaDialog {...disable} />
     </Card>
