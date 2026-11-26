@@ -277,7 +277,7 @@ export default function GestorDashboardPage() {
                 className="h-auto flex-col gap-2 py-4 hover:border-sicoob-green/30 hover:bg-sicoob-green/10"
                 asChild
               >
-                <Link to="/admin/verbas">
+                <Link to="/gestor/verbas">
                   <Wallet className="h-5 w-5 text-sicoob-green" />
                   Gestão de Verbas
                 </Link>

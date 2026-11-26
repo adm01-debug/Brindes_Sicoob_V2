@@ -207,10 +207,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P2
 
 ### SIC-017  Gestor da Singular sem acesso às configurações do próprio escopo
-- Status: PARCIAL
+- Status: RESOLVIDO no repositório
 - Origem: RLS dá ao `gestor_compras` a gestão de verbas (`20260502153425:14-25`) e a delegação da própria autoridade (`20260927203000:122-150`)
-- Evidência no código: `src/App.tsx:116-125` protege todo `/admin/*` com `<AdminRoute />`, cujo padrão é `supervisor` (`src/components/layout/AdminRoute.tsx:85`). Verbas (`/admin/verbas`, aba Verbas), Delegações e Alertas ficam só em `/admin/sicoob`. `SICOOB_ROUTE_ACCESS` (`role-policy.ts:29-46`) não tem rota de gestor para isso.
-- O que falta: UI — rotas `/gestor/verbas`, `/gestor/delegacoes`, `/gestor/alertas` restritas ao escopo da Singular.
+- Evidência no código: as três telas do escopo existem para o gestor: `/gestor/delegacoes` (`src/pages/sicoob/GestorDelegationsPage.tsx`, já entregue), `/gestor/verbas` (`src/pages/sicoob/GestorBudgetsPage.tsx`, reusa `BudgetsTab`) e `/gestor/alertas` (`src/pages/sicoob/GestorAlertsPage.tsx`, reusa `NotificationSettingsTab` em modo leitura, que é a aba "Alertas" de `/admin/sicoob`). Registradas em `src/routes/config/sicoob-rbac.ts`; `/gestor/verbas` libera só `dev`, `supervisor` e `gestor_compras` — a guarda de INSERT em `pa_budgets` exige `is_admin` ou `gestor_compras` no PA da cooperativa (`20261013115605:127-146`) — e `/gestor/alertas` libera `MANAGERS` apenas para leitura, porque gravar `pa_notification_settings` exige o papel `admin`. As duas telas passam pelo `MfaGate` (mesmo segundo fator de `/admin/verbas` e `/admin/sicoob`) e têm item de menu e breadcrumb. O atalho "Gestão de Verbas" do Painel Gestor aponta para `/gestor/verbas`.
+- Testes que travam a regra: `tests/sicoob/route-access-scenarios.test.tsx` (libera as duas rotas para `gestor_compras`/`supervisor` e `/gestor/alertas` para `comprador_singular`; recusa `gerente_pa`/`vendedor`/`comprador_pac`/`comprador_singular` em verbas, além de exigir política para toda rota Sicoob), `tests/lib/gestor-self-service-routes.test.ts` (política de verbas igual à autoridade de escrita do banco; alertas somente leitura enquanto a gravação exigir `admin`) e `tests/components/MfaGate.test.tsx` (sem segundo fator não renderiza a tela).
+- O que falta: nada no repositório. Alertas do gestor são somente leitura: abrir a gravação para `gestor_compras` exigiria DDL em `pa_notification_settings` e permitiria apontar o webhook do PA para destino arbitrário (decisão de negócio pendente).
+- Não verificado: escrita real em `pa_budgets` por `gestor_compras` e o `MfaGate` em navegador — a política existe na migration e os testes usam contexto simulado; nenhuma execução foi feita contra o banco ou o deploy de produção.
 - Impacto no negócio: a Singular não distribui verba entre seus PAs nem delega aprovações sem chamar a Promo.
 - Esforço: M
 - Prioridade: P1

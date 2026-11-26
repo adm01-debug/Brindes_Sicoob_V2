@@ -15,7 +15,12 @@ interface NotificationSettingPayload {
   is_active: boolean | null;
 }
 
-export const NotificationSettingsTab = () => {
+interface NotificationSettingsTabProps {
+  /** Leitura liberada ao gestor; gravar pa_notification_settings exige o papel `admin`. */
+  readOnly?: boolean;
+}
+
+export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettingsTabProps) => {
   const queryClient = useQueryClient();
   const [selectedPa, setSelectedPa] = useState<string | null>(null);
 
@@ -64,6 +69,10 @@ export const NotificationSettingsTab = () => {
     }
   });
 
+  const salvar = (payload: NotificationSettingPayload) => {
+    if (!readOnly) upsertMutation.mutate(payload);
+  };
+
   const getSetting = (channel: 'slack' | 'email'): NotificationSettingPayload => {
     const setting = settings?.find(s => s.channel === channel);
     return setting
@@ -87,6 +96,11 @@ export const NotificationSettingsTab = () => {
           <CardDescription>
             Defina canais externos para alertar gestores sobre pedidos que excedem a alçada.
           </CardDescription>
+          {readOnly && (
+            <p className="text-xs text-muted-foreground">
+              Somente a administração altera estes canais. Aqui você acompanha a configuração vigente.
+            </p>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -115,7 +129,8 @@ export const NotificationSettingsTab = () => {
                     </CardTitle>
                     <Switch
                       checked={getSetting('slack').is_active ?? false}
-                      onCheckedChange={(val) => upsertMutation.mutate({ ...getSetting('slack'), is_active: val })}
+                      disabled={readOnly}
+                      onCheckedChange={(val) => salvar({ ...getSetting('slack'), is_active: val })}
                     />
                   </div>
                 </CardHeader>
@@ -125,7 +140,8 @@ export const NotificationSettingsTab = () => {
                     <Input
                       placeholder="https://hooks.slack.com/services/..."
                       defaultValue={getSetting('slack').webhook_url ?? ''}
-                      onBlur={(e) => upsertMutation.mutate({ ...getSetting('slack'), webhook_url: e.target.value })}
+                      disabled={readOnly}
+                      onBlur={(e) => salvar({ ...getSetting('slack'), webhook_url: e.target.value })}
                     />
                   </div>
                 </CardContent>
@@ -141,7 +157,8 @@ export const NotificationSettingsTab = () => {
                     </CardTitle>
                     <Switch
                       checked={getSetting('email').is_active ?? false}
-                      onCheckedChange={(val) => upsertMutation.mutate({ ...getSetting('email'), is_active: val })}
+                      disabled={readOnly}
+                      onCheckedChange={(val) => salvar({ ...getSetting('email'), is_active: val })}
                     />
                   </div>
                 </CardHeader>
@@ -151,7 +168,8 @@ export const NotificationSettingsTab = () => {
                     <Input
                       placeholder="gestor@singular.com.br"
                       defaultValue={getSetting('email').recipient_email ?? ''}
-                      onBlur={(e) => upsertMutation.mutate({ ...getSetting('email'), recipient_email: e.target.value })}
+                      disabled={readOnly}
+                      onBlur={(e) => salvar({ ...getSetting('email'), recipient_email: e.target.value })}
                     />
                   </div>
                 </CardContent>

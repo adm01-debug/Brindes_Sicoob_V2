@@ -96,6 +96,18 @@ export const navGroups: NavGroup[] = [
         href: '/gestor/delegacoes',
         allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
       },
+      {
+        icon: Wallet,
+        label: 'Verbas dos PAs',
+        href: '/gestor/verbas',
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras'],
+      },
+      {
+        icon: Bell,
+        label: 'Alertas e avisos',
+        href: '/gestor/alertas',
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
       { icon: Building, label: 'Painel PA', href: '/dashboard-pa' },
       { icon: Users, label: 'Minha Carteira', href: '/vendedor/dashboard' },
     ],

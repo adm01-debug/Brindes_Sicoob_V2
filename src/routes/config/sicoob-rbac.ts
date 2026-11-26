@@ -20,6 +20,8 @@ export const sicoobRbacRoutes = [
   defineRoute({ path: "/gestor/convites", component: lazyWithRetry(() => import("@/pages/sicoob/SicoobInvitationsPage")) }),
   defineRoute({ path: "/gestor/aprovacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorApprovalsPage")) }),
   defineRoute({ path: "/gestor/delegacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorDelegationsPage")) }),
+  defineRoute({ path: "/gestor/verbas", component: lazyWithRetry(() => import("@/pages/sicoob/GestorBudgetsPage")) }),
+  defineRoute({ path: "/gestor/alertas", component: lazyWithRetry(() => import("@/pages/sicoob/GestorAlertsPage")) }),
   defineRoute({ path: "/gestor/auditoria", component: lazyWithRetry(() => import("@/pages/sicoob/GestorAuditPage")) }),
   
   // Módulo Vendedor (Carteira)
