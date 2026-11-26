@@ -244,6 +244,14 @@ const TARGETS = [
     file: "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
     sha256: "7b3994348fcf23f474975f2200cd0d5dff508a82e264704d2aeeb7c2c784da0d",
   },
+  {
+    file: "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+    sha256: "d2b173855200f8375ae392ba73ed813d708aa6cd4738263ae6d367389bb2efb9",
+  },
+  {
+    file: "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
+    sha256: "f674e21c89f7647e66e8073ed3fa28a4e4c4d3e6a7c77beea407ecc304f8bdfa",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
