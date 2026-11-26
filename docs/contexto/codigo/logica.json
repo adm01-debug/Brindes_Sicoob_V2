@@ -1,14 +1,14 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 256,
+ "total": 257,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
   "lib": 170,
   "python": 12,
-  "services": 24,
+  "services": 25,
   "stores": 6,
   "utils": 37
  },
@@ -672,7 +672,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 403,
+   "usado_por": 404,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -762,7 +762,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 68,
+   "usado_por": 69,
    "usado_por_modulos": [
     "components/admin",
     "components/cart",
@@ -6225,6 +6225,41 @@
     "pages/admin"
    ],
    "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/services/sicoob/approvalPolicyService.ts",
+   "camada": "services",
+   "exports": [
+    "ApprovalPolicy",
+    "BASELINE_POLICY",
+    "CloseActiveOptions",
+    "EffectivePolicy",
+    "PolicyScope",
+    "PublishPolicyInput",
+    "isPolicyInForce",
+    "pickEffectivePolicy",
+    "pickPolicyInForce",
+    "sicoobApprovalPolicyService"
+   ],
+   "export_default": null,
+   "linhas": 194,
+   "tabelas": [
+    "cooperativas",
+    "sicoob_approval_policies"
+   ],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 1,
+   "usado_por_modulos": [
+    "pages/admin"
+   ],
+   "coberto_por_testes": 2,
    "orfao": false
   },
   {

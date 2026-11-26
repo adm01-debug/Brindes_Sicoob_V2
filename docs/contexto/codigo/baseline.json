@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ce42c9fb49b86275f8afd64e1b3c3e25739923c8",
+  "commit": "6f109c44e6b84da50ecca9a427054227c540e243",
   "branch": "main",
-  "data_commit": "2026-11-25T22:07:59-03:00",
+  "data_commit": "2026-11-26T11:23:04-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "6f109c4",
+    "data": "2026-11-26",
+    "assunto": "feat: tela de gestão das políticas de aprovação por Singular (#461)"
+   },
    {
     "sha": "ce42c9f",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "b71a077",
     "data": "2026-11-24",
     "assunto": "feat: assistente de layouts passa a usar a IA real (#435)"
-   },
-   {
-    "sha": "ca1b482",
-    "data": "2026-11-24",
-    "assunto": "test: rede estatica de protecao a dados de clientes (recuperada da branch hermes) (#433)"
    }
   ],
-  "arquivos_mudados_7d": 1204,
+  "arquivos_mudados_7d": 948,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -160,6 +160,10 @@
     "mudancas": 20
    },
    {
+    "pasta": "src/pages/admin",
+    "mudancas": 17
+   },
+   {
     "pasta": "tests/components/bi",
     "mudancas": 17
    },
@@ -174,10 +178,6 @@
    {
     "pasta": "src/components/sicoob",
     "mudancas": 16
-   },
-   {
-    "pasta": "src/pages/admin",
-    "mudancas": 15
    },
    {
     "pasta": "src/components/quotes",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 233
+    "commits": 234
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5335,
-  "arquivos_codigo": 3221,
-  "linhas_codigo": 509658,
+  "arquivos_total": 5339,
+  "arquivos_codigo": 3225,
+  "linhas_codigo": 510877,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 85,
   "modulos": 146,
-  "componentes": 1176,
+  "componentes": 1177,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 952,
+  "testes": 954,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -815,16 +815,16 @@
    "linhas": 126
   },
   "src/pages": {
-   "arquivos": 196,
-   "linhas": 51600
+   "arquivos": 197,
+   "linhas": 52196
   },
   "src/routes": {
    "arquivos": 9,
    "linhas": 523
   },
   "src/services": {
-   "arquivos": 24,
-   "linhas": 3486
+   "arquivos": 25,
+   "linhas": 3680
   },
   "src/stores": {
    "arquivos": 6,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 171,
-   "linhas": 30112
+   "arquivos": 172,
+   "linhas": 30468
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -983,8 +983,8 @@
    "linhas": 1327
   },
   "tests/services": {
-   "arquivos": 14,
-   "linhas": 1427
+   "arquivos": 15,
+   "linhas": 1500
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,
@@ -1159,7 +1159,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 74
+  "arquivos_acima_500_linhas": 75
  },
  "todos": [
   {

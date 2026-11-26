@@ -2269,6 +2269,7 @@
     "useQuery",
     "useQueryClient",
     "useRef",
+    "useRelogio",
     "useState",
     "useUserProfile",
     "useUserRoles"
@@ -2286,6 +2287,7 @@
     "postos_atendimento",
     "profiles",
     "sicoob_approval_delegations",
+    "sicoob_approval_policies",
     "sicoob_centrais",
     "sicoob_temas",
     "user_roles"
@@ -2313,7 +2315,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 53
+   "arquivos_puxados": 55
   },
   {
    "protegida": true,

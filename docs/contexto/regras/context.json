@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "ce42c9fb49b86275f8afd64e1b3c3e25739923c8",
+  "sha": "6f109c44e6b84da50ecca9a427054227c540e243",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 01:11 UTC",
-  "files_total": 5338,
-  "code_files": 3898,
-  "code_lines": 574482
+  "generated_at": "2026-11-26 14:30 UTC",
+  "files_total": 5342,
+  "code_files": 3902,
+  "code_lines": 575701
  },
  "version": "1.3.2",
- "facts_hash": "653f078618c99fc9",
+ "facts_hash": "fc118ce155e1824b",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1507,
-   ".tsx": 1489,
+   ".ts": 1509,
+   ".tsx": 1491,
    ".sql": 695,
    ".mjs": 145,
    ".py": 69,
@@ -62776,7 +62776,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1308,
+  "components_count": 1309,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -66378,8 +66378,8 @@
   },
   {
    "module": "src/pages",
-   "files": 196,
-   "lines": 51600,
+   "files": 197,
+   "lines": 52196,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -66647,8 +66647,8 @@
   },
   {
    "module": "src/services",
-   "files": 24,
-   "lines": 3486,
+   "files": 25,
+   "lines": 3680,
    "tables": [
     "cooperativas",
     "cost_centers",
@@ -66671,6 +66671,7 @@
     "quote_items",
     "quotes",
     "sicoob_approval_delegations",
+    "sicoob_approval_policies",
     "sicoob_approval_requests",
     "sicoob_order_history",
     "sicoob_order_item_logs",
@@ -66691,6 +66692,7 @@
     "publicFavoriteListService.ts: PublicFavoriteList, PublicFavoriteItem, PublicFavoriteListResponse, PublicFavoriteReaction, parsePublicFavoriteListResponse, fetchPublicFavoriteList",
     "quoteVersionService.ts: quoteVersionService",
     "approvalDelegationService.ts: ApprovalDelegation, DelegationCandidate, sicoobApprovalDelegationService",
+    "approvalPolicyService.ts: ApprovalPolicy, PolicyScope, PublishPolicyInput, CloseActiveOptions, BASELINE_POLICY, isPolicyInForce",
     "approvalService.ts: ApprovalAuthority, sicoobApprovalService",
     "budgetService.ts: sicoobBudgetService",
     "commonService.ts: sicoobCommonService",
@@ -66729,6 +66731,7 @@
     "src/services/infrastructure/BaseHttpService.ts",
     "src/services/quotes/quoteVersionService.ts",
     "src/services/sicoob/approvalDelegationService.ts",
+    "src/services/sicoob/approvalPolicyService.ts",
     "src/services/sicoob/approvalService.ts",
     "src/services/sicoob/budgetService.ts",
     "src/services/sicoob/commonService.ts",
@@ -67378,8 +67381,8 @@
   },
   {
    "module": "tests",
-   "files": 721,
-   "lines": 96459,
+   "files": 723,
+   "lines": 96888,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67933,6 +67936,7 @@
      "src/pages/admin/sicoob/tabs/PAsTab.tsx",
      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
      "src/pages/sicoob/admin/CostCentersPage.tsx",
+     "src/services/sicoob/approvalPolicyService.ts",
      "src/services/sicoob/commonService.ts"
     ],
     "update": [
@@ -69516,6 +69520,17 @@
      "supabase/functions/sicoob-approval-reconciliation/index.ts"
     ]
    },
+   "sicoob_approval_policies": {
+    "select": [
+     "src/services/sicoob/approvalPolicyService.ts"
+    ],
+    "insert": [
+     "src/services/sicoob/approvalPolicyService.ts"
+    ],
+    "update": [
+     "src/services/sicoob/approvalPolicyService.ts"
+    ]
+   },
    "sicoob_approval_requests": {
     "select": [
      "src/hooks/useSicoobApprovals.ts",
@@ -70960,6 +70975,11 @@
     "request_id",
     "state",
     "updated_at"
+   ],
+   "sicoob_approval_policies": [
+    "created_at",
+    "effective_from",
+    "id"
    ],
    "sicoob_approval_requests": [
     "amount_at_request",
@@ -73459,7 +73479,6 @@
    "seller_achievements",
    "seller_gamification",
    "sicoob_approval_delivery_archive",
-   "sicoob_approval_policies",
    "sicoob_approval_worker_dispatches",
    "sicoob_budget_audit",
    "sicoob_delivery_allocations",
@@ -74603,6 +74622,11 @@
    {
     "file": "src/pages/admin/sicoob/tabs/ApprovalDelegationsTab.tsx",
     "field": "delegation-end",
+    "rules": "type=datetime-local"
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "field": "policy-effective-from",
     "rules": "type=datetime-local"
    },
    {
@@ -79625,6 +79649,14 @@
     "msg": "Selecione uma delegação para revogar."
    },
    {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "msg": ";\nimport { Badge } from "
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "msg": "Selecione o escopo da política."
+   },
+   {
     "file": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
     "msg": ";\nimport { useAuth } from "
    },
@@ -79971,6 +80003,14 @@
    {
     "file": "src/services/quotes/quoteVersionService.ts",
     "msg": "A criação da nova versão não retornou um orçamento válido."
+   },
+   {
+    "file": "src/services/sicoob/approvalPolicyService.ts",
+    "msg": "A versão publicada não retornou identificador."
+   },
+   {
+    "file": "src/services/sicoob/approvalPolicyService.ts",
+    "msg": "Informe a versão da política."
    },
    {
     "file": "src/services/sicoob/approvalService.ts",
@@ -82997,6 +83037,14 @@
     "text": "---------- Mutation: salvar limite + notas ----------"
    },
    {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "text": "* \"Ativa\" não pode ser só `is_active`: numa troca agendada a versão anterior"
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "text": "publicar sem olhar os valores mudaria a regra que estava em vigor."
+   },
+   {
     "file": "src/pages/admin/telemetry/useHighLimitTelemetry.ts",
     "text": "* Série temporal de telemetria SOMENTE para listings com `limit > 50`,"
    },
@@ -83119,6 +83167,14 @@
    {
     "file": "src/services/QuoteService.ts",
     "text": "do que o limite retornou, loga aviso explícito para orientar a"
+   },
+   {
+    "file": "src/services/sicoob/approvalPolicyService.ts",
+    "text": "mudança de regra exige uma nova versão, e a anterior é apenas encerrada."
+   },
+   {
+    "file": "src/services/sicoob/approvalPolicyService.ts",
+    "text": "- `createdUntil`: substitui apenas versões criadas até este instante, evitando"
    },
    {
     "file": "src/services/sicoob/costCenterService.ts",
@@ -111627,6 +111683,12 @@
     "body": "queryClient.invalidateQueries({ queryKey: ['qa_run_steps', id] });"
    },
    {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "name": "invalidate",
+    "params": "",
+    "body": "queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });"
+   },
+   {
     "file": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
     "name": "formatCurrency",
     "params": "value: number",
@@ -124575,6 +124637,54 @@
    {
     "file": "tests/components/security/SecurityDashboard.test.tsx",
     "name": "exports SecurityDashboard component"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "ApprovalPolicyTab"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "mostra o padrão do sistema quando nenhuma versão foi publicada"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "mostra a versão vigente e as regras em vigor da Singular"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "publica nova versão com as regras escolhidas"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "encerra a política vigente somente após confirmação"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "avisa quando as políticas não carregam"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "mostra a política global herdada pela Singular sem versão própria"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "vira de Agendada para Ativa quando a vigência começa"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "não marca como ativa a versão cuja vigência terminou na troca agendada"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "acompanha a virada da vigência com a tela aberta, sem recarregar"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "mostra a versao recem-publicada sem cair no padrao do sistema"
+   },
+   {
+    "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    "name": "reabre o formulário sugerindo a próxima versão após publicar"
    },
    {
     "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
@@ -141853,6 +141963,30 @@
     "name": "nao consulta profiles quando nenhum log tem autor"
    },
    {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "pickEffectivePolicy"
+   },
+   {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "prefere a versão própria da Singular à global"
+   },
+   {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "herda a política global quando a Singular não publicou versão própria"
+   },
+   {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "cai no padrão técnico quando não há versão própria nem global"
+   },
+   {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "não herda versão agendada para o futuro"
+   },
+   {
+    "file": "tests/services/sicoob/approvalPolicyService.test.ts",
+    "name": "ignora versão encerrada da própria Singular e herda a global"
+   },
+   {
     "file": "tests/sicoob/cart-routes-and-sharing.test.ts",
     "name": "rotas de carrinhos compartilháveis"
    },
@@ -144545,6 +144679,10 @@
     "call": "invoke("
    },
    {
+    "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "call": "publish("
+   },
+   {
     "file": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
     "call": "slack.com"
    },
@@ -144575,6 +144713,10 @@
    {
     "file": "src/services/admin/UserService.ts",
     "call": "invoke("
+   },
+   {
+    "file": "src/services/sicoob/approvalPolicyService.ts",
+    "call": "publish("
    },
    {
     "file": "src/services/sicoob/documentIngestService.ts",
@@ -226891,7 +227033,7 @@
   },
   "src/pages/admin/sicoob/SicoobManagementPage.tsx": {
    "path": "src/pages/admin/sicoob/SicoobManagementPage.tsx",
-   "lines": 78,
+   "lines": 87,
    "exports": [
     "default SicoobManagementPage"
    ]
@@ -226917,6 +227059,38 @@
    ],
    "temporal": [
     "const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1_000);"
+   ]
+  },
+  "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx": {
+   "path": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+   "lines": 587,
+   "exports": [
+    "function policyStatusAt",
+    "const ApprovalPolicyTab"
+   ],
+   "errors": [
+    ";\nimport { Badge } from ",
+    "Selecione o escopo da política."
+   ],
+   "html_constraints": [
+    {
+     "field": "policy-effective-from",
+     "rules": "type=datetime-local"
+    }
+   ],
+   "rule_comments": [
+    "* \"Ativa\" não pode ser só `is_active`: numa troca agendada a versão anterior",
+    "publicar sem olhar os valores mudaria a regra que estava em vigor."
+   ],
+   "calc_fns": [
+    {
+     "name": "invalidate",
+     "params": "",
+     "body": "queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });"
+    }
+   ],
+   "side_effects": [
+    "publish("
    ]
   },
   "src/pages/admin/sicoob/tabs/BudgetsTab.tsx": {
@@ -230720,6 +230894,62 @@
     "create_sicoob_approval_delegation",
     "list_sicoob_approval_delegate_candidates",
     "revoke_sicoob_approval_delegation"
+   ]
+  },
+  "src/services/sicoob/approvalPolicyService.ts": {
+   "path": "src/services/sicoob/approvalPolicyService.ts",
+   "lines": 194,
+   "exports": [
+    "type ApprovalPolicy",
+    "type PolicyScope",
+    "type PublishPolicyInput",
+    "type CloseActiveOptions",
+    "const BASELINE_POLICY",
+    "function isPolicyInForce",
+    "function pickPolicyInForce",
+    "type EffectivePolicy",
+    "function pickEffectivePolicy",
+    "const sicoobApprovalPolicyService"
+   ],
+   "tables": [
+    {
+     "table": "sicoob_approval_policies",
+     "op": "select"
+    },
+    {
+     "table": "cooperativas",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_approval_policies",
+     "op": "insert,select"
+    },
+    {
+     "table": "sicoob_approval_policies",
+     "op": "update"
+    }
+   ],
+   "table_cols": {
+    "cooperativas": [
+     "id",
+     "nome"
+    ],
+    "sicoob_approval_policies": [
+     "created_at",
+     "effective_from",
+     "id"
+    ]
+   },
+   "errors": [
+    "A versão publicada não retornou identificador.",
+    "Informe a versão da política."
+   ],
+   "rule_comments": [
+    "mudança de regra exige uma nova versão, e a anterior é apenas encerrada.",
+    "- `createdUntil`: substitui apenas versões criadas até este instante, evitando"
+   ],
+   "side_effects": [
+    "publish("
    ]
   },
   "src/services/sicoob/approvalService.ts": {
@@ -250231,6 +250461,25 @@
     "exports SecurityDashboard component"
    ]
   },
+  "tests/components/sicoob/ApprovalPolicyTab.test.tsx": {
+   "path": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+   "lines": 356,
+   "is_test": true,
+   "tests": [
+    "ApprovalPolicyTab",
+    "mostra o padrão do sistema quando nenhuma versão foi publicada",
+    "mostra a versão vigente e as regras em vigor da Singular",
+    "publica nova versão com as regras escolhidas",
+    "encerra a política vigente somente após confirmação",
+    "avisa quando as políticas não carregam",
+    "mostra a política global herdada pela Singular sem versão própria",
+    "vira de Agendada para Ativa quando a vigência começa",
+    "não marca como ativa a versão cuja vigência terminou na troca agendada",
+    "acompanha a virada da vigência com a tela aberta, sem recarregar",
+    "mostra a versao recem-publicada sem cair no padrao do sistema",
+    "reabre o formulário sugerindo a próxima versão após publicar"
+   ]
+  },
   "tests/components/sicoob/OrderInvoicesTab.amount.test.ts": {
    "path": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
    "lines": 77,
@@ -259719,6 +259968,29 @@
     "nao consulta profiles quando nenhum log tem autor"
    ]
   },
+  "tests/services/sicoob/approvalPolicyService.test.ts": {
+   "path": "tests/services/sicoob/approvalPolicyService.test.ts",
+   "lines": 73,
+   "is_test": true,
+   "params": [
+    {
+     "name": "PAST",
+     "value": "\"2026-01-01T00:00:00.000Z\""
+    },
+    {
+     "name": "FUTURE",
+     "value": "\"2027-01-01T00:00:00.000Z\""
+    }
+   ],
+   "tests": [
+    "pickEffectivePolicy",
+    "prefere a versão própria da Singular à global",
+    "herda a política global quando a Singular não publicou versão própria",
+    "cai no padrão técnico quando não há versão própria nem global",
+    "não herda versão agendada para o futuro",
+    "ignora versão encerrada da própria Singular e herda a global"
+   ]
+  },
   "tests/sicoob/cart-routes-and-sharing.test.ts": {
    "path": "tests/sicoob/cart-routes-and-sharing.test.ts",
    "lines": 77,
@@ -260697,10 +260969,25 @@
   }
  },
  "git": {
-  "sha": "ce42c9fb49b86275f8afd64e1b3c3e25739923c8",
+  "sha": "6f109c44e6b84da50ecca9a427054227c540e243",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "6f109c4",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "feat: tela de gestão das políticas de aprovação por Singular (#461)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+     "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+     "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+     "src/services/sicoob/approvalPolicyService.ts",
+     "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+     "tests/services/sicoob/approvalPolicyService.test.ts"
+    ]
+   },
    {
     "sha": "ce42c9f",
     "date": "2026-11-25",
@@ -261051,18 +261338,6 @@
      "tests/components/favorites/FavoritesSortBar.chip.test.tsx",
      "tests/hooks/useFavoriteListItems.undo.test.tsx"
     ]
-   },
-   {
-    "sha": "dffd62e",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: ranking de categoria pagina os dados e avisa quando o mercado falha (#429)",
-    "files": [
-     "src/components/intelligence/CategoryRanking.tsx",
-     "src/hooks/useCommercialIntelligence.ts",
-     "tests/components/intelligence/CategoryRanking.errors.test.tsx",
-     "tests/hooks/useCategoryRanking.pagination.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -261099,6 +261374,34 @@
     2
    ],
    [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    1
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    1
+   ],
+   [
+    "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+    1
+   ],
+   [
+    "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    1
+   ],
+   [
+    "src/services/sicoob/approvalPolicyService.ts",
+    1
+   ],
+   [
+    "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+    1
+   ],
+   [
+    "tests/services/sicoob/approvalPolicyService.test.ts",
+    1
+   ],
+   [
     "supabase/migrations/20261125133000_harden_push_subscriptions_initplan.sql",
     1
    ],
@@ -261116,34 +261419,6 @@
    ],
    [
     "src/components/pricing/ProductPriceSimulator.tsx",
-    1
-   ],
-   [
-    "src/components/pricing/QuantityPriceCalculator.tsx",
-    1
-   ],
-   [
-    "src/components/pricing/calculator/types.ts",
-    1
-   ],
-   [
-    "src/components/pricing/simulator/ProductSearch.tsx",
-    1
-   ],
-   [
-    "src/components/pricing/simulator/types.ts",
-    1
-   ],
-   [
-    "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
-    1
-   ],
-   [
-    "tests/components/pricing/QuantityPriceCalculator.test.tsx",
-    1
-   ],
-   [
-    "tests/components/pricing/simulator/ProductSearch.test.tsx",
     1
    ]
   ]

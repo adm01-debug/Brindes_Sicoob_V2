@@ -9135,7 +9135,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 7,
+   "usada_no_front": 8,
    "usada_em_edges": [
     "sicoob-seed",
     "sicoob-seed-qa"
@@ -33235,13 +33235,13 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 0,
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [
     "tr_protect_sicoob_approval_policy_version"
    ],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "sicoob_approval_requests": {
    "colunas": {

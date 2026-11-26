@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 952,
+ "total": 954,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 718
+  "unit": 720
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 699
+   "arquivos": 701
   },
   {
    "padrao": "e2e/",
@@ -3583,6 +3583,16 @@
     "src/components/security/SecurityDashboard.tsx"
    ],
    "casos": 1
+  },
+  {
+   "arquivo": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
+   "tipo": "unit",
+   "linhas": 356,
+   "testa": [
+    "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+    "src/services/sicoob/approvalPolicyService.ts"
+   ],
+   "casos": 11
   },
   {
    "arquivo": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
@@ -7729,6 +7739,15 @@
    "casos": 3
   },
   {
+   "arquivo": "tests/services/sicoob/approvalPolicyService.test.ts",
+   "tipo": "unit",
+   "linhas": 73,
+   "testa": [
+    "src/services/sicoob/approvalPolicyService.ts"
+   ],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/services/sicoobApprovalService.test.ts",
    "tipo": "unit",
    "linhas": 39,
@@ -8780,6 +8799,7 @@
   "src/pages/admin/RLSAuditPage.tsx": 1,
   "src/pages/admin/ai-usage/AiQuotaManager.tsx": 1,
   "src/pages/admin/sicoob/tabs/ApprovalDelegationsTab.tsx": 1,
+  "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx": 1,
   "src/pages/filters/filters-page-helpers.ts": 1,
   "src/pages/kit-builder/kitQuoteRequest.ts": 1,
   "src/pages/kit-builder/useKitBuilderQuote.ts": 1,
@@ -8809,6 +8829,7 @@
   "src/services/quoteStatusTransition.ts": 1,
   "src/services/quotes/quoteVersionService.ts": 1,
   "src/services/sicoob/approvalDelegationService.ts": 1,
+  "src/services/sicoob/approvalPolicyService.ts": 2,
   "src/services/sicoob/approvalService.ts": 1,
   "src/services/sicoob/budgetService.ts": 1,
   "src/services/sicoob/commonService.ts": 1,

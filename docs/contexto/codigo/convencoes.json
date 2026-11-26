@@ -7,7 +7,7 @@
   ],
   "componentes": [
    "src/components (1004)",
-   "src/pages (160)",
+   "src/pages (161)",
    "src/contexts (9)"
   ],
   "hooks": [
@@ -18,10 +18,10 @@
   "servicos_logica": [
    "src/lib (170)",
    "src/utils (37)",
-   "src/services (24)"
+   "src/services (25)"
   ],
   "testes": [
-   "tests/ (699)",
+   "tests/ (701)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1176)"
+  ".tsx (1177)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: tela de gestão das políticas de aprovação por Singular (#461)",
    "fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)",
    "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)",
    "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)",
-   "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)",
-   "fix: falha de consulta nao pode parecer fila vazia (#452)"
+   "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

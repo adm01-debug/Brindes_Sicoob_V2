@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1176,
+ "total": 1177,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -14905,7 +14905,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 39,
+   "usado_por": 40,
    "orfao": false
   },
   {
@@ -14936,7 +14936,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 511,
+   "usado_por": 512,
    "orfao": false
   },
   {
@@ -14971,7 +14971,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 636,
+   "usado_por": 637,
    "orfao": false
   },
   {
@@ -15005,7 +15005,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 396,
+   "usado_por": 397,
    "orfao": false
   },
   {
@@ -15057,7 +15057,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 27,
+   "usado_por": 28,
    "orfao": false
   },
   {
@@ -15118,7 +15118,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 138,
+   "usado_por": 139,
    "orfao": false
   },
   {
@@ -15286,7 +15286,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 268,
+   "usado_por": 269,
    "orfao": false
   },
   {
@@ -15314,7 +15314,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 153,
+   "usado_por": 154,
    "orfao": false
   },
   {
@@ -15694,7 +15694,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 78,
+   "usado_por": 79,
    "orfao": false
   },
   {
@@ -16843,7 +16843,7 @@
     "SicoobManagementPage"
    ],
    "export_default": "SicoobManagementPage",
-   "linhas": 78,
+   "linhas": 87,
    "dominio": "pages/admin",
    "hooks_locais": [],
    "tabelas": [],
@@ -16863,6 +16863,20 @@
    "tabelas": [],
    "edges": [],
    "usado_por": 2,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
+   "exports": [
+    "ApprovalPolicyTab"
+   ],
+   "export_default": "ApprovalPolicyTab",
+   "linhas": 587,
+   "dominio": "pages/admin",
+   "hooks_locais": [],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
    "orfao": false
   },
   {

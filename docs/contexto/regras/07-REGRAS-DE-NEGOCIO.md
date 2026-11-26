@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ce42c9fb49` · branch `main` · 2026-11-26 01:11 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `6f109c44e6` · branch `main` · 2026-11-26 14:30 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -2006,6 +2006,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `evidence-upload` | disabled=uploading | `src/pages/admin/qa/ReleaseEvidencesPage.tsx` |
 | `delegation-start` | type=datetime-local | `src/pages/admin/sicoob/tabs/ApprovalDelegationsTab.tsx` |
 | `delegation-end` | type=datetime-local | `src/pages/admin/sicoob/tabs/ApprovalDelegationsTab.tsx` |
+| `policy-effective-from` | type=datetime-local | `src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx` |
 | `pa_id` | required | `src/pages/admin/sicoob/tabs/BudgetsTab.tsx` |
 | `year` | type=number, required | `src/pages/admin/sicoob/tabs/BudgetsTab.tsx` |
 | `amount` | type=number, step=0.01, required | `src/pages/admin/sicoob/tabs/BudgetsTab.tsx` |
@@ -3989,6 +3990,10 @@ _nenhum item encontrado_
   ```
   queryClient.invalidateQueries({ queryKey: ['qa_run_steps', id] });
   ```
+- **invalidate()** — `src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx`
+  ```
+  queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });
+  ```
 - **formatCurrency(value: number)** — `src/pages/admin/sicoob/tabs/BudgetsTab.tsx`
   ```
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", }).format(value);
@@ -5651,7 +5656,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1023 linhas — lista completa em `context.json` | |
+| … +1027 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5756,7 +5761,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7389 testes em 763 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7407 testes em 765 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5913,6 +5918,7 @@ _nenhum item encontrado_
 | `tests/components/admin/MaskedSuffixBadge.test.tsx` | 12 | MaskedSuffixBadge — UI por tamanho de sufixo · 0 chars (missing) sem length → mostra  · 0 chars + length=12 → mostra placeholder derivado  · 0 chars + length=5 →  … |
 | `tests/components/admin/pluralization.test.tsx` | 12 | diagnoseMaskedSuffix — pluralização (1 caractere vs N caracteres) · 1 char → singular ( · 2 chars → plural ( · 3 chars → plural ( … |
 | `tests/components/quotes/AIRecommendationsPanel.test.tsx` | 12 | AIRecommendationsPanel · exibe perfil, total de produtos e estado inicial · habilita a ação com cliente inicial e catálogo disponível · envia o perfil editado e os produtos ao hook … |
+| `tests/components/sicoob/ApprovalPolicyTab.test.tsx` | 12 | ApprovalPolicyTab · mostra o padrão do sistema quando nenhuma versão foi publicada · mostra a versão vigente e as regras em vigor da Singular · publica nova versão com as regras escolhidas … |
 | `tests/components/simulator/UpsellPlusPlus.test.ts` | 12 | UpsellPlusPlus generateSuggestions · suggests adding position when unused locations exist · does NOT suggest position when no engravings exist · suggests technique upgrade when premium option available … |
 | `tests/edge-functions/sicoob-kit-quote-catalog.test.ts` | 12 | catálogo servidor da conversão de kit · exige contagem exata para impedir validação sobre resposta truncada · usa nome, SKU e preço vigentes da variante · agrega duas linhas da mesma variante antes de validar o saldo … |
 | `tests/hooks/quoteHelpers.priceConfirmed.test.ts` | 12 | quoteHelpers — persistência do price_confirmed_at (save) · inclui price_confirmed_at no payload quando o vendedor confirmou · envia null quando o vendedor ainda NÃO confirmou · normaliza undefined → null (defensivo contra serialização) … |
@@ -6059,8 +6065,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
-| `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
-| … +463 linhas — lista completa em `context.json` | | |
+| … +465 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6197,6 +6202,7 @@ _nenhum item encontrado_
 | `invoke(` | `src/pages/admin/DevChallengeExamplesPage.tsx` |
 | `invoke(` | `src/pages/admin/OwnershipAuditAdminPage.tsx` |
 | `invoke(` | `src/pages/admin/sicoob/SicoobApprovalReconciliationPage.tsx` |
+| `publish(` | `src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx` |
 | `slack.com` | `src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx` |
 | `enqueue(` | `src/pages/admin/telemetry/useOptimizationQueue.ts` |
 | `invoke(` | `src/pages/kit-builder/useKitBuilderQuote.ts` |
@@ -6205,6 +6211,7 @@ _nenhum item encontrado_
 | `notifyStatusChange` | `src/services/OrderService.ts` |
 | `invoke(` | `src/services/QuoteService.ts` |
 | `invoke(` | `src/services/admin/UserService.ts` |
+| `publish(` | `src/services/sicoob/approvalPolicyService.ts` |
 | `invoke(` | `src/services/sicoob/documentIngestService.ts` |
 | `invoke(` | `src/services/sicoob/orderService.ts` |
 | `invoke(` | `src/utils/adminAudit.ts` |
@@ -6548,4 +6555,4 @@ _nenhum item encontrado_
 | o prewarm dispara no máximo 1x por sessão de browser — ideal para gatilho | `src/lib/external-db-prewarm.ts` |
 | (apenas 2 invokes totais: 1 batch das 6 tabelas + 1 ping CRM) | `src/lib/external-db-prewarm.ts` |
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
-| … +339 linhas — lista completa em `context.json` | |
+| … +343 linhas — lista completa em `context.json` | |

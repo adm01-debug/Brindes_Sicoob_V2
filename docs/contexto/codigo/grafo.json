@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2269,
- "arestas": 9225,
+ "nos": 2271,
+ "arestas": 9238,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 640
+   "importado_por": 641
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,19 +14,19 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 513
+   "importado_por": 514
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 420
+   "importado_por": 421
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 399
+   "importado_por": 400
   },
   {
    "arquivo": "src/components/ui/input.tsx",
-   "importado_por": 270
+   "importado_por": 271
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
@@ -42,7 +42,7 @@
   },
   {
    "arquivo": "src/components/ui/label.tsx",
-   "importado_por": 154
+   "importado_por": 155
   },
   {
    "arquivo": "src/components/ui/select.tsx",
@@ -50,7 +50,7 @@
   },
   {
    "arquivo": "src/components/ui/dialog.tsx",
-   "importado_por": 140
+   "importado_por": 141
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
@@ -74,7 +74,7 @@
   },
   {
    "arquivo": "src/components/ui/table.tsx",
-   "importado_por": 78
+   "importado_por": 79
   },
   {
    "arquivo": "src/lib/external-db/index.ts",
@@ -82,7 +82,7 @@
   },
   {
    "arquivo": "src/integrations/supabase/types.ts",
-   "importado_por": 68
+   "importado_por": 69
   },
   {
    "arquivo": "src/components/ui/textarea.tsx",
@@ -114,7 +114,7 @@
   },
   {
    "arquivo": "src/components/ui/alert.tsx",
-   "importado_por": 39
+   "importado_por": 40
   },
   {
    "arquivo": "src/components/ui/dropdown-menu.tsx",
@@ -137,6 +137,10 @@
    "importado_por": 31
   },
   {
+   "arquivo": "src/components/ui/checkbox.tsx",
+   "importado_por": 28
+  },
+  {
    "arquivo": "src/hooks/quotes/useQuotes.ts",
    "importado_por": 28
   },
@@ -147,10 +151,6 @@
   {
    "arquivo": "src/types/product-catalog.ts",
    "importado_por": 28
-  },
-  {
-   "arquivo": "src/components/ui/checkbox.tsx",
-   "importado_por": 27
   },
   {
    "arquivo": "src/components/ui/collapsible.tsx",
