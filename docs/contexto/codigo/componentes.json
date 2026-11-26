@@ -8662,7 +8662,7 @@
     "MfaGate"
    ],
    "export_default": null,
-   "linhas": 59,
+   "linhas": 58,
    "dominio": "components/layout",
    "hooks_locais": [
     "useAuth"
@@ -13958,7 +13958,7 @@
     "MfaEnrollmentDialog"
    ],
    "export_default": null,
-   "linhas": 351,
+   "linhas": 348,
    "dominio": "components/security",
    "hooks_locais": [
     "useAuth"
@@ -14059,7 +14059,7 @@
     "TwoFactorSetup"
    ],
    "export_default": null,
-   "linhas": 222,
+   "linhas": 221,
    "dominio": "components/security",
    "hooks_locais": [
     "useAuth"

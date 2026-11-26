@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
+  "commit": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
   "branch": "main",
-  "data_commit": "2026-11-26T16:19:14-03:00",
+  "data_commit": "2026-11-26T17:47:09-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "e5e0f47",
+    "data": "2026-11-26",
+    "assunto": "fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)"
+   },
    {
     "sha": "6f282a4",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "8f7aeeb",
     "data": "2026-11-25",
     "assunto": "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)"
-   },
-   {
-    "sha": "afdb894",
-    "data": "2026-11-25",
-    "assunto": "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)"
    }
   ],
-  "arquivos_mudados_7d": 964,
+  "arquivos_mudados_7d": 967,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -219,7 +219,7 @@
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
@@ -230,24 +230,24 @@
     "mudancas": 13
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 12
-   },
-   {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 12
-   },
-   {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 11
+   },
+   {
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 11
    },
    {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
+   },
+   {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 10
    },
    {
     "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -270,14 +270,6 @@
     "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 8
-   },
-   {
-    "arquivo": ".github/workflows/migration-ledger-drift.yml",
-    "mudancas": 8
-   },
-   {
     "arquivo": ".github/workflows/security.yml",
     "mudancas": 8
    },
@@ -296,12 +288,20 @@
    {
     "arquivo": "src/services/QuoteService.ts",
     "mudancas": 8
+   },
+   {
+    "arquivo": "src/services/sicoob/orderService.ts",
+    "mudancas": 8
+   },
+   {
+    "arquivo": ".github/workflows/bundle-check.yml",
+    "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 240
+    "commits": 241
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5347,
-  "arquivos_codigo": 3233,
-  "linhas_codigo": 511835,
+  "arquivos_total": 5348,
+  "arquivos_codigo": 3234,
+  "linhas_codigo": 511970,
   "rotas": 142,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 959,
+  "testes": 960,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1137,
-   "linhas": 168240
+   "linhas": 168235
   },
   "src/constants": {
    "arquivos": 3,
@@ -884,7 +884,7 @@
   },
   "tests/components": {
    "arquivos": 173,
-   "linhas": 30550
+   "linhas": 30548
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -979,8 +979,8 @@
    "linhas": 54
   },
   "tests/security": {
-   "arquivos": 8,
-   "linhas": 1327
+   "arquivos": 9,
+   "linhas": 1469
   },
   "tests/services": {
    "arquivos": 16,

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
+  "sha": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 20:40 UTC",
-  "files_total": 5350,
-  "code_files": 3910,
-  "code_lines": 576659
+  "generated_at": "2026-11-26 21:05 UTC",
+  "files_total": 5351,
+  "code_files": 3911,
+  "code_lines": 576794
  },
  "version": "1.3.2",
- "facts_hash": "20120a780b4da517",
+ "facts_hash": "3087afe311eb2e5c",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1512,
-   ".tsx": 1495,
+   ".tsx": 1496,
    ".sql": 695,
    ".mjs": 146,
    ".py": 69,
@@ -61141,6 +61141,13 @@
     "file": "tests/components/quotes/ReopenExpiredQuoteButton.test.tsx"
    },
    {
+    "path": "*",
+    "component": "p",
+    "guard": "",
+    "roles": [],
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
     "path": "/",
     "component": "A",
     "guard": "",
@@ -61650,6 +61657,20 @@
     "guard": "",
     "roles": [],
     "file": "src/routes/config/admin.ts"
+   },
+   {
+    "path": "/admin/verbas",
+    "component": "AdminRoute",
+    "guard": "AdminRoute",
+    "roles": [],
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
+    "path": "/admin/verbas",
+    "component": "",
+    "guard": "",
+    "roles": [],
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
    },
    {
     "path": "/admin/video-variantes",
@@ -65053,6 +65074,14 @@
    },
    {
     "guard": "AdminRoute",
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
+    "guard": "AdminRoute",
     "file": "tests/security/privileged-client-data-guards.test.ts"
    },
    {
@@ -65614,7 +65643,7 @@
   {
    "module": "src/components",
    "files": 1137,
-   "lines": 168240,
+   "lines": 168235,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -67395,8 +67424,8 @@
   },
   {
    "module": "tests",
-   "files": 728,
-   "lines": 97490,
+   "files": 729,
+   "lines": 97630,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -141519,6 +141548,18 @@
     "name": "${name}: Bearer inválido → 401"
    },
    {
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+    "name": "MfaEnrollmentDialog: sem redirect para rota inexistente"
+   },
+   {
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+    "name": "permanece na rota de origem depois de ativar o segundo fator"
+   },
+   {
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+    "name": "a guarda libera a tela no endereço de origem quando o fator fica ativo"
+   },
+   {
     "file": "tests/security/portal-access-policy.test.ts",
     "name": "política de acesso privilegiado do portal"
    },
@@ -177650,6 +177691,14 @@
    },
    {
     "guard": "AdminRoute",
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
+    "guard": "AdminRoute",
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
+   {
+    "guard": "AdminRoute",
     "file": "tests/security/privileged-client-data-guards.test.ts"
    },
    {
@@ -177682,6 +177731,13 @@
    }
   ],
   "protected_routes": [
+   {
+    "path": "/admin/verbas",
+    "component": "AdminRoute",
+    "guard": "AdminRoute",
+    "roles": [],
+    "file": "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+   },
    {
     "path": "/app",
     "component": "Shell",
@@ -199854,7 +199910,7 @@
   },
   "src/components/layout/MfaGate.tsx": {
    "path": "src/components/layout/MfaGate.tsx",
-   "lines": 59,
+   "lines": 58,
    "exports": [
     "function MfaGate"
    ]
@@ -206226,12 +206282,11 @@
   },
   "src/components/security/MfaEnrollmentDialog.tsx": {
    "path": "src/components/security/MfaEnrollmentDialog.tsx",
-   "lines": 351,
+   "lines": 348,
    "exports": [
     "function MfaEnrollmentDialog"
    ],
    "navigates": [
-    "/admin",
     "/login"
    ],
    "errors": [
@@ -206335,7 +206390,7 @@
   },
   "src/components/security/TwoFactorSetup.tsx": {
    "path": "src/components/security/TwoFactorSetup.tsx",
-   "lines": 222,
+   "lines": 221,
    "exports": [
     "function TwoFactorSetup"
    ],
@@ -247860,10 +247915,10 @@
   },
   "tests/components/MfaGate.test.tsx": {
    "path": "tests/components/MfaGate.test.tsx",
-   "lines": 82,
+   "lines": 80,
    "is_test": true,
    "rule_comments": [
-    "o gestor deve permanecer na tela em que estava (verbas/alertas)."
+    "rota registrada (404) e o gestor deve permanecer em verbas/alertas."
    ],
    "tests": [
     "MfaGate das telas do gestor",
@@ -259904,6 +259959,51 @@
    ],
    "uses_service_role": true
   },
+  "tests/security/mfa-enrollment-sem-redirect.test.tsx": {
+   "path": "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+   "lines": 142,
+   "is_test": true,
+   "routes": [
+    {
+     "path": "/admin/verbas",
+     "component": "AdminRoute",
+     "guard": "AdminRoute",
+     "roles": []
+    },
+    {
+     "path": "*",
+     "component": "p",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/admin/verbas",
+     "component": "",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "*",
+     "component": "p",
+     "guard": "",
+     "roles": []
+    }
+   ],
+   "guards": [
+    "AdminRoute",
+    "AdminRoute"
+   ],
+   "rule_comments": [
+    "* O diálogo de ativação do segundo fator NÃO pode navegar ao concluir.",
+    "em que estava. A liberação deve vir do refreshAAL() (hasMFA), não de rota."
+   ],
+   "doc": "O diálogo de ativação do segundo fator NÃO pode navegar ao concluir. Ele mandava para \"/admin\", que não é rota registrada no App.tsx (cai no catch-all \"*\" → página 404). O admin/gestor ativava o MFA e perdia a tela em que estava. A liberação deve vir do refreshAAL() (hasMFA), não de rota.",
+   "tests": [
+    "MfaEnrollmentDialog: sem redirect para rota inexistente",
+    "permanece na rota de origem depois de ativar o segundo fator",
+    "a guarda libera a tela no endereço de origem quando o fator fica ativo"
+   ]
+  },
   "tests/security/portal-access-policy.test.ts": {
    "path": "tests/security/portal-access-policy.test.ts",
    "lines": 155,
@@ -261278,10 +261378,23 @@
   }
  },
  "git": {
-  "sha": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
+  "sha": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "e5e0f47",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)",
+    "files": [
+     "src/components/layout/MfaGate.tsx",
+     "src/components/security/MfaEnrollmentDialog.tsx",
+     "src/components/security/TwoFactorSetup.tsx",
+     "tests/components/MfaGate.test.tsx",
+     "tests/security/mfa-enrollment-sem-redirect.test.tsx"
+    ]
+   },
    {
     "sha": "6f282a4",
     "date": "2026-11-26",
@@ -261646,19 +261759,6 @@
      "supabase/migrations/000_notification_functions_replay_guard.sql",
      "supabase/migrations/20261125100000_notification_functions_contract.sql"
     ]
-   },
-   {
-    "sha": "e8fcd27",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: inteligencia de mercado nao inventa dados quando nao ha registros (#434)",
-    "files": [
-     "src/components/intelligence/MarketIntelligenceChart.tsx",
-     "src/hooks/useMarketIntelligenceMacro.ts",
-     "tests/components/intelligence/commercial-intelligence.test.ts",
-     "tests/components/intelligence/market-intelligence-truth.test.tsx",
-     "tests/hooks/useMarketIntelligenceMacro.order.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -261679,6 +261779,14 @@
     5
    ],
    [
+    "src/components/layout/MfaGate.tsx",
+    2
+   ],
+   [
+    "tests/components/MfaGate.test.tsx",
+    2
+   ],
+   [
     "src/services/sicoob/userService.ts",
     2
    ],
@@ -261688,10 +261796,6 @@
    ],
    [
     "src/contexts/AuthContext.tsx",
-    2
-   ],
-   [
-    "src/components/intelligence/MarketIntelligenceChart.tsx",
     2
    ],
    [
@@ -261707,15 +261811,23 @@
     2
    ],
    [
+    "src/components/security/MfaEnrollmentDialog.tsx",
+    1
+   ],
+   [
+    "src/components/security/TwoFactorSetup.tsx",
+    1
+   ],
+   [
+    "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+    1
+   ],
+   [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
     1
    ],
    [
     "src/components/common/PersistentBreadcrumbs.tsx",
-    1
-   ],
-   [
-    "src/components/layout/MfaGate.tsx",
     1
    ],
    [
@@ -261728,18 +261840,6 @@
    ],
    [
     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
-    1
-   ],
-   [
-    "src/pages/sicoob/GestorAlertsPage.tsx",
-    1
-   ],
-   [
-    "src/pages/sicoob/GestorBudgetsPage.tsx",
-    1
-   ],
-   [
-    "src/pages/sicoob/GestorDashboardPage.tsx",
     1
    ]
   ]

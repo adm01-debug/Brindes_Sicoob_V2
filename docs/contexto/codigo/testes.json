@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 959,
+ "total": 960,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 725
+  "unit": 726
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 706
+   "arquivos": 707
   },
   {
    "padrao": "e2e/",
@@ -2879,7 +2879,7 @@
   {
    "arquivo": "tests/components/MfaGate.test.tsx",
    "tipo": "unit",
-   "linhas": 82,
+   "linhas": 80,
    "testa": [
     "src/components/layout/MfaGate.tsx"
    ],
@@ -7663,6 +7663,16 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+   "tipo": "unit",
+   "linhas": 142,
+   "testa": [
+    "src/components/layout/AdminRoute.tsx",
+    "src/components/security/MfaEnrollmentDialog.tsx"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/security/portal-access-policy.test.ts",
    "tipo": "unit",
    "linhas": 155,
@@ -8501,7 +8511,7 @@
   "src/components/kit-builder/KitSmartSuggestions.tsx": 1,
   "src/components/kit-builder/KitVisualPreview.tsx": 1,
   "src/components/kit-builder/SimilarKitsWidget.tsx": 1,
-  "src/components/layout/AdminRoute.tsx": 4,
+  "src/components/layout/AdminRoute.tsx": 5,
   "src/components/layout/DevRoute.tsx": 5,
   "src/components/layout/MainLayout.tsx": 1,
   "src/components/layout/MfaGate.tsx": 1,
@@ -8561,6 +8571,7 @@
   "src/components/search/SmartSearchInput.tsx": 1,
   "src/components/search/VoiceSearchOverlay.tsx": 1,
   "src/components/search/useGlobalSearch.ts": 2,
+  "src/components/security/MfaEnrollmentDialog.tsx": 1,
   "src/components/security/SecurityDashboard.tsx": 1,
   "src/components/seo/PageSEO.tsx": 3,
   "src/components/sicoob/GestorComprasMetrics.tsx": 1,

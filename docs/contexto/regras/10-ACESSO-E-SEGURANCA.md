@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `6f282a454b` · branch `main` · 2026-11-26 20:40 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e5e0f47ccf` · branch `main` · 2026-11-26 21:05 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -846,6 +846,7 @@
 
 | Rota | Guard | Roles | Arquivo |
 |---|---|---|---|
+| /admin/verbas | AdminRoute |  | `tests/security/mfa-enrollment-sem-redirect.test.tsx` |
 | /app | ProtectedRoute |  | `scripts/ai-context/gerar.unit.mjs` |
 | /privada | ProtectedRoute |  | `scripts/ai-context/gerar.unit.mjs` |
 
