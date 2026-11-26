@@ -133,4 +133,52 @@ describe("ApprovalPolicyTab", () => {
     );
     expect(screen.getByText("permissão negada")).toBeInTheDocument();
   });
+
+  it("mostra a política global herdada pela Singular sem versão própria", async () => {
+    list.mockResolvedValue([
+      buildPolicy({
+        id: "policy-global",
+        cooperative_id: null,
+        version: "v9",
+        forbid_self_approval: false,
+        require_active_membership: true,
+      }),
+    ]);
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    expect(await screen.findByText("Herdada da global")).toBeInTheDocument();
+    // Escopo global, Singular que herda e histórico de versões.
+    expect(screen.getAllByText("v9")).toHaveLength(3);
+    expect(screen.getAllByText("Permite autoaprovação").length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText(/bloquear autoaprovação/i)).not.toBeChecked();
+    expect(within(dialog).getByLabelText(/exigir vínculo ativo/i)).toBeChecked();
+  });
+
+  it("reabre o formulário sugerindo a próxima versão após publicar", async () => {
+    list.mockResolvedValue([buildPolicy({ version: "v1" })]);
+    publish.mockImplementation(async () => {
+      list.mockResolvedValue([
+        buildPolicy({ version: "v1", is_active: false, effective_until: pastDate }),
+        buildPolicy({ id: "policy-2", version: "v2" }),
+      ]);
+      return "policy-2";
+    });
+    renderWithProviders(<ApprovalPolicyTab />);
+    await screen.findAllByText("SINGULAR TESTE");
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    let dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Versão")).toHaveValue("v2");
+    fireEvent.click(within(dialog).getByRole("button", { name: /publicar versão/i }));
+
+    await waitFor(() => expect(publish).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Versão")).toHaveValue("v3");
+  });
 });

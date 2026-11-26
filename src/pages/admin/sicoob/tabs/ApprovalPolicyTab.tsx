@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import {
   BASELINE_POLICY,
-  pickPolicyInForce,
+  pickEffectivePolicy,
   sicoobApprovalPolicyService,
   type ApprovalPolicy,
   type PolicyScope,
@@ -71,9 +71,11 @@ function PolicyRuleBadges({ policy }: { policy: ApprovalPolicy | null }) {
 
 function CurrentPolicyCell({
   policy,
+  inherited = false,
   baselineLabel = "Padrão do sistema",
 }: {
   policy: ApprovalPolicy | null;
+  inherited?: boolean;
   baselineLabel?: string;
 }) {
   if (!policy) {
@@ -85,6 +87,21 @@ function CurrentPolicyCell({
         </div>
         <p className="text-xs text-muted-foreground">
           Nenhuma versão publicada: o servidor aplica as regras padrão.
+        </p>
+      </div>
+    );
+  }
+
+  if (inherited) {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{policy.version}</span>
+          <Badge variant="secondary">Herdada da global</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Esta Singular não publicou versão própria: vale a política global desde{" "}
+          {formatDateTime(policy.effective_from)}.
         </p>
       </div>
     );
@@ -104,12 +121,14 @@ function CurrentPolicyCell({
 function ScopeRow({
   scope,
   policy,
+  inherited,
   onPublish,
   onClose,
   isClosing,
 }: {
   scope: PolicyScope;
   policy: ApprovalPolicy | null;
+  inherited: boolean;
   onPublish: (scope: PolicyScope) => void;
   onClose: (scope: PolicyScope) => void;
   isClosing: boolean;
@@ -118,7 +137,7 @@ function ScopeRow({
     <TableRow>
       <TableCell className="font-medium">{scope.cooperativeName}</TableCell>
       <TableCell>
-        <CurrentPolicyCell policy={policy} />
+        <CurrentPolicyCell policy={policy} inherited={inherited} />
       </TableCell>
       <TableCell>
         <PolicyRuleBadges policy={policy} />
@@ -132,7 +151,7 @@ function ScopeRow({
             size="sm"
             variant="ghost"
             className="gap-1 text-destructive"
-            disabled={!policy || isClosing}
+            disabled={!policy || inherited || isClosing}
             onClick={() => onClose(scope)}
           >
             <ShieldOff className="h-3.5 w-3.5" /> Encerrar
@@ -195,27 +214,42 @@ function ScopesTableBody({
 }) {
   return (
     <TableBody>
-      {scopes.map((scope) => (
-        <ScopeRow
-          key={scope.cooperativeId ?? "global"}
-          scope={scope}
-          policy={pickPolicyInForce(policies, scope.cooperativeId)}
-          onPublish={onPublish}
-          onClose={onClose}
-          isClosing={isClosing}
-        />
-      ))}
+      {scopes.map((scope) => {
+        const effective = pickEffectivePolicy(policies, scope.cooperativeId);
+        return (
+          <ScopeRow
+            key={scope.cooperativeId ?? "global"}
+            scope={scope}
+            policy={effective.policy}
+            inherited={effective.inherited}
+            onPublish={onPublish}
+            onClose={onClose}
+            isClosing={isClosing}
+          />
+        );
+      })}
     </TableBody>
   );
 }
 
 function resolveDefaults(policies: ApprovalPolicy[], cooperativeId: string | null) {
-  const current = pickPolicyInForce(policies, cooperativeId);
+  // Herdando a global, o formulário parte das regras que a Singular já obedece —
+  // publicar sem olhar os valores mudaria a regra que estava em vigor.
+  const current = pickEffectivePolicy(policies, cooperativeId).policy;
   return {
     forbidSelfApproval: current?.forbid_self_approval ?? BASELINE_POLICY.forbidSelfApproval,
     requireActiveMembership:
       current?.require_active_membership ?? BASELINE_POLICY.requireActiveMembership,
   };
+}
+
+/**
+ * Reabrir o mesmo escopo recalcula a próxima versão e as regras vigentes; sem
+ * isso o formulário repetiria o nome já publicado (rejeitado pelo índice único).
+ */
+function needsPreparation(scope: PolicyScope | null, preparedFor: string | null) {
+  if (!scope) return preparedFor !== null;
+  return (scope.cooperativeId ?? "global") !== preparedFor;
 }
 
 function FlagCheckbox({
@@ -267,13 +301,15 @@ function PublishPolicyDialog({
   const [preparedFor, setPreparedFor] = useState<string | null>(null);
 
   const scopeKey = scope ? scope.cooperativeId ?? "global" : null;
-  if (scope && scopeKey !== preparedFor) {
-    const defaults = resolveDefaults(policies, scope.cooperativeId);
+  if (needsPreparation(scope, preparedFor)) {
     setPreparedFor(scopeKey);
-    setVersion(sicoobApprovalPolicyService.suggestVersion(policies, scope.cooperativeId));
-    setForbidSelfApproval(defaults.forbidSelfApproval);
-    setRequireActiveMembership(defaults.requireActiveMembership);
-    setEffectiveFrom(toLocalInput(new Date()));
+    if (scope) {
+      const defaults = resolveDefaults(policies, scope.cooperativeId);
+      setVersion(sicoobApprovalPolicyService.suggestVersion(policies, scope.cooperativeId));
+      setForbidSelfApproval(defaults.forbidSelfApproval);
+      setRequireActiveMembership(defaults.requireActiveMembership);
+      setEffectiveFrom(toLocalInput(new Date()));
+    }
   }
 
   return (

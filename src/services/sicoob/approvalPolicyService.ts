@@ -20,6 +20,12 @@ export type PublishPolicyInput = {
   effectiveFrom: string;
 };
 
+export type CloseActiveOptions = {
+  keepPolicyId?: string;
+  createdUntil?: string;
+  handoverAt?: string;
+};
+
 /** Versão aplicada pelo servidor quando nenhuma política foi publicada. */
 export const BASELINE_POLICY = {
   version: "baseline-tecnica-v1",
@@ -41,6 +47,27 @@ export function pickPolicyInForce(policies: ApprovalPolicy[], cooperativeId: str
     .sort(
       (a, b) => new Date(b.effective_from).getTime() - new Date(a.effective_from).getTime(),
     )[0] ?? null;
+}
+
+export type EffectivePolicy = {
+  policy: ApprovalPolicy | null;
+  /** Sem versão própria vigente, a Singular responde pela política global. */
+  inherited: boolean;
+};
+
+/**
+ * Espelha a ordem do resolvedor do servidor (`get_sicoob_order_approval_policy`):
+ * versão própria vigente; senão a versão global vigente; senão o padrão técnico.
+ */
+export function pickEffectivePolicy(
+  policies: ApprovalPolicy[],
+  cooperativeId: string | null,
+  now = new Date(),
+): EffectivePolicy {
+  const own = pickPolicyInForce(policies, cooperativeId, now);
+  if (own || cooperativeId === null) return { policy: own, inherited: false };
+  const global = pickPolicyInForce(policies, null, now);
+  return { policy: global, inherited: global !== null };
 }
 
 function nextVersionSuggestion(policies: ApprovalPolicy[], cooperativeId: string | null) {
@@ -100,37 +127,65 @@ export const sicoobApprovalPolicyService = {
         effective_from: input.effectiveFrom,
         is_active: true,
       })
-      .select("id")
+      .select("id, created_at")
       .single();
 
     if (error) throw error;
     const policyId = data?.id ?? null;
+    if (!policyId) throw new Error("A versão publicada não retornou identificador.");
 
-    // A versão nova só encerra a anterior quando já passa a valer; agendada
-    // para o futuro, a política vigente continua respondendo pelo escopo.
-    if (policyId && new Date(input.effectiveFrom) <= new Date()) {
-      await this.closeActive(input.cooperativeId, policyId);
-    }
+    const startsNow = new Date(input.effectiveFrom) <= new Date();
+    await this.closeActive(input.cooperativeId, {
+      keepPolicyId: policyId,
+      // Publicações simultâneas no mesmo escopo: só são substituídas as versões
+      // criadas antes desta, para duas gravações não se desativarem mutuamente.
+      createdUntil: data?.created_at ?? undefined,
+      // Agendada: a versão em vigor continua respondendo até a virada, e o
+      // histórico guarda a data real da substituição.
+      handoverAt: startsNow ? undefined : input.effectiveFrom,
+    });
 
-    return policyId ?? "";
+    return policyId;
   },
 
   /**
-   * Encerra apenas as versões já em vigor (`effective_from <= now()`): uma versão
-   * agendada para o futuro não pode ser cancelada por engano.
+   * Encerra as versões em vigor do escopo (versão publicada é imutável: a nova
+   * substitui a anterior). Só atingem versões já iniciadas (`effective_from <= now()`),
+   * para uma versão agendada para o futuro não ser cancelada por engano.
+   *
+   * - `keepPolicyId`: versão recém-publicada, que não encerra a si mesma.
+   * - `createdUntil`: substitui apenas versões criadas até este instante, evitando
+   *   que duas publicações simultâneas desativem uma à outra.
+   * - `handoverAt`: virada de uma versão agendada — a versão atual continua ativa
+   *   (e respondendo pelo escopo) até esse instante.
    */
-  async closeActive(cooperativeId: string | null, keepPolicyId?: string) {
+  async closeActive(cooperativeId: string | null, options: CloseActiveOptions = {}) {
+    const now = new Date().toISOString();
+    const handover = options.handoverAt ?? null;
+
     let query = supabase
       .from("sicoob_approval_policies")
-      .update({ is_active: false, effective_until: new Date().toISOString() })
-      .eq("is_active", true)
-      .lte("effective_from", new Date().toISOString());
+      .update(
+        handover
+          ? { effective_until: handover }
+          : { is_active: false, effective_until: now },
+      )
+      .lte("effective_from", now);
+
+    if (handover) {
+      // Só versões em vigor hoje: as já encerradas não têm a data reescrita.
+      query = query.or(`effective_until.is.null,effective_until.gt.${now}`);
+    } else {
+      query = query.eq("is_active", true);
+    }
+
+    if (options.createdUntil) query = query.lte("created_at", options.createdUntil);
 
     query = cooperativeId === null
       ? query.is("cooperative_id", null)
       : query.eq("cooperative_id", cooperativeId);
 
-    if (keepPolicyId) query = query.neq("id", keepPolicyId);
+    if (options.keepPolicyId) query = query.neq("id", options.keepPolicyId);
 
     const { error } = await query;
     if (error) throw error;
