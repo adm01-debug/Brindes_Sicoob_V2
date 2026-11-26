@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: tira os \"insights\" fictícios do painel executivo e o R$ 0 enganoso (#475)",
    "fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)",
    "fix: verba e alçada usam a competência do pedido (SIC-028) (#469)",
    "fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)",
-   "chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)",
-   "feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)"
+   "chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

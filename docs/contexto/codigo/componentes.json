@@ -16121,7 +16121,7 @@
     "AdminBusinessDashboardPage"
    ],
    "export_default": "AdminBusinessDashboardPage",
-   "linhas": 121,
+   "linhas": 110,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useQuoteFunnel",

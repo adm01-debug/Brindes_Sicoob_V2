@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `63352e5aa9052c7d1f3d254e733e44814a495dfb` (2026-11-26T18:52:55-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `da92e3553b6f8f58d6efc3a81ffaf92a5bec2644` (2026-11-26T19:28:42-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5353 |
 | arquivos_codigo | 3239 |
-| linhas_codigo | 512837 |
+| linhas_codigo | 512826 |
 | rotas | 142 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -475,7 +475,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37343 nós · 62263 arestas · 2756 comunidades · grafo do commit `63352e5a`
+- 37343 nós · 62263 arestas · 2756 comunidades · grafo do commit `da92e355`
 - comunidades maiores: ref_integrations (533), ref_components (518), ref_lib (384), ref_hooks (307), ref_node_fs (250), lucide-react (232), framer-motion (217), react-router-dom (189), ai-usage.ts (188), ref_contexts (188), getCorsHeaders (187), ref_pages (167)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -487,9 +487,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - RELATORIO_CI.md (20)
 - package-lock.json (20)
 - .github/workflows/ci.yml (14)
-- .github/workflows/deploy-sicoob-functions.yml (14)
+- .github/workflows/deploy-sicoob-functions.yml (13)
+- docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (13)
 - .github/workflows/codeql.yml (12)
-- docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (12)
 - src/hooks/useQuoteBuilderState.ts (12)
 - scripts/automation.config.json (11)
 - .github/workflows/e2e.yml (10)
@@ -699,6 +699,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-26 `da92e35` fix: tira os "insights" fictícios do painel executivo e o R$ 0 enganoso (#475)
 - 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
 - 2026-11-26 `ee56b7f` fix: verba e alçada usam a competência do pedido (SIC-028) (#469)
 - 2026-11-26 `e5e0f47` fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)
@@ -713,7 +714,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `d036bf1` fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)
 - 2026-11-26 `791ef78` fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)
 - 2026-11-25 `76245cc` fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)
-- 2026-11-25 `50898b5` fix: falha de consulta nao pode parecer fila vazia (#452)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
