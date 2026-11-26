@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/format";
 import { sicoobBudgetService, type BudgetPeriod } from "@/services/sicoob/budgetService";
 
@@ -48,10 +49,15 @@ function fromPeriodInput(value: string): BudgetPeriod | null {
 
 /** Abre na competência mais recente que o usuário pode ver, para a tela não nascer vazia. */
 function useBudgetAuditData() {
+  const { user } = useAuth();
   const [period, setPeriod] = React.useState<BudgetPeriod | null>(null);
 
-  const { data: latestPeriod, isLoading: isLoadingPeriod } = useQuery({
-    queryKey: [BUDGET_AUDIT_QUERY_KEY, "ultima-competencia"],
+  const {
+    data: latestPeriod,
+    isLoading: isLoadingPeriod,
+    error: periodError,
+  } = useQuery({
+    queryKey: [BUDGET_AUDIT_QUERY_KEY, user?.id, "ultima-competencia"],
     queryFn: () => sicoobBudgetService.getLatestBudgetAuditPeriod(),
     staleTime: 60_000,
   });
@@ -63,14 +69,14 @@ function useBudgetAuditData() {
     isLoading: isLoadingRows,
     error,
   } = useQuery({
-    queryKey: [BUDGET_AUDIT_QUERY_KEY, effectivePeriod?.year, effectivePeriod?.month],
+    queryKey: [BUDGET_AUDIT_QUERY_KEY, user?.id, effectivePeriod?.year, effectivePeriod?.month],
     queryFn: () => sicoobBudgetService.listBudgetAudit(effectivePeriod as BudgetPeriod),
     enabled: effectivePeriod !== null,
   });
 
   return {
     rows,
-    error: error as Error | null,
+    error: (error ?? periodError) as Error | null,
     isLoading: isLoadingPeriod || isLoadingRows,
     period: effectivePeriod,
     setPeriod,

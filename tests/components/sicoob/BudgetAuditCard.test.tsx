@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import { BudgetAuditCard } from "@/components/sicoob/BudgetAuditCard";
 
@@ -83,5 +83,29 @@ describe("BudgetAuditCard", () => {
     renderWithProviders(<BudgetAuditCard />);
     expect(await screen.findByText("Não foi possível carregar a conciliação")).toBeInTheDocument();
     expect(screen.getByText("permission denied for view sicoob_budget_audit")).toBeInTheDocument();
+  });
+
+  it("recarrega a conciliação ao trocar de competência", async () => {
+    listBudgetAudit.mockImplementation(({ month }: { month: number }) =>
+      Promise.resolve([row({ mes: month })]),
+    );
+    renderWithProviders(<BudgetAuditCard />);
+    expect(await screen.findByText("10/2026")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Competência da conciliação de verba"), {
+      target: { value: "2026-09" },
+    });
+
+    await waitFor(() => expect(listBudgetAudit).toHaveBeenLastCalledWith({ year: 2026, month: 9 }));
+    expect(await screen.findByText("09/2026")).toBeInTheDocument();
+    expect(screen.queryByText("10/2026")).not.toBeInTheDocument();
+  });
+
+  it("mostra o erro da consulta de competências em vez de tela vazia", async () => {
+    getLatestBudgetAuditPeriod.mockRejectedValue(new Error("failed to fetch latest period"));
+    renderWithProviders(<BudgetAuditCard />);
+    expect(await screen.findByText("Não foi possível carregar a conciliação")).toBeInTheDocument();
+    expect(screen.getByText("failed to fetch latest period")).toBeInTheDocument();
+    expect(listBudgetAudit).not.toHaveBeenCalled();
   });
 });
