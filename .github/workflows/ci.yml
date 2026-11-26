@@ -149,6 +149,9 @@ jobs:
       - name: Simular agendamento do worker de relatórios
         run: python3 scripts/qa/simular-relatorios-agendados-cron.py
 
+      - name: Simular prazo (SLA) dos pedidos Sicoob
+        run: python3 scripts/qa/simular-sla-pedido-sicoob.py
+
       - name: Compilar artefato de produção
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999

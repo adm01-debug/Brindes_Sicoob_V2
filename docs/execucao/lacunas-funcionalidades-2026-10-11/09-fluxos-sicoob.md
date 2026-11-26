@@ -382,10 +382,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P1
 
 ### SIC-043  SLA de pedido inerte
-- Status: ORFA
+- Status: RESOLVIDO no repositório (migration pendente de aplicação em produção)
 - Origem: `20260503204301_*.sql:3-4,32-34`; `20260504153856:26-30` (48 h)
 - Evidência no código: o único lugar que preenchia `sla_deadline` (trigger `trigger_sicoob_order_flow_intelligence`) foi removido em `20260912120000:340`, e não há cron. A UI continua exibindo SLA (`src/components/sicoob/orders/SLABadge.tsx:41-96`; `OrdersPage.tsx:242,293`), e a notificação de "SLA crítico" (`20260912110000:151-176`) nunca dispara.
-- O que falta: RPC ou cron — definir o prazo na entrada em aprovação, recalcular `sla_status` e decidir o SLA por cooperativa.
+- Evidência da correção: `supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql` — `set_sicoob_order_sla_deadline()` (BEFORE INSERT OR UPDATE OF status) grava `sla_deadline = now() + 48h` e `sla_status = 'normal'` na entrada em `waiting_approval`/`escalated_to_board`, preserva o prazo quando o pedido sai desses estados, e o `backfill` corrige os pedidos em fluxo que estavam com prazo nulo. `refresh_sicoob_order_sla_status()` recalcula `normal|warning|critical` (limiares 80%/100% do prazo) para pedidos em `pending`/`waiting_approval`/`escalated_to_board` e é agendada por `sicoob-refresh-order-sla` (`*/15 * * * *`) quando `pg_cron` existe. A ordem alfabética dos triggers garante `set_sicoob_order_sla_deadline` antes de `trigger_check_order_sla`, que consome o prazo.
+- Testes que travam a regra: `scripts/qa/simular-sla-pedido-sicoob.py` (9 verificações em Postgres descartável, rodando em `ci.yml` e `sicoob-ci.yml`): pedido em fluxo com prazo nulo é corrigido; nascimento e entrada em aprovação recebem 48 h; rascunho não recebe prazo; prazo preservado ao sair da aprovação; recálculo marca `critical` e `warning`; pedido encerrado não é tocado; recálculo recusado fora de `service_role`. Sem a migration a simulação falha na primeira verificação.
+- O que falta: aplicar a migration em produção (`apply-sicoob-migrations.yml`); o valor do SLA por cooperativa continua em SIC-141.
 - Impacto no negócio: "Todos SLAs em conformidade" aparece sempre, mesmo com pedido parado há dias.
 - Esforço: M
 - Prioridade: P2

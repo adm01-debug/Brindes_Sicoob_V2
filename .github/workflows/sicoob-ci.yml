@@ -62,6 +62,7 @@ jobs:
           python3 scripts/qa/simular-consolidacao-sicoob.py
           python3 scripts/qa/simular-rls-cruzada-sicoob.py
           python3 scripts/qa/simular-verba-lifecycle.py
+          python3 scripts/qa/simular-sla-pedido-sicoob.py
 
   experiencia:
     if: github.actor != 'Copilot'
