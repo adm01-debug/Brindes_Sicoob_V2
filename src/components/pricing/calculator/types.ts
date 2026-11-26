@@ -9,6 +9,8 @@ export interface CalcProduct {
   price: number;
   images: string[];
   category_name: string | null;
+  /** false quando o catálogo externo não traz preço de venda válido para o produto. */
+  priceAvailable?: boolean;
 }
 
 export interface ProductTechnique {
