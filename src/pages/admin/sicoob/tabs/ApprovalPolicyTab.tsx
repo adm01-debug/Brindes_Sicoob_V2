@@ -183,13 +183,19 @@ function PolicyStatusBadge({ policy, now }: { policy: ApprovalPolicy; now: Date 
   return <Badge variant={variant}>{label}</Badge>;
 }
 
-/** Reavalia a cada minuto: a virada da vigência acontece com a tela aberta. */
-function useRelogio(intervaloMs = 60_000) {
+/**
+ * Reavalia a cada minuto e a cada leitura nova de dados: a vigência vira com a
+ * tela aberta e também logo depois de publicar uma versão que já começa.
+ */
+function useRelogio(intervaloMs = 60_000, gatilho?: unknown) {
   const [agora, setAgora] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setAgora(new Date()), intervaloMs);
     return () => clearInterval(id);
   }, [intervaloMs]);
+  useEffect(() => {
+    setAgora(new Date());
+  }, [gatilho]);
   return agora;
 }
 
@@ -412,10 +418,6 @@ export const ApprovalPolicyTab = () => {
   const queryClient = useQueryClient();
   const [publishScope, setPublishScope] = useState<PolicyScope | null>(null);
   const [closeScope, setCloseScope] = useState<PolicyScope | null>(null);
-  // Um unico relogio para resumo e historico: a virada da vigencia tem que
-  // refletir nas duas tabelas ao mesmo tempo.
-  const agora = useRelogio();
-
   const policies = useQuery({
     queryKey: [POLICIES_QUERY_KEY],
     queryFn: sicoobApprovalPolicyService.list,
@@ -424,6 +426,10 @@ export const ApprovalPolicyTab = () => {
     queryKey: [SCOPES_QUERY_KEY],
     queryFn: sicoobApprovalPolicyService.listScopes,
   });
+
+  // Um unico relogio para resumo e historico: a virada da vigencia tem que
+  // refletir nas duas tabelas, e uma publicacao ja vale na leitura seguinte.
+  const agora = useRelogio(60_000, policies.dataUpdatedAt);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });

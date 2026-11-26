@@ -273,6 +273,55 @@ describe("ApprovalPolicyTab", () => {
     }
   });
 
+  it("mostra a versao recem-publicada sem cair no padrao do sistema", async () => {
+    const t0 = new Date("2026-11-26T12:00:00Z");
+    const publicada = new Date(t0.getTime() + 45_000);
+    const nova = buildPolicy({
+      id: "policy-nova",
+      cooperative_id: "coop-1",
+      version: "v1",
+      effective_from: publicada.toISOString(),
+      effective_until: null,
+    });
+
+    vi.useFakeTimers();
+    vi.setSystemTime(t0);
+    try {
+      renderWithProviders(<ApprovalPolicyTab />);
+      await flushMicrotasks();
+
+      const linhaSingular = () =>
+        screen.getAllByText("SINGULAR TESTE")[0].closest("tr") as HTMLElement;
+      expect(within(linhaSingular()).getAllByText("Padrão do sistema")).toHaveLength(1);
+
+      // O usuario leva 45s para preencher e publicar: a vigencia nasce depois da
+      // ultima leitura do relogio da tela, mas antes do proximo minuto.
+      vi.setSystemTime(publicada);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(45_000);
+      });
+      await flushMicrotasks();
+
+      publish.mockImplementation(async () => {
+        list.mockResolvedValue([nova]);
+        return "policy-nova";
+      });
+
+      fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+      await flushMicrotasks();
+      const dialog = screen.getByRole("dialog");
+      fireEvent.click(within(dialog).getByRole("button", { name: /publicar versão/i }));
+      await flushMicrotasks();
+
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(within(linhaSingular()).getByText("v1")).toBeInTheDocument();
+      expect(within(linhaSingular()).getByText("Vigente")).toBeInTheDocument();
+      expect(within(linhaSingular()).queryByText("Padrão do sistema")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("reabre o formulário sugerindo a próxima versão após publicar", async () => {
     list.mockResolvedValue([buildPolicy({ version: "v1" })]);
     publish.mockImplementation(async () => {
