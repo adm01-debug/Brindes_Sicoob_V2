@@ -275,7 +275,7 @@ Os 153 registros P1 se agrupam nos 17 temas abaixo (alguns têm registros P2/P3 
 
 | Lacuna | Status | Registros |
 |---|---|---|
-| A aba "Vínculos" de `/admin/sicoob` grava em `profiles.role` os papéis `gestor_singular` e `gestor_pa`, que não existem em `app_role`, e não toca `user_roles`: **não concede acesso** | STUB/MOCK | SIC-010 |
+| A aba "Vínculos" de `/admin/sicoob` gravava em `profiles.role` papéis que não existem em `app_role` e não tocava `user_roles`, então **não concedia acesso**. Resolvido: a aba espelha o papel real (`gerente_pa`, `gestor_compras`, …) em `user_roles` | RESOLVIDO | SIC-010 |
 | Duas fontes de verdade para papel; vocabulário legado em código e RLS; seed e login de teste com papéis inexistentes | PARCIAL | SIC-011, SIC-012, SIC-013, DOC-55 |
 | O gestor da Singular não acessa verba, delegação e alertas do próprio escopo (restritos a supervisor) | PARCIAL | SIC-017, SIC-063 |
 | Papel e visão da Central (consolidado das Singulares) não existem; as telas de Centrais, Singulares e PAs estão órfãs | NAO_INICIADA / ORFA | SIC-001, SIC-002, ADM-05, FE-006 |
