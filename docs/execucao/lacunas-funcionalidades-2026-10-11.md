@@ -780,8 +780,8 @@ Lista completa nos apêndices dos anexos 05 e 06.
 
 **Tabelas e RPCs sem tela:**
 - `cooperativa_budgets` e `check_budget_availability`;
-- `sicoob_budget_audit` e `v_full_scope_grants`;
-- `sicoob_approval_policies`;
+- `sicoob_budget_audit` (tela entregue em /gestor/auditoria) e `v_full_scope_grants`;
+- ~~`sicoob_approval_policies`~~ — tela da Central entregue em /admin/sicoob (aba Políticas);
 - `sensitive_access_logs`;
 - `quote_audit_logs` e `log_quote_action`;
 - `scheduled_notifications` e `notification_digests`;

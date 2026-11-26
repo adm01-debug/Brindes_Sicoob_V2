@@ -1,11 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Landmark, Wallet, Users, BellRing, UserCog } from "lucide-react";
+import { Building2, Landmark, Wallet, Users, BellRing, UserCog, ShieldCheck } from "lucide-react";
 import { CooperativasTab } from "./tabs/CooperativasTab";
 import { PAsTab } from "./tabs/PAsTab";
 import { BudgetsTab } from "./tabs/BudgetsTab";
 import { UserAssignmentTab } from "./tabs/UserAssignmentTab";
 import { NotificationSettingsTab } from "./tabs/NotificationSettingsTab";
 import { ApprovalDelegationsTab } from "./tabs/ApprovalDelegationsTab";
+import { ApprovalPolicyTab } from "./tabs/ApprovalPolicyTab";
 
 const SicoobManagementPage = () => {
   return (
@@ -18,7 +19,7 @@ const SicoobManagementPage = () => {
       </div>
 
       <Tabs defaultValue="cooperativas" className="space-y-4">
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 xl:w-[930px] xl:grid-cols-6">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 xl:w-[1085px] xl:grid-cols-7">
           <TabsTrigger value="cooperativas" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
             <span>Singulares</span>
@@ -42,6 +43,10 @@ const SicoobManagementPage = () => {
           <TabsTrigger value="delegations" className="flex items-center gap-2">
             <UserCog className="h-4 w-4" />
             <span>Delegações</span>
+          </TabsTrigger>
+          <TabsTrigger value="policies" className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            <span>Políticas</span>
           </TabsTrigger>
         </TabsList>
 
@@ -68,6 +73,10 @@ const SicoobManagementPage = () => {
 
         <TabsContent value="delegations">
           <ApprovalDelegationsTab />
+        </TabsContent>
+
+        <TabsContent value="policies">
+          <ApprovalPolicyTab />
         </TabsContent>
       </Tabs>
     </div>

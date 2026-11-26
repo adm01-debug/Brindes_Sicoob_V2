@@ -1,0 +1,355 @@
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import {
+  ApprovalPolicyTab,
+  policyStatusAt,
+} from "@/pages/admin/sicoob/tabs/ApprovalPolicyTab";
+import type {
+  ApprovalPolicy,
+  PublishPolicyInput,
+} from "@/services/sicoob/approvalPolicyService";
+import { renderWithProviders } from "../render-helpers";
+
+const { list, listScopes, publish, closeActive } = vi.hoisted(() => ({
+  list: vi.fn(),
+  listScopes: vi.fn(),
+  publish: vi.fn(),
+  closeActive: vi.fn(),
+}));
+
+vi.mock("@/services/sicoob/approvalPolicyService", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/sicoob/approvalPolicyService")>();
+  return {
+    ...actual,
+    sicoobApprovalPolicyService: {
+      ...actual.sicoobApprovalPolicyService,
+      list,
+      listScopes,
+      publish,
+      closeActive,
+    },
+  };
+});
+
+const pastDate = new Date(Date.now() - 86_400_000).toISOString();
+
+const buildPolicy = (overrides: Partial<ApprovalPolicy> = {}): ApprovalPolicy =>
+  ({
+    id: "policy-1",
+    cooperative_id: "coop-1",
+    version: "v2",
+    is_active: true,
+    effective_from: pastDate,
+    effective_until: null,
+    forbid_self_approval: true,
+    require_active_membership: false,
+    created_at: pastDate,
+    updated_at: pastDate,
+    cooperative: { nome: "SINGULAR TESTE" },
+    ...overrides,
+  }) as ApprovalPolicy;
+
+/** Só microtarefas: com fake timers o waitFor não avança o relógio sozinho. */
+const flushMicrotasks = async () => {
+  for (let i = 0; i < 20; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+    });
+  }
+};
+
+const scopes = [
+  { cooperativeId: null, cooperativeName: "Todas as Singulares (política global)" },
+  { cooperativeId: "coop-1", cooperativeName: "SINGULAR TESTE" },
+];
+
+describe("ApprovalPolicyTab", () => {
+  beforeEach(() => {
+    list.mockReset();
+    listScopes.mockReset();
+    publish.mockReset();
+    closeActive.mockReset();
+    list.mockResolvedValue([]);
+    listScopes.mockResolvedValue(scopes);
+    publish.mockResolvedValue("policy-nova");
+    closeActive.mockResolvedValue(undefined);
+  });
+
+  it("mostra o padrão do sistema quando nenhuma versão foi publicada", async () => {
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    await waitFor(() => expect(screen.getByText("SINGULAR TESTE")).toBeInTheDocument());
+    expect(screen.getAllByText("baseline-tecnica-v1")).toHaveLength(2);
+    expect(screen.getAllByText("Padrão do sistema")).toHaveLength(2);
+    expect(screen.getByText("Nenhuma política publicada")).toBeInTheDocument();
+    for (const button of screen.getAllByRole("button", { name: /encerrar/i })) {
+      expect(button).toBeDisabled();
+    }
+  });
+
+  it("mostra a versão vigente e as regras em vigor da Singular", async () => {
+    list.mockResolvedValue([buildPolicy()]);
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    await waitFor(() => expect(screen.getAllByText("v2").length).toBeGreaterThan(1));
+    expect(screen.getByText("Ativa")).toBeInTheDocument();
+    expect(screen.getAllByText("Bloqueia autoaprovação").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Dispensa vínculo ativo").length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText("Nenhuma política publicada")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /encerrar/i })[1]).toBeEnabled();
+  });
+
+  it("publica nova versão com as regras escolhidas", async () => {
+    renderWithProviders(<ApprovalPolicyTab />);
+    await screen.findAllByText("SINGULAR TESTE");
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[0]);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Versão")).toHaveValue("v1");
+
+    fireEvent.click(within(dialog).getByLabelText(/exigir vínculo ativo/i));
+    fireEvent.click(within(dialog).getByRole("button", { name: /publicar versão/i }));
+
+    await waitFor(() => expect(publish).toHaveBeenCalledTimes(1));
+    expect(publish).toHaveBeenCalledWith(
+      expect.objectContaining<PublishPolicyInput>({
+        cooperativeId: null,
+        version: "v1",
+        forbidSelfApproval: true,
+        requireActiveMembership: false,
+      }),
+    );
+    expect(publish.mock.calls[0][0].effectiveFrom).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("encerra a política vigente somente após confirmação", async () => {
+    list.mockResolvedValue([buildPolicy()]);
+    renderWithProviders(<ApprovalPolicyTab />);
+    await screen.findAllByText("SINGULAR TESTE");
+
+    expect(closeActive).not.toHaveBeenCalled();
+    fireEvent.click(screen.getAllByRole("button", { name: /encerrar/i })[1]);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /encerrar política/i }));
+
+    await waitFor(() => expect(closeActive).toHaveBeenCalledWith("coop-1"));
+  });
+
+  it("avisa quando as políticas não carregam", async () => {
+    list.mockRejectedValue(new Error("permissão negada"));
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Não foi possível carregar as políticas")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("permissão negada")).toBeInTheDocument();
+  });
+
+  it("mostra a política global herdada pela Singular sem versão própria", async () => {
+    list.mockResolvedValue([
+      buildPolicy({
+        id: "policy-global",
+        cooperative_id: null,
+        version: "v9",
+        forbid_self_approval: false,
+        require_active_membership: true,
+      }),
+    ]);
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    expect(await screen.findByText("Herdada da global")).toBeInTheDocument();
+    // Escopo global, Singular que herda e histórico de versões.
+    expect(screen.getAllByText("v9")).toHaveLength(3);
+    expect(screen.getAllByText("Permite autoaprovação").length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText(/bloquear autoaprovação/i)).not.toBeChecked();
+    expect(within(dialog).getByLabelText(/exigir vínculo ativo/i)).toBeChecked();
+  });
+
+  it("vira de Agendada para Ativa quando a vigência começa", () => {
+    const inicio = new Date("2026-11-26T12:00:00Z");
+    const agendada = buildPolicy({
+      version: "v4",
+      effective_from: inicio.toISOString(),
+      effective_until: null,
+    });
+
+    expect(policyStatusAt(agendada, new Date("2026-11-26T11:59:00Z")).label).toBe("Agendada");
+    expect(policyStatusAt(agendada, new Date("2026-11-26T12:00:30Z")).label).toBe("Ativa");
+    expect(
+      policyStatusAt(
+        { ...agendada, effective_until: new Date("2026-11-26T12:00:00Z").toISOString() },
+        new Date("2026-11-26T12:00:30Z"),
+      ).label,
+    ).toBe("Encerrada");
+  });
+
+  it("não marca como ativa a versão cuja vigência terminou na troca agendada", async () => {
+    const agora = Date.now();
+    const anterior = buildPolicy({
+      id: "policy-anterior",
+      version: "v1",
+      is_active: true,
+      effective_from: new Date(agora - 7 * 86_400_000).toISOString(),
+      effective_until: new Date(agora - 86_400_000).toISOString(),
+    });
+    const vigente = buildPolicy({
+      id: "policy-vigente",
+      version: "v2",
+      effective_from: new Date(agora - 86_400_000).toISOString(),
+    });
+    const agendada = buildPolicy({
+      id: "policy-agendada",
+      version: "v3",
+      effective_from: new Date(agora + 7 * 86_400_000).toISOString(),
+    });
+    list.mockResolvedValue([anterior, vigente, agendada]);
+
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    const historico = (await screen.findByText("Término")).closest("table") as HTMLElement;
+    const linha = (versao: string) =>
+      within(historico).getByText(versao).closest("tr") as HTMLElement;
+
+    expect(within(linha("v1")).getByText("Encerrada")).toBeInTheDocument();
+    expect(within(linha("v2")).getByText("Ativa")).toBeInTheDocument();
+    expect(within(linha("v3")).getByText("Agendada")).toBeInTheDocument();
+  });
+
+  it("acompanha a virada da vigência com a tela aberta, sem recarregar", async () => {
+    const t0 = new Date("2026-11-26T12:00:00Z");
+    const virada = new Date(t0.getTime() + 120_000);
+    list.mockResolvedValue([
+      buildPolicy({
+        id: "policy-antes",
+        cooperative_id: null,
+        version: "v1",
+        effective_from: new Date(t0.getTime() - 86_400_000).toISOString(),
+        effective_until: virada.toISOString(),
+      }),
+      buildPolicy({
+        id: "policy-depois",
+        cooperative_id: null,
+        version: "v2",
+        effective_from: virada.toISOString(),
+        effective_until: null,
+      }),
+    ]);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(t0);
+    try {
+      renderWithProviders(<ApprovalPolicyTab />);
+      await flushMicrotasks();
+
+      const resumo = (
+        screen.getByText("Todas as Singulares (política global)").closest("tr") as HTMLElement
+      );
+      const historico = screen.getByText("Término").closest("table") as HTMLElement;
+      const linhaHistorico = (versao: string) =>
+        within(historico).getByText(versao).closest("tr") as HTMLElement;
+
+      expect(within(resumo).getByText("v1")).toBeInTheDocument();
+      expect(within(linhaHistorico("v1")).getByText("Ativa")).toBeInTheDocument();
+      expect(within(linhaHistorico("v2")).getByText("Agendada")).toBeInTheDocument();
+
+      vi.setSystemTime(new Date(virada.getTime() + 30_000));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(120_000);
+      });
+      await flushMicrotasks();
+
+      // Resumo e histórico viram juntos: nenhum dos dois pode ficar na versão antiga.
+      expect(within(resumo).getByText("v2")).toBeInTheDocument();
+      expect(within(resumo).queryByText("v1")).not.toBeInTheDocument();
+      expect(within(linhaHistorico("v1")).getByText("Encerrada")).toBeInTheDocument();
+      expect(within(linhaHistorico("v2")).getByText("Ativa")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("mostra a versao recem-publicada sem cair no padrao do sistema", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-26T11:59:30Z"));
+    try {
+      renderWithProviders(<ApprovalPolicyTab />);
+      await flushMicrotasks();
+
+      const linhaSingular = () =>
+        screen.getAllByText("SINGULAR TESTE")[0].closest("tr") as HTMLElement;
+      expect(within(linhaSingular()).getAllByText("Padrão do sistema")).toHaveLength(1);
+
+      // O minuto vira antes de o formulario ser preenchido: a vigencia que ele
+      // envia (12:00, truncada ao minuto) fica depois da ultima leitura do relogio
+      // da tela (11:59:30), e o tick de 60s ainda nao disparou.
+      // 50s depois da ultima leitura e antes do tick de 60s: o relogio da tela
+      // continua em 11:59:30 enquanto o mundo ja esta em 12:00:20.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(50_000);
+      });
+      await flushMicrotasks();
+
+      // O mock devolve exatamente a vigencia que o formulario enviou.
+      publish.mockImplementation(async (input: PublishPolicyInput) => {
+        list.mockResolvedValue([
+          buildPolicy({
+            id: "policy-nova",
+            cooperative_id: "coop-1",
+            version: "v1",
+            effective_from: input.effectiveFrom,
+            effective_until: null,
+          }),
+        ]);
+        return "policy-nova";
+      });
+
+      fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+      await flushMicrotasks();
+      const dialog = screen.getByRole("dialog");
+      fireEvent.click(within(dialog).getByRole("button", { name: /publicar versão/i }));
+      await flushMicrotasks();
+
+      expect(publish).toHaveBeenCalledTimes(1);
+      const vigenciaEnviada = new Date(publish.mock.calls[0][0].effectiveFrom);
+      // O formulario envia a vigencia truncada ao minuto atual: depois da ultima
+      // leitura do relogio da tela e antes do proximo tick.
+      expect(vigenciaEnviada.getTime()).toBeGreaterThan(Date.parse("2026-11-26T11:59:30Z"));
+      expect(vigenciaEnviada.getTime()).toBeLessThanOrEqual(Date.parse("2026-11-26T12:00:20Z"));
+      expect(within(linhaSingular()).getByText("v1")).toBeInTheDocument();
+      expect(within(linhaSingular()).getByText("Vigente")).toBeInTheDocument();
+      expect(within(linhaSingular()).queryByText("Padrão do sistema")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("reabre o formulário sugerindo a próxima versão após publicar", async () => {
+    list.mockResolvedValue([buildPolicy({ version: "v1" })]);
+    publish.mockImplementation(async () => {
+      list.mockResolvedValue([
+        buildPolicy({ version: "v1", is_active: false, effective_until: pastDate }),
+        buildPolicy({ id: "policy-2", version: "v2" }),
+      ]);
+      return "policy-2";
+    });
+    renderWithProviders(<ApprovalPolicyTab />);
+    await screen.findAllByText("SINGULAR TESTE");
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    let dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Versão")).toHaveValue("v2");
+    fireEvent.click(within(dialog).getByRole("button", { name: /publicar versão/i }));
+
+    await waitFor(() => expect(publish).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByRole("button", { name: /publicar versão/i })[1]);
+    dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Versão")).toHaveValue("v3");
+  });
+});
