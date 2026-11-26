@@ -204,8 +204,14 @@ describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar"
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     cleanup();
+    // O boundary dispara `import('@/lib/error-reporter')` em fire-and-forget ao
+    // capturar o erro. Sem esperar esse chunk, o Vitest encerra o worker com o
+    // log pendente e reprova a suíte inteira com
+    // "Closing rpc while onUserConsoleLog was pending" — foi o que derrubou o
+    // gate `Segurança, contratos e build` num push verde (run 45833066059).
+    await vi.dynamicImportSettled();
     window.removeEventListener("error", suppressExpectedBoundaryError);
     errorSpy.mockRestore();
     guard.dispose();
