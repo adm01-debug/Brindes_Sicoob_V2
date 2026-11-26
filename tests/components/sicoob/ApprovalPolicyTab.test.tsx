@@ -274,18 +274,8 @@ describe("ApprovalPolicyTab", () => {
   });
 
   it("mostra a versao recem-publicada sem cair no padrao do sistema", async () => {
-    const t0 = new Date("2026-11-26T12:00:00Z");
-    const publicada = new Date(t0.getTime() + 45_000);
-    const nova = buildPolicy({
-      id: "policy-nova",
-      cooperative_id: "coop-1",
-      version: "v1",
-      effective_from: publicada.toISOString(),
-      effective_until: null,
-    });
-
     vi.useFakeTimers();
-    vi.setSystemTime(t0);
+    vi.setSystemTime(new Date("2026-11-26T11:59:30Z"));
     try {
       renderWithProviders(<ApprovalPolicyTab />);
       await flushMicrotasks();
@@ -294,16 +284,27 @@ describe("ApprovalPolicyTab", () => {
         screen.getAllByText("SINGULAR TESTE")[0].closest("tr") as HTMLElement;
       expect(within(linhaSingular()).getAllByText("Padrão do sistema")).toHaveLength(1);
 
-      // O usuario leva 45s para preencher e publicar: a vigencia nasce depois da
-      // ultima leitura do relogio da tela, mas antes do proximo minuto.
-      vi.setSystemTime(publicada);
+      // O minuto vira antes de o formulario ser preenchido: a vigencia que ele
+      // envia (12:00, truncada ao minuto) fica depois da ultima leitura do relogio
+      // da tela (11:59:30), e o tick de 60s ainda nao disparou.
+      // 50s depois da ultima leitura e antes do tick de 60s: o relogio da tela
+      // continua em 11:59:30 enquanto o mundo ja esta em 12:00:20.
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(45_000);
+        await vi.advanceTimersByTimeAsync(50_000);
       });
       await flushMicrotasks();
 
-      publish.mockImplementation(async () => {
-        list.mockResolvedValue([nova]);
+      // O mock devolve exatamente a vigencia que o formulario enviou.
+      publish.mockImplementation(async (input: PublishPolicyInput) => {
+        list.mockResolvedValue([
+          buildPolicy({
+            id: "policy-nova",
+            cooperative_id: "coop-1",
+            version: "v1",
+            effective_from: input.effectiveFrom,
+            effective_until: null,
+          }),
+        ]);
         return "policy-nova";
       });
 
@@ -314,6 +315,11 @@ describe("ApprovalPolicyTab", () => {
       await flushMicrotasks();
 
       expect(publish).toHaveBeenCalledTimes(1);
+      const vigenciaEnviada = new Date(publish.mock.calls[0][0].effectiveFrom);
+      // O formulario envia a vigencia truncada ao minuto atual: depois da ultima
+      // leitura do relogio da tela e antes do proximo tick.
+      expect(vigenciaEnviada.getTime()).toBeGreaterThan(Date.parse("2026-11-26T11:59:30Z"));
+      expect(vigenciaEnviada.getTime()).toBeLessThanOrEqual(Date.parse("2026-11-26T12:00:20Z"));
       expect(within(linhaSingular()).getByText("v1")).toBeInTheDocument();
       expect(within(linhaSingular()).getByText("Vigente")).toBeInTheDocument();
       expect(within(linhaSingular()).queryByText("Padrão do sistema")).not.toBeInTheDocument();
