@@ -1,7 +1,10 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApprovalPolicyTab } from "@/pages/admin/sicoob/tabs/ApprovalPolicyTab";
+import {
+  ApprovalPolicyTab,
+  policyStatusAt,
+} from "@/pages/admin/sicoob/tabs/ApprovalPolicyTab";
 import type {
   ApprovalPolicy,
   PublishPolicyInput,
@@ -155,6 +158,24 @@ describe("ApprovalPolicyTab", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByLabelText(/bloquear autoaprovação/i)).not.toBeChecked();
     expect(within(dialog).getByLabelText(/exigir vínculo ativo/i)).toBeChecked();
+  });
+
+  it("vira de Agendada para Ativa quando a vigência começa", () => {
+    const inicio = new Date("2026-11-26T12:00:00Z");
+    const agendada = buildPolicy({
+      version: "v4",
+      effective_from: inicio.toISOString(),
+      effective_until: null,
+    });
+
+    expect(policyStatusAt(agendada, new Date("2026-11-26T11:59:00Z")).label).toBe("Agendada");
+    expect(policyStatusAt(agendada, new Date("2026-11-26T12:00:30Z")).label).toBe("Ativa");
+    expect(
+      policyStatusAt(
+        { ...agendada, effective_until: new Date("2026-11-26T12:00:00Z").toISOString() },
+        new Date("2026-11-26T12:00:30Z"),
+      ).label,
+    ).toBe("Encerrada");
   });
 
   it("não marca como ativa a versão cuja vigência terminou na troca agendada", async () => {

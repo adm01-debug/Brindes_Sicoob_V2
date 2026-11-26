@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -178,12 +178,23 @@ export function policyStatusAt(policy: ApprovalPolicy, now = new Date()) {
   return { label: "Encerrada", variant: "secondary" as const };
 }
 
-function PolicyStatusBadge({ policy }: { policy: ApprovalPolicy }) {
-  const { label, variant } = policyStatusAt(policy);
+function PolicyStatusBadge({ policy, now }: { policy: ApprovalPolicy; now: Date }) {
+  const { label, variant } = policyStatusAt(policy, now);
   return <Badge variant={variant}>{label}</Badge>;
 }
 
+/** Reavalia a cada minuto: a virada da vigência acontece com a tela aberta. */
+function useRelogio(intervaloMs = 60_000) {
+  const [agora, setAgora] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setAgora(new Date()), intervaloMs);
+    return () => clearInterval(id);
+  }, [intervaloMs]);
+  return agora;
+}
+
 function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
+  const agora = useRelogio();
   return (
     <Table>
       <TableHeader>
@@ -207,7 +218,7 @@ function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
             <TableCell>{formatDateTime(policy.effective_from)}</TableCell>
             <TableCell>{formatDateTime(policy.effective_until)}</TableCell>
             <TableCell>
-              <PolicyStatusBadge policy={policy} />
+              <PolicyStatusBadge policy={policy} now={agora} />
             </TableCell>
           </TableRow>
         ))}
