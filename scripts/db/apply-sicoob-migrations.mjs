@@ -240,6 +240,10 @@ const TARGETS = [
     file: "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
     sha256: "db796e80a4dd50ec30eb997a933bf1e048e1895cb2a3ec9ed18607fb6e964110",
   },
+  {
+    file: "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
+    sha256: "7b3994348fcf23f474975f2200cd0d5dff508a82e264704d2aeeb7c2c784da0d",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
