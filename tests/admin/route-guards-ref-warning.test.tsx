@@ -49,6 +49,15 @@ vi.mock("@/lib/access/log-access-denied", () => ({
   logAccessDenied: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+// O boundary real enfileira o relato e agenda um flush de telemetria
+// (error-reporter.ts:114-137) que faz `insert` + `logger.warn` segundos depois.
+// Esse timer virava log pendente no teardown do worker e reprovava a suíte
+// inteira com "Closing rpc while onUserConsoleLog was pending" (run
+// 45833066059), num push cujos 7146 testes passaram. Mesmo mock do
+// tests/components/EnhancedErrorBoundary.test.tsx.
+vi.mock("@/lib/error-reporter", () => ({
+  reportError: vi.fn(),
+}));
 
 import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
@@ -204,8 +213,12 @@ describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar"
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     cleanup();
+    // O boundary dispara `import('@/lib/error-reporter')` em fire-and-forget ao
+    // capturar o erro. Mesmo com o reporter mockado acima, esperar o chunk
+    // resolve antes de restaurar os spies de console e encerrar o worker.
+    await vi.dynamicImportSettled();
     window.removeEventListener("error", suppressExpectedBoundaryError);
     errorSpy.mockRestore();
     guard.dispose();
