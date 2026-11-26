@@ -35,8 +35,16 @@ import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
  */
 const CART_PANEL_MAX_HEIGHT_WITH_FOOTER = "max-h-[min(calc(440px+15.5rem),var(--radix-popover-content-available-height))]";
 const CART_PANEL_MAX_HEIGHT_WITHOUT_FOOTER = "max-h-[min(calc(440px+4.5rem),var(--radix-popover-content-available-height))]";
-/** A lista rola dentro da coluna: cede altura para o rodapé em vez de empurrá-lo. */
-const CART_LIST_FLEX_CLASS = "min-h-0 flex-1";
+/**
+ * O viewport do ScrollArea precisa de altura definida para rolar de fato. Com
+ * `h-full` (height: 100%) o Chrome não resolve a porcentagem contra a altura
+ * que o Root recebeu do flex: o viewport crescia com o conteúdo (550px num
+ * Root de 115px), o `overflow-hidden` do Root cortava os últimos orçamentos e
+ * nenhuma rolagem acontecia. Como item de flex (basis 0 + min-h-0), a altura
+ * vem do Root sem depender de porcentagem.
+ */
+const CART_LIST_FLEX_CLASS = "flex min-h-0 flex-1 flex-col";
+const CART_LIST_VIEWPORT_CLASS = "min-h-0 flex-1";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -238,7 +246,10 @@ export function CartHeaderButton() {
                   {/* O rodapé (verba + alçada + subtotal + CTA) não rola: a coluna
                       cede altura para ele, então "Gerar Orçamento" continua visível
                       mesmo quando o rodapé cresce em janelas baixas. */}
-                  <ScrollArea className={CART_LIST_FLEX_CLASS}>
+                  <ScrollArea
+                    className={CART_LIST_FLEX_CLASS}
+                    viewportClassName={CART_LIST_VIEWPORT_CLASS}
+                  >
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>

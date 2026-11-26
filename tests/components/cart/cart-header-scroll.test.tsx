@@ -117,8 +117,14 @@ describe("CartHeaderButton — janela baixa", () => {
 
     const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
     expect(viewport).not.toBeNull();
+    expect(viewport?.parentElement).toHaveClass("flex");
     expect(viewport?.parentElement).toHaveClass("min-h-0");
     expect(viewport?.parentElement).toHaveClass("flex-1");
+    // O viewport também é item de flex: `h-full` não resolve contra a altura
+    // que o Root recebe do flex, e o viewport crescia com o conteúdo
+    // (medido em Chromium: 550px dentro de um Root de 115px).
+    expect(viewport).toHaveClass("min-h-0");
+    expect(viewport).toHaveClass("flex-1");
     // …e o rodapé com o CTA fica fora dela: nunca sai da área visível.
     expect(viewport?.contains(cta)).toBe(false);
     expect(cta.closest(".shrink-0")).not.toBeNull();
