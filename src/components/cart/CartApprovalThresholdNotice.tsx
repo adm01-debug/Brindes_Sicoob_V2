@@ -7,7 +7,7 @@ export interface CartThresholdItem {
   quantity: number;
 }
 
-type NoticeState = "exact" | "carry-over" | "missing";
+type NoticeState = "exact" | "carry-over" | "missing" | "future-only";
 
 interface NoticeCopy {
   state: NoticeState;
@@ -59,13 +59,25 @@ function carriedOverCopy(input: {
   };
 }
 
-function missingCopy(requestedCompetenceLabel: string | null): NoticeCopy {
+/**
+ * Verba cadastrada apenas em competencia futura. O mes do carrinho continua sem
+ * alcada, mas a tela nao pode se calar: sem este aviso o comprador so descobre o
+ * bloqueio quando o servidor recusa o pedido.
+ */
+function futureCompetenceAlert(futureLabel: string, requestedCompetenceLabel: string | null): string {
+  return `Há verba cadastrada para ${futureLabel}, mas não para o mês do carrinho${requestedCompetenceLabel ? ` (${requestedCompetenceLabel})` : ""}: o administrativo precisa configurar a alçada deste mês antes de o pedido ser confirmado.`;
+}
+
+function missingCopy(requestedCompetenceLabel: string | null, futureLabel: string | null): NoticeCopy {
   return {
-    state: "missing",
+    state: futureLabel ? "future-only" : "missing",
     title: `Sem alçada para ${requestedCompetenceLabel ?? "o mês do carrinho"}`,
     value: null,
     over: false,
-    alerts: [missingCompetenceAlert(requestedCompetenceLabel)],
+    alerts: [
+      missingCompetenceAlert(requestedCompetenceLabel),
+      ...(futureLabel ? [futureCompetenceAlert(futureLabel, requestedCompetenceLabel)] : []),
+    ],
   };
 }
 
@@ -74,9 +86,10 @@ function buildNoticeCopy(input: {
   isCarryOver: boolean;
   competenceLabel: string | null;
   requestedCompetenceLabel: string | null;
+  futurePaBudgetLabel: string | null;
   over: boolean;
 }): NoticeCopy {
-  if (input.paThreshold === null) return missingCopy(input.requestedCompetenceLabel);
+  if (input.paThreshold === null) return missingCopy(input.requestedCompetenceLabel, input.futurePaBudgetLabel);
   if (input.isCarryOver) return carriedOverCopy({ ...input, paThreshold: input.paThreshold });
   return exactCopy(input.competenceLabel, input.paThreshold, input.over);
 }
@@ -101,7 +114,15 @@ function NoticeAlerts({ copy }: { copy: NoticeCopy }) {
  * a competencia corrente tem alcada aprovada antes de gerar o orcamento.
  */
 export function CartApprovalThresholdNotice({ items }: { items: CartThresholdItem[] }) {
-  const { paThreshold, hasVisiblePaBudget, competenceLabel, requestedCompetenceLabel, isCarryOver, needsApproval } =
+  const {
+    paThreshold,
+    hasVisiblePaBudget,
+    competenceLabel,
+    requestedCompetenceLabel,
+    futurePaBudgetLabel,
+    isCarryOver,
+    needsApproval,
+  } =
     useApprovalThreshold(items.map((item) => ({ unit_price: item.product_price, quantity: item.quantity, category_id: null })));
 
   if (!hasVisiblePaBudget) return null;
@@ -112,6 +133,7 @@ export function CartApprovalThresholdNotice({ items }: { items: CartThresholdIte
     isCarryOver,
     competenceLabel,
     requestedCompetenceLabel,
+    futurePaBudgetLabel,
     over: needsApproval(subtotal),
   });
 

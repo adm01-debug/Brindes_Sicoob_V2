@@ -109,6 +109,19 @@ describe("CartApprovalThresholdNotice", () => {
     vi.useRealTimers();
   });
 
+  it("avisa que a verba visível é só do mês seguinte, sem se calar", async () => {
+    freezeTime();
+    mocks.budgets = [{ ano: 2026, mes: 12, limite_alcada: 5000 }];
+
+    renderNotice([{ product_price: 300, quantity: 1 }]);
+
+    const notice = await screen.findByTestId("cart-approval-threshold");
+    expect(notice.getAttribute("data-state")).toBe("future-only");
+    expect(screen.getByText(/Há verba cadastrada para 12\/2026/)).toBeTruthy();
+    expect(screen.queryByText(/exigirá aprovação/)).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("não acusa alçada ausente quando nenhuma linha de verba está visível", async () => {
     freezeTime();
     mocks.budgets = [];

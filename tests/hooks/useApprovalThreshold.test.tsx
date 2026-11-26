@@ -109,6 +109,19 @@ describe("useApprovalThreshold", () => {
     expect(result.current.needsApproval(500)).toBe(true);
   });
 
+  it("avisa que só existe verba futura em vez de se calar como PA sem verba", async () => {
+    mocks.budgets = [{ ano: 2026, mes: 12, limite_alcada: 5000 }];
+    const { result } = renderHook(
+      () => useApprovalThreshold(undefined, { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.hasVisiblePaBudget).toBe(true));
+    expect(result.current.paThreshold).toBeNull();
+    expect(result.current.requestedCompetenceLabel).toBe("11/2026");
+    expect(result.current.futurePaBudgetLabel).toBe("12/2026");
+  });
+
   it("trata a alçada de R$ 0 como limite real do PA, e não como limite ausente", async () => {
     mocks.profile = { pa_id: "pa-do-pedido", approval_threshold: 5000 };
     mocks.budgets = [{ ano: 2026, mes: 11, limite_alcada: 0 }];

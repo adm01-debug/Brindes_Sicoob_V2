@@ -111,6 +111,32 @@ export function pickBudgetForCompetence<T extends CompetenceRow>(
   return best;
 }
 
+/**
+ * Primeira competencia com verba DEPOIS da pedida. Quando so existe linha
+ * futura, `pickBudgetForCompetence` devolve null e a tela calaria como se o PA
+ * nao tivesse verba cadastrada; esta funcao permite avisar que a verba existe,
+ * mas nao vale para o mes do pedido.
+ */
+export function nextFutureCompetence<T extends CompetenceRow>(
+  rows: T[] | null | undefined,
+  competence: BudgetCompetence | null | undefined,
+): BudgetCompetence | null {
+  if (!competence || !rows?.length) return null;
+  const limit = competence.year * 12 + competence.month;
+  let best: BudgetCompetence | null = null;
+  let bestRank = Number.POSITIVE_INFINITY;
+  for (const row of rows) {
+    const year = Number(row.ano);
+    const month = Number(row.mes);
+    if (!Number.isFinite(year) || !Number.isFinite(month)) continue;
+    const rank = year * 12 + month;
+    if (rank <= limit || rank >= bestRank) continue;
+    best = { year, month };
+    bestRank = rank;
+  }
+  return best;
+}
+
 /** Competencia de uma linha de verba, ou null quando `ano`/`mes` nao sao numeros. */
 export function readBudgetCompetence(row: CompetenceRow | null | undefined): BudgetCompetence | null {
   if (!row) return null;

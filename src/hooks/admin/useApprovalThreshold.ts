@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatBudgetCompetence, isCarryOverCompetence, pickBudgetForCompetence, readBudgetCompetence, resolveBudgetCompetence, type BudgetCompetence } from "@/lib/sicoob/paBudgetState";
+import { formatBudgetCompetence, isCarryOverCompetence, nextFutureCompetence, pickBudgetForCompetence, readBudgetCompetence, resolveBudgetCompetence, type BudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 interface ApprovalItem {
   category_id?: string | null;
@@ -75,17 +75,51 @@ export interface ApprovalThresholdOptions {
   referenceDate?: string | Date;
 }
 
+interface ApprovalThresholdBudget {
+  row: ApprovalThresholdBudgetRow | null;
+  /** Existe alguma linha de verba visivel do PA, mesmo fora da competencia. */
+  hasAnyRow: boolean;
+  /** Competencia com verba depois da pedida; a tela avisa em vez de se calar. */
+  futureCompetence: BudgetCompetence | null;
+}
+
 async function loadApprovalThresholdBudget(
   paId: string,
   competence: BudgetCompetence,
-): Promise<ApprovalThresholdBudgetRow | null> {
+): Promise<ApprovalThresholdBudget> {
   const { data, error } = await supabase
     .from("pa_budgets")
     .select("ano, mes, limite_alcada")
     .eq("pa_id", paId);
 
   if (error) throw error;
-  return pickBudgetForCompetence(data as ApprovalThresholdBudgetRow[] | null, competence);
+  const rows = (data ?? []) as ApprovalThresholdBudgetRow[];
+  return {
+    row: pickBudgetForCompetence(rows, competence),
+    hasAnyRow: rows.length > 0,
+    futureCompetence: nextFutureCompetence(rows, competence),
+  };
+}
+
+/**
+ * Tudo que a tela precisa saber sobre a verba visivel do PA na competencia
+ * pedida: a linha que decide a alcada, se ha alguma linha visivel, a
+ * competencia futura (quando a pedida nao tem verba) e se a alcada usada veio
+ * de um mes anterior.
+ */
+function readBudgetView(
+  budgetData: ApprovalThresholdBudget | null | undefined,
+  competence: BudgetCompetence | null,
+) {
+  const row = budgetData?.row ?? null;
+  const usedCompetence = readBudgetCompetence(row);
+  return {
+    paThreshold: readPaAlcada(row),
+    hasVisiblePaBudget: Boolean(budgetData?.hasAnyRow),
+    futurePaBudgetLabel: formatBudgetCompetence(budgetData?.futureCompetence ?? null),
+    usedCompetence,
+    isCarryOver: isCarryOverCompetence(usedCompetence, competence),
+  };
 }
 
 function thresholdQueryKey(paId?: string | null, competence?: BudgetCompetence | null) {
@@ -99,12 +133,11 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
   const canLoadThreshold = Boolean(paId && competence);
   const hasCategorizedItems = Boolean(paId && items?.some((item) => item.category_id));
 
-  const { data: budget } = useQuery({
+  const { data: budgetData } = useQuery({
     queryKey: thresholdQueryKey(paId, competence),
     queryFn: () => (paId && competence ? loadApprovalThresholdBudget(paId, competence) : Promise.resolve(null)),
     enabled: canLoadThreshold,
   });
-
   const { data: categoryThresholds } = useQuery({
     queryKey: ["pa_category_thresholds", paId],
     queryFn: async () => {
@@ -119,25 +152,26 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
     enabled: hasCategorizedItems,
   });
 
-  const paThreshold = readPaAlcada(budget);
-  const usedCompetence = readBudgetCompetence(budget);
-  const isCarryOver = isCarryOverCompetence(usedCompetence, competence);
+  const { paThreshold, hasVisiblePaBudget, futurePaBudgetLabel, usedCompetence, isCarryOver } =
+    readBudgetView(budgetData, competence);
 
-  const needsApproval = (amount: number, currentItems?: ApprovalItem[]) => {
+  const globalThreshold = globalApprovalThreshold(profile?.approval_threshold, paThreshold);
+
+  const needsApproval = (amount: number) => {
     return approvalRequired({
       amount,
-      items: currentItems || items || [],
+      items: items ?? [],
       isDev,
       isSupervisor,
       isGestorCompras,
       paId,
-      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, paThreshold),
+      globalThreshold,
       categoryThresholds,
     });
   };
 
   return {
-    threshold: globalApprovalThreshold(profile?.approval_threshold, paThreshold),
+    threshold: globalThreshold,
     /**
      * Alcada numerica aprovada do PA para a competencia pedida (0 e limite real).
      * `null` = a linha do mes nao tem limite preenchido.
@@ -148,7 +182,13 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
      * afirmar que o PA esta sem alcada: a policy de SELECT esconde pa_budgets de
      * quem nao tem escopo (vendedor), entao a tela se cala em vez de acusar.
      */
-    hasVisiblePaBudget: budget !== null && budget !== undefined,
+    hasVisiblePaBudget,
+    /**
+     * Competencia com verba cadastrada depois da pedida. Sem ela a tela nao
+     * distingue "PA sem verba" de "verba so para o mes seguinte" e fica em
+     * silencio nos dois casos, embora o servidor recuse o mes do pedido.
+     */
+    futurePaBudgetLabel,
     /** Competencia da linha que realmente define a alcada (pode ser herdada). */
     competenceLabel: formatBudgetCompetence(usedCompetence),
     /** Competencia do pedido; igual a anterior quando nao ha heranca. */
