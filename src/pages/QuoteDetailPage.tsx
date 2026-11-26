@@ -2,7 +2,7 @@
  * QuoteDetailPage — detalhe completo de um orçamento (itens, histórico, comentários, versões).
  * Inclui banner read-only quando convertido em pedido + badge de pedido vinculado.
  */
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,8 +19,7 @@ import { QuoteManagerApprovalBanner } from '@/components/quotes/QuoteManagerAppr
 import { QUOTE_STATUS_CONFIG } from '@/lib/quote-status-config';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileText, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 async function fetchQuote(id: string | undefined) {
@@ -33,7 +32,7 @@ async function fetchQuote(id: string | undefined) {
 
 type QuoteDetail = NonNullable<Awaited<ReturnType<typeof fetchQuote>>>;
 
-export function QuoteDetailHeader({
+function QuoteDetailHeader({
   quote,
   onConverted,
 }: {
@@ -53,13 +52,7 @@ export function QuoteDetailHeader({
           {Number(quote.total ?? 0).toFixed(2)}
         </p>
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <Link to={`/orcamentos/${quote.id}/visualizar`}>
-            <FileText className="h-4 w-4" aria-hidden="true" />
-            Ver proposta
-          </Link>
-        </Button>
+      <div className="flex items-center gap-2">
         <Badge variant={status?.badgeVariant || 'outline'} className={status?.badgeClassName}>
           {status?.label || quote.status}
         </Badge>
