@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)",
    "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)",
    "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)",
    "fix: falha de consulta nao pode parecer fila vazia (#452)",
-   "fix: erro e vazio nos selos de inteligencia do produto (#448)",
-   "fix: exige tres empresas com historico para usar o setor como amostra (#449)"
+   "fix: erro e vazio nos selos de inteligencia do produto (#448)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

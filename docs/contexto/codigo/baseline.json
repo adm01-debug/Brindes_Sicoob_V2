@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "791ef7897048e9c789c1d698b38a10e43118c087",
+  "commit": "d036bf1848a7407ec3f30ea72acd52aae378a96f",
   "branch": "main",
-  "data_commit": "2026-11-26T00:09:55Z",
+  "data_commit": "2026-11-25T21:51:45-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "d036bf1",
+    "data": "2026-11-25",
+    "assunto": "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)"
+   },
    {
     "sha": "791ef78",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "9716657",
     "data": "2026-11-24",
     "assunto": "fix: orcamento existente avisa quando nao carrega (#436)"
-   },
-   {
-    "sha": "8152263",
-    "data": "2026-11-24",
-    "assunto": "docs: ledger reflete as recuperacoes ja integradas na main (#432)"
    }
   ],
-  "arquivos_mudados_7d": 1204,
+  "arquivos_mudados_7d": 1203,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -148,12 +148,12 @@
     "mudancas": 23
    },
    {
-    "pasta": "src/components/admin",
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 22
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 21
+    "pasta": "src/components/admin",
+    "mudancas": 22
    },
    {
     "pasta": "src/hooks/bi",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 28
+    "mudancas": 29
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 231
+    "commits": 232
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5332,
+  "arquivos_total": 5333,
   "arquivos_codigo": 3220,
-  "linhas_codigo": 509537,
+  "linhas_codigo": 509541,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -326,7 +326,7 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 630,
+  "migrations": 631,
   "cron_jobs": 28,
   "testes": 951,
   "workflows": 17,
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3483
+   "linhas": 3487
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1795
+   "linhas": 1799
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "791ef7897048e9c789c1d698b38a10e43118c087",
+  "sha": "d036bf1848a7407ec3f30ea72acd52aae378a96f",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 00:12 UTC",
-  "files_total": 5335,
-  "code_files": 3895,
-  "code_lines": 574225
+  "generated_at": "2026-11-26 00:58 UTC",
+  "files_total": 5336,
+  "code_files": 3896,
+  "code_lines": 574304
  },
  "version": "1.3.2",
- "facts_hash": "fb1edfba089bfe4a",
+ "facts_hash": "a2b6512dfa957a6d",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -357,7 +357,7 @@
   "languages": {
    ".ts": 1507,
    ".tsx": 1489,
-   ".sql": 693,
+   ".sql": 694,
    ".mjs": 144,
    ".py": 69,
    ".cjs": 7,
@@ -48539,6 +48539,7 @@
    "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
    "supabase/migrations/20261125100000_notification_functions_contract.sql",
    "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+   "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -65362,7 +65363,7 @@
   {
    "module": "scripts",
    "files": 171,
-   "lines": 40494,
+   "lines": 40498,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67271,8 +67272,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 630,
-   "lines": 56831,
+   "files": 631,
+   "lines": 56906,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -185321,7 +185322,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1795,
+   "lines": 1799,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -245908,6 +245909,10 @@
    "lines": 111,
    "uses_service_role": true
   },
+  "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql": {
+   "path": "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
+   "lines": 75
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -260678,10 +260683,20 @@
   }
  },
  "git": {
-  "sha": "791ef7897048e9c789c1d698b38a10e43118c087",
+  "sha": "d036bf1848a7407ec3f30ea72acd52aae378a96f",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "d036bf1",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)",
+    "files": [
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql"
+    ]
+   },
    {
     "sha": "791ef78",
     "date": "2026-11-25",
@@ -261037,18 +261052,6 @@
      "tests/hooks/useCustomKitPersistence.test.tsx",
      "tests/hooks/useKitAutoSave.test.tsx"
     ]
-   },
-   {
-    "sha": "7630297",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: unifica o último confirm nativo do Kit Builder no diálogo global (#427)",
-    "files": [
-     "src/components/kit-builder/KitBuilderHeader.tsx",
-     "src/hooks/useKitWizardShortcuts.ts",
-     "src/pages/KitBuilderPage.tsx",
-     "tests/hooks/useKitWizardShortcuts.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -261058,7 +261061,7 @@
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    3
+    4
    ],
    [
     "src/pages/QuoteBuilderPage.tsx",
@@ -261085,8 +261088,8 @@
     2
    ],
    [
-    "src/pages/KitBuilderPage.tsx",
-    2
+    "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
+    1
    ],
    [
     "src/components/pricing/PrecoIndisponivelAlert.tsx",

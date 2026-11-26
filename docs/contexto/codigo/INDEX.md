@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `791ef7897048e9c789c1d698b38a10e43118c087` (2026-11-26T00:09:55Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `d036bf1848a7407ec3f30ea72acd52aae378a96f` (2026-11-25T21:51:45-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2998), Markdown (974), SQL (693), JSON (295), JavaScript (156), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2998), Markdown (974), SQL (694), JSON (295), JavaScript (156), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5332 |
+| arquivos_total | 5333 |
 | arquivos_codigo | 3220 |
-| linhas_codigo | 509537 |
+| linhas_codigo | 509541 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -46,7 +46,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
-| migrations | 630 |
+| migrations | 631 |
 | cron_jobs | 28 |
 | testes | 951 |
 | workflows | 17 |
@@ -473,13 +473,13 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37179 nós · 62002 arestas · 2757 comunidades · grafo do commit `791ef789`
+- 37180 nós · 62002 arestas · 2758 comunidades · grafo do commit `d036bf18`
 - comunidades maiores: ref_lib (741), ref_integrations (553), ref_components (337), lucide-react (327), react (313), react-router-dom (236), date-fns (186), expert-chat/index.ts (173), ref_utils (167), ref_stores (156), getCorsHeaders (152), external-db-bridge/index.ts (139)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- scripts/db/apply-sicoob-migrations.mjs (28)
+- scripts/db/apply-sicoob-migrations.mjs (29)
 - package.json (24)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-25 `d036bf1` fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)
 - 2026-11-26 `791ef78` fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)
 - 2026-11-25 `76245cc` fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)
 - 2026-11-25 `50898b5` fix: falha de consulta nao pode parecer fila vazia (#452)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `1e59beb` fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)
 - 2026-11-25 `bc1b6c5` chore: recupera 21 testes de branches nao incorporadas (#444)
 - 2026-11-25 `8747cf2` fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)
-- 2026-11-25 `8f7aeeb` chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
