@@ -13057,6 +13057,30 @@ export type Database = {
       }
       seed_discount_test_users: { Args: never; Returns: Json }
       seed_qa_scenario: { Args: { scenario_name: string }; Returns: Json }
+      can_decide_limit_increase: {
+        Args: { p_request_id: string }
+        Returns: boolean
+      }
+      decide_limit_increase_request: {
+        Args: {
+          p_approve: boolean
+          p_reason?: string
+          p_request_id: string
+        }
+        Returns: {
+          approved_by: string
+          created_at: string
+          current_limit: number
+          id: string
+          pa_id: string
+          reason: string
+          rejection_reason: string
+          requested_by: string
+          requested_limit: number
+          status: string
+          updated_at: string
+        }
+      }
       send_notification: {
         Args: {
           p_action_url?: string

@@ -158,13 +158,93 @@ export const sicoobApprovalService = {
     return data;
   },
 
-  async createLimitIncreaseRequest(paId: string, amount: number, reason: string) {
+  // Fila de aprovação dos pedidos de aumento de verba. A RLS devolve apenas os
+  // pedidos da cooperativa do usuário; `can_decide` diz, por linha, se ele tem
+  // autoridade para decidir (admin global ou gestor_compras da cooperativa).
+  async listPendingLimitIncreaseRequests() {
+    const { data, error } = await supabase
+      .from("limit_increase_requests")
+      .select(`
+        *,
+        postos_atendimento (id, nome, cooperativa_id)
+      `)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    // requested_by referencia auth.users, sem FK para profiles — o PostgREST não
+    // consegue embutir o nome do solicitante. Busca-se à parte (mesmo padrão de
+    // listPendingApprovals).
+    const requesterIds = Array.from(
+      new Set(
+        (data ?? [])
+          .map((request) => request.requested_by)
+          .filter((id): id is string => !!id),
+      ),
+    );
+    const requesterNames = new Map<string, string | null>();
+    if (requesterIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', requesterIds);
+      for (const p of profiles ?? []) {
+        requesterNames.set(p.user_id, p.full_name);
+      }
+    }
+
+    return Promise.all((data ?? []).map(async (request) => {
+      const { data: canDecide, error: authorityError } = await supabase.rpc(
+        'can_decide_limit_increase',
+        { p_request_id: request.id },
+      );
+      if (authorityError) throw authorityError;
+
+      return {
+        ...request,
+        requester_name: request.requested_by
+          ? requesterNames.get(request.requested_by) ?? null
+          : null,
+        can_decide: canDecide === true,
+      };
+    }));
+  },
+
+  async approveLimitIncreaseRequest(requestId: string) {
+    const { data, error } = await supabase.rpc('decide_limit_increase_request', {
+      p_request_id: requestId,
+      p_approve: true,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async rejectLimitIncreaseRequest(requestId: string, reason: string) {
+    const { data, error } = await supabase.rpc('decide_limit_increase_request', {
+      p_request_id: requestId,
+      p_approve: false,
+      p_reason: reason,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async createLimitIncreaseRequest(
+    paId: string,
+    amount: number,
+    reason: string,
+    currentLimit?: number | null,
+  ) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_MESSAGE);
 
     const { error } = await supabase.from("limit_increase_requests").insert({
       pa_id: paId,
       requested_by: user.id,
+      current_limit: currentLimit ?? null,
       requested_limit: amount,
       reason: reason,
       status: 'pending'
