@@ -22,5 +22,15 @@
     }
   },
   "leitura_autenticada": true,
+  "vinculo_singular": {
+    "exclusao_recusada": true,
+    "mensagem_do_banco": "DETAIL:  Key is still referenced from table \"cooperativas\".",
+    "central_preservada": true
+  },
+  "reversao": {
+    "sql": "DROP POLICY IF EXISTS sicoob_centrais_admin_insert ON public.sicoob_centrais;\nDROP POLICY IF EXISTS sicoob_centrais_admin_update ON public.sicoob_centrais;\nDROP POLICY IF EXISTS sicoob_centrais_admin_delete ON public.sicoob_centrais;\nREVOKE INSERT, UPDATE, DELETE ON public.sicoob_centrais FROM authenticated;",
+    "escrita_bloqueada_de_novo": true,
+    "mensagem": "ERROR:  permission denied for table sicoob_centrais"
+  },
   "resultado": "aprovado"
 }

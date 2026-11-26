@@ -69,11 +69,11 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 ### 1. Cadastro de cooperativa/organização e hierarquia Central→Singular→PA
 
 ### SIC-001  Telas de Centrais/Singulares/PAs/Cooperativas órfãs
-- Status: ORFA
+- Status: RESOLVIDO na aplicação (rota + menu + CRUD de Centrais); migration pendente de aplicação em produção
 - Origem: `supabase/migrations/20260517131757_*.sql:1-40` (Centrais com marca e ligação à Singular); `SICOOB_TESTING.md:55-58` (topologia Central→Singular→PA)
-- Evidência no código: `src/pages/admin/AdminCentraisPage.tsx`, `AdminSingularesPage.tsx`, `AdminPAsPage.tsx`, `AdminCooperativasPage.tsx` não têm importadores em `src/` (fora o próprio arquivo); `src/routes/config/admin.ts:29-40` aponta `/admin/singulares`, `/admin/pas` e `/admin/cooperativas` para `SicoobManagementPage`
-- O que falta: UI — não há rota nem aba para cadastrar Centrais (CRUD de `sicoob_centrais` só existe na tela órfã). Decidir entre ligar ou remover as quatro telas legadas.
-- Impacto no negócio: a Promo não consegue cadastrar uma nova Central pelo sistema, só via banco.
+- Evidência no código: `/admin/centrais` está registrada em `src/routes/config/admin.ts` sob `AdminRoute`, com entrada no menu (*Estrutura SICOOB*) e CRUD em `src/pages/admin/AdminCentraisPage.tsx`; `/admin/singulares`, `/admin/pas` e `/admin/cooperativas` já tinham rota e menu.
+- O que falta: aplicar `supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql` no banco de produção para liberar escrita de admin em `sicoob_centrais`. Enquanto a migration não roda, a tela abre mas o banco recusa INSERT/UPDATE/DELETE (é a regressão que a migration corrige).
+- Impacto no negócio: a Promo já navega até o cadastro de Central; a gravação passa a funcionar quando a migration for aplicada.
 - Esforço: P
 - Prioridade: P2
 

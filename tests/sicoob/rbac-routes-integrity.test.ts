@@ -4,7 +4,9 @@ import { toolRoutes } from '../../src/routes/config/tools';
 import { productRoutes } from '../../src/routes/config/products';
 import { RBAC_ROUTES } from '../../src/lib/rbac/route-matrix';
 import { adminRoutes } from '../../src/routes/config/admin';
-import { navGroups } from '../../src/components/layout/SidebarReorganized';
+import { navGroups, hasDeclaredAccess, hasRouteAccess } from '../../src/components/layout/SidebarReorganized';
+import { hasRequiredRole } from '../../src/lib/access/role-policy';
+import { isAdminOnlyPath } from '../../src/lib/navigation/restricted-routes';
 
 describe('SICOOB RBAC Routes Integrity', () => {
   it('should contain all matrix-mandated routes', () => {
@@ -38,6 +40,35 @@ describe('SICOOB RBAC Routes Integrity', () => {
       .flatMap((item) => [item, ...(item.children ?? [])])
       .filter((item) => item.href === '/admin/centrais');
     expect(itens).toHaveLength(1);
+  });
+
+  it('nenhum item de menu leva a /403: a visibilidade segue a guarda de rota', () => {
+    // O menu usava `isSupervisorOrAbove` (que inclui gestor_compras) para decidir
+    // quem vê /admin/*, mas o AdminRoute exige dev|supervisor. Resultado: gestor
+    // via "Centrais" e caía em 403. Esta catraca amarra a visibilidade à guarda.
+    const papeis = [
+      'dev', 'supervisor', 'gestor_compras', 'comprador_singular',
+      'gerente_pa', 'comprador_pac', 'vendedor', 'agente',
+    ];
+    const todosItens = navGroups.flatMap((grupo) =>
+      grupo.items.flatMap((item) => [item, ...(item.children ?? [])]),
+    );
+    const vazamentos: string[] = [];
+
+    for (const papel of papeis) {
+      const isDev = papel === 'dev';
+      for (const item of todosItens) {
+        const href = item.href ?? '';
+        const visivel = hasDeclaredAccess(item, isDev, [papel]) && hasRouteAccess(href, isDev, [papel]);
+        if (!visivel || !isAdminOnlyPath(href)) continue;
+        if (!hasRequiredRole([papel], 'supervisor')) vazamentos.push(`${papel} -> ${href}`);
+      }
+    }
+
+    expect(vazamentos).toEqual([]);
+    // Caso concreto do relato: a tela de Centrais só abre para dev|supervisor.
+    expect(hasRouteAccess('/admin/centrais', false, ['gestor_compras'])).toBe(false);
+    expect(hasRouteAccess('/admin/centrais', false, ['supervisor'])).toBe(true);
   });
 
   it('todo destino do menu mobile tem rota registrada', () => {

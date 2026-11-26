@@ -57,6 +57,16 @@ CREATE TABLE public.sicoob_centrais (
 ALTER TABLE public.sicoob_centrais ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Authenticated read for centrais" ON public.sicoob_centrais FOR SELECT USING (auth.role() = 'authenticated');
 
+-- Espelha o vínculo real (cooperativas.central_id, sem ON DELETE) para provar o
+-- 23503 ao excluir uma Central com Singular vinculada.
+CREATE TABLE public.cooperativas (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  central_id uuid REFERENCES public.sicoob_centrais(id)
+);
+
+ALTER TABLE public.cooperativas ENABLE ROW LEVEL SECURITY;
+
 GRANT USAGE ON SCHEMA public, auth TO authenticated;
 GRANT SELECT ON public.user_roles TO authenticated;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;

@@ -83,7 +83,7 @@ export default function AdminCentraisPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!(await askConfirm({ title: 'Excluir Central?', description: 'Isso pode desvincular Singulares. Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
+    if (!(await askConfirm({ title: 'Excluir Central?', description: 'Singulares ou Cooperativas vinculadas impedem a exclusão. Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('sicoob_centrais').delete().eq('id', id);
       if (error) throw error;
@@ -91,7 +91,14 @@ export default function AdminCentraisPage() {
       fetchData();
     } catch (error) {
       console.error("Error deleting central:", error);
-      toast.error("Erro ao excluir Central");
+      // sicoob_centrais é referenciada por cooperativas.central_id e
+      // pa_singularidades.central_id sem ON DELETE: o banco recusa a exclusão
+      // enquanto houver vínculo, e o erro cru ("violates foreign key") não diz
+      // ao administrador o que fazer.
+      const codigo = (error as { code?: string } | null)?.code;
+      toast.error(codigo === '23503'
+        ? "Central com Singulares ou Cooperativas vinculadas: reatribua os vínculos antes de excluir"
+        : "Erro ao excluir Central");
     }
   };
 

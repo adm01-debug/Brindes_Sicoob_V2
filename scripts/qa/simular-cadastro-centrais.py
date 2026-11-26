@@ -104,12 +104,16 @@ try:
 
     result["admin"] = {
         "criar": bool(central_id),
-        "editar": scalar(as_actor(
-            ADMIN,
-            f"UPDATE public.sicoob_centrais SET name='Central Brasilia Editada' "
-            f"WHERE id='{central_id}' RETURNING name",
-        )) == "Central Brasilia Editada",
+        "editar": False,
     }
+    as_actor(
+        ADMIN,
+        f"UPDATE public.sicoob_centrais SET name='Central Brasilia Editada' WHERE id='{central_id}'",
+    )
+    result["admin"]["editar"] = scalar(as_actor(
+        ADMIN,
+        f"SELECT name FROM public.sicoob_centrais WHERE id='{central_id}'",
+    )) == "Central Brasilia Editada"
 
     # Papéis não-admin não criam, não editam e não excluem.
     bloqueios = {}
@@ -146,12 +150,68 @@ try:
     )) == "1"
     assert result["leitura_autenticada"]
 
+    # O banco referencia sicoob_centrais em cooperativas.central_id e
+    # pa_singularidades.central_id sem ON DELETE: com vínculo ativo a exclusão é
+    # recusada (23503) e a Central precisa continuar intacta — é o caso que a tela
+    # agora explica em vez de mostrar "Erro ao excluir Central".
+    sql(f"""
+      INSERT INTO public.cooperativas (name, central_id)
+      VALUES ('Singular Vinculada', '{central_id}');
+    """)
+    com_vinculo = as_actor(
+        ADMIN,
+        "WITH mov AS (DELETE FROM public.sicoob_centrais "
+        f"WHERE id='{central_id}' RETURNING 1) SELECT count(*) FROM mov",
+        check=False,
+    )
+    motivo_vinculo = com_vinculo.stderr.strip()
+    result["vinculo_singular"] = {
+        "exclusao_recusada": com_vinculo.returncode != 0 and "foreign key constraint" in motivo_vinculo,
+        "mensagem_do_banco": motivo_vinculo.splitlines()[-1] if motivo_vinculo else "",
+        "central_preservada": scalar(as_actor(
+            ADMIN,
+            f"SELECT count(*) FROM public.sicoob_centrais WHERE id='{central_id}'",
+        )) == "1",
+    }
+    assert all(
+        v for k, v in result["vinculo_singular"].items() if k != "mensagem_do_banco"
+    ), result["vinculo_singular"]
+
+    sql(f"UPDATE public.cooperativas SET central_id = NULL WHERE central_id = '{central_id}'")
     result["admin"]["excluir"] = scalar(as_actor(
         ADMIN,
         "WITH mov AS (DELETE FROM public.sicoob_centrais "
         f"WHERE id='{central_id}' RETURNING 1) SELECT count(*) FROM mov",
     )) == "1"
-    assert result["admin"]["excluir"]
+    assert all(result["admin"].values()), result["admin"]
+
+    # Reversão: derrubar políticas e grants devolve o banco ao estado anterior à
+    # correção (é o ROLLBACK documentado na PR). Sem isso, o script provaria a
+    # correção sem provar que ela é desfazível.
+    rollback = """
+DROP POLICY IF EXISTS sicoob_centrais_admin_insert ON public.sicoob_centrais;
+DROP POLICY IF EXISTS sicoob_centrais_admin_update ON public.sicoob_centrais;
+DROP POLICY IF EXISTS sicoob_centrais_admin_delete ON public.sicoob_centrais;
+REVOKE INSERT, UPDATE, DELETE ON public.sicoob_centrais FROM authenticated;
+""".strip()
+    sql(rollback)
+    desfeito = as_actor(
+        ADMIN,
+        "INSERT INTO public.sicoob_centrais (name) VALUES ('Central Apos Rollback')",
+        check=False,
+    )
+    motivo_desfeito = desfeito.stderr.strip().splitlines()[-1] if desfeito.stderr.strip() else ""
+    result["reversao"] = {
+        "sql": rollback,
+        "escrita_bloqueada_de_novo": desfeito.returncode != 0 and any(
+            marca in motivo_desfeito.lower()
+            for marca in ("permission denied", "row-level security")
+        ),
+        "mensagem": motivo_desfeito,
+    }
+    assert all(
+        v for k, v in result["reversao"].items() if k != "sql" and k != "mensagem"
+    ), result["reversao"]
 
     result["resultado"] = "aprovado"
 finally:
