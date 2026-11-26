@@ -1,18 +1,29 @@
-// Guarda da leitura de pedidos Sicoob: a delegação de aprovação precisa continuar
-// valendo na RLS e o cliente não pode refiltrar por papel.
+
+// Guarda da leitura de pedidos Sicoob: a delegacao de aprovacao precisa seguir valendo
+// na RLS efetiva (a politica consolidada preserva a expressao) e o cliente nao pode
+// refiltrar por papel.
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const MIGRATIONS = 'supabase/migrations';
+const CONSOLIDACAO = '20261007233000_consolidate_permissive_rls_policies.sql';
 const orderService = readFileSync('src/services/sicoob/orderService.ts', 'utf8');
 
+const migrations = readdirSync(MIGRATIONS)
+  .filter(file => file.endsWith('.sql'))
+  .sort()
+  .map(file => ({ file, sql: readFileSync(`${MIGRATIONS}/${file}`, 'utf8') }));
+
 function ultimaDefinicao(nome) {
-  return readdirSync(MIGRATIONS)
-    .filter(file => file.endsWith('.sql'))
-    .sort()
-    .map(file => ({ file, sql: readFileSync(`${MIGRATIONS}/${file}`, 'utf8') }))
-    .filter(item => item.sql.includes(`FUNCTION public.${nome}(`))
+  return migrations.filter(item => item.sql.includes(`FUNCTION public.${nome}(`)).at(-1);
+}
+
+function ultimaPoliticaDeLeitura(tabela) {
+  const re = new RegExp(`CREATE POLICY[^;]*?ON public\\.${tabela}\\b[^;]*;`, 'gs');
+  return migrations
+    .flatMap(item => [...item.sql.matchAll(re)].map(match => ({ file: item.file, sql: match[0] })))
+    .filter(item => /FOR (SELECT|ALL)\b/.test(item.sql))
     .at(-1);
 }
 
@@ -26,18 +37,34 @@ test('leitura do pedido mantem os dois ramos: escopo proprio e delegacao', () =>
   );
 });
 
-test('policy de listagem alcanca o pedido delegado pelo helper de leitura', () => {
-  const policy = readFileSync(`${MIGRATIONS}/20260927193000_sicoob_cross_cooperative_rls.sql`, 'utf8');
+test('a ultima politica de leitura de sicoob_orders passa pelo helper', () => {
+  const policy = ultimaPoliticaDeLeitura('sicoob_orders');
+  assert.ok(policy, 'nenhuma politica de leitura definida para public.sicoob_orders');
   assert.match(
-    policy,
-    /CREATE POLICY sicoob_orders_read_scoped[\s\S]*?sicoob_current_actor_can_read_order\(id\)/
+    policy.sql,
+    /sicoob_current_actor_can_read_order\(id\)/,
+    `${policy.file}: a leitura de sicoob_orders deixou de usar o helper de escopo`
+  );
+});
+
+test('a consolidacao de politicas preserva a expressao consolidada', () => {
+  const consolidacao = readFileSync(`${MIGRATIONS}/${CONSOLIDACAO}`, 'utf8');
+  assert.match(
+    consolidacao,
+    /\('sicoob_orders'\),/,
+    'sicoob_orders saiu das tabelas consolidadas'
+  );
+  assert.match(
+    consolidacao,
+    /string_agg\(\s*format\('\(%s AND \(%s\)\)', policy\.role_guard, policy\.using_expression\),\s*' OR '/,
+    'a consolidacao deixou de reproduzir a expressao original das politicas'
   );
 });
 
 test('listOrders nao refiltra por papel no cliente', () => {
   const inicio = orderService.indexOf('async listOrders');
-  const escopo = orderService.slice(inicio, orderService.indexOf('async getOrderById'));
   assert.notEqual(inicio, -1, 'listOrders nao encontrada');
+  const escopo = orderService.slice(inicio, orderService.indexOf('async getOrderById'));
   assert.doesNotMatch(escopo, /profile/i, 'listOrders voltou a consultar perfis/papeis');
   assert.doesNotMatch(orderService, /applyProfileScope/);
 });
