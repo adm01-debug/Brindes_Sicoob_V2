@@ -1,4 +1,5 @@
 import { BudgetsTab } from '@/pages/admin/sicoob/tabs/BudgetsTab';
+import { MfaGate } from '@/components/layout/MfaGate';
 import { PageSEO } from '@/components/seo/PageSEO';
 
 export default function GestorBudgetsPage() {
@@ -16,7 +17,9 @@ export default function GestorBudgetsPage() {
           Defina o teto de cada PA e o limite de alçada da sua Singular sem depender da Promo.
         </p>
       </div>
-      <BudgetsTab />
+      <MfaGate>
+        <BudgetsTab />
+      </MfaGate>
     </div>
   );
 }

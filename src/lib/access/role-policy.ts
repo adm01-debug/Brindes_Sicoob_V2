@@ -22,6 +22,9 @@ export function hasRequiredRole(roles: readonly string[], required: RequiredRole
 }
 
 const MANAGERS: readonly AppRole[] = ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'];
+// Gravar verba no banco exige `gestor_compras` ou administração (20261013115605:127-146);
+// o comprador da Singular acompanha a verba pela carteira do PA.
+const BUDGET_AUTHORITY: readonly AppRole[] = ['dev', 'supervisor', 'gestor_compras'];
 const PA_ROLES: readonly AppRole[] = [...MANAGERS, 'gerente_pa', 'comprador_pac'];
 const ORDER_ROLES: readonly AppRole[] = [...PA_ROLES, 'vendedor'];
 
@@ -37,7 +40,7 @@ export const SICOOB_ROUTE_ACCESS: Record<string, readonly AppRole[]> = {
   '/gestor/convites': MANAGERS,
   '/gestor/aprovacoes': PA_ROLES,
   '/gestor/delegacoes': MANAGERS,
-  '/gestor/verbas': MANAGERS,
+  '/gestor/verbas': BUDGET_AUTHORITY,
   '/gestor/alertas': MANAGERS,
   '/gestor/auditoria': MANAGERS,
   '/vendedor/dashboard': ['dev', 'supervisor', 'vendedor'],

@@ -100,7 +100,7 @@ export const navGroups: NavGroup[] = [
         icon: Wallet,
         label: 'Verbas dos PAs',
         href: '/gestor/verbas',
-        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras'],
       },
       {
         icon: Bell,

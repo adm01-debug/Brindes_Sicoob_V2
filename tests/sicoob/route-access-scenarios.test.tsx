@@ -39,6 +39,7 @@ describe('Cenários reais dos guards de compras', () => {
     ['/relatorios/sicoob','agente'], ['/rota-sem-politica','dev'],
     ['/gestor/verbas','gerente_pa'], ['/gestor/alertas','gerente_pa'],
     ['/gestor/verbas','vendedor'], ['/gestor/alertas','comprador_pac'],
+    ['/gestor/verbas','comprador_singular'], ['/gestor/verbas','comprador_pac'],
   ])('%s recusa %s mesmo com profiles.role=dev', (path, role) => {
     mostrar(path, [role]);
     expect(screen.getByText('Acesso negado')).toBeInTheDocument();
