@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import {
   BASELINE_POLICY,
+  isPolicyInForce,
   pickEffectivePolicy,
   sicoobApprovalPolicyService,
   type ApprovalPolicy,
@@ -162,6 +163,26 @@ function ScopeRow({
   );
 }
 
+/**
+ * "Ativa" não pode ser só `is_active`: numa troca agendada a versão anterior
+ * continua com `is_active = true` até o momento da virada, e depois disso o
+ * servidor já usa a sucessora.
+ */
+export function policyStatusAt(policy: ApprovalPolicy, now = new Date()) {
+  if (isPolicyInForce(policy, now)) {
+    return { label: "Ativa", variant: "default" as const };
+  }
+  if (policy.is_active && new Date(policy.effective_from) > now) {
+    return { label: "Agendada", variant: "outline" as const };
+  }
+  return { label: "Encerrada", variant: "secondary" as const };
+}
+
+function PolicyStatusBadge({ policy }: { policy: ApprovalPolicy }) {
+  const { label, variant } = policyStatusAt(policy);
+  return <Badge variant={variant}>{label}</Badge>;
+}
+
 function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
   return (
     <Table>
@@ -186,11 +207,7 @@ function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
             <TableCell>{formatDateTime(policy.effective_from)}</TableCell>
             <TableCell>{formatDateTime(policy.effective_until)}</TableCell>
             <TableCell>
-              {policy.is_active ? (
-                <Badge variant="default">Ativa</Badge>
-              ) : (
-                <Badge variant="secondary">Encerrada</Badge>
-              )}
+              <PolicyStatusBadge policy={policy} />
             </TableCell>
           </TableRow>
         ))}

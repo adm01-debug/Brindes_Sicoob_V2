@@ -157,6 +157,38 @@ describe("ApprovalPolicyTab", () => {
     expect(within(dialog).getByLabelText(/exigir vínculo ativo/i)).toBeChecked();
   });
 
+  it("não marca como ativa a versão cuja vigência terminou na troca agendada", async () => {
+    const agora = Date.now();
+    const anterior = buildPolicy({
+      id: "policy-anterior",
+      version: "v1",
+      is_active: true,
+      effective_from: new Date(agora - 7 * 86_400_000).toISOString(),
+      effective_until: new Date(agora - 86_400_000).toISOString(),
+    });
+    const vigente = buildPolicy({
+      id: "policy-vigente",
+      version: "v2",
+      effective_from: new Date(agora - 86_400_000).toISOString(),
+    });
+    const agendada = buildPolicy({
+      id: "policy-agendada",
+      version: "v3",
+      effective_from: new Date(agora + 7 * 86_400_000).toISOString(),
+    });
+    list.mockResolvedValue([anterior, vigente, agendada]);
+
+    renderWithProviders(<ApprovalPolicyTab />);
+
+    const historico = (await screen.findByText("Término")).closest("table") as HTMLElement;
+    const linha = (versao: string) =>
+      within(historico).getByText(versao).closest("tr") as HTMLElement;
+
+    expect(within(linha("v1")).getByText("Encerrada")).toBeInTheDocument();
+    expect(within(linha("v2")).getByText("Ativa")).toBeInTheDocument();
+    expect(within(linha("v3")).getByText("Agendada")).toBeInTheDocument();
+  });
+
   it("reabre o formulário sugerindo a próxima versão após publicar", async () => {
     list.mockResolvedValue([buildPolicy({ version: "v1" })]);
     publish.mockImplementation(async () => {
