@@ -68,17 +68,6 @@ function applyPeriodAndSearch(query: SicoobOrderQuery, filters?: OrderListFilter
   return filtered;
 }
 
-function applyProfileScope(
-  query: SicoobOrderQuery,
-  profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,
-): SicoobOrderQuery {
-  if (profile?.role === "gestor_pa" && profile.pa_id) return query.eq("pa_id", profile.pa_id);
-  if (profile?.role === "gestor_singular" && profile.cooperativa_id) {
-    return query.eq("cooperative_id", profile.cooperativa_id);
-  }
-  return query;
-}
-
 function applyPagination(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
   if (!filters?.page || !filters.pageSize) return query;
   const from = (filters.page - 1) * filters.pageSize;
@@ -154,10 +143,6 @@ export const sicoobOrderService = {
     let query = applyStatusFilter(createSicoobOrderQuery(), filters);
     query = applyOrganizationFilters(query, filters);
     query = applyPeriodAndSearch(query, filters);
-
-    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("user_id", user.id).single();
-
-    query = applyProfileScope(query, profile);
     query = applyPagination(query, filters);
 
     const { data, error, count } = await query
