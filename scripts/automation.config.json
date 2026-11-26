@@ -684,6 +684,14 @@
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml, .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
+      "id": "legacy-742fe63e5ddebfdb",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-cadastro-centrais.py"],
+      "manual": ["python3", "scripts/qa/simular-cadastro-centrais.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv. O dispatcher não executa esta operação."
+    },
+    {
       "id": "legacy-f263fc839c44d6ae",
       "kind": "legacy",
       "files": ["scripts/qa/simular-agendamento-outbox.py"],
