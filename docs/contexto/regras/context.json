@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
+  "sha": "63352e5aa9052c7d1f3d254e733e44814a495dfb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 21:41 UTC",
+  "generated_at": "2026-11-26 22:22 UTC",
   "files_total": 5356,
   "code_files": 3916,
   "code_lines": 577661
@@ -261652,10 +261652,19 @@
   }
  },
  "git": {
-  "sha": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
+  "sha": "63352e5aa9052c7d1f3d254e733e44814a495dfb",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "63352e5",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
+    ]
+   },
    {
     "sha": "ee56b7f",
     "date": "2026-11-26",
@@ -262033,17 +262042,6 @@
     "files": [
      "src/hooks/useCatalogPrefetch.ts"
     ]
-   },
-   {
-    "sha": "ff48a63",
-    "date": "2026-11-25",
-    "author": "github-actions[bot]",
-    "subject": "chore(inventario): estado real do banco e do codigo [auto] (#438)",
-    "files": [
-     "inventario/estado/banco.json",
-     "inventario/estado/edges.json",
-     "inventario/estado/rotas.json"
-    ]
    }
   ],
   "hot_files": [
@@ -262052,11 +262050,11 @@
     8
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
-    6
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    7
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
     6
    ],
    [

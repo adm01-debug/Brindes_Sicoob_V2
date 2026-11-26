@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
+  "commit": "63352e5aa9052c7d1f3d254e733e44814a495dfb",
   "branch": "main",
-  "data_commit": "2026-11-26T18:31:31-03:00",
+  "data_commit": "2026-11-26T18:52:55-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "63352e5",
+    "data": "2026-11-26",
+    "assunto": "fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)"
+   },
    {
     "sha": "ee56b7f",
     "data": "2026-11-26",
@@ -126,11 +131,6 @@
     "sha": "bc1b6c5",
     "data": "2026-11-25",
     "assunto": "chore: recupera 21 testes de branches nao incorporadas (#444)"
-   },
-   {
-    "sha": "8747cf2",
-    "data": "2026-11-25",
-    "assunto": "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)"
    }
   ],
   "arquivos_mudados_7d": 973,
@@ -156,12 +156,12 @@
     "mudancas": 22
    },
    {
-    "pasta": "src/hooks/bi",
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
     "mudancas": 20
    },
    {
-    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
-    "mudancas": 19
+    "pasta": "src/hooks/bi",
+    "mudancas": 20
    },
    {
     "pasta": "src/pages/admin",
@@ -230,27 +230,27 @@
     "mudancas": 12
    },
    {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 11
-   },
-   {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    "mudancas": 11
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 12
    },
    {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
    {
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 10
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 242
+    "commits": 243
    },
    {
     "autor": "dependabot[bot]",
