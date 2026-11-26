@@ -28,11 +28,12 @@ const authState = vi.hoisted(() => ({
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => authState.current }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Gestor com acesso à tela e sem segundo fator: é o estado em que a guarda
-// abre o diálogo de ativação.
-const gestorSemMfa = {
-  user: { id: 'gestor-1' },
-  roles: ['gestor_compras'],
+// Supervisora com acesso à tela e sem segundo fator: é o estado em que a guarda
+// abre o diálogo de ativação. O papel espelha o grupo /admin do App.tsx, que
+// usa <AdminRoute /> sem requiredRole (guard padrão: supervisor).
+const supervisorSemMfa = {
+  user: { id: 'supervisor-1' },
+  roles: ['supervisor'],
   rolesLoaded: true,
   rolesError: null,
   isLoading: false,
@@ -50,7 +51,7 @@ function adminRouteTree() {
         <Route
           path="/admin/verbas"
           element={
-            <AdminRoute requiredRole="gestor_compras">
+            <AdminRoute>
               <p>Verbas do PA</p>
             </AdminRoute>
           }
@@ -121,7 +122,7 @@ describe('MfaEnrollmentDialog: sem redirect para rota inexistente', () => {
   });
 
   it('a guarda libera a tela no endereço de origem quando o fator fica ativo', async () => {
-    authState.current = { ...gestorSemMfa, refreshAAL };
+    authState.current = { ...supervisorSemMfa, refreshAAL };
     const { rerender } = renderAdminRoute();
 
     // Sem segundo fator a guarda não entrega a tela, só o diálogo de ativação.
@@ -131,7 +132,7 @@ describe('MfaEnrollmentDialog: sem redirect para rota inexistente', () => {
 
     // É o que refreshAAL() faz no AuthContext: hasMFA muda e a mesma rota
     // re-renderiza já liberada. Sem isso a guarda continuaria bloqueada.
-    authState.current = { ...gestorSemMfa, hasMFA: true, currentAAL: 'aal2', refreshAAL };
+    authState.current = { ...supervisorSemMfa, hasMFA: true, currentAAL: 'aal2', refreshAAL };
     rerender(adminRouteTree());
 
     expect(screen.getByText('Verbas do PA')).toBeInTheDocument();
