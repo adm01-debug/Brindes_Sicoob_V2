@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "269e7afa799c9c9f2cf1caaf665577c6671fb941",
+  "commit": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
   "branch": "main",
-  "data_commit": "2026-11-26T15:22:53-03:00",
+  "data_commit": "2026-11-26T16:19:14-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "6f282a4",
+    "data": "2026-11-26",
+    "assunto": "chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)"
+   },
    {
     "sha": "269e7af",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "afdb894",
     "data": "2026-11-25",
     "assunto": "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)"
-   },
-   {
-    "sha": "7bf44fc",
-    "data": "2026-11-25",
-    "assunto": "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)"
    }
   ],
-  "arquivos_mudados_7d": 966,
+  "arquivos_mudados_7d": 964,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -164,6 +164,10 @@
     "mudancas": 19
    },
    {
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
+    "mudancas": 17
+   },
+   {
     "pasta": "tests/components/bi",
     "mudancas": 17
    },
@@ -182,10 +186,6 @@
    {
     "pasta": "src/pages/sicoob",
     "mudancas": 16
-   },
-   {
-    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
-    "mudancas": 14
    },
    {
     "pasta": "src/components/quotes",
@@ -222,23 +222,19 @@
     "mudancas": 15
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 14
-   },
-   {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
     "mudancas": 14
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
+    "arquivo": ".github/workflows/codeql.yml",
     "mudancas": 13
+   },
+   {
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 12
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 13
-   },
-   {
-    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 12
    },
    {
@@ -246,20 +242,20 @@
     "mudancas": 12
    },
    {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 11
+   },
+   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
    {
-    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    "mudancas": 9
+    "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
+    "mudancas": 10
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
@@ -274,11 +270,11 @@
     "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/migration-ledger-drift.yml",
+    "arquivo": ".github/workflows/bundle-check.yml",
     "mudancas": 8
    },
    {
-    "arquivo": ".github/workflows/security-compliance.yml",
+    "arquivo": ".github/workflows/migration-ledger-drift.yml",
     "mudancas": 8
    },
    {
@@ -296,12 +292,16 @@
    {
     "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
     "mudancas": 8
+   },
+   {
+    "arquivo": "src/services/QuoteService.ts",
+    "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 239
+    "commits": 240
    },
    {
     "autor": "dependabot[bot]",

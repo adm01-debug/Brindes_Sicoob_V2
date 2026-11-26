@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `269e7afa799c9c9f2cf1caaf665577c6671fb941` (2026-11-26T15:22:53-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `6f282a454bc4ec7f6361bfbd45e31445792c58e6` (2026-11-26T16:19:14-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -475,7 +475,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37275 nós · 62157 arestas · 2744 comunidades · grafo do commit `269e7afa`
+- 37275 nós · 62157 arestas · 2744 comunidades · grafo do commit `6f282a45`
 - comunidades maiores: ref_lib (632), ref_integrations (498), ref_components (357), lucide-react (293), ref_node_fs (239), getCorsHeaders (216), framer-motion (206), react (198), ref_contexts (185), react-router-dom (180), date-fns (162), ref_types (144)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
@@ -487,15 +487,15 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - RELATORIO_CI.md (20)
 - package-lock.json (20)
 - .github/workflows/ci.yml (15)
-- .github/workflows/codeql.yml (14)
 - .github/workflows/deploy-sicoob-functions.yml (14)
-- .github/workflows/e2e.yml (13)
-- .github/workflows/sicoob-ci.yml (13)
-- .github/workflows/lighthouse.yml (12)
+- .github/workflows/codeql.yml (13)
+- .github/workflows/e2e.yml (12)
+- .github/workflows/sicoob-ci.yml (12)
 - src/hooks/useQuoteBuilderState.ts (12)
+- .github/workflows/lighthouse.yml (11)
 - scripts/automation.config.json (11)
+- docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (10)
 - src/hooks/quote/useQuoteInitialization.ts (10)
-- .github/workflows/bundle-check.yml (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -699,6 +699,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-26 `6f282a4` chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)
 - 2026-11-26 `269e7af` feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)
 - 2026-11-26 `3dbc153` fix: link do aviso de alcada abre a fila de aprovacoes (#467)
 - 2026-11-26 `b5b924a` fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)
@@ -713,7 +714,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `2701a09` fix: erro e vazio nos selos de inteligencia do produto (#448)
 - 2026-11-25 `e42cc6a` fix: exige tres empresas com historico para usar o setor como amostra (#449)
 - 2026-11-25 `f0354ac` fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)
-- 2026-11-25 `bebc2c9` fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

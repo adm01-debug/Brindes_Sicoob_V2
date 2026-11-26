@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "269e7afa799c9c9f2cf1caaf665577c6671fb941",
+  "sha": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 18:23 UTC",
+  "generated_at": "2026-11-26 20:40 UTC",
   "files_total": 5350,
   "code_files": 3910,
   "code_lines": 576659
@@ -261278,10 +261278,21 @@
   }
  },
  "git": {
-  "sha": "269e7afa799c9c9f2cf1caaf665577c6671fb941",
+  "sha": "6f282a454bc4ec7f6361bfbd45e31445792c58e6",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "6f282a4",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
+    ]
+   },
    {
     "sha": "269e7af",
     "date": "2026-11-26",
@@ -261648,22 +261659,6 @@
      "tests/components/intelligence/market-intelligence-truth.test.tsx",
      "tests/hooks/useMarketIntelligenceMacro.order.test.tsx"
     ]
-   },
-   {
-    "sha": "b71a077",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "feat: assistente de layouts passa a usar a IA real (#435)",
-    "files": [
-     "src/components/ai/AIChat.tsx",
-     "src/components/ai/AIMockupAssistant.tsx",
-     "src/components/expert/chat/useExpertChat.ts",
-     "src/lib/assistant-stream.ts",
-     "supabase/functions/expert-chat/index.ts",
-     "tests/components/ai/aichat-stream.test.tsx",
-     "tests/components/ai/aimockup-assistant-focus.test.tsx",
-     "tests/components/ai/aimockup-assistant-real-ai.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -261672,16 +261667,16 @@
     8
    ],
    [
-    "scripts/db/apply-sicoob-migrations.mjs",
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
     5
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
-    4
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    5
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    4
+    "scripts/db/apply-sicoob-migrations.mjs",
+    5
    ],
    [
     "src/services/sicoob/userService.ts",
@@ -261710,6 +261705,10 @@
    [
     "package.json",
     2
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+    1
    ],
    [
     "src/components/common/PersistentBreadcrumbs.tsx",
@@ -261741,10 +261740,6 @@
    ],
    [
     "src/pages/sicoob/GestorDashboardPage.tsx",
-    1
-   ],
-   [
-    "src/routes/config/sicoob-rbac.ts",
     1
    ]
   ]
