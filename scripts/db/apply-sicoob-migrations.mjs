@@ -244,6 +244,10 @@ const TARGETS = [
     file: "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
     sha256: "7b3994348fcf23f474975f2200cd0d5dff508a82e264704d2aeeb7c2c784da0d",
   },
+  {
+    file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    sha256: "4b8c1be310c3a178d780504d3c6d94cba448deb5394c353afdfac403e149adca",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
