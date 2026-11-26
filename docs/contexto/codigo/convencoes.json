@@ -21,7 +21,7 @@
    "src/services (25)"
   ],
   "testes": [
-   "tests/ (703)",
+   "tests/ (704)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: link do aviso de alcada abre a fila de aprovacoes (#467)",
    "fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)",
    "fix: aba de vínculos passa a conceder o papel real em user_roles (SIC-010) (#464)",
    "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)",
-   "feat: tela de gestão das políticas de aprovação por Singular (#461)",
-   "fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)"
+   "feat: tela de gestão das políticas de aprovação por Singular (#461)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 956,
+ "total": 957,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 722
+  "unit": 723
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 703
+   "arquivos": 704
   },
   {
    "padrao": "e2e/",
@@ -5788,6 +5788,15 @@
    "casos": 1
   },
   {
+   "arquivo": "tests/lib/approval-link-target.test.ts",
+   "tipo": "unit",
+   "linhas": 34,
+   "testa": [
+    "src/lib/access/role-policy.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/lib/assistant-message-window.test.ts",
    "tipo": "unit",
    "linhas": 47,
@@ -7196,9 +7205,9 @@
   {
    "arquivo": "tests/scenarios/notificacoes-aprovacao.mjs",
    "tipo": "unit",
-   "linhas": 231,
+   "linhas": 245,
    "testa": [],
-   "casos": 21
+   "casos": 23
   },
   {
    "arquivo": "tests/scenarios/notification-guard-postgres.scenario.mjs",
@@ -8709,7 +8718,7 @@
   "src/hooks/voice/types.ts": 1,
   "src/integrations/supabase/client.ts": 17,
   "src/lib/access/dev-route-telemetry.ts": 1,
-  "src/lib/access/role-policy.ts": 2,
+  "src/lib/access/role-policy.ts": 3,
   "src/lib/assistant-message-window.ts": 1,
   "src/lib/auth/apply-seller-scope.ts": 2,
   "src/lib/auth/auth-utils.ts": 1,

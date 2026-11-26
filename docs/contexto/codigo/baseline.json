@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "b5b924a584e8fd673214ee4457a9a655fa27648d",
+  "commit": "3dbc1530328074c9e49d6c6090da5d44a4ee7f9c",
   "branch": "main",
-  "data_commit": "2026-11-26T13:58:29-03:00",
+  "data_commit": "2026-11-26T14:47:59-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "3dbc153",
+    "data": "2026-11-26",
+    "assunto": "fix: link do aviso de alcada abre a fila de aprovacoes (#467)"
+   },
    {
     "sha": "b5b924a",
     "data": "2026-11-26",
@@ -126,11 +131,6 @@
     "sha": "a07c4e7",
     "data": "2026-11-25",
     "assunto": "fix: prefetch do catalogo declara getNextPageParam (#440)"
-   },
-   {
-    "sha": "ff48a63",
-    "data": "2026-11-25",
-    "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#438)"
    }
   ],
   "arquivos_mudados_7d": 957,
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 40
+    "mudancas": 41
    },
    {
     "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
@@ -192,7 +192,7 @@
     "mudancas": 13
    },
    {
-    "pasta": "package-lock.json",
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
     "mudancas": 12
    }
   ],
@@ -219,27 +219,27 @@
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 16
+    "mudancas": 15
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 14
+    "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 14
+    "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/lighthouse.yml",
-    "mudancas": 13
+    "mudancas": 12
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
@@ -250,23 +250,11 @@
     "mudancas": 11
    },
    {
-    "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 10
-   },
-   {
     "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/migration-ledger-drift.yml",
-    "mudancas": 9
-   },
-   {
-    "arquivo": ".github/workflows/security-compliance.yml",
-    "mudancas": 9
-   },
-   {
-    "arquivo": ".github/workflows/security.yml",
+    "arquivo": ".github/workflows/bundle-check.yml",
     "mudancas": 9
    },
    {
@@ -282,7 +270,15 @@
     "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "arquivo": ".github/workflows/migration-ledger-drift.yml",
+    "mudancas": 8
+   },
+   {
+    "arquivo": ".github/workflows/security-compliance.yml",
+    "mudancas": 8
+   },
+   {
+    "arquivo": ".github/workflows/security.yml",
     "mudancas": 8
    },
    {
@@ -294,6 +290,10 @@
     "mudancas": 8
    },
    {
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    "mudancas": 8
+   },
+   {
     "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
     "mudancas": 8
    }
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 237
+    "commits": 238
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5341,
-  "arquivos_codigo": 3227,
-  "linhas_codigo": 511486,
+  "arquivos_total": 5342,
+  "arquivos_codigo": 3228,
+  "linhas_codigo": 511538,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 956,
+  "testes": 957,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -848,7 +848,7 @@
   },
   "supabase/functions": {
    "arquivos": 223,
-   "linhas": 36720
+   "linhas": 36724
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -931,8 +931,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 80,
-   "linhas": 9561
+   "arquivos": 81,
+   "linhas": 9595
   },
   "tests/load": {
    "arquivos": 1,
@@ -968,7 +968,7 @@
   },
   "tests/scenarios": {
    "arquivos": 38,
-   "linhas": 3238
+   "linhas": 3252
   },
   "tests/scripts": {
    "arquivos": 35,

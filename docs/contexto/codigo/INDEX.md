@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `b5b924a584e8fd673214ee4457a9a655fa27648d` (2026-11-26T13:58:29-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `3dbc1530328074c9e49d6c6090da5d44a4ee7f9c` (2026-11-26T14:47:59-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (3003), Markdown (974), SQL (695), JSON (295), JavaScript (158), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (3004), Markdown (974), SQL (695), JSON (295), JavaScript (158), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5341 |
-| arquivos_codigo | 3227 |
-| linhas_codigo | 511486 |
+| arquivos_total | 5342 |
+| arquivos_codigo | 3228 |
+| linhas_codigo | 511538 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 295 |
 | migrations | 632 |
 | cron_jobs | 28 |
-| testes | 956 |
+| testes | 957 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 974 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (1004), src/pages (161), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (170), src/utils (37), src/services (25)
-- testes: tests/ (703), e2e/ (150), outro (54)
+- testes: tests/ (704), e2e/ (150), outro (54)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -473,8 +473,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37249 nós · 62119 arestas · 2797 comunidades · grafo do commit `b5b924a5`
-- comunidades maiores: ref_hooks (645), ref_components (456), ref_integrations (331), ref_lib (309), react (215), getCorsHeaders (215), react-router-dom (197), framer-motion (190), ref_contexts (179), ref_stores (161), ref_types (161), ref_node_assert (161)
+- 37252 nós · 62124 arestas · 2789 comunidades · grafo do commit `3dbc1530`
+- comunidades maiores: ref_lib (528), ref_components (417), @tanstack/react-query (310), lucide-react (280), ref_node_fs (238), react (233), sonner (228), framer-motion (212), ref_integrations (212), getCorsHeaders (205), react-router-dom (191), date-fns (187)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -484,16 +484,16 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
 - package-lock.json (20)
-- .github/workflows/ci.yml (16)
-- .github/workflows/codeql.yml (15)
-- .github/workflows/deploy-sicoob-functions.yml (15)
-- .github/workflows/e2e.yml (14)
-- .github/workflows/sicoob-ci.yml (14)
-- .github/workflows/lighthouse.yml (13)
+- .github/workflows/ci.yml (15)
+- .github/workflows/codeql.yml (14)
+- .github/workflows/deploy-sicoob-functions.yml (14)
+- .github/workflows/e2e.yml (13)
+- .github/workflows/sicoob-ci.yml (13)
+- .github/workflows/lighthouse.yml (12)
 - src/hooks/useQuoteBuilderState.ts (12)
 - scripts/automation.config.json (11)
-- .github/workflows/bundle-check.yml (10)
 - src/hooks/quote/useQuoteInitialization.ts (10)
+- .github/workflows/bundle-check.yml (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-26 `3dbc153` fix: link do aviso de alcada abre a fila de aprovacoes (#467)
 - 2026-11-26 `b5b924a` fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)
 - 2026-11-26 `5321aef` fix: aba de vínculos passa a conceder o papel real em user_roles (SIC-010) (#464)
 - 2026-11-26 `20deb10` fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `f0354ac` fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)
 - 2026-11-25 `bebc2c9` fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)
 - 2026-11-25 `4ec46e6` fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)
-- 2026-11-25 `3f6b0e0` fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

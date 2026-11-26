@@ -911,7 +911,7 @@
     "lib/navigation",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 2,
+   "coberto_por_testes": 3,
    "orfao": false
   },
   {

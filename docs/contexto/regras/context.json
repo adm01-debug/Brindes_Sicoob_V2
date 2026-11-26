@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "b5b924a584e8fd673214ee4457a9a655fa27648d",
+  "sha": "3dbc1530328074c9e49d6c6090da5d44a4ee7f9c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 17:01 UTC",
-  "files_total": 5344,
-  "code_files": 3904,
-  "code_lines": 576310
+  "generated_at": "2026-11-26 17:48 UTC",
+  "files_total": 5345,
+  "code_files": 3905,
+  "code_lines": 576362
  },
  "version": "1.3.2",
- "facts_hash": "4d3d73040d7d001c",
+ "facts_hash": "31e43fbd19ca1c32",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1510,
+   ".ts": 1511,
    ".tsx": 1491,
    ".sql": 695,
    ".mjs": 146,
@@ -67026,7 +67026,7 @@
   {
    "module": "supabase/functions",
    "files": 223,
-   "lines": 36720,
+   "lines": 36724,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67132,7 +67132,7 @@
    ],
    "exports": [
     "ai-usage.ts: checkAiQuota, acquireAiQuota, logAiUsage, extractTokensFromResponse, extractUsageFromSseLine, trackStreamingResponse",
-    "approval-delivery.ts: ApprovalDelivery, deliverApprovalNotification",
+    "approval-delivery.ts: ApprovalDelivery, APPROVER_QUEUE_PATH, deliverApprovalNotification",
     "assistant-context.ts: normalizeAssistantContext",
     "audit-log.ts: redactPayload, summarizePayload, AuditEntryInput, writeAuditEntry, extractRequestMeta",
     "auth.ts: AuthResult, UserAuthenticationResult, authenticateUser, authenticateRequest, requireRole, requireDev",
@@ -67381,8 +67381,8 @@
   },
   {
    "module": "tests",
-   "files": 725,
-   "lines": 97296,
+   "files": 726,
+   "lines": 97344,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -108763,6 +108763,12 @@
     "field": "state",
     "value": "retry",
     "kind": "compara"
+   },
+   {
+    "file": "tests/scenarios/notificacoes-aprovacao.mjs",
+    "field": "type",
+    "value": "actions",
+    "kind": "compara"
    }
   ],
   "calc_fns": [
@@ -133741,6 +133747,22 @@
    {
     "file": "tests/integration/tecnicas-pricing-flow.test.tsx",
     "name": "carrega técnicas mistas e calcula preço para cada uma sem erros"
+   },
+   {
+    "file": "tests/lib/approval-link-target.test.ts",
+    "name": "link do aviso de alçada"
+   },
+   {
+    "file": "tests/lib/approval-link-target.test.ts",
+    "name": "abre a fila de aprovações da Singular"
+   },
+   {
+    "file": "tests/lib/approval-link-target.test.ts",
+    "name": "cai numa rota que os aprovadores podem acessar"
+   },
+   {
+    "file": "tests/lib/approval-link-target.test.ts",
+    "name": "não cai na área administrativa, que fica fora da política de rotas do Sicoob"
    },
    {
     "file": "tests/lib/assistant-message-window.test.ts",
@@ -164484,6 +164506,7 @@
       "escreve:supabase/functions/_shared/approval-delivery.ts"
      ],
      "actions": [
+      "compara:tests/scenarios/notificacoes-aprovacao.mjs",
       "escreve:supabase/functions/_shared/approval-delivery.ts"
      ],
      "button": [
@@ -233538,9 +233561,10 @@
   },
   "supabase/functions/_shared/approval-delivery.ts": {
    "path": "supabase/functions/_shared/approval-delivery.ts",
-   "lines": 87,
+   "lines": 91,
    "exports": [
     "interface ApprovalDelivery",
+    "const APPROVER_QUEUE_PATH",
     "function deliverApprovalNotification"
    ],
    "env": [
@@ -255248,6 +255272,26 @@
     "carrega técnicas mistas e calcula preço para cada uma sem erros"
    ]
   },
+  "tests/lib/approval-link-target.test.ts": {
+   "path": "tests/lib/approval-link-target.test.ts",
+   "lines": 34,
+   "is_test": true,
+   "errors": [
+    "APPROVER_QUEUE_PATH não encontrado no aviso de alçada"
+   ],
+   "params": [
+    {
+     "name": "AVISO",
+     "value": "'supabase/functions/_shared/approval-delivery.ts'"
+    }
+   ],
+   "tests": [
+    "link do aviso de alçada",
+    "abre a fila de aprovações da Singular",
+    "cai numa rota que os aprovadores podem acessar",
+    "não cai na área administrativa, que fica fora da política de rotas do Sicoob"
+   ]
+  },
   "tests/lib/assistant-message-window.test.ts": {
    "path": "tests/lib/assistant-message-window.test.ts",
    "lines": 47,
@@ -258489,7 +258533,7 @@
   },
   "tests/scenarios/notificacoes-aprovacao.mjs": {
    "path": "tests/scenarios/notificacoes-aprovacao.mjs",
-   "lines": 231,
+   "lines": 245,
    "errors": [
     "Dependência inesperada: ${name}",
     "RPC inesperada: ${name}",
@@ -258529,6 +258573,11 @@
     {
      "field": "state",
      "value": "retry",
+     "kind": "compara"
+    },
+    {
+     "field": "type",
+     "value": "actions",
      "kind": "compara"
     }
    ],
@@ -261096,10 +261145,23 @@
   }
  },
  "git": {
-  "sha": "b5b924a584e8fd673214ee4457a9a655fa27648d",
+  "sha": "3dbc1530328074c9e49d6c6090da5d44a4ee7f9c",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "3dbc153",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: link do aviso de alcada abre a fila de aprovacoes (#467)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+     "supabase/functions/_shared/approval-delivery.ts",
+     "tests/lib/approval-link-target.test.ts",
+     "tests/scenarios/notificacoes-aprovacao.mjs"
+    ]
+   },
    {
     "sha": "b5b924a",
     "date": "2026-11-26",
@@ -261456,20 +261518,6 @@
     "files": [
      "tests/security/privileged-client-data-guards.test.ts"
     ]
-   },
-   {
-    "sha": "9716657",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "fix: orcamento existente avisa quando nao carrega (#436)",
-    "files": [
-     "public/offline.html",
-     "src/hooks/quote/useQuoteInitialization.ts",
-     "src/hooks/useQuoteBuilderState.ts",
-     "src/pages/QuoteBuilderPage.tsx",
-     "tests/hooks/quote/useQuoteInitialization.load-error.test.tsx",
-     "tests/pwa/offline-fallback.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -261483,7 +261531,11 @@
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
-    2
+    3
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    3
    ],
    [
     "src/services/sicoob/userService.ts",
@@ -261494,15 +261546,7 @@
     2
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    2
-   ],
-   [
     "src/contexts/AuthContext.tsx",
-    2
-   ],
-   [
-    "src/pages/QuoteBuilderPage.tsx",
     2
    ],
    [
@@ -261520,6 +261564,18 @@
    [
     "package.json",
     2
+   ],
+   [
+    "supabase/functions/_shared/approval-delivery.ts",
+    1
+   ],
+   [
+    "tests/lib/approval-link-target.test.ts",
+    1
+   ],
+   [
+    "tests/scenarios/notificacoes-aprovacao.mjs",
+    1
    ],
    [
     "src/services/sicoob/approvalService.ts",
@@ -261543,14 +261599,6 @@
    ],
    [
     "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    1
-   ],
-   [
-    "tests/hooks/useUserRoles-race.test.tsx",
-    1
-   ],
-   [
-    "tests/services/sicoob/userService.syncUserRole.test.ts",
     1
    ]
   ]

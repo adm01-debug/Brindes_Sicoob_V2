@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `b5b924a584` · branch `main` · 2026-11-26 17:01 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `3dbc153032` · branch `main` · 2026-11-26 17:48 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1124,7 +1124,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `type` | `__REDO__` | compara, escreve | `src/hooks/simulator/useUndoRedo.ts` |
 | `type` | `__UNDO__` | compara, escreve | `src/hooks/simulator/useUndoRedo.ts` |
 | `type` | `action` | compara, escreve | `src/components/search/GlobalSearchIdleState.tsx`<br>`src/hooks/useContextualSuggestions.ts` |
-| `type` | `actions` | escreve | `supabase/functions/_shared/approval-delivery.ts` |
+| `type` | `actions` | compara, escreve | `supabase/functions/_shared/approval-delivery.ts`<br>`tests/scenarios/notificacoes-aprovacao.mjs` |
 | `type` | `add` | compara, escreve | `src/components/cart/CartUtilComponents.tsx` |
 | `type` | `add_position` | escreve | `src/components/pricing/simulator/upsell/upsell-engine.ts` |
 | `type` | `agent` | compara, escreve | `src/components/workflows/WorkflowCanvas.tsx`<br>`src/components/workflows/WorkflowEditDialog.tsx` |
@@ -5757,7 +5757,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7431 testes em 766 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7435 testes em 767 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6061,7 +6061,7 @@ _nenhum item encontrado_
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
-| … +466 linhas — lista completa em `context.json` | | |
+| … +467 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
