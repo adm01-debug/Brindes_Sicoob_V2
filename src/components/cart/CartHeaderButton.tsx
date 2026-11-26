@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSellerCartContext } from "@/contexts/SellerCartContext";
 import { CartCompanyPicker } from "./CartCompanyPicker";
 import { CartPaBudgetBalance } from "./CartPaBudgetBalance";
+import { CartApprovalThresholdNotice } from "./CartApprovalThresholdNotice";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -246,6 +247,7 @@ export function CartHeaderButton() {
                       <div className="border-t border-border/40">
                       <div className="p-3 space-y-2">
                         <CartPaBudgetBalance />
+                        <CartApprovalThresholdNotice items={activeCart.items} />
                       </div>
                       <div className="px-3 pb-3 space-y-2">
                         {/* Subtotal */}

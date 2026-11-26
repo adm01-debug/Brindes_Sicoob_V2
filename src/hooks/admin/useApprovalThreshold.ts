@@ -14,8 +14,13 @@ interface CategoryThreshold {
   limite_alcada: number;
 }
 
+/**
+ * A alcada que decide a aprovacao do pedido e a do PA (limite aprovado para a
+ * cooperativa); o limite pessoal do perfil so vale quando o PA nao tem limite
+ * configurado, senao a tela mostra um limite e decide por outro.
+ */
 function globalApprovalThreshold(profileThreshold?: number | null, budgetThreshold?: number | null): number {
-  return profileThreshold || budgetThreshold || 0;
+  return budgetThreshold || profileThreshold || 0;
 }
 
 function exceedsCategoryThreshold(items: ApprovalItem[], thresholds?: CategoryThreshold[] | null): boolean {
@@ -121,7 +126,7 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
   };
 
   return {
-    threshold: globalApprovalThreshold(undefined, budgetThreshold),
+    threshold: globalApprovalThreshold(profile?.approval_threshold, budgetThreshold),
     /** Competencia da linha que realmente define a alcada (pode ser herdada). */
     competenceLabel: formatBudgetCompetence(usedCompetence),
     /** Competencia do pedido; igual a anterior quando nao ha heranca. */

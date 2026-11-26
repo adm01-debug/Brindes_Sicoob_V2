@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   budgets: [] as Array<Record<string, unknown>>,
   eqCalls: [] as Array<[string, string, unknown]>,
+  profile: { pa_id: "pa-do-pedido", approval_threshold: null } as { pa_id: string; approval_threshold: number | null },
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -15,7 +16,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    profile: { pa_id: "pa-do-pedido", approval_threshold: null },
+    profile: mocks.profile,
     isGestorCompras: true,
     isDev: false,
     isSupervisor: false,
@@ -48,6 +49,7 @@ describe("useApprovalThreshold", () => {
     vi.clearAllMocks();
     mocks.from.mockImplementation((table: string) => thenable(table));
     mocks.eqCalls = [];
+    mocks.profile = { pa_id: "pa-do-pedido", approval_threshold: null };
     mocks.budgets = [
       { ano: 2025, mes: 10, limite_alcada: 700 },
       { ano: 2026, mes: 11, limite_alcada: 1000 },
@@ -77,6 +79,30 @@ describe("useApprovalThreshold", () => {
     expect(result.current.competenceLabel).toBe("10/2025");
     expect(result.current.requestedCompetenceLabel).toBe("08/2026");
     expect(result.current.isCarryOver).toBe(true);
+  });
+
+  it("a alçada do PA vence o limite pessoal do perfil", async () => {
+    mocks.profile = { pa_id: "pa-do-pedido", approval_threshold: 200 };
+    const { result } = renderHook(
+      () => useApprovalThreshold(undefined, { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.threshold).toBe(1000));
+    expect(result.current.needsApproval(500)).toBe(false);
+    expect(result.current.needsApproval(1500)).toBe(true);
+  });
+
+  it("cai no limite pessoal quando o PA não tem limite aprovado", async () => {
+    mocks.profile = { pa_id: "pa-do-pedido", approval_threshold: 200 };
+    mocks.budgets = [];
+    const { result } = renderHook(
+      () => useApprovalThreshold(undefined, { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.threshold).toBe(200));
+    expect(result.current.needsApproval(500)).toBe(true);
   });
 
   it("usa a alçada do PA do pedido, e não a do usuário logado", async () => {
