@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-26 00:38 UTC
+
+- **functions** alterado (4): `public.audit_security_definer_acl()`, `public.cleanup_old_notifications()`, `public.is_dnd_active()`, `public.is_dnd_active(p_user_id uuid)`
+
 ## 2026-11-25 13:19 UTC
 
 - **functions** alterado (1): `public.cleanup_old_notifications()`

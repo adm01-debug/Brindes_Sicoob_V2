@@ -51567,9 +51567,13 @@
             {
               "file": "supabase/migrations/20261124142500_revoke_execute_pa_budget_triggers.sql",
               "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 7,
+          "code_total_files": 8,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -53342,9 +53346,13 @@
             {
               "file": "supabase/migrations/20261125100000_notification_functions_contract.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+              "hits": 5
             }
           ],
-          "code_total_files": 7,
+          "code_total_files": 8,
           "cron": [
             "8:cleanup-old-notifications"
           ],
@@ -58563,8 +58571,13 @@
       {
         "args": "",
         "callers": {
-          "code": [],
-          "code_total_files": 0,
+          "code": [
+            {
+              "file": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+              "hits": 8
+            }
+          ],
+          "code_total_files": 1,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -58593,8 +58606,13 @@
       {
         "args": "p_user_id uuid",
         "callers": {
-          "code": [],
-          "code_total_files": 0,
+          "code": [
+            {
+              "file": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+              "hits": 8
+            }
+          ],
+          "code_total_files": 1,
           "cron": [],
           "db": [],
           "triggers": [],
