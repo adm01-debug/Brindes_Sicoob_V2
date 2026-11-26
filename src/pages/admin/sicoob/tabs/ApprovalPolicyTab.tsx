@@ -193,8 +193,7 @@ function useRelogio(intervaloMs = 60_000) {
   return agora;
 }
 
-function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
-  const agora = useRelogio();
+function PolicyHistoryTable({ policies, now }: { policies: ApprovalPolicy[]; now: Date }) {
   return (
     <Table>
       <TableHeader>
@@ -218,7 +217,7 @@ function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
             <TableCell>{formatDateTime(policy.effective_from)}</TableCell>
             <TableCell>{formatDateTime(policy.effective_until)}</TableCell>
             <TableCell>
-              <PolicyStatusBadge policy={policy} now={agora} />
+              <PolicyStatusBadge policy={policy} now={now} />
             </TableCell>
           </TableRow>
         ))}
@@ -230,12 +229,14 @@ function PolicyHistoryTable({ policies }: { policies: ApprovalPolicy[] }) {
 function ScopesTableBody({
   scopes,
   policies,
+  now,
   onPublish,
   onClose,
   isClosing,
 }: {
   scopes: PolicyScope[];
   policies: ApprovalPolicy[];
+  now: Date;
   onPublish: (scope: PolicyScope) => void;
   onClose: (scope: PolicyScope) => void;
   isClosing: boolean;
@@ -243,7 +244,7 @@ function ScopesTableBody({
   return (
     <TableBody>
       {scopes.map((scope) => {
-        const effective = pickEffectivePolicy(policies, scope.cooperativeId);
+        const effective = pickEffectivePolicy(policies, scope.cooperativeId, now);
         return (
           <ScopeRow
             key={scope.cooperativeId ?? "global"}
@@ -411,6 +412,9 @@ export const ApprovalPolicyTab = () => {
   const queryClient = useQueryClient();
   const [publishScope, setPublishScope] = useState<PolicyScope | null>(null);
   const [closeScope, setCloseScope] = useState<PolicyScope | null>(null);
+  // Um unico relogio para resumo e historico: a virada da vigencia tem que
+  // refletir nas duas tabelas ao mesmo tempo.
+  const agora = useRelogio();
 
   const policies = useQuery({
     queryKey: [POLICIES_QUERY_KEY],
@@ -504,6 +508,7 @@ export const ApprovalPolicyTab = () => {
               <ScopesTableBody
                 scopes={scopeList}
                 policies={policyList}
+                now={agora}
                 onPublish={setPublishScope}
                 onClose={setCloseScope}
                 isClosing={closeMutation.isPending}
@@ -530,7 +535,7 @@ export const ApprovalPolicyTab = () => {
               </AlertDescription>
             </Alert>
           ) : (
-            <PolicyHistoryTable policies={policyList} />
+            <PolicyHistoryTable policies={policyList} now={agora} />
           )}
         </CardContent>
       </Card>

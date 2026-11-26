@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -49,6 +49,16 @@ const buildPolicy = (overrides: Partial<ApprovalPolicy> = {}): ApprovalPolicy =>
     cooperative: { nome: "SINGULAR TESTE" },
     ...overrides,
   }) as ApprovalPolicy;
+
+/** Só microtarefas: com fake timers o waitFor não avança o relógio sozinho. */
+const flushMicrotasks = async () => {
+  for (let i = 0; i < 20; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+    });
+  }
+};
 
 const scopes = [
   { cooperativeId: null, cooperativeName: "Todas as Singulares (política global)" },
@@ -208,6 +218,59 @@ describe("ApprovalPolicyTab", () => {
     expect(within(linha("v1")).getByText("Encerrada")).toBeInTheDocument();
     expect(within(linha("v2")).getByText("Ativa")).toBeInTheDocument();
     expect(within(linha("v3")).getByText("Agendada")).toBeInTheDocument();
+  });
+
+  it("acompanha a virada da vigência com a tela aberta, sem recarregar", async () => {
+    const t0 = new Date("2026-11-26T12:00:00Z");
+    const virada = new Date(t0.getTime() + 120_000);
+    list.mockResolvedValue([
+      buildPolicy({
+        id: "policy-antes",
+        cooperative_id: null,
+        version: "v1",
+        effective_from: new Date(t0.getTime() - 86_400_000).toISOString(),
+        effective_until: virada.toISOString(),
+      }),
+      buildPolicy({
+        id: "policy-depois",
+        cooperative_id: null,
+        version: "v2",
+        effective_from: virada.toISOString(),
+        effective_until: null,
+      }),
+    ]);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(t0);
+    try {
+      renderWithProviders(<ApprovalPolicyTab />);
+      await flushMicrotasks();
+
+      const resumo = (
+        screen.getByText("Todas as Singulares (política global)").closest("tr") as HTMLElement
+      );
+      const historico = screen.getByText("Término").closest("table") as HTMLElement;
+      const linhaHistorico = (versao: string) =>
+        within(historico).getByText(versao).closest("tr") as HTMLElement;
+
+      expect(within(resumo).getByText("v1")).toBeInTheDocument();
+      expect(within(linhaHistorico("v1")).getByText("Ativa")).toBeInTheDocument();
+      expect(within(linhaHistorico("v2")).getByText("Agendada")).toBeInTheDocument();
+
+      vi.setSystemTime(new Date(virada.getTime() + 30_000));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(120_000);
+      });
+      await flushMicrotasks();
+
+      // Resumo e histórico viram juntos: nenhum dos dois pode ficar na versão antiga.
+      expect(within(resumo).getByText("v2")).toBeInTheDocument();
+      expect(within(resumo).queryByText("v1")).not.toBeInTheDocument();
+      expect(within(linhaHistorico("v1")).getByText("Encerrada")).toBeInTheDocument();
+      expect(within(linhaHistorico("v2")).getByText("Ativa")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("reabre o formulário sugerindo a próxima versão após publicar", async () => {
