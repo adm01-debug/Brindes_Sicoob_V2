@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "3dbc1530328074c9e49d6c6090da5d44a4ee7f9c",
+  "commit": "269e7afa799c9c9f2cf1caaf665577c6671fb941",
   "branch": "main",
-  "data_commit": "2026-11-26T14:47:59-03:00",
+  "data_commit": "2026-11-26T15:22:53-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "269e7af",
+    "data": "2026-11-26",
+    "assunto": "feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)"
+   },
    {
     "sha": "3dbc153",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "7bf44fc",
     "data": "2026-11-25",
     "assunto": "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)"
-   },
-   {
-    "sha": "a07c4e7",
-    "data": "2026-11-25",
-    "assunto": "fix: prefetch do catalogo declara getNextPageParam (#440)"
    }
   ],
-  "arquivos_mudados_7d": 957,
+  "arquivos_mudados_7d": 966,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -161,7 +161,7 @@
    },
    {
     "pasta": "src/pages/admin",
-    "mudancas": 18
+    "mudancas": 19
    },
    {
     "pasta": "tests/components/bi",
@@ -180,20 +180,20 @@
     "mudancas": 16
    },
    {
+    "pasta": "src/pages/sicoob",
+    "mudancas": 16
+   },
+   {
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
+    "mudancas": 14
+   },
+   {
     "pasta": "src/components/quotes",
     "mudancas": 14
    },
    {
-    "pasta": "src/pages/sicoob",
-    "mudancas": 13
-   },
-   {
     "pasta": "src/services/sicoob",
     "mudancas": 13
-   },
-   {
-    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
-    "mudancas": 12
    }
   ],
   "arquivos_mais_mudados_90d": [
@@ -258,6 +258,10 @@
     "mudancas": 9
    },
    {
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    "mudancas": 9
+   },
+   {
     "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 9
    },
@@ -290,10 +294,6 @@
     "mudancas": 8
    },
    {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    "mudancas": 8
-   },
-   {
     "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
     "mudancas": 8
    }
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 238
+    "commits": 239
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5342,
-  "arquivos_codigo": 3228,
-  "linhas_codigo": 511538,
-  "rotas": 140,
+  "arquivos_total": 5347,
+  "arquivos_codigo": 3233,
+  "linhas_codigo": 511835,
+  "rotas": 142,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
-  "itens_menu": 85,
+  "itens_menu": 87,
   "modulos": 146,
-  "componentes": 1177,
+  "componentes": 1180,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 957,
+  "testes": 959,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1136,
-   "linhas": 168167
+   "arquivos": 1137,
+   "linhas": 168240
   },
   "src/constants": {
    "arquivos": 3,
@@ -808,19 +808,19 @@
   },
   "src/lib": {
    "arquivos": 170,
-   "linhas": 23005
+   "linhas": 23010
   },
   "src/main.tsx": {
    "arquivos": 1,
    "linhas": 126
   },
   "src/pages": {
-   "arquivos": 197,
-   "linhas": 52252
+   "arquivos": 199,
+   "linhas": 52323
   },
   "src/routes": {
    "arquivos": 9,
-   "linhas": 523
+   "linhas": 525
   },
   "src/services": {
    "arquivos": 25,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 172,
-   "linhas": 30468
+   "arquivos": 173,
+   "linhas": 30550
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -931,8 +931,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 81,
-   "linhas": 9595
+   "arquivos": 82,
+   "linhas": 9654
   },
   "tests/load": {
    "arquivos": 1,
@@ -996,7 +996,7 @@
   },
   "tests/sicoob": {
    "arquivos": 9,
-   "linhas": 506
+   "linhas": 511
   },
   "tests/sicoob-status-mapping.test.ts": {
    "arquivos": 1,

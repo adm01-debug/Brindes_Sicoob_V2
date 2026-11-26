@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `3dbc153032` · branch `main` · 2026-11-26 17:48 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `269e7afa79` · branch `main` · 2026-11-26 18:23 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5757,7 +5757,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7435 testes em 767 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7447 testes em 769 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6059,9 +6059,9 @@ _nenhum item encontrado_
 | `supabase/functions/crm-db-bridge/firstRowAsRecord.test.ts` | 7 | toRecord: returns null for null/undefined/primitives/arrays · toRecord: returns null for GenericStringError-like payload · toRecord: returns the object itself for a plain row · firstRowAsRecord: null for non-array/empty inputs … |
 | `supabase/functions/external-db-bridge/lightweightSelect.e2e.test.ts` | 7 | E2E force-lightweight: products + limit=51 + select= · E2E force-lightweight: products + limit=300 + select omitido → lightweight · E2E no-force: products + fetch por id (filters.id) → payload completo · E2E no-force: products + limit=50 (boundary) + select= … |
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
+| `tests/components/MfaGate.test.tsx` | 7 | MfaGate das telas do gestor · renderiza o conteúdo com segundo fator ativo e sessão aal2 · não renderiza o conteúdo para gestor sem segundo fator · não redireciona o gestor após ativar o segundo fator … |
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
-| `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
-| … +467 linhas — lista completa em `context.json` | | |
+| … +469 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

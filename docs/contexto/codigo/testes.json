@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 957,
+ "total": 959,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 723
+  "unit": 725
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 704
+   "arquivos": 706
   },
   {
    "padrao": "e2e/",
@@ -2875,6 +2875,15 @@
     "src/pages/magic-up/magicUpStrategy.ts"
    ],
    "casos": 5
+  },
+  {
+   "arquivo": "tests/components/MfaGate.test.tsx",
+   "tipo": "unit",
+   "linhas": 82,
+   "testa": [
+    "src/components/layout/MfaGate.tsx"
+   ],
+   "casos": 6
   },
   {
    "arquivo": "tests/components/mockup/MockupHistoryPanel.test.tsx",
@@ -6103,6 +6112,15 @@
    "casos": 6
   },
   {
+   "arquivo": "tests/lib/gestor-self-service-routes.test.ts",
+   "tipo": "unit",
+   "linhas": 59,
+   "testa": [
+    "src/lib/access/role-policy.ts"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/lib/image-converter-extended.test.ts",
    "tipo": "unit",
    "linhas": 39,
@@ -7929,7 +7947,7 @@
   {
    "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
    "tipo": "unit",
-   "linhas": 68,
+   "linhas": 73,
    "testa": [
     "src/components/layout/ProtectedRoute.tsx",
     "src/components/layout/SicoobRoute.tsx",
@@ -8486,6 +8504,7 @@
   "src/components/layout/AdminRoute.tsx": 4,
   "src/components/layout/DevRoute.tsx": 5,
   "src/components/layout/MainLayout.tsx": 1,
+  "src/components/layout/MfaGate.tsx": 1,
   "src/components/layout/ProtectedRoute.tsx": 5,
   "src/components/layout/SicoobRoute.tsx": 1,
   "src/components/layout/SidebarReorganized.tsx": 1,
@@ -8718,7 +8737,7 @@
   "src/hooks/voice/types.ts": 1,
   "src/integrations/supabase/client.ts": 17,
   "src/lib/access/dev-route-telemetry.ts": 1,
-  "src/lib/access/role-policy.ts": 3,
+  "src/lib/access/role-policy.ts": 4,
   "src/lib/assistant-message-window.ts": 1,
   "src/lib/auth/apply-seller-scope.ts": 2,
   "src/lib/auth/auth-utils.ts": 1,
@@ -9022,8 +9041,10 @@
    "src/pages/admin/sicoob/SicoobApprovalReconciliationPage.tsx",
    "src/pages/admin/sicoob/SicoobManagementPage.tsx",
    "src/pages/sicoob/DemoPortalPage.tsx",
+   "src/pages/sicoob/GestorAlertsPage.tsx",
    "src/pages/sicoob/GestorApprovalsPage.tsx",
    "src/pages/sicoob/GestorAuditPage.tsx",
+   "src/pages/sicoob/GestorBudgetsPage.tsx",
    "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
    "src/pages/sicoob/GestorDashboardPage.tsx",
    "src/pages/sicoob/GestorDelegationsPage.tsx",

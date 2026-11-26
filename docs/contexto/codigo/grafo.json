@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2271,
- "arestas": 9239,
+ "nos": 2274,
+ "arestas": 9250,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -34,7 +34,7 @@
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
-   "importado_por": 169
+   "importado_por": 170
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
@@ -54,7 +54,7 @@
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
-   "importado_por": 118
+   "importado_por": 120
   },
   {
    "arquivo": "src/components/ui/scroll-area.tsx",
@@ -472,14 +472,14 @@
    "importado_por": 21
   },
   {
+   "modulo": "components/layout",
+   "depende_de": 30,
+   "importado_por": 1
+  },
+  {
    "modulo": "components/products",
    "depende_de": 17,
    "importado_por": 14
-  },
-  {
-   "modulo": "components/layout",
-   "depende_de": 30,
-   "importado_por": 0
   },
   {
    "modulo": "components/admin",
@@ -518,7 +518,7 @@
   },
   {
    "modulo": "pages/sicoob",
-   "depende_de": 18,
+   "depende_de": 19,
    "importado_por": 2
   },
   {

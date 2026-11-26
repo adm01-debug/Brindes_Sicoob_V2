@@ -2,10 +2,10 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "resumo": {
-  "urls": 140,
+  "urls": 142,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
-  "itens_menu": 85,
+  "itens_menu": 87,
   "lazy": 79
  },
  "urls": [
@@ -5310,6 +5310,69 @@
    "arquivos_puxados": 41
   },
   {
+   "protegida": false,
+   "wrappers": [],
+   "pai": null,
+   "indice": false,
+   "lazy": true,
+   "tipo": "tela",
+   "caminho": "/gestor/alertas",
+   "componente": null,
+   "arquivo": "src/pages/sicoob/GestorAlertsPage.tsx",
+   "definida_em": "src/routes/config/sicoob-rbac.ts",
+   "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useEnrollmentClose",
+    "useEnrollmentState",
+    "useMemo",
+    "useMfaChallenge",
+    "useMfaEnrollment",
+    "useMfaFactorId",
+    "useMutation",
+    "useNavigate",
+    "useQuery",
+    "useQueryClient",
+    "useRef",
+    "useStartEnrollment",
+    "useState",
+    "useUserProfile",
+    "useUserRoles",
+    "useVerifyEnrollment"
+   ],
+   "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useUserProfile",
+    "useUserRoles"
+   ],
+   "tabelas": [
+    "pa_notification_settings",
+    "postos_atendimento",
+    "profiles",
+    "user_roles"
+   ],
+   "rpcs": [
+    "get_sicoob_access_state"
+   ],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
+   "canais_realtime": [],
+   "flags": [],
+   "papeis": [
+    "admin",
+    "dialog",
+    "manager"
+   ],
+   "arquivos_puxados": 41
+  },
+  {
    "protegida": true,
    "wrappers": [],
    "pai": null,
@@ -5876,6 +5939,70 @@
     "supervisor"
    ],
    "arquivos_puxados": 133
+  },
+  {
+   "protegida": false,
+   "wrappers": [],
+   "pai": null,
+   "indice": false,
+   "lazy": true,
+   "tipo": "tela",
+   "caminho": "/gestor/verbas",
+   "componente": null,
+   "arquivo": "src/pages/sicoob/GestorBudgetsPage.tsx",
+   "definida_em": "src/routes/config/sicoob-rbac.ts",
+   "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useEnrollmentClose",
+    "useEnrollmentState",
+    "useMemo",
+    "useMfaChallenge",
+    "useMfaEnrollment",
+    "useMfaFactorId",
+    "useMutation",
+    "useNavigate",
+    "useQuery",
+    "useQueryClient",
+    "useRef",
+    "useStartEnrollment",
+    "useState",
+    "useUserProfile",
+    "useUserRoles",
+    "useVerifyEnrollment"
+   ],
+   "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useUserProfile",
+    "useUserRoles"
+   ],
+   "tabelas": [
+    "pa_budgets",
+    "postos_atendimento",
+    "profiles",
+    "user_roles"
+   ],
+   "rpcs": [
+    "get_sicoob_access_state"
+   ],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
+   "canais_realtime": [],
+   "flags": [],
+   "papeis": [
+    "admin",
+    "alert",
+    "dialog",
+    "manager"
+   ],
+   "arquivos_puxados": 41
   },
   {
    "protegida": true,
@@ -11408,6 +11535,20 @@
    "resolve_para": "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx"
   },
   {
+   "rotulo": "Alertas e avisos",
+   "destino": "/gestor/alertas",
+   "grupo": null,
+   "papeis": [
+    "comprador_singular",
+    "dev",
+    "gestor_compras",
+    "supervisor"
+   ],
+   "papeis_nao_resolvidos": null,
+   "definido_em": "src/components/layout/SidebarReorganized.tsx",
+   "resolve_para": "src/pages/sicoob/GestorAlertsPage.tsx"
+  },
+  {
    "rotulo": "Análise de Tendências",
    "destino": "/tendencias",
    "grupo": null,
@@ -12158,6 +12299,19 @@
    "papeis_nao_resolvidos": null,
    "definido_em": "src/components/layout/SidebarReorganized.tsx",
    "resolve_para": "src/pages/admin/AdminVerbasPage.tsx"
+  },
+  {
+   "rotulo": "Verbas dos PAs",
+   "destino": "/gestor/verbas",
+   "grupo": null,
+   "papeis": [
+    "dev",
+    "gestor_compras",
+    "supervisor"
+   ],
+   "papeis_nao_resolvidos": null,
+   "definido_em": "src/components/layout/SidebarReorganized.tsx",
+   "resolve_para": "src/pages/sicoob/GestorBudgetsPage.tsx"
   },
   {
    "rotulo": "Workflows IA",

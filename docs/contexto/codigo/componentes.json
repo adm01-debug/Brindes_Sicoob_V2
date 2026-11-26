@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1177,
+ "total": 1180,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -5586,7 +5586,7 @@
     "PersistentBreadcrumbs"
    ],
    "export_default": null,
-   "linhas": 216,
+   "linhas": 218,
    "dominio": "components/common",
    "hooks_locais": [
     "useAuth"
@@ -8657,6 +8657,22 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/layout/MfaGate.tsx",
+   "exports": [
+    "MfaGate"
+   ],
+   "export_default": null,
+   "linhas": 59,
+   "dominio": "components/layout",
+   "hooks_locais": [
+    "useAuth"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 2,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/layout/PageHeader.tsx",
    "exports": [
     "PageHeader",
@@ -8810,7 +8826,7 @@
     "SidebarReorganized"
    ],
    "export_default": null,
-   "linhas": 693,
+   "linhas": 705,
    "dominio": "components/layout",
    "hooks_locais": [
     "useAuth"
@@ -13933,7 +13949,7 @@
    ],
    "tabelas": [],
    "edges": [],
-   "usado_por": 2,
+   "usado_por": 3,
    "orfao": false
   },
   {
@@ -13949,7 +13965,7 @@
    ],
    "tabelas": [],
    "edges": [],
-   "usado_por": 3,
+   "usado_por": 4,
    "orfao": false
   },
   {
@@ -14064,7 +14080,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 115,
+   "usado_por": 117,
    "orfao": false
   },
   {
@@ -15891,7 +15907,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 158,
+   "usado_por": 159,
    "orfao": false
   },
   {
@@ -16895,7 +16911,7 @@
     "postos_atendimento"
    ],
    "edges": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "orfao": false
   },
   {
@@ -16924,7 +16940,7 @@
     "NotificationSettingsTab"
    ],
    "export_default": null,
-   "linhas": 166,
+   "linhas": 184,
    "dominio": "pages/admin",
    "hooks_locais": [],
    "tabelas": [
@@ -16932,7 +16948,7 @@
     "postos_atendimento"
    ],
    "edges": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "orfao": false
   },
   {
@@ -18307,6 +18323,20 @@
    "orfao": false
   },
   {
+   "arquivo": "src/pages/sicoob/GestorAlertsPage.tsx",
+   "exports": [
+    "GestorAlertsPage"
+   ],
+   "export_default": "GestorAlertsPage",
+   "linhas": 27,
+   "dominio": "pages/sicoob",
+   "hooks_locais": [],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/pages/sicoob/GestorApprovalsPage.tsx",
    "exports": [
     "GestorApprovalsPage"
@@ -18333,6 +18363,20 @@
     "sicoob_manager_audit",
     "sicoob_orders"
    ],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/pages/sicoob/GestorBudgetsPage.tsx",
+   "exports": [
+    "GestorBudgetsPage"
+   ],
+   "export_default": "GestorBudgetsPage",
+   "linhas": 26,
+   "dominio": "pages/sicoob",
+   "hooks_locais": [],
+   "tabelas": [],
    "edges": [],
    "usado_por": 1,
    "orfao": false

@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (3004)",
+   "TypeScript (3009)",
    "Markdown (974)",
    "SQL (695)",
    "JSON (295)",
@@ -2272,6 +2272,8 @@
    "/convite/:token",
    "/demonstracao",
    "/dossie/:token",
+   "/gestor/alertas",
+   "/gestor/verbas",
    "/kit/:token",
    "/lista-publica/:token",
    "/login",
@@ -2299,6 +2301,15 @@
      "comprador_singular",
      "dev",
      "gerente_pa",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Alertas e avisos",
+    "papeis": [
+     "comprador_singular",
+     "dev",
      "gestor_compras",
      "supervisor"
     ]
@@ -2354,6 +2365,14 @@
     "rotulo": "Painel Gestor",
     "papeis": [
      "comprador_singular",
+     "dev",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Verbas dos PAs",
+    "papeis": [
      "dev",
      "gestor_compras",
      "supervisor"

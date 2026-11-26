@@ -1702,7 +1702,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 158,
+   "usado_por": 159,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -1729,11 +1729,11 @@
     "src/components/layout/AdminRoute.tsx",
     "src/components/layout/DevRoute.tsx",
     "src/components/layout/Header.tsx",
+    "src/components/layout/MfaGate.tsx",
     "src/components/layout/PermissionsError.tsx",
     "src/components/layout/ProtectedRoute.tsx",
     "src/components/layout/SicoobRoute.tsx",
-    "src/components/layout/SidebarReorganized.tsx",
-    "src/components/layout/sidebar/RestrictedRouteNotice.tsx"
+    "src/components/layout/SidebarReorganized.tsx"
    ],
    "coberto_por_testes": 11
   },

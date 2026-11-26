@@ -4645,6 +4645,11 @@
    "src/lib/lazyWithRetry.ts",
    "src/lib/utils.ts"
   ],
+  "src/components/layout/MfaGate.tsx": [
+   "src/components/security/MfaChallengeDialog.tsx",
+   "src/components/security/MfaEnrollmentDialog.tsx",
+   "src/contexts/AuthContext.tsx"
+  ],
   "src/components/layout/PageHeader.tsx": [
    "src/components/navigation/Breadcrumbs.tsx",
    "src/lib/utils.ts"
@@ -11750,6 +11755,11 @@
    "src/components/ui/card.tsx",
    "src/components/ui/progress.tsx"
   ],
+  "src/pages/sicoob/GestorAlertsPage.tsx": [
+   "src/components/layout/MfaGate.tsx",
+   "src/components/seo/PageSEO.tsx",
+   "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx"
+  ],
   "src/pages/sicoob/GestorApprovalsPage.tsx": [
    "src/components/seo/PageSEO.tsx",
    "src/components/ui/badge.tsx",
@@ -11769,6 +11779,11 @@
    "src/components/ui/skeleton.tsx",
    "src/components/ui/table.tsx",
    "src/integrations/supabase/client.ts"
+  ],
+  "src/pages/sicoob/GestorBudgetsPage.tsx": [
+   "src/components/layout/MfaGate.tsx",
+   "src/components/seo/PageSEO.tsx",
+   "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
   ],
   "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx": [
    "src/components/ui/badge.tsx",
@@ -12124,8 +12139,10 @@
    "src/lib/lazyWithRetry.ts",
    "src/lib/router-utils.ts",
    "src/pages/GestorCompras.tsx",
+   "src/pages/sicoob/GestorAlertsPage.tsx",
    "src/pages/sicoob/GestorApprovalsPage.tsx",
    "src/pages/sicoob/GestorAuditPage.tsx",
+   "src/pages/sicoob/GestorBudgetsPage.tsx",
    "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
    "src/pages/sicoob/GestorDashboardPage.tsx",
    "src/pages/sicoob/GestorDelegationsPage.tsx",

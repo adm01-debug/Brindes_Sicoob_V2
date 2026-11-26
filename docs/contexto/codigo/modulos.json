@@ -1596,7 +1596,7 @@
    "modulo": "components/common",
    "arquivos": 29,
    "testes": 0,
-   "linhas": 4218,
+   "linhas": 4220,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -3062,13 +3062,13 @@
   },
   {
    "modulo": "components/layout",
-   "arquivos": 18,
+   "arquivos": 19,
    "testes": 0,
-   "linhas": 3348,
+   "linhas": 3419,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 17,
+   "componentes": 18,
    "hooks_locais": [
     "useA11y",
     "useAIRecommendations",
@@ -3636,7 +3636,9 @@
     ],
     "rpcs": []
    },
-   "importado_por_outros_modulos": [],
+   "importado_por_outros_modulos": [
+    "pages/sicoob"
+   ],
    "depende_de_modulos": [
     "components/access",
     "components/admin",
@@ -10929,7 +10931,7 @@
    "modulo": "lib/access",
    "arquivos": 4,
    "testes": 0,
-   "linhas": 350,
+   "linhas": 355,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -12687,7 +12689,7 @@
    "modulo": "pages/admin",
    "arquivos": 70,
    "testes": 3,
-   "linhas": 17927,
+   "linhas": 17945,
    "itens_menu": [
     "Acesso & Bots",
     "Aprovações de desconto",
@@ -14472,12 +14474,13 @@
   },
   {
    "modulo": "pages/sicoob",
-   "arquivos": 20,
+   "arquivos": 22,
    "testes": 0,
-   "linhas": 7137,
+   "linhas": 7190,
    "itens_menu": [
     "Acompanhamento",
     "Agregados e recebimentos",
+    "Alertas e avisos",
     "Analytics SICOOB",
     "Aprovações",
     "Centros de Custo",
@@ -14488,7 +14491,8 @@
     "Painel Gestor",
     "Painel PA",
     "Pedidos",
-    "Relatórios SICOOB"
+    "Relatórios SICOOB",
+    "Verbas dos PAs"
    ],
    "telas": [
     "/convite/:token",
@@ -14496,11 +14500,13 @@
     "/demonstracao",
     "/gestor",
     "/gestor/agregados",
+    "/gestor/alertas",
     "/gestor/aprovacoes",
     "/gestor/auditoria",
     "/gestor/centros-custo",
     "/gestor/convites",
     "/gestor/delegacoes",
+    "/gestor/verbas",
     "/kpis/sicoob",
     "/loja-demo",
     "/pa/verba",
@@ -14513,7 +14519,7 @@
     "/vendedor/dashboard"
    ],
    "rotas_http": [],
-   "componentes": 20,
+   "componentes": 22,
    "hooks_locais": [
     "useApprovalRequests",
     "useApprovalThreshold",
@@ -14576,6 +14582,7 @@
     "pa_budget_allocations",
     "pa_budgets",
     "pa_category_thresholds",
+    "pa_notification_settings",
     "postos_atendimento",
     "profiles",
     "sicoob_approval_delegations",
@@ -14684,6 +14691,7 @@
    ],
    "depende_de_modulos": [
     "assets/demo",
+    "components/layout",
     "components/orders",
     "components/seo",
     "components/sicoob",
@@ -14813,7 +14821,7 @@
    "modulo": "routes/config",
    "arquivos": 8,
    "testes": 0,
-   "linhas": 517,
+   "linhas": 519,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],

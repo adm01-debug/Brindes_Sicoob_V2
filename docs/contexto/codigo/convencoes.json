@@ -3,11 +3,11 @@
  "format_version": 2,
  "onde_ficam": {
   "telas": [
-   "src/pages (117)"
+   "src/pages (119)"
   ],
   "componentes": [
-   "src/components (1004)",
-   "src/pages (161)",
+   "src/components (1005)",
+   "src/pages (163)",
    "src/contexts (9)"
   ],
   "hooks": [
@@ -21,7 +21,7 @@
    "src/services (25)"
   ],
   "testes": [
-   "tests/ (704)",
+   "tests/ (706)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1177)"
+  ".tsx (1180)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)",
    "fix: link do aviso de alcada abre a fila de aprovacoes (#467)",
    "fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)",
    "fix: aba de vínculos passa a conceder o papel real em user_roles (SIC-010) (#464)",
-   "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)",
-   "feat: tela de gestão das políticas de aprovação por Singular (#461)"
+   "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

@@ -892,7 +892,7 @@
     "rolesForSicoobPath"
    ],
    "export_default": null,
-   "linhas": 69,
+   "linhas": 74,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -911,7 +911,7 @@
     "lib/navigation",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 3,
+   "coberto_por_testes": 4,
    "orfao": false
   },
   {
