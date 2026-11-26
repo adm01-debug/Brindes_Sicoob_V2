@@ -39,7 +39,6 @@ export function MfaGate({ children }: { children: ReactNode }) {
           open={enrollOpen}
           onOpenChange={setEnrollOpen}
           enforce
-          redirectOnSuccess={false}
         />
       </>
     );
