@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { TablesUpdate } from "@/integrations/supabase/types";
+import { updateSicoobUserAssignment } from "@/services/sicoob/userService";
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Erro desconhecido";
@@ -92,17 +92,13 @@ export const UserAssignmentTab = () => {
       role?: string;
       approvalThreshold?: number | null;
     }) => {
-      const updates: TablesUpdate<"profiles"> = {};
-      if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
-      if (paId !== undefined) updates.pa_id = paId;
-      if (role !== undefined) updates.role = role;
-      if (approvalThreshold !== undefined) updates.approval_threshold = approvalThreshold;
-
-      const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", userId);
-      if (error) throw error;
+      await updateSicoobUserAssignment({
+        userId,
+        cooperativaId,
+        paId,
+        role,
+        approvalThreshold,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_profiles_sicoob"] });

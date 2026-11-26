@@ -22,7 +22,7 @@ Fatia SIC. Leitura estática do repositório em 11/10/2026, sem consulta ao banc
 3. **SIC-041 (P0): um orçamento aprovado pela Singular ainda pode ser alterado antes de virar pedido.** A RLS `FOR ALL` em `quote_items` e `quote_item_personalizations`, somada ao `UPDATE` de totais em `quotes`, permite mudar itens e valores depois da aprovação.
 4. **SIC-021 (P0): a RLS de `pa_budgets` deixa a verba vulnerável.** O `gerente_pa` pode alterar a própria verba, o consumo e a alçada. As políticas `pa_budgets_select/insert/update` usam `is_gestor_compras()` sem escopo de cooperativa, então um gestor de uma cooperativa lê e altera verba de outra.
 5. **SIC-100 (P1, bloqueada): o scanner de malware não está configurado.** Sem `SICOOB_MALWARE_SCANNER_URL/TOKEN`, a ingestão responde 503 e nenhuma NF nem comprovante de entrega entra no fluxo.
-6. **SIC-010 (P1): a aba "Vínculos" de `/admin/sicoob` não concede acesso.** Ela grava em `profiles.role` os papéis `gestor_singular` e `gestor_pa`, que não existem em `app_role`, e não toca `user_roles`.
+6. **SIC-010 (P1) — resolvido:** a aba "Vínculos" de `/admin/sicoob` gravava em `profiles.role` os papéis `gestor_singular`/`gestor_pa` e não tocava `user_roles`, então não concedia acesso. Agora `updateSicoobUserAssignment` espelha o papel real (`gerente_pa`, `gestor_compras`, …) em `user_roles`.
 7. **SIC-042 (P1): `/gestor/compras` mostra números inventados.** Exibe "12 pendentes", "85% SLA", "R$ 450.000 orçado" e "R$ 380.000 aprovado" fixos, e o botão "Aprovação em Lote" não faz nada.
 8. **SIC-024 (P1): o PA não consegue pedir aumento de verba.** A RLS de `limit_increase_requests` exige o papel inexistente `gestor_pa` e não há tela nem RPC de decisão.
 9. **SIC-020/SIC-022 (P1): a verba é checada só no navegador na etapa de orçamento.** O servidor não valida nem reserva verba no envio ou na aprovação pela Singular. Também não há fechamento de competência, e um estorno pode reescrever mês fechado.
@@ -134,11 +134,13 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 ### 2. Usuários e papéis
 
 ### SIC-010  A aba "Vínculos" grava papéis inexistentes em profiles.role
-- Status: STUB/MOCK
+- Status: RESOLVIDO na aplicação (sem migration)
 - Origem: `src/pages/admin/sicoob/SicoobManagementPage.tsx:34-37,61-63` (aba Vínculos)
-- Evidência no código: `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx:182-192` oferece `gestor_singular`/`gestor_pa`, e `:94-104` faz `update` só em `profiles` (role, cooperativa, PA, `approval_threshold`). As permissões vêm de `user_roles` (`role-policy.ts:5-27`; `is_gestor_compras` em `20260502143127:111-114`).
-- O que falta: UI e RPC — atribuir papéis válidos (`gerente_pa`, `comprador_pac`, `gestor_compras`, `comprador_singular`, `vendedor`) em `user_roles` por RPC auditada, com sincronia ou eliminação de `profiles.role`.
-- Impacto no negócio: o admin acha que deu acesso, mas o usuário continua barrado ou fora do escopo certo.
+- Evidência no código (antes): `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx` oferecia `gestor_singular`/`gestor_pa` e fazia `update` só em `profiles`. As permissões vêm de `user_roles` (`role-policy.ts:5-27`; `is_gestor_compras` em `20260502143127:111-114`).
+- Correção: `src/services/sicoob/userService.ts` ganhou `APP_ROLE_BY_UI_ROLE` (traduz o vocabulário da tela para valores que existem em `app_role`, incluindo `gestor_pa → gerente_pa` e `gestor_singular → gestor_compras`), `syncUserRole` e `updateSicoobUserAssignment`, que grava a ficha em `profiles` e espelha o papel em `user_roles` (preservando `dev`) na mesma ação. A aba passou a chamar esse serviço. Não houve DDL: a policy `Supervisors can manage roles` (`FOR ALL` em `user_roles` para `is_supervisor_or_above`) já autoriza a escrita, e os triggers `trg_user_roles_audit_*` registram cada concessão.
+- Evidência de teste: `tests/services/sicoob/userService.syncUserRole.test.ts` (11 casos: mapeamento legado, `dev` preservado, papel inválido sem tocar no banco, erro de limpeza e de concessão, ordem ficha→permissão e cobertura de todo papel oferecido na aba).
+- O que falta: `profiles.role` continua guardando o vocabulário legado de propósito, porque `orderService` filtra por ele — a convergência é o escopo de SIC-011.
+- Impacto no negócio: o botão "definir papel" passou a conceder o acesso de verdade.
 - Esforço: P
 - Prioridade: P1
 
