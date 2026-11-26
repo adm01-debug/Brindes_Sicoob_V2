@@ -93,7 +93,10 @@ describe("ScrollArea", () => {
 });
 
 describe("CartHeaderButton — janela baixa", () => {
-  it("mantém o CTA fora da área rolável e limita a altura do viewport", async () => {
+  const panelWithFooter = "max-h-[min(calc(440px+15.5rem),var(--radix-popover-content-available-height))]";
+  const panelWithoutFooter = "max-h-[min(calc(440px+4.5rem),var(--radix-popover-content-available-height))]";
+
+  it("limita o painel e deixa a lista ceder altura para o rodapé", async () => {
     renderWithProviders(<CartHeaderButton />, { route: "/" });
 
     await userEvent.click(screen.getByTestId("cart-trigger"));
@@ -105,13 +108,26 @@ describe("CartHeaderButton — janela baixa", () => {
       expect(cta).toBeVisible();
     });
 
+    // O teto fica no painel, que é uma coluna flex: crescer o rodapé (aviso de
+    // alçada) reduz a lista, não corta o CTA.
+    const panel = screen.getByTestId("cart-drawer");
+    expect(panel).toHaveClass(panelWithFooter);
+    expect(panel).toHaveClass("flex-col");
+    expect(panel).toHaveClass("overflow-hidden");
+
     const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
     expect(viewport).not.toBeNull();
-    // A lista longa rola dentro do teto de altura, que acompanha o espaço
-    // realmente disponível na viewport (var do Radix)…
-    expect(viewport).toHaveClass("max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]");
+    expect(viewport?.parentElement).toHaveClass("flex");
+    expect(viewport?.parentElement).toHaveClass("min-h-0");
+    expect(viewport?.parentElement).toHaveClass("flex-1");
+    // O viewport também é item de flex: `h-full` não resolve contra a altura
+    // que o Root recebe do flex, e o viewport crescia com o conteúdo
+    // (medido em Chromium: 550px dentro de um Root de 115px).
+    expect(viewport).toHaveClass("min-h-0");
+    expect(viewport).toHaveClass("flex-1");
     // …e o rodapé com o CTA fica fora dela: nunca sai da área visível.
     expect(viewport?.contains(cta)).toBe(false);
+    expect(cta.closest(".shrink-0")).not.toBeNull();
 
     await waitFor(() => {
       expect(screen.getAllByTestId("cart-tab")).toHaveLength(3);
@@ -129,10 +145,8 @@ describe("CartHeaderButton — janela baixa", () => {
     });
     expect(screen.queryByTestId("cart-checkout-cta")).toBeNull();
 
-    const viewport = document.querySelector("[data-radix-scroll-area-viewport]");
-    expect(viewport).not.toBeNull();
-    // Sem rodapé o teto desconta só o cabeçalho; reservar 15.5rem zerava a
-    // lista e o vendedor não conseguia trocar de orçamento.
-    expect(viewport).toHaveClass("max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-4.5rem))]");
+    // Sem rodapé o teto reserva só o cabeçalho; reservar o rodapé inteiro
+    // deixava a lista curta demais para trocar de orçamento.
+    expect(screen.getByTestId("cart-drawer")).toHaveClass(panelWithoutFooter);
   });
 });
