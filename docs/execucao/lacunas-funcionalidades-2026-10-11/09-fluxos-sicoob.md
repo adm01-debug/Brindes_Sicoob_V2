@@ -207,10 +207,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P2
 
 ### SIC-017  Gestor da Singular sem acesso às configurações do próprio escopo
-- Status: PARCIAL
+- Status: RESOLVIDO no repositório
 - Origem: RLS dá ao `gestor_compras` a gestão de verbas (`20260502153425:14-25`) e a delegação da própria autoridade (`20260927203000:122-150`)
-- Evidência no código: `src/App.tsx:116-125` protege todo `/admin/*` com `<AdminRoute />`, cujo padrão é `supervisor` (`src/components/layout/AdminRoute.tsx:85`). Verbas (`/admin/verbas`, aba Verbas), Delegações e Alertas ficam só em `/admin/sicoob`. `SICOOB_ROUTE_ACCESS` (`role-policy.ts:29-46`) não tem rota de gestor para isso.
-- O que falta: UI — rotas `/gestor/verbas`, `/gestor/delegacoes`, `/gestor/alertas` restritas ao escopo da Singular.
+- Evidência no código: as três telas do escopo existem para o gestor: `/gestor/delegacoes` (`src/pages/sicoob/GestorDelegationsPage.tsx`, já entregue), `/gestor/verbas` (`src/pages/sicoob/GestorBudgetsPage.tsx`, reusa `BudgetsTab`) e `/gestor/alertas` (`src/pages/sicoob/GestorAlertsPage.tsx`, reusa `NotificationSettingsTab`, que é a aba "Alertas" de `/admin/sicoob`). Registradas em `src/routes/config/sicoob-rbac.ts` e liberadas em `SICOOB_ROUTE_ACCESS` para `MANAGERS` (`src/lib/access/role-policy.ts`), com item de menu e breadcrumb.
+- Testes que travam a regra: `tests/sicoob/route-access-scenarios.test.tsx` (libera as duas rotas para `gestor_compras`/`supervisor`/`comprador_singular` e recusa `gerente_pa`/`vendedor`/`comprador_pac`, além de exigir política para toda rota Sicoob) e `tests/lib/gestor-self-service-routes.test.ts` (menu e política não divergem).
+- O que falta: nada no repositório.
+- Não verificado: escrita real em `pa_budgets` por `gestor_compras` — a política existe na migration, mas nenhuma execução foi feita contra o banco de produção.
 - Impacto no negócio: a Singular não distribui verba entre seus PAs nem delega aprovações sem chamar a Promo.
 - Esforço: M
 - Prioridade: P1

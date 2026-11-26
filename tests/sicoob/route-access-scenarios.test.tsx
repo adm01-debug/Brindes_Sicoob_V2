@@ -27,6 +27,8 @@ describe('Cenários reais dos guards de compras', () => {
     ['/gestor','comprador_singular'], ['/gestor/agregados','gerente_pa'],
     ['/gestor/agregados','comprador_pac'], ['/gestor/convites','gestor_compras'],
     ['/gestor/convites','comprador_singular'], ['/vendedor/dashboard','vendedor'],
+    ['/gestor/verbas','gestor_compras'], ['/gestor/alertas','gestor_compras'],
+    ['/gestor/verbas','supervisor'], ['/gestor/alertas','comprador_singular'],
   ])('%s permite o papel atribuído %s', (path, role) => {
     mostrar(path, [role]);
     expect(screen.getByText('Conteúdo autorizado')).toBeInTheDocument();
@@ -35,6 +37,8 @@ describe('Cenários reais dos guards de compras', () => {
     ['/gestor/auditoria','gerente_pa'], ['/sicoob/vendas','comprador_pac'],
     ['/pa/verba','vendedor'], ['/gestor/convites','gerente_pa'],
     ['/relatorios/sicoob','agente'], ['/rota-sem-politica','dev'],
+    ['/gestor/verbas','gerente_pa'], ['/gestor/alertas','gerente_pa'],
+    ['/gestor/verbas','vendedor'], ['/gestor/alertas','comprador_pac'],
   ])('%s recusa %s mesmo com profiles.role=dev', (path, role) => {
     mostrar(path, [role]);
     expect(screen.getByText('Acesso negado')).toBeInTheDocument();
