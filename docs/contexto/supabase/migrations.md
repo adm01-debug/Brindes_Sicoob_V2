@@ -169,3 +169,7 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261122120000 | [pa_budget_full_lifecycle](migrations/20261122120000_pa_budget_full_lifecycle.sql) | 1 |
 | 20261123090000 | [notify_singular_quote_decision](migrations/20261123090000_notify_singular_quote_decision.sql) | 1 |
 | 20261124142500 | [revoke_execute_pa_budget_triggers](migrations/20261124142500_revoke_execute_pa_budget_triggers.sql) | 1 |
+| 20261125100000 | [notification_functions_contract](migrations/20261125100000_notification_functions_contract.sql) | 1 |
+| 20261125133000 | [harden_push_subscriptions_initplan](migrations/20261125133000_harden_push_subscriptions_initplan.sql) | 1 |
+| 20261125193000 | [revoke_execute_legacy_notification_helpers](migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql) | 1 |
+| 20261125230000 | [wrap_auth_calls_in_public_policies](migrations/20261125230000_wrap_auth_calls_in_public_policies.sql) | 1 |

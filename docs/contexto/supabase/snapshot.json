@@ -53361,18 +53361,20 @@
           "views": []
         },
         "comment": null,
-        "config": null,
+        "config": [
+          "search_path=public"
+        ],
         "definition": null,
-        "definition_sha": "6d82dce7b8f857da",
-        "execute_api_roles": "anon, authenticated, service_role",
-        "execute_public": true,
+        "definition_sha": "8f5b2bd18e49cb3a",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
         "is_trigger_fn": false,
         "kind": "function",
         "language": "plpgsql",
         "leakproof": false,
         "name": "cleanup_old_notifications",
         "owner": "postgres",
-        "returns": "integer",
+        "returns": "void",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -58622,8 +58624,8 @@
         "config": null,
         "definition": null,
         "definition_sha": "7e217a57d22c1414",
-        "execute_api_roles": "anon, authenticated, service_role",
-        "execute_public": true,
+        "execute_api_roles": "service_role",
+        "execute_public": false,
         "is_trigger_fn": false,
         "kind": "function",
         "language": "plpgsql",
@@ -79730,12 +79732,6 @@
       {
         "code": "secdef_mutable_search_path",
         "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
-        "object": "public.cleanup_old_notifications()",
-        "severity": "ALTA"
-      },
-      {
-        "code": "secdef_mutable_search_path",
-        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
         "object": "public.get_unread_count()",
         "severity": "ALTA"
       },
@@ -79833,12 +79829,6 @@
         "code": "policy_auth_fn_not_wrapped",
         "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
         "object": "public.admin_audit_log_y2027_m02.Admins can view audit logs",
-        "severity": "BAIXA"
-      },
-      {
-        "code": "policy_auth_fn_not_wrapped",
-        "detail": "Policy chama auth.uid()/jwt() sem `(select ...)`: é reavaliada por linha; envolva em subselect.",
-        "object": "public.push_subscriptions.Users can manage own subscriptions",
         "severity": "BAIXA"
       },
       {
@@ -80054,12 +80044,6 @@
       {
         "code": "rpc_anon_executable",
         "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
-        "object": "public.cleanup_old_notifications()",
-        "severity": "INFO"
-      },
-      {
-        "code": "rpc_anon_executable",
-        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
         "object": "public.get_public_favorite_list(_token text)",
         "severity": "INFO"
       },
@@ -80073,12 +80057,6 @@
         "code": "rpc_anon_executable",
         "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
         "object": "public.get_sicoob_invitation(p_token text)",
-        "severity": "INFO"
-      },
-      {
-        "code": "rpc_anon_executable",
-        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
-        "object": "public.is_dnd_active(p_user_id uuid)",
         "severity": "INFO"
       }
     ],
@@ -81052,6 +81030,30 @@
         "statements": 1,
         "statements_sha": "b6ab3fe4cb0d76e2",
         "version": "20261124142500"
+      },
+      {
+        "name": "notification_functions_contract",
+        "statements": 1,
+        "statements_sha": "6a9e38cabbf9c5cf",
+        "version": "20261125100000"
+      },
+      {
+        "name": "harden_push_subscriptions_initplan",
+        "statements": 1,
+        "statements_sha": "50c8f52d8e0c9f79",
+        "version": "20261125133000"
+      },
+      {
+        "name": "revoke_execute_legacy_notification_helpers",
+        "statements": 1,
+        "statements_sha": "d0233ed9df5ccfcc",
+        "version": "20261125193000"
+      },
+      {
+        "name": "wrap_auth_calls_in_public_policies",
+        "statements": 1,
+        "statements_sha": "ca6a97e0733a8700",
+        "version": "20261125230000"
       }
     ],
     "policies": [
@@ -86501,7 +86503,7 @@
         ],
         "schema": "public",
         "table": "push_subscriptions",
-        "using": "(auth.uid() = user_id)",
+        "using": "(( SELECT auth.uid() AS uid) = user_id)",
         "with_check": null
       },
       {

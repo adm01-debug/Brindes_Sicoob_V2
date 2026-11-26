@@ -56,7 +56,7 @@
 | comando | ALL |
 | tipo | PERMISSIVE |
 | roles | public |
-| USING | `(auth.uid() = user_id)` |
+| USING | `(( SELECT auth.uid() AS uid) = user_id)` |
 | WITH CHECK |  |
 
 

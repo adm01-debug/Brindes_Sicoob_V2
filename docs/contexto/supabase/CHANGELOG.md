@@ -2,6 +2,13 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-26 10:18 UTC
+
+- **functions** alterado (2): `public.cleanup_old_notifications()`, `public.is_dnd_active(p_user_id uuid)`
+- **lints** removido (4): `policy_auth_fn_not_wrapped:public.push_subscriptions.Users can manage own subscriptions`, `rpc_anon_executable:public.cleanup_old_notifications()`, `rpc_anon_executable:public.is_dnd_active(p_user_id uuid)`, `secdef_mutable_search_path:public.cleanup_old_notifications()`
+- **migrations** adicionado (4): `20261125100000_notification_functions_contract`, `20261125133000_harden_push_subscriptions_initplan`, `20261125193000_revoke_execute_legacy_notification_helpers`, `20261125230000_wrap_auth_calls_in_public_policies`
+- **policies (RLS)** alterado (1): `public.push_subscriptions.Users can manage own subscriptions`
+
 ## 2026-11-26 00:38 UTC
 
 - **functions** alterado (4): `public.audit_security_definer_acl()`, `public.cleanup_old_notifications()`, `public.is_dnd_active()`, `public.is_dnd_active(p_user_id uuid)`
