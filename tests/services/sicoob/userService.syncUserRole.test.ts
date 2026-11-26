@@ -5,18 +5,33 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 type Op =
   | { kind: "delete"; table: string; userId: string; notColumn?: string; notOperator?: string; notValue?: string }
   | { kind: "insert"; table: string; row: Record<string, unknown> }
-  | { kind: "update"; table: string; values: Record<string, unknown>; column: string; userId: string };
+  | { kind: "update"; table: string; values: Record<string, unknown>; column: string; userId: string }
+  | { kind: "select"; table: string; columns: string; column: string; userId: string };
 
 const harness = vi.hoisted(() => ({
   ops: [] as Op[],
   deleteError: null as unknown,
   insertError: null as unknown,
   updateError: null as unknown,
+  selectError: null as unknown,
+  // profiles.id -> auth.users.id; ausente = ficha órfã (sem conta)
+  authUserByProfile: {} as Record<string, string | null>,
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (table: string) => ({
+      select: (columns: string) => ({
+        eq: (column: string, value: string) => ({
+          single: () => {
+            harness.ops.push({ kind: "select", table, columns, column, userId: value });
+            if (harness.selectError) return Promise.resolve({ data: null, error: harness.selectError });
+            const mapped = Object.prototype.hasOwnProperty.call(harness.authUserByProfile, value);
+            const authUser = mapped ? harness.authUserByProfile[value] : value;
+            return Promise.resolve({ data: authUser === null ? null : { user_id: authUser }, error: null });
+          },
+        }),
+      }),
       update: (values: Record<string, unknown>) => ({
         eq: (column: string, value: string) => {
           harness.ops.push({ kind: "update", table, values, column, userId: value });
@@ -39,18 +54,28 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { APP_ROLE_BY_UI_ROLE, syncUserRole, updateSicoobUserAssignment } from "@/services/sicoob/userService";
+import {
+  APP_ROLE_BY_UI_ROLE,
+  SICOOB_UI_ROLE_CHOICES,
+  syncUserRole,
+  updateSicoobUserAssignment,
+} from "@/services/sicoob/userService";
 
 const deletes = () => harness.ops.filter((op) => op.kind === "delete") as Extract<Op, { kind: "delete" }>[];
 const inserts = () => harness.ops.filter((op) => op.kind === "insert") as Extract<Op, { kind: "insert" }>[];
+const updates = () => harness.ops.filter((op) => op.kind === "update") as Extract<Op, { kind: "update" }>[];
+
+const resetHarness = () => {
+  harness.ops = [];
+  harness.deleteError = null;
+  harness.insertError = null;
+  harness.updateError = null;
+  harness.selectError = null;
+  harness.authUserByProfile = {};
+};
 
 describe("syncUserRole — o papel da tela chega em user_roles", () => {
-  beforeEach(() => {
-    harness.ops = [];
-    harness.deleteError = null;
-    harness.insertError = null;
-    harness.updateError = null;
-  });
+  beforeEach(resetHarness);
 
   it("traduz 'gestor_pa' (vocabulário legado) para gerente_pa e grava em user_roles", async () => {
     await expect(syncUserRole("u1", "gestor_pa")).resolves.toBe("gerente_pa");
@@ -101,21 +126,63 @@ describe("syncUserRole — o papel da tela chega em user_roles", () => {
       resolve(process.cwd(), "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"),
       "utf8",
     );
-    const offered = [...source.matchAll(/mutate\(\{\s*userId:\s*user\.id,\s*role:\s*'([^']+)'/g)].map((m) => m[1]);
 
-    expect(offered.length).toBeGreaterThan(0);
-    for (const role of offered) {
-      expect(APP_ROLE_BY_UI_ROLE[role], `papel oferecido sem equivalente: ${role}`).toBeTruthy();
+    // A tela renderiza o menu a partir de SICOOB_UI_ROLE_CHOICES; se a lista
+    // deixar de ser usada, o teste falha em vez de ficar cego.
+    expect(source).toContain("SICOOB_UI_ROLE_CHOICES.map(");
+
+    expect(SICOOB_UI_ROLE_CHOICES.length).toBeGreaterThan(0);
+    for (const choice of SICOOB_UI_ROLE_CHOICES) {
+      expect(
+        APP_ROLE_BY_UI_ROLE[choice.role],
+        `papel oferecido sem equivalente: ${choice.role}`,
+      ).toBeTruthy();
     }
   });
 });
 
 describe("updateSicoobUserAssignment — ficha e permissão na mesma ação", () => {
-  beforeEach(() => {
-    harness.ops = [];
-    harness.deleteError = null;
-    harness.insertError = null;
-    harness.updateError = null;
+  beforeEach(resetHarness);
+
+  it("usa o id da conta (profiles.user_id), não o id da ficha, em user_roles", async () => {
+    harness.authUserByProfile = { "profile-1": "auth-1" };
+
+    await expect(
+      updateSicoobUserAssignment({ userId: "profile-1", role: "gestor_pa" }),
+    ).resolves.toEqual({ appRole: "gerente_pa" });
+
+    expect(updates()).toEqual([
+      {
+        kind: "update",
+        table: "profiles",
+        values: { role: "gestor_pa" },
+        column: "id",
+        userId: "profile-1",
+      },
+    ]);
+    expect(inserts()).toEqual([
+      { kind: "insert", table: "user_roles", row: { user_id: "auth-1", role: "gerente_pa" } },
+    ]);
+  });
+
+  it("ficha sem conta vinculada falha sem atualizar a ficha nem conceder papel", async () => {
+    harness.authUserByProfile = { "profile-orfa": null };
+
+    await expect(
+      updateSicoobUserAssignment({ userId: "profile-orfa", role: "supervisor" }),
+    ).rejects.toThrow(/sem conta vinculada/);
+
+    expect(updates()).toHaveLength(0);
+    expect(inserts()).toHaveLength(0);
+    expect(deletes()).toHaveLength(0);
+  });
+
+  it("propaga falha ao ler a conta vinculada", async () => {
+    harness.selectError = { message: "permission denied for table profiles" };
+    await expect(
+      updateSicoobUserAssignment({ userId: "profile-2", role: "vendedor" }),
+    ).rejects.toMatchObject({ message: "permission denied for table profiles" });
+    expect(inserts()).toHaveLength(0);
   });
 
   it("grava profiles e concede o papel real em user_roles", async () => {
@@ -123,7 +190,7 @@ describe("updateSicoobUserAssignment — ficha e permissão na mesma ação", ()
       updateSicoobUserAssignment({ userId: "u1", role: "gestor_pa", cooperativaId: "coop-1" }),
     ).resolves.toEqual({ appRole: "gerente_pa" });
 
-    expect(harness.ops[0]).toEqual({
+    expect(updates()[0]).toEqual({
       kind: "update",
       table: "profiles",
       values: { cooperativa_id: "coop-1", role: "gestor_pa" },
@@ -139,6 +206,7 @@ describe("updateSicoobUserAssignment — ficha e permissão na mesma ação", ()
     await expect(updateSicoobUserAssignment({ userId: "u2", paId: "pa-1" })).resolves.toEqual({});
     expect(deletes()).toHaveLength(0);
     expect(inserts()).toHaveLength(0);
+    expect(harness.ops.filter((op) => op.kind === "select")).toHaveLength(0);
   });
 
   it("se a ficha falhar, nenhuma permissão é concedida", async () => {

@@ -29,7 +29,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { updateSicoobUserAssignment } from "@/services/sicoob/userService";
+import {
+  PROFILE_AUTHORITY_APP_ROLES,
+  ROLE_GRANT_APP_ROLES,
+  SICOOB_UI_ROLE_CHOICES,
+  updateSicoobUserAssignment,
+} from "@/services/sicoob/userService";
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Erro desconhecido";
@@ -77,6 +82,29 @@ export const UserAssignmentTab = () => {
       return data;
     },
   });
+
+  const { data: actorRoles } = useQuery({
+    queryKey: ["current_actor_roles"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [] as string[];
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return (data ?? []).map((row) => row.role as string);
+    },
+  });
+
+  // `user_roles` só aceita escrita de admin estrito (20260429155414:33-45);
+  // cooperativa/PA/alçada e `profiles.role` aceitam admin/dev/supervisor
+  // (guard_profile_authority_fields). A tela espelha exatamente isso.
+  const actorRoleList = actorRoles ?? [];
+  const canAssignRoles = actorRoleList.some((r) => (ROLE_GRANT_APP_ROLES as string[]).includes(r));
+  const canEditScope = actorRoleList.some((r) =>
+    (PROFILE_AUTHORITY_APP_ROLES as string[]).includes(r),
+  );
 
   const updateMutation = useMutation({
     mutationFn: async ({
@@ -166,32 +194,39 @@ export const UserAssignmentTab = () => {
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                          <RoleBadge role={user.role} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56">
-                        <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_singular' })}>
-                          <RoleBadge role="gestor_singular" className="mr-2" /> Gestor Singular
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_pa' })}>
-                          <RoleBadge role="gestor_pa" className="mr-2" /> Gestor PA
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'vendedor' })}>
-                          <RoleBadge role="vendedor" className="mr-2" /> Vendedor
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'supervisor' })}>
-                          <RoleBadge role="supervisor" className="mr-2" /> Supervisor
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {canAssignRoles ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                            <RoleBadge role={user.role} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-56">
+                          <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {SICOOB_UI_ROLE_CHOICES.map((choice) => (
+                            <DropdownMenuItem
+                              key={choice.role}
+                              onClick={() => updateMutation.mutate({ userId: user.id, role: choice.role })}
+                            >
+                              <RoleBadge role={choice.role} className="mr-2" /> {choice.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <div
+                        className="flex flex-col gap-1"
+                        title="Alterar papel exige o papel admin; o banco recusa a concessão para os demais."
+                      >
+                        <RoleBadge role={user.role} />
+                        <span className="text-xs text-muted-foreground">Papel: somente admin</span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Select
+                      disabled={!canEditScope}
                       defaultValue={user.cooperativa_id || "none"}
                       onValueChange={(val) => {
                         updateMutation.mutate({
@@ -216,7 +251,7 @@ export const UserAssignmentTab = () => {
                   </TableCell>
                   <TableCell>
                     <Select
-                      disabled={!user.cooperativa_id}
+                      disabled={!canEditScope || !user.cooperativa_id}
                       defaultValue={user.pa_id || "none"}
                       onValueChange={(val) => {
                         updateMutation.mutate({
@@ -244,6 +279,7 @@ export const UserAssignmentTab = () => {
                       type="number"
                       className="w-32 h-9"
                       placeholder="Sem limite"
+                      disabled={!canEditScope}
                       defaultValue={user.approval_threshold || ""}
                       onBlur={(e) => {
                         const val = e.target.value === "" ? null : parseFloat(e.target.value);

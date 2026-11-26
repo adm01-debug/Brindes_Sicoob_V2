@@ -32,9 +32,28 @@ export const APP_ROLE_BY_UI_ROLE: Record<string, AppRole> = {
 export const PRESERVED_APP_ROLES: AppRole[] = ["dev"];
 
 /**
+ * Opções de papel oferecidas na aba de vínculos. Fonte única: a tela renderiza
+ * a partir daqui e o teste cobra que todo item tenha equivalente em
+ * `APP_ROLE_BY_UI_ROLE`.
+ */
+export const SICOOB_UI_ROLE_CHOICES = [
+  { role: "gestor_singular", label: "Gestor Singular" },
+  { role: "gestor_pa", label: "Gestor PA" },
+  { role: "vendedor", label: "Vendedor" },
+  { role: "supervisor", label: "Supervisor" },
+] as const;
+
+/** Papéis que `is_admin_strict` aceita para escrever em `user_roles`. */
+export const ROLE_GRANT_APP_ROLES: AppRole[] = ["admin"];
+
+/** Papéis aceitos como "administração" por `guard_profile_authority_fields`. */
+export const PROFILE_AUTHORITY_APP_ROLES: AppRole[] = ["admin", "dev", "supervisor"];
+
+/**
  * Espelha em `user_roles` o papel escolhido na aba de vínculos.
- * Substitui os papéis gerenciados pela tela (preservando `dev`) para que a
- * lista de permissões não acumule papéis antigos.
+ * `authUserId` é o id de `auth.users` (ou seja, `profiles.user_id`), não o id
+ * da ficha. Substitui os papéis gerenciados pela tela (preservando `dev`) para
+ * que a lista de permissões não acumule papéis antigos.
  */
 export async function syncUserRole(userId: string, uiRole: string): Promise<AppRole> {
   const appRole = APP_ROLE_BY_UI_ROLE[uiRole];
@@ -66,6 +85,24 @@ export interface SicoobUserAssignment {
 }
 
 /**
+ * `user_roles.user_id` referencia `auth.users(id)`, mas a aba de vínculos
+ * trabalha com o id da ficha em `profiles` (que tem UUID próprio, gerado por
+ * `profiles.id DEFAULT gen_random_uuid()`; `handle_new_user` grava o id da
+ * conta em `profiles.user_id`). Gravar o id da ficha violaria a FK.
+ */
+async function resolveAuthUserId(profileRowId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("id", profileRowId)
+    .single();
+  if (error) throw error;
+  const authUserId = data?.user_id;
+  if (!authUserId) throw new Error(`Perfil sem conta vinculada: ${profileRowId}`);
+  return authUserId;
+}
+
+/**
  * Aplica a edição da aba de vínculos: grava a ficha em `profiles` e, quando o
  * papel muda, espelha o equivalente real em `user_roles` — é de lá que as
  * policies e as guardas de rota leem.
@@ -81,11 +118,15 @@ export async function updateSicoobUserAssignment(
   if (role !== undefined) updates.role = role;
   if (approvalThreshold !== undefined) updates.approval_threshold = approvalThreshold;
 
+  // Resolve a conta antes de escrever: assim uma ficha órfã falha sem deixar
+  // a ficha atualizada e o acesso não concedido.
+  const authUserId = role === undefined ? null : await resolveAuthUserId(userId);
+
   const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
   if (error) throw error;
 
-  if (role === undefined) return {};
-  return { appRole: await syncUserRole(userId, role) };
+  if (authUserId === null) return {};
+  return { appRole: await syncUserRole(authUserId, role as string) };
 }
 
 export const sicoobUserService = {
