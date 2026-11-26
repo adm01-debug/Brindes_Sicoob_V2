@@ -1,6 +1,6 @@
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { GoalTracker } from "@/components/admin/GoalTracker";
 import { OrdersHeatmap } from "@/components/admin/OrdersHeatmap";
 import { ConversionFunnel } from "@/components/intelligence/ConversionFunnel";
@@ -55,7 +55,9 @@ export default function AdminBusinessDashboardPage() {
               <div>
                 <p className="text-[10px] uppercase font-bold text-muted-foreground">Ticket Médio</p>
                 <p className="text-xl font-bold font-display">
-                  R$ {(quotes.reduce((sum, q) => sum + (q.total || 0), 0) / (quotes.length || 1)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                  {quotes.length === 0
+                    ? '—'
+                    : `R$ ${(quotes.reduce((sum, q) => sum + (q.total || 0), 0) / quotes.length).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`}
                 </p>
               </div>
             </CardContent>
@@ -99,19 +101,6 @@ export default function AdminBusinessDashboardPage() {
           
           <div className="space-y-6">
             <GoalTracker />
-            <Card className="border-border/50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Insights Rápidos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-[11px] leading-relaxed">
-                  💡 <span className="font-bold">Dica de Performance:</span> Sua taxa de conversão de "Aprovado" para "Convertido" está abaixo da média. Considere automatizar o faturamento.
-                </div>
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-[11px] leading-relaxed">
-                  📈 <span className="font-bold">Tendência:</span> O horário de pico de pedidos é terça-feira às 14h. Reforce o time de suporte neste período.
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
