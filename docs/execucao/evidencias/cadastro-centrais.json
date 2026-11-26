@@ -2,12 +2,25 @@
   "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
   "migracao": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
   "banco_canonico_alterado": false,
+  "privilegios_iniciais": {
+    "SELECT": "t",
+    "INSERT": "f",
+    "UPDATE": "f",
+    "DELETE": "f"
+  },
   "regressao_reproduzida": true,
   "mensagem_antes_da_correcao": "ERROR:  permission denied for table sicoob_centrais",
   "admin": {
     "criar": true,
     "editar": true,
     "excluir": true
+  },
+  "admin_sem_mfa": {
+    "criar_bloqueado": true,
+    "editar_sem_efeito": true,
+    "excluir_sem_efeito": true,
+    "mensagem": "ERROR:  new row violates row-level security policy for table \"sicoob_centrais\"",
+    "nome_preservado": true
   },
   "bloqueios": {
     "gestor_compras": {
@@ -27,8 +40,15 @@
     "mensagem_do_banco": "DETAIL:  Key is still referenced from table \"cooperativas\".",
     "central_preservada": true
   },
+  "privilegios_apos_rollback": {
+    "SELECT": "t",
+    "INSERT": "f",
+    "UPDATE": "f",
+    "DELETE": "f"
+  },
   "reversao": {
     "sql": "DROP POLICY IF EXISTS sicoob_centrais_admin_insert ON public.sicoob_centrais;\nDROP POLICY IF EXISTS sicoob_centrais_admin_update ON public.sicoob_centrais;\nDROP POLICY IF EXISTS sicoob_centrais_admin_delete ON public.sicoob_centrais;\nREVOKE INSERT, UPDATE, DELETE ON public.sicoob_centrais FROM authenticated;",
+    "privilegios_restaurados": true,
     "escrita_bloqueada_de_novo": true,
     "mensagem": "ERROR:  permission denied for table sicoob_centrais"
   },

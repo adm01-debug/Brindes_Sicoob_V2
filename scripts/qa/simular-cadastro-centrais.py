@@ -39,10 +39,13 @@ def sql(statement, *, check=True):
     return response
 
 
-def as_actor(actor, statement, *, check=True):
+def as_actor(actor, statement, *, check=True, aal="aal2"):
+    # `aal` reproduz a claim de segundo fator do token (aal1 = senha apenas,
+    # aal2 = segundo fator concluido). Admin da tela de Centrais entra em aal2.
     return sql(
         "BEGIN; SET LOCAL ROLE authenticated; "
         f"SELECT set_config('request.jwt.claim.sub','{actor}',true); "
+        f"SELECT set_config('request.jwt.claim.aal','{aal}',true); "
         f"{statement}; COMMIT;",
         check=check,
     )
@@ -70,6 +73,18 @@ try:
     ])
     wait_for_postgres(command, CONTAINER)
     sql(FIXTURE.read_text())
+
+    def privilegios():
+        return {
+            priv: scalar(sql(
+                "SELECT has_table_privilege('authenticated','public.sicoob_centrais','"
+                + priv + "')"
+            ))
+            for priv in ("SELECT", "INSERT", "UPDATE", "DELETE")
+        }
+
+    result["privilegios_iniciais"] = privilegios()
+
     sql(f"""
       INSERT INTO public.user_roles (user_id, role) VALUES
         ('{ADMIN}', 'admin'),
@@ -114,6 +129,43 @@ try:
         ADMIN,
         f"SELECT name FROM public.sicoob_centrais WHERE id='{central_id}'",
     )) == "Central Brasilia Editada"
+
+    # Admin logado sem concluir o segundo fator (AAL1) nao grava pela API: a tela
+    # ja exige MFA e a policy precisa exigir o mesmo.
+    sem_mfa = {
+        "criar": as_actor(
+            ADMIN,
+            "INSERT INTO public.sicoob_centrais (name) VALUES ('Central Sem MFA')",
+            check=False, aal="aal1",
+        ),
+        "editar": as_actor(
+            ADMIN,
+            "WITH mov AS (UPDATE public.sicoob_centrais SET name='invadida por aal1' "
+            f"WHERE id='{central_id}' RETURNING 1) SELECT count(*) FROM mov",
+            check=False, aal="aal1",
+        ),
+        "excluir": as_actor(
+            ADMIN,
+            "WITH mov AS (DELETE FROM public.sicoob_centrais "
+            f"WHERE id='{central_id}' RETURNING 1) SELECT count(*) FROM mov",
+            check=False, aal="aal1",
+        ),
+    }
+    result["admin_sem_mfa"] = {
+        "criar_bloqueado": sem_mfa["criar"].returncode != 0,
+        "editar_sem_efeito": sem_mfa["editar"].returncode != 0
+        or scalar(sem_mfa["editar"]) == "0",
+        "excluir_sem_efeito": sem_mfa["excluir"].returncode != 0
+        or scalar(sem_mfa["excluir"]) == "0",
+        "mensagem": (sem_mfa["criar"].stderr.strip().splitlines() or [""])[-1],
+        "nome_preservado": scalar(as_actor(
+            ADMIN,
+            f"SELECT name FROM public.sicoob_centrais WHERE id='{central_id}'",
+        )) == "Central Brasilia Editada",
+    }
+    assert all(
+        v for k, v in result["admin_sem_mfa"].items() if k != "mensagem"
+    ), result["admin_sem_mfa"]
 
     # Papéis não-admin não criam, não editam e não excluem.
     bloqueios = {}
@@ -201,16 +253,22 @@ REVOKE INSERT, UPDATE, DELETE ON public.sicoob_centrais FROM authenticated;
         check=False,
     )
     motivo_desfeito = desfeito.stderr.strip().splitlines()[-1] if desfeito.stderr.strip() else ""
+    result["privilegios_apos_rollback"] = privilegios()
     result["reversao"] = {
         "sql": rollback,
+        "privilegios_restaurados": (
+            result["privilegios_apos_rollback"] == result["privilegios_iniciais"]
+        ),
         "escrita_bloqueada_de_novo": desfeito.returncode != 0 and any(
             marca in motivo_desfeito.lower()
             for marca in ("permission denied", "row-level security")
         ),
         "mensagem": motivo_desfeito,
     }
+    assert result["reversao"]["privilegios_restaurados"], result["reversao"]
     assert all(
-        v for k, v in result["reversao"].items() if k != "sql" and k != "mensagem"
+        v for k, v in result["reversao"].items()
+        if k not in ("sql", "mensagem", "privilegios_restaurados")
     ), result["reversao"]
 
     result["resultado"] = "aprovado"

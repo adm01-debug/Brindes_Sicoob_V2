@@ -11,6 +11,20 @@ AS $fn$
   SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $fn$;
 
+-- auth.jwt() do Supabase: mesma origem das settings usadas por auth.uid()/auth.role(),
+-- no formato minimo que as policies leem (sub, role e a claim de segundo fator).
+CREATE FUNCTION auth.jwt()
+RETURNS jsonb
+LANGUAGE sql
+STABLE
+AS $fn$
+  SELECT jsonb_build_object(
+    'sub', coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''), ''),
+    'role', coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), 'authenticated'),
+    'aal', coalesce(nullif(current_setting('request.jwt.claim.aal', true), ''), 'aal1')
+  )
+$fn$;
+
 CREATE FUNCTION auth.role()
 RETURNS text
 LANGUAGE sql
@@ -72,3 +86,4 @@ GRANT SELECT ON public.user_roles TO authenticated;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated;
 GRANT SELECT ON public.sicoob_centrais TO authenticated;
+GRANT EXECUTE ON FUNCTION auth.jwt() TO authenticated;

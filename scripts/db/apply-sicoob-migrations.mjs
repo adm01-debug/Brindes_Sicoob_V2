@@ -246,7 +246,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
-    sha256: "8c97249b22a60b12c9c7cbbeb4aadbf235c09251392f3d29bfce6645442fa0b6",
+    sha256: "0f6f589019a0b25b06d7d7e2d2f2f3ae3af4061504e8c926591ab85959c81e2c",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

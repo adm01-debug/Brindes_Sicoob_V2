@@ -66,9 +66,34 @@ describe('SICOOB RBAC Routes Integrity', () => {
     }
 
     expect(vazamentos).toEqual([]);
-    // Caso concreto do relato: a tela de Centrais só abre para dev|supervisor.
-    expect(hasRouteAccess('/admin/centrais', false, ['gestor_compras'])).toBe(false);
-    expect(hasRouteAccess('/admin/centrais', false, ['supervisor'])).toBe(true);
+
+    // A visibilidade do menu tem de concordar com a guarda declarada na matriz,
+    // que e o que o router aplica (AdminRoute = supervisor+, DevRoute = dev).
+    // Sem isto o teste de menu poderia passar com um menu que mente sobre a guarda.
+    const exigeGuarda = (guard: string | undefined, papel: string, isDev: boolean) => {
+      if (guard === 'AdminRoute') return hasRequiredRole([papel], 'supervisor');
+      if (guard === 'DevRoute') return isDev;
+      return true;
+    };
+    const conferidos: string[] = [];
+    for (const item of todosItens) {
+      const caminho = (item.href ?? '').split('?')[0];
+      if (!caminho.startsWith('/admin')) continue;
+      const entrada = RBAC_ROUTES.find((route) => route.path === caminho);
+      expect(entrada, `rota ${caminho} sem entrada na matriz de RBAC`).toBeDefined();
+      conferidos.push(caminho);
+      for (const papel of papeis) {
+        const isDev = papel === 'dev';
+        const visivel = hasDeclaredAccess(item, isDev, [papel])
+          && hasRouteAccess(item.href ?? '', isDev, [papel]);
+        if (!visivel) continue;
+        expect(
+          exigeGuarda(entrada?.guard, papel, isDev),
+          `${papel} enxerga ${caminho}, cuja guarda e ${entrada?.guard}`,
+        ).toBe(true);
+      }
+    }
+    expect(conferidos.length).toBeGreaterThanOrEqual(10);
   });
 
   it('todo destino do menu mobile tem rota registrada', () => {
