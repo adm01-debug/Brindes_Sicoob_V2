@@ -16,10 +16,14 @@ const harness = vi.hoisted(() => ({
   selectError: null as unknown,
   // profiles.id -> auth.users.id; ausente = ficha órfã (sem conta)
   authUserByProfile: {} as Record<string, string | null>,
+  currentActor: { id: "actor-1" } as { id: string } | null,
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
+    auth: {
+      getUser: () => Promise.resolve({ data: { user: harness.currentActor } }),
+    },
     from: (table: string) => ({
       select: (columns: string) => ({
         eq: (column: string, value: string) => ({
@@ -72,6 +76,7 @@ const resetHarness = () => {
   harness.updateError = null;
   harness.selectError = null;
   harness.authUserByProfile = {};
+  harness.currentActor = { id: "actor-1" };
 };
 
 describe("syncUserRole — o papel da tela chega em user_roles", () => {
@@ -171,6 +176,19 @@ describe("updateSicoobUserAssignment — ficha e permissão na mesma ação", ()
     await expect(
       updateSicoobUserAssignment({ userId: "profile-orfa", role: "supervisor" }),
     ).rejects.toThrow(/sem conta vinculada/);
+
+    expect(updates()).toHaveLength(0);
+    expect(inserts()).toHaveLength(0);
+    expect(deletes()).toHaveLength(0);
+  });
+
+  it("recusa trocar o próprio papel, que deixaria a conta sem acesso", async () => {
+    harness.authUserByProfile = { "profile-self": "auth-self" };
+    harness.currentActor = { id: "auth-self" };
+
+    await expect(
+      updateSicoobUserAssignment({ userId: "profile-self", role: "vendedor" }),
+    ).rejects.toThrow(/próprio papel/);
 
     expect(updates()).toHaveLength(0);
     expect(inserts()).toHaveLength(0);

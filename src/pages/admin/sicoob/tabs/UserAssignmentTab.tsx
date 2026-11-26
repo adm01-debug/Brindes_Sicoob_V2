@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Search, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import {
   DropdownMenu,
@@ -39,6 +40,58 @@ import {
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Erro desconhecido";
 
+interface SicoobRoleCellProps {
+  role: string | null;
+  canAssignRoles: boolean;
+  isSelf: boolean;
+  onSelect: (role: string) => void;
+}
+
+/**
+ * Célula de papel: o menu só aparece para admin estrito e nunca na própria
+ * linha — a troca apaga o papel antigo antes de gravar o novo, então um admin
+ * que trocasse o próprio papel ficaria sem acesso (`is_admin_strict` deixa de
+ * valer na inserção seguinte).
+ */
+const SicoobRoleCell = ({ role, canAssignRoles, isSelf, onSelect }: SicoobRoleCellProps) => {
+  if (canAssignRoles && !isSelf) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+            <RoleBadge role={role} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {SICOOB_UI_ROLE_CHOICES.map((choice) => (
+            <DropdownMenuItem key={choice.role} onClick={() => onSelect(choice.role)}>
+              <RoleBadge role={choice.role} className="mr-2" /> {choice.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-col gap-1"
+      title={
+        isSelf
+          ? "Trocar o próprio papel pode remover o seu acesso; peça a outro administrador."
+          : "Alterar papel exige o papel admin; o banco recusa a concessão para os demais."
+      }
+    >
+      <RoleBadge role={role} />
+      <span className="text-xs text-muted-foreground">
+        {isSelf ? "Seu papel — outro admin altera" : "Papel: somente admin"}
+      </span>
+    </div>
+  );
+};
+
 export const UserAssignmentTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
@@ -50,6 +103,7 @@ export const UserAssignmentTab = () => {
         .from("profiles")
         .select(`
           id,
+          user_id,
           full_name,
           email,
           role,
@@ -83,23 +137,12 @@ export const UserAssignmentTab = () => {
     },
   });
 
-  const { data: actorRoles } = useQuery({
-    queryKey: ["current_actor_roles"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [] as string[];
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      if (error) throw error;
-      return (data ?? []).map((row) => row.role as string);
-    },
-  });
-
+  const { user: actorUser, roles: actorRoles } = useAuth();
   // `user_roles` só aceita escrita de admin estrito (20260429155414:33-45);
-  // cooperativa/PA/alçada e `profiles.role` aceitam admin/dev/supervisor
-  // (guard_profile_authority_fields). A tela espelha exatamente isso.
+  // cooperativa/PA/alçada e `profiles.role` aceitam admin/supervisor
+  // (policy de UPDATE de profiles + guard_profile_authority_fields).
+  // A tela espelha exatamente isso, e o papel vem da sessão (`useAuth`), que
+  // é limpo no logout — cache por conta, sem reutilizar papel de quem saiu.
   const actorRoleList = actorRoles ?? [];
   const canAssignRoles = actorRoleList.some((r) => (ROLE_GRANT_APP_ROLES as string[]).includes(r));
   const canEditScope = actorRoleList.some((r) =>
@@ -194,35 +237,12 @@ export const UserAssignmentTab = () => {
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                   </TableCell>
                   <TableCell>
-                    {canAssignRoles ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                            <RoleBadge role={user.role} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56">
-                          <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {SICOOB_UI_ROLE_CHOICES.map((choice) => (
-                            <DropdownMenuItem
-                              key={choice.role}
-                              onClick={() => updateMutation.mutate({ userId: user.id, role: choice.role })}
-                            >
-                              <RoleBadge role={choice.role} className="mr-2" /> {choice.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <div
-                        className="flex flex-col gap-1"
-                        title="Alterar papel exige o papel admin; o banco recusa a concessão para os demais."
-                      >
-                        <RoleBadge role={user.role} />
-                        <span className="text-xs text-muted-foreground">Papel: somente admin</span>
-                      </div>
-                    )}
+                    <SicoobRoleCell
+                      role={user.role}
+                      canAssignRoles={canAssignRoles}
+                      isSelf={actorUser?.id === user.user_id}
+                      onSelect={(role) => updateMutation.mutate({ userId: user.id, role })}
+                    />
                   </TableCell>
                   <TableCell>
                     <Select

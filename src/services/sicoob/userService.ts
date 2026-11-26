@@ -46,8 +46,13 @@ export const SICOOB_UI_ROLE_CHOICES = [
 /** Papéis que `is_admin_strict` aceita para escrever em `user_roles`. */
 export const ROLE_GRANT_APP_ROLES: AppRole[] = ["admin"];
 
-/** Papéis aceitos como "administração" por `guard_profile_authority_fields`. */
-export const PROFILE_AUTHORITY_APP_ROLES: AppRole[] = ["admin", "dev", "supervisor"];
+/**
+ * Papéis que a policy de UPDATE de `profiles` aceita para editar a ficha de
+ * outra pessoa (`sicoob_merged_49a6a498d072653c_update`): admin e supervisor.
+ * `guard_profile_authority_fields` também aceita `dev`, mas ele precisa passar
+ * pela policy antes — por isso `dev` fica fora desta lista.
+ */
+export const PROFILE_AUTHORITY_APP_ROLES: AppRole[] = ["admin", "supervisor"];
 
 /**
  * Espelha em `user_roles` o papel escolhido na aba de vínculos.
@@ -102,6 +107,31 @@ async function resolveAuthUserId(profileRowId: string): Promise<string> {
   return authUserId;
 }
 
+function buildProfileUpdates(assignment: SicoobUserAssignment): TablesUpdate<"profiles"> {
+  const updates: TablesUpdate<"profiles"> = {};
+  if (assignment.cooperativaId !== undefined) updates.cooperativa_id = assignment.cooperativaId;
+  if (assignment.paId !== undefined) updates.pa_id = assignment.paId;
+  if (assignment.role !== undefined) updates.role = assignment.role;
+  if (assignment.approvalThreshold !== undefined) {
+    updates.approval_threshold = assignment.approvalThreshold;
+  }
+  return updates;
+}
+
+/**
+ * `syncUserRole` apaga o papel antigo antes de inserir o novo. Se a conta
+ * editada for a do próprio ator, ele perde o `admin` na exclusão e a inserção
+ * é recusada pela RLS — a conta fica sem papel nenhum. Trocar o próprio papel
+ * é responsabilidade de outro administrador.
+ */
+async function assertNotOwnRoleChange(authUserId: string | null): Promise<void> {
+  if (authUserId === null) return;
+  const { data: { user: actor } } = await supabase.auth.getUser();
+  if (actor?.id && actor.id === authUserId) {
+    throw new Error("Não é possível alterar o próprio papel; peça a outro administrador.");
+  }
+}
+
 /**
  * Aplica a edição da aba de vínculos: grava a ficha em `profiles` e, quando o
  * papel muda, espelha o equivalente real em `user_roles` — é de lá que as
@@ -110,19 +140,17 @@ async function resolveAuthUserId(profileRowId: string): Promise<string> {
 export async function updateSicoobUserAssignment(
   assignment: SicoobUserAssignment,
 ): Promise<{ appRole?: AppRole }> {
-  const { userId, cooperativaId, paId, role, approvalThreshold } = assignment;
-
-  const updates: TablesUpdate<"profiles"> = {};
-  if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
-  if (paId !== undefined) updates.pa_id = paId;
-  if (role !== undefined) updates.role = role;
-  if (approvalThreshold !== undefined) updates.approval_threshold = approvalThreshold;
+  const { userId, role } = assignment;
 
   // Resolve a conta antes de escrever: assim uma ficha órfã falha sem deixar
   // a ficha atualizada e o acesso não concedido.
   const authUserId = role === undefined ? null : await resolveAuthUserId(userId);
+  await assertNotOwnRoleChange(authUserId);
 
-  const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
+  const { error } = await supabase
+    .from("profiles")
+    .update(buildProfileUpdates(assignment))
+    .eq("id", userId);
   if (error) throw error;
 
   if (authUserId === null) return {};
