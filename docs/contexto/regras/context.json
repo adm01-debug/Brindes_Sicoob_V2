@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "20deb103883264c6842035b96af888652c8abf47",
+  "sha": "5321aef86290d07a6957bae5b5253828588a750d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 15:19 UTC",
-  "files_total": 5342,
-  "code_files": 3902,
-  "code_lines": 575714
+  "generated_at": "2026-11-26 16:06 UTC",
+  "files_total": 5343,
+  "code_files": 3903,
+  "code_lines": 576259
  },
  "version": "1.3.2",
- "facts_hash": "88e362c5b028777a",
+ "facts_hash": "e6be88b344d8d6b8",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1509,
+   ".ts": 1510,
    ".tsx": 1491,
    ".sql": 695,
    ".mjs": 145,
@@ -65858,7 +65858,7 @@
   {
    "module": "src/contexts",
    "files": 10,
-   "lines": 1558,
+   "lines": 1562,
    "tables": [
     "organization_members",
     "organizations"
@@ -65933,7 +65933,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48718,
+   "lines": 48719,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66379,7 +66379,7 @@
   {
    "module": "src/pages",
    "files": 197,
-   "lines": 52196,
+   "lines": 52252,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -66648,7 +66648,7 @@
   {
    "module": "src/services",
    "files": 25,
-   "lines": 3680,
+   "lines": 3869,
    "tables": [
     "cooperativas",
     "cost_centers",
@@ -66704,7 +66704,7 @@
     "orderService.ts: sicoobOrderService",
     "reorderIdempotency.ts: beginReorderIntent, completeReorderIntent",
     "statsService.ts: sicoobStatsService",
-    "userService.ts: sicoobUserService"
+    "userService.ts: APP_ROLE_BY_UI_ROLE, PRESERVED_APP_ROLES, SICOOB_UI_ROLE_CHOICES, ROLE_GRANT_APP_ROLES, PROFILE_AUTHORITY_APP_ROLES, PROFILE_SELF_AUTHORITY_APP_ROLES"
    ],
    "docs": [
     "encryption.ts: Encryption Service (App Layer) Provides AES-GCM encryption/decryption for sensitive data. Used to protect PII before storage in accordance with P2 audit gap.",
@@ -67381,8 +67381,8 @@
   },
   {
    "module": "tests",
-   "files": 723,
-   "lines": 96901,
+   "files": 724,
+   "lines": 97196,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -69105,9 +69105,9 @@
      "src/components/expert/chat/useExpertChat.ts",
      "src/components/quotes/PdfGenerationDialog.tsx",
      "src/hooks/useSimulatorPreferences.ts",
-     "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
      "src/services/admin/UserService.ts",
      "src/services/authService.ts",
+     "src/services/sicoob/userService.ts",
      "supabase/functions/manage-users/index.ts"
     ],
     "delete": [
@@ -69833,18 +69833,20 @@
      "src/services/admin/UserService.ts",
      "supabase/functions/manage-users/index.ts"
     ],
-    "ref": [
-     "supabase/functions/_shared/authorize.ts"
+    "delete": [
+     "src/services/sicoob/userService.ts",
+     "supabase/functions/sicoob-seed/index.ts"
     ],
     "insert": [
+     "src/services/sicoob/userService.ts",
      "supabase/functions/manage-users/index.ts"
+    ],
+    "ref": [
+     "supabase/functions/_shared/authorize.ts"
     ],
     "upsert": [
      "supabase/functions/rls-integration-tests/index.ts",
      "supabase/functions/sicoob-seed-qa/index.ts",
-     "supabase/functions/sicoob-seed/index.ts"
-    ],
-    "delete": [
      "supabase/functions/sicoob-seed/index.ts"
     ]
    },
@@ -75407,6 +75409,11 @@
     "values": "pending | in_transit | delivered"
    },
    {
+    "file": "src/services/sicoob/userService.ts",
+    "name": "SICOOB_UI_ROLE_CHOICES",
+    "values": "{ role: \"gestor_singular\", label: \"Gestor Singular\" }, { role: \"gestor_pa\", label: \"Gestor PA\" }, { role: \"vendedor\", label: \"Vendedor\" }, { role: \"supervisor\", label: \"Supervisor\" },"
+   },
+   {
     "file": "src/types/crm.ts",
     "name": "SocialPlatform",
     "values": "instagram | linkedin | facebook | twitter | youtube | tiktok | whatsapp | telegram | outro"
@@ -80057,6 +80064,18 @@
     "msg": "Não foi possível carregar ${label}: ${error.message || "
    },
    {
+    "file": "src/services/sicoob/userService.ts",
+    "msg": "Não é possível alterar o próprio papel; peça a outro administrador."
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "msg": "Papel sem equivalente em app_role: ${uiRole}"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "msg": "Perfil sem conta vinculada: ${profileRowId}"
+   },
+   {
     "file": "src/stores/useFavoritesStore.ts",
     "msg": "O armazenamento de favoritos contém um payload inválido"
    },
@@ -81123,10 +81142,6 @@
     "value": "vendedor"
    },
    {
-    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    "value": "undefined"
-   },
-   {
     "file": "src/services/admin/UserService.ts",
     "value": "agente"
    },
@@ -81145,6 +81160,10 @@
    {
     "file": "src/services/sicoob/userService.ts",
     "value": "gestor_singular"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "value": "undefined"
    },
    {
     "file": "src/services/sicoob/userService.ts",
@@ -83043,6 +83062,10 @@
    {
     "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
     "text": "publicar sem olhar os valores mudaria a regra que estava em vigor."
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+    "text": "conta; ficha de terceiro só para admin/supervisor. O `dev` entra apenas"
    },
    {
     "file": "src/pages/admin/telemetry/useHighLimitTelemetry.ts",
@@ -105069,30 +105092,6 @@
     "kind": "compara"
    },
    {
-    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    "field": "role",
-    "value": "gestor_singular",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    "field": "role",
-    "value": "gestor_pa",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    "field": "role",
-    "value": "vendedor",
-    "kind": "escreve"
-   },
-   {
-    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-    "field": "role",
-    "value": "supervisor",
-    "kind": "escreve"
-   },
-   {
     "file": "src/pages/admin/telemetry/useOptimizationQueue.ts",
     "field": "status",
     "value": "pending",
@@ -105769,6 +105768,30 @@
     "field": "status",
     "value": "completed",
     "kind": "filtra"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "field": "role",
+    "value": "gestor_singular",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "field": "role",
+    "value": "gestor_pa",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "field": "role",
+    "value": "vendedor",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/services/sicoob/userService.ts",
+    "field": "role",
+    "value": "supervisor",
+    "kind": "escreve"
    },
    {
     "file": "src/services/sicoob/userService.ts",
@@ -111693,6 +111716,12 @@
     "name": "formatCurrency",
     "params": "value: number",
     "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\", }).format(value);"
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+    "name": "canEditScopeOf",
+    "params": "profileUserId: string | null",
+    "body": "const isSelf = !!actorUser?.id && actorUser.id === profileUserId; return isSelf ? gates.canEditOwnProfile : gates.canEditOtherProfile;"
    },
    {
     "file": "src/pages/admin/telemetry/useOptimizationQueue.ts",
@@ -132955,6 +132984,10 @@
     "name": "encerra o carregamento com erro e permite recuperação"
    },
    {
+    "file": "tests/hooks/useUserRoles-race.test.tsx",
+    "name": "entrega admin bruto para a aba de vínculos e supervisor para a navegação"
+   },
+   {
     "file": "tests/hooks/useVideoVariantLinks.test.ts",
     "name": "useVideoVariantLinks"
    },
@@ -141985,6 +142018,86 @@
    {
     "file": "tests/services/sicoob/approvalPolicyService.test.ts",
     "name": "ignora versão encerrada da própria Singular e herda a global"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "syncUserRole — o papel da tela chega em user_roles"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "traduz "
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "traduz "
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "não regrava o papel técnico dev, que é preservado na limpeza"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "recusa papel sem equivalente em app_role sem tocar no banco"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "propaga falha da limpeza dos papéis antigos"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "propaga falha da concessão do novo papel"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "todo papel oferecido na aba de vínculos tem equivalente em app_role"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "updateSicoobUserAssignment — ficha e permissão na mesma ação"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "usa o id da conta (profiles.user_id), não o id da ficha, em user_roles"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "ficha sem conta vinculada falha sem atualizar a ficha nem conceder papel"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "recusa trocar o próprio papel, que deixaria a conta sem acesso"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "propaga falha ao ler a conta vinculada"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "grava profiles e concede o papel real em user_roles"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "sem papel, não mexe em user_roles"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "se a ficha falhar, nenhuma permissão é concedida"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "a aba de vínculos usa este serviço em vez de gravar papel por conta própria"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "sicoobActorGates — o que a sessão autoriza na aba de vínculos"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "só o admin bruto concede papel"
+   },
+   {
+    "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
+    "name": "ficha de terceiro exige admin ou supervisor; a própria ficha aceita dev"
    },
    {
     "file": "tests/sicoob/cart-routes-and-sharing.test.ts",
@@ -164505,7 +164618,7 @@
       "compara:supabase/functions/manage-users/index.ts",
       "escreve:src/components/admin/users/AccessManagement.tsx",
       "escreve:src/components/admin/users/CreateUserDialog.tsx",
-      "escreve:src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+      "escreve:src/services/sicoob/userService.ts",
       "escreve:supabase/functions/sicoob-seed-qa/index.ts",
       "filtra:src/components/admin/SellerDiscountLimitsPanel.tsx",
       "filtra:src/pages/admin/SellerDiscountLimitsAdminPage.tsx"
@@ -164525,7 +164638,7 @@
       "compara:src/pages/admin/AdminUsuariosPage.tsx",
       "compara:supabase/functions/send-transactional-email/index.ts",
       "escreve:src/components/admin/users/AccessManagement.tsx",
-      "escreve:src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+      "escreve:src/services/sicoob/userService.ts",
       "escreve:supabase/functions/sicoob-seed/index.ts"
      ],
      "string": [
@@ -164648,15 +164761,15 @@
       "compara:src/pages/admin/AdminRbacRoutesPage.tsx",
       "escreve:src/pages/OrderAuditPage.tsx"
      ],
-     "gestor_singular": [
-      "compara:src/services/sicoob/orderService.ts",
-      "compara:src/services/sicoob/userService.ts",
-      "escreve:src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
-     ],
      "gestor_pa": [
       "compara:src/services/sicoob/orderService.ts",
       "compara:src/services/sicoob/userService.ts",
-      "escreve:src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
+      "escreve:src/services/sicoob/userService.ts"
+     ],
+     "gestor_singular": [
+      "compara:src/services/sicoob/orderService.ts",
+      "compara:src/services/sicoob/userService.ts",
+      "escreve:src/services/sicoob/userService.ts"
      ],
      "system": [
       "escreve:supabase/functions/ai-recommendations/index.ts",
@@ -207793,7 +207906,7 @@
   },
   "src/contexts/AuthContext.tsx": {
    "path": "src/contexts/AuthContext.tsx",
-   "lines": 507,
+   "lines": 511,
    "exports": [
     "const AuthProvider",
     "function useAuth"
@@ -216141,7 +216254,7 @@
   },
   "src/hooks/auth/useUserRoles.ts": {
    "path": "src/hooks/auth/useUserRoles.ts",
-   "lines": 65,
+   "lines": 66,
    "exports": [
     "function useUserRoles"
    ],
@@ -227331,7 +227444,7 @@
   },
   "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-   "lines": 278,
+   "lines": 334,
    "exports": [
     "const UserAssignmentTab"
    ],
@@ -227347,10 +227460,6 @@
     {
      "table": "postos_atendimento",
      "op": "select"
-    },
-    {
-     "table": "profiles",
-     "op": "update"
     }
    ],
    "table_cols": {
@@ -227361,36 +227470,22 @@
      "full_name",
      "id",
      "pa_id",
-     "role"
+     "role",
+     "user_id"
     ]
    },
    "errors": [
     "Erro ao atualizar: ${getErrorMessage(error)}"
    ],
-   "status_values": [
-    {
-     "field": "role",
-     "value": "gestor_singular",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "gestor_pa",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "vendedor",
-     "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "supervisor",
-     "kind": "escreve"
-    }
+   "rule_comments": [
+    "conta; ficha de terceiro só para admin/supervisor. O `dev` entra apenas"
    ],
-   "role_checks": [
-    "undefined"
+   "calc_fns": [
+    {
+     "name": "canEditScopeOf",
+     "params": "profileUserId: string | null",
+     "body": "const isSelf = !!actorUser?.id && actorUser.id === profileUserId; return isSelf ? gates.canEditOwnProfile : gates.canEditOtherProfile;"
+    }
    ]
   },
   "src/pages/admin/telemetry/TelemetrySkeletons.tsx": {
@@ -231577,22 +231672,84 @@
   },
   "src/services/sicoob/userService.ts": {
    "path": "src/services/sicoob/userService.ts",
-   "lines": 42,
+   "lines": 231,
    "exports": [
+    "const APP_ROLE_BY_UI_ROLE",
+    "const PRESERVED_APP_ROLES",
+    "const SICOOB_UI_ROLE_CHOICES",
+    "const ROLE_GRANT_APP_ROLES",
+    "const PROFILE_AUTHORITY_APP_ROLES",
+    "const PROFILE_SELF_AUTHORITY_APP_ROLES",
+    "interface SicoobActorGates",
+    "function sicoobActorGates",
+    "function syncUserRole",
+    "interface SicoobUserAssignment",
+    "function updateSicoobUserAssignment",
     "const sicoobUserService"
    ],
    "tables": [
+    {
+     "table": "user_roles",
+     "op": "delete"
+    },
+    {
+     "table": "user_roles",
+     "op": "insert"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
+    },
+    {
+     "table": "profiles",
+     "op": "update"
+    },
     {
      "table": "profiles",
      "op": "select"
     }
    ],
    "table_cols": {
+    "user_roles": [
+     "user_id"
+    ],
     "profiles": [
-     "id"
+     "id",
+     "user_id"
     ]
    },
+   "errors": [
+    "Não é possível alterar o próprio papel; peça a outro administrador.",
+    "Papel sem equivalente em app_role: ${uiRole}",
+    "Perfil sem conta vinculada: ${profileRowId}"
+   ],
+   "enums": [
+    {
+     "name": "SICOOB_UI_ROLE_CHOICES",
+     "values": "{ role: \"gestor_singular\", label: \"Gestor Singular\" }, { role: \"gestor_pa\", label: \"Gestor PA\" }, { role: \"vendedor\", label: \"Vendedor\" }, { role: \"supervisor\", label: \"Supervisor\" },"
+    }
+   ],
    "status_values": [
+    {
+     "field": "role",
+     "value": "gestor_singular",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "gestor_pa",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "vendedor",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "supervisor",
+     "kind": "escreve"
+    },
     {
      "field": "role",
      "value": "gestor_pa",
@@ -231612,6 +231769,7 @@
    "role_checks": [
     "gestor_pa",
     "gestor_singular",
+    "undefined",
     "vendedor"
    ]
   },
@@ -254534,13 +254692,14 @@
   },
   "tests/hooks/useUserRoles-race.test.tsx": {
    "path": "tests/hooks/useUserRoles-race.test.tsx",
-   "lines": 46,
+   "lines": 59,
    "is_test": true,
    "tests": [
     "Carregamento de papéis por sessão",
     "não restaura privilégio quando uma consulta antiga termina após sair",
     "mantém os papéis da nova sessão quando a resposta antiga chega por último",
-    "encerra o carregamento com erro e permite recuperação"
+    "encerra o carregamento com erro e permite recuperação",
+    "entrega admin bruto para a aba de vínculos e supervisor para a navegação"
    ]
   },
   "tests/hooks/useVideoVariantLinks.test.ts": {
@@ -259991,6 +260150,33 @@
     "ignora versão encerrada da própria Singular e herda a global"
    ]
   },
+  "tests/services/sicoob/userService.syncUserRole.test.ts": {
+   "path": "tests/services/sicoob/userService.syncUserRole.test.ts",
+   "lines": 282,
+   "is_test": true,
+   "tests": [
+    "syncUserRole — o papel da tela chega em user_roles",
+    "traduz ",
+    "traduz ",
+    "não regrava o papel técnico dev, que é preservado na limpeza",
+    "recusa papel sem equivalente em app_role sem tocar no banco",
+    "propaga falha da limpeza dos papéis antigos",
+    "propaga falha da concessão do novo papel",
+    "todo papel oferecido na aba de vínculos tem equivalente em app_role",
+    "updateSicoobUserAssignment — ficha e permissão na mesma ação",
+    "usa o id da conta (profiles.user_id), não o id da ficha, em user_roles",
+    "ficha sem conta vinculada falha sem atualizar a ficha nem conceder papel",
+    "recusa trocar o próprio papel, que deixaria a conta sem acesso",
+    "propaga falha ao ler a conta vinculada",
+    "grava profiles e concede o papel real em user_roles",
+    "sem papel, não mexe em user_roles",
+    "se a ficha falhar, nenhuma permissão é concedida",
+    "a aba de vínculos usa este serviço em vez de gravar papel por conta própria",
+    "sicoobActorGates — o que a sessão autoriza na aba de vínculos",
+    "só o admin bruto concede papel",
+    "ficha de terceiro exige admin ou supervisor; a própria ficha aceita dev"
+   ]
+  },
   "tests/sicoob/cart-routes-and-sharing.test.ts": {
    "path": "tests/sicoob/cart-routes-and-sharing.test.ts",
    "lines": 77,
@@ -260969,10 +261155,27 @@
   }
  },
  "git": {
-  "sha": "20deb103883264c6842035b96af888652c8abf47",
+  "sha": "5321aef86290d07a6957bae5b5253828588a750d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "5321aef",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: aba de vínculos passa a conceder o papel real em user_roles (SIC-010) (#464)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+     "src/contexts/AuthContext.tsx",
+     "src/hooks/auth/useUserRoles.ts",
+     "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+     "src/services/sicoob/userService.ts",
+     "tests/hooks/useUserRoles-race.test.tsx",
+     "tests/services/sicoob/userService.syncUserRole.test.ts"
+    ]
+   },
    {
     "sha": "20deb10",
     "date": "2026-11-26",
@@ -261322,15 +261525,6 @@
      "docs/RECUPERACAO/prs.md",
      "docs/RECUPERACAO/reauditoria.md"
     ]
-   },
-   {
-    "sha": "617dc9f",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "docs: re-auditoria dos descartes medida PR por PR (#430)",
-    "files": [
-     "docs/RECUPERACAO/reauditoria.md"
-    ]
    }
   ],
   "hot_files": [
@@ -261341,6 +261535,18 @@
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     5
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    2
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    2
+   ],
+   [
+    "src/contexts/AuthContext.tsx",
+    2
    ],
    [
     "src/pages/QuoteBuilderPage.tsx",
@@ -261363,19 +261569,31 @@
     2
    ],
    [
-    "docs/RECUPERACAO/reauditoria.md",
-    2
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+    1
+   ],
+   [
+    "src/hooks/auth/useUserRoles.ts",
+    1
+   ],
+   [
+    "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+    1
+   ],
+   [
+    "src/services/sicoob/userService.ts",
+    1
+   ],
+   [
+    "tests/hooks/useUserRoles-race.test.tsx",
+    1
+   ],
+   [
+    "tests/services/sicoob/userService.syncUserRole.test.ts",
+    1
    ],
    [
     "tests/admin/route-guards-ref-warning.test.tsx",
-    1
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-    1
-   ],
-   [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     1
    ],
    [
@@ -261388,30 +261606,6 @@
    ],
    [
     "src/services/sicoob/approvalPolicyService.ts",
-    1
-   ],
-   [
-    "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
-    1
-   ],
-   [
-    "tests/services/sicoob/approvalPolicyService.test.ts",
-    1
-   ],
-   [
-    "supabase/migrations/20261125133000_harden_push_subscriptions_initplan.sql",
-    1
-   ],
-   [
-    "tests/scenarios/push-subscriptions-initplan.scenario.mjs",
-    1
-   ],
-   [
-    "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
-    1
-   ],
-   [
-    "src/components/pricing/PrecoIndisponivelAlert.tsx",
     1
    ]
   ]

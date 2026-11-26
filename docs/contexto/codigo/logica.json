@@ -6593,12 +6593,24 @@
    "arquivo": "src/services/sicoob/userService.ts",
    "camada": "services",
    "exports": [
-    "sicoobUserService"
+    "APP_ROLE_BY_UI_ROLE",
+    "PRESERVED_APP_ROLES",
+    "PROFILE_AUTHORITY_APP_ROLES",
+    "PROFILE_SELF_AUTHORITY_APP_ROLES",
+    "ROLE_GRANT_APP_ROLES",
+    "SICOOB_UI_ROLE_CHOICES",
+    "SicoobActorGates",
+    "SicoobUserAssignment",
+    "sicoobActorGates",
+    "sicoobUserService",
+    "syncUserRole",
+    "updateSicoobUserAssignment"
    ],
    "export_default": null,
-   "linhas": 42,
+   "linhas": 231,
    "tabelas": [
-    "profiles"
+    "profiles",
+    "user_roles"
    ],
    "rpcs": [],
    "edges": [],
@@ -6609,12 +6621,15 @@
    "papeis": [
     "gestor_pa",
     "gestor_singular",
+    "supervisor",
     "vendedor"
    ],
-   "usado_por": 0,
-   "usado_por_modulos": [],
-   "coberto_por_testes": 0,
-   "orfao": true
+   "usado_por": 1,
+   "usado_por_modulos": [
+    "pages/admin"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
   },
   {
    "arquivo": "src/stores/oracleVoiceBridge.ts",

@@ -8021,8 +8021,7 @@
   "src/hooks/auth/useUserRoles.ts": [
    "src/lib/access/role-policy.ts",
    "src/lib/auth/auth-debug.ts",
-   "src/services/authService.ts",
-   "src/types/users.ts"
+   "src/services/authService.ts"
   ],
   "src/hooks/bi/useBIDossierExport.ts": [
    "src/contexts/AuthContext.tsx",
@@ -11475,8 +11474,9 @@
    "src/components/ui/input.tsx",
    "src/components/ui/select.tsx",
    "src/components/ui/table.tsx",
+   "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
-   "src/integrations/supabase/types.ts"
+   "src/services/sicoob/userService.ts"
   ],
   "src/pages/admin/telemetry/TelemetrySkeletons.tsx": [
    "src/components/ui/card.tsx",
@@ -12258,7 +12258,8 @@
    "src/lib/sicoob/paBudgetState.ts"
   ],
   "src/services/sicoob/userService.ts": [
-   "src/integrations/supabase/client.ts"
+   "src/integrations/supabase/client.ts",
+   "src/integrations/supabase/types.ts"
   ],
   "src/stores/useFavoritesStore.ts": [
    "src/lib/logger.ts",

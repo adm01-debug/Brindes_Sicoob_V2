@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "nos": 2271,
- "arestas": 9238,
+ "arestas": 9239,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -34,7 +34,7 @@
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
-   "importado_por": 168
+   "importado_por": 169
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
@@ -425,7 +425,6 @@
   "src/lib/storage-resilience.ts",
   "src/lib/system/dev-infra-messages.ts",
   "src/services/encryption.ts",
-  "src/services/sicoob/userService.ts",
   "src/utils/formatters.ts",
   "src/utils/quote-data-mapper.ts",
   "src/utils/quotePdfUtils.ts",
@@ -465,7 +464,7 @@
   {
    "modulo": "types",
    "depende_de": 6,
-   "importado_por": 46
+   "importado_por": 45
   },
   {
    "modulo": "utils",

@@ -15879,7 +15879,7 @@
     "AuthProvider"
    ],
    "export_default": null,
-   "linhas": 507,
+   "linhas": 511,
    "dominio": "contexts",
    "hooks_locais": [
     "useAuth",
@@ -15891,7 +15891,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 157,
+   "usado_por": 158,
    "orfao": false
   },
   {
@@ -16960,9 +16960,11 @@
     "UserAssignmentTab"
    ],
    "export_default": null,
-   "linhas": 278,
+   "linhas": 334,
    "dominio": "pages/admin",
-   "hooks_locais": [],
+   "hooks_locais": [
+    "useAuth"
+   ],
    "tabelas": [
     "cooperativas",
     "postos_atendimento",

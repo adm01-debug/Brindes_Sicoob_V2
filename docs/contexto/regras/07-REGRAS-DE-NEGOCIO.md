@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `20deb10388` · branch `main` · 2026-11-26 15:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `5321aef862` · branch `main` · 2026-11-26 16:06 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1260,8 +1260,8 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `dev` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>`src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx`<br>… +5 |
 | `role` | `gerente_pa` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
 | `role` | `gestor_compras` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
-| `role` | `gestor_pa` | compara, escreve | `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`<br>`src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
-| `role` | `gestor_singular` | compara, escreve | `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`<br>`src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
+| `role` | `gestor_pa` | compara, escreve | `src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
+| `role` | `gestor_singular` | compara, escreve | `src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
 | `role` | `manager` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useQuoteTemplates.ts`<br>`src/lib/access/role-policy.ts` |
 | `role` | `owner` | escreve | `src/contexts/OrganizationContext.tsx` |
 | `role` | `public` | compara, escreve | `src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx` |
@@ -1273,7 +1273,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `supervisor` | compara, escreve | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>… +5 |
 | `role` | `system` | escreve | `supabase/functions/ai-recommendations/index.ts`<br>`supabase/functions/bi-copilot/index.ts`<br>`supabase/functions/comparison-ai-advisor/index.ts`<br>`supabase/functions/expert-chat/index.ts`<br>`supabase/functions/generate-ad-prompt/index.ts`<br>… +8 |
 | `role` | `user` | compara, escreve | `src/components/ai/AIChat.tsx`<br>`src/components/bi/BIAiCopilot.tsx`<br>`src/components/expert/chat/ChatMessageList.tsx`<br>`src/components/expert/chat/useExpertChat.ts`<br>`src/hooks/useExpertConversations.tsx`<br>… +19 |
-| `role` | `vendedor` | compara, escreve, filtra | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/SellerDiscountLimitsPanel.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/CreateUserDialog.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>… +9 |
+| `role` | `vendedor` | compara, escreve, filtra | `src/components/access/DevAccessDeniedPage.tsx`<br>`src/components/admin/SellerDiscountLimitsPanel.tsx`<br>`src/components/admin/users/AccessManagement.tsx`<br>`src/components/admin/users/CreateUserDialog.tsx`<br>`src/components/admin/users/PromotionDialog.tsx`<br>… +8 |
 | `status` | `Achado` | compara, escreve | `src/pages/admin/AuditEvidenceDashboard.tsx` |
 | `status` | `Pendente` | compara, escreve | `src/components/search/GlobalSearch.tsx`<br>`src/pages/admin/AuditEvidenceDashboard.tsx` |
 | `status` | `SUBSCRIBED` | compara | `src/hooks/useRealtimeSync.ts` |
@@ -1531,6 +1531,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | MagicUpCampaignStatus | draft \| review \| sent \| approved \| rejected | `src/pages/magic-up/magicUpStrategy.ts` |
 | SicoobDocumentPurpose | invoice_pdf \| invoice_xml \| delivery_proof | `src/services/sicoob/documentIngestService.ts` |
 | SicoobLogisticsStatus | pending \| in_transit \| delivered | `src/services/sicoob/logisticsReportService.ts` |
+| SICOOB_UI_ROLE_CHOICES | { role: "gestor_singular", label: "Gestor Singular" }, { role: "gestor_pa", label: "Gestor PA" }, { role: "vendedor", label: "Vendedor" }, { role: "supervisor", label: "Supervisor" }, | `src/services/sicoob/userService.ts` |
 | SocialPlatform | instagram \| linkedin \| facebook \| twitter \| youtube \| tiktok \| whatsapp \| telegram \| outro | `src/types/crm.ts` |
 | AreaShape | rectangle \| circle \| oval \| triangle \| custom | `src/types/gravacao.ts` |
 | OrderStatus | rascunho \| enviado_gestor \| aprovado_gestor \| enviado_vendedor \| em_producao \| em_separacao \| em_transporte \| entregue \| concluido \| cancelado | `src/types/orders.ts` |
@@ -3998,6 +3999,10 @@ _nenhum item encontrado_
   ```
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", }).format(value);
   ```
+- **canEditScopeOf(profileUserId: string | null)** — `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`
+  ```
+  const isSelf = !!actorUser?.id && actorUser.id === profileUserId; return isSelf ? gates.canEditOwnProfile : gates.canEditOtherProfile;
+  ```
 - **invalidate()** — `src/pages/admin/telemetry/useOptimizationQueue.ts`
   ```
   queryClient.invalidateQueries({ queryKey: QUEUE_KEY });
@@ -5656,7 +5661,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1027 linhas — lista completa em `context.json` | |
+| … +1030 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5708,12 +5713,12 @@ _nenhum item encontrado_
 | `dev` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `supervisor` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `vendedor` | `src/pages/admin/AdminUsuariosPage.tsx` |
-| `undefined` | `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx` |
 | `agente` | `src/services/admin/UserService.ts` |
 | `gestor_pa` | `src/services/sicoob/orderService.ts` |
 | `gestor_singular` | `src/services/sicoob/orderService.ts` |
 | `gestor_pa` | `src/services/sicoob/userService.ts` |
 | `gestor_singular` | `src/services/sicoob/userService.ts` |
+| `undefined` | `src/services/sicoob/userService.ts` |
 | `vendedor` | `src/services/sicoob/userService.ts` |
 | `null` | `supabase/functions/_shared/authorize.ts` |
 | `admin` | `supabase/functions/block-ip-temporarily/index.ts` |
@@ -5761,7 +5766,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7407 testes em 765 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7428 testes em 766 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5850,6 +5855,7 @@ _nenhum item encontrado_
 | `tests/lib/rbac-permissions.test.ts` | 20 | RBAC Permission Matrix · admin · has access to everything · manager … |
 | `tests/pages/QuoteBuilder.test.ts` | 20 | QuoteBuilder — Item Calculations · calculates single item total · calculates quote subtotal · handles empty items list … |
 | `tests/scripts/db-scripts-hardening.test.ts` | 20 | drift do ledger — nomes de arquivo · .sql fora do padrão vira pendência em vez de sumir · arquivo no padrão e alinhado ao ledger continua sem pendência · classificador do backlog de migrations — operações destrutivas … |
+| `tests/services/sicoob/userService.syncUserRole.test.ts` | 20 | syncUserRole — o papel da tela chega em user_roles · traduz  · traduz  · não regrava o papel técnico dev, que é preservado na limpeza … |
 | `tests/types/quote-types.test.ts` | 20 | QuoteHistoryEntry shape · has all required fields · allows nullable fields · metadata defaults to empty object … |
 | `tests/components/ReplenishmentToolbar.test.tsx` | 19 | ReplenishmentToolbar · renders title and count badge · shows loading state when isLoading with zero total · shows filtered/total when hasActiveFilters … |
 | `tests/components/products/ProductCard.test.tsx` | 19 | ProductCard · renders product name and price · renders with favorite state · calls onClick when clicked … |
@@ -6064,8 +6070,7 @@ _nenhum item encontrado_
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
-| `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
-| … +465 linhas — lista completa em `context.json` | | |
+| … +466 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6555,4 +6560,4 @@ _nenhum item encontrado_
 | o prewarm dispara no máximo 1x por sessão de browser — ideal para gatilho | `src/lib/external-db-prewarm.ts` |
 | (apenas 2 invokes totais: 1 batch das 6 tabelas + 1 ping CRM) | `src/lib/external-db-prewarm.ts` |
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
-| … +343 linhas — lista completa em `context.json` | |
+| … +344 linhas — lista completa em `context.json` | |

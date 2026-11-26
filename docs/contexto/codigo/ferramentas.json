@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (3002)",
+   "TypeScript (3003)",
    "Markdown (974)",
    "SQL (695)",
    "JSON (295)",
@@ -1943,7 +1943,7 @@
    },
    {
     "papel": "supervisor",
-    "ocorrencias": 30
+    "ocorrencias": 31
    },
    {
     "papel": "user",
@@ -2042,6 +2042,10 @@
     "ocorrencias": 4
    },
    {
+    "papel": "gerente_pa",
+    "ocorrencias": 4
+   },
+   {
     "papel": "listbox",
     "ocorrencias": 4
    },
@@ -2050,15 +2054,11 @@
     "ocorrencias": 4
    },
    {
-    "papel": "gerente_pa",
+    "papel": "gestor_compras",
     "ocorrencias": 3
    },
    {
     "papel": "gestor_pa",
-    "ocorrencias": 3
-   },
-   {
-    "papel": "gestor_singular",
     "ocorrencias": 3
    },
    {
@@ -2086,7 +2086,7 @@
     "ocorrencias": 2
    },
    {
-    "papel": "gestor_compras",
+    "papel": "gestor_singular",
     "ocorrencias": 2
    },
    {

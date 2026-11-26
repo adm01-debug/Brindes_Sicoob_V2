@@ -1681,7 +1681,7 @@
    "hooks_exportados": [
     "useAuth"
    ],
-   "linhas": 507,
+   "linhas": 511,
    "dominio": "contexts",
    "tabelas": [],
    "rpcs": [
@@ -1702,7 +1702,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 157,
+   "usado_por": 158,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -2155,13 +2155,14 @@
    "hooks_exportados": [
     "useUserRoles"
    ],
-   "linhas": 65,
+   "linhas": 66,
    "dominio": "hooks/auth",
    "tabelas": [],
    "rpcs": [],
    "edges": [],
    "hooks_internos": [
     "useCallback",
+    "useMemo",
     "useRef",
     "useState"
    ],

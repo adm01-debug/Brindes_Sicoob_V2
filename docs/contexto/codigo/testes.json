@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 954,
+ "total": 955,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 720
+  "unit": 721
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 701
+   "arquivos": 702
   },
   {
    "padrao": "e2e/",
@@ -5599,11 +5599,11 @@
   {
    "arquivo": "tests/hooks/useUserRoles-race.test.tsx",
    "tipo": "unit",
-   "linhas": 46,
+   "linhas": 59,
    "testa": [
     "src/hooks/auth/useUserRoles.ts"
    ],
-   "casos": 3
+   "casos": 4
   },
   {
    "arquivo": "tests/hooks/useVideoVariantLinks.test.ts",
@@ -7748,6 +7748,15 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/services/sicoob/userService.syncUserRole.test.ts",
+   "tipo": "unit",
+   "linhas": 282,
+   "testa": [
+    "src/services/sicoob/userService.ts"
+   ],
+   "casos": 17
+  },
+  {
    "arquivo": "tests/services/sicoobApprovalService.test.ts",
    "tipo": "unit",
    "linhas": 39,
@@ -8837,6 +8846,7 @@
   "src/services/sicoob/fulfillmentService.ts": 1,
   "src/services/sicoob/logisticsReportService.ts": 1,
   "src/services/sicoob/orderService.ts": 1,
+  "src/services/sicoob/userService.ts": 1,
   "src/stores/useComparisonStore.ts": 1,
   "src/stores/useConfirmDialogStore.ts": 5,
   "src/stores/useFavoritesStore.ts": 3,

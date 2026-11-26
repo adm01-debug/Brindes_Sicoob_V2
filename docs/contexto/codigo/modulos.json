@@ -7067,7 +7067,7 @@
    "modulo": "contexts",
    "arquivos": 10,
    "testes": 0,
-   "linhas": 1558,
+   "linhas": 1562,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8548,7 +8548,7 @@
    "modulo": "hooks/auth",
    "arquivos": 3,
    "testes": 0,
-   "linhas": 128,
+   "linhas": 129,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8604,8 +8604,7 @@
     "contexts",
     "lib/access",
     "lib/auth",
-    "services",
-    "types"
+    "services"
    ],
    "pacotes_externos": []
   },
@@ -12704,7 +12703,7 @@
    "modulo": "pages/admin",
    "arquivos": 70,
    "testes": 3,
-   "linhas": 17871,
+   "linhas": 17927,
    "itens_menu": [
     "Acesso & Bots",
     "Aprovações de desconto",
@@ -15961,7 +15960,7 @@
    "modulo": "services/sicoob",
    "arquivos": 14,
    "testes": 0,
-   "linhas": 1558,
+   "linhas": 1747,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15987,7 +15986,8 @@
     "sicoob_order_item_logs",
     "sicoob_order_items",
     "sicoob_order_shipments",
-    "sicoob_orders"
+    "sicoob_orders",
+    "user_roles"
    ],
    "rpcs": [
     "approve_sicoob_order",
@@ -16015,6 +16015,7 @@
    "papeis": [
     "gestor_pa",
     "gestor_singular",
+    "supervisor",
     "vendedor"
    ],
    "diretos": {
@@ -16037,7 +16038,8 @@
      "sicoob_order_item_logs",
      "sicoob_order_items",
      "sicoob_order_shipments",
-     "sicoob_orders"
+     "sicoob_orders",
+     "user_roles"
     ],
     "rpcs": [
      "approve_sicoob_order",
@@ -16296,7 +16298,6 @@
     "contexts",
     "data",
     "hooks",
-    "hooks/auth",
     "hooks/bi",
     "hooks/gravacao",
     "hooks/orders",
