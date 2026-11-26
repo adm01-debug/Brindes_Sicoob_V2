@@ -78,6 +78,7 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/cadastros", label: "Cadastros", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/newsletter", label: "Newsletter", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/campanhas", label: "Campanhas", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/centrais", label: "Centrais", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "sicoob_centrais_admin_* (is_admin)", category: "admin" },
   { path: "/admin/singulares", label: "Singulares", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/pas", label: "Postos de Atendimento", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/cooperativas", label: "Cooperativas", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },

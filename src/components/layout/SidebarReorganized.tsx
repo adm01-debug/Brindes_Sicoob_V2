@@ -43,6 +43,7 @@ import {
   Bell,
   ClipboardCheck,
   Building,
+  Globe,
   Megaphone,
   Mail,
   Wallet,
@@ -275,6 +276,7 @@ export const navGroups: NavGroup[] = [
         href: '',
         adminOnly: true,
         children: [
+          { icon: Globe, label: 'Centrais', href: '/admin/centrais' },
           { icon: Landmark, label: 'Singulares', href: '/admin/singulares' },
           { icon: Building, label: 'Postos de Atendimento', href: '/admin/pas' },
           { icon: Users, label: 'Parceiros', href: '/admin/cooperativas' },

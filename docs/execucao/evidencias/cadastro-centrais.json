@@ -1,0 +1,26 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
+  "migracao": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+  "banco_canonico_alterado": false,
+  "regressao_reproduzida": true,
+  "mensagem_antes_da_correcao": "ERROR:  permission denied for table sicoob_centrais",
+  "admin": {
+    "criar": true,
+    "editar": true,
+    "excluir": true
+  },
+  "bloqueios": {
+    "gestor_compras": {
+      "criar_bloqueado": true,
+      "editar_sem_efeito": true,
+      "excluir_sem_efeito": true
+    },
+    "comprador_pac": {
+      "criar_bloqueado": true,
+      "editar_sem_efeito": true,
+      "excluir_sem_efeito": true
+    }
+  },
+  "leitura_autenticada": true,
+  "resultado": "aprovado"
+}
