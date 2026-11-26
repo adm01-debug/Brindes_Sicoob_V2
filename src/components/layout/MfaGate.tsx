@@ -35,7 +35,12 @@ export function MfaGate({ children }: { children: ReactNode }) {
     return (
       <>
         <GateLoader />
-        <MfaEnrollmentDialog open={enrollOpen} onOpenChange={setEnrollOpen} enforce />
+        <MfaEnrollmentDialog
+          open={enrollOpen}
+          onOpenChange={setEnrollOpen}
+          enforce
+          redirectOnSuccess={false}
+        />
       </>
     );
   }
