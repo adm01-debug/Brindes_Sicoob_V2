@@ -122,6 +122,24 @@ describe("CartApprovalThresholdNotice", () => {
     vi.useRealTimers();
   });
 
+  it("não diz que falta verba quando o mês do carrinho tem linha sem alçada", async () => {
+    freezeTime();
+    mocks.budgets = [
+      { ano: 2026, mes: 11, limite_alcada: null },
+      { ano: 2026, mes: 12, limite_alcada: 5000 },
+    ];
+
+    renderNotice([{ product_price: 300, quantity: 1 }]);
+
+    const notice = await screen.findByTestId("cart-approval-threshold");
+    expect(notice.getAttribute("data-state")).toBe("future-only");
+    expect(screen.getByText(/a verba de 11\/2026 está cadastrada, mas sem alçada definida/)).toBeTruthy();
+    // O painel de verbas mostra a linha de 11/2026: dizer "não para o mês do
+    // carrinho" contradiz a tela do administrativo e esconde o que falta.
+    expect(screen.queryByText(/mas não para o mês do carrinho/)).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("não acusa alçada ausente quando nenhuma linha de verba está visível", async () => {
     freezeTime();
     mocks.budgets = [];

@@ -64,11 +64,29 @@ function carriedOverCopy(input: {
  * alcada, mas a tela nao pode se calar: sem este aviso o comprador so descobre o
  * bloqueio quando o servidor recusa o pedido.
  */
-function futureCompetenceAlert(futureLabel: string, requestedCompetenceLabel: string | null): string {
+function requestedMonthLabel(requestedCompetenceLabel: string | null): string {
+  return requestedCompetenceLabel ? ` de ${requestedCompetenceLabel}` : "";
+}
+
+function futureCompetenceAlert(
+  futureLabel: string,
+  requestedCompetenceLabel: string | null,
+  hasRequestedMonthRow: boolean,
+): string {
+  // A linha do mês do carrinho pode existir com a alçada em branco (o formulário
+  // de verbas salva sem alçada). Nesse caso dizer que "não há verba para o mês"
+  // contradiz o painel do administrativo e esconde o que falta preencher.
+  if (hasRequestedMonthRow) {
+    return `Há verba cadastrada para ${futureLabel}; a verba${requestedMonthLabel(requestedCompetenceLabel)} está cadastrada, mas sem alçada definida: o administrativo precisa preencher a alçada antes de o pedido ser confirmado.`;
+  }
   return `Há verba cadastrada para ${futureLabel}, mas não para o mês do carrinho${requestedCompetenceLabel ? ` (${requestedCompetenceLabel})` : ""}: o administrativo precisa configurar a alçada deste mês antes de o pedido ser confirmado.`;
 }
 
-function missingCopy(requestedCompetenceLabel: string | null, futureLabel: string | null): NoticeCopy {
+function missingCopy(
+  requestedCompetenceLabel: string | null,
+  futureLabel: string | null,
+  hasRequestedMonthRow: boolean,
+): NoticeCopy {
   return {
     state: futureLabel ? "future-only" : "missing",
     title: `Sem alçada para ${requestedCompetenceLabel ?? "o mês do carrinho"}`,
@@ -76,7 +94,7 @@ function missingCopy(requestedCompetenceLabel: string | null, futureLabel: strin
     over: false,
     alerts: [
       missingCompetenceAlert(requestedCompetenceLabel),
-      ...(futureLabel ? [futureCompetenceAlert(futureLabel, requestedCompetenceLabel)] : []),
+      ...(futureLabel ? [futureCompetenceAlert(futureLabel, requestedCompetenceLabel, hasRequestedMonthRow)] : []),
     ],
   };
 }
@@ -87,9 +105,12 @@ function buildNoticeCopy(input: {
   competenceLabel: string | null;
   requestedCompetenceLabel: string | null;
   futurePaBudgetLabel: string | null;
+  /** O mês do carrinho tem linha de verba própria (mesmo sem alçada preenchida). */
+  hasRequestedMonthRow: boolean;
   over: boolean;
 }): NoticeCopy {
-  if (input.paThreshold === null) return missingCopy(input.requestedCompetenceLabel, input.futurePaBudgetLabel);
+  if (input.paThreshold === null)
+    return missingCopy(input.requestedCompetenceLabel, input.futurePaBudgetLabel, input.hasRequestedMonthRow);
   if (input.isCarryOver) return carriedOverCopy({ ...input, paThreshold: input.paThreshold });
   return exactCopy(input.competenceLabel, input.paThreshold, input.over);
 }
@@ -134,6 +155,7 @@ export function CartApprovalThresholdNotice({ items }: { items: CartThresholdIte
     competenceLabel,
     requestedCompetenceLabel,
     futurePaBudgetLabel,
+    hasRequestedMonthRow: competenceLabel !== null && !isCarryOver,
     over: needsApproval(subtotal),
   });
 
