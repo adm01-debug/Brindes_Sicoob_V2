@@ -42,4 +42,17 @@ describe('Carregamento de papéis por sessão', () => {
     expect(result.current.rolesError).toBeNull();
     expect(result.current.userRoles).toEqual(['gerente_pa']);
   });
+  it('entrega admin bruto para a aba de vínculos e supervisor para a navegação', async () => {
+    // A aba de vínculos grava em `user_roles`, onde `is_admin_strict` exige
+    // `admin` literal; a navegação usa o normalizado, onde `admin` e `manager`
+    // viram `supervisor` (`role-policy.ts:5-8`).
+    queryRoles.mockResolvedValue(response('admin'));
+    const { result } = renderHook(() => useUserRoles());
+    await act(async () => { await result.current.fetchRoles('admin-1'); });
+    expect(result.current.rawRoles).toEqual(['admin']);
+    expect(result.current.userRoles).toEqual(['supervisor']);
+    act(() => result.current.clearRoles());
+    expect(result.current.rawRoles).toEqual([]);
+    expect(result.current.userRoles).toEqual([]);
+  });
 });
