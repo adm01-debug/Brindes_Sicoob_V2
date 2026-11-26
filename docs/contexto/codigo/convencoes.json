@@ -6,7 +6,7 @@
    "src/pages (117)"
   ],
   "componentes": [
-   "src/components (1003)",
+   "src/components (1004)",
    "src/pages (160)",
    "src/contexts (9)"
   ],
@@ -21,7 +21,7 @@
    "src/services (24)"
   ],
   "testes": [
-   "tests/ (696)",
+   "tests/ (698)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1175)"
+  ".tsx (1176)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)",
    "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)",
    "fix: falha de consulta nao pode parecer fila vazia (#452)",
    "fix: erro e vazio nos selos de inteligencia do produto (#448)",
-   "fix: exige tres empresas com historico para usar o setor como amostra (#449)",
-   "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)"
+   "fix: exige tres empresas com historico para usar o setor como amostra (#449)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

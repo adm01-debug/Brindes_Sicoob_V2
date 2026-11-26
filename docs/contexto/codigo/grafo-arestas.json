@@ -5532,7 +5532,11 @@
   "src/components/presentation/PresentationMode.tsx": [
    "src/lib/utils.ts"
   ],
+  "src/components/pricing/PrecoIndisponivelAlert.tsx": [
+   "src/components/ui/alert.tsx"
+  ],
   "src/components/pricing/ProductPriceSimulator.tsx": [
+   "src/components/pricing/PrecoIndisponivelAlert.tsx",
    "src/components/pricing/simulator/EngravingList.tsx",
    "src/components/pricing/simulator/MultiEngravingResult.tsx",
    "src/components/pricing/simulator/index.ts",
@@ -5543,6 +5547,7 @@
    "src/lib/utils.ts"
   ],
   "src/components/pricing/QuantityPriceCalculator.tsx": [
+   "src/components/pricing/PrecoIndisponivelAlert.tsx",
    "src/components/pricing/calculator/QuantityComparisonTable.tsx",
    "src/components/pricing/calculator/TechniqueConfigCard.tsx",
    "src/components/pricing/calculator/TechniqueMultiSelector.tsx",

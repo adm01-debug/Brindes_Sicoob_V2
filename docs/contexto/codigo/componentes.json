@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1175,
+ "total": 1176,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -10695,12 +10695,26 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/pricing/PrecoIndisponivelAlert.tsx",
+   "exports": [
+    "PrecoIndisponivelAlert"
+   ],
+   "export_default": null,
+   "linhas": 23,
+   "dominio": "components/pricing",
+   "hooks_locais": [],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 2,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/pricing/ProductPriceSimulator.tsx",
    "exports": [
     "ProductPriceSimulator"
    ],
    "export_default": "ProductPriceSimulator",
-   "linhas": 375,
+   "linhas": 382,
    "dominio": "components/pricing",
    "hooks_locais": [],
    "tabelas": [],
@@ -10714,7 +10728,7 @@
     "QuantityPriceCalculator"
    ],
    "export_default": "QuantityPriceCalculator",
-   "linhas": 128,
+   "linhas": 135,
    "dominio": "components/pricing",
    "hooks_locais": [
     "useCustomizationPricing"
@@ -10791,7 +10805,7 @@
     "ProductSearch"
    ],
    "export_default": null,
-   "linhas": 131,
+   "linhas": 132,
    "dominio": "components/pricing",
    "hooks_locais": [
     "useExternalProductSearch"
@@ -14891,7 +14905,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 38,
+   "usado_por": 39,
    "orfao": false
   },
   {

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
+  "commit": "791ef7897048e9c789c1d698b38a10e43118c087",
   "branch": "main",
-  "data_commit": "2026-11-25T23:14:53Z",
+  "data_commit": "2026-11-26T00:09:55Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "791ef78",
+    "data": "2026-11-26",
+    "assunto": "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)"
+   },
    {
     "sha": "76245cc",
     "data": "2026-11-25",
@@ -126,14 +131,9 @@
     "sha": "8152263",
     "data": "2026-11-24",
     "assunto": "docs: ledger reflete as recuperacoes ja integradas na main (#432)"
-   },
-   {
-    "sha": "617dc9f",
-    "data": "2026-11-24",
-    "assunto": "docs: re-auditoria dos descartes medida PR por PR (#430)"
    }
   ],
-  "arquivos_mudados_7d": 1195,
+  "arquivos_mudados_7d": 1204,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -230,11 +230,11 @@
     "mudancas": 16
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 16
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 15
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 15
    },
    {
@@ -270,11 +270,11 @@
     "mudancas": 10
    },
    {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 10
+    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 9
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 230
+    "commits": 231
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5329,
-  "arquivos_codigo": 3217,
-  "linhas_codigo": 509324,
+  "arquivos_total": 5332,
+  "arquivos_codigo": 3220,
+  "linhas_codigo": 509537,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 85,
   "modulos": 146,
-  "componentes": 1175,
+  "componentes": 1176,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 630,
   "cron_jobs": 28,
-  "testes": 949,
+  "testes": 951,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1135,
-   "linhas": 168120
+   "arquivos": 1136,
+   "linhas": 168167
   },
   "src/constants": {
    "arquivos": 3,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 169,
-   "linhas": 29946
+   "arquivos": 171,
+   "linhas": 30112
   },
   "tests/contexts": {
    "arquivos": 3,

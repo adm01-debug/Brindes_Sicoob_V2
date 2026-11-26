@@ -5168,13 +5168,13 @@
   },
   {
    "modulo": "components/pricing",
-   "arquivos": 22,
+   "arquivos": 23,
    "testes": 0,
-   "linhas": 2816,
+   "linhas": 2863,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 15,
+   "componentes": 16,
    "hooks_locais": [
     "useCategoriasTecnicas",
     "useCustomizationPriceLegacy",
@@ -5226,7 +5226,9 @@
     "VITE_SUPABASE_URL"
    ],
    "flags": [],
-   "papeis": [],
+   "papeis": [
+    "alert"
+   ],
    "diretos": {
     "edges": [],
     "tabelas": [],

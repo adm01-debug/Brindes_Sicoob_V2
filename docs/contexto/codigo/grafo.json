@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2268,
- "arestas": 9222,
+ "nos": 2269,
+ "arestas": 9225,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -113,12 +113,12 @@
    "importado_por": 43
   },
   {
-   "arquivo": "src/components/ui/dropdown-menu.tsx",
+   "arquivo": "src/components/ui/alert.tsx",
    "importado_por": 39
   },
   {
-   "arquivo": "src/components/ui/alert.tsx",
-   "importado_por": 38
+   "arquivo": "src/components/ui/dropdown-menu.tsx",
+   "importado_por": 39
   },
   {
    "arquivo": "src/hooks/use-toast.ts",

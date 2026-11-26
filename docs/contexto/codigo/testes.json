@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 949,
+ "total": 951,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 715
+  "unit": 717
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 696
+   "arquivos": 698
   },
   {
    "padrao": "e2e/",
@@ -3223,13 +3223,31 @@
    "casos": 4
   },
   {
+   "arquivo": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+   "tipo": "unit",
+   "linhas": 78,
+   "testa": [
+    "src/components/pricing/ProductPriceSimulator.tsx"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
    "tipo": "unit",
-   "linhas": 56,
+   "linhas": 97,
    "testa": [
     "src/components/pricing/QuantityPriceCalculator.tsx"
    ],
-   "casos": 2
+   "casos": 4
+  },
+  {
+   "arquivo": "tests/components/pricing/simulator/ProductSearch.test.tsx",
+   "tipo": "unit",
+   "linhas": 47,
+   "testa": [
+    "src/components/pricing/simulator/ProductSearch.tsx"
+   ],
+   "casos": 1
   },
   {
    "arquivo": "tests/components/product-price-card-trust.test.tsx",
@@ -8435,7 +8453,9 @@
   "src/components/orders/FinancialPanel.tsx": 1,
   "src/components/orders/OrderAuditTimeline.tsx": 1,
   "src/components/orders/OrderStatsBar.tsx": 1,
+  "src/components/pricing/ProductPriceSimulator.tsx": 1,
   "src/components/pricing/QuantityPriceCalculator.tsx": 1,
+  "src/components/pricing/simulator/ProductSearch.tsx": 1,
   "src/components/pricing/simulator/types.ts": 1,
   "src/components/pricing/simulator/upsell/upsell-engine.ts": 1,
   "src/components/pricing/simulator/utils.ts": 1,

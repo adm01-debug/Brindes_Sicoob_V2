@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `76245cc5defecb7c57cd132fc17ccde3174b3fe2` (2026-11-25T23:14:53Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `791ef7897048e9c789c1d698b38a10e43118c087` (2026-11-26T00:09:55Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (2995), Markdown (974), SQL (693), JSON (295), JavaScript (156), Python (69), YAML (24), CSS (7)
+- linguagens: TypeScript (2998), Markdown (974), SQL (693), JSON (295), JavaScript (156), Python (69), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,31 +34,31 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5329 |
-| arquivos_codigo | 3217 |
-| linhas_codigo | 509324 |
+| arquivos_total | 5332 |
+| arquivos_codigo | 3220 |
+| linhas_codigo | 509537 |
 | rotas | 140 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 85 |
 | modulos | 146 |
-| componentes | 1175 |
+| componentes | 1176 |
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
 | migrations | 630 |
 | cron_jobs | 28 |
-| testes | 949 |
+| testes | 951 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 974 |
 
 ## Onde ficam as coisas
 - telas: src/pages (117)
-- componentes: src/components (1003), src/pages (160), src/contexts (9)
+- componentes: src/components (1004), src/pages (160), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (170), src/utils (37), src/services (24)
-- testes: tests/ (696), e2e/ (150), outro (54)
+- testes: tests/ (698), e2e/ (150), outro (54)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -95,7 +95,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/novelties | 0 | 0 | 5 | 37 | 5 | 8 |
 | components/orders | 0 | 0 | 32 | 43 | 8 | 40 |
 | components/pdf | 0 | 0 | 13 | 0 | 0 | 0 |
-| components/pricing | 0 | 0 | 22 | 32 | 2 | 0 |
+| components/pricing | 0 | 0 | 23 | 32 | 2 | 0 |
 | components/product-registration | 0 | 0 | 8 | 34 | 4 | 3 |
 | components/products | 0 | 0 | 90 | 56 | 5 | 16 |
 | components/quotes | 0 | 0 | 73 | 33 | 7 | 29 |
@@ -473,8 +473,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37165 nós · 61964 arestas · 2755 comunidades · grafo do commit `76245cc5`
-- comunidades maiores: ref_hooks (631), ref_integrations (464), ref_components (457), ref_lib (296), react (209), react-router-dom (198), framer-motion (189), expert-chat/index.ts (179), ref_contexts (173), date-fns (167), ref_stores (164), postgres_ready.py (153)
+- 37179 nós · 62002 arestas · 2757 comunidades · grafo do commit `791ef789`
+- comunidades maiores: ref_lib (741), ref_integrations (553), ref_components (337), lucide-react (327), react (313), react-router-dom (236), date-fns (186), expert-chat/index.ts (173), ref_utils (167), ref_stores (156), getCorsHeaders (152), external-db-bridge/index.ts (139)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -487,8 +487,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/ci.yml (17)
 - .github/workflows/codeql.yml (16)
 - .github/workflows/deploy-sicoob-functions.yml (16)
-- .github/workflows/sicoob-ci.yml (16)
 - .github/workflows/e2e.yml (15)
+- .github/workflows/sicoob-ci.yml (15)
 - .github/workflows/lighthouse.yml (14)
 - src/hooks/useQuoteBuilderState.ts (12)
 - .github/workflows/bundle-check.yml (11)
@@ -697,6 +697,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-26 `791ef78` fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)
 - 2026-11-25 `76245cc` fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)
 - 2026-11-25 `50898b5` fix: falha de consulta nao pode parecer fila vazia (#452)
 - 2026-11-25 `2701a09` fix: erro e vazio nos selos de inteligencia do produto (#448)
@@ -711,7 +712,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `bc1b6c5` chore: recupera 21 testes de branches nao incorporadas (#444)
 - 2026-11-25 `8747cf2` fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)
 - 2026-11-25 `8f7aeeb` chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)
-- 2026-11-25 `afdb894` chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

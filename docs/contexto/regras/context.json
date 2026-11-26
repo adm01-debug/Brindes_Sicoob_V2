@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
+  "sha": "791ef7897048e9c789c1d698b38a10e43118c087",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-25 23:22 UTC",
-  "files_total": 5332,
-  "code_files": 3892,
-  "code_lines": 574012
+  "generated_at": "2026-11-26 00:12 UTC",
+  "files_total": 5335,
+  "code_files": 3895,
+  "code_lines": 574225
  },
  "version": "1.3.2",
- "facts_hash": "e9df0086ecce0a95",
+ "facts_hash": "fb1edfba089bfe4a",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -356,7 +356,7 @@
   "package_manager": "npm",
   "languages": {
    ".ts": 1507,
-   ".tsx": 1486,
+   ".tsx": 1489,
    ".sql": 693,
    ".mjs": 144,
    ".py": 69,
@@ -57142,7 +57142,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 118
+    "deps_count": 120
    },
    {
     "path": "",
@@ -62774,7 +62774,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1305,
+  "components_count": 1308,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65597,8 +65597,8 @@
   },
   {
    "module": "src/components",
-   "files": 1135,
-   "lines": 168120,
+   "files": 1136,
+   "lines": 168167,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -67376,8 +67376,8 @@
   },
   {
    "module": "tests",
-   "files": 718,
-   "lines": 96180,
+   "files": 720,
+   "lines": 96346,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -81740,6 +81740,14 @@
    {
     "file": "src/components/pdf/proposal/ProposalTotals.tsx",
     "text": "Frete row — após desconto, entra no total */}"
+   },
+   {
+    "file": "src/components/pricing/ProductPriceSimulator.tsx",
+    "text": "Preco invalido (zero/negativo/infinito/ausente) mantem o produto selecionado apenas"
+   },
+   {
+    "file": "src/components/pricing/ProductPriceSimulator.tsx",
+    "text": "Preço inválido: as etapas 2+ ficam ocultas, então a barra não pode"
    },
    {
     "file": "src/components/pricing/simulator/MultiEngravingResult.tsx",
@@ -109522,6 +109530,18 @@
     "body": "if (!value) return \"—\"; return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\" }).format(value);"
    },
    {
+    "file": "src/components/pricing/PrecoIndisponivelAlert.tsx",
+    "name": "PrecoIndisponivelAlert",
+    "params": "{ nome }: { readonly nome: string }",
+    "body": "return ( <Alert variant=\"destructive\"> <AlertTriangle className=\"h-4 w-4\" /> <AlertTitle>Produto sem preço de venda no catálogo</AlertTitle> <AlertDescription> {nome} está sem preço de venda válido no catálogo (zero, negativo, infinito ou ausente). A simulação e a criação de orçamento ficam bloqueadas até o preço ser corrigido no cadastro do produto. </AlertDescription> </Alert> );"
+   },
+   {
+    "file": "src/components/pricing/QuantityPriceCalculator.tsx",
+    "name": "podeSimularPreco",
+    "params": "produto: CalcProduct | null",
+    "body": "return produto !== null && produto.priceAvailable !== false;"
+   },
+   {
     "file": "src/components/pricing/calculator/types.ts",
     "name": "formatCurrency",
     "params": "value: number",
@@ -109586,6 +109606,12 @@
     "name": "calculate",
     "params": "",
     "body": "setIsCalculating(true); setError(null); try { // Usar o ID da técnica como ID da área const result = await calculatePrice(technique.id, quantity, colors); if (result?.success) { setPriceData(result); } else { setError('Erro ao calcular preço'); setPriceData(null); } } catch (err) { setError(err instanceof Error ? err.message : 'Erro desconhecido'); setPriceData(null); } finally { setIsCalculating(false); }"
+   },
+   {
+    "file": "src/components/pricing/simulator/types.ts",
+    "name": "hasValidSalePrice",
+    "params": "price: unknown",
+    "body": "return typeof price === \"number\" && Number.isFinite(price) && price > 0;"
    },
    {
     "file": "src/components/pricing/simulator/utils.ts",
@@ -123376,6 +123402,26 @@
     "name": "accumulates multiple errors"
    },
    {
+    "file": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    "name": "ProductPriceSimulator — preço de venda inválido"
+   },
+   {
+    "file": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    "name": "avisa e bloqueia personalização e orçamento quando o preço é inválido"
+   },
+   {
+    "file": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    "name": "bloqueia também a seleção de cor quando o produto tem variantes"
+   },
+   {
+    "file": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    "name": "libera a seleção de cor com preço válido em produto com variantes"
+   },
+   {
+    "file": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    "name": "mantém a simulação normal quando o preço é válido"
+   },
+   {
     "file": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
     "name": "QuantityPriceCalculator"
    },
@@ -123386,6 +123432,22 @@
    {
     "file": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
     "name": "renders with product base price"
+   },
+   {
+    "file": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
+    "name": "bloqueia a simulação e explica quando o produto está sem preço de venda"
+   },
+   {
+    "file": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
+    "name": "mantém a simulação quando o produto tem preço de venda válido"
+   },
+   {
+    "file": "tests/components/pricing/simulator/ProductSearch.test.tsx",
+    "name": "ProductSearch - validação do preço de venda"
+   },
+   {
+    "file": "tests/components/pricing/simulator/ProductSearch.test.tsx",
+    "name": "marca $name corretamente ao selecionar produto"
    },
    {
     "file": "tests/components/products/ColumnSelector.test.tsx",
@@ -201555,9 +201617,23 @@
     "cursorTimer.current = setTimeout(() => setCursorHidden(true), 3000);"
    ]
   },
+  "src/components/pricing/PrecoIndisponivelAlert.tsx": {
+   "path": "src/components/pricing/PrecoIndisponivelAlert.tsx",
+   "lines": 23,
+   "exports": [
+    "function PrecoIndisponivelAlert"
+   ],
+   "calc_fns": [
+    {
+     "name": "PrecoIndisponivelAlert",
+     "params": "{ nome }: { readonly nome: string }",
+     "body": "return ( <Alert variant=\"destructive\"> <AlertTriangle className=\"h-4 w-4\" /> <AlertTitle>Produto sem preço de venda no catálogo</AlertTitle> <AlertDescription> {nome} está sem preço de venda válido no catálogo (zero, negativo, infinito ou ausente). A simulação e a criação de orçamento ficam bloqueadas até o preço ser corrigido no cadastro do produto. </AlertDescription> </Alert> );"
+    }
+   ]
+  },
   "src/components/pricing/ProductPriceSimulator.tsx": {
    "path": "src/components/pricing/ProductPriceSimulator.tsx",
-   "lines": 375,
+   "lines": 382,
    "exports": [
     "function ProductPriceSimulator"
    ],
@@ -201570,20 +201646,31 @@
      "value": "5"
     }
    ],
+   "rule_comments": [
+    "Preco invalido (zero/negativo/infinito/ausente) mantem o produto selecionado apenas",
+    "Preço inválido: as etapas 2+ ficam ocultas, então a barra não pode"
+   ],
    "temporal": [
     "staleTime: 5 * 60 * 1000,"
    ]
   },
   "src/components/pricing/QuantityPriceCalculator.tsx": {
    "path": "src/components/pricing/QuantityPriceCalculator.tsx",
-   "lines": 128,
+   "lines": 135,
    "exports": [
     "function QuantityPriceCalculator"
    ],
    "navigates": [
     "/orcamentos"
    ],
-   "doc": "QuantityPriceCalculator — Main orchestrator. Sub-components extracted to calculator/ folder."
+   "doc": "QuantityPriceCalculator — Main orchestrator. Sub-components extracted to calculator/ folder.",
+   "calc_fns": [
+    {
+     "name": "podeSimularPreco",
+     "params": "produto: CalcProduct | null",
+     "body": "return produto !== null && produto.priceAvailable !== false;"
+    }
+   ]
   },
   "src/components/pricing/index.ts": {
    "path": "src/components/pricing/index.ts",
@@ -201618,7 +201705,7 @@
   },
   "src/components/pricing/calculator/types.ts": {
    "path": "src/components/pricing/calculator/types.ts",
-   "lines": 51,
+   "lines": 53,
    "exports": [
     "interface CalcProduct",
     "interface ProductTechnique",
@@ -201720,7 +201807,7 @@
   },
   "src/components/pricing/simulator/ProductSearch.tsx": {
    "path": "src/components/pricing/simulator/ProductSearch.tsx",
-   "lines": 131,
+   "lines": 132,
    "exports": [
     "function ProductSearch"
    ]
@@ -201791,10 +201878,11 @@
   },
   "src/components/pricing/simulator/types.ts": {
    "path": "src/components/pricing/simulator/types.ts",
-   "lines": 119,
+   "lines": 126,
    "exports": [
     "interface ProductColor",
     "interface Product",
+    "function hasValidSalePrice",
     "interface ProductTechnique",
     "interface ConfiguredEngraving",
     "interface SimulationResult",
@@ -201803,7 +201891,14 @@
     "interface TechniqueData",
     "interface SizeOption"
    ],
-   "doc": "Pricing Simulator Types Tipos específicos para o componente de simulador de preços. Utiliza tipos de domínio como base."
+   "doc": "Pricing Simulator Types Tipos específicos para o componente de simulador de preços. Utiliza tipos de domínio como base.",
+   "calc_fns": [
+    {
+     "name": "hasValidSalePrice",
+     "params": "price: unknown",
+     "body": "return typeof price === \"number\" && Number.isFinite(price) && price > 0;"
+    }
+   ]
   },
   "src/components/pricing/simulator/utils.ts": {
    "path": "src/components/pricing/simulator/utils.ts",
@@ -249600,15 +249695,39 @@
     "accumulates multiple errors"
    ]
   },
+  "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx": {
+   "path": "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+   "lines": 78,
+   "is_test": true,
+   "doc": "Aba \"Por Produto\" do simulador: produto do catalogo externo com preco de venda invalido (zero/negativo/infinito/ausente) precisa avisar e bloquear o avanco, senao a gravacao entra no orcamento com o item a R$ 0,00.",
+   "tests": [
+    "ProductPriceSimulator — preço de venda inválido",
+    "avisa e bloqueia personalização e orçamento quando o preço é inválido",
+    "bloqueia também a seleção de cor quando o produto tem variantes",
+    "libera a seleção de cor com preço válido em produto com variantes",
+    "mantém a simulação normal quando o preço é válido"
+   ]
+  },
   "tests/components/pricing/QuantityPriceCalculator.test.tsx": {
    "path": "tests/components/pricing/QuantityPriceCalculator.test.tsx",
-   "lines": 56,
+   "lines": 97,
    "is_test": true,
    "doc": "Render tests for QuantityPriceCalculator (863 lines)",
    "tests": [
     "QuantityPriceCalculator",
     "renders without crashing with no props",
-    "renders with product base price"
+    "renders with product base price",
+    "bloqueia a simulação e explica quando o produto está sem preço de venda",
+    "mantém a simulação quando o produto tem preço de venda válido"
+   ]
+  },
+  "tests/components/pricing/simulator/ProductSearch.test.tsx": {
+   "path": "tests/components/pricing/simulator/ProductSearch.test.tsx",
+   "lines": 47,
+   "is_test": true,
+   "tests": [
+    "ProductSearch - validação do preço de venda",
+    "marca $name corretamente ao selecionar produto"
    ]
   },
   "tests/components/products/ColumnSelector.test.tsx": {
@@ -260559,10 +260678,27 @@
   }
  },
  "git": {
-  "sha": "76245cc5defecb7c57cd132fc17ccde3174b3fe2",
+  "sha": "791ef7897048e9c789c1d698b38a10e43118c087",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "791ef78",
+    "date": "2026-11-25",
+    "author": "adm01-debug",
+    "subject": "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)",
+    "files": [
+     "src/components/pricing/PrecoIndisponivelAlert.tsx",
+     "src/components/pricing/ProductPriceSimulator.tsx",
+     "src/components/pricing/QuantityPriceCalculator.tsx",
+     "src/components/pricing/calculator/types.ts",
+     "src/components/pricing/simulator/ProductSearch.tsx",
+     "src/components/pricing/simulator/types.ts",
+     "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+     "tests/components/pricing/QuantityPriceCalculator.test.tsx",
+     "tests/components/pricing/simulator/ProductSearch.test.tsx"
+    ]
+   },
    {
     "sha": "76245cc",
     "date": "2026-11-25",
@@ -260913,16 +261049,6 @@
      "src/pages/KitBuilderPage.tsx",
      "tests/hooks/useKitWizardShortcuts.test.tsx"
     ]
-   },
-   {
-    "sha": "a409d6d",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "chore: alinha status do indice de lacunas aos vereditos verificados (#426)",
-    "files": [
-     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv"
-    ]
    }
   ],
   "hot_files": [
@@ -260963,47 +261089,47 @@
     2
    ],
    [
+    "src/components/pricing/PrecoIndisponivelAlert.tsx",
+    1
+   ],
+   [
+    "src/components/pricing/ProductPriceSimulator.tsx",
+    1
+   ],
+   [
+    "src/components/pricing/QuantityPriceCalculator.tsx",
+    1
+   ],
+   [
+    "src/components/pricing/calculator/types.ts",
+    1
+   ],
+   [
+    "src/components/pricing/simulator/ProductSearch.tsx",
+    1
+   ],
+   [
+    "src/components/pricing/simulator/types.ts",
+    1
+   ],
+   [
+    "tests/components/pricing/ProductPriceSimulator.preco-indisponivel.test.tsx",
+    1
+   ],
+   [
+    "tests/components/pricing/QuantityPriceCalculator.test.tsx",
+    1
+   ],
+   [
+    "tests/components/pricing/simulator/ProductSearch.test.tsx",
+    1
+   ],
+   [
     "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
     1
    ],
    [
     "tests/scenarios/notification-helpers-acl.scenario.mjs",
-    1
-   ],
-   [
-    "src/components/orders/ApprovalKanbanBoard.tsx",
-    1
-   ],
-   [
-    "src/components/orders/OrderStatsBar.tsx",
-    1
-   ],
-   [
-    "src/components/sicoob/GestorComprasMetrics.tsx",
-    1
-   ],
-   [
-    "src/pages/OrdersPage.tsx",
-    1
-   ],
-   [
-    "tests/components/orders/ApprovalKanbanBoard.error-state.test.tsx",
-    1
-   ],
-   [
-    "tests/components/orders/OrderStatsBar.error-state.test.tsx",
-    1
-   ],
-   [
-    "tests/pages/GestorCompras.metrics.test.tsx",
-    1
-   ],
-   [
-    "tests/pages/OrdersPage.content.test.tsx",
-    1
-   ],
-   [
-    "tests/pages/OrdersPage.page.test.tsx",
     1
    ]
   ]

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `76245cc5de` · branch `main` · 2026-11-25 23:22 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `791ef78970` · branch `main` · 2026-11-26 00:12 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -2593,6 +2593,14 @@ _nenhum item encontrado_
   ```
   if (!value) return "—"; return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
   ```
+- **PrecoIndisponivelAlert({ nome }: { readonly nome: string })** — `src/components/pricing/PrecoIndisponivelAlert.tsx`
+  ```
+  return ( <Alert variant="destructive"> <AlertTriangle className="h-4 w-4" /> <AlertTitle>Produto sem preço de venda no catálogo</AlertTitle> <AlertDescription> {nome} está sem preço de venda válido no catálogo (zero, negativo, infinito ou ausente). A simulação e a criação de orçamento ficam bloqueadas até o preço ser corrigido no cadastro do produto. </AlertDescription> </Alert> );
+  ```
+- **podeSimularPreco(produto: CalcProduct | null)** — `src/components/pricing/QuantityPriceCalculator.tsx`
+  ```
+  return produto !== null && produto.priceAvailable !== false;
+  ```
 - **formatCurrency(value: number)** — `src/components/pricing/calculator/types.ts`
   ```
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -2636,6 +2644,10 @@ _nenhum item encontrado_
 - **calculate()** — `src/components/pricing/simulator/QuantityAndResult.tsx`
   ```
   setIsCalculating(true); setError(null); try { // Usar o ID da técnica como ID da área const result = await calculatePrice(technique.id, quantity, colors); if (result?.success) { setPriceData(result); } else { setError('Erro ao calcular preço'); setPriceData(null); } } catch (err) { setError(err instanceof Error ? err.message : 'Erro desconhecido'); setPriceData(null); } finally { setIsCalculating(false); }
+  ```
+- **hasValidSalePrice(price: unknown)** — `src/components/pricing/simulator/types.ts`
+  ```
+  return typeof price === "number" && Number.isFinite(price) && price > 0;
   ```
 - **formatCurrency(value: number)** — `src/components/pricing/simulator/utils.ts`
   ```
@@ -5744,7 +5756,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7380 testes em 761 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7389 testes em 763 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6048,7 +6060,7 @@ _nenhum item encontrado_
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
 | `tests/components/ai/aimockup-assistant-real-ai.test.tsx` | 7 | assistente de layouts entrega a conversa para a IA real · abre o chat real no modo layout com o contexto do produto e da tecnica · tira o botao de abrir da ordem de tabulacao enquanto o painel esta aberto · preserva a conversa ao minimizar e reabrir … |
 | `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
-| … +461 linhas — lista completa em `context.json` | | |
+| … +463 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6349,6 +6361,8 @@ _nenhum item encontrado_
 | Para onde o Tab deve ir, ou null quando o navegador pode seguir sozinho. | `src/components/onboarding/OnboardingTour.tsx` |
 | c62828" }}>Desconto Global:</span></td> | `src/components/pdf/proposal/ProposalTotals.tsx` |
 | Frete row — após desconto, entra no total */} | `src/components/pdf/proposal/ProposalTotals.tsx` |
+| Preco invalido (zero/negativo/infinito/ausente) mantem o produto selecionado apenas | `src/components/pricing/ProductPriceSimulator.tsx` |
+| Preço inválido: as etapas 2+ ficam ocultas, então a barra não pode | `src/components/pricing/ProductPriceSimulator.tsx` |
 | - Faturamento mínimo (setup como piso) | `src/components/pricing/simulator/MultiEngravingResult.tsx` |
 | - Faturamento mínimo (setup como piso) | `src/components/pricing/simulator/MultiEngravingResult.tsx` |
 | Prazo máximo | `src/components/pricing/simulator/MultiEngravingResult.tsx` |
@@ -6534,6 +6548,4 @@ _nenhum item encontrado_
 | o prewarm dispara no máximo 1x por sessão de browser — ideal para gatilho | `src/lib/external-db-prewarm.ts` |
 | (apenas 2 invokes totais: 1 batch das 6 tabelas + 1 ping CRM) | `src/lib/external-db-prewarm.ts` |
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
-| Sem dependências externas; apenas Canvas API. | `src/lib/kit-og-image.ts` |
-| Se já estourou o limite de reloads na janela, propaga o erro para | `src/lib/lazyWithRetry.ts` |
-| … +337 linhas — lista completa em `context.json` | |
+| … +339 linhas — lista completa em `context.json` | |
