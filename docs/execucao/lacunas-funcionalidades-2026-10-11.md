@@ -264,7 +264,7 @@ Os 153 registros P1 se agrupam nos 17 temas abaixo (alguns têm registros P2/P3 
 |---|---|---|
 | A verba só é checada no navegador na etapa de orçamento. O servidor só cobra na confirmação do pedido, então a Singular pode aprovar acima do saldo do PA | PARCIAL | SIC-020, PLA-T056 |
 | Sem estados planejado, reservado e comprometido; sem fechamento de competência; sem livro de eventos. Um estorno pode reescrever mês fechado | NAO_INICIADA / PARCIAL | SIC-022, PLB-32, PLA-T087, PLA-T088 |
-| Sem conciliação proposta × entrega × NF × pagamento. A view `sicoob_budget_audit` não tem tela | NAO_INICIADA | PLB-43, DB-19, SIC-029, PLC-51, ADM-09 |
+| Sem conciliação proposta × entrega × NF × pagamento. A conciliação verba × pedidos confirmados já tem tela (`/gestor/auditoria`); faltam entrega, NF e pagamento | PARCIAL | PLB-43, DB-19, SIC-029, PLC-51, ADM-09 |
 | Pedido de aumento de limite: o PA grava em `limit_increase_requests`, a RLS exige o papel inexistente `gestor_pa`, e nenhuma tela ou RPC decide. O PA nunca recebe resposta | ORFA | PLB-33, SIC-024 |
 | Alçadas configuráveis na tela que o servidor ignora; alçada de "Diretoria" sem papel próprio; flag "Validação de Verbas (PAC)" sem leitor | PARCIAL / ORFA | SIC-026, SIC-062, PLA-X04, FE-092, ADM-19 |
 | Verba por cooperativa (`cooperativa_budgets`) e `check_budget_availability` órfãs; remanejamento entre PAs não existe; centro de custo e rateio não existem | ORFA / NAO_INICIADA | SIC-025, DB-19, SIC-027, PLB-29 |
@@ -780,7 +780,7 @@ Lista completa nos apêndices dos anexos 05 e 06.
 
 **Tabelas e RPCs sem tela:**
 - `cooperativa_budgets` e `check_budget_availability`;
-- `sicoob_budget_audit` (tela entregue em /gestor/auditoria) e `v_full_scope_grants`;
+- `sicoob_budget_audit` (tela de conciliação em `/gestor/auditoria`) e `v_full_scope_grants`;
 - ~~`sicoob_approval_policies`~~ — tela da Central entregue em /admin/sicoob (aba Políticas);
 - `sensitive_access_logs`;
 - `quote_audit_logs` e `log_quote_action`;
