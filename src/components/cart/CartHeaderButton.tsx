@@ -23,18 +23,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
 
 /**
- * Tetos de altura da lista de orçamentos. O painel inteiro é limitado ao espaço
- * realmente disponível na janela (variável publicada pelo Radix Popover), então a
- * lista precisa descontar somente o que está renderizado acima e abaixo dela:
- * o cabeçalho existe sempre e o rodapé (verba + subtotal + CTA) só aparece
- * quando o orçamento ativo tem itens. Reservar os ~248px do rodapé sem ele
- * zerava a altura da lista em janelas baixas, sem rolagem para alcançar os
- * outros orçamentos. O teto vale para o Root *e* para o viewport porque é o
- * viewport que rola: `max-h` só no Root, que tem `overflow-hidden`, corta o
- * conteúdo em vez de rolar e empurra "Gerar Orçamento" para fora da tela.
+ * Tetos de altura do painel de orçamentos. O painel é limitado ao espaço
+ * realmente disponível na janela (variável publicada pelo Radix Popover) e o
+ * miolo é uma coluna flex: o cabeçalho e o rodapé (verba + alçada + subtotal +
+ * CTA) não encolhem, e a lista cede altura para eles. Antes o teto ficava na
+ * própria lista, descontando um valor fixo de rodapé: quando o rodapé crescia
+ * (aviso de alçada), a lista continuava no mesmo teto, o conteúdo passava da
+ * altura disponível e o `overflow-hidden` do painel cortava "Gerar Orçamento".
+ * Os tetos abaixo somam o teto da lista ao cabeçalho/rodapé para preservar o
+ * mesmo tamanho total de antes.
  */
-const CART_LIST_MAX_HEIGHT_WITH_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-15.5rem))]";
-const CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER = "max-h-[min(440px,calc(var(--radix-popover-content-available-height,100dvh)-4.5rem))]";
+const CART_PANEL_MAX_HEIGHT_WITH_FOOTER = "max-h-[min(calc(440px+15.5rem),var(--radix-popover-content-available-height))]";
+const CART_PANEL_MAX_HEIGHT_WITHOUT_FOOTER = "max-h-[min(calc(440px+4.5rem),var(--radix-popover-content-available-height))]";
+/** A lista rola dentro da coluna: cede altura para o rodapé em vez de empurrá-lo. */
+const CART_LIST_FLEX_CLASS = "min-h-0 flex-1";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -109,7 +111,7 @@ export function CartHeaderButton() {
   // Sem itens no orçamento ativo não existe rodapé: a lista fica com todo o
   // espaço que sobra, em vez de reservar uma altura que ninguém ocupa.
   const hasCheckoutFooter = Boolean(activeCart && activeCart.items.length > 0);
-  const listMaxHeight = hasCheckoutFooter ? CART_LIST_MAX_HEIGHT_WITH_FOOTER : CART_LIST_MAX_HEIGHT_WITHOUT_FOOTER;
+  const panelMaxHeight = hasCheckoutFooter ? CART_PANEL_MAX_HEIGHT_WITH_FOOTER : CART_PANEL_MAX_HEIGHT_WITHOUT_FOOTER;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -139,7 +141,10 @@ export function CartHeaderButton() {
 
       <PopoverContent
         data-testid="cart-drawer"
-        className="max-h-[var(--radix-popover-content-available-height)] w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
+        className={cn(
+          "flex w-[min(420px,calc(100vw-1rem))] flex-col overflow-hidden rounded-xl border-border/50 p-0 shadow-xl",
+          panelMaxHeight,
+        )}
         align="end"
         sideOffset={8}
         onCloseAutoFocus={() => setShowPicker(false)}
@@ -177,9 +182,10 @@ export function CartHeaderButton() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.15 }}
+              className="flex min-h-0 flex-1 flex-col"
             >
               {/* Header */}
-              <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-border/40">
+              <div className="px-4 pt-4 pb-3 flex shrink-0 items-center justify-between border-b border-border/40">
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ShoppingCart className="h-3.5 w-3.5 text-primary" />
@@ -229,9 +235,10 @@ export function CartHeaderButton() {
                 </div>
               ) : (
                 <>
-                  {/* O rodapé (verba + subtotal + CTA) não rola: a lista cede altura
-                      para que "Gerar Orçamento" continue visível em janelas baixas. */}
-                  <ScrollArea className={listMaxHeight} viewportClassName={listMaxHeight}>
+                  {/* O rodapé (verba + alçada + subtotal + CTA) não rola: a coluna
+                      cede altura para ele, então "Gerar Orçamento" continua visível
+                      mesmo quando o rodapé cresce em janelas baixas. */}
+                  <ScrollArea className={CART_LIST_FLEX_CLASS}>
                     <div className="p-3 space-y-2">
                       {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>
@@ -244,7 +251,7 @@ export function CartHeaderButton() {
                       0
                     );
                     return (
-                      <div className="border-t border-border/40">
+                      <div className="shrink-0 border-t border-border/40">
                       <div className="p-3 space-y-2">
                         <CartPaBudgetBalance />
                         <CartApprovalThresholdNotice items={activeCart.items} />

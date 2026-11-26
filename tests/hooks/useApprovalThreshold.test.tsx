@@ -102,7 +102,43 @@ describe("useApprovalThreshold", () => {
     );
 
     await waitFor(() => expect(result.current.threshold).toBe(200));
+    expect(result.current.paThreshold).toBeNull();
+    // Sem linha visível não dá para afirmar que o PA está sem alçada: a tela que
+    // depende disso (aviso do carrinho) precisa saber a diferença.
+    expect(result.current.hasVisiblePaBudget).toBe(false);
     expect(result.current.needsApproval(500)).toBe(true);
+  });
+
+  it("trata a alçada de R$ 0 como limite real do PA, e não como limite ausente", async () => {
+    mocks.profile = { pa_id: "pa-do-pedido", approval_threshold: 5000 };
+    mocks.budgets = [{ ano: 2026, mes: 11, limite_alcada: 0 }];
+    const { result } = renderHook(
+      () => useApprovalThreshold(undefined, { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.paThreshold).toBe(0));
+    expect(result.current.threshold).toBe(0);
+    expect(result.current.hasVisiblePaBudget).toBe(true);
+    expect(result.current.isCarryOver).toBe(false);
+    expect(result.current.needsApproval(1)).toBe(true);
+  });
+
+  it("só consulta limites por categoria quando algum item tem categoria", async () => {
+    const semCategoria = renderHook(
+      () => useApprovalThreshold([{ unit_price: 10, quantity: 1, category_id: null }], { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(semCategoria.result.current.threshold).toBe(1000));
+    expect(mocks.eqCalls.some(([table]) => table === "pa_category_thresholds")).toBe(false);
+
+    mocks.eqCalls = [];
+    const comCategoria = renderHook(
+      () => useApprovalThreshold([{ unit_price: 10, quantity: 1, category_id: "7" }], { referenceDate: "2026-11-02T12:00:00.000Z" }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(comCategoria.result.current.threshold).toBe(1000));
+    expect(mocks.eqCalls.some(([table, column, value]) => table === "pa_category_thresholds" && column === "pa_id" && value === "pa-do-pedido")).toBe(true);
   });
 
   it("usa a alçada do PA do pedido, e não a do usuário logado", async () => {

@@ -20,7 +20,7 @@ interface CategoryThreshold {
  * configurado, senao a tela mostra um limite e decide por outro.
  */
 function globalApprovalThreshold(profileThreshold?: number | null, budgetThreshold?: number | null): number {
-  return budgetThreshold || profileThreshold || 0;
+  return budgetThreshold ?? profileThreshold ?? 0;
 }
 
 function exceedsCategoryThreshold(items: ApprovalItem[], thresholds?: CategoryThreshold[] | null): boolean {
@@ -50,6 +50,16 @@ export interface ApprovalThresholdBudgetRow {
   ano?: number | null;
   mes?: number | null;
   limite_alcada?: number | null;
+}
+
+/**
+ * Alcada numerica da linha de verba. Zero e um limite real — o servidor recusa a
+ * confirmacao direta de qualquer pedido positivo —, entao nao pode cair no
+ * fallback do perfil como se a coluna estivesse vazia.
+ */
+function readPaAlcada(budget?: ApprovalThresholdBudgetRow | null): number | null {
+  const limit = budget?.limite_alcada;
+  return typeof limit === "number" && Number.isFinite(limit) ? limit : null;
 }
 
 export interface ApprovalThresholdOptions {
@@ -87,6 +97,7 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
   const paId = options?.paId || profile?.pa_id;
   const competence = resolveBudgetCompetence(options?.referenceDate);
   const canLoadThreshold = Boolean(paId && competence);
+  const hasCategorizedItems = Boolean(paId && items?.some((item) => item.category_id));
 
   const { data: budget } = useQuery({
     queryKey: thresholdQueryKey(paId, competence),
@@ -105,10 +116,10 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
       if (error) throw error;
       return data;
     },
-    enabled: !!paId,
+    enabled: hasCategorizedItems,
   });
 
-  const budgetThreshold = budget?.limite_alcada ?? null;
+  const paThreshold = readPaAlcada(budget);
   const usedCompetence = readBudgetCompetence(budget);
   const isCarryOver = isCarryOverCompetence(usedCompetence, competence);
 
@@ -120,13 +131,24 @@ export const useApprovalThreshold = (items?: ApprovalItem[], options?: ApprovalT
       isSupervisor,
       isGestorCompras,
       paId,
-      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, budgetThreshold),
+      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, paThreshold),
       categoryThresholds,
     });
   };
 
   return {
-    threshold: globalApprovalThreshold(profile?.approval_threshold, budgetThreshold),
+    threshold: globalApprovalThreshold(profile?.approval_threshold, paThreshold),
+    /**
+     * Alcada numerica aprovada do PA para a competencia pedida (0 e limite real).
+     * `null` = a linha do mes nao tem limite preenchido.
+     */
+    paThreshold,
+    /**
+     * Existe linha de verba visivel para o PA. Sem nenhuma linha nao da para
+     * afirmar que o PA esta sem alcada: a policy de SELECT esconde pa_budgets de
+     * quem nao tem escopo (vendedor), entao a tela se cala em vez de acusar.
+     */
+    hasVisiblePaBudget: budget !== null && budget !== undefined,
     /** Competencia da linha que realmente define a alcada (pode ser herdada). */
     competenceLabel: formatBudgetCompetence(usedCompetence),
     /** Competencia do pedido; igual a anterior quando nao ha heranca. */
