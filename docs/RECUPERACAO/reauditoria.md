@@ -968,3 +968,104 @@ ser recuperada ou declarada obsoleta por escrito".
 
 As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
 escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
+
+## Terceira rodada — 26/11/2026: as PRs fechadas que nunca estiveram neste documento
+
+As duas rodadas anteriores mediram os descartes **que já estavam** no ledger. Esta mede o que
+nunca esteve: das 475 PRs do repositório, **90 foram fechadas sem merge** e o `prs.md` cita 38.
+As outras **52** foram confrontadas uma a uma com a `main` de hoje.
+
+### Método (repetível)
+
+```
+gh pr list --state all --limit 500 --json number,state,title,headRefName,mergedAt
+git fetch origin 'refs/pull/*/head:refs/recovered/*'
+git diff --numstat origin/main refs/recovered/<n>          # o que a ref tem por arquivo
+git cat-file -e origin/main:<caminho>                       # arquivo existe na main?
+git grep -l -e <nome-do-objeto> origin/main                 # nome do objeto, nunca o do PR
+```
+
+Arquivo **ausente** na `main` é sinal de perda; arquivo que **difere** é divergência — a `main`
+pode estar à frente da ref, e só vira veredito depois de ler os dois lados.
+
+### Os 52 fora do ledger
+
+| Grupo | Quantos | Situação |
+| --- | --- | --- |
+| Dependabot (bump de dependência) | 26 | nenhum byte próprio; regeneráveis |
+| Documentação (#105, #114, #117, #118) | 4 | nenhum arquivo ausente na `main` |
+| Já absorvidas (#188, #192) | 2 | conteúdo presente |
+| **Com conteúdo próprio e residual** | **20** | tabela abaixo |
+
+### Os 20 com conteúdo próprio — veredito medido
+
+| PR | O que era | Veredito | Prova na `main` de hoje |
+| --- | --- | --- | --- |
+| #100 | UX Onda 1 (voltar fecha modal, confirmação unificada, Esc no tour) | incorporado por equivalente | `src/lib/navigation/dirty-registry.ts`; confirmação unificada (#306); voltar fecha overlay (#319); sinal de dirty (#357/#359) |
+| #116 | Motor do copiloto F06/F07/F08 (~760 linhas, 6 tabelas, 3 edge functions) | **preservado, não apagado** | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/` + `README-PRESERVACAO.md` (#324); sem produtor de mensagem, depende de decisão de produto |
+| #175 | Integridade de preços + workflows de CI | incorporado | `supabase/migrations/20261117092000_quote_price_attestation_gate.sql` (#317) e `supabase/functions/quote-price-attestation/` |
+| #290 | Preço atestado pelo servidor (recupera a #175) | incorporado | mesmo arquivo: `register_quote_price_attestation`, `quote_price_payload_hash`, `save_quote_atomic_attested` |
+| #201 | A-028 — `DROP` antes de `RETURNS VOID` | incorporado | `supabase/migrations/20260301000000_fix_cleanup_old_notifications_drop.sql` |
+| #385 / #392 | 42P13 do `cleanup_old_notifications` no Supabase Preview | incorporado por equivalente mais forte | `supabase/migrations/000_notification_functions_replay_guard.sql` roda **antes** de `004` e derruba a assinatura `VOID`; contrato final em `20261125100000_notification_functions_contract.sql` |
+| #286 | Remove policies "Allow all" que anulavam o RLS | incorporado | `supabase/migrations/20261118130500_block_permissive_allow_all_policies.sql` |
+| #288 | 4 migrations de hardening da #119 | incorporado | `20261118130000_harden_storage_and_public_favorites_acl.sql`, `20261118130100_enable_scoped_business_realtime.sql` (+ `…130400`, `…130500`), todas pela #305 |
+| #289 | Destaque de kit vira operação atômica no banco | incorporado | `20261118130400_pin_custom_kit_atomically.sql`; `set_custom_kit_pinned` em `src/integrations/supabase/types.ts` e `useCustomKitPersistence.ts` |
+| #298 | RPC do painel de auditoria do hub | incorporado | `get_connections_hub_operational_evidence` criada em `20261118130000_…` e consumida por `supabase/functions/connections-hub-audit/index.ts` |
+| #308 / #318 | Backport CORS (`admin-audit-hook`) na branch de produção | incorporado | a branch de produção inteira entrou pela #305 (mesmas migrations `20261118*`); `admin-audit-hook` responde em produção (sonda abaixo) |
+| #326 / #346 / #348 / #350 / #360 | BI para de carimbar número inventado como real | incorporado pela #361 | `ComparativoIndisponivel` e `AvisoDeCacheDesatualizado` em `src/components/bi/ClientVsIndustryComparison.tsx`; `MIN_SECTOR_COMPANIES` em `src/hooks/bi/useClientSeasonality.ts`; `hasIndustryData` em radar/heatmap |
+| #374 | Catraca do selo de inteligência não inventado | incorporado por equivalente | `tests/hooks/useProductIntelligenceBadges.market-data.test.tsx` cobre o mesmo contrato |
+| #394 | `send-transactional-email` na publicação de funções | incorporado | `.github/workflows/deploy-sicoob-functions.yml` lista `send-transactional-email` no laço de `supabase functions deploy` |
+
+**Nenhuma das 20 tem trabalho parcial ainda ausente da `main`** por conteúdo, arquivo ou nome de
+objeto — incluindo as duas que pareciam ser o contrário: a #385/#392 (o 42P13 do preview está
+resolvido por uma guarda de replay que roda antes do arquivo legado) e a #318 (a branch foi
+apagada, mas o head está na tag `arquivo/claude-fix-prod-cors-audit-261118-1034` e na PR).
+
+### Mergeadas fora da `main` (base colapsada)
+
+13 PRs mergeadas cujo `baseRefName` não é `main`; o merge delas não prova que o conteúdo chegou
+à `main`, por isso cada uma foi medida:
+
+| PR | Base | Situação na `main` |
+| --- | --- | --- |
+| #26, #36, #45, #46 | ramos `fix/sicoob-*` de setembro | adjudicadas em [`cobertura-refs.md`](cobertura-refs.md) (`:1127`); a página de aprovação legada que a #26 apagava **já não existe** na `main` (0 arquivos `public-approval`/`PublicQuoteApprovalPage`) |
+| #101 | `devin/1791190000-ux-onda1` (a #100, fechada sem merge) | recuperada por equivalente (`useScrollRestoration`, transição, `dirty-registry`) |
+| #251 | manutenção local | `--git-common-dir` em `scripts/maintenance/lib.mjs:198` e `:224`; `.gitignore:100` cobre `/.tools/graphify/.venv/` |
+| #341, #356 | trava do kit | #334/#341 na `main`; o aviso de saída da #356 é o sinal de dirty (#357/#359) |
+| #347, #349, #351 | BI | entraram pela #361 (mesmos tokens `ComparativoIndisponivel`/`AvisoDeCacheDesatualizado`) |
+| #359 | sinal de dirty | `useScreenDirtyState` + `useQuoteInitialization` na `main` |
+| #412 | hash da allowlist de verba | `20261122120000_pa_budget_full_lifecycle.sql` com sha256 `a95d26fb…7141d8` = o da allowlist |
+
+### Sonda de produção — nenhuma tela chama função inexistente
+
+`supabase/config.toml` declara `project_id = "cfmzkthhgliqelozlmwu"`. As **57** funções
+invocadas por `supabase.functions.invoke('<nome>')` no `src/` foram chamadas contra
+`https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/<nome>`: **44×401, 9×400, 4×403,
+zero `404 NOT_FOUND`**. Função ausente devolveria `{"code":"NOT_FOUND"}`, como acontece com um
+nome inventado. Ou seja: a allowlist do workflow de publicação não é a lista do que está no ar —
+o ambiente tem mais funções publicadas do que as 22 do `deploy-sicoob-functions.yml`.
+
+### Três pendências que envelheceram (correção desta rodada)
+
+1. `src/pages/QuoteBuilderPage.tsx` **tem** estado de falha de carga: `:176-185` devolve
+   `role="alert"` com "Tentar novamente", alimentado por `quoteLoadError`
+   (`useQuoteBuilderState.ts:536`) que `useQuoteInitialization.ts:319/322/344` preenche em
+   não-encontrado e em falha. O bullet da rodada de 24/11 (`:941-943`) está vencido.
+2. `src/components/intelligence/MarketIntelligenceChart.tsx:5` hoje diz "Nunca inventa dados:
+   sem registros reais, mostra estado vazio", e a série fabricada saiu na #434. O bullet
+   `:944-945` está vencido.
+3. A tela legada de aprovação pública (`src/pages/PublicQuoteApprovalPage.tsx` e os 4 módulos de
+   `src/pages/public-approval/`) **não existe mais** na `main` — a limpeza que a #26 pedia já
+   foi feita. `src/routes/config/public.ts:45` aponta `/approve/:token` para a página nova.
+
+### O que continua aberto (e não é perda de trabalho)
+
+- `tests/` da tag `arquivo/claude-fix-prod-cors-audit-261118-1034`: 46 arquivos ausentes na
+  `main`, dos quais 5 dependem de módulo que não existe mais, 3 de módulo renomeado e 38
+  apontam para módulo existente — amostra adjudicada mostrou contrato equivalente com outro
+  nome (ex.: `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` contra
+  `useQuoteInitialization.loading.test.ts` na ref). **Não adjudicados um a um**: por isso a tag
+  fica.
+- `WEBHOOK_DISPATCHER_SECRET` (provisionamento) e a fila de PRs de rule 8 seguem como estavam.
+- `DIRECTORY_CAP = 200` em `src/hooks/useCrmCompanies.ts:36` limita o diretório do orçamento;
+  é contrato documentado do portal (`portal-access-policy.ts`), não trabalho perdido.
