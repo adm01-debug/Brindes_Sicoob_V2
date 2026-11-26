@@ -4847,15 +4847,23 @@
    "arquivo": "src/lib/sicoob/paBudgetState.ts",
    "camada": "lib",
    "exports": [
+    "BudgetCompetence",
     "PaBudgetAmounts",
     "PaBudgetState",
+    "formatBudgetCompetence",
     "hasConfiguredPaBudget",
+    "isCarryOverCompetence",
     "isOrderOverPaBudget",
+    "nextFutureCompetence",
+    "pickBudgetForCompetence",
+    "pickBudgetForExactCompetence",
+    "readBudgetCompetence",
     "readPaBudgetAmounts",
+    "resolveBudgetCompetence",
     "resolvePaBudgetState"
    ],
    "export_default": null,
-   "linhas": 90,
+   "linhas": 191,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4864,13 +4872,15 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 4,
+   "usado_por": 6,
    "usado_por_modulos": [
     "components/sicoob",
+    "hooks",
+    "hooks/admin",
     "pages/sicoob",
     "services/sicoob"
    ],
-   "coberto_por_testes": 2,
+   "coberto_por_testes": 3,
    "orfao": false
   },
   {
@@ -5547,7 +5557,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 563,
+   "usado_por": 564,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -6583,7 +6593,7 @@
    "usado_por_modulos": [
     "hooks/sicoob"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

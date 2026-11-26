@@ -928,13 +928,13 @@
   },
   {
    "modulo": "components/cart",
-   "arquivos": 17,
+   "arquivos": 18,
    "testes": 0,
-   "linhas": 2437,
+   "linhas": 2650,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 15,
+   "componentes": 16,
    "hooks_locais": [
     "useApprovalThreshold",
     "useAuth",
@@ -3077,6 +3077,7 @@
     "useAdminPermissions",
     "useAdvancedFilters",
     "useAdvancedPriceSearch",
+    "useApprovalThreshold",
     "useAriaLive",
     "useAuditLog",
     "useAuth",
@@ -7267,7 +7268,7 @@
    "modulo": "hooks",
    "arquivos": 211,
    "testes": 0,
-   "linhas": 35910,
+   "linhas": 35899,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8420,6 +8421,7 @@
     "lib/personalization",
     "lib/quotes",
     "lib/security",
+    "lib/sicoob",
     "lib/system",
     "lib/telemetry",
     "lib/validations",
@@ -8450,7 +8452,7 @@
    "modulo": "hooks/admin",
    "arquivos": 4,
    "testes": 0,
-   "linhas": 593,
+   "linhas": 697,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8529,7 +8531,8 @@
    ],
    "depende_de_modulos": [
     "contexts",
-    "integrations/supabase"
+    "integrations/supabase",
+    "lib/sicoob"
    ],
    "pacotes_externos": [
     "@tanstack/react-query",
@@ -11622,7 +11625,7 @@
    "modulo": "lib/sicoob",
    "arquivos": 8,
    "testes": 0,
-   "linhas": 567,
+   "linhas": 668,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11644,6 +11647,8 @@
    },
    "importado_por_outros_modulos": [
     "components/sicoob",
+    "hooks",
+    "hooks/admin",
     "hooks/sicoob",
     "pages/sicoob",
     "services/sicoob"
@@ -14476,7 +14481,7 @@
    "modulo": "pages/sicoob",
    "arquivos": 22,
    "testes": 0,
-   "linhas": 7190,
+   "linhas": 7189,
    "itens_menu": [
     "Acompanhamento",
     "Agregados e recebimentos",

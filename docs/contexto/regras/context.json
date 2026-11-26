@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
+  "sha": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 21:05 UTC",
-  "files_total": 5351,
-  "code_files": 3911,
-  "code_lines": 576794
+  "generated_at": "2026-11-26 21:41 UTC",
+  "files_total": 5356,
+  "code_files": 3916,
+  "code_lines": 577661
  },
  "version": "1.3.2",
- "facts_hash": "3087afe311eb2e5c",
+ "facts_hash": "6524962120bf220b",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1512,
-   ".tsx": 1496,
+   ".ts": 1514,
+   ".tsx": 1499,
    ".sql": 695,
    ".mjs": 146,
    ".py": 69,
@@ -56214,7 +56214,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 97
+    "deps_count": 98
    },
    {
     "path": "",
@@ -56596,7 +56596,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 144
+    "deps_count": 145
    },
    {
     "path": "",
@@ -57024,7 +57024,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 126
+    "deps_count": 127
    },
    {
     "path": "",
@@ -57089,7 +57089,7 @@
      "save_quote_atomic_attested",
      "save_quote_atomic_idempotent_attested"
     ],
-    "deps_count": 115
+    "deps_count": 116
    },
    {
     "path": "",
@@ -62811,7 +62811,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1311,
+  "components_count": 1313,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65642,8 +65642,8 @@
   },
   {
    "module": "src/components",
-   "files": 1137,
-   "lines": 168235,
+   "files": 1138,
+   "lines": 168448,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65976,7 +65976,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48719,
+   "lines": 48812,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66254,7 +66254,7 @@
   {
    "module": "src/lib",
    "files": 170,
-   "lines": 23010,
+   "lines": 23111,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -66422,7 +66422,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52323,
+   "lines": 52322,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67424,8 +67424,8 @@
   },
   {
    "module": "tests",
-   "files": 729,
-   "lines": 97630,
+   "files": 733,
+   "lines": 98091,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -81635,8 +81635,12 @@
     "text": "50, 0); // estimativa volume mínimo"
    },
    {
-    "file": "src/components/cart/CartHeaderButton.tsx",
-    "text": "lista precisa descontar somente o que está renderizado acima e abaixo dela:"
+    "file": "src/components/cart/CartApprovalThresholdNotice.tsx",
+    "text": "* Verba cadastrada apenas em competencia futura. O mes do carrinho continua sem"
+   },
+   {
+    "file": "src/components/cart/CartApprovalThresholdNotice.tsx",
+    "text": "alcada, mas a tela nao pode se calar: sem este aviso o comprador so descobre o"
    },
    {
     "file": "src/components/cart/cart-company-options.ts",
@@ -82431,6 +82435,34 @@
     "text": "O fluxo antigo comparava somente credential_id e podia declarar um user_id"
    },
    {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "* A alcada que decide a aprovacao do pedido e a do PA (limite aprovado para a"
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "cooperativa); o limite pessoal do perfil so vale quando o PA nao tem limite"
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "configurado, senao a tela mostra um limite e decide por outro."
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "* Alcada numerica da linha de verba. Zero e um limite real — o servidor recusa a"
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "confirmacao direta de qualquer pedido positivo —, entao nao pode cair no"
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "* Alcada numerica aprovada do PA para a competencia pedida (0 e limite real)."
+   },
+   {
+    "file": "src/hooks/admin/useApprovalThreshold.ts",
+    "text": "`null` = a linha do mes nao tem limite preenchido."
+   },
+   {
     "file": "src/hooks/auth/useUserRoles.ts",
     "text": "Uma resposta da sessão anterior não pode restaurar seus privilégios."
    },
@@ -82901,6 +82933,10 @@
    {
     "file": "src/lib/sicoob/orderCostCenterAllocation.ts",
     "text": "recusava o rateio inteiro; aqui a linha que nao comporta o desconto zera e o"
+   },
+   {
+    "file": "src/lib/sicoob/paBudgetState.ts",
+    "text": "— o gestor veria um limite que ainda nao foi aprovado para aquele mes."
    },
    {
     "file": "src/lib/sicoob/sla-cycle.ts",
@@ -98906,6 +98942,18 @@
     "field": "status",
     "value": "super",
     "kind": "compara"
+   },
+   {
+    "file": "src/components/cart/CartApprovalThresholdNotice.tsx",
+    "field": "state",
+    "value": "exact",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/components/cart/CartApprovalThresholdNotice.tsx",
+    "field": "state",
+    "value": "carry-over",
+    "kind": "escreve"
    },
    {
     "file": "src/components/cart/CartHealthChecklist.tsx",
@@ -122440,6 +122488,42 @@
     "name": "cliente com histórico: mantém o selo de dado real"
    },
    {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "CartApprovalThresholdNotice"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "avisa que o mês do carrinho não tem alçada, sem prometer aprovação"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "não avisa herança quando o mês corrente tem limite aprovado"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "bloqueia a mensagem de aprovação quando o carrinho excede a alçada"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "mostra alçada de R$ 0 como limite real, e não como limite ausente"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "acusa o mês sem limite preenchido em vez de mostrar o valor herdado"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "avisa que a verba visível é só do mês seguinte, sem se calar"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "não diz que falta verba quando o mês do carrinho tem linha sem alçada"
+   },
+   {
+    "file": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+    "name": "não acusa alçada ausente quando nenhuma linha de verba está visível"
+   },
+   {
     "file": "tests/components/cart/cart-company-options.test.ts",
     "name": "opções de empresa do carrinho"
    },
@@ -122501,7 +122585,7 @@
    },
    {
     "file": "tests/components/cart/cart-header-scroll.test.tsx",
-    "name": "mantém o CTA fora da área rolável e limita a altura do viewport"
+    "name": "limita o painel e deixa a lista ceder altura para o rodapé"
    },
    {
     "file": "tests/components/cart/cart-header-scroll.test.tsx",
@@ -129320,6 +129404,42 @@
     "name": "currentIP é populado pelo ipify"
    },
    {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "useApprovalThreshold"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "usa a alçada da competência do pedido, não a do mês corrente"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "não aplica alçada futura e rotula a competência de onde o limite veio"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "a alçada do PA vence o limite pessoal do perfil"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "cai no limite pessoal quando o PA não tem limite aprovado"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "avisa que só existe verba futura em vez de se calar como PA sem verba"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "trata a alçada de R$ 0 como limite real do PA, e não como limite ausente"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "só consulta limites por categoria quando algum item tem categoria"
+   },
+   {
+    "file": "tests/hooks/useApprovalThreshold.test.tsx",
+    "name": "usa a alçada do PA do pedido, e não a do usuário logado"
+   },
+   {
     "file": "tests/hooks/useAutoSave.test.tsx",
     "name": "useAutoSave"
    },
@@ -136048,6 +136168,30 @@
     "name": "isOverlayDismissEvent distingue o evento sintético do digitado"
    },
    {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "competência da verba"
+   },
+   {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "usa a linha exata da competência pedida"
+   },
+   {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "cai para a última competência anterior quando a exata não existe"
+   },
+   {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "nunca usa competência futura"
+   },
+   {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "devolve nulo sem competência ou sem linhas"
+   },
+   {
+    "file": "tests/lib/paBudgetCompetence.test.ts",
+    "name": "resolve a competência em UTC, como as colunas ano/mes"
+   },
+   {
     "file": "tests/lib/print-area-grouping.test.ts",
     "name": "groupPrintAreasByComponent"
    },
@@ -142090,6 +142234,22 @@
    {
     "file": "tests/services/sicoobOrderService.test.ts",
     "name": "nao consulta profiles quando nenhum log tem autor"
+   },
+   {
+    "file": "tests/services/sicoobStatsCompetence.test.ts",
+    "name": "sicoobStatsService.getPaDashboardStats"
+   },
+   {
+    "file": "tests/services/sicoobStatsCompetence.test.ts",
+    "name": "mostra a verba da competência corrente e ignora competência futura"
+   },
+   {
+    "file": "tests/services/sicoobStatsCompetence.test.ts",
+    "name": "não herda a verba do mês anterior: saldo é mensal"
+   },
+   {
+    "file": "tests/services/sicoobStatsCompetence.test.ts",
+    "name": "declara verba não configurada quando só existe competência futura"
    },
    {
     "file": "tests/services/sicoob/approvalPolicyService.test.ts",
@@ -162939,10 +163099,6 @@
    },
    {
     "file": "src/services/sicoob/statsService.ts",
-    "limit": "1"
-   },
-   {
-    "file": "src/services/sicoob/statsService.ts",
     "limit": "5"
    },
    {
@@ -165733,6 +165889,12 @@
       "compara:src/lib/security/circuit-breaker.ts",
       "compara:src/utils/resilience.ts",
       "compara:supabase/functions/_shared/circuit-breaker.ts"
+     ],
+     "exact": [
+      "escreve:src/components/cart/CartApprovalThresholdNotice.tsx"
+     ],
+     "carry-over": [
+      "escreve:src/components/cart/CartApprovalThresholdNotice.tsx"
      ],
      "blocked": [
       "compara:src/components/routing/GlobalExitGuard.tsx"
@@ -179910,6 +180072,20 @@
     "msg": "valor `empty` para `state` usado no código não existe em nenhum enum do banco/TS",
     "where": [
      "compara:src/components/admin/connections/ExpectedKeysMatchPanel.tsx"
+    ]
+   },
+   {
+    "kind": "status",
+    "msg": "valor `exact` para `state` usado no código não existe em nenhum enum do banco/TS",
+    "where": [
+     "escreve:src/components/cart/CartApprovalThresholdNotice.tsx"
+    ]
+   },
+   {
+    "kind": "status",
+    "msg": "valor `carry-over` para `state` usado no código não existe em nenhum enum do banco/TS",
+    "where": [
+     "escreve:src/components/cart/CartApprovalThresholdNotice.tsx"
     ]
    },
    {
@@ -195489,6 +195665,30 @@
    ],
    "doc": "CartActionsMenu - Menu colapsado com ações secundárias do carrinho. Reduz a sidebar de 8 botões para 1 botão primário + 1 menu."
   },
+  "src/components/cart/CartApprovalThresholdNotice.tsx": {
+   "path": "src/components/cart/CartApprovalThresholdNotice.tsx",
+   "lines": 181,
+   "exports": [
+    "interface CartThresholdItem",
+    "function CartApprovalThresholdNotice"
+   ],
+   "status_values": [
+    {
+     "field": "state",
+     "value": "exact",
+     "kind": "escreve"
+    },
+    {
+     "field": "state",
+     "value": "carry-over",
+     "kind": "escreve"
+    }
+   ],
+   "rule_comments": [
+    "* Verba cadastrada apenas em competencia futura. O mes do carrinho continua sem",
+    "alcada, mas a tela nao pode se calar: sem este aviso o comprador so descobre o"
+   ]
+  },
   "src/components/cart/CartCompanyPicker.tsx": {
    "path": "src/components/cart/CartCompanyPicker.tsx",
    "lines": 205,
@@ -195533,16 +195733,13 @@
   },
   "src/components/cart/CartHeaderButton.tsx": {
    "path": "src/components/cart/CartHeaderButton.tsx",
-   "lines": 312,
+   "lines": 332,
    "exports": [
     "function CartHeaderButton"
    ],
    "navigates": [
     "/carrinhos",
     "/orcamentos/novo"
-   ],
-   "rule_comments": [
-    "lista precisa descontar somente o que está renderizado acima e abaixo dela:"
    ],
    "doc": "CartHeaderButton - Ícone de carrinho no header com popover de resumo",
    "calc_fns": [
@@ -195670,7 +195867,7 @@
   },
   "src/components/cart/MiniCart.tsx": {
    "path": "src/components/cart/MiniCart.tsx",
-   "lines": 140,
+   "lines": 152,
    "exports": [
     "function MiniCart"
    ],
@@ -212639,7 +212836,7 @@
   },
   "src/hooks/usePaBudget.ts": {
    "path": "src/hooks/usePaBudget.ts",
-   "lines": 143,
+   "lines": 132,
    "exports": [
     "interface PaBudget",
     "interface PaBudgetCompetence",
@@ -216262,8 +216459,10 @@
   },
   "src/hooks/admin/useApprovalThreshold.ts": {
    "path": "src/hooks/admin/useApprovalThreshold.ts",
-   "lines": 97,
+   "lines": 201,
    "exports": [
+    "interface ApprovalThresholdBudgetRow",
+    "interface ApprovalThresholdOptions",
     "const useApprovalThreshold"
    ],
    "tables": [
@@ -216287,6 +216486,15 @@
      "pa_id"
     ]
    },
+   "rule_comments": [
+    "* A alcada que decide a aprovacao do pedido e a do PA (limite aprovado para a",
+    "cooperativa); o limite pessoal do perfil so vale quando o PA nao tem limite",
+    "configurado, senao a tela mostra um limite e decide por outro.",
+    "* Alcada numerica da linha de verba. Zero e um limite real — o servidor recusa a",
+    "confirmacao direta de qualquer pedido positivo —, entao nao pode cair no",
+    "* Alcada numerica aprovada do PA para a competencia pedida (0 e limite real).",
+    "`null` = a linha do mes nao tem limite preenchido."
+   ],
    "hooks": [
     "useApprovalThreshold"
    ]
@@ -223511,13 +223719,21 @@
   },
   "src/lib/sicoob/paBudgetState.ts": {
    "path": "src/lib/sicoob/paBudgetState.ts",
-   "lines": 90,
+   "lines": 191,
    "exports": [
     "type PaBudgetState",
     "function hasConfiguredPaBudget",
     "interface PaBudgetAmounts",
     "function readPaBudgetAmounts",
     "function resolvePaBudgetState",
+    "interface BudgetCompetence",
+    "function resolveBudgetCompetence",
+    "function formatBudgetCompetence",
+    "function pickBudgetForCompetence",
+    "function nextFutureCompetence",
+    "function readBudgetCompetence",
+    "function isCarryOverCompetence",
+    "function pickBudgetForExactCompetence",
     "function isOrderOverPaBudget"
    ],
    "enums": [
@@ -223532,6 +223748,9 @@
      "value": "configured",
      "kind": "compara"
     }
+   ],
+   "rule_comments": [
+    "— o gestor veria um limite que ainda nao foi aprovado para aquele mes."
    ]
   },
   "src/lib/sicoob/sla-cycle.ts": {
@@ -229301,7 +229520,7 @@
   },
   "src/pages/sicoob/orders/OrderDetailPage.tsx": {
    "path": "src/pages/sicoob/orders/OrderDetailPage.tsx",
-   "lines": 326,
+   "lines": 325,
    "exports": [
     "function OrderDetailPage"
    ],
@@ -231782,7 +232001,6 @@
     }
    ],
    "pagination": [
-    "1",
     "5"
    ]
   },
@@ -249538,6 +249756,22 @@
     "cliente com histórico: mantém o selo de dado real"
    ]
   },
+  "tests/components/cart/cart-approval-threshold-notice.test.tsx": {
+   "path": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+   "lines": 156,
+   "is_test": true,
+   "tests": [
+    "CartApprovalThresholdNotice",
+    "avisa que o mês do carrinho não tem alçada, sem prometer aprovação",
+    "não avisa herança quando o mês corrente tem limite aprovado",
+    "bloqueia a mensagem de aprovação quando o carrinho excede a alçada",
+    "mostra alçada de R$ 0 como limite real, e não como limite ausente",
+    "acusa o mês sem limite preenchido em vez de mostrar o valor herdado",
+    "avisa que a verba visível é só do mês seguinte, sem se calar",
+    "não diz que falta verba quando o mês do carrinho tem linha sem alçada",
+    "não acusa alçada ausente quando nenhuma linha de verba está visível"
+   ]
+  },
   "tests/components/cart/cart-company-options.test.ts": {
    "path": "tests/components/cart/cart-company-options.test.ts",
    "lines": 61,
@@ -249575,13 +249809,13 @@
   },
   "tests/components/cart/cart-header-scroll.test.tsx": {
    "path": "tests/components/cart/cart-header-scroll.test.tsx",
-   "lines": 139,
+   "lines": 153,
    "is_test": true,
    "tests": [
     "ScrollArea",
     "repassa viewportClassName ao elemento que realmente rola",
     "CartHeaderButton — janela baixa",
-    "mantém o CTA fora da área rolável e limita a altura do viewport",
+    "limita o painel e deixa a lista ceder altura para o rodapé",
     "não reserva o rodapé quando o orçamento ativo está sem itens"
    ]
   },
@@ -252809,6 +253043,22 @@
     "isIPAllowed bloqueia IPs não cadastrados quando há restrição",
     "addIP retorna erro ",
     "currentIP é populado pelo ipify"
+   ]
+  },
+  "tests/hooks/useApprovalThreshold.test.tsx": {
+   "path": "tests/hooks/useApprovalThreshold.test.tsx",
+   "lines": 170,
+   "is_test": true,
+   "tests": [
+    "useApprovalThreshold",
+    "usa a alçada da competência do pedido, não a do mês corrente",
+    "não aplica alçada futura e rotula a competência de onde o limite veio",
+    "a alçada do PA vence o limite pessoal do perfil",
+    "cai no limite pessoal quando o PA não tem limite aprovado",
+    "avisa que só existe verba futura em vez de se calar como PA sem verba",
+    "trata a alçada de R$ 0 como limite real do PA, e não como limite ausente",
+    "só consulta limites por categoria quando algum item tem categoria",
+    "usa a alçada do PA do pedido, e não a do usuário logado"
    ]
   },
   "tests/hooks/useAutoSave.test.tsx": {
@@ -256354,6 +256604,19 @@
     "fechar overlay pelo Voltar não limpa o formulário do gerador de mockup",
     "Escape digitado pelo usuário continua limpando o formulário",
     "isOverlayDismissEvent distingue o evento sintético do digitado"
+   ]
+  },
+  "tests/lib/paBudgetCompetence.test.ts": {
+   "path": "tests/lib/paBudgetCompetence.test.ts",
+   "lines": 43,
+   "is_test": true,
+   "tests": [
+    "competência da verba",
+    "usa a linha exata da competência pedida",
+    "cai para a última competência anterior quando a exata não existe",
+    "nunca usa competência futura",
+    "devolve nulo sem competência ou sem linhas",
+    "resolve a competência em UTC, como as colunas ano/mes"
    ]
   },
   "tests/lib/print-area-grouping.test.ts": {
@@ -260350,6 +260613,17 @@
     "nao consulta profiles quando nenhum log tem autor"
    ]
   },
+  "tests/services/sicoobStatsCompetence.test.ts": {
+   "path": "tests/services/sicoobStatsCompetence.test.ts",
+   "lines": 78,
+   "is_test": true,
+   "tests": [
+    "sicoobStatsService.getPaDashboardStats",
+    "mostra a verba da competência corrente e ignora competência futura",
+    "não herda a verba do mês anterior: saldo é mensal",
+    "declara verba não configurada quando só existe competência futura"
+   ]
+  },
   "tests/services/sicoob/approvalPolicyService.test.ts": {
    "path": "tests/services/sicoob/approvalPolicyService.test.ts",
    "lines": 73,
@@ -261378,10 +261652,33 @@
   }
  },
  "git": {
-  "sha": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
+  "sha": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "ee56b7f",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: verba e alçada usam a competência do pedido (SIC-028) (#469)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+     "src/components/cart/CartApprovalThresholdNotice.tsx",
+     "src/components/cart/CartHeaderButton.tsx",
+     "src/components/cart/MiniCart.tsx",
+     "src/hooks/admin/useApprovalThreshold.ts",
+     "src/hooks/usePaBudget.ts",
+     "src/lib/sicoob/paBudgetState.ts",
+     "src/pages/sicoob/orders/OrderDetailPage.tsx",
+     "src/services/sicoob/statsService.ts",
+     "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+     "tests/components/cart/cart-header-scroll.test.tsx",
+     "tests/hooks/useApprovalThreshold.test.tsx",
+     "tests/lib/paBudgetCompetence.test.ts",
+     "tests/services/sicoobStatsCompetence.test.ts"
+    ]
+   },
    {
     "sha": "e5e0f47",
     "date": "2026-11-26",
@@ -261747,18 +262044,6 @@
      "inventario/estado/edges.json",
      "inventario/estado/rotas.json"
     ]
-   },
-   {
-    "sha": "ba511bb",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)",
-    "files": [
-     "docs/agentes/banco.md",
-     "scripts/db/migration-ledger-baseline.json",
-     "supabase/migrations/000_notification_functions_replay_guard.sql",
-     "supabase/migrations/20261125100000_notification_functions_contract.sql"
-    ]
    }
   ],
   "hot_files": [
@@ -261768,11 +262053,11 @@
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
-    5
+    6
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    5
+    6
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
@@ -261811,35 +262096,35 @@
     2
    ],
    [
-    "src/components/security/MfaEnrollmentDialog.tsx",
+    "src/components/cart/CartApprovalThresholdNotice.tsx",
     1
    ],
    [
-    "src/components/security/TwoFactorSetup.tsx",
+    "src/components/cart/CartHeaderButton.tsx",
     1
    ],
    [
-    "tests/security/mfa-enrollment-sem-redirect.test.tsx",
+    "src/components/cart/MiniCart.tsx",
     1
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+    "src/hooks/admin/useApprovalThreshold.ts",
     1
    ],
    [
-    "src/components/common/PersistentBreadcrumbs.tsx",
+    "src/hooks/usePaBudget.ts",
     1
    ],
    [
-    "src/components/layout/SidebarReorganized.tsx",
+    "src/lib/sicoob/paBudgetState.ts",
     1
    ],
    [
-    "src/lib/access/role-policy.ts",
+    "src/pages/sicoob/orders/OrderDetailPage.tsx",
     1
    ],
    [
-    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    "src/services/sicoob/statsService.ts",
     1
    ]
   ]

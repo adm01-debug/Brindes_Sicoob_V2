@@ -6,7 +6,7 @@
    "src/pages (119)"
   ],
   "componentes": [
-   "src/components (1005)",
+   "src/components (1006)",
    "src/pages (163)",
    "src/contexts (9)"
   ],
@@ -21,7 +21,7 @@
    "src/services (25)"
   ],
   "testes": [
-   "tests/ (707)",
+   "tests/ (711)",
    "e2e/ (150)",
    "outro (54)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1180)"
+  ".tsx (1181)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: verba e alçada usam a competência do pedido (SIC-028) (#469)",
    "fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)",
    "chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)",
    "feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)",
-   "fix: link do aviso de alcada abre a fila de aprovacoes (#467)",
-   "fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)"
+   "fix: link do aviso de alcada abre a fila de aprovacoes (#467)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

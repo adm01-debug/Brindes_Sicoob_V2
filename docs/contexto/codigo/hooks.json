@@ -2061,7 +2061,7 @@
    "hooks_exportados": [
     "useApprovalThreshold"
    ],
-   "linhas": 97,
+   "linhas": 201,
    "dominio": "hooks/admin",
    "tabelas": [
     "pa_budgets",
@@ -2074,13 +2074,14 @@
     "useQuery"
    ],
    "canais_realtime": [],
-   "usado_por": 3,
+   "usado_por": 4,
    "usado_por_arquivos": [
+    "src/components/cart/CartApprovalThresholdNotice.tsx",
     "src/components/cart/MiniCart.tsx",
     "src/hooks/index.ts",
     "src/pages/sicoob/orders/OrderDetailPage.tsx"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/admin/useAuditLog.ts",
@@ -6794,7 +6795,7 @@
    "hooks_exportados": [
     "usePaBudget"
    ],
-   "linhas": 143,
+   "linhas": 132,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"

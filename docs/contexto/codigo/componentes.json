@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1180,
+ "total": 1181,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -4656,6 +4656,23 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/cart/CartApprovalThresholdNotice.tsx",
+   "exports": [
+    "CartApprovalThresholdNotice",
+    "CartThresholdItem"
+   ],
+   "export_default": null,
+   "linhas": 181,
+   "dominio": "components/cart",
+   "hooks_locais": [
+    "useApprovalThreshold"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/cart/CartCompanyPicker.tsx",
    "exports": [
     "CartCompanyPicker"
@@ -4707,7 +4724,7 @@
     "CartHeaderButton"
    ],
    "export_default": null,
-   "linhas": 312,
+   "linhas": 332,
    "dominio": "components/cart",
    "hooks_locais": [
     "useSellerCartContext"
@@ -4807,7 +4824,7 @@
     "MiniCart"
    ],
    "export_default": null,
-   "linhas": 140,
+   "linhas": 152,
    "dominio": "components/cart",
    "hooks_locais": [
     "useApprovalThreshold",
@@ -18452,7 +18469,7 @@
     "OrderDetailPage"
    ],
    "export_default": "OrderDetailPage",
-   "linhas": 326,
+   "linhas": 325,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useApprovalRequests",

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "e5e0f47ccff76bc8fe6f0ea79d2a30f5687898f3",
+  "commit": "ee56b7fbbc3514dd44098acaf584f647581a3daa",
   "branch": "main",
-  "data_commit": "2026-11-26T17:47:09-03:00",
+  "data_commit": "2026-11-26T18:31:31-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "ee56b7f",
+    "data": "2026-11-26",
+    "assunto": "fix: verba e alçada usam a competência do pedido (SIC-028) (#469)"
+   },
    {
     "sha": "e5e0f47",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "8747cf2",
     "data": "2026-11-25",
     "assunto": "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)"
-   },
-   {
-    "sha": "8f7aeeb",
-    "data": "2026-11-25",
-    "assunto": "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)"
    }
   ],
-  "arquivos_mudados_7d": 967,
+  "arquivos_mudados_7d": 973,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -160,11 +160,15 @@
     "mudancas": 20
    },
    {
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
+    "mudancas": 19
+   },
+   {
     "pasta": "src/pages/admin",
     "mudancas": 19
    },
    {
-    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
+    "pasta": "src/pages/sicoob",
     "mudancas": 17
    },
    {
@@ -184,16 +188,12 @@
     "mudancas": 16
    },
    {
-    "pasta": "src/pages/sicoob",
-    "mudancas": 16
-   },
-   {
     "pasta": "src/components/quotes",
     "mudancas": 14
    },
    {
     "pasta": "src/services/sicoob",
-    "mudancas": 13
+    "mudancas": 14
    }
   ],
   "arquivos_mais_mudados_90d": [
@@ -227,7 +227,7 @@
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 13
+    "mudancas": 12
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
@@ -242,15 +242,15 @@
     "mudancas": 11
    },
    {
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+    "mudancas": 11
+   },
+   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
    {
     "arquivo": ".github/workflows/lighthouse.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     "mudancas": 10
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 241
+    "commits": 242
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5348,
-  "arquivos_codigo": 3234,
-  "linhas_codigo": 511970,
+  "arquivos_total": 5353,
+  "arquivos_codigo": 3239,
+  "linhas_codigo": 512837,
   "rotas": 142,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 87,
   "modulos": 146,
-  "componentes": 1180,
+  "componentes": 1181,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 960,
+  "testes": 964,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1137,
-   "linhas": 168235
+   "arquivos": 1138,
+   "linhas": 168448
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48719
+   "linhas": 48812
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/lib": {
    "arquivos": 170,
-   "linhas": 23010
+   "linhas": 23111
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52323
+   "linhas": 52322
   },
   "src/routes": {
    "arquivos": 9,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 173,
-   "linhas": 30548
+   "arquivos": 174,
+   "linhas": 30718
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -923,16 +923,16 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 160,
-   "linhas": 18562
+   "arquivos": 161,
+   "linhas": 18732
   },
   "tests/integration": {
    "arquivos": 4,
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 82,
-   "linhas": 9654
+   "arquivos": 83,
+   "linhas": 9697
   },
   "tests/load": {
    "arquivos": 1,
@@ -983,8 +983,8 @@
    "linhas": 1469
   },
   "tests/services": {
-   "arquivos": 16,
-   "linhas": 1811
+   "arquivos": 17,
+   "linhas": 1889
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,

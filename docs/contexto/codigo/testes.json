@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 960,
+ "total": 964,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 726
+  "unit": 730
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 707
+   "arquivos": 711
   },
   {
    "padrao": "e2e/",
@@ -2445,6 +2445,15 @@
    "casos": 13
   },
   {
+   "arquivo": "tests/components/cart/cart-approval-threshold-notice.test.tsx",
+   "tipo": "unit",
+   "linhas": 156,
+   "testa": [
+    "src/components/cart/CartApprovalThresholdNotice.tsx"
+   ],
+   "casos": 8
+  },
+  {
    "arquivo": "tests/components/cart/cart-company-options.test.ts",
    "tipo": "unit",
    "linhas": 61,
@@ -2468,7 +2477,7 @@
   {
    "arquivo": "tests/components/cart/cart-header-scroll.test.tsx",
    "tipo": "unit",
-   "linhas": 139,
+   "linhas": 153,
    "testa": [
     "src/components/cart/CartHeaderButton.tsx",
     "src/components/ui/scroll-area.tsx",
@@ -4529,6 +4538,15 @@
    "casos": 5
   },
   {
+   "arquivo": "tests/hooks/useApprovalThreshold.test.tsx",
+   "tipo": "unit",
+   "linhas": 170,
+   "testa": [
+    "src/hooks/admin/useApprovalThreshold.ts"
+   ],
+   "casos": 8
+  },
+  {
    "arquivo": "tests/hooks/useAutoSave.test.tsx",
    "tipo": "unit",
    "linhas": 267,
@@ -6226,6 +6244,15 @@
    "casos": 6
   },
   {
+   "arquivo": "tests/lib/paBudgetCompetence.test.ts",
+   "tipo": "unit",
+   "linhas": 43,
+   "testa": [
+    "src/lib/sicoob/paBudgetState.ts"
+   ],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/lib/personalization/adapters/customization-options.adapter.test.ts",
    "tipo": "unit",
    "linhas": 105,
@@ -7855,6 +7882,15 @@
    "casos": 14
   },
   {
+   "arquivo": "tests/services/sicoobStatsCompetence.test.ts",
+   "tipo": "unit",
+   "linhas": 78,
+   "testa": [
+    "src/services/sicoob/statsService.ts"
+   ],
+   "casos": 3
+  },
+  {
    "arquivo": "tests/setup-ref-warning-capture.ts",
    "tipo": "unit",
    "linhas": 140,
@@ -8467,6 +8503,7 @@
   "src/components/bi/ConfirmQuoteSuggestionsModal.tsx": 2,
   "src/components/bi/ExecutiveSummaryButton.tsx": 1,
   "src/components/bi/IndustryTrendingProducts.tsx": 1,
+  "src/components/cart/CartApprovalThresholdNotice.tsx": 1,
   "src/components/cart/CartCompanyPicker.tsx": 1,
   "src/components/cart/CartCompanyPickerDialog.tsx": 1,
   "src/components/cart/CartHeaderButton.tsx": 1,
@@ -8606,6 +8643,7 @@
   "src/contexts/ProductsContext.tsx": 3,
   "src/contexts/ProductsContextDef.ts": 1,
   "src/contexts/SellerCartContext.tsx": 1,
+  "src/hooks/admin/useApprovalThreshold.ts": 1,
   "src/hooks/auth/useUserRoles.ts": 1,
   "src/hooks/bi/useClientAffinity.ts": 1,
   "src/hooks/bi/useClientBI.ts": 5,
@@ -8814,7 +8852,7 @@
   "src/lib/sicoob/order-permissions.ts": 1,
   "src/lib/sicoob/orderBudgetProjection.ts": 1,
   "src/lib/sicoob/orderCostCenterAllocation.ts": 1,
-  "src/lib/sicoob/paBudgetState.ts": 2,
+  "src/lib/sicoob/paBudgetState.ts": 3,
   "src/lib/sicoob/sla-cycle.ts": 1,
   "src/lib/supabase-untyped.ts": 1,
   "src/lib/supplier-colors.ts": 1,
@@ -8892,6 +8930,7 @@
   "src/services/sicoob/fulfillmentService.ts": 1,
   "src/services/sicoob/logisticsReportService.ts": 1,
   "src/services/sicoob/orderService.ts": 1,
+  "src/services/sicoob/statsService.ts": 1,
   "src/services/sicoob/userService.ts": 1,
   "src/stores/useComparisonStore.ts": 1,
   "src/stores/useConfirmDialogStore.ts": 5,
@@ -9135,7 +9174,6 @@
    "src/contexts/ThemeContext.tsx",
    "src/hooks/admin/useAccessSecurity.ts",
    "src/hooks/admin/useAdminPermissions.ts",
-   "src/hooks/admin/useApprovalThreshold.ts",
    "src/hooks/admin/useAuditLog.ts",
    "src/hooks/auth/useAuthAAL.ts",
    "src/hooks/auth/useUserProfile.ts",
@@ -9413,8 +9451,7 @@
    "src/services/ramoAtividadeService.ts",
    "src/services/sicoob/costCenterService.ts",
    "src/services/sicoob/managerStatsService.ts",
-   "src/services/sicoob/reorderIdempotency.ts",
-   "src/services/sicoob/statsService.ts"
+   "src/services/sicoob/reorderIdempotency.ts"
   ]
  }
 }

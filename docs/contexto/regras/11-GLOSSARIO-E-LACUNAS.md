@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e5e0f47ccf` · branch `main` · 2026-11-26 21:05 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ee56b7fbbc` · branch `main` · 2026-11-26 21:41 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -358,6 +358,8 @@ _nenhum item encontrado_
 | status | valor `versao_ativa_duplicada` para `status` usado no código não existe em nenhum enum do banco/TS | `compara:tests/scenarios/migration-ledger.mjs` |
 | status | valor `mixed` para `state` usado no código não existe em nenhum enum do banco/TS | `escreve:src/components/admin/connections/ConnectionRowSourceBadge.tsx` |
 | status | valor `empty` para `state` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/admin/connections/ExpectedKeysMatchPanel.tsx` |
+| status | valor `exact` para `state` usado no código não existe em nenhum enum do banco/TS | `escreve:src/components/cart/CartApprovalThresholdNotice.tsx` |
+| status | valor `carry-over` para `state` usado no código não existe em nenhum enum do banco/TS | `escreve:src/components/cart/CartApprovalThresholdNotice.tsx` |
 | status | valor `over` para `state` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/sicoob/orders/OrderBudgetIntelligence.tsx` |
 | status | valor `expanded` para `state` usado no código não existe em nenhum enum do banco/TS | `escreve:src/components/ui/sidebar.tsx` |
 | status | valor `collapsed` para `state` usado no código não existe em nenhum enum do banco/TS | `compara:src/components/ui/sidebar.tsx` |

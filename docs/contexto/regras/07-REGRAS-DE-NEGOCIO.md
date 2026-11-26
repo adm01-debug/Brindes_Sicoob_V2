@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `e5e0f47ccf` · branch `main` · 2026-11-26 21:05 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `ee56b7fbbc` · branch `main` · 2026-11-26 21:41 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1388,7 +1388,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
-| … +101 linhas — lista completa em `context.json` | | | |
+| … +103 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -5315,7 +5315,6 @@ _nenhum item encontrado_
 | 0 | `src/services/sicoob/managerStatsService.ts` |
 | 10 | `src/services/sicoob/managerStatsService.ts` |
 | 5 | `src/services/sicoob/managerStatsService.ts` |
-| 1 | `src/services/sicoob/statsService.ts` |
 | 5 | `src/services/sicoob/statsService.ts` |
 | 1 | `supabase/functions/_shared/scheduled-report-data.ts` |
 | 2000 | `supabase/functions/_shared/scheduled-report-data.ts` |
@@ -5757,7 +5756,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7450 testes em 770 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7478 testes em 774 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5984,6 +5983,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.thresholdMatrix.test.tsx` | 9 | PriceFreshnessBadge × thresholdDays — matriz parametrizada · getPriceFreshness (util) classifica corretamente cada (threshold × dias) · threshold=$threshold, daysSince=$daysSince → status=$expected · variant=%s (catálogo: card / lista / tabela) … |
 | `tests/components/admin/connections/ZoneRefreshButton.collapsed.test.tsx` | 9 | ZoneRefreshButton — interação com zona colapsada · o botão de refresh permanece visível e clicável quando a zona está colapsada · invalida queryKeys mesmo com a zona colapsada · exibe estado de loading (texto + spinner) durante o refresh com zona colapsada … |
 | `tests/components/admin/connections/connectionStatus.test.ts` | 9 | resolveSupabaseConnectionStatus · readOnly cards são sempre active (gerenciados) · retorna  · retorna  … |
+| `tests/components/cart/cart-approval-threshold-notice.test.tsx` | 9 | CartApprovalThresholdNotice · avisa que o mês do carrinho não tem alçada, sem prometer aprovação · não avisa herança quando o mês corrente tem limite aprovado · bloqueia a mensagem de aprovação quando o carrinho excede a alçada … |
 | `tests/components/cart/cart-company-picker-dialog.error.test.tsx` | 9 | CartCompanyPickerDialog — erro no diretório · mostra erro + Tentar novamente quando o fetch falha, e recupera no retry · não inventa vazio no erro (a mensagem de vazio é exclusiva do sucesso) · picker inline: erro mostra Tentar novamente em vez de vazio … |
 | `tests/components/products/ProductSparkline.labels.test.tsx` | 9 | ProductSparkline — origem dos dados · renders the sparkline SVG when real data is available · does NOT show old  · identifica as saídas de estoque na grade de métricas … |
 | `tests/components/quotes/QuoteAutoSave.transicao.test.tsx` | 9 | QuoteAutoSave quando o orçamento deixa de ser editável · grava no mesmo rascunho a edição feita durante o envio · apaga o rascunho do orçamento que o usuário descartou · não apaga o rascunho que outra aba gravou … |
@@ -5991,6 +5991,7 @@ _nenhum item encontrado_
 | `tests/contexts/AuthContext.test.tsx` | 9 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
 | `tests/edge-functions/parseAiResponse.test.ts` | 9 | parseAiResponse · parses tool call arguments correctly · falls back to content parsing when no tool calls · returns fallback for invalid JSON in tool call args … |
+| `tests/hooks/useApprovalThreshold.test.tsx` | 9 | useApprovalThreshold · usa a alçada da competência do pedido, não a do mês corrente · não aplica alçada futura e rotula a competência de onde o limite veio · a alçada do PA vence o limite pessoal do perfil … |
 | `tests/hooks/useClientVsIndustry.reliable-data.test.tsx` | 9 | useClientVsIndustry — dados confiáveis · cliente real sem histórico não vira simulado nem desempenho zero contra o setor · distingue indisponibilidade técnica do histórico de ausência legítima de pedidos · calcula métricas somente quando cliente e amostra do ramo têm dado medido … |
 | `tests/hooks/useFavorites.test.ts` | 9 | useFavorites · initializes with empty favorites · adds a favorite · does not duplicate favorites … |
 | `tests/hooks/useSmartNavigation.test.tsx` | 9 | useSmartNavigation.goBack · fecha overlay role=%s aberto em vez de navegar · fecha conteúdo popper (select/popover) aberto em vez de navegar · tooltip aberto NÃO bloqueia a navegação … |
@@ -6059,9 +6060,7 @@ _nenhum item encontrado_
 | `supabase/functions/crm-db-bridge/firstRowAsRecord.test.ts` | 7 | toRecord: returns null for null/undefined/primitives/arrays · toRecord: returns null for GenericStringError-like payload · toRecord: returns the object itself for a plain row · firstRowAsRecord: null for non-array/empty inputs … |
 | `supabase/functions/external-db-bridge/lightweightSelect.e2e.test.ts` | 7 | E2E force-lightweight: products + limit=51 + select= · E2E force-lightweight: products + limit=300 + select omitido → lightweight · E2E no-force: products + fetch por id (filters.id) → payload completo · E2E no-force: products + limit=50 (boundary) + select= … |
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
-| `tests/components/MfaGate.test.tsx` | 7 | MfaGate das telas do gestor · renderiza o conteúdo com segundo fator ativo e sessão aal2 · não renderiza o conteúdo para gestor sem segundo fator · não redireciona o gestor após ativar o segundo fator … |
-| `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
-| … +470 linhas — lista completa em `context.json` | | |
+| … +474 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6317,7 +6316,8 @@ _nenhum item encontrado_
 | " value={client.name} onChange={onFieldChange("name")} aria-label="Nome do cliente" required /> | `src/components/ai/AIRecommendationsPanel.tsx` |
 | A favorita sai só do histórico do cliente: falha do SETOR não pode escondê-la. | `src/components/bi/ClientHealthHero.tsx` |
 | 50, 0); // estimativa volume mínimo | `src/components/bi/ConfirmQuoteSuggestionsModal.tsx` |
-| lista precisa descontar somente o que está renderizado acima e abaixo dela: | `src/components/cart/CartHeaderButton.tsx` |
+| * Verba cadastrada apenas em competencia futura. O mes do carrinho continua sem | `src/components/cart/CartApprovalThresholdNotice.tsx` |
+| alcada, mas a tela nao pode se calar: sem este aviso o comprador so descobre o | `src/components/cart/CartApprovalThresholdNotice.tsx` |
 | `limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa | `src/components/cart/cart-company-options.ts` |
 | usado em contextos onde o componente atua como navegador de seleção (não apenas exibição). | `src/components/categories/CategoryTreeNavigator.tsx` |
 | Uma imagem remota inválida não deve interromper a exportação dos demais produtos. | `src/components/collections/ExportCollectionButton.tsx` |
@@ -6516,6 +6516,13 @@ _nenhum item encontrado_
 | Stop all tracks immediately — we just needed permission | `src/hooks/useVoiceAgent.ts` |
 | 1. Request microphone permission first | `src/hooks/useVoiceAgent.ts` |
 | O fluxo antigo comparava somente credential_id e podia declarar um user_id | `src/hooks/useWebAuthn.ts` |
+| * A alcada que decide a aprovacao do pedido e a do PA (limite aprovado para a | `src/hooks/admin/useApprovalThreshold.ts` |
+| cooperativa); o limite pessoal do perfil so vale quando o PA nao tem limite | `src/hooks/admin/useApprovalThreshold.ts` |
+| configurado, senao a tela mostra um limite e decide por outro. | `src/hooks/admin/useApprovalThreshold.ts` |
+| * Alcada numerica da linha de verba. Zero e um limite real — o servidor recusa a | `src/hooks/admin/useApprovalThreshold.ts` |
+| confirmacao direta de qualquer pedido positivo —, entao nao pode cair no | `src/hooks/admin/useApprovalThreshold.ts` |
+| * Alcada numerica aprovada do PA para a competencia pedida (0 e limite real). | `src/hooks/admin/useApprovalThreshold.ts` |
+| `null` = a linha do mes nao tem limite preenchido. | `src/hooks/admin/useApprovalThreshold.ts` |
 | Uma resposta da sessão anterior não pode restaurar seus privilégios. | `src/hooks/auth/useUserRoles.ts` |
 | * Falha de consulta nunca deve ser serializada como um cliente sem compras. */ | `src/hooks/bi/useClientBI.ts` |
 | * Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */ | `src/hooks/bi/useClientHealthScore.ts` |
@@ -6543,12 +6550,4 @@ _nenhum item encontrado_
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
 | neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
 | foi atingido — neste caso o caller deve mostrar tela de erro estável. | `src/lib/chunk-recovery.ts` |
-| dando um sinal visual por tipo de falha. Usa apenas tokens da paleta | `src/lib/connection-error-copy.ts` |
-| * Limite acima do qual uma conexão é destacada como "muitas falhas seguidas". */ | `src/lib/connections-config.ts` |
-| e a projecao e somente o id — nenhum nome, CNPJ, e-mail ou telefone. | `src/lib/crm-db.ts` |
-| * Formata apenas a hora | `src/lib/date-utils.ts` |
-| * Antes: 6 invokes paralelos = 6 round-trips TLS, 6 entradas no rate-limit, | `src/lib/external-db-prewarm.ts` |
-| o prewarm dispara no máximo 1x por sessão de browser — ideal para gatilho | `src/lib/external-db-prewarm.ts` |
-| (apenas 2 invokes totais: 1 batch das 6 tabelas + 1 ping CRM) | `src/lib/external-db-prewarm.ts` |
-| * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
-| … +345 linhas — lista completa em `context.json` | |
+| … +354 linhas — lista completa em `context.json` | |

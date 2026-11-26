@@ -2755,6 +2755,10 @@
    "src/components/ui/button.tsx",
    "src/components/ui/dropdown-menu.tsx"
   ],
+  "src/components/cart/CartApprovalThresholdNotice.tsx": [
+   "src/hooks/admin/useApprovalThreshold.ts",
+   "src/lib/utils.ts"
+  ],
   "src/components/cart/CartCompanyPicker.tsx": [
    "src/components/cart/cart-company-options.ts",
    "src/components/ui/button.tsx",
@@ -2783,6 +2787,7 @@
    "src/lib/utils.ts"
   ],
   "src/components/cart/CartHeaderButton.tsx": [
+   "src/components/cart/CartApprovalThresholdNotice.tsx",
    "src/components/cart/CartCompanyPicker.tsx",
    "src/components/cart/CartPaBudgetBalance.tsx",
    "src/components/ui/button.tsx",
@@ -8008,7 +8013,8 @@
   ],
   "src/hooks/admin/useApprovalThreshold.ts": [
    "src/contexts/AuthContext.tsx",
-   "src/integrations/supabase/client.ts"
+   "src/integrations/supabase/client.ts",
+   "src/lib/sicoob/paBudgetState.ts"
   ],
   "src/hooks/admin/useAuditLog.ts": [
    "src/contexts/AuthContext.tsx",
@@ -8942,7 +8948,8 @@
   ],
   "src/hooks/usePaBudget.ts": [
    "src/contexts/AuthContext.tsx",
-   "src/integrations/supabase/client.ts"
+   "src/integrations/supabase/client.ts",
+   "src/lib/sicoob/paBudgetState.ts"
   ],
   "src/hooks/usePasswordResetRequests.ts": [
    "src/hooks/use-toast.ts",
