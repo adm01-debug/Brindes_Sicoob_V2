@@ -1,5 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
-import type { AppRole } from '@/types/users';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { authService } from '@/services/authService';
 import { authDebugError } from '@/lib/auth/auth-debug';
 import { normalizeAssignedRoles } from '@/lib/access/role-policy';
@@ -15,7 +14,9 @@ async function queryRolesWithRetry(userId: string, requestIsCurrent: () => boole
 }
 
 export function useUserRoles() {
-  const [userRoles, setUserRoles] = useState<AppRole[]>([]);
+  // Bruto de `user_roles` — as policies de admin estrito precisam do `admin`.
+  const [rawRoles, setRawRoles] = useState<string[]>([]);
+  const userRoles = useMemo(() => normalizeAssignedRoles(rawRoles), [rawRoles]);
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const generation = useRef(0);
@@ -25,7 +26,7 @@ export function useUserRoles() {
     if (!userId) return Promise.resolve();
     if (pending.current?.userId === userId) return pending.current.promise;
     const request = ++generation.current;
-    setUserRoles([]);
+    setRawRoles([]);
     setRolesLoaded(false);
     setRolesError(null);
 
@@ -35,7 +36,7 @@ export function useUserRoles() {
         if (!result) return;
         if (result.error) throw result.error;
         if (request !== generation.current) return;
-        setUserRoles(normalizeAssignedRoles((result.data ?? []).map(row => row.role)));
+        setRawRoles((result.data ?? []).map(row => row.role as string));
       } catch (error) {
         if (request !== generation.current) return;
         authDebugError('useUserRoles', 'Falha ao consultar permissões', error);
@@ -55,10 +56,10 @@ export function useUserRoles() {
     // Uma resposta da sessão anterior não pode restaurar seus privilégios.
     generation.current++;
     pending.current = null;
-    setUserRoles([]);
+    setRawRoles([]);
     setRolesLoaded(false);
     setRolesError(null);
   }, []);
 
-  return { userRoles, rolesLoaded, rolesError, fetchRoles, clearRoles };
+  return { userRoles, rawRoles, rolesLoaded, rolesError, fetchRoles, clearRoles };
 }

@@ -61,6 +61,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 import {
   APP_ROLE_BY_UI_ROLE,
   SICOOB_UI_ROLE_CHOICES,
+  sicoobActorGates,
   syncUserRole,
   updateSicoobUserAssignment,
 } from "@/services/sicoob/userService";
@@ -243,5 +244,38 @@ describe("updateSicoobUserAssignment — ficha e permissão na mesma ação", ()
     );
     expect(source).toContain("updateSicoobUserAssignment(");
     expect(source).not.toMatch(/from\("profiles"\)\s*\n?\s*\.update\(/);
+    // O menu de papel depende de admin estrito; a fonte precisa ser o papel
+    // bruto de `user_roles`, não o normalizado (`admin` -> `supervisor`).
+    expect(source).toContain("sicoobActorGates(rolesRaw");
+  });
+});
+
+describe("sicoobActorGates — o que a sessão autoriza na aba de vínculos", () => {
+  it("só o admin bruto concede papel", () => {
+    expect(sicoobActorGates(["admin"]).canGrantRoles).toBe(true);
+    expect(sicoobActorGates(["supervisor"]).canGrantRoles).toBe(false);
+    expect(sicoobActorGates(["dev", "gestor_compras"]).canGrantRoles).toBe(false);
+    expect(sicoobActorGates([]).canGrantRoles).toBe(false);
+  });
+
+  it("ficha de terceiro exige admin ou supervisor; a própria ficha aceita dev", () => {
+    expect(sicoobActorGates(["admin"])).toMatchObject({
+      canEditOtherProfile: true,
+      canEditOwnProfile: true,
+    });
+    expect(sicoobActorGates(["supervisor"])).toMatchObject({
+      canEditOtherProfile: true,
+      canEditOwnProfile: true,
+    });
+    // `dev` não passa pela policy de UPDATE de outro perfil, mas edita a
+    // própria ficha (a policy libera self e a guarda usa `is_admin`).
+    expect(sicoobActorGates(["dev"])).toMatchObject({
+      canEditOtherProfile: false,
+      canEditOwnProfile: true,
+    });
+    expect(sicoobActorGates(["gerente_pa"])).toMatchObject({
+      canEditOtherProfile: false,
+      canEditOwnProfile: false,
+    });
   });
 });

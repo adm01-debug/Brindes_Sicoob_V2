@@ -31,8 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  PROFILE_AUTHORITY_APP_ROLES,
-  ROLE_GRANT_APP_ROLES,
+  sicoobActorGates,
   SICOOB_UI_ROLE_CHOICES,
   updateSicoobUserAssignment,
 } from "@/services/sicoob/userService";
@@ -137,17 +136,14 @@ export const UserAssignmentTab = () => {
     },
   });
 
-  const { user: actorUser, roles: actorRoles } = useAuth();
+  const { user: actorUser, rolesRaw } = useAuth();
   // `user_roles` só aceita escrita de admin estrito (20260429155414:33-45);
-  // cooperativa/PA/alçada e `profiles.role` aceitam admin/supervisor
-  // (policy de UPDATE de profiles + guard_profile_authority_fields).
-  // A tela espelha exatamente isso, e o papel vem da sessão (`useAuth`), que
-  // é limpo no logout — cache por conta, sem reutilizar papel de quem saiu.
-  const actorRoleList = actorRoles ?? [];
-  const canAssignRoles = actorRoleList.some((r) => (ROLE_GRANT_APP_ROLES as string[]).includes(r));
-  const canEditScope = actorRoleList.some((r) =>
-    (PROFILE_AUTHORITY_APP_ROLES as string[]).includes(r),
-  );
+  // cooperativa/PA/alçada de terceiros exigem admin/supervisor na policy de
+  // UPDATE de profiles, e a própria ficha aceita ainda `dev`, porque o
+  // `guard_profile_authority_fields` usa `is_admin`. Os papéis vêm da sessão
+  // (`useAuth`), que é limpo no logout — cache por conta, sem reutilizar papel
+  // de quem saiu.
+  const gates = sicoobActorGates(rolesRaw ?? []);
 
   const updateMutation = useMutation({
     mutationFn: async ({
@@ -179,6 +175,14 @@ export const UserAssignmentTab = () => {
       toast.error(`Erro ao atualizar: ${getErrorMessage(error)}`);
     },
   });
+
+  // A policy de UPDATE de `profiles` libera a própria ficha para qualquer
+  // conta; ficha de terceiro só para admin/supervisor. O `dev` entra apenas
+  // na própria linha, onde a guarda usa `is_admin`.
+  const canEditScopeOf = (profileUserId: string | null) => {
+    const isSelf = !!actorUser?.id && actorUser.id === profileUserId;
+    return isSelf ? gates.canEditOwnProfile : gates.canEditOtherProfile;
+  };
 
   const filtered = users?.filter((u) =>
     (u.full_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -239,14 +243,14 @@ export const UserAssignmentTab = () => {
                   <TableCell>
                     <SicoobRoleCell
                       role={user.role}
-                      canAssignRoles={canAssignRoles}
+                      canAssignRoles={gates.canGrantRoles}
                       isSelf={actorUser?.id === user.user_id}
                       onSelect={(role) => updateMutation.mutate({ userId: user.id, role })}
                     />
                   </TableCell>
                   <TableCell>
                     <Select
-                      disabled={!canEditScope}
+                      disabled={!canEditScopeOf(user.user_id)}
                       defaultValue={user.cooperativa_id || "none"}
                       onValueChange={(val) => {
                         updateMutation.mutate({
@@ -271,7 +275,7 @@ export const UserAssignmentTab = () => {
                   </TableCell>
                   <TableCell>
                     <Select
-                      disabled={!canEditScope || !user.cooperativa_id}
+                      disabled={!canEditScopeOf(user.user_id) || !user.cooperativa_id}
                       defaultValue={user.pa_id || "none"}
                       onValueChange={(val) => {
                         updateMutation.mutate({
@@ -299,7 +303,7 @@ export const UserAssignmentTab = () => {
                       type="number"
                       className="w-32 h-9"
                       placeholder="Sem limite"
-                      disabled={!canEditScope}
+                      disabled={!canEditScopeOf(user.user_id)}
                       defaultValue={user.approval_threshold || ""}
                       onBlur={(e) => {
                         const val = e.target.value === "" ? null : parseFloat(e.target.value);

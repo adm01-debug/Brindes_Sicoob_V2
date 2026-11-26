@@ -26,6 +26,9 @@ interface AuthContextType {
   isLoading: boolean;
   // Conjunto de todas as roles que o usuário possui em user_roles
   roles: AppRole[];
+  // Os mesmos papéis como estão em `user_roles`, sem a normalização que troca
+  // `admin` por `supervisor` — exigido pelas policies de admin estrito.
+  rolesRaw: string[];
   // Role principal (mais alta na hierarquia) para exibição/legado
   role: AppRole | null;
   // Helpers da hierarquia Sicoob/Flow
@@ -192,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // token salvo mantêm o bloqueio até a sessão e os papéis serem validados.
   const [isLoading, setIsLoading] = useState(hasPersistedSession);
   
-  const { userRoles, rolesLoaded, rolesError, fetchRoles, clearRoles } = useUserRoles();
+  const { userRoles, rawRoles, rolesLoaded, rolesError, fetchRoles, clearRoles } = useUserRoles();
   const { profile, fetchProfile, clearProfile } = useUserProfile();
   const { currentAAL, nextAAL, hasMFA, fetchAAL, clearAAL } = useAuthAAL();
 
@@ -461,6 +464,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     isLoading,
     roles: userRoles,
+    rolesRaw: rawRoles,
     role,
     isDev,
     isGestorCompras,
@@ -488,7 +492,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshProfile,
     refreshSession,
   }), [
-    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, isCompradorSingular, rolesError,
+    user, session, profile, isLoading, userRoles, rawRoles, role, isDev, isGestorCompras, isCompradorSingular, rolesError,
     isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove,
     canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded,
     fetchAAL, refreshProfile, refreshSession, signOut

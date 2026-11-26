@@ -55,6 +55,38 @@ export const ROLE_GRANT_APP_ROLES: AppRole[] = ["admin"];
 export const PROFILE_AUTHORITY_APP_ROLES: AppRole[] = ["admin", "supervisor"];
 
 /**
+ * A própria ficha é liberada pela policy (`id = auth.uid()` ou self), e a
+ * guarda `guard_profile_authority_fields` aceita `is_admin` — ou seja
+ * admin, dev e supervisor. Restringir a própria ficha a admin/supervisor
+ * tirava de `dev` uma edição que o banco autoriza.
+ */
+export const PROFILE_SELF_AUTHORITY_APP_ROLES: AppRole[] = [
+  ...PROFILE_AUTHORITY_APP_ROLES,
+  "dev",
+];
+
+export interface SicoobActorGates {
+  canGrantRoles: boolean;
+  canEditOtherProfile: boolean;
+  canEditOwnProfile: boolean;
+}
+
+/**
+ * Traduz os papéis **brutos** de `user_roles` (não os normalizados por
+ * `normalizeAssignedRoles`, que converte `admin` em `supervisor`) no que a
+ * aba de vínculos pode oferecer. Sem os valores brutos o menu de papel nunca
+ * apareceria, porque nenhum papel normalizado é igual a `admin`.
+ */
+export function sicoobActorGates(rawRoles: readonly string[]): SicoobActorGates {
+  const has = (allowed: readonly string[]) => rawRoles.some((role) => allowed.includes(role));
+  return {
+    canGrantRoles: has(ROLE_GRANT_APP_ROLES),
+    canEditOtherProfile: has(PROFILE_AUTHORITY_APP_ROLES),
+    canEditOwnProfile: has(PROFILE_SELF_AUTHORITY_APP_ROLES),
+  };
+}
+
+/**
  * Espelha em `user_roles` o papel escolhido na aba de vínculos.
  * `authUserId` é o id de `auth.users` (ou seja, `profiles.user_id`), não o id
  * da ficha. Substitui os papéis gerenciados pela tela (preservando `dev`) para
