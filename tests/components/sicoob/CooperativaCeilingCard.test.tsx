@@ -13,6 +13,9 @@ const loadDistributedTotal = vi.fn();
 const saveCeiling = vi.fn();
 
 vi.mock('@/services/sicoob/cooperativaBudgetService', () => ({
+  COOPERATIVA_CEILING_QUERY_KEY: 'cooperativa-ceiling',
+  cooperativaCeilingQueryKey: (cooperativaId?: string) =>
+    cooperativaId ? ['cooperativa-ceiling', cooperativaId] : ['cooperativa-ceiling'],
   loadCeiling: (...args: unknown[]) => loadCeiling(...args),
   loadDistributedTotal: (...args: unknown[]) => loadDistributedTotal(...args),
   saveCeiling: (...args: unknown[]) => saveCeiling(...args),
@@ -103,6 +106,36 @@ describe('teto da cooperativa', () => {
 
     expect(await screen.findByText(/não está vinculada a uma cooperativa/)).toBeInTheDocument();
     expect(loadCeiling).not.toHaveBeenCalled();
+  });
+
+  it('não envia teto vazio como R$ 0', async () => {
+    renderizar(<CooperativaCeilingCard />);
+
+    const campo = await screen.findByLabelText('Teto mensal (R$)');
+    fireEvent.change(campo, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teto' }));
+
+    expect(saveCeiling).not.toHaveBeenCalled();
+    expect(await screen.findByText(/Informe o teto em reais/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar teto' })).toBeDisabled();
+  });
+
+  it('ao voltar para uma competência já carregada, o campo mostra o teto daquele mês', async () => {
+    loadCeiling.mockImplementation((_id: string, _ano: number, mes: number) =>
+      Promise.resolve({ verbaTotal: mes * 100, limiteAlcada: null }));
+
+    renderizar(<CooperativaCeilingCard />);
+    const inicial = new Date().getMonth() + 1;
+
+    await waitFor(() => expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima competência' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(((inicial % 12) + 1) * 100),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Competência anterior' }));
+    await waitFor(() => expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100));
   });
 
   it('rotula a competência em pt-BR', () => {

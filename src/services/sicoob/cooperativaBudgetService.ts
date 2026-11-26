@@ -2,8 +2,27 @@
  * Teto mensal da cooperativa (`cooperativa_budgets`) e quanto dele ja foi
  * distribuido aos PAs. A RLS de 20261013115605:190-240 limita escrita ao
  * gestor da propria cooperativa; o servico nao amplia esse escopo.
+ *
+ * Duas restricoes do banco moldam este arquivo:
+ *   1. `authenticated` tem UPDATE apenas em `verba_total, limite_alcada,
+ *      observacoes` (20261013115605). Upsert do PostgREST inclui as colunas da
+ *      chave no `ON CONFLICT DO UPDATE SET` e seria recusado por permissao, por
+ *      isso a gravacao e update-primeiro / insert-depois.
+ *   2. A policy de leitura de `postos_atendimento` esconde PAs inativos
+ *      (20260502145232:41-46), enquanto o gatilho do teto soma todas as verbas.
+ *      Somar pelo cliente daria um total menor que o cobrado; o total vem da
+ *      RPC `cooperativa_verba_distribuida`.
  */
 import { supabase } from "@/integrations/supabase/client";
+
+export const COOPERATIVA_CEILING_QUERY_KEY = "cooperativa-ceiling";
+
+/** Familia de cache do teto: invalide esta chave onde verbas forem alocadas. */
+export function cooperativaCeilingQueryKey(cooperativaId?: string) {
+  return cooperativaId
+    ? [COOPERATIVA_CEILING_QUERY_KEY, cooperativaId]
+    : [COOPERATIVA_CEILING_QUERY_KEY];
+}
 
 export interface CooperativaCeiling {
   verbaTotal: number;
@@ -42,26 +61,15 @@ export async function loadDistributedTotal(
   ano: number,
   mes: number,
 ): Promise<number> {
-  const { data: pas, error: paError } = await supabase
-    .from("postos_atendimento")
-    .select("id")
-    .eq("cooperativa_id", cooperativaId);
-
-  if (paError) throw paError;
-
-  const paIds = (pas ?? []).map((pa) => pa.id);
-  if (paIds.length === 0) return 0;
-
-  const { data, error } = await supabase
-    .from("pa_budgets")
-    .select("verba_total")
-    .eq("ano", ano)
-    .eq("mes", mes)
-    .in("pa_id", paIds);
+  const { data, error } = await supabase.rpc("cooperativa_verba_distribuida", {
+    p_cooperativa_id: cooperativaId,
+    p_ano: ano,
+    p_mes: mes,
+  });
 
   if (error) throw error;
 
-  return (data ?? []).reduce((total, row) => total + toNumber(row.verba_total), 0);
+  return toNumber(data);
 }
 
 export interface SaveCeilingInput {
@@ -72,18 +80,40 @@ export interface SaveCeilingInput {
   limiteAlcada?: number | null;
 }
 
+const UNIQUE_VIOLATION = "23505";
+
 export async function saveCeiling(input: SaveCeilingInput): Promise<void> {
-  const payload = {
-    cooperativa_id: input.cooperativaId,
-    ano: input.ano,
-    mes: input.mes,
+  const changes = {
     verba_total: input.verbaTotal,
     ...(input.limiteAlcada === undefined ? {} : { limite_alcada: input.limiteAlcada }),
   };
 
-  const { error } = await supabase
-    .from("cooperativa_budgets")
-    .upsert(payload, { onConflict: "cooperativa_id,ano,mes" });
+  const updateExisting = async (): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from("cooperativa_budgets")
+      .update(changes)
+      .eq("cooperativa_id", input.cooperativaId)
+      .eq("ano", input.ano)
+      .eq("mes", input.mes)
+      .select("id");
 
-  if (error) throw error;
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  };
+
+  if (await updateExisting()) return;
+
+  const { error } = await supabase.from("cooperativa_budgets").insert({
+    cooperativa_id: input.cooperativaId,
+    ano: input.ano,
+    mes: input.mes,
+    ...changes,
+  });
+
+  if (!error) return;
+
+  // Outra sessao criou a linha entre o update e o insert.
+  if (error.code === UNIQUE_VIOLATION && (await updateExisting())) return;
+
+  throw error;
 }

@@ -31,6 +31,7 @@ import { Plus, Filter, AlertCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { cooperativaCeilingQueryKey } from "@/services/sicoob/cooperativaBudgetService";
 import type { TablesInsert } from "@/integrations/supabase/types";
 
 const getErrorMessage = (error: unknown) =>
@@ -86,6 +87,10 @@ export const BudgetsTab = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pa_budgets"] });
+      // O teto da cooperativa e carregado em outra familia de cache e aparece na
+      // mesma tela (GestorBudgetsPage): sem esta invalidacao o "Disponivel"
+      // continua mostrando o saldo de antes da alocacao.
+      queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
       toast.success("Verba definida com sucesso");
       setIsCreateOpen(false);
     },

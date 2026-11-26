@@ -12113,6 +12113,10 @@ export type Database = {
           total_amount: number
         }[]
       }
+      cooperativa_verba_distribuida: {
+        Args: { p_ano: number; p_cooperativa_id: string; p_mes: number }
+        Returns: number
+      }
       copy_group_personalization_to_product: {
         Args: { p_membership_id: string }
         Returns: number

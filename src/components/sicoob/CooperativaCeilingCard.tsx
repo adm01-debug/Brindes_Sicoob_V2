@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/format";
 import {
+  COOPERATIVA_CEILING_QUERY_KEY,
+  cooperativaCeilingQueryKey,
   loadCeiling,
   loadDistributedTotal,
   saveCeiling,
@@ -30,8 +32,6 @@ const MESES = [
   "dezembro",
 ];
 
-const QUERY_KEY = "cooperativa-ceiling";
-
 export function competenceLabel(ano: number, mes: number): string {
   return `${MESES[(mes - 1) % 12] ?? String(mes)}/${ano}`;
 }
@@ -41,9 +41,11 @@ function shiftCompetence(ano: number, mes: number, delta: number): { ano: number
   return { ano: Math.floor(index / 12), mes: (index % 12) + 1 };
 }
 
-function parseAmount(raw: string): number {
-  const parsed = Number(raw.replace(",", "."));
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+function parseAmount(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return null;
+  const parsed = Number(trimmed.replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
 function errorMessage(error: unknown): string {
@@ -69,12 +71,13 @@ interface TetoFormProps {
 function TetoForm({ cooperativaId, ano, mes, atual }: TetoFormProps) {
   const queryClient = useQueryClient();
   const [valor, setValor] = useState(atual === null ? "" : String(atual));
+  const valorNumerico = parseAmount(valor);
 
   const mutation = useMutation({
-    mutationFn: () => saveCeiling({ cooperativaId, ano, mes, verbaTotal: parseAmount(valor) }),
+    mutationFn: (verbaTotal: number) => saveCeiling({ cooperativaId, ano, mes, verbaTotal }),
     onSuccess: async () => {
       toast.success("Teto da cooperativa salvo");
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      await queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
     },
     onError: (error: unknown) => {
       toast.error("Não foi possível salvar o teto", { description: errorMessage(error) });
@@ -94,12 +97,23 @@ function TetoForm({ cooperativaId, ano, mes, atual }: TetoFormProps) {
           step="0.01"
           value={valor}
           onChange={(event) => setValor(event.target.value)}
+          aria-invalid={valorNumerico === null}
+          aria-describedby={valorNumerico === null ? "teto-cooperativa-erro" : undefined}
           className="w-40"
         />
       </div>
-      <Button size="sm" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+      <Button
+        size="sm"
+        onClick={() => valorNumerico !== null && mutation.mutate(valorNumerico)}
+        disabled={mutation.isPending || valorNumerico === null}
+      >
         {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar teto"}
       </Button>
+      {valorNumerico === null && (
+        <p id="teto-cooperativa-erro" className="text-xs text-destructive">
+          Informe o teto em reais. Use 0 para bloquear novas verbas na competência.
+        </p>
+      )}
     </div>
   );
 }
@@ -113,11 +127,11 @@ interface CeilingBodyProps {
 
 function useTetoData(cooperativaId: string, ano: number, mes: number) {
   const tetoQuery = useQuery({
-    queryKey: [QUERY_KEY, cooperativaId, ano, mes],
+    queryKey: [COOPERATIVA_CEILING_QUERY_KEY, cooperativaId, ano, mes],
     queryFn: () => loadCeiling(cooperativaId, ano, mes),
   });
   const distribuidoQuery = useQuery({
-    queryKey: [QUERY_KEY, cooperativaId, ano, mes, "distribuido"],
+    queryKey: [COOPERATIVA_CEILING_QUERY_KEY, cooperativaId, ano, mes, "distribuido"],
     queryFn: () => loadDistributedTotal(cooperativaId, ano, mes),
   });
 
@@ -175,7 +189,13 @@ function CeilingBody({ cooperativaId, ano, mes, podeEditar }: CeilingBodyProps) 
       <Resumo teto={teto} distribuido={distribuido} />
       {excedido && <ExcessoAlert teto={teto ?? 0} distribuido={distribuido} />}
       {podeEditar ? (
-        <TetoForm cooperativaId={cooperativaId} ano={ano} mes={mes} atual={teto} />
+        <TetoForm
+          key={`${cooperativaId}-${ano}-${mes}`}
+          cooperativaId={cooperativaId}
+          ano={ano}
+          mes={mes}
+          atual={teto}
+        />
       ) : (
         <p className="text-sm text-muted-foreground">Somente o gestor da cooperativa define o teto.</p>
       )}
