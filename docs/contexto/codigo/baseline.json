@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "5321aef86290d07a6957bae5b5253828588a750d",
+  "commit": "b5b924a584e8fd673214ee4457a9a655fa27648d",
   "branch": "main",
-  "data_commit": "2026-11-26T13:05:45-03:00",
+  "data_commit": "2026-11-26T13:58:29-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "b5b924a",
+    "data": "2026-11-26",
+    "assunto": "fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)"
+   },
    {
     "sha": "5321aef",
     "data": "2026-11-26",
@@ -126,14 +131,9 @@
     "sha": "ff48a63",
     "data": "2026-11-25",
     "assunto": "chore(inventario): estado real do banco e do codigo [auto] (#438)"
-   },
-   {
-    "sha": "ba511bb",
-    "data": "2026-11-25",
-    "assunto": "fix: destrava o replay da migration 004 (A-028) sem mudar o contrato de produção (#437)"
    }
   ],
-  "arquivos_mudados_7d": 953,
+  "arquivos_mudados_7d": 957,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -188,11 +188,11 @@
     "mudancas": 13
    },
    {
-    "pasta": "package-lock.json",
-    "mudancas": 12
+    "pasta": "src/services/sicoob",
+    "mudancas": 13
    },
    {
-    "pasta": "src/components/intelligence",
+    "pasta": "package-lock.json",
     "mudancas": 12
    }
   ],
@@ -219,50 +219,38 @@
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 17
+    "mudancas": 16
    },
    {
     "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 16
+    "mudancas": 15
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 16
+    "mudancas": 15
    },
    {
     "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": ".github/workflows/lighthouse.yml",
-    "mudancas": 14
+    "mudancas": 13
    },
    {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 11
-   },
-   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 11
    },
    {
-    "arquivo": ".github/workflows/migration-ledger-drift.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": ".github/workflows/security-compliance.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": ".github/workflows/security.yml",
+    "arquivo": ".github/workflows/bundle-check.yml",
     "mudancas": 10
    },
    {
@@ -270,7 +258,15 @@
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "arquivo": ".github/workflows/migration-ledger-drift.yml",
+    "mudancas": 9
+   },
+   {
+    "arquivo": ".github/workflows/security-compliance.yml",
+    "mudancas": 9
+   },
+   {
+    "arquivo": ".github/workflows/security.yml",
     "mudancas": 9
    },
    {
@@ -284,6 +280,10 @@
    {
     "arquivo": "src/pages/QuoteBuilderPage.tsx",
     "mudancas": 9
+   },
+   {
+    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "mudancas": 8
    },
    {
     "arquivo": "AGENTS.md",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 236
+    "commits": 237
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5340,
-  "arquivos_codigo": 3226,
-  "linhas_codigo": 511435,
+  "arquivos_total": 5341,
+  "arquivos_codigo": 3227,
+  "linhas_codigo": 511486,
   "rotas": 140,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 632,
   "cron_jobs": 28,
-  "testes": 955,
+  "testes": 956,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -824,7 +824,7 @@
   },
   "src/services": {
    "arquivos": 25,
-   "linhas": 3869
+   "linhas": 3820
   },
   "src/stores": {
    "arquivos": 6,
@@ -967,8 +967,8 @@
    "linhas": 267
   },
   "tests/scenarios": {
-   "arquivos": 37,
-   "linhas": 3167
+   "arquivos": 38,
+   "linhas": 3238
   },
   "tests/scripts": {
    "arquivos": 35,
@@ -984,7 +984,7 @@
   },
   "tests/services": {
    "arquivos": 16,
-   "linhas": 1782
+   "linhas": 1811
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,

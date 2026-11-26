@@ -6270,7 +6270,7 @@
     "sicoobApprovalService"
    ],
    "export_default": null,
-   "linhas": 170,
+   "linhas": 176,
    "tabelas": [
     "limit_increase_requests",
     "profiles",
@@ -6501,7 +6501,7 @@
     "sicoobOrderService"
    ],
    "export_default": null,
-   "linhas": 331,
+   "linhas": 316,
    "tabelas": [
     "profiles",
     "sicoob_order_item_logs",
@@ -6521,10 +6521,7 @@
    "externos": [],
    "zod_schemas": 0,
    "flags": [],
-   "papeis": [
-    "gestor_pa",
-    "gestor_singular"
-   ],
+   "papeis": [],
    "usado_por": 8,
    "usado_por_modulos": [
     "components/orders",
@@ -6602,12 +6599,11 @@
     "SicoobActorGates",
     "SicoobUserAssignment",
     "sicoobActorGates",
-    "sicoobUserService",
     "syncUserRole",
     "updateSicoobUserAssignment"
    ],
    "export_default": null,
-   "linhas": 231,
+   "linhas": 191,
    "tabelas": [
     "profiles",
     "user_roles"

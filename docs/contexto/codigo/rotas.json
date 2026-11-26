@@ -5638,8 +5638,6 @@
     "alertdialog",
     "dev",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "listbox",
     "manager",
     "menu",
@@ -7542,8 +7540,6 @@
     "alert",
     "dev",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "manager",
     "owner",
     "status",
@@ -7711,8 +7707,6 @@
     "alert",
     "dev",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "manager",
     "owner",
     "status",
@@ -7882,8 +7876,6 @@
     "alert",
     "dev",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "manager",
     "owner",
     "status",
@@ -8357,8 +8349,6 @@
     "alert",
     "dev",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "manager",
     "owner",
     "status",
@@ -10177,10 +10167,7 @@
    ],
    "canais_realtime": [],
    "flags": [],
-   "papeis": [
-    "gestor_pa",
-    "gestor_singular"
-   ],
+   "papeis": [],
    "arquivos_puxados": 11
   },
   {
@@ -10249,8 +10236,6 @@
    "flags": [],
    "papeis": [
     "admin",
-    "gestor_pa",
-    "gestor_singular",
     "manager"
    ],
    "arquivos_puxados": 46
@@ -10410,8 +10395,6 @@
     "alert",
     "button",
     "dialog",
-    "gestor_pa",
-    "gestor_singular",
     "manager",
     "status"
    ],
@@ -10484,8 +10467,6 @@
    "flags": [],
    "papeis": [
     "admin",
-    "gestor_pa",
-    "gestor_singular",
     "manager"
    ],
    "arquivos_puxados": 40

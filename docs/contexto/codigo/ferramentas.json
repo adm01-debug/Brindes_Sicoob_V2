@@ -7,7 +7,7 @@
    "Markdown (974)",
    "SQL (695)",
    "JSON (295)",
-   "JavaScript (157)",
+   "JavaScript (158)",
    "Python (69)",
    "YAML (24)",
    "CSS (7)"
@@ -2058,10 +2058,6 @@
     "ocorrencias": 3
    },
    {
-    "papel": "gestor_pa",
-    "ocorrencias": 3
-   },
-   {
     "papel": "main",
     "ocorrencias": 3
    },
@@ -2086,7 +2082,7 @@
     "ocorrencias": 2
    },
    {
-    "papel": "gestor_singular",
+    "papel": "gestor_pa",
     "ocorrencias": 2
    },
    {
@@ -2139,6 +2135,10 @@
    },
    {
     "papel": "editor",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "gestor_singular",
     "ocorrencias": 1
    },
    {

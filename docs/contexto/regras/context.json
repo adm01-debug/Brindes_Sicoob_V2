@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "5321aef86290d07a6957bae5b5253828588a750d",
+  "sha": "b5b924a584e8fd673214ee4457a9a655fa27648d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 16:06 UTC",
-  "files_total": 5343,
-  "code_files": 3903,
-  "code_lines": 576259
+  "generated_at": "2026-11-26 17:01 UTC",
+  "files_total": 5344,
+  "code_files": 3904,
+  "code_lines": 576310
  },
  "version": "1.3.2",
- "facts_hash": "e6be88b344d8d6b8",
+ "facts_hash": "4d3d73040d7d001c",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -358,7 +358,7 @@
    ".ts": 1510,
    ".tsx": 1491,
    ".sql": 695,
-   ".mjs": 145,
+   ".mjs": 146,
    ".py": 69,
    ".cjs": 7,
    ".js": 6
@@ -66648,7 +66648,7 @@
   {
    "module": "src/services",
    "files": 25,
-   "lines": 3869,
+   "lines": 3820,
    "tables": [
     "cooperativas",
     "cost_centers",
@@ -67381,8 +67381,8 @@
   },
   {
    "module": "tests",
-   "files": 724,
-   "lines": 97196,
+   "files": 725,
+   "lines": 97296,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -80020,10 +80020,6 @@
     "msg": "Informe a versão da política."
    },
    {
-    "file": "src/services/sicoob/approvalService.ts",
-    "msg": "Usuário não autenticado"
-   },
-   {
     "file": "src/services/sicoob/costCenterService.ts",
     "msg": "Cada centro de custo pode aparecer uma unica vez no rateio."
    },
@@ -81146,28 +81142,8 @@
     "value": "agente"
    },
    {
-    "file": "src/services/sicoob/orderService.ts",
-    "value": "gestor_pa"
-   },
-   {
-    "file": "src/services/sicoob/orderService.ts",
-    "value": "gestor_singular"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "value": "gestor_pa"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "value": "gestor_singular"
-   },
-   {
     "file": "src/services/sicoob/userService.ts",
     "value": "undefined"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "value": "vendedor"
    },
    {
     "file": "supabase/functions/_shared/authorize.ts",
@@ -83922,6 +83898,10 @@
    {
     "file": "tests/scenarios/relatorios-agendados-cron.mjs",
     "text": "formulário sob o limite do gate de lint; as regras continuam as mesmas."
+   },
+   {
+    "file": "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+    "text": "na RLS efetiva (a politica consolidada preserva a expressao) e o cliente nao pode"
    },
    {
     "file": "tests/utils/deterministicTime.ts",
@@ -97047,6 +97027,11 @@
     "value": "'AES-GCM'"
    },
    {
+    "file": "src/services/sicoob/approvalService.ts",
+    "name": "UNAUTHENTICATED_MESSAGE",
+    "value": "\"Usuário não autenticado\""
+   },
+   {
     "file": "src/services/sicoob/logisticsReportService.ts",
     "name": "LOGISTICS_PAGE_SIZE",
     "value": "200"
@@ -97385,6 +97370,16 @@
     "file": "tests/scenarios/notification-helpers-acl.scenario.mjs",
     "name": "VERSION",
     "value": "\"20261125193000\""
+   },
+   {
+    "file": "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+    "name": "MIGRATIONS",
+    "value": "'supabase/migrations'"
+   },
+   {
+    "file": "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+    "name": "CONSOLIDACAO",
+    "value": "'20261007233000_consolidate_permissive_rls_policies.sql'"
    },
    {
     "file": "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -105717,18 +105712,6 @@
    },
    {
     "file": "src/services/sicoob/orderService.ts",
-    "field": "role",
-    "value": "gestor_pa",
-    "kind": "compara"
-   },
-   {
-    "file": "src/services/sicoob/orderService.ts",
-    "field": "role",
-    "value": "gestor_singular",
-    "kind": "compara"
-   },
-   {
-    "file": "src/services/sicoob/orderService.ts",
     "field": "status",
     "value": "rejected",
     "kind": "compara"
@@ -105792,24 +105775,6 @@
     "field": "role",
     "value": "supervisor",
     "kind": "escreve"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "field": "role",
-    "value": "gestor_pa",
-    "kind": "compara"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "field": "role",
-    "value": "gestor_singular",
-    "kind": "compara"
-   },
-   {
-    "file": "src/services/sicoob/userService.ts",
-    "field": "role",
-    "value": "vendedor",
-    "kind": "compara"
    },
    {
     "file": "src/types/stock.ts",
@@ -111950,12 +111915,6 @@
     "name": "applyPeriodAndSearch",
     "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
     "body": "let filtered = query; if (filters?.from) filtered = filtered.gte(\"created_at\", filters.from); if (filters?.to) filtered = filtered.lte(\"created_at\", filters.to); if (filters?.search) { // Remove caracteres sintáticos do PostgREST (, ( )) que poderiam injetar condições extras const term = filters.search.toLowerCase().trim().replace(/[,()]/g, ''); if (term) { filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`); } else { // Busca original conti …"
-   },
-   {
-    "file": "src/services/sicoob/orderService.ts",
-    "name": "applyProfileScope",
-    "params": "query: SicoobOrderQuery, profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,",
-    "body": "if (profile?.role === \"gestor_pa\" && profile.pa_id) return query.eq(\"pa_id\", profile.pa_id); if (profile?.role === \"gestor_singular\" && profile.cooperativa_id) { return query.eq(\"cooperative_id\", profile.cooperativa_id); } return query;"
    },
    {
     "file": "src/services/sicoob/orderService.ts",
@@ -141844,6 +141803,18 @@
     "name": "registra a rejeição sem solicitação pela RPC auditável"
    },
    {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "sicoobApprovalService.createLimitIncreaseRequest"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "grava o solicitante, que é o que a policy de INSERT exige"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "falha sem sessão em vez de inserir pedido sem solicitante"
+   },
+   {
     "file": "tests/services/sicoobBudgetService.test.ts",
     "name": "sicoobBudgetService.getBudgets"
    },
@@ -164614,7 +164585,6 @@
       "compara:src/lib/auth/auth-utils.ts",
       "compara:src/pages/admin/AdminPromoverUsuarioPage.tsx",
       "compara:src/pages/admin/AdminUsuariosPage.tsx",
-      "compara:src/services/sicoob/userService.ts",
       "compara:supabase/functions/manage-users/index.ts",
       "escreve:src/components/admin/users/AccessManagement.tsx",
       "escreve:src/components/admin/users/CreateUserDialog.tsx",
@@ -164761,14 +164731,10 @@
       "compara:src/pages/admin/AdminRbacRoutesPage.tsx",
       "escreve:src/pages/OrderAuditPage.tsx"
      ],
-     "gestor_pa": [
-      "compara:src/services/sicoob/orderService.ts",
-      "compara:src/services/sicoob/userService.ts",
+     "gestor_singular": [
       "escreve:src/services/sicoob/userService.ts"
      ],
-     "gestor_singular": [
-      "compara:src/services/sicoob/orderService.ts",
-      "compara:src/services/sicoob/userService.ts",
+     "gestor_pa": [
       "escreve:src/services/sicoob/userService.ts"
      ],
      "system": [
@@ -231049,7 +231015,7 @@
   },
   "src/services/sicoob/approvalService.ts": {
    "path": "src/services/sicoob/approvalService.ts",
-   "lines": 170,
+   "lines": 176,
    "exports": [
     "type ApprovalAuthority",
     "const sicoobApprovalService"
@@ -231088,8 +231054,11 @@
     "request_sicoob_order_approval",
     "sicoob_current_actor_approval_authority"
    ],
-   "errors": [
-    "Usuário não autenticado"
+   "params": [
+    {
+     "name": "UNAUTHENTICATED_MESSAGE",
+     "value": "\"Usuário não autenticado\""
+    }
    ],
    "status_values": [
     {
@@ -231424,17 +231393,13 @@
   },
   "src/services/sicoob/orderService.ts": {
    "path": "src/services/sicoob/orderService.ts",
-   "lines": 331,
+   "lines": 316,
    "exports": [
     "const sicoobOrderService"
    ],
    "tables": [
     {
      "table": "sicoob_orders",
-     "op": "select"
-    },
-    {
-     "table": "profiles",
      "op": "select"
     },
     {
@@ -231459,13 +231424,6 @@
     }
    ],
    "table_cols": {
-    "profiles": [
-     "cooperativa_id",
-     "full_name",
-     "pa_id",
-     "role",
-     "user_id"
-    ],
     "sicoob_orders": [
      "id",
      "status"
@@ -231480,6 +231438,10 @@
      "new_data",
      "old_data",
      "order_id",
+     "user_id"
+    ],
+    "profiles": [
+     "full_name",
      "user_id"
     ]
    },
@@ -231513,16 +231475,6 @@
      "kind": "compara"
     },
     {
-     "field": "role",
-     "value": "gestor_pa",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "gestor_singular",
-     "kind": "compara"
-    },
-    {
      "field": "status",
      "value": "rejected",
      "kind": "compara"
@@ -231532,10 +231484,6 @@
      "value": "fulfilled",
      "kind": "compara"
     }
-   ],
-   "role_checks": [
-    "gestor_pa",
-    "gestor_singular"
    ],
    "rule_comments": [
     "Busca original continha apenas pontuação removida — retornar zero resultados"
@@ -231555,11 +231503,6 @@
      "name": "applyPeriodAndSearch",
      "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
      "body": "let filtered = query; if (filters?.from) filtered = filtered.gte(\"created_at\", filters.from); if (filters?.to) filtered = filtered.lte(\"created_at\", filters.to); if (filters?.search) { // Remove caracteres sintáticos do PostgREST (, ( )) que poderiam injetar condições extras const term = filters.search.toLowerCase().trim().replace(/[,()]/g, ''); if (term) { filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`); } else { // Busca original conti …"
-    },
-    {
-     "name": "applyProfileScope",
-     "params": "query: SicoobOrderQuery, profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,",
-     "body": "if (profile?.role === \"gestor_pa\" && profile.pa_id) return query.eq(\"pa_id\", profile.pa_id); if (profile?.role === \"gestor_singular\" && profile.cooperativa_id) { return query.eq(\"cooperative_id\", profile.cooperativa_id); } return query;"
     },
     {
      "name": "applyPagination",
@@ -231672,7 +231615,7 @@
   },
   "src/services/sicoob/userService.ts": {
    "path": "src/services/sicoob/userService.ts",
-   "lines": 231,
+   "lines": 191,
    "exports": [
     "const APP_ROLE_BY_UI_ROLE",
     "const PRESERVED_APP_ROLES",
@@ -231684,8 +231627,7 @@
     "function sicoobActorGates",
     "function syncUserRole",
     "interface SicoobUserAssignment",
-    "function updateSicoobUserAssignment",
-    "const sicoobUserService"
+    "function updateSicoobUserAssignment"
    ],
    "tables": [
     {
@@ -231703,10 +231645,6 @@
     {
      "table": "profiles",
      "op": "update"
-    },
-    {
-     "table": "profiles",
-     "op": "select"
     }
    ],
    "table_cols": {
@@ -231749,28 +231687,10 @@
      "field": "role",
      "value": "supervisor",
      "kind": "escreve"
-    },
-    {
-     "field": "role",
-     "value": "gestor_pa",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "gestor_singular",
-     "kind": "compara"
-    },
-    {
-     "field": "role",
-     "value": "vendedor",
-     "kind": "compara"
     }
    ],
    "role_checks": [
-    "gestor_pa",
-    "gestor_singular",
-    "undefined",
-    "vendedor"
+    "undefined"
    ]
   },
   "src/stores/oracleVoiceBridge.ts": {
@@ -258685,6 +258605,24 @@
    "path": "tests/scenarios/runtime-references.mjs",
    "lines": 58
   },
+  "tests/scenarios/sicoob-order-read-delegation.scenario.mjs": {
+   "path": "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+   "lines": 71,
+   "params": [
+    {
+     "name": "MIGRATIONS",
+     "value": "'supabase/migrations'"
+    },
+    {
+     "name": "CONSOLIDACAO",
+     "value": "'20261007233000_consolidate_permissive_rls_policies.sql'"
+    }
+   ],
+   "rule_comments": [
+    "na RLS efetiva (a politica consolidada preserva a expressao) e o cliente nao pode"
+   ],
+   "doc": "Guarda da leitura de pedidos Sicoob: a delegacao de aprovacao precisa seguir valendo na RLS efetiva (a politica consolidada preserva a expressao) e o cliente nao pode refiltrar por papel."
+  },
   "tests/scenarios/step-up-otp.mjs": {
    "path": "tests/scenarios/step-up-otp.mjs",
    "lines": 64
@@ -260044,11 +259982,14 @@
   },
   "tests/services/sicoobApprovalService.test.ts": {
    "path": "tests/services/sicoobApprovalService.test.ts",
-   "lines": 39,
+   "lines": 68,
    "is_test": true,
    "tests": [
     "sicoobApprovalService.rejectOrderWithoutApproval",
-    "registra a rejeição sem solicitação pela RPC auditável"
+    "registra a rejeição sem solicitação pela RPC auditável",
+    "sicoobApprovalService.createLimitIncreaseRequest",
+    "grava o solicitante, que é o que a policy de INSERT exige",
+    "falha sem sessão em vez de inserir pedido sem solicitante"
    ]
   },
   "tests/services/sicoobBudgetService.test.ts": {
@@ -261155,10 +261096,24 @@
   }
  },
  "git": {
-  "sha": "5321aef86290d07a6957bae5b5253828588a750d",
+  "sha": "b5b924a584e8fd673214ee4457a9a655fa27648d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "b5b924a",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)",
+    "files": [
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "src/services/sicoob/approvalService.ts",
+     "src/services/sicoob/orderService.ts",
+     "src/services/sicoob/userService.ts",
+     "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+     "tests/services/sicoobApprovalService.test.ts"
+    ]
+   },
    {
     "sha": "5321aef",
     "date": "2026-11-26",
@@ -261515,16 +261470,6 @@
      "tests/hooks/quote/useQuoteInitialization.load-error.test.tsx",
      "tests/pwa/offline-fallback.test.ts"
     ]
-   },
-   {
-    "sha": "8152263",
-    "date": "2026-11-24",
-    "author": "adm01-debug",
-    "subject": "docs: ledger reflete as recuperacoes ja integradas na main (#432)",
-    "files": [
-     "docs/RECUPERACAO/prs.md",
-     "docs/RECUPERACAO/reauditoria.md"
-    ]
    }
   ],
   "hot_files": [
@@ -261535,6 +261480,14 @@
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     5
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+    2
+   ],
+   [
+    "src/services/sicoob/userService.ts",
+    2
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
@@ -261569,7 +261522,19 @@
     2
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+    "src/services/sicoob/approvalService.ts",
+    1
+   ],
+   [
+    "src/services/sicoob/orderService.ts",
+    1
+   ],
+   [
+    "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+    1
+   ],
+   [
+    "tests/services/sicoobApprovalService.test.ts",
     1
    ],
    [
@@ -261581,31 +261546,11 @@
     1
    ],
    [
-    "src/services/sicoob/userService.ts",
-    1
-   ],
-   [
     "tests/hooks/useUserRoles-race.test.tsx",
     1
    ],
    [
     "tests/services/sicoob/userService.syncUserRole.test.ts",
-    1
-   ],
-   [
-    "tests/admin/route-guards-ref-warning.test.tsx",
-    1
-   ],
-   [
-    "src/pages/admin/sicoob/SicoobManagementPage.tsx",
-    1
-   ],
-   [
-    "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
-    1
-   ],
-   [
-    "src/services/sicoob/approvalPolicyService.ts",
     1
    ]
   ]

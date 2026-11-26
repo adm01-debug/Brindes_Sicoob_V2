@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 955,
+ "total": 956,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 44,
-  "unit": 721
+  "unit": 722
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 702
+   "arquivos": 703
   },
   {
    "padrao": "e2e/",
@@ -7264,6 +7264,13 @@
    "casos": 6
   },
   {
+   "arquivo": "tests/scenarios/sicoob-order-read-delegation.scenario.mjs",
+   "tipo": "unit",
+   "linhas": 71,
+   "testa": [],
+   "casos": 5
+  },
+  {
    "arquivo": "tests/scenarios/step-up-otp.mjs",
    "tipo": "unit",
    "linhas": 64,
@@ -7759,11 +7766,11 @@
   {
    "arquivo": "tests/services/sicoobApprovalService.test.ts",
    "tipo": "unit",
-   "linhas": 39,
+   "linhas": 68,
    "testa": [
     "src/services/sicoob/approvalService.ts"
    ],
-   "casos": 1
+   "casos": 3
   },
   {
    "arquivo": "tests/services/sicoobBudgetService.test.ts",

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `5321aef862` · branch `main` · 2026-11-26 16:06 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `b5b924a584` · branch `main` · 2026-11-26 17:01 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1260,8 +1260,8 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `role` | `dev` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useRBAC.tsx`<br>`src/lib/auth/auth-utils.ts`<br>`src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx`<br>… +5 |
 | `role` | `gerente_pa` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
 | `role` | `gestor_compras` | compara, escreve | `src/lib/auth/auth-utils.ts`<br>`supabase/functions/sicoob-seed-qa/index.ts`<br>`supabase/functions/sicoob-seed/index.ts` |
-| `role` | `gestor_pa` | compara, escreve | `src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
-| `role` | `gestor_singular` | compara, escreve | `src/services/sicoob/orderService.ts`<br>`src/services/sicoob/userService.ts` |
+| `role` | `gestor_pa` | escreve | `src/services/sicoob/userService.ts` |
+| `role` | `gestor_singular` | escreve | `src/services/sicoob/userService.ts` |
 | `role` | `manager` | compara, escreve | `src/components/admin/users/AccessManagement.tsx`<br>`src/hooks/useQuoteTemplates.ts`<br>`src/lib/access/role-policy.ts` |
 | `role` | `owner` | escreve | `src/contexts/OrganizationContext.tsx` |
 | `role` | `public` | compara, escreve | `src/lib/rbac/route-matrix.ts`<br>`src/pages/admin/AdminRbacRoutesPage.tsx` |
@@ -4155,10 +4155,6 @@ _nenhum item encontrado_
   ```
   let filtered = query; if (filters?.from) filtered = filtered.gte("created_at", filters.from); if (filters?.to) filtered = filtered.lte("created_at", filters.to); if (filters?.search) { // Remove caracteres sintáticos do PostgREST (, ( )) que poderiam injetar condições extras const term = filters.search.toLowerCase().trim().replace(/[,()]/g, ''); if (term) { filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`); } else { // Busca original conti …
   ```
-- **applyProfileScope(query: SicoobOrderQuery, profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,)** — `src/services/sicoob/orderService.ts`
-  ```
-  if (profile?.role === "gestor_pa" && profile.pa_id) return query.eq("pa_id", profile.pa_id); if (profile?.role === "gestor_singular" && profile.cooperativa_id) { return query.eq("cooperative_id", profile.cooperativa_id); } return query;
-  ```
 - **applyPagination(query: SicoobOrderQuery, filters?: OrderListFilters)** — `src/services/sicoob/orderService.ts`
   ```
   if (!filters?.page || !filters.pageSize) return query; const from = (filters.page - 1) * filters.pageSize; return query.range(from, from + filters.pageSize - 1);
@@ -4924,7 +4920,7 @@ _nenhum item encontrado_
 | `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
 | `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
 | `CRM_DB_BRIDGE_FUNCTION` | `"crm-db-bridge"` | `src/lib/crm-db.ts` |
-| … +182 linhas — lista completa em `context.json` | | |
+| … +185 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5661,7 +5657,7 @@ _nenhum item encontrado_
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1030 linhas — lista completa em `context.json` | |
+| … +1029 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5714,12 +5710,7 @@ _nenhum item encontrado_
 | `supervisor` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `vendedor` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `agente` | `src/services/admin/UserService.ts` |
-| `gestor_pa` | `src/services/sicoob/orderService.ts` |
-| `gestor_singular` | `src/services/sicoob/orderService.ts` |
-| `gestor_pa` | `src/services/sicoob/userService.ts` |
-| `gestor_singular` | `src/services/sicoob/userService.ts` |
 | `undefined` | `src/services/sicoob/userService.ts` |
-| `vendedor` | `src/services/sicoob/userService.ts` |
 | `null` | `supabase/functions/_shared/authorize.ts` |
 | `admin` | `supabase/functions/block-ip-temporarily/index.ts` |
 | `admin` | `supabase/functions/connection-tester/index.ts` |
@@ -5766,7 +5757,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (7428 testes em 766 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7431 testes em 766 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6560,4 +6551,4 @@ _nenhum item encontrado_
 | o prewarm dispara no máximo 1x por sessão de browser — ideal para gatilho | `src/lib/external-db-prewarm.ts` |
 | (apenas 2 invokes totais: 1 batch das 6 tabelas + 1 ping CRM) | `src/lib/external-db-prewarm.ts` |
 | * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido. | `src/lib/external-rpc.ts` |
-| … +344 linhas — lista completa em `context.json` | |
+| … +345 linhas — lista completa em `context.json` | |
