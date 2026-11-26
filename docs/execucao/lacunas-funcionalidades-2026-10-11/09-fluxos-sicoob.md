@@ -376,7 +376,7 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Evidência do problema (histórica): a tela trazia "12", "85%", "Aprovação em Lote" com R$ 5.000,00 num `<button>` sem `onClick`, R$ 450.000,00, R$ 380.000,00 e uma barra em `w-[84%]` — tudo literal.
 - Evidência da correção: `src/pages/GestorCompras.tsx` (132 linhas) não tem mais nenhum número literal; os indicadores vêm de `GestorComprasMetrics` (`src/components/sicoob/GestorComprasMetrics.tsx:69` `usePurchasingMetrics(cooperativeId)` e `:114` `useManagerDashboardStats(cooperativeId)`, com estados de carregando/erro/recarregar). O botão "Aprovação em Lote" foi removido: a ação virou link para a fila real (`GestorCompras.tsx:76` → `/gestor/aprovacoes`, rota registrada em `src/routes/config/sicoob-rbac.ts:21`) e para o painel de indicadores (`/gestor`). As abas (alertas, kanban, pedidos, consolidação) usam componentes com dados reais.
 - Testes que travam a regra: `tests/pages/GestorCompras.test.tsx` e `tests/pages/GestorCompras.metrics.test.tsx` (verdes na suíte do CI).
-- O que falta: nada nesta tela. A consolidação de orçamentos continua pendente em SIC-046 (decisão de negócio, não de UI).
+- O que falta: nada nesta tela. A antiga ação em lote virou link para a fila real, então este item não deixa aprovação em lote pendente — aprovar/reprovar em lote seria funcionalidade nova, fora do escopo do FE-095. A consolidação de orçamentos continua pendente em SIC-046 (decisão de negócio, não de UI).
 - Impacto no negócio: o gestor vê pendências e verba inventadas e clica num botão que não faz nada.
 - Esforço: P
 - Prioridade: P1
