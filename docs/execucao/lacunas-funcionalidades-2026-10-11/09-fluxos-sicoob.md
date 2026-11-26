@@ -350,10 +350,13 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 ### 5. Carrinho/pedido
 
 ### SIC-040  Conversão de orçamento em pedido barrada pelo guard de governança
-- Status: PARCIAL
+- Status: RESOLVIDO no repositório (aplicação da migration em produção não confirmada)
 - Origem: `docs/order-workflow.md:21-26`; matriz P049
-- Evidência no código: `20260922224500_convert_quote_to_sicoob_order.sql:250-252` faz `UPDATE public.quotes SET status='converted'` sem `set_config('app.quote_governance_write','true',true)`. O trigger `aaa_guard_quote_governance_write` (`20260927171216:88-133`, com a checagem de status em `:112-121`) é posterior e não foi redefinido. As únicas funções que setam a flag estão em `20260927171216:479,557,627,686`, `20260927210000:568` e `20260928182000:66`. `scripts/qa/simular-conversao-pedido-sicoob.py:10-11` aplica só a migration da conversão.
-- O que falta: RPC — setar a flag (ou permitir explicitamente `approved*→converted`) e incluir na simulação toda a cadeia de triggers. Confirmar no banco com conversão sintética.
+- Evidência do problema (histórica): `20260922224500_convert_quote_to_sicoob_order.sql:250-252` fazia `UPDATE public.quotes SET status='converted'` sem `set_config('app.quote_governance_write','true',true)`, e o trigger `aaa_guard_quote_governance_write` (`20260927171216:88-133`, checagem de status em `:112-121`) recusava com 42501.
+- Evidência da correção: `20261013120512_fix_quote_governance_writers_and_freeze_content.sql:5-8` renomeia o escritor original para `convert_quote_to_sicoob_order_core_20261013` (sem `EXECUTE` para cliente) e `:10-34` cria o wrapper `convert_quote_to_sicoob_order` que guarda o contexto, seta `app.quote_governance_write='true'` (`:19`), chama o núcleo (`:21-23`) e restaura o contexto no sucesso e na exceção (`:24-28`). O wrapper é o único caminho do cliente — `src/services/OrderService.ts:453` chama exatamente esse nome.
+- Testes que travam a regra: `scripts/qa/simular-conversao-pedido-sicoob.py` reproduz o guard num banco descartável (`:176-193`, guarda equivalente — o guard real vem da migration `20260927171216`) e o fix de governança (`:236`) antes de converter, e roda no CI (`.github/workflows/ci.yml:126`). Cenários verdes na execução local de 26/11/2026: `converte_para_dominio_sicoob`, `marca_orcamento_convertido`, `conversao_restaura_contexto_de_governanca`, `nucleo_interno_sem_execute_cliente`, `cliente_nao_forja_contexto_interno`, `falha_intermediaria_reverte_pedido_e_quote`.
+- Nível de verificação: (a) código no repositório ✅; (b) objetos em produção ✅ confirmados em 21/11/2026 por swagger REST e `pg_proc`, com a cadeia de triggers ativa por assert (`docs/pendencias/SIC-040-convers-o-de-or-amento-em-pedido-barrada-pelo-gu.md:37-39`); (c) fluxo real em produção ❌ **não exercitado** — `quotes` tem 0 linhas em produção, então não há orçamento para converter.
+- O que falta: nada no repositório. Falta só exercitar a conversão quando existir orçamento real em produção (pendência de dado/E2E, não de código).
 - Impacto no negócio: nenhum orçamento aprovado vira pedido, então a compra para no meio.
 - Esforço: P
 - Prioridade: P0
@@ -368,10 +371,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P0
 
 ### SIC-042  /gestor/compras com indicadores fixos e botão sem ação
-- Status: STUB/MOCK
+- Status: RESOLVIDO
 - Origem: `src/routes/config/sicoob-rbac.ts:14` (rota de MANAGERS); PR #59 "remove indicadores fictícios" (não alcançou esta tela)
-- Evidência no código: `src/pages/GestorCompras.tsx:54` ("12"), `:58` ("85%"), `:83-85` ("Aprovação em Lote", R$ 5.000,00, `<button>` sem `onClick`), `:94` (R$ 450.000,00), `:98` (R$ 380.000,00), `:101` (`w-[84%]`)
-- O que falta: UI — números reais (reaproveitar `loadGestorStats` de `GestorDashboardPage.tsx:79-104`) e aprovação em lote real ou remoção do botão.
+- Evidência do problema (histórica): a tela trazia "12", "85%", "Aprovação em Lote" com R$ 5.000,00 num `<button>` sem `onClick`, R$ 450.000,00, R$ 380.000,00 e uma barra em `w-[84%]` — tudo literal.
+- Evidência da correção: `src/pages/GestorCompras.tsx` (132 linhas) não tem mais nenhum número literal; os indicadores vêm de `GestorComprasMetrics` (`src/components/sicoob/GestorComprasMetrics.tsx:69` `usePurchasingMetrics(cooperativeId)` e `:114` `useManagerDashboardStats(cooperativeId)`, com estados de carregando/erro/recarregar). O botão "Aprovação em Lote" foi removido: a ação virou link para a fila real (`GestorCompras.tsx:76` → `/gestor/aprovacoes`, rota registrada em `src/routes/config/sicoob-rbac.ts:21`) e para o painel de indicadores (`/gestor`). As abas (alertas, kanban, pedidos, consolidação) usam componentes com dados reais.
+- Testes que travam a regra: `tests/pages/GestorCompras.test.tsx` e `tests/pages/GestorCompras.metrics.test.tsx` (verdes na suíte do CI).
+- O que falta: nada nesta tela. A antiga ação em lote virou link para a fila real, então este item não deixa aprovação em lote pendente — aprovar/reprovar em lote seria funcionalidade nova, fora do escopo do FE-095. A consolidação de orçamentos continua pendente em SIC-046 (decisão de negócio, não de UI).
 - Impacto no negócio: o gestor vê pendências e verba inventadas e clica num botão que não faz nada.
 - Esforço: P
 - Prioridade: P1
@@ -507,10 +512,13 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 ### 7. Aprovação (interna e link público)
 
 ### SIC-060  Resposta pelo link público barrada pelo guard
-- Status: PARCIAL
+- Status: RESOLVIDO no repositório (aplicação da migration em produção não confirmada)
 - Origem: `docs/execucao/backend-aprovacao-publica-20260922.md:35-55` (fluxo público transacional)
-- Evidência no código: `20260922225000_secure_public_quote_approval.sql:260-262` muda `quotes.status` sem a flag de governança. O guard posterior (`20260927171216:112-121`) recusa. `scripts/qa/simular-aprovacao-publica.py:35-108` não aplica o guard. `e2e/quote-approval.spec.ts:11-94` só testa token inválido e roteamento. Também pendentes no próprio documento (`:52-54,99-125`): publicação e comparação da edge `quote-approval`, rate limit nas RPCs públicas e assinatura opcional.
-- O que falta: RPC — setar a flag; simulação com toda a cadeia; E2E com token válido.
+- Evidência do problema (histórica): `20260922225000_secure_public_quote_approval.sql:260-262` mudava `quotes.status` sem a flag de governança, e o guard posterior (`20260927171216:112-121`) recusava com 42501.
+- Evidência da correção: `20261013120512_fix_quote_governance_writers_and_freeze_content.sql:69-74` renomeia o escritor para `apply_local_quote_approval_response_core_20261013` (sem `EXECUTE` para ninguém) e `:78-122` cria o wrapper que seta `app.quote_governance_write='true'` (`:97`) antes de chamar o núcleo (`:99-107`) e restaura o contexto em sucesso e erro (`:110-115`). `submit_quote_response` e `submit_signed_quote_response` continuam chamando o nome público, agora com a flag.
+- Testes que travam a regra: `scripts/qa/simular-aprovacao-publica.py` reproduz o guard num banco descartável (`:234-260`, guarda equivalente) e a migration de governança (`:306-313`), e roda no CI (`.github/workflows/ci.yml:117`). Cenários verdes na execução local de 26/11/2026: `aprovacao_publica_atravessa_gate_e_restaura_contexto`, `falha_real_do_gate_reproduzida`, `flag_de_governanca_nao_elevavel_por_cliente`, `contexto_interno_nao_pode_ser_forjado_por_cliente`, `efeitos_atomicos` (status vira `approved`), `nucleos_internos_sem_execute_externo`.
+- Nível de verificação: (a) código no repositório ✅; (b) objetos em produção ✅ confirmados em 21/11/2026 por swagger REST e `pg_proc` (`docs/pendencias/SIC-060-resposta-pelo-link-p-blico-barrada-pelo-guard.md:37-39`); (c) fluxo real em produção ❌ **não exercitado** — `quotes` tem 0 linhas e não há token real de link público para E2E.
+- O que falta: nada no repositório para a resposta pelo link. Seguem pendentes, fora do escopo deste veredito: E2E com token válido (`e2e/quote-approval.spec.ts:11-94` cobre só token inválido e roteamento), a publicação da edge `quote-approval` e dados reais para exercitar o fluxo.
 - Impacto no negócio: o cliente ou a cooperativa clica em "aprovar" e recebe erro.
 - Esforço: P
 - Prioridade: P0

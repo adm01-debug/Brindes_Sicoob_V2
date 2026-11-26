@@ -500,13 +500,14 @@ Merecem atenção logo em seguida: FE-095 e FE-100 (KPIs inventados nas telas Ge
 - Prioridade: P3
 
 #### FE-095  "Gestão de Compras" com indicadores inventados e aprovação em lote sem ação
-- Status: STUB/MOCK
+- Status: RESOLVIDO (veredito de 26/11/2026 — a descrição abaixo é histórica, do estado encontrado)
 - Origem: `src/pages/GestorCompras.tsx` (rota `/gestor/compras`, `routes/config/sicoob-rbac.ts:14`).
 - Evidência no código: `:52-60` mostra "12 pedidos pendentes hoje" e "85% SLA"; `:88-101` mostra "Orçado no mês R$ 450.000,00", "Aprovado R$ 380.000,00" e uma barra fixa de 84%. Tudo literal. `:80-86` traz o botão "Aprovação em Lote (SLA Rápido)" sem `onClick`, com limite fixo de "R$ 5.000,00" no texto.
 - O que falta: ligar os KPIs aos pedidos e verbas reais e implementar a aprovação em lote por alçada.
 - Impacto no negócio: o gestor da cooperativa toma decisões olhando números falsos.
 - Esforço: M
 - Prioridade: P1
+- Resolução (26/11/2026): `src/pages/GestorCompras.tsx` (132 linhas) não tem mais número literal; os KPIs vêm de `src/components/sicoob/GestorComprasMetrics.tsx:69` (`usePurchasingMetrics`) e `:114` (`useManagerDashboardStats`), com estados de carregando/erro/recarregar. O botão morto "Aprovação em Lote" foi removido e a ação virou link para a fila real (`GestorCompras.tsx:76` → `/gestor/aprovacoes`, rota em `src/routes/config/sicoob-rbac.ts:21`) e para `/gestor`. Travado por `tests/pages/GestorCompras.test.tsx` e `tests/pages/GestorCompras.metrics.test.tsx`. A antiga ação em lote virou link para a fila real, então este item não deixa aprovação em lote pendente — aprovar/reprovar em lote seria funcionalidade nova, fora do escopo do FE-095. O que continua pendente em SIC-026 é outra coisa: o servidor ignorar as alçadas configuradas (valor, categoria e pessoa).
 
 #### FE-096  Página antiga de aprovações do gestor (com canais e-mail/Slack) órfã
 - Status: ORFA
