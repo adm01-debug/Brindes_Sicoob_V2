@@ -51,6 +51,23 @@ describe('MfaGate das telas do gestor', () => {
     });
   });
 
+  it('libera a tela no mesmo endereço quando o segundo fator fica ativo', () => {
+    const { rerender } = renderGate({ hasMFA: false });
+    expect(screen.queryByText('Verbas do gestor')).not.toBeInTheDocument();
+
+    // É o que o diálogo faz ao verificar o código: refreshAAL() muda hasMFA
+    // sem navegar, porque redirectOnSuccess está desligado.
+    mockAuth.mockReturnValue({ ...base, hasMFA: true, currentAAL: 'aal2' });
+    rerender(
+      <MfaGate>
+        <p>Verbas do gestor</p>
+      </MfaGate>,
+    );
+
+    expect(screen.getByText('Verbas do gestor')).toBeInTheDocument();
+    expect(screen.queryByText('Enrolar segundo fator')).not.toBeInTheDocument();
+  });
+
   it('exige desafio quando a sessão ainda está em aal1', () => {
     renderGate({ mfaRequired: true, currentAAL: 'aal1' });
     expect(screen.queryByText('Verbas do gestor')).not.toBeInTheDocument();
