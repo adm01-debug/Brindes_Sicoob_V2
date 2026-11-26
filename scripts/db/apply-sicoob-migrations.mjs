@@ -233,6 +233,10 @@ const TARGETS = [
     sha256: "5975cf023451f3f9d843a04e5ff323ac1f4506517dd42ee0d08f8b20fe17f0f4",
   },
   {
+    file: "supabase/migrations/20261125133000_harden_push_subscriptions_initplan.sql",
+    sha256: "df5e5bbafe2a0857fa99e95819fcf73e76b2f5215f8e1eb4960486a8f72501e2",
+  },
+  {
     file: "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
     sha256: "db796e80a4dd50ec30eb997a933bf1e048e1895cb2a3ec9ed18607fb6e964110",
   },
