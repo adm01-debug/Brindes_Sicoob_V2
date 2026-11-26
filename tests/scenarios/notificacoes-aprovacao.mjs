@@ -228,3 +228,17 @@ test('escalação informa a Diretoria no conteúdo enviado', async () => {
   assert.equal((await app.chamar(requisicao())).status,200);
   assert.match(app.envios[0].opts.body,/escalada para a Diretoria/);
 });
+
+test('aviso de alçada no Slack abre a fila que o aprovador pode decidir', async () => {
+  const app=carregar({settings:[slack]});
+  assert.equal((await app.chamar(requisicao())).status,200);
+  const acoes=JSON.parse(app.envios[0].opts.body).blocks.find(bloco=>bloco.type==='actions');
+  assert.equal(acoes.elements[0].url,'https://simulacao.invalid/gestor/aprovacoes');
+});
+test('e-mail de alçada aponta para a fila de aprovações e não para a área administrativa', async () => {
+  const app=carregar({settings:[{channel:'email',recipient_email:'aprovador@example.invalid'}],emailConfigurado:true});
+  assert.equal((await app.chamar(requisicao())).status,200);
+  const corpo=JSON.parse(app.envios[0].opts.body).text;
+  assert.match(corpo,/https:\/\/simulacao\.invalid\/gestor\/aprovacoes/);
+  assert.doesNotMatch(corpo,/\/admin\//);
+});
