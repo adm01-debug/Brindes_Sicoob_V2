@@ -31,6 +31,18 @@
 --     consolidadas em 20261007233000 (nomes `sicoob_merged_*`), que o contrato
 --     do aplicador exige manter. Nelas a correcao entra como policy permissiva
 --     adicional: a consolidada continua valida e cobre o ramo admin.
+--   - Historico e logs de itens saem deste PR: a consolidacao de 20260927193000
+--     ja le por sicoob_current_actor_can_read_order, que cobre created_by, admin,
+--     manager, dev, supervisor, gestor_compras da cooperativa, gerente_pa do PA e
+--     delegacao ativa, ainda checando is_active/deleted_at do perfil. Recriar as
+--     policies aqui so afrouxaria a guarda, entao elas nao sao tocadas.
+--   - `pa_notification_settings.webhook_url` e credencial de publicacao no Slack:
+--     a coluna sai do GRANT de `authenticated` e passa a ser lida pela RPC
+--     sicoob_pa_slack_webhook, restrita a administracao. O dispatcher da outbox
+--     (20260922210000/20260922225300) le a coluna por funcao SECURITY DEFINER e
+--     nao e afetado.
+--   - `limit_increase_requests` aceita apenas insercao pendente e sem aprovador:
+--     quem solicita nao escolhe o proprio veredito; aprovar segue nas RPCs.
 -- Idempotente: DROP POLICY IF EXISTS antes de cada CREATE POLICY.
 
 -- =====================================================
@@ -65,7 +77,9 @@ DROP POLICY IF EXISTS "order_comments_select_scoped" ON public.order_comments;
 CREATE POLICY "order_comments_select_scoped"
 ON public.order_comments FOR SELECT TO authenticated
 USING (
-  EXISTS (
+  public.has_role((SELECT auth.uid()), 'admin'::public.app_role)
+  OR public.has_role((SELECT auth.uid()), 'dev'::public.app_role)
+  OR EXISTS (
     SELECT 1 FROM public.orders o
      WHERE o.id = order_comments.order_id
        AND (o.seller_id = (SELECT auth.uid())
@@ -74,44 +88,6 @@ USING (
   OR EXISTS (
     SELECT 1 FROM public.sicoob_orders so
      WHERE so.id = order_comments.order_id
-       AND (
-         so.created_by = (SELECT auth.uid())
-         OR (public.is_gerente_pa() AND so.pa_id = public.current_user_pa_id())
-         OR (public.is_gestor_compras() AND so.cooperative_id = public.current_user_cooperativa_id())
-         OR public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role)
-       )
-  )
-);
-
--- =====================================================
--- 3) sicoob_order_history
--- =====================================================
-DROP POLICY IF EXISTS "sicoob_order_history_select_scoped" ON public.sicoob_order_history;
-CREATE POLICY "sicoob_order_history_select_scoped"
-ON public.sicoob_order_history FOR SELECT TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.sicoob_orders so
-     WHERE so.id = sicoob_order_history.order_id
-       AND (
-         so.created_by = (SELECT auth.uid())
-         OR (public.is_gerente_pa() AND so.pa_id = public.current_user_pa_id())
-         OR (public.is_gestor_compras() AND so.cooperative_id = public.current_user_cooperativa_id())
-         OR public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role)
-       )
-  )
-);
-
--- =====================================================
--- 4) sicoob_order_item_logs
--- =====================================================
-DROP POLICY IF EXISTS "sicoob_order_item_logs_select_scoped" ON public.sicoob_order_item_logs;
-CREATE POLICY "sicoob_order_item_logs_select_scoped"
-ON public.sicoob_order_item_logs FOR SELECT TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.sicoob_orders so
-     WHERE so.id = sicoob_order_item_logs.order_id
        AND (
          so.created_by = (SELECT auth.uid())
          OR (public.is_gerente_pa() AND so.pa_id = public.current_user_pa_id())
@@ -138,6 +114,9 @@ ON public.limit_increase_requests FOR INSERT TO authenticated
 WITH CHECK (
   public.user_can_access_pa(pa_id)
   AND requested_by = (SELECT auth.uid())
+  AND status = 'pending'
+  AND approved_by IS NULL
+  AND rejection_reason IS NULL
 );
 
 -- =====================================================
@@ -154,3 +133,41 @@ USING (
            AND pa.cooperativa_id = public.current_user_cooperativa_id()
       ))
 );
+
+-- =====================================================
+-- 7) pa_notification_settings: a URL secreta do Slack nao vai para o navegador
+-- =====================================================
+-- O GRANT de tabela e por papel, e o gerente usa o mesmo papel `authenticated`
+-- do admin: para dar leitura de canal/estado ao gerente sem entregar a
+-- credencial, o acesso passa a ser por coluna.
+REVOKE SELECT ON public.pa_notification_settings FROM authenticated, anon;
+GRANT SELECT (id, pa_id, channel, recipient_email, is_active, created_at)
+  ON public.pa_notification_settings TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.sicoob_pa_slack_webhook(p_pa_id uuid)
+RETURNS text
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_url text;
+BEGIN
+  IF NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
+    RAISE EXCEPTION USING ERRCODE='42501',
+      MESSAGE='Somente a administracao consulta o webhook do Slack.';
+  END IF;
+
+  SELECT s.webhook_url INTO v_url
+    FROM public.pa_notification_settings s
+   WHERE s.pa_id = p_pa_id
+     AND s.channel = 'slack'
+   LIMIT 1;
+
+  RETURN v_url;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.sicoob_pa_slack_webhook(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.sicoob_pa_slack_webhook(uuid) TO authenticated, service_role;

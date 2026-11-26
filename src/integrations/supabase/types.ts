@@ -13212,6 +13212,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      sicoob_pa_slack_webhook: {
+        Args: { p_pa_id: string }
+        Returns: string
+      }
       snapshot_hardening_status: { Args: never; Returns: Json }
       submit_quote_response: {
         Args: { _response: string; _response_notes?: string; _token: string }

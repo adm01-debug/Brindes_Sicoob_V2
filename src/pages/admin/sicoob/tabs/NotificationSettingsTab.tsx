@@ -20,6 +20,24 @@ interface NotificationSettingsTabProps {
   readOnly?: boolean;
 }
 
+/**
+ * A URL do webhook do Slack e credencial de publicacao: a coluna esta fora do GRANT
+ * de `authenticated`, entao a leitura passa pela RPC restrita a administracao.
+ */
+async function carregarWebhookSlack(paId: string, readOnly: boolean): Promise<string | null> {
+  if (readOnly) return null;
+  const { data } = await supabase.rpc("sicoob_pa_slack_webhook", { p_pa_id: paId });
+  return data ?? null;
+}
+
+/** Campos do webhook do Slack ficam vazios para quem nao administra. */
+function webhookExibido(readOnly: boolean, webhookUrl: string | null) {
+  return {
+    valor: readOnly ? '' : webhookUrl ?? '',
+    dica: readOnly ? 'Visível apenas para a administração' : 'https://hooks.slack.com/services/...',
+  };
+}
+
 export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettingsTabProps) => {
   const queryClient = useQueryClient();
   const [selectedPa, setSelectedPa] = useState<string | null>(null);
@@ -39,10 +57,15 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
       if (!selectedPa) return [];
       const { data, error } = await supabase
         .from("pa_notification_settings")
-        .select("*")
+        .select("id, pa_id, channel, recipient_email, is_active")
         .eq("pa_id", selectedPa);
       if (error) throw error;
-      return data;
+      const rows = data ?? [];
+      const webhook = await carregarWebhookSlack(selectedPa, readOnly);
+      return rows.map((row) => ({
+        ...row,
+        webhook_url: row.channel === "slack" ? webhook : null,
+      }));
     },
     enabled: !!selectedPa,
   });
@@ -138,8 +161,8 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">Webhook URL</Label>
                     <Input
-                      placeholder="https://hooks.slack.com/services/..."
-                      defaultValue={getSetting('slack').webhook_url ?? ''}
+                      placeholder={webhookExibido(readOnly, null).dica}
+                      defaultValue={webhookExibido(readOnly, getSetting('slack').webhook_url).valor}
                       disabled={readOnly}
                       onBlur={(e) => salvar({ ...getSetting('slack'), webhook_url: e.target.value })}
                     />
