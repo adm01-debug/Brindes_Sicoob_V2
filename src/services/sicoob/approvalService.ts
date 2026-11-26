@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const UNAUTHENTICATED_MESSAGE = "Usuário não autenticado";
+
 export type ApprovalAuthority = {
   can_decide: boolean;
   source: "direct" | "delegated" | "none";
@@ -110,7 +112,7 @@ export const sicoobApprovalService = {
 
   async approveOrder(requestId: string, orderId: string) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_MESSAGE);
 
     const { error } = await supabase.rpc('approve_sicoob_order', {
       p_request_id: requestId,
@@ -123,7 +125,7 @@ export const sicoobApprovalService = {
 
   async rejectOrder(requestId: string, orderId: string, reason: string) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_MESSAGE);
 
     const { error } = await supabase.rpc('reject_sicoob_order', {
       p_request_id: requestId,
@@ -157,8 +159,12 @@ export const sicoobApprovalService = {
   },
 
   async createLimitIncreaseRequest(paId: string, amount: number, reason: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error(UNAUTHENTICATED_MESSAGE);
+
     const { error } = await supabase.from("limit_increase_requests").insert({
       pa_id: paId,
+      requested_by: user.id,
       requested_limit: amount,
       reason: reason,
       status: 'pending'

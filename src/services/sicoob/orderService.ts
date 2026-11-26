@@ -68,12 +68,20 @@ function applyPeriodAndSearch(query: SicoobOrderQuery, filters?: OrderListFilter
   return filtered;
 }
 
-function applyProfileScope(
+// `profiles.role` carrega o papel canonico de `user_roles` desde 20260326193116
+// (gerente_pa/gestor_compras); os rotulos antigos seguem aceitos para linhas
+// que nunca passaram por aquela migracao de dados.
+const PA_MANAGER_ROLES = ["gestor_pa", "gerente_pa"];
+const SINGULAR_MANAGER_ROLES = ["gestor_singular", "gestor_compras"];
+
+export function applyProfileScope(
   query: SicoobOrderQuery,
   profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,
 ): SicoobOrderQuery {
-  if (profile?.role === "gestor_pa" && profile.pa_id) return query.eq("pa_id", profile.pa_id);
-  if (profile?.role === "gestor_singular" && profile.cooperativa_id) {
+  if (profile?.pa_id && PA_MANAGER_ROLES.includes(profile.role ?? "")) {
+    return query.eq("pa_id", profile.pa_id);
+  }
+  if (profile?.cooperativa_id && SINGULAR_MANAGER_ROLES.includes(profile.role ?? "")) {
     return query.eq("cooperative_id", profile.cooperativa_id);
   }
   return query;
