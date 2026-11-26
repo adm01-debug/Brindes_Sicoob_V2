@@ -12996,6 +12996,18 @@ export type Database = {
         Args: { p_vault_secret_name: string }
         Returns: string
       }
+      salvar_verba_pa: {
+        Args: {
+          p_ano: number
+          p_budget_id?: string | null
+          p_limite_alcada?: number | null
+          p_mes: number
+          p_observacoes?: string | null
+          p_pa_id: string
+          p_verba_total: number
+        }
+        Returns: string
+      }
       save_quote_atomic: {
         Args: {
           p_expected_row_version?: number

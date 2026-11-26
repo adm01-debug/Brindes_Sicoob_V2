@@ -13,6 +13,10 @@
 --     (`FOR SHARE` em `postos_atendimento`) e a transferencia reavalia a soma
 --     ja com a verba confirmada, para que as duas operacoes sobre o mesmo PA
 --     nao se cruzem;
+--   * a escrita da verba passa pela RPC `salvar_verba_pa`, que bloqueia o PA
+--     antes da verba. A exclusao de um PA chega nas verbas pela cascata (PA
+--     primeiro) e o UPDATE direto do app bloqueava a verba primeiro: as duas
+--     transacoes se travavam (deadlock 40P01) quando coincidiam;
 --   * a soma agregada so e liberada para quem ja enxerga as verbas da
 --     Singular inteira (admin, gestor_compras ou comprador_singular do
 --     proprio vinculo) — comprador restrito a um PA nao ve o total.
@@ -27,6 +31,8 @@
 --   DROP FUNCTION IF EXISTS public.tg_cooperativa_budget_not_below_distributed();
 --   DROP FUNCTION IF EXISTS public.tg_pa_transfer_respects_cooperativa_ceiling();
 --   DROP FUNCTION IF EXISTS public.cooperativa_verba_distribuida(uuid, integer, integer);
+--   DROP FUNCTION IF EXISTS public.salvar_verba_pa(uuid, integer, integer, numeric, numeric, text, uuid);
+--   DROP FUNCTION IF EXISTS public._trava_pa_da_verba(uuid);
 --   DROP FUNCTION IF EXISTS public._trava_competencia_da_cooperativa(uuid, integer, integer);
 --   DROP FUNCTION IF EXISTS public._cooperativa_verba_distribuida(uuid, integer, integer);
 --   -- sem DDL anterior a esta migration: nada mais a remover. As policies,
@@ -326,3 +332,88 @@ DROP TRIGGER IF EXISTS trg_pa_transfer_respects_cooperativa_ceiling ON public.po
 CREATE TRIGGER trg_pa_transfer_respects_cooperativa_ceiling
 AFTER UPDATE OF cooperativa_id ON public.postos_atendimento
 FOR EACH ROW EXECUTE FUNCTION public.tg_pa_transfer_respects_cooperativa_ceiling();
+
+-- ---------------------------------------------------------------------------
+-- Escrita da verba: ordem de bloqueio PA -> verba
+-- ---------------------------------------------------------------------------
+-- A exclusao de um PA chega em `pa_budgets` pela cascata da FK
+-- (20260502143127:67-79): bloqueia a linha do PA e so depois as verbas. O
+-- UPDATE direto do app fazia o inverso — o PostgreSQL bloqueia a linha da
+-- verba antes de o gatilho do teto pedir o PA — e as duas transacoes se
+-- travavam (deadlock 40P01) quando coincidiam. Esta RPC roda na mesma
+-- transacao da escrita e pega o PA antes, na ordem da exclusao.
+-- A RPC e SECURITY INVOKER de proposito: as policies de RLS de `pa_budgets`
+-- continuam valendo para quem chama. O bloqueio do PA fica numa funcao
+-- SECURITY DEFINER separada porque `FOR SHARE` exige privilegio de escrita na
+-- tabela e a escrita da verba nao pode depender disso.
+CREATE OR REPLACE FUNCTION public._trava_pa_da_verba(p_pa_id uuid)
+RETURNS void
+LANGUAGE sql
+VOLATILE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id FOR SHARE;
+$$;
+
+REVOKE ALL ON FUNCTION public._trava_pa_da_verba(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public._trava_pa_da_verba(uuid) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.salvar_verba_pa(
+  p_pa_id uuid,
+  p_ano integer,
+  p_mes integer,
+  p_verba_total numeric,
+  p_limite_alcada numeric DEFAULT NULL,
+  p_observacoes text DEFAULT NULL,
+  p_budget_id uuid DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+VOLATILE
+SECURITY INVOKER
+SET search_path = public
+AS $$
+DECLARE
+  v_budget_id uuid;
+BEGIN
+  IF p_pa_id IS NULL THEN
+    RAISE EXCEPTION 'Informe o posto de atendimento da verba.' USING ERRCODE = '22023';
+  END IF;
+
+  -- Mesmo primeiro bloqueio da exclusao de PA. Sem ele o gatilho do teto
+  -- pegaria o PA depois da verba e o deadlock continuaria possivel.
+  PERFORM public._trava_pa_da_verba(p_pa_id);
+
+  IF p_budget_id IS NULL THEN
+    -- O id sai daqui em vez de vir de RETURNING: INSERT/UPDATE ... RETURNING
+    -- exige que a linha nova esteja visivel pelas policies de SELECT do
+    -- chamador, e quem tem autoridade de escrita sem leitura receberia um
+    -- falso "new row violates row-level security policy".
+    v_budget_id := gen_random_uuid();
+
+    INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, limite_alcada, observacoes)
+    VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_limite_alcada, p_observacoes);
+  ELSE
+    UPDATE public.pa_budgets
+       SET pa_id = p_pa_id,
+           ano = p_ano,
+           mes = p_mes,
+           verba_total = p_verba_total,
+           limite_alcada = p_limite_alcada,
+           observacoes = p_observacoes
+     WHERE id = p_budget_id;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Verba nao encontrada.' USING ERRCODE = 'P0002';
+    END IF;
+
+    v_budget_id := p_budget_id;
+  END IF;
+
+  RETURN v_budget_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.salvar_verba_pa(uuid, integer, integer, numeric, numeric, text, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.salvar_verba_pa(uuid, integer, integer, numeric, numeric, text, uuid) TO authenticated, service_role;

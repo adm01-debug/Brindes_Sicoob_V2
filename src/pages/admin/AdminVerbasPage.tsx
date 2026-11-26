@@ -162,19 +162,20 @@ export default function AdminVerbasPage() {
 
   const handleSave = async (formData: BudgetFormData) => {
     try {
-      if (editingBudget) {
-        const { error } = await supabase.from('pa_budgets').update({
-          verba_total: formData.verba_total,
-          limite_alcada: formData.limite_alcada,
-          observacoes: formData.observacoes,
-        }).eq('id', editingBudget.id);
-        if (error) throw error;
-        toast.success("Verba atualizada com sucesso");
-      } else {
-        const { error } = await supabase.from('pa_budgets').insert(formData);
-        if (error) throw error;
-        toast.success("Verba criada com sucesso");
-      }
+      // RPC transacional: bloqueia o PA antes da verba, a mesma ordem da
+      // exclusao de um PA (cascata da FK). O UPDATE direto travava a verba
+      // primeiro e podia dar deadlock com uma exclusao de PA em andamento.
+      const { error } = await supabase.rpc("salvar_verba_pa", {
+        p_pa_id: formData.pa_id,
+        p_ano: formData.ano ?? new Date().getFullYear(),
+        p_mes: formData.mes ?? new Date().getMonth() + 1,
+        p_verba_total: formData.verba_total ?? 0,
+        p_limite_alcada: formData.limite_alcada,
+        p_observacoes: formData.observacoes,
+        p_budget_id: editingBudget?.id ?? null,
+      });
+      if (error) throw error;
+      toast.success(editingBudget ? "Verba atualizada com sucesso" : "Verba criada com sucesso");
       setIsFormOpen(false);
       setEditingBudget(null);
       await queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
