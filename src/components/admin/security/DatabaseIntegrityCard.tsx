@@ -3,15 +3,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Database, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, Database, RefreshCw, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface RlsCompliance {
-  score: number;
-  total: number;
-  with_rls: number;
-  missing: string[];
-  permissive: string[];
+/**
+ * `audit_all_rls_compliance()` nao e executavel por `authenticated` (o grant e
+ * so para postgres e service_role) e grava uma linha em `qa_rls_audits` por
+ * chamada. A tela le o resultado ja auditado, dentro da policy de admin, em
+ * vez de rodar a auditoria a cada abertura.
+ */
+interface RlsAuditRow {
+  tables_total: number | null;
+  tables_with_rls: number | null;
+  tables_missing_rls: string[] | null;
+  tables_permissive_rls: string[] | null;
+  score: number | null;
+  audited_at: string;
 }
 
 interface SecurityHealth {
@@ -29,67 +36,145 @@ interface SecDefinerFinding {
 }
 
 export interface DatabaseIntegrity {
-  rls: RlsCompliance | null;
+  rls: RlsAuditRow | null;
   health: SecurityHealth | null;
   aclFindings: SecDefinerFinding[];
-  error: string | null;
+  errors: string[];
+  carregadoEm: string;
+}
+
+const COLUNAS_DA_AUDITORIA = "tables_total, tables_with_rls, tables_missing_rls, tables_permissive_rls, score, audited_at";
+
+function numeroOuZero(valor: unknown): number {
+  return typeof valor === "number" && Number.isFinite(valor) ? valor : 0;
+}
+
+function listaDeTexto(valor: unknown): string[] {
+  return Array.isArray(valor) ? valor.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizarAuditoria(bruto: unknown): RlsAuditRow | null {
+  if (!bruto || typeof bruto !== "object") return null;
+  const linha = bruto as Record<string, unknown>;
+  return {
+    tables_total: numeroOuZero(linha.tables_total),
+    tables_with_rls: numeroOuZero(linha.tables_with_rls),
+    tables_missing_rls: listaDeTexto(linha.tables_missing_rls),
+    tables_permissive_rls: listaDeTexto(linha.tables_permissive_rls),
+    score: numeroOuZero(linha.score),
+    audited_at: typeof linha.audited_at === "string" ? linha.audited_at : "",
+  };
+}
+
+function normalizarAchados(bruto: unknown): SecDefinerFinding[] {
+  if (!Array.isArray(bruto)) return [];
+  return bruto.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const achado = item as Record<string, unknown>;
+    if (typeof achado.function_name !== "string") return [];
+    return [{
+      function_name: achado.function_name,
+      arguments: typeof achado.arguments === "string" ? achado.arguments : "",
+      problem: typeof achado.problem === "string" ? achado.problem : "",
+      granted_to: typeof achado.granted_to === "string" ? achado.granted_to : "",
+    }];
+  });
 }
 
 async function carregarIntegridade(): Promise<DatabaseIntegrity> {
-  const [rls, health, acl] = await Promise.all([
-    supabase.rpc("audit_all_rls_compliance" as never),
-    supabase.rpc("check_security_health" as never),
-    supabase.rpc("audit_security_definer_acl" as never),
-  ]);
-  const erro = rls.error ?? health.error ?? acl.error;
+  const erros: string[] = [];
+
+  const auditoria = await supabase
+    .from("qa_rls_audits")
+    .select(COLUNAS_DA_AUDITORIA)
+    .order("audited_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (auditoria.error) erros.push(`Auditoria de RLS: ${auditoria.error.message}`);
+
+  const saude = await supabase.rpc("check_security_health" as never);
+  if (saude.error) erros.push(`Saúde do sistema: ${saude.error.message}`);
+
+  const acl = await supabase.rpc("audit_security_definer_acl" as never);
+  if (acl.error) erros.push(`Permissões de função: ${acl.error.message}`);
+
   return {
-    rls: (rls.data as unknown as RlsCompliance) ?? null,
-    health: (health.data as unknown as SecurityHealth) ?? null,
-    aclFindings: (acl.data as unknown as SecDefinerFinding[]) ?? [],
-    error: erro ? erro.message : null,
+    rls: normalizarAuditoria(auditoria.data),
+    health: saude.error ? null : (saude.data as unknown as SecurityHealth),
+    aclFindings: normalizarAchados(acl.data),
+    errors: erros,
+    carregadoEm: new Date().toISOString(),
   };
 }
 
-export function resumoRls(rls: RlsCompliance | null) {
-  if (!rls) return { ok: false, detail: "Sem leitura do inventário" };
-  const semRls = rls.missing.length;
-  const permissivas = rls.permissive.length;
-  if (semRls === 0 && permissivas === 0) {
-    return { ok: true, detail: `${rls.with_rls}/${rls.total} tabelas com RLS — score ${rls.score.toFixed(2)}%` };
-  }
-  return {
-    ok: false,
-    detail: `${semRls} sem RLS, ${permissivas} permissiva(s) — score ${rls.score.toFixed(2)}%`,
-  };
+export interface Resumo {
+  ok: boolean;
+  detail: string;
 }
 
-export function resumoAcl(achados: SecDefinerFinding[]) {
-  if (achados.length === 0) {
-    return { ok: true, detail: "Nenhuma função SECURITY DEFINER exposta sem controle" };
+export function resumoRls(rls: RlsAuditRow | null): Resumo {
+  if (!rls) return { ok: false, detail: "Nenhuma auditoria de RLS registrada" };
+  const semRls = listaDeTexto(rls.tables_missing_rls);
+  const permissivas = listaDeTexto(rls.tables_permissive_rls);
+  const comRls = numeroOuZero(rls.tables_with_rls);
+  const total = numeroOuZero(rls.tables_total);
+  if (semRls.length === 0 && permissivas.length === 0) {
+    return { ok: true, detail: `${comRls}/${total} tabelas com RLS — score ${numeroOuZero(rls.score).toFixed(2)}%` };
   }
+  return { ok: false, detail: `${semRls.length} sem RLS, ${permissivas.length} permissiva(s) — score ${numeroOuZero(rls.score).toFixed(2)}%` };
+}
+
+export function resumoAcl(achados: SecDefinerFinding[], falhou: boolean): Resumo {
+  if (falhou) return { ok: false, detail: "Não foi possível ler as permissões" };
+  if (achados.length === 0) return { ok: true, detail: "Nenhuma função SECURITY DEFINER exposta sem controle" };
   return { ok: false, detail: `${achados.length} função(ões) com permissão indevida` };
 }
 
-export function resumoHealth(health: SecurityHealth | null) {
+/**
+ * `check_security_health()` devolve `system_status` fixo em 'SECURE'. O status
+ * exibido e recalculado a partir dos achados reais das auditorias.
+ */
+export function resumoHealth(health: SecurityHealth | null, temAchado: boolean): Resumo {
   if (!health) return { ok: false, detail: "Sem leitura de saúde" };
-  const quando = new Date(health.last_check).toLocaleString("pt-BR");
-  return {
-    ok: health.system_status === "SECURE",
-    detail: `${health.system_status} — ${health.recent_admin_changes} alteração(ões) de admin desde ${quando}`,
-  };
+  const alteracoes = numeroOuZero(health.recent_admin_changes);
+  if (temAchado) return { ok: false, detail: `Achados de integridade abertos — ${alteracoes} alteração(ões) de admin nas últimas 24h` };
+  return { ok: true, detail: `Sem achados — ${alteracoes} alteração(ões) de admin nas últimas 24h` };
 }
 
-const COR_DO_STATUS: Record<string, "default" | "destructive"> = {
-  SECURE: "default",
-  AT_RISK: "destructive",
-};
+/** Tabelas particionadas contam em `tables_total` mas o pai pode nao ter sido verificado. */
+export function avisoDeCobertura(rls: RlsAuditRow | null): string | null {
+  if (!rls) return null;
+  const total = numeroOuZero(rls.tables_total);
+  const comRls = numeroOuZero(rls.tables_with_rls);
+  const semRls = listaDeTexto(rls.tables_missing_rls);
+  if (semRls.length === 0 && total > comRls) {
+    return `${total - comRls} tabela(s) do total não aparecem como verificadas (inclui particionadas) — o score trata como ausência.`;
+  }
+  return null;
+}
 
-function ListaDeAchadosRls({ rls }: { rls: RlsCompliance }) {
-  if (rls.missing.length === 0 && rls.permissive.length === 0) return null;
+const COR_DO_STATUS: Record<string, "default" | "destructive"> = { OK: "default", ATENCAO: "destructive" };
+
+function ItemDeIntegridade({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
+  return (
+    <li className="flex items-start gap-2 rounded-md border border-border/50 p-2.5">
+      {ok ? <CheckCircle2 className="h-4 w-4 mt-0.5 text-success shrink-0" /> : <XCircle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />}
+      <div className="min-w-0">
+        <p className="text-sm font-medium leading-tight">{label}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{detail}</p>
+      </div>
+    </li>
+  );
+}
+
+function ListaDeAchadosRls({ rls }: { rls: RlsAuditRow }) {
+  const semRls = listaDeTexto(rls.tables_missing_rls);
+  const permissivas = listaDeTexto(rls.tables_permissive_rls);
+  if (semRls.length === 0 && permissivas.length === 0) return null;
   return (
     <div className="rounded-md border border-destructive/40 p-2.5 text-xs">
-      {rls.missing.length > 0 && <p>Sem RLS: {rls.missing.join(", ")}</p>}
-      {rls.permissive.length > 0 && <p>Permissivas: {rls.permissive.join(", ")}</p>}
+      {semRls.length > 0 && <p>Sem RLS: {semRls.join(", ")}</p>}
+      {permissivas.length > 0 && <p>Permissivas: {permissivas.join(", ")}</p>}
     </div>
   );
 }
@@ -107,24 +192,12 @@ function ListaDeAchadosAcl({ achados }: { achados: SecDefinerFinding[] }) {
   );
 }
 
-function ItemDeIntegridade({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
-  return (
-    <li className="flex items-start gap-2 rounded-md border border-border/50 p-2.5">
-      {ok ? <CheckCircle2 className="h-4 w-4 mt-0.5 text-success shrink-0" /> : <XCircle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />}
-      <div className="min-w-0">
-        <p className="text-sm font-medium leading-tight">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{detail}</p>
-      </div>
-    </li>
-  );
-}
-
 function CabecalhoDaIntegridade({ dados, carregando, recarregar }: { dados: DatabaseIntegrity; carregando: boolean; recarregar: () => void }) {
-  const status = dados.health?.system_status ?? "DESCONHECIDO";
+  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
+  const status = temAchado ? "ATENCAO" : "OK";
   return (
     <div className="flex items-center gap-2">
-      <Badge variant={COR_DO_STATUS[status] ?? "destructive"}>{status}</Badge>
-      {dados.error && <span className="text-xs text-destructive">{dados.error}</span>}
+      <Badge variant={COR_DO_STATUS[status]}>{status}</Badge>
       <Button variant="ghost" size="sm" className="ml-auto" onClick={recarregar} disabled={carregando}>
         <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${carregando ? "animate-spin" : ""}`} />
         Reverificar
@@ -135,11 +208,13 @@ function CabecalhoDaIntegridade({ dados, carregando, recarregar }: { dados: Data
 
 function DatabaseIntegrityBody({ dados, carregando, recarregar }: { dados: DatabaseIntegrity | null; carregando: boolean; recarregar: () => void }) {
   if (!dados) return <p className="text-sm text-muted-foreground">{carregando ? "Verificando…" : "Sem dados"}</p>;
+  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
   const itens = [
     { label: "RLS em todas as tabelas", ...resumoRls(dados.rls) },
-    { label: "SECURITY DEFINER", ...resumoAcl(dados.aclFindings) },
-    { label: "Saúde do sistema", ...resumoHealth(dados.health) },
+    { label: "SECURITY DEFINER", ...resumoAcl(dados.aclFindings, dados.errors.some((e) => e.startsWith("Permissões"))) },
+    { label: "Saúde do sistema", ...resumoHealth(dados.health, temAchado) },
   ];
+  const aviso = avisoDeCobertura(dados.rls);
   return (
     <div className="space-y-3">
       <CabecalhoDaIntegridade dados={dados} carregando={carregando} recarregar={recarregar} />
@@ -148,6 +223,20 @@ function DatabaseIntegrityBody({ dados, carregando, recarregar }: { dados: Datab
       </ul>
       {dados.rls && <ListaDeAchadosRls rls={dados.rls} />}
       <ListaDeAchadosAcl achados={dados.aclFindings} />
+      {aviso && (
+        <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          {aviso}
+        </p>
+      )}
+      {dados.rls?.audited_at && (
+        <p className="text-xs text-muted-foreground">Última auditoria registrada em {new Date(dados.rls.audited_at).toLocaleString("pt-BR")}</p>
+      )}
+      {dados.errors.length > 0 && (
+        <div className="rounded-md border border-destructive/40 p-2.5 text-xs space-y-1">
+          {dados.errors.map((erro) => <p key={erro} className="text-destructive">{erro}</p>)}
+        </div>
+      )}
     </div>
   );
 }
@@ -162,13 +251,13 @@ export function DatabaseIntegrityCard() {
     try {
       const resultado = await carregarIntegridade();
       setDados(resultado);
-      if (resultado.error) throw new Error(resultado.error);
-    } catch (erro) {
-      toast({
-        title: "Erro ao verificar a integridade do banco",
-        description: erro instanceof Error ? erro.message : "Erro desconhecido",
-        variant: "destructive",
-      });
+      if (resultado.errors.length > 0) {
+        toast({
+          title: "Parte da integridade não pôde ser lida",
+          description: resultado.errors.join(" · "),
+          variant: "destructive",
+        });
+      }
     } finally {
       setCarregando(false);
     }
