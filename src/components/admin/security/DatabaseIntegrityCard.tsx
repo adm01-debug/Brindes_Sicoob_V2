@@ -110,6 +110,8 @@ async function carregarIntegridade(): Promise<DatabaseIntegrity> {
 export interface Resumo {
   ok: boolean;
   detail: string;
+  /** Achado confirmado na fonte. Dado desatualizado deixa `ok` falso sem ser achado. */
+  achado?: boolean;
 }
 
 /** Dado mais velho que isso nao sustenta um selo verde. */
@@ -123,18 +125,18 @@ export function auditoriaVencida(rls: RlsAuditRow | null, agora: Date = new Date
 }
 
 export function resumoRls(rls: RlsAuditRow | null, agora: Date = new Date()): Resumo {
-  if (!rls) return { ok: false, detail: "Nenhuma auditoria de RLS registrada" };
+  if (!rls) return { ok: false, detail: "Nenhuma auditoria de RLS registrada", achado: false };
   const semRls = listaDeTexto(rls.tables_missing_rls);
   const permissivas = listaDeTexto(rls.tables_permissive_rls);
   const comRls = numeroOuZero(rls.tables_with_rls);
   const total = numeroOuZero(rls.tables_total);
   if (semRls.length === 0 && permissivas.length === 0) {
     if (auditoriaVencida(rls, agora)) {
-      return { ok: false, detail: `${comRls}/${total} tabelas com RLS na última auditoria, mas o dado está desatualizado` };
+      return { ok: false, detail: `${comRls}/${total} tabelas com RLS na última auditoria, mas o dado está desatualizado`, achado: false };
     }
     return { ok: true, detail: `${comRls}/${total} tabelas com RLS — score ${numeroOuZero(rls.score).toFixed(2)}%` };
   }
-  return { ok: false, detail: `${semRls.length} sem RLS, ${permissivas.length} permissiva(s) — score ${numeroOuZero(rls.score).toFixed(2)}%` };
+  return { ok: false, achado: true, detail: `${semRls.length} sem RLS, ${permissivas.length} permissiva(s) — score ${numeroOuZero(rls.score).toFixed(2)}%` };
 }
 
 export function resumoAcl(achados: SecDefinerFinding[], falhou: boolean): Resumo {
@@ -222,15 +224,15 @@ function CabecalhoDaIntegridade({ dados, carregando, recarregar }: { dados: Data
  * Leitura parcial nao pode virar selo verde: se qualquer RPC falhou, o estado
  * e desconhecido, nao aprovado.
  */
-export function statusDeIntegridade(dados: DatabaseIntegrity): "OK" | "ATENCAO" | "PARCIAL" {
-  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
+export function statusDeIntegridade(dados: DatabaseIntegrity, agora: Date = new Date()): "OK" | "ATENCAO" | "PARCIAL" {
+  const temAchado = resumoRls(dados.rls, agora).achado === true || dados.aclFindings.length > 0;
   if (temAchado) return "ATENCAO";
   return dados.errors.length > 0 ? "PARCIAL" : "OK";
 }
 
 function DatabaseIntegrityBody({ dados, carregando, recarregar }: { dados: DatabaseIntegrity | null; carregando: boolean; recarregar: () => void }) {
   if (!dados) return <p className="text-sm text-muted-foreground">{carregando ? "Verificando…" : "Sem dados"}</p>;
-  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
+  const temAchado = resumoRls(dados.rls).achado === true || dados.aclFindings.length > 0;
   const itens = [
     { label: "RLS em todas as tabelas", ...resumoRls(dados.rls) },
     { label: "SECURITY DEFINER", ...resumoAcl(dados.aclFindings, dados.errors.some((e) => e.startsWith("Permissões"))) },

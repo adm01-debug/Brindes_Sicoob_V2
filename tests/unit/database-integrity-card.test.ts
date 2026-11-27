@@ -30,7 +30,7 @@ describe('resumoRls', () => {
   });
 
   it('reprova, em vez de aprovar, quando nao existe auditoria registrada', () => {
-    expect(resumoRls(null)).toEqual({ ok: false, detail: 'Nenhuma auditoria de RLS registrada' });
+    expect(resumoRls(null)).toEqual({ ok: false, detail: 'Nenhuma auditoria de RLS registrada', achado: false });
   });
 });
 
@@ -108,14 +108,26 @@ describe('statusDeIntegridade', () => {
   const base = { rls: auditoria, health: saude, aclFindings: [] as never[], errors: [] as string[], carregadoEm: AGORA.toISOString() };
 
   it('APROVA so quando tudo foi lido e nada tem achado', () => {
-    expect(statusDeIntegridade(base)).toBe('OK');
+    expect(statusDeIntegridade(base, AGORA)).toBe('OK');
   });
 
   it('marca PARCIAL quando alguma leitura falhou, em vez de aprovar', () => {
-    expect(statusDeIntegridade({ ...base, errors: ['Permissões de função: boom'] })).toBe('PARCIAL');
+    expect(statusDeIntegridade({ ...base, errors: ['Permissões de função: boom'] }, AGORA)).toBe('PARCIAL');
   });
 
   it('marca ATENCAO quando ha achado, mesmo com leitura parcial', () => {
-    expect(statusDeIntegridade({ ...base, errors: ['x'], aclFindings: [{ function_name: 'f', arguments: '', problem: 'EXECUTE', granted_to: 'anon' }] })).toBe('ATENCAO');
+    expect(statusDeIntegridade({ ...base, errors: ['x'], aclFindings: [{ function_name: 'f', arguments: '', problem: 'EXECUTE', granted_to: 'anon' }] }, AGORA)).toBe('ATENCAO');
+  });
+
+  it('auditoria vencida sem achado nao vira ATENCAO: nao ha problema confirmado', () => {
+    const velha = { ...base, rls: { ...auditoria, audited_at: '2026-11-01T00:00:00Z' } };
+    expect(statusDeIntegridade(velha, AGORA)).toBe('OK');
+    expect(resumoRls(velha.rls, AGORA).ok).toBe(false);
+    expect(resumoRls(velha.rls, AGORA).achado).toBe(false);
+  });
+
+  it('auditoria vencida nao mascara achado real de RLS', () => {
+    const velhaComFuro = { ...base, rls: { ...auditoria, audited_at: '2026-11-01T00:00:00Z', tables_missing_rls: ['t'] } };
+    expect(statusDeIntegridade(velhaComFuro, AGORA)).toBe('ATENCAO');
   });
 });
