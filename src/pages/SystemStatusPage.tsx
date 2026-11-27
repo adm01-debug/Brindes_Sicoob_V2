@@ -34,14 +34,12 @@ interface CrmTableCheck {
 
 const CRM_CRITICAL_TABLES = [
   'companies',
-  'contacts',
-  'contact_emails',
-  'contact_phones',
-  'company_addresses',
-  'company_social_media',
-  'customers',
+  'enriched_contacts',
   'suppliers',
-  'carriers',
+  'products',
+  'product_attributes',
+  'quotes',
+  'custom_kits',
 ];
 
 const LOCAL_TABLES = ['quotes', 'quote_items', 'quote_templates', 'quote_history'] as const;
