@@ -40,6 +40,20 @@ describe('SICOOB RBAC Routes Integrity', () => {
       .flatMap((item) => [item, ...(item.children ?? [])])
       .filter((item) => item.href === '/admin/centrais');
     expect(itens).toHaveLength(1);
+
+    // Caso positivo: a catraca de visibilidade só reprova quem vê demais. Se
+    // Centrais sumisse do menu para supervisores, ela continuaria verde.
+    const item = itens[0]!;
+    const enxerga = (papel: string) => {
+      const isDev = papel === 'dev';
+      return hasDeclaredAccess(item, isDev, [papel])
+        && hasRouteAccess('/admin/centrais', isDev, [papel]);
+    };
+    expect(enxerga('dev')).toBe(true);
+    expect(enxerga('supervisor')).toBe(true);
+    for (const papel of ['gerente_pa', 'comprador_pac', 'comprador_singular', 'vendedor']) {
+      expect(enxerga(papel), `${papel} não deve enxergar Centrais`).toBe(false);
+    }
   });
 
   it('nenhum item de menu leva a /403: a visibilidade segue a guarda de rota', () => {
