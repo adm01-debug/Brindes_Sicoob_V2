@@ -613,3 +613,23 @@ Deno.test("ancora usa o dia de Brasilia, nao o de UTC", () => {
     31,
   );
 });
+
+Deno.test("mensal avanca a partir do mes de Brasilia, nao do mes UTC", () => {
+  // 31/07 as 21h de Brasilia ja e 01/08 00h em UTC. Avancando pelo mes UTC, a
+  // entrega de agosto era pulada e o mensal so voltava em setembro.
+  const virada = new Date("2026-08-01T00:00:00.000Z");
+  assertEquals(
+    calculateNextRun("monthly", virada, 31).toISOString(),
+    "2026-08-31T08:00:00.000Z",
+  );
+  // O dia-ancora 31 nao existe em setembro: cai no ultimo dia do mes.
+  assertEquals(
+    calculateNextRun("monthly", new Date("2026-09-01T00:00:00.000Z"), 31).toISOString(),
+    "2026-09-30T08:00:00.000Z",
+  );
+  // Sem ancora, o dia vem do calendario de Brasilia e nao vira dia 1.
+  assertEquals(
+    calculateNextRun("monthly", new Date("2026-08-01T00:00:00.000Z")).toISOString(),
+    "2026-08-31T08:00:00.000Z",
+  );
+});

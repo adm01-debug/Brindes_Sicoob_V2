@@ -424,11 +424,16 @@ async function salesSection(
   // pode estar em branco e o valor estar no anexo atrasado (ou no PDF e nao no
   // XML). Sem isso a nota aparecia por R$ 0,00 no relatorio e, como o anexo
   // atrasado nao entra em ajustes de nota faturada, o valor sumia de vez.
+  // O anexo com emissao a partir do fechamento entra no faturamento do ciclo
+  // seguinte: herdar o valor dele aqui somava o mesmo valor nos dois relatorios.
+  const untilDate = until.slice(0, 10);
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
     const existing = invoices.get(key);
     if (!existing || existing.amount !== null) continue;
     if (inv.amount === null || inv.amount === undefined) continue;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
+    if (issuedAtDoAnexo && issuedAtDoAnexo >= untilDate) continue;
     existing.amount = Number(inv.amount);
   }
   const invoiceRows = [...invoices.values()]
@@ -474,12 +479,17 @@ async function salesSection(
   // Duas passadas: o valor de reserva da nota precisa estar completo antes de
   // decidir quem abre o ajuste, porque a consulta nao garante ordem e o anexo
   // que comprova o atraso pode vir em branco.
+  // So serve de reserva o anexo que NAO vai ser contado em nenhum relatorio. O
+  // anexo emitido depois do fechamento entra no faturamento do ciclo seguinte:
+  // usar o valor dele aqui adiantava para este ciclo o mesmo valor que o ciclo
+  // seguinte somaria de novo.
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
     const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
-    // Valor informado em qualquer anexo da nota serve de reserva para o anexo
-    // que abrir o ajuste.
-    if (amount !== null && valorDaNota.get(key) === undefined) valorDaNota.set(key, amount);
+    if (amount === null) continue;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
+    if (issuedAtDoAnexo && issuedAtDoAnexo >= untilDate) continue;
+    if (valorDaNota.get(key) === undefined) valorDaNota.set(key, amount);
   }
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;

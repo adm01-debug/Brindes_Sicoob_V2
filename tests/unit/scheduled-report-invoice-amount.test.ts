@@ -66,6 +66,10 @@ const notaCom = (amount: number | null, created_at: string) => ({
   created_at,
 });
 
+// `money` formata com espaco nao separavel (U+00A0), entao "R$ 0,00" com
+// espaco comum nunca aparece e a assercao passaria a toa.
+const ZERO_REAL = 'R$\u00A00,00';
+
 describe('faturamento por nota fiscal no relatorio agendado', () => {
   it('preserva o valor informado no anexo anterior quando o mais recente vem em branco', async () => {
     // PDF com valor de R$ 250 (mais antigo) e XML sem valor anexado depois: a
@@ -75,9 +79,14 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
       [notaCom(null, '2026-03-09T10:00:00.000Z'), notaCom(250, '2026-03-05T10:00:00.000Z')],
     );
 
-    const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    // Escopo ate "Propostas aprovadas": a secao seguinte mostra R$ 0,00 em
+    // "Aprovadas: 0", que nada tem a ver com o valor da nota.
+    const ajustes = html.slice(
+      html.indexOf('Ajustes de faturamento'),
+      html.indexOf('Propostas aprovadas'),
+    );
     expect(ajustes).toContain('250,00');
-    expect(ajustes).not.toContain('R$ 0,00');
+    expect(ajustes).not.toContain(ZERO_REAL);
     expect(ajustes).toContain('1 \u2014');
   });
 
@@ -122,8 +131,11 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
       ],
     );
 
-    expect(html).toContain('180,00');
-    expect(html).not.toContain('R$ 0,00');
+    // A linha da nota no faturamento precisa ter o valor: sem o escopo, o
+    // "Aprovadas: 0" adiante mascarava o R$ 0,00 da nota.
+    const faturamento = html.slice(0, html.indexOf('Propostas aprovadas'));
+    expect(faturamento).toContain('180,00');
+    expect(faturamento).not.toContain(ZERO_REAL);
     expect(html).not.toContain('Ajustes de faturamento');
   });
 
@@ -197,10 +209,13 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
       ],
     );
 
-    const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    const ajustes = html.slice(
+      html.indexOf('Ajustes de faturamento'),
+      html.indexOf('Propostas aprovadas'),
+    );
     expect(ajustes).toContain('4321');
     expect(ajustes).toContain('300,00');
-    expect(ajustes).not.toContain('R$ 0,00');
+    expect(ajustes).not.toContain(ZERO_REAL);
   });
 
   it('ajuste herda o valor tambem quando o anexo em branco vem primeiro', async () => {
@@ -217,6 +232,27 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
     expect(ajustes).toContain('4321');
     expect(ajustes).toContain('300,00');
+  });
+
+  it('nao herda o valor da nota a partir de anexo emitido no ciclo seguinte', async () => {
+    // PDF e XML da mesma nota com emissoes em ciclos diferentes: o XML foi
+    // emitido em 12/03, DEPOIS do fechamento (10/03), entao o faturamento
+    // deste ciclo so enxerga o PDF, sem valor. O XML aparece na consulta de
+    // registro (criado em 09/03) e, se o valor dele fosse usado aqui, o ciclo
+    // atual somaria os 400 e o ciclo seguinte somaria os mesmos 400 de novo —
+    // por isso o anexo com emissao a partir do fechamento fica fora da heranca.
+    const html = await relatorio(
+      [{ order_id: 'ped-7', invoice_number: '9090', amount: null, issued_at: '2026-03-08', created_at: '2026-03-09T10:00:00.000Z', sicoob_orders: { created_by: SELLER } }],
+      [{ order_id: 'ped-7', invoice_number: '9090', amount: 400, issued_at: '2026-03-12', created_at: '2026-03-09T10:00:00.000Z' }],
+    );
+
+    // A nota continua no faturamento (o PDF foi emitido no periodo), mas com o
+    // valor do XML fora da heranca: R$ 0,00 aqui e R$ 400,00 no proximo ciclo,
+    // nao R$ 400,00 nos dois.
+    const faturamento = html.slice(0, html.indexOf('Propostas aprovadas'));
+    expect(faturamento).toContain('9090');
+    expect(faturamento).toContain(ZERO_REAL);
+    expect(faturamento).not.toContain('400,00');
   });
 
   it('nao soma em ajustes a nota cujo anexo do ciclo entrou no faturamento', async () => {

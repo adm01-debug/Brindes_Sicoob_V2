@@ -84,15 +84,20 @@ export function calculateNextRun(
       next.setUTCDate(next.getUTCDate() + 1);
       break;
     case "monthly": {
-      // O dia-âncora é o dia original do agendamento, não o dia da última
-      // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava
-      // preso no 28 em todos os meses seguintes.
+      // O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as
+      // 21h de Brasilia ja e dia 1 em UTC, e avancar por UTC pulava um mes.
+      const brasilia = new Date(reference.getTime() - BRASILIA_OFFSET_MS);
       const day = anchorDay && anchorDay >= 1 && anchorDay <= 31
         ? anchorDay
-        : next.getUTCDate();
-      next.setUTCDate(1);
-      next.setUTCMonth(next.getUTCMonth() + 1);
-      next.setUTCDate(Math.min(day, lastDayOfMonth(next.getUTCFullYear(), next.getUTCMonth())));
+        : brasilia.getUTCDate();
+      next.setTime(Date.UTC(
+        brasilia.getUTCFullYear(),
+        brasilia.getUTCMonth() + 1,
+        Math.min(
+          day,
+          lastDayOfMonth(brasilia.getUTCFullYear(), brasilia.getUTCMonth() + 1),
+        ),
+      ));
       break;
     }
     case "weekly":
