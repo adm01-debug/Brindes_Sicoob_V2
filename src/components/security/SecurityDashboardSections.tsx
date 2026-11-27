@@ -691,7 +691,7 @@ export function SecurityTabs({
         <GeoBlockingManager />
       </TabsContent>
       <TabsContent value="notifications">
-        <PushNotificationSettings />
+        <PushNotificationSettings managingOther={managingOther} />
       </TabsContent>
       <TabsContent value="history" className="space-y-4">
         <LoginHistory
