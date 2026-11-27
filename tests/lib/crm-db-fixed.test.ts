@@ -140,4 +140,15 @@ describe('invokeCrmBatch', () => {
     mockInvoke.mockResolvedValueOnce({ data: { success: false, error: 'Batch failed' }, error: null });
     await expect(invokeCrmBatch([{ table: 'companies' }])).rejects.toThrow('Batch failed');
   });
+
+  it('degrada sem throw quando o CRM ainda nao esta configurado', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { success: false, error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+    const results = await invokeCrmBatch([{ table: 'companies' }, { table: 'suppliers' }]);
+    expect(results).toHaveLength(2);
+    expect(results.every((r) => r.success === false)).toBe(true);
+    expect(results[0].error).toContain('not configured');
+  });
 });
