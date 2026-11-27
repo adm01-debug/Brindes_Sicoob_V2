@@ -13735,7 +13735,7 @@
       },
       {
         "comment": null,
-        "default": null,
+        "default": "auth.uid()",
         "generated": null,
         "identity": null,
         "is_enum": false,
@@ -33170,6 +33170,45 @@
       },
       {
         "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "sla_closed_at",
+        "nullable": true,
+        "position": 34,
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "timestamp with time zone"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "sla_closed_status",
+        "nullable": true,
+        "position": 35,
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "text"
+      },
+      {
+        "comment": null,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "is_enum": false,
+        "name": "sla_closed_outcome",
+        "nullable": true,
+        "position": 36,
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "text"
+      },
+      {
+        "comment": null,
         "default": "gen_random_uuid()",
         "generated": null,
         "identity": null,
@@ -49252,6 +49291,23 @@
       },
       {
         "columns": [
+          "sla_closed_outcome"
+        ],
+        "deferrable": false,
+        "definition": "CHECK (sla_closed_outcome IS NULL OR (sla_closed_outcome = ANY (ARRAY['approved'::text, 'rejected'::text, 'escalated'::text, 'cancelled'::text])))",
+        "name": "sicoob_orders_sla_closed_outcome_check",
+        "on_delete": null,
+        "on_update": null,
+        "ref_columns": [],
+        "ref_schema": null,
+        "ref_table": null,
+        "schema": "public",
+        "table": "sicoob_orders",
+        "type": "CHECK",
+        "validated": true
+      },
+      {
+        "columns": [
           "sla_status"
         ],
         "deferrable": false,
@@ -50454,6 +50510,15 @@
           "jobname": "prune-cron-job-run-details",
           "schedule": "17 3 * * *",
           "username": "postgres"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.refresh_sicoob_order_sla_status();",
+          "database": "postgres",
+          "jobid": 38,
+          "jobname": "sicoob-refresh-order-sla",
+          "schedule": "*/15 * * * *",
+          "username": "postgres"
         }
       ]
     },
@@ -50585,6 +50650,162 @@
         "security_definer": true,
         "strict": false,
         "volatility": "stable"
+      },
+      {
+        "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 4
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.cooperativa_verba_distribuida",
+            "public.tg_cooperativa_budget_not_below_distributed",
+            "public.tg_pa_budget_respects_cooperativa_ceiling",
+            "public.tg_pa_transfer_respects_cooperativa_ceiling"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "50dd828ede7530f7",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "_cooperativa_verba_distribuida",
+        "owner": "postgres",
+        "returns": "numeric",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_cooperativa_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 4
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.cooperativa_verba_distribuida",
+            "public.tg_cooperativa_budget_not_below_distributed",
+            "public.tg_pa_budget_respects_cooperativa_ceiling",
+            "public.tg_pa_transfer_respects_cooperativa_ceiling"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "2e017648f5ae2cb9",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "_pode_ver_verba_da_cooperativa",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
+        "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 3
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.tg_cooperativa_budget_not_below_distributed",
+            "public.tg_pa_budget_respects_cooperativa_ceiling",
+            "public.tg_pa_transfer_respects_cooperativa_ceiling"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "6a88d9f0938b3af2",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "_trava_competencia_da_cooperativa",
+        "owner": "postgres",
+        "returns": "void",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_pa_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [
+            "public.salvar_verba_pa"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "767805f121f0e0d8",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "_trava_pa_da_verba",
+        "owner": "postgres",
+        "returns": "void",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
       },
       {
         "args": "p_token text",
@@ -51989,6 +52210,47 @@
         "volatility": "stable"
       },
       {
+        "args": "p_request_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "src/services/sicoob/approvalService.ts",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [
+            "public.decide_limit_increase_request"
+          ],
+          "triggers": [],
+          "views": []
+        },
+        "comment": "Autoridade para decidir aumento de verba: admin global ou gestor_compras da cooperativa do PA (mesma regra da escrita de pa_budgets).",
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "07368d93b1c84efe",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "sql",
+        "leakproof": false,
+        "name": "can_decide_limit_increase",
+        "owner": "postgres",
+        "returns": "boolean",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
         "args": "_user_id uuid",
         "callers": {
           "code": [
@@ -52807,7 +53069,7 @@
           "search_path=public"
         ],
         "definition": null,
-        "definition_sha": "9d205791c4bc4f88",
+        "definition_sha": "f31e29fdb23d190b",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": true,
@@ -53574,6 +53836,43 @@
         "volatility": "volatile"
       },
       {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.sicoob_orders.close_sicoob_order_sla"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "f3f5d984ea1076cf",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "close_sicoob_order_sla",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "_id uuid, _status text, _notes text, _guardrail_status text, _result jsonb, _error text",
         "callers": {
           "code": [
@@ -53907,6 +54206,41 @@
         "security_definer": true,
         "strict": false,
         "volatility": "volatile"
+      },
+      {
+        "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+        "callers": {
+          "code": [
+            {
+              "file": "src/services/sicoob/cooperativaBudgetService.ts",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "9b5903f54542caf2",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "cooperativa_verba_distribuida",
+        "owner": "postgres",
+        "returns": "numeric",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
       },
       {
         "args": "p_membership_id uuid",
@@ -54359,6 +54693,8 @@
           "code_total_files": 17,
           "cron": [],
           "db": [
+            "public._pode_ver_verba_da_cooperativa",
+            "public.can_decide_limit_increase",
             "public.user_can_access_cooperativa",
             "public.user_can_access_pa"
           ],
@@ -54474,6 +54810,45 @@
         "security_definer": true,
         "strict": false,
         "volatility": "stable"
+      },
+      {
+        "args": "p_request_id uuid, p_approve boolean, p_reason text",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 5
+            },
+            {
+              "file": "src/services/sicoob/approvalService.ts",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": "Decide um pedido de aumento de verba: aprova (eleva verba_planejada da competência) ou recusa, registrando autor e motivo e avisando o solicitante.",
+        "config": [
+          "search_path=\"\""
+        ],
+        "definition": null,
+        "definition_sha": "d89100fcb2044e3c",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "decide_limit_increase_request",
+        "owner": "postgres",
+        "returns": "limit_increase_requests",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
       },
       {
         "args": "p_artwork_id uuid, p_status text, p_feedback text",
@@ -58167,9 +58542,11 @@
           "cron": [],
           "db": [
             "public._can_act_on_behalf_of_others",
+            "public._pode_ver_verba_da_cooperativa",
             "public.assert_database_auditor",
             "public.assert_quote_transition",
             "public.audit_ownership_orphans",
+            "public.can_decide_limit_increase",
             "public.can_manage_quote_scope",
             "public.can_view_all_sales",
             "public.check_telemetry_regression",
@@ -58507,6 +58884,8 @@
           "code_total_files": 25,
           "cron": [],
           "db": [
+            "public._pode_ver_verba_da_cooperativa",
+            "public.can_decide_limit_increase",
             "public.guard_profile_authority_fields",
             "public.pa_budget_allocation_write_ok",
             "public.pa_budget_close_competence",
@@ -62243,6 +62622,51 @@
         "volatility": "volatile"
       },
       {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-sla-pedido-sicoob.py",
+              "hits": 7
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+              "hits": 2
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [
+            "38:sicoob-refresh-order-sla"
+          ],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "4e502e611916c00f",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "refresh_sicoob_order_sla_status",
+        "owner": "postgres",
+        "returns": "integer",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "p_quote_id uuid, p_items jsonb, p_actor_id uuid",
         "callers": {
           "code": [
@@ -63324,6 +63748,49 @@
         "volatility": "volatile"
       },
       {
+        "args": "p_pa_id uuid, p_ano integer, p_mes integer, p_verba_total numeric, p_limite_alcada numeric, p_observacoes text, p_budget_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 4
+            },
+            {
+              "file": "src/pages/admin/AdminVerbasPage.tsx",
+              "hits": 1
+            },
+            {
+              "file": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 3,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "1298491f9d5c610f",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "salvar_verba_pa",
+        "owner": "postgres",
+        "returns": "uuid",
+        "schema": "public",
+        "security_definer": false,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
         "args": "p_quote jsonb, p_items jsonb, p_quote_id uuid, p_expected_row_version integer, p_history jsonb",
         "callers": {
           "code": [
@@ -63678,7 +64145,9 @@
           ],
           "code_total_files": 2,
           "cron": [],
-          "db": [],
+          "db": [
+            "public.decide_limit_increase_request"
+          ],
           "triggers": [],
           "views": []
         },
@@ -63955,6 +64424,43 @@
         "returns": "trigger",
         "schema": "public",
         "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.sicoob_orders.set_sicoob_order_sla_deadline"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "0a3749c03f287609",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "set_sicoob_order_sla_deadline",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": false,
         "strict": false,
         "volatility": "volatile"
       },
@@ -65380,6 +65886,43 @@
         "callers": {
           "code": [
             {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.cooperativa_budgets.trg_cooperativa_budget_not_below_distributed"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "c5f74df2038030fa",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_cooperativa_budget_not_below_distributed",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 1
             }
@@ -65442,6 +65985,84 @@
         "language": "plpgsql",
         "leakproof": false,
         "name": "tg_pa_budget_entries_immutable",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.pa_budgets.trg_pa_budget_respects_cooperativa_ceiling"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "d9d19b1e3ab33465",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_pa_budget_respects_cooperativa_ceiling",
+        "owner": "postgres",
+        "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
+          "cron": [],
+          "db": [],
+          "triggers": [
+            "public.postos_atendimento.trg_pa_transfer_respects_cooperativa_ceiling"
+          ],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=public"
+        ],
+        "definition": null,
+        "definition_sha": "b92d391465789c79",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": true,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "tg_pa_transfer_respects_cooperativa_ceiling",
         "owner": "postgres",
         "returns": "trigger",
         "schema": "public",
@@ -81349,6 +81970,42 @@
         "version": "20261125230000"
       },
       {
+        "name": "sicoob_order_sla_lifecycle",
+        "statements": 1,
+        "statements_sha": "74602cf2d171c1b0",
+        "version": "20261126120000"
+      },
+      {
+        "name": "limit_increase_decision",
+        "statements": 1,
+        "statements_sha": "9b9e42fd40fe54d6",
+        "version": "20261126121000"
+      },
+      {
+        "name": "fix_sicoob_budget_audit_consuming_statuses",
+        "statements": 1,
+        "statements_sha": "91ea13dfe1519b51",
+        "version": "20261126130000"
+      },
+      {
+        "name": "grant_admin_write_sicoob_centrais",
+        "statements": 1,
+        "statements_sha": "e041ed63b524b386",
+        "version": "20261126140000"
+      },
+      {
+        "name": "sicoob_escopo_gerente_papeis_reais",
+        "statements": 1,
+        "statements_sha": "32e72f5a3ac663f5",
+        "version": "20261126160000"
+      },
+      {
+        "name": "cooperativa_budget_ceiling",
+        "statements": 1,
+        "statements_sha": "a6ae65b3cc4833cf",
+        "version": "20261126170000"
+      },
+      {
         "name": "approval_worker_health_ignores_empty_timeouts",
         "statements": 1,
         "statements_sha": "296562975c194d75",
@@ -83921,7 +84578,7 @@
         "schema": "public",
         "table": "limit_increase_requests",
         "using": null,
-        "with_check": "((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (pa_id = current_user_pa_id()) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))"
+        "with_check": "(user_can_access_pa(pa_id) AND (requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL))"
       },
       {
         "cmd": "SELECT",
@@ -83932,7 +84589,31 @@
         ],
         "schema": "public",
         "table": "limit_increase_requests",
-        "using": "((requested_by = ( SELECT auth.uid() AS uid)) OR is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))",
+        "using": "(user_can_access_pa(pa_id) AND (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) OR (requested_by = ( SELECT auth.uid() AS uid))))",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "name": "limit_increase_requests_scope_insert",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "limit_increase_requests",
+        "using": null,
+        "with_check": "((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR (has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))"
+      },
+      {
+        "cmd": "SELECT",
+        "name": "limit_increase_requests_scope_select",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "limit_increase_requests",
+        "using": "(is_admin(( SELECT auth.uid() AS uid)) OR ((pa_id = current_user_pa_id()) AND (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_pac'::app_role))) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))",
         "with_check": null
       },
       {
@@ -88104,6 +88785,42 @@
         "table": "sicoob_centrais",
         "using": "(( SELECT auth.role() AS role) = 'authenticated'::text)",
         "with_check": null
+      },
+      {
+        "cmd": "DELETE",
+        "name": "sicoob_centrais_admin_delete",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "sicoob_centrais",
+        "using": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "name": "sicoob_centrais_admin_insert",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "sicoob_centrais",
+        "using": null,
+        "with_check": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))"
+      },
+      {
+        "cmd": "UPDATE",
+        "name": "sicoob_centrais_admin_update",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "sicoob_centrais",
+        "using": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))",
+        "with_check": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))"
       },
       {
         "cmd": "SELECT",
@@ -94156,6 +94873,17 @@
         "timing": "BEFORE"
       },
       {
+        "definition": "CREATE TRIGGER trg_cooperativa_budget_not_below_distributed BEFORE INSERT OR UPDATE OF verba_total, ano, mes ON cooperativa_budgets FOR EACH ROW EXECUTE FUNCTION tg_cooperativa_budget_not_below_distributed()",
+        "events": "INSERT OR UPDATE",
+        "function": "public.tg_cooperativa_budget_not_below_distributed",
+        "level": "ROW",
+        "name": "trg_cooperativa_budget_not_below_distributed",
+        "schema": "public",
+        "status": "enabled",
+        "table": "cooperativa_budgets",
+        "timing": "BEFORE"
+      },
+      {
         "definition": "CREATE TRIGGER tr_audit_cooperativas AFTER INSERT OR DELETE OR UPDATE ON cooperativas FOR EACH ROW EXECUTE FUNCTION log_sicoob_admin_action()",
         "events": "INSERT OR DELETE OR UPDATE",
         "function": "public.log_sicoob_admin_action",
@@ -95058,6 +95786,17 @@
         "timing": "AFTER"
       },
       {
+        "definition": "CREATE TRIGGER trg_pa_budget_respects_cooperativa_ceiling BEFORE INSERT OR UPDATE OF verba_total, verba_planejada, ano, mes, pa_id ON pa_budgets FOR EACH ROW EXECUTE FUNCTION tg_pa_budget_respects_cooperativa_ceiling()",
+        "events": "INSERT OR UPDATE",
+        "function": "public.tg_pa_budget_respects_cooperativa_ceiling",
+        "level": "ROW",
+        "name": "trg_pa_budget_respects_cooperativa_ceiling",
+        "schema": "public",
+        "status": "enabled",
+        "table": "pa_budgets",
+        "timing": "BEFORE"
+      },
+      {
         "definition": "CREATE TRIGGER trg_pa_budgets_updated BEFORE UPDATE ON pa_budgets FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()",
         "events": "UPDATE",
         "function": "public.tg_set_updated_at",
@@ -95118,6 +95857,17 @@
         "function": "public.log_sicoob_admin_action",
         "level": "ROW",
         "name": "tr_audit_pas",
+        "schema": "public",
+        "status": "enabled",
+        "table": "postos_atendimento",
+        "timing": "AFTER"
+      },
+      {
+        "definition": "CREATE TRIGGER trg_pa_transfer_respects_cooperativa_ceiling AFTER UPDATE OF cooperativa_id ON postos_atendimento FOR EACH ROW EXECUTE FUNCTION tg_pa_transfer_respects_cooperativa_ceiling()",
+        "events": "UPDATE",
+        "function": "public.tg_pa_transfer_respects_cooperativa_ceiling",
+        "level": "ROW",
+        "name": "trg_pa_transfer_respects_cooperativa_ceiling",
         "schema": "public",
         "status": "enabled",
         "table": "postos_atendimento",
@@ -95927,6 +96677,28 @@
         "timing": "BEFORE"
       },
       {
+        "definition": "CREATE TRIGGER close_sicoob_order_sla BEFORE INSERT OR UPDATE OF status ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION close_sicoob_order_sla()",
+        "events": "INSERT OR UPDATE",
+        "function": "public.close_sicoob_order_sla",
+        "level": "ROW",
+        "name": "close_sicoob_order_sla",
+        "schema": "public",
+        "status": "enabled",
+        "table": "sicoob_orders",
+        "timing": "BEFORE"
+      },
+      {
+        "definition": "CREATE TRIGGER set_sicoob_order_sla_deadline BEFORE INSERT OR UPDATE OF status ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION set_sicoob_order_sla_deadline()",
+        "events": "INSERT OR UPDATE",
+        "function": "public.set_sicoob_order_sla_deadline",
+        "level": "ROW",
+        "name": "set_sicoob_order_sla_deadline",
+        "schema": "public",
+        "status": "enabled",
+        "table": "sicoob_orders",
+        "timing": "BEFORE"
+      },
+      {
         "definition": "CREATE TRIGGER tr_capture_sicoob_order_approval_policy BEFORE INSERT OR UPDATE ON sicoob_orders FOR EACH ROW EXECUTE FUNCTION capture_sicoob_order_approval_policy()",
         "events": "INSERT OR UPDATE",
         "function": "public.capture_sicoob_order_approval_policy",
@@ -96428,7 +97200,7 @@
       },
       {
         "comment": null,
-        "definition": " SELECT pb.pa_id,\n    pa.nome AS pa_nome,\n    pb.ano,\n    pb.mes,\n    pb.verba_total,\n    pb.verba_consumida AS verba_registrada,\n    COALESCE(sum(so.total_amount), 0::numeric) AS verba_calculada_pedidos,\n    pb.verba_consumida - COALESCE(sum(so.total_amount), 0::numeric) AS discrepancia\n   FROM pa_budgets pb\n     JOIN postos_atendimento pa ON pb.pa_id = pa.id\n     LEFT JOIN sicoob_orders so ON so.pa_id = pb.pa_id AND (so.status = ANY (ARRAY['confirmed'::text, 'logistic'::text, 'completed'::text])) AND EXTRACT(year FROM so.created_at) = pb.ano::numeric AND EXTRACT(month FROM so.created_at) = pb.mes::numeric\n  GROUP BY pb.id, pa.nome;",
+        "definition": " SELECT pb.pa_id,\n    pa.nome AS pa_nome,\n    pb.ano,\n    pb.mes,\n    pb.verba_total,\n    pb.verba_consumida AS verba_registrada,\n    COALESCE(sum(so.total_amount), 0::numeric) AS verba_calculada_pedidos,\n    pb.verba_consumida - COALESCE(sum(so.total_amount), 0::numeric) AS discrepancia\n   FROM pa_budgets pb\n     JOIN postos_atendimento pa ON pb.pa_id = pa.id\n     LEFT JOIN sicoob_orders so ON so.pa_id = pb.pa_id AND (so.status = ANY (ARRAY['confirmed'::text, 'logistic'::text, 'in_production'::text, 'in_separation'::text, 'in_transit'::text, 'delivered'::text, 'completed'::text])) AND EXTRACT(year FROM so.created_at) = pb.ano::numeric AND EXTRACT(month FROM so.created_at) = pb.mes::numeric\n  GROUP BY pb.id, pa.nome;",
         "depends_on": [
           "public.pa_budgets",
           "public.postos_atendimento",

@@ -6,7 +6,7 @@
 | owner | postgres |
 | RLS habilitado | sim |
 | RLS forçado (owner) | não |
-| policies | 1 |
+| policies | 4 |
 | realtime (publication) | não |
 | replica identity | default |
 | vem de extensão | não |
@@ -62,6 +62,36 @@
 | roles | public |
 | USING | `(( SELECT auth.role() AS role) = 'authenticated'::text)` |
 | WITH CHECK |  |
+
+### `sicoob_centrais_admin_delete`
+
+| campo | valor |
+|---|---|
+| comando | DELETE |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
+| WITH CHECK |  |
+
+### `sicoob_centrais_admin_insert`
+
+| campo | valor |
+|---|---|
+| comando | INSERT |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING |  |
+| WITH CHECK | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
+
+### `sicoob_centrais_admin_update`
+
+| campo | valor |
+|---|---|
+| comando | UPDATE |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
+| WITH CHECK | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
 
 
 ## Triggers

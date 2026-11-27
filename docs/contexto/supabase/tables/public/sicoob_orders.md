@@ -50,6 +50,9 @@
 | 31 | `shipping_amount` | `numeric(14,2)` | não | `0` |  |  |
 | 32 | `pricing_formula_version` | `text` | não | `'legacy-v0'::text` |  |  |
 | 33 | `cost_center_id` | `uuid` | sim |  |  |  |
+| 34 | `sla_closed_at` | `timestamp with time zone` | sim |  |  |  |
+| 35 | `sla_closed_status` | `text` | sim |  |  |  |
+| 36 | `sla_closed_outcome` | `text` | sim |  |  |  |
 
 
 ## Constraints
@@ -66,6 +69,7 @@
 | sicoob_orders_created_by_fkey | FOREIGN KEY | `FOREIGN KEY (created_by) REFERENCES auth.users(id)` | NO ACTION | NO ACTION | sim |
 | sicoob_orders_pa_id_fkey | FOREIGN KEY | `FOREIGN KEY (pa_id) REFERENCES postos_atendimento(id) ON DELETE CASCADE` | CASCADE | NO ACTION | sim |
 | sicoob_orders_pkey | PRIMARY KEY | `PRIMARY KEY (id)` |  |  | sim |
+| sicoob_orders_sla_closed_outcome_check | CHECK | `CHECK (sla_closed_outcome IS NULL OR (sla_closed_outcome = ANY (ARRAY['approved'::text, 'rejected'::text, 'escalated'::text, 'cancelled'::text])))` |  |  | sim |
 | sicoob_orders_sla_status_check | CHECK | `CHECK (sla_status = ANY (ARRAY['normal'::text, 'warning'::text, 'critical'::text]))` |  |  | sim |
 | sicoob_orders_source_quote_id_fkey | FOREIGN KEY | `FOREIGN KEY (source_quote_id) REFERENCES quotes(id) ON DELETE RESTRICT` | RESTRICT | NO ACTION | sim |
 
@@ -153,6 +157,8 @@
 
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
+| close_sicoob_order_sla | BEFORE | INSERT OR UPDATE | ROW | enabled | public.close_sicoob_order_sla |
+| set_sicoob_order_sla_deadline | BEFORE | INSERT OR UPDATE | ROW | enabled | public.set_sicoob_order_sla_deadline |
 | tr_capture_sicoob_order_approval_policy | BEFORE | INSERT OR UPDATE | ROW | enabled | public.capture_sicoob_order_approval_policy |
 | tr_freeze_sicoob_order_scope_pending_approval | BEFORE | UPDATE | ROW | enabled | public.freeze_sicoob_order_while_approval_pending |
 | tr_guard_sicoob_approval_status_transition | BEFORE | UPDATE | ROW | enabled | public.guard_sicoob_approval_status_transition |

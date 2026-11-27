@@ -116,6 +116,7 @@
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
 | tr_audit_pas | AFTER | INSERT OR DELETE OR UPDATE | ROW | enabled | public.log_sicoob_admin_action |
+| trg_pa_transfer_respects_cooperativa_ceiling | AFTER | UPDATE | ROW | enabled | public.tg_pa_transfer_respects_cooperativa_ceiling |
 | trg_pas_updated | BEFORE | UPDATE | ROW | enabled | public.tg_set_updated_at |
 
 

@@ -91,7 +91,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.kit_share_tokens](tables/public/kit_share_tokens.md) | table | sim | 1 | 11 | não |  |
 | [public.kit_templates](tables/public/kit_templates.md) | table | sim | 4 | 18 | não |  |
 | [public.kit_variants](tables/public/kit_variants.md) | table | sim | 4 | 11 | não |  |
-| [public.limit_increase_requests](tables/public/limit_increase_requests.md) | table | sim | 2 | 11 | não |  |
+| [public.limit_increase_requests](tables/public/limit_increase_requests.md) | table | sim | 4 | 11 | não |  |
 | [public.login_attempts](tables/public/login_attempts.md) | table | sim | 3 | 8 | sim |  |
 | [public.magic_up_brand_kits](tables/public/magic_up_brand_kits.md) | table | sim | 4 | 15 | não |  |
 | [public.magic_up_campaigns](tables/public/magic_up_campaigns.md) | table | sim | 4 | 15 | não |  |
@@ -205,7 +205,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.sicoob_approval_policies](tables/public/sicoob_approval_policies.md) | table | sim | 1 | 10 | não | Políticas versionadas por cooperativa. A ausência de política formal usa somente a base técnica conservadora. |
 | [public.sicoob_approval_requests](tables/public/sicoob_approval_requests.md) | table | sim | 3 | 14 | não |  |
 | [public.sicoob_approval_worker_dispatches](tables/public/sicoob_approval_worker_dispatches.md) | table | sim | 1 | 7 | não | Despachos do worker de aprovacoes. timed_out de despacho sem entrega pendente e perda de resposta do pg_net, nao falha de entrega. |
-| [public.sicoob_centrais](tables/public/sicoob_centrais.md) | table | sim | 1 | 8 | não |  |
+| [public.sicoob_centrais](tables/public/sicoob_centrais.md) | table | sim | 4 | 8 | não |  |
 | [public.sicoob_delivery_allocations](tables/public/sicoob_delivery_allocations.md) | table | sim | 1 | 8 | não |  |
 | [public.sicoob_delivery_destinations](tables/public/sicoob_delivery_destinations.md) | table | sim | 1 | 6 | não |  |
 | [public.sicoob_delivery_receipt_events](tables/public/sicoob_delivery_receipt_events.md) | table | sim | 1 | 9 | não |  |
@@ -221,7 +221,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.sicoob_order_items](tables/public/sicoob_order_items.md) | table | sim | 1 | 18 | não |  |
 | [public.sicoob_order_payments](tables/public/sicoob_order_payments.md) | table | sim | 1 | 17 | não |  |
 | [public.sicoob_order_shipments](tables/public/sicoob_order_shipments.md) | table | sim | 1 | 13 | não |  |
-| [public.sicoob_orders](tables/public/sicoob_orders.md) | table | sim | 4 | 33 | sim |  |
+| [public.sicoob_orders](tables/public/sicoob_orders.md) | table | sim | 4 | 36 | sim |  |
 | [public.sicoob_performance_reports](tables/public/sicoob_performance_reports.md) | table | sim | 1 | 8 | não |  |
 | [public.sicoob_quote_reorder_requests](tables/public/sicoob_quote_reorder_requests.md) | table | sim | 1 | 7 | não |  |
 | [public.sicoob_reorder_requests](tables/public/sicoob_reorder_requests.md) | table | sim | 1 | 7 | não |  |

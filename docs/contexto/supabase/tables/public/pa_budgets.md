@@ -185,6 +185,7 @@
 
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
+| trg_pa_budget_respects_cooperativa_ceiling | BEFORE | INSERT OR UPDATE | ROW | enabled | public.tg_pa_budget_respects_cooperativa_ceiling |
 | trg_pa_budgets_updated | BEFORE | UPDATE | ROW | enabled | public.tg_set_updated_at |
 | trg_sync_pa_budget_planejada | BEFORE | INSERT OR UPDATE | ROW | enabled | public.tg_sync_pa_budget_planejada |
 | update_pa_budgets_updated_at | BEFORE | UPDATE | ROW | enabled | public.update_updated_at_column |

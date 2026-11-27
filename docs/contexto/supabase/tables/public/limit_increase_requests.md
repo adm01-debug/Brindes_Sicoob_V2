@@ -6,7 +6,7 @@
 | owner | postgres |
 | RLS habilitado | sim |
 | RLS forçado (owner) | não |
-| policies | 2 |
+| policies | 4 |
 | realtime (publication) | não |
 | replica identity | default |
 | vem de extensão | não |
@@ -18,7 +18,7 @@
 |---|---|---|---|---|---|---|
 | 1 | `id` | `uuid` | não | `gen_random_uuid()` |  |  |
 | 2 | `pa_id` | `uuid` | sim |  |  |  |
-| 3 | `requested_by` | `uuid` | sim |  |  |  |
+| 3 | `requested_by` | `uuid` | sim | `auth.uid()` |  |  |
 | 4 | `current_limit` | `numeric(12,2)` | sim |  |  |  |
 | 5 | `requested_limit` | `numeric(12,2)` | sim |  |  |  |
 | 6 | `reason` | `text` | sim |  |  |  |
@@ -59,7 +59,7 @@
 | tipo | PERMISSIVE |
 | roles | authenticated |
 | USING |  |
-| WITH CHECK | `((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (pa_id = current_user_pa_id()) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))` |
+| WITH CHECK | `(user_can_access_pa(pa_id) AND (requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL))` |
 
 ### `Users can view their own PA limit requests`
 
@@ -68,7 +68,27 @@
 | comando | SELECT |
 | tipo | PERMISSIVE |
 | roles | authenticated |
-| USING | `((requested_by = ( SELECT auth.uid() AS uid)) OR is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))` |
+| USING | `(user_can_access_pa(pa_id) AND (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) OR (requested_by = ( SELECT auth.uid() AS uid))))` |
+| WITH CHECK |  |
+
+### `limit_increase_requests_scope_insert`
+
+| campo | valor |
+|---|---|
+| comando | INSERT |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING |  |
+| WITH CHECK | `((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR (has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))` |
+
+### `limit_increase_requests_scope_select`
+
+| campo | valor |
+|---|---|
+| comando | SELECT |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `(is_admin(( SELECT auth.uid() AS uid)) OR ((pa_id = current_user_pa_id()) AND (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_pac'::app_role))) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))` |
 | WITH CHECK |  |
 
 

@@ -173,6 +173,12 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261125133000 | [harden_push_subscriptions_initplan](migrations/20261125133000_harden_push_subscriptions_initplan.sql) | 1 |
 | 20261125193000 | [revoke_execute_legacy_notification_helpers](migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql) | 1 |
 | 20261125230000 | [wrap_auth_calls_in_public_policies](migrations/20261125230000_wrap_auth_calls_in_public_policies.sql) | 1 |
+| 20261126120000 | [sicoob_order_sla_lifecycle](migrations/20261126120000_sicoob_order_sla_lifecycle.sql) | 1 |
+| 20261126121000 | [limit_increase_decision](migrations/20261126121000_limit_increase_decision.sql) | 1 |
+| 20261126130000 | [fix_sicoob_budget_audit_consuming_statuses](migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql) | 1 |
+| 20261126140000 | [grant_admin_write_sicoob_centrais](migrations/20261126140000_grant_admin_write_sicoob_centrais.sql) | 1 |
+| 20261126160000 | [sicoob_escopo_gerente_papeis_reais](migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql) | 1 |
+| 20261126170000 | [cooperativa_budget_ceiling](migrations/20261126170000_cooperativa_budget_ceiling.sql) | 1 |
 | 20261127150000 | [approval_worker_health_ignores_empty_timeouts](migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql) | 1 |
 | 20261127153000 | [fix_approval_dispatch_response_skew](migrations/20261127153000_fix_approval_dispatch_response_skew.sql) | 1 |
 | 20261127190000 | [prune_cron_job_run_details](migrations/20261127190000_prune_cron_job_run_details.sql) | 1 |

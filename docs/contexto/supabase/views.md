@@ -50,7 +50,7 @@ SELECT pb.pa_id,
     pb.verba_consumida - COALESCE(sum(so.total_amount), 0::numeric) AS discrepancia
    FROM pa_budgets pb
      JOIN postos_atendimento pa ON pb.pa_id = pa.id
-     LEFT JOIN sicoob_orders so ON so.pa_id = pb.pa_id AND (so.status = ANY (ARRAY['confirmed'::text, 'logistic'::text, 'completed'::text])) AND EXTRACT(year FROM so.created_at) = pb.ano::numeric AND EXTRACT(month FROM so.created_at) = pb.mes::numeric
+     LEFT JOIN sicoob_orders so ON so.pa_id = pb.pa_id AND (so.status = ANY (ARRAY['confirmed'::text, 'logistic'::text, 'in_production'::text, 'in_separation'::text, 'in_transit'::text, 'delivered'::text, 'completed'::text])) AND EXTRACT(year FROM so.created_at) = pb.ano::numeric AND EXTRACT(month FROM so.created_at) = pb.mes::numeric
   GROUP BY pb.id, pa.nome;
 ```
 

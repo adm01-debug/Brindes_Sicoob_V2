@@ -2,6 +2,20 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 21:15 UTC
+
+- **colunas** adicionado (3): `public.sicoob_orders.sla_closed_at`, `public.sicoob_orders.sla_closed_outcome`, `public.sicoob_orders.sla_closed_status`
+- **colunas** alterado (1): `public.limit_increase_requests.requested_by`
+- **constraints** adicionado (1): `public.sicoob_orders.sicoob_orders_sla_closed_outcome_check`
+- **cron jobs** adicionado (1): `38:sicoob-refresh-order-sla`
+- **functions** adicionado (14): `public._cooperativa_verba_distribuida(p_cooperativa_id uuid, p_ano integer, p_mes integer)`, `public._pode_ver_verba_da_cooperativa(p_cooperativa_id uuid)`, `public._trava_competencia_da_cooperativa(p_cooperativa_id uuid, p_ano integer, p_mes integer)`, `public._trava_pa_da_verba(p_pa_id uuid)`, `public.can_decide_limit_increase(p_request_id uuid)`, `public.close_sicoob_order_sla()`, `public.cooperativa_verba_distribuida(p_cooperativa_id uuid, p_ano integer, p_mes integer)`, `public.decide_limit_increase_request(p_request_id uuid, p_approve boolean, p_reason text)`, `public.refresh_sicoob_order_sla_status()`, `public.salvar_verba_pa(p_pa_id uuid, p_ano integer, p_mes integer, p_verba_total numeric, p_limite_alcada numeric, p_observacoes text, p_budget_id uuid)`, `public.set_sicoob_order_sla_deadline()`, `public.tg_cooperativa_budget_not_below_distributed()`, `public.tg_pa_budget_respects_cooperativa_ceiling()`, `public.tg_pa_transfer_respects_cooperativa_ceiling()`
+- **functions** alterado (5): `public.check_order_sla()`, `public.current_user_cooperativa_id()`, `public.has_role(_user_id uuid, _role app_role)`, `public.is_admin(_user_id uuid)`, `public.send_notification(p_user_id uuid, p_title text, p_message text, p_type text, p_category text, p_action_url text, p_metadata jsonb)`
+- **migrations** adicionado (6): `20261126120000_sicoob_order_sla_lifecycle`, `20261126121000_limit_increase_decision`, `20261126130000_fix_sicoob_budget_audit_consuming_statuses`, `20261126140000_grant_admin_write_sicoob_centrais`, `20261126160000_sicoob_escopo_gerente_papeis_reais`, `20261126170000_cooperativa_budget_ceiling`
+- **policies (RLS)** adicionado (5): `public.limit_increase_requests.limit_increase_requests_scope_insert`, `public.limit_increase_requests.limit_increase_requests_scope_select`, `public.sicoob_centrais.sicoob_centrais_admin_delete`, `public.sicoob_centrais.sicoob_centrais_admin_insert`, `public.sicoob_centrais.sicoob_centrais_admin_update`
+- **policies (RLS)** alterado (2): `public.limit_increase_requests.PA Managers can insert limit requests`, `public.limit_increase_requests.Users can view their own PA limit requests`
+- **triggers** adicionado (5): `public.cooperativa_budgets.trg_cooperativa_budget_not_below_distributed`, `public.pa_budgets.trg_pa_budget_respects_cooperativa_ceiling`, `public.postos_atendimento.trg_pa_transfer_respects_cooperativa_ceiling`, `public.sicoob_orders.close_sicoob_order_sla`, `public.sicoob_orders.set_sicoob_order_sla_deadline`
+- **views** alterado (1): `public.sicoob_budget_audit`
+
 ## 2026-11-27 20:17 UTC
 
 - **functions** alterado (1): `public.monitor_sicoob_approval_worker()`

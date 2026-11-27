@@ -152,6 +152,7 @@
 | nome | timing | eventos | nível | status | função |
 |---|---|---|---|---|---|
 | trg_coop_budgets_updated | BEFORE | UPDATE | ROW | enabled | public.tg_set_updated_at |
+| trg_cooperativa_budget_not_below_distributed | BEFORE | INSERT OR UPDATE | ROW | enabled | public.tg_cooperativa_budget_not_below_distributed |
 
 
 ## Grants
