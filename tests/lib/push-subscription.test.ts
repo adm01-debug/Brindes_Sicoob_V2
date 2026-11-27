@@ -213,7 +213,13 @@ describe('pushSubscriptions', () => {
     });
 
     const desinscricao = mod.desinscreverPush('user-1');
-    await updateIniciado;
+    // Promise.race com diagnóstico: se o update nunca for chamado, a falha diz
+    // isso em vez de estourar o timeout do vitest.
+    const disparou = await Promise.race([
+      updateIniciado.then(() => 'ok' as const),
+      desinscricao.then(() => 'terminou' as const),
+    ]);
+    expect(disparou, 'desinscreverPush terminou sem chamar o update do banco').toBe('ok');
     expect(ordem).toEqual(['banco']);
 
     liberarBanco();
