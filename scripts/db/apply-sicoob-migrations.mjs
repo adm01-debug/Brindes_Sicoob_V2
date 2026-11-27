@@ -250,7 +250,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
-    sha256: "54632a67df1df2b45b4aa3d2e613b4e675d57fb896fc67c95eeb0fdd74e75f9b",
+    sha256: "a4493155b74e7ecdab880802ec4ec9a7ddab3463aafffb350c4e4874cc458cdd",
   },
   {
     file: "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",

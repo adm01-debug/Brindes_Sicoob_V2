@@ -185,10 +185,18 @@ export function LimitIncreaseApprovalsCard() {
   // A chave inclui a conta: a fila é escopada pela cooperativa do usuário, e o
   // cache global servia os pedidos da conta anterior ao trocar de sessão na
   // mesma aba.
+  // O cliente global desliga refetch ao montar, ao focar e ao reconectar
+  // (src/lib/query-config.ts). Numa fila de trabalho isso esconde pedido novo
+  // até recarregar a página, então esta consulta revalida nos três casos e
+  // ainda atualiza sozinha a cada minuto enquanto a tela estiver aberta.
   const { data: requests, isLoading, isError, error } = useQuery({
     queryKey: [LIMIT_INCREASE_APPROVALS_QUERY_KEY, user?.id ?? null],
     queryFn: () => sicoobApprovalService.listPendingLimitIncreaseRequests(),
     enabled: Boolean(user?.id),
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 60_000,
   });
 
   const clearCaches = () => {

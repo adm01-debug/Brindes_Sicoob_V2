@@ -99,7 +99,12 @@ BEGIN
         USING ERRCODE = 'check_violation';
     END IF;
 
-    v_competencia := now() AT TIME ZONE 'America/Sao_Paulo';
+    -- Mesma competência que o consumo de verba usa: `sicoob_orders.created_at`
+    -- cru, lido por EXTRACT em UTC (20261122120000:394-395, 449-450, 1069-1070,
+    -- 1176-1177, 1256-1257). O fuso de São Paulo recuava 3h e, entre 21h e
+    -- meia-noite do último dia do mês, elevava a verba do mês anterior — que
+    -- nenhum pedido do mês novo lê.
+    v_competencia := now();
     v_ano := EXTRACT(YEAR FROM v_competencia)::int;
     v_mes := EXTRACT(MONTH FROM v_competencia)::int;
 
@@ -214,6 +219,11 @@ $$;
 ALTER TABLE public.limit_increase_requests
   ALTER COLUMN requested_by SET DEFAULT auth.uid();
 
+-- Quem pode abrir solicitação: admin, gerente do próprio PA, ou
+-- gestor_compras/comprador_singular da cooperativa do PA. `comprador_pac`
+-- ficou fora porque o vínculo dele é com o posto atendido, não com a
+-- cooperativa: sozinho, esse vínculo autorizava qualquer posto da cooperativa
+-- (um comprador de PA lia valores e justificativas dos outros postos).
 DROP POLICY IF EXISTS "Users can view their own PA limit requests" ON public.limit_increase_requests;
 CREATE POLICY limit_increase_requests_scope_select
 ON public.limit_increase_requests
@@ -221,10 +231,15 @@ FOR SELECT
 TO authenticated
 USING (
   public.is_admin((SELECT auth.uid()))
-  OR limit_increase_requests.requested_by = (SELECT auth.uid())
+  -- Histórico do posto: quem é do PA (gerente ou comprador) acompanha a fila
+  -- completa dele. Antes só o gerente lia, então o comprador via apenas as
+  -- próprias solicitações, e as do gerente sumiam do histórico na carteira.
   OR (
-    public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role)
-    AND limit_increase_requests.pa_id = public.current_user_pa_id()
+    limit_increase_requests.pa_id = public.current_user_pa_id()
+    AND (
+      public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role)
+      OR public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role)
+    )
   )
   OR (
     (public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role)

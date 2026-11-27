@@ -36,6 +36,7 @@ PA1 = "aaaaaaaa-0000-0000-0000-000000000001"
 PA2 = "aaaaaaaa-0000-0000-0000-000000000002"
 ORG1 = "bbbbbbbb-0000-0000-0000-000000000001"
 ORG2 = "bbbbbbbb-0000-0000-0000-000000000002"
+REQ1 = "eeeeeeee-0000-0000-0000-000000000001"
 ORDER1 = "cccccccc-0000-0000-0000-000000000001"
 ORDER2 = "cccccccc-0000-0000-0000-000000000002"
 ORDER3 = "cccccccc-0000-0000-0000-000000000003"
@@ -182,6 +183,25 @@ STUBS = f"""
   ALTER TABLE public.order_comments ENABLE ROW LEVEL SECURITY;
   ALTER TABLE public.limit_increase_requests ENABLE ROW LEVEL SECURITY;
 
+  CREATE TABLE public.notifications (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid,
+    title text,
+    message text,
+    type text,
+    category text,
+    action_url text,
+    metadata jsonb,
+    created_at timestamptz NOT NULL DEFAULT now()
+  );
+  CREATE FUNCTION public.send_notification(
+    _user_id uuid, _title text, _message text, _type text,
+    _category text, _action_url text, _metadata jsonb
+  ) RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+    INSERT INTO public.notifications (user_id, title, message, type, category, action_url, metadata)
+    VALUES (_user_id, _title, _message, _type, _category, _action_url, _metadata)
+  $$;
+
   CREATE TABLE public.qa_results (name text PRIMARY KEY, ok boolean);
   GRANT SELECT ON public.pa_notification_settings, public.postos_atendimento TO authenticated;
   GRANT SELECT ON public.order_comments, public.orders,tie_placeholder TO authenticated;
@@ -205,9 +225,11 @@ SEED = f"""
     ('{ADMIN}', 'admin'),
     ('{SUPERVISOR}', 'supervisor'),
     ('{GERENTE}', 'gerente_pa'),
-    ('{SELLER}', 'seller');
+    ('{SELLER}', 'seller'),
+    ('{SUPERVISOR}', 'gestor_compras');
 
   INSERT INTO public.qa_user_orgs (user_id, org_id) VALUES ('{SUPERVISOR}', '{ORG1}');
+  INSERT INTO public.qa_user_coop (user_id, coop_id) VALUES ('{SUPERVISOR}', '{ORG1}');
   INSERT INTO public.qa_user_pa (user_id, pa_id) VALUES ('{GERENTE}', '{PA1}');
 
   INSERT INTO public.pa_notification_settings (pa_id, channel, webhook_url, recipient_email, is_active) VALUES
@@ -221,8 +243,13 @@ SEED = f"""
 
   -- Pedido de aumento do PA1 aberto pelo gerente: e a fila que gerente e
   -- comprador do PA1 devem ver, e que nenhum outro posto pode enxergar.
-  INSERT INTO public.limit_increase_requests (pa_id, requested_by, current_limit, requested_limit, reason) VALUES
-    ('{PA1}', '{GERENTE}', 1000, 2500, 'Campanha de fim de ano');
+  INSERT INTO public.limit_increase_requests (id, pa_id, requested_by, current_limit, requested_limit, reason) VALUES
+    ('{REQ1}', '{PA1}', '{GERENTE}', 1000, 2500, 'Campanha de fim de ano');
+
+  -- Verba de fevereiro/2026 para exercitar a recusa (nao altera verba) sem
+  -- depender da competencia corrente do servidor de teste.
+  INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_planejada, limite_alcada)
+  VALUES ('{PA1}', 2026, 2, 1000, 1000, 1000);
 
   INSERT INTO public.order_comments (id, order_id) VALUES
     ('dddddddd-0000-0000-0000-000000000001', '{ORDER1}'),
@@ -252,6 +279,8 @@ try:
     sql(secao("-- 6) pa_notification_settings"))
     # 3) RLS de limit_increase_requests: sem estas policies a fila de aumentos
     # nao tinha teste integrado (os testes do servico usam mock).
+    sql(secao("-- 1. Autoridade de decis", "-- 2. Decis", arquivo=AUMENTO))
+    sql(secao("-- 2. Decis", "-- 3. RLS com os pap", arquivo=AUMENTO))
     sql(secao("-- 3. RLS com os pap", "-- 4. Contrato ACL", arquivo=AUMENTO))
     sql(SEED)
 
@@ -335,6 +364,47 @@ try:
       INSERT INTO public.qa_results (name, ok) VALUES
         ('admin_ve_a_fila_de_aumentos', (SELECT count(*) = 1 FROM public.limit_increase_requests));
     """))
+
+    # Decisao: recusa exige motivo, o comprador do PA nao tem autoridade, o
+    # gestor da cooperativa recusa e o solicitante recebe a notificacao.
+    sql(como(GERENTE, f"""
+      DO $qa$
+      BEGIN
+        PERFORM public.decide_limit_increase_request('{REQ1}', true, NULL);
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_do_pa_nao_decide_o_proprio_pedido', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_do_pa_nao_decide_o_proprio_pedido', true);
+      END
+      $qa$;
+    """))
+    sql(como(SUPERVISOR, f"""
+      DO $qa$
+      BEGIN
+        PERFORM public.decide_limit_increase_request('{REQ1}', false, NULL);
+        INSERT INTO public.qa_results (name, ok) VALUES ('recusa_sem_motivo_falha', false);
+      EXCEPTION WHEN check_violation THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('recusa_sem_motivo_falha', true);
+      END
+      $qa$;
+      SELECT public.decide_limit_increase_request('{REQ1}', false, 'Verba do mes ja fechada');
+    """))
+    sql(f"""
+      INSERT INTO public.qa_results (name, ok) VALUES
+        ('recusa_nao_altera_verba', (
+          SELECT verba_planejada = 1000 FROM public.pa_budgets
+           WHERE pa_id = '{PA1}' AND ano = 2026 AND mes = 2
+        )),
+        ('recusa_fica_com_autor_e_motivo', (
+          SELECT status = 'rejected' AND approved_by = '{SUPERVISOR}'
+             AND rejection_reason = 'Verba do mes ja fechada'
+            FROM public.limit_increase_requests WHERE id = '{REQ1}'
+        )),
+        ('solicitante_recebe_o_aviso_da_recusa', (
+          SELECT count(*) = 1 FROM public.notifications
+           WHERE user_id = '{GERENTE}' AND category = 'approval'
+             AND metadata ->> 'limit_increase_request_id' = '{REQ1}'
+        ));
+    """)
 
     # Escopo de leitura por papel.
     sql(como(SUPERVISOR, f"""
