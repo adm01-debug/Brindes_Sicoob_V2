@@ -2,6 +2,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
+import { enviarPush, type InscricaoPush } from "../_shared/web-push.ts";
 
 const NotificationSchema = z.object({
   user_id: z.string().uuid(),
@@ -122,15 +123,110 @@ async function sendImmediate(supabase: any, payload: any, corsHeaders: any) {
 
   if (error) throw error;
 
-  // Log de sucesso
+  // O canal 'push' so pode ser registrado como sucesso se a entrega foi
+  // tentada de fato — antes este log dizia 'success' sem enviar nada.
+  const entrega = await enviarParaDispositivos(supabase, payload, notification.id);
+
   await supabase.from('notification_logs').insert({
     user_id: payload.user_id,
     channel: 'push',
-    status: 'success',
-    execution_time_ms: 0
+    status: entrega.status,
+    error_code: entrega.motivo ?? null,
+    provider_response: {
+      enviados: entrega.enviados,
+      removidos: entrega.removidos,
+      motivo: entrega.motivo ?? null,
+    },
+    execution_time_ms: entrega.duracaoMs,
   });
 
-  return jsonRes(corsHeaders, { success: true, notification_id: notification.id });
+  return jsonRes(corsHeaders, {
+    success: true,
+    notification_id: notification.id,
+    push: {
+      status: entrega.status,
+      enviados: entrega.enviados,
+      removidos: entrega.removidos,
+      motivo: entrega.motivo ?? null,
+    },
+  });
+}
+
+/**
+ * Envia a Web Push para todos os dispositivos inscritos do usuario.
+ *
+ * Sem `VAPID_PRIVATE_KEY`/`VAPID_PUBLIC_KEY` nada e enviado e o motivo fica
+ * explicito no log — a notificacao continua existindo em
+ * `workspace_notifications`, entao a UI nunca perde o alerta.
+ */
+async function enviarParaDispositivos(supabase: any, payload: any, notificationId: string) {
+  const inicio = Date.now();
+  const duracao = () => Date.now() - inicio;
+
+  const publicKey = Deno.env.get('VAPID_PUBLIC_KEY') ?? '';
+  const privateKey = Deno.env.get('VAPID_PRIVATE_KEY') ?? '';
+  if (!publicKey || !privateKey) {
+    return { status: 'skipped', enviados: 0, removidos: 0, motivo: 'VAPID nao configurado', duracaoMs: duracao() };
+  }
+
+  const { data: inscricoes, error: erroInscricoes } = await supabase
+    .from('push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .eq('user_id', payload.user_id)
+    .eq('is_active', true);
+
+  if (erroInscricoes) {
+    // Detalhe interno do banco fica so no log; o retorno traz apenas o codigo.
+    console.error('[send-notification] falha ao listar push_subscriptions', erroInscricoes.message);
+    return { status: 'failed', enviados: 0, removidos: 0, motivo: 'falha_consulta_inscricoes', duracaoMs: duracao() };
+  }
+  if (!inscricoes?.length) {
+    return { status: 'skipped', enviados: 0, removidos: 0, motivo: 'sem dispositivo inscrito', duracaoMs: duracao() };
+  }
+
+  const config = {
+    publicKey,
+    privateKey,
+    subject: Deno.env.get('VAPID_SUBJECT') ?? 'mailto:suporte@sicoob.com.br',
+  };
+
+  let enviados = 0;
+  const expirados: string[] = [];
+  let ultimoMotivo: string | null = null;
+
+  await Promise.all(
+    (inscricoes as InscricaoPush[]).map(async (inscricao) => {
+      const resultado = await enviarPush(inscricao, {
+        title: payload.title,
+        body: payload.message,
+        url: payload.action_url ?? '/',
+        tag: notificationId,
+      }, config);
+
+      if (resultado.ok) {
+        enviados += 1;
+        return;
+      }
+      ultimoMotivo = resultado.motivo;
+      if (resultado.expirada && inscricao.id) expirados.push(inscricao.id);
+    }),
+  );
+
+  if (expirados.length) {
+    await supabase
+      .from('push_subscriptions')
+      .update({ is_active: false })
+      .in('id', expirados);
+  }
+
+  const status = enviados > 0 ? 'success' : 'failed';
+  return {
+    status,
+    enviados,
+    removidos: expirados.length,
+    motivo: enviados > 0 ? null : ultimoMotivo,
+    duracaoMs: duracao(),
+  };
 }
 
 async function scheduleNotification(supabase: any, payload: any, scheduledFor: string, corsHeaders: any) {
