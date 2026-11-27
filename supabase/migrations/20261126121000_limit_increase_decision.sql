@@ -76,14 +76,17 @@ BEGIN
       USING ERRCODE = 'no_data_found';
   END IF;
 
-  IF v_request.status IS DISTINCT FROM 'pending' THEN
-    RAISE EXCEPTION 'Esta solicitação já foi decidida (%).', v_request.status
-      USING ERRCODE = 'object_not_in_prerequisite_state';
-  END IF;
-
   IF NOT public.can_decide_limit_increase(p_request_id) THEN
     RAISE EXCEPTION 'Você não tem autoridade para decidir o aumento de verba deste PA.'
       USING ERRCODE = 'insufficient_privilege';
+  END IF;
+
+  -- A autoridade vem antes do estado: recusar por "já decidida" antes de checar a
+  -- permissão deixava qualquer conta autenticada distinguir aprovação de recusa
+  -- de outro PA só pelo texto do erro, conhecendo o id.
+  IF v_request.status IS DISTINCT FROM 'pending' THEN
+    RAISE EXCEPTION 'Esta solicitação já foi decidida (%).', v_request.status
+      USING ERRCODE = 'object_not_in_prerequisite_state';
   END IF;
 
   IF NOT p_approve AND v_reason IS NULL THEN
@@ -96,7 +99,11 @@ BEGIN
         USING ERRCODE = 'check_violation';
     END IF;
 
-    v_competencia := now() AT TIME ZONE 'America/Sao_Paulo';
+    -- A competência é a mesma da operação de verba: o resto do sistema
+    -- (reserva da verba em 20261122120000:307-308 e as RPCs de 20260503214537/57)
+    -- usa EXTRACT(...FROM now()) com o banco em UTC. Ler o mês de São Paulo
+    -- desalinhava a virada da competência (21h-24h BRT do último dia do mês).
+    v_competencia := now() AT TIME ZONE 'utc';
     v_ano := EXTRACT(YEAR FROM v_competencia)::int;
     v_mes := EXTRACT(MONTH FROM v_competencia)::int;
 

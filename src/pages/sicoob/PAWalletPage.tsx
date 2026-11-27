@@ -328,6 +328,10 @@ export default function PAWalletPage() {
       return sicoobBudgetService.getBudgetByPa(paId);
     },
     enabled: Boolean(paId),
+    // A carteira reaberta dentro do cache mostrava a verba anterior a decisao
+    // da Singular, e o proximo pedido era calculado sobre o valor velho.
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const { data: requests } = useQuery({
@@ -337,6 +341,7 @@ export default function PAWalletPage() {
       return sicoobApprovalService.listLimitIncreaseRequests(paId);
     },
     enabled: Boolean(paId),
+    refetchOnMount: 'always',
   });
 
   const amounts = readPaBudgetAmounts(budget);

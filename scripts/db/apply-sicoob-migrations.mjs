@@ -246,7 +246,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
-    sha256: "081df063b42f2cdf49123d5f702ad31347f09c0a8b7e3d4c5717cd21abfd00a5",
+    sha256: "bae385422f7d4a1f4b882efe1b1e33075aa725c479ef8b74cee2710b63a8beae",
   },
   {
     file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",

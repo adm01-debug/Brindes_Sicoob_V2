@@ -188,12 +188,19 @@ export function LimitIncreaseApprovalsCard() {
   const { data: requests, isLoading, isError, error } = useQuery({
     queryKey: [LIMIT_INCREASE_APPROVALS_QUERY_KEY, user?.id ?? null],
     queryFn: () => sicoobApprovalService.listPendingLimitIncreaseRequests(),
+    // A fila precisa revalidar ao reabrir a tela: com o cache global de 5 minutos
+    // e refetchOnMount: false, um pedido enviado nesse intervalo não aparecia.
+    staleTime: 0,
+    refetchOnMount: 'always',
     enabled: Boolean(user?.id),
   });
 
   const clearCaches = () => {
     queryClient.invalidateQueries({ queryKey: [LIMIT_INCREASE_APPROVALS_QUERY_KEY] });
     queryClient.invalidateQueries({ queryKey: ['budget-requests'] });
+    // A aprovação muda a verba do PA: a carteira em cache não pode seguir exibindo
+    // o valor antigo.
+    queryClient.invalidateQueries({ queryKey: ['pa-budget'] });
   };
 
   const approveMutation = useMutation({
