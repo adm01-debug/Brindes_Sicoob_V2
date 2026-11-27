@@ -185,8 +185,7 @@ export function useScheduledReports() {
   };
 }
 
-function calculateNextRun(frequency: ReportFrequency): Date {
-  const now = new Date();
+export function calculateNextRun(frequency: ReportFrequency, now: Date = new Date()): Date {
   switch (frequency) {
     case 'daily':
       return new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -200,11 +199,17 @@ function calculateNextRun(frequency: ReportFrequency): Date {
       // agendamento é recalculada no servidor por `getAnchorDay` (UTC-3). Com
       // o dia local um relatório criado às 22h30 em UTC-3 nascia com âncora
       // 28 e passava a rodar dia 27 nas entregas seguintes.
-      const day = new Date(now.getTime() - BRASILIA_OFFSET_MS).getUTCDate();
-      next.setDate(1);
-      next.setMonth(next.getMonth() + 1);
-      const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
-      next.setDate(Math.min(day, lastDay));
+      const brasilia = new Date(now.getTime() - BRASILIA_OFFSET_MS);
+      const day = brasilia.getUTCDate();
+      // Mês e ano também no calendário de Brasília: o servidor monta a próxima
+      // execução a partir da âncora no mês seguinte ao de `created_at` em
+      // Brasília. Com o mês local, em Fernando de Noronha um relatório criado
+      // em 15/07 às 00h30 (14/07 em Brasília) estreava em agosto e depois
+      // passava a rodar dia 14.
+      const monthIndex = brasilia.getUTCFullYear() * 12 + brasilia.getUTCMonth() + 1;
+      const lastDay = new Date(Date.UTC(Math.floor(monthIndex / 12), monthIndex % 12 + 1, 0)).getUTCDate();
+      next.setUTCFullYear(Math.floor(monthIndex / 12), monthIndex % 12, Math.min(day, lastDay));
+      next.setUTCHours(now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
       return next;
     }
   }
