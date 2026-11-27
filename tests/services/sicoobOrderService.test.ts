@@ -310,13 +310,13 @@ describe("sicoobOrderService.listOrders — filtro de urgências", () => {
     ]);
   });
 
-  it("outros valores de SLA continuam sem recorte de etapa", async () => {
+  it.each(["warning", "normal"])("o filtro %s continua sem recorte de etapa", async (sla) => {
     const { builder, chamadas } = builderEspiao();
     mocks.from.mockReturnValue(builder);
 
-    await sicoobOrderService.listOrders({ sla_status: "met", page: 1, pageSize: 10 });
+    await sicoobOrderService.listOrders({ sla_status: sla, page: 1, pageSize: 10 });
 
-    expect(chamadas).toContainEqual(["eq:sla_status", "met"]);
+    expect(chamadas).toContainEqual(["eq:sla_status", sla]);
     expect(chamadas.some(([chave]) => chave === "in:status")).toBe(false);
   });
 });
