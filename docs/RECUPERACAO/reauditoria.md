@@ -1074,7 +1074,13 @@ próprio handler (corpo fora do contrato) e vem com `x-deno-execution-id` — o 
 Conclusão restrita ao que foi medido: **nenhuma das 65 funções referenciadas pelo front falta no
 ambiente**, e a allowlist do workflow de publicação (22 nomes) não é a lista do que está no ar.
 Isto não compara o código publicado com a `main` — essa é outra medição
-(`RELATORIO_CI.md:943-960`, item 5 do `README.md`), ainda pendente para `connections-auto-test`.
+(`RELATORIO_CI.md:943-960`, item 6 do `README.md`), ainda pendente para `connections-auto-test`.
+
+Ressalva sobre o `webhook-inbound`: o `404` com `x-deno-execution-id` prova que a função está
+publicada e executa, **não** que um webhook configurado entrega. O handler devolve esse mesmo
+`404` (`{"error":"endpoint não encontrado"}`) quando o slug da URL não corresponde a um endpoint
+ativo — ou seja, com esse slug nenhuma entrega externa é aceita. Falta provisionar um endpoint
+ativo e medir a entrega ponta a ponta.
 
 ### Três pendências que envelheceram (correção desta rodada)
 
