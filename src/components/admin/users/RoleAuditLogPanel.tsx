@@ -414,75 +414,87 @@ function ConfigAuditTable({ entries, profiles, isLoading, isError }: {
   );
 }
 
+interface ConfigAuditData {
+  entries: ConfigAuditEntry[];
+  profilesMap: Map<string, ProfileLite>;
+}
+
+/** Busca a trilha bruta e os perfis de ator/alvo em uma unica ida ao banco. */
+async function fetchConfigAudit(): Promise<ConfigAuditData> {
+  const { data: entries, error } = await supabase
+    .from("admin_config_audit")
+    .select("id, action_type, table_name, old_data, new_data, changed_by, changed_at")
+    .eq("table_name", "user_roles")
+    .order("changed_at", { ascending: false, nullsFirst: false })
+    .limit(200);
+  if (error) throw error;
+
+  const ids = new Set<string>();
+  (entries ?? []).forEach((e) => {
+    if (e.changed_by) ids.add(e.changed_by);
+    const alvo = (e.new_data as { user_id?: string } | null)?.user_id
+      ?? (e.old_data as { user_id?: string } | null)?.user_id;
+    if (alvo) ids.add(alvo);
+  });
+
+  const profilesMap = new Map<string, ProfileLite>();
+  if (ids.size > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", Array.from(ids));
+    (profiles ?? []).forEach((p) => profilesMap.set(p.user_id, p));
+  }
+  return { entries: (entries ?? []) as unknown as ConfigAuditEntry[], profilesMap };
+}
+
+function ConfigAuditHeader({ isFetching, onRefresh }: { isFetching: boolean; onRefresh: () => void }) {
+  return (
+    <CardHeader className="flex flex-row items-start justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Database className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <CardTitle>Trilha bruta (admin_config_audit)</CardTitle>
+          <CardDescription>
+            Estado linha a linha gravado pelo trigger direto na tabela ? inclui mudan?as feitas por servi?os, sem ator no JWT.
+          </CardDescription>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={onRefresh} disabled={isFetching} className="gap-2">
+        <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+        Atualizar
+      </Button>
+    </CardHeader>
+  );
+}
+
 export function RawConfigAuditPanel() {
-  // A chave de cache inclui o usuário da sessão: sem isso, trocar de conta na
+  // A chave de cache inclui o usu?rio da sess?o: sem isso, trocar de conta na
   // mesma aba reaproveitava por 15 s os eventos (nomes e e-mails) carregados
-  // pela conta anterior, mesmo quando o banco já barrava a nova leitura.
+  // pela conta anterior, mesmo quando o banco j? barrava a nova leitura.
   const { user } = useAuth();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["admin-config-audit", "user_roles", user?.id ?? "anon"],
-    queryFn: async () => {
-      const { data: entries, error } = await supabase
-        .from("admin_config_audit")
-        .select("id, action_type, table_name, old_data, new_data, changed_by, changed_at")
-        .eq("table_name", "user_roles")
-        .order("changed_at", { ascending: false, nullsFirst: false })
-        .limit(200);
-      if (error) throw error;
-
-      const ids = new Set<string>();
-      (entries ?? []).forEach((e) => {
-        if (e.changed_by) ids.add(e.changed_by);
-        const alvo = (e.new_data as { user_id?: string } | null)?.user_id
-          ?? (e.old_data as { user_id?: string } | null)?.user_id;
-        if (alvo) ids.add(alvo);
-      });
-
-      const profilesMap = new Map<string, ProfileLite>();
-      if (ids.size > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, email")
-          .in("user_id", Array.from(ids));
-        (profiles ?? []).forEach((p) => profilesMap.set(p.user_id, p));
-      }
-      return { entries: (entries ?? []) as unknown as ConfigAuditEntry[], profilesMap };
-    },
+    queryFn: fetchConfigAudit,
     staleTime: 15_000,
     refetchInterval: 60_000,
     enabled: !!user?.id,
   });
 
-  const profilesMap = data?.profilesMap ?? EMPTY_PROFILES;
-
   return (
     <Card className="border-border/50">
-      <CardHeader className="flex flex-row items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Database className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <CardTitle>Trilha bruta (admin_config_audit)</CardTitle>
-            <CardDescription>
-              Estado linha a linha gravado pelo trigger direto na tabela — inclui mudanças feitas por serviços, sem ator no JWT.
-            </CardDescription>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-          Atualizar
-        </Button>
-      </CardHeader>
+      <ConfigAuditHeader isFetching={isFetching} onRefresh={() => refetch()} />
       <CardContent>
         <ConfigAuditTable
           entries={data?.entries ?? []}
-          profiles={profilesMap}
+          profiles={data?.profilesMap ?? EMPTY_PROFILES}
           isLoading={isLoading}
           isError={isError}
         />
         <p className="text-[11px] text-muted-foreground mt-3">
-          Mostrando até 200 registros mais recentes de <code>user_roles</code>.
+          Mostrando at? 200 registros mais recentes de <code>user_roles</code>.
         </p>
       </CardContent>
     </Card>
