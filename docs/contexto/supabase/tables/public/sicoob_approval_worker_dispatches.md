@@ -1,5 +1,7 @@
 # public.sicoob_approval_worker_dispatches
 
+> Despachos do worker de aprovacoes. timed_out de despacho sem entrega pendente e perda de resposta do pg_net, nao falha de entrega.
+
 | propriedade | valor |
 |---|---|
 | tipo | table |

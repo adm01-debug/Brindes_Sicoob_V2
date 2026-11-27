@@ -60164,7 +60164,7 @@
           "search_path=pg_catalog, public, net"
         ],
         "definition": null,
-        "definition_sha": "22bf4e88b097afb6",
+        "definition_sha": "1e922bde4a180adb",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -81347,6 +81347,24 @@
         "statements": 1,
         "statements_sha": "ca6a97e0733a8700",
         "version": "20261125230000"
+      },
+      {
+        "name": "approval_worker_health_ignores_empty_timeouts",
+        "statements": 1,
+        "statements_sha": "296562975c194d75",
+        "version": "20261127150000"
+      },
+      {
+        "name": "fix_approval_dispatch_response_skew",
+        "statements": 1,
+        "statements_sha": "50d6cb2c1209f27e",
+        "version": "20261127153000"
+      },
+      {
+        "name": "prune_cron_job_run_details",
+        "statements": 1,
+        "statements_sha": "e50bfb79a3e12943",
+        "version": "20261127190000"
       }
     ],
     "policies": [
@@ -93230,7 +93248,7 @@
         "schema": "public"
       },
       {
-        "comment": null,
+        "comment": "Despachos do worker de aprovacoes. timed_out de despacho sem entrega pendente e perda de resposta do pg_net, nao falha de entrega.",
         "from_extension": false,
         "is_partition": false,
         "kind": "table",

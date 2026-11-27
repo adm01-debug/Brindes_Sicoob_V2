@@ -51,7 +51,12 @@ BEGIN
   DELETE FROM public.sicoob_approval_worker_dispatches
   WHERE requested_at<clock_timestamp()-interval '30 days';
 
-  SELECT count(*) FILTER (WHERE state IN ('failed','timed_out')),
+  SELECT count(*) FILTER (
+           WHERE state='failed'
+              OR (state='timed_out' AND completed_at > clock_timestamp()-interval '24 hours'
+                  AND EXISTS (SELECT 1 FROM public.sicoob_approval_deliveries dl
+                              WHERE dl.state IN ('pending','retry','uncertain')
+                                AND dl.available_at <= clock_timestamp()))),
          count(*) FILTER (WHERE state='queued'),
          COALESCE(extract(epoch FROM clock_timestamp()-(min(requested_at) FILTER (WHERE state='queued'))),0)::integer
   INTO v_failed,v_queued,v_oldest_seconds

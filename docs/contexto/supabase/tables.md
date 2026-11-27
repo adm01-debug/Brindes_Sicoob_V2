@@ -204,7 +204,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.sicoob_approval_delivery_archive](tables/public/sicoob_approval_delivery_archive.md) | table | sim | 1 | 5 | não |  |
 | [public.sicoob_approval_policies](tables/public/sicoob_approval_policies.md) | table | sim | 1 | 10 | não | Políticas versionadas por cooperativa. A ausência de política formal usa somente a base técnica conservadora. |
 | [public.sicoob_approval_requests](tables/public/sicoob_approval_requests.md) | table | sim | 3 | 14 | não |  |
-| [public.sicoob_approval_worker_dispatches](tables/public/sicoob_approval_worker_dispatches.md) | table | sim | 1 | 7 | não |  |
+| [public.sicoob_approval_worker_dispatches](tables/public/sicoob_approval_worker_dispatches.md) | table | sim | 1 | 7 | não | Despachos do worker de aprovacoes. timed_out de despacho sem entrega pendente e perda de resposta do pg_net, nao falha de entrega. |
 | [public.sicoob_centrais](tables/public/sicoob_centrais.md) | table | sim | 1 | 8 | não |  |
 | [public.sicoob_delivery_allocations](tables/public/sicoob_delivery_allocations.md) | table | sim | 1 | 8 | não |  |
 | [public.sicoob_delivery_destinations](tables/public/sicoob_delivery_destinations.md) | table | sim | 1 | 6 | não |  |

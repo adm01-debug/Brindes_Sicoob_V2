@@ -2,6 +2,12 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 20:17 UTC
+
+- **functions** alterado (1): `public.monitor_sicoob_approval_worker()`
+- **migrations** adicionado (3): `20261127150000_approval_worker_health_ignores_empty_timeouts`, `20261127153000_fix_approval_dispatch_response_skew`, `20261127190000_prune_cron_job_run_details`
+- **tabelas** alterado (1): `public.sicoob_approval_worker_dispatches`
+
 ## 2026-11-27 19:13 UTC
 
 - **cron jobs** adicionado (1): `37:prune-cron-job-run-details`

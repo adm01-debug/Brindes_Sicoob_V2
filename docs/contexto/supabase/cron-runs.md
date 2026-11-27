@@ -12,18 +12,18 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
+| 2026-11-27 20:00:00 | succeeded | 0.11 | 1 row |
 | 2026-11-27 19:00:00 | succeeded | 0.08 | 1 row |
 | 2026-11-27 18:00:00 | succeeded | 0.08 | 1 row |
-| 2026-11-27 17:00:00 | succeeded | 0.09 | 1 row |
 
 
 ## 3 · cleanup-expired-step-up
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:00:00 | succeeded | 0.03 | 1 row |
-| 2026-11-27 18:45:00 | succeeded | 0.04 | 1 row |
-| 2026-11-27 18:30:00 | succeeded | 0.05 | 1 row |
+| 2026-11-27 20:15:00 | succeeded | 0.02 | 1 row |
+| 2026-11-27 20:00:00 | succeeded | 0.02 | 1 row |
+| 2026-11-27 19:45:00 | succeeded | 0.04 | 1 row |
 
 
 ## 5 · cleanup-expired-collection-trash
@@ -93,18 +93,18 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:13:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 19:12:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 19:11:00 | succeeded | 0.04 | 1 row |
+| 2026-11-27 20:16:00 | succeeded | 0.07 | 1 row |
+| 2026-11-27 20:15:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 20:14:00 | succeeded | 0.04 | 1 row |
 
 
 ## 18 · sicoob-materialize-overdue-payments
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
+| 2026-11-27 19:17:00 | succeeded | 0.02 | 1 row |
 | 2026-11-27 18:17:00 | succeeded | 0.01 | 1 row |
 | 2026-11-27 17:17:00 | succeeded | 0.02 | 1 row |
-| 2026-11-27 16:17:00 | succeeded | 0.03 | 1 row |
 
 
 ## 19 · sicoob-approval-outbox-retention
@@ -120,54 +120,54 @@ _nenhum_
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:12:00 | succeeded | 1.68 | 1 row |
-| 2026-11-27 19:10:00 | succeeded | 0.16 | 1 row |
-| 2026-11-27 19:08:00 | succeeded | 0.09 | 1 row |
+| 2026-11-27 20:16:00 | succeeded | 0.16 | 1 row |
+| 2026-11-27 20:14:00 | succeeded | 0.08 | 1 row |
+| 2026-11-27 20:12:00 | succeeded | 1.66 | 1 row |
 
 
 ## 23 · process-export-queue
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:13:00 | succeeded | 0.04 | 1 row |
-| 2026-11-27 19:12:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 19:11:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 20:16:00 | succeeded | 0.06 | 1 row |
+| 2026-11-27 20:15:00 | succeeded | 0.04 | 1 row |
+| 2026-11-27 20:14:00 | succeeded | 0.02 | 1 row |
 
 
 ## 26 · external-db-bridge-keepalive
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:12:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 19:08:00 | succeeded | 0.02 | 1 row |
-| 2026-11-27 19:04:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 20:16:00 | succeeded | 0.05 | 1 row |
+| 2026-11-27 20:12:00 | succeeded | 0.01 | 1 row |
+| 2026-11-27 20:08:00 | succeeded | 0.03 | 1 row |
 
 
 ## 27 · connections-auto-test
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:00:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 18:45:00 | succeeded | 0.05 | 1 row |
-| 2026-11-27 18:30:00 | succeeded | 0.04 | 1 row |
+| 2026-11-27 20:15:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 20:00:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 19:45:00 | succeeded | 0.04 | 1 row |
 
 
 ## 35 · connections-health-check
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:07:00 | succeeded | 0.03 | 1 row |
-| 2026-11-27 18:52:00 | succeeded | 0.04 | 1 row |
-| 2026-11-27 18:37:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 20:07:00 | succeeded | 0.01 | 1 row |
+| 2026-11-27 19:52:00 | succeeded | 0.04 | 1 row |
+| 2026-11-27 19:37:00 | succeeded | 0.02 | 1 row |
 
 
 ## 36 · scheduled-reports-worker
 
 | início (UTC) | status | duração (s) | mensagem |
 |---|---|---|---|
-| 2026-11-27 19:10:00 | succeeded | 0.06 | 1 row |
-| 2026-11-27 19:00:00 | succeeded | 0.06 | 1 row |
-| 2026-11-27 18:50:00 | succeeded | 0.05 | 1 row |
+| 2026-11-27 20:10:00 | succeeded | 0.02 | 1 row |
+| 2026-11-27 20:00:00 | succeeded | 0.03 | 1 row |
+| 2026-11-27 19:50:00 | succeeded | 0.05 | 1 row |
 
 
 ## 37 · prune-cron-job-run-details

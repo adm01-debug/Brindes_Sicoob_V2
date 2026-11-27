@@ -173,3 +173,6 @@ SQL em `migrations/<versao>_<nome>.sql`. Mudanças feitas pelo Dashboard/SQL Edi
 | 20261125133000 | [harden_push_subscriptions_initplan](migrations/20261125133000_harden_push_subscriptions_initplan.sql) | 1 |
 | 20261125193000 | [revoke_execute_legacy_notification_helpers](migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql) | 1 |
 | 20261125230000 | [wrap_auth_calls_in_public_policies](migrations/20261125230000_wrap_auth_calls_in_public_policies.sql) | 1 |
+| 20261127150000 | [approval_worker_health_ignores_empty_timeouts](migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql) | 1 |
+| 20261127153000 | [fix_approval_dispatch_response_skew](migrations/20261127153000_fix_approval_dispatch_response_skew.sql) | 1 |
+| 20261127190000 | [prune_cron_job_run_details](migrations/20261127190000_prune_cron_job_run_details.sql) | 1 |
