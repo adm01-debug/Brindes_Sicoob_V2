@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slack, Mail, BellRing } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NotificationSettingPayload {
   channel: 'slack' | 'email';
@@ -41,6 +42,7 @@ function webhookExibido(readOnly: boolean, webhookUrl: string | null | undefined
 
 export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettingsTabProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [selectedPa, setSelectedPa] = useState<string | null>(null);
 
   const { data: pas } = useQuery({
@@ -54,8 +56,10 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
 
   const { data: settings } = useQuery({
     // Modo no cache: o gestor le sem webhook (readOnly) e a administracao le com
-    // webhook; a mesma chave serviria o resultado de uma tela na outra.
-    queryKey: ["pa_notification_settings", selectedPa, readOnly ? "leitura" : "admin"],
+    // webhook; a mesma chave serviria o resultado de uma tela na outra. O id do
+    // usuario entra na chave porque trocar de conta na mesma aba nao pode servir
+    // o cache da conta anterior (a RLS so vale para a requisicao, nao para o cache).
+    queryKey: ["pa_notification_settings", user?.id, selectedPa, readOnly ? "leitura" : "admin"],
     queryFn: async () => {
       if (!selectedPa) return [];
       const { data, error } = await supabase
@@ -89,7 +93,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pa_notification_settings", selectedPa] });
+      queryClient.invalidateQueries({ queryKey: ["pa_notification_settings", user?.id, selectedPa] });
       toast.success("Configurações salvas!");
     },
     onError: (error: unknown) => {
@@ -184,6 +188,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">Webhook URL</Label>
                     <Input
+                      key={`slack-${selectedPa}`}
                       placeholder={webhookExibido(readOnly, null).dica}
                       defaultValue={webhookExibido(readOnly, getSetting('slack').webhook_url).valor}
                       disabled={readOnly}
@@ -212,6 +217,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">E-mail para Alerta</Label>
                     <Input
+                      key={`email-${selectedPa}`}
                       placeholder="gestor@singular.com.br"
                       defaultValue={getSetting('email').recipient_email ?? ''}
                       disabled={readOnly}
