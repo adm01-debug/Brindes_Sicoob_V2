@@ -65,6 +65,13 @@ USING (
        AND (o.seller_id = (SELECT auth.uid())
             OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid()))))
   )
+  -- O ramo dos papeis Sicoob era inalcancavel, nao um defeito de proposito:
+  -- `order_audit_events.order_id` tem FK para `public.orders`
+  -- (20260502174252:309), entao todo UUID que a auditoria guarda e de `orders`.
+  -- Nenhum pedido Sicoob grava evento nesta tabela (a timeline usa
+  -- `sicoob_orders` e a RPC log_order_audit_event so insere order_id). O ramo
+  -- segue valido para o dia em que a auditoria passar a espelhar sicoob_orders,
+  -- e o simulador prova que ele nao vaza nada hoje.
   OR EXISTS (
     SELECT 1 FROM public.sicoob_orders so
      WHERE so.id = order_audit_events.order_id
