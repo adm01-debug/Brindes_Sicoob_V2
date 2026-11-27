@@ -3,12 +3,12 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (3015)",
+   "TypeScript (3024)",
    "Markdown (974)",
-   "SQL (695)",
-   "JSON (295)",
+   "SQL (703)",
+   "JSON (296)",
    "JavaScript (158)",
-   "Python (69)",
+   "Python (73)",
    "YAML (24)",
    "CSS (7)"
   ],
@@ -348,6 +348,7 @@
     "scripts/qa/simular-outbox-aprovacao.py",
     "scripts/qa/simular-reacoes-favoritos-rls.py",
     "scripts/qa/simular-relatorios-agendados-cron.py",
+    "scripts/qa/simular-sla-pedido-sicoob.py",
     "scripts/qa/simular-verba-atomica.py",
     "scripts/qa/simular-webhook-internal-auth.py"
    ],
@@ -784,6 +785,7 @@
     "scripts/qa/simular-consolidacao-sicoob.py",
     "scripts/qa/simular-delegacao-aprovacao-sicoob.py",
     "scripts/qa/simular-duplicacao-pedido-atomica.py",
+    "scripts/qa/simular-escopo-gerencial-sicoob.py",
     "scripts/qa/simular-eventos-status-sicoob.py",
     "scripts/qa/simular-financeiro-arte-sicoob.py",
     "scripts/qa/simular-kit-orcamento-sicoob.py",
@@ -792,6 +794,7 @@
     "scripts/qa/simular-politica-aprovacao-sicoob.py",
     "scripts/qa/simular-recompra-sicoob.py",
     "scripts/qa/simular-rls-cruzada-sicoob.py",
+    "scripts/qa/simular-sla-pedido-sicoob.py",
     "scripts/qa/simular-verba-atomica.py",
     "scripts/qa/simular-verba-lifecycle.py",
     "scripts/qa/simular-versionamento-orcamento-atomico.py"
@@ -1931,7 +1934,7 @@
   "papeis_no_codigo": [
    {
     "papel": "alert",
-    "ocorrencias": 71
+    "ocorrencias": 72
    },
    {
     "papel": "status",
@@ -1939,7 +1942,7 @@
    },
    {
     "papel": "dev",
-    "ocorrencias": 44
+    "ocorrencias": 45
    },
    {
     "papel": "supervisor",
@@ -1955,7 +1958,7 @@
    },
    {
     "papel": "admin",
-    "ocorrencias": 22
+    "ocorrencias": 23
    },
    {
     "papel": "agente",
@@ -2246,6 +2249,7 @@
    }
   ],
   "rpcs_de_autorizacao": [
+   "can_decide_limit_increase",
    "can_grant_mcp_full",
    "cleanup_test_auth_orphans",
    "execute_role_migration_batch",
@@ -2266,6 +2270,7 @@
    "/*",
    "/*",
    "/403",
+   "/admin/centrais",
    "/approve/:token",
    "/colecao-publica/:token",
    "/comparar-publica/:token",

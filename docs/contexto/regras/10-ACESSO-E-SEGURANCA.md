@@ -1,11 +1,11 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `870bfb1f7b` · branch `main` · 2026-11-27 01:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `18833012e7` · branch `main` · 2026-11-27 06:24 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
 
-`admin`, `agent`, `agente`, `all`, `assistant`, `completed`, `comprador_pac`, `comprador_singular`, `denied`, `dev`, `dry_run`, `failed`, `gerente_pa`, `gestor_compras`, `gestor_pa`, `gestor_singular`, `granted`, `manager`, `member`, `object`, `owner`, `partial`, `pending`, `perm`, `permission`, `public`, `role`, `running`, `skipped`, `string`, `success`, `supervisor`, `user`, `vendedor`
+`admin`, `agent`, `agente`, `all`, `assistant`, `completed`, `comprador_pac`, `comprador_singular`, `denied`, `dev`, `dry_run`, `failed`, `gerente_pa`, `gestor_compras`, `gestor_pa`, `granted`, `manager`, `member`, `object`, `owner`, `partial`, `pending`, `perm`, `permission`, `public`, `role`, `running`, `skipped`, `string`, `success`, `supervisor`, `user`, `vendedor`
 
 - Tabelas de perfil/permissão: `user_roles`, `product_group_members`, `roles`, `organization_members`, `permissions`, `role_permissions`, `role_migration_batches`, `role_migration_items`
 - Colunas de perfil: `profiles.role` (TEXT DEFAULT 'vendedor'), `user_roles.role` (app_role NOT NULL DEFAULT 'vendedor'), `expert_messages.role` (text NOT NULL DEFAULT 'user'), `organization_members.role` (org_role NOT NULL DEFAULT 'member'), `role_permissions.role` (app_role NOT NULL), `ai_usage_quotas.role` (app_role NOT NULL UNIQUE), `sicoob_invitations.role` (public.app_role NOT NULL)
@@ -122,7 +122,7 @@
 | `kit_share_tokens` | enabled | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() |
 | `kit_templates` | enabled | authenticated: is_active = true OR public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') |
 | `kit_variants` | enabled | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) OR has_role(auth.uid(), 'admin') | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) |
-| `limit_increase_requests` | enabled | public: EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND ( p.role IN ('admin', 'supervisor') OR (p.role = 'gestor_pa' AN | public: EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_i | — | — |
+| `limit_increase_requests` | enabled | authenticated: public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((<br>authenticated: public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by =  | authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_<br>authenticated: public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND re | — | — |
 | `login_attempts` | enabled | public: auth.uid() = user_id OR has_role(auth.uid(), 'admin'::app_role)<br>authenticated: has_role(auth.uid(), 'admin'::app_role)<br>authenticated: user_id = (SELECT auth.uid()) | public: true<br>service_role: true | — | — |
 | `logistics_tracking` | enabled | authenticated: true | authenticated: public.has_role(auth.uid(), 'vendedor') OR public.has_role(auth.uid(), 'admin') | — | — |
 | `magic_up_brand_kits` | enabled | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id |
@@ -151,8 +151,8 @@
 | `optimization_queue` | enabled | authenticated: public.is_dev(auth.uid()) | authenticated: public.is_dev(auth.uid()) | authenticated: public.is_dev(auth.uid()) | authenticated: public.is_dev(auth.uid()) |
 | `optimization_queue_runs` | enabled | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') |
 | `order_approval_history` | enabled | authenticated: EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_approval_history.order_id AND (o.seller_id = auth.uid() OR o.organi | public: auth.uid() = approver_id | — | — |
-| `order_audit_events` | enabled | anon: false<br>authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE | authenticated: false<br>anon: false<br>public: auth.role() = 'authenticated' | anon: false | anon: false<br>public: false |
-| `order_comments` | enabled | anon: false<br>authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE | authenticated: public.is_order_owner_or_admin(order_id) AND author_id = auth.uid()<br>anon: false | authenticated: author_id = auth.uid()<br>anon: false | authenticated: author_id = auth.uid() OR public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'dev'::app_role)<br>anon: false |
+| `order_audit_events` | enabled | anon: false<br>authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE<br>authenticated: EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = (SELECT auth.uid()) OR o.o | authenticated: false<br>anon: false<br>public: auth.role() = 'authenticated' | anon: false | anon: false<br>public: false |
+| `order_comments` | enabled | anon: false<br>authenticated: EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND ( public.can_view_all_sales() OR (public.has_ | authenticated: public.is_order_owner_or_admin(order_id) AND author_id = auth.uid()<br>anon: false | authenticated: author_id = auth.uid()<br>anon: false | authenticated: author_id = auth.uid() OR public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'dev'::app_role)<br>anon: false |
 | `order_consolidation_orders` | enabled | authenticated: public.sicoob_current_actor_can_view_all_consolidation(consolidation_id) | — | — | — |
 | `order_consolidations` | enabled | authenticated: vendedor_id = auth.uid() OR public.sicoob_current_actor_can_manage_consolidation(singular_id) OR public.sicoob_current_actor_ | — | — | — |
 | `order_duplicate_requests` | enabled | PUBLIC: false | PUBLIC: false | PUBLIC: false | PUBLIC: false |
@@ -175,7 +175,7 @@
 | `pa_budget_entries` | enabled | authenticated: public.user_can_access_pa(pa_id) | authenticated: public.user_can_access_pa(pa_id) AND ( public.is_admin((SELECT auth.uid())) OR public.is_gestor_compras() ) AND actor_id = (S | — | — |
 | `pa_budgets` | enabled | anon: false<br>authenticated: public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras() OR pa_id = public.current_user_pa_id()<br>public: EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_budgets.pa_id AND pa.cooperativa_id = public.current_user_coope<br>authenticated: EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_budgets.pa_id AND pa.cooperativa_id = public.current_use<br>authenticated: public.has_role(auth.uid(), 'admin')<br>authenticated: public.has_role(auth.uid(), 'gestor_compras') AND singular_id = public.get_user_singular_id()<br>authenticated: public.has_role(auth.uid(), 'gerente_pa') AND pa_id = public.get_user_pa_id()<br>authenticated: public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) AND EXISTS <br>authenticated: ( public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role) AND pa_budgets.pa_id = public.current_user_pa_id() ) | anon: false<br>authenticated: public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras()<br>authenticated: EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_budgets.pa_id AND pa.cooperativa_id = public.current_use<br>authenticated: public.has_role(auth.uid(), 'admin')<br>authenticated: public.has_role(auth.uid(), 'gestor_compras') AND singular_id = public.get_user_singular_id()<br>authenticated: public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) AND EXISTS  | anon: false<br>authenticated: public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras()<br>authenticated: public.is_gerente_pa() AND pa_id = (SELECT p.pa_id FROM public.profiles p WHERE p.user_id = auth.uid())<br>authenticated: EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_budgets.pa_id AND pa.cooperativa_id = public.current_use<br>authenticated: public.has_role(auth.uid(), 'admin')<br>authenticated: public.has_role(auth.uid(), 'gestor_compras') AND singular_id = public.get_user_singular_id()<br>authenticated: public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) AND EXISTS  | anon: false<br>authenticated: public.has_role(auth.uid(), 'admin')<br>authenticated: EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_budgets.pa_id AND pa.cooperativa_id = public.current_use<br>authenticated: public.has_role(auth.uid(), 'admin')<br>authenticated: public.has_role(auth.uid(), 'gestor_compras') AND singular_id = public.get_user_singular_id()<br>authenticated: public.is_admin((SELECT auth.uid())) |
 | `pa_category_thresholds` | enabled | authenticated: public.is_admin(auth.uid())<br>authenticated: true | authenticated: public.is_admin(auth.uid()) | authenticated: public.is_admin(auth.uid()) | authenticated: public.is_admin(auth.uid()) |
-| `pa_notification_settings` | enabled | public: public.has_role(auth.uid(), 'admin')<br>public: EXISTS ( SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.pa_id = pa_notification_settings.pa_id AND (profi | public: public.has_role(auth.uid(), 'admin') | public: public.has_role(auth.uid(), 'admin') | public: public.has_role(auth.uid(), 'admin') |
+| `pa_notification_settings` | enabled | public: EXISTS ( SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.pa_id = pa_notification_settings.pa_id AND (profi<br>authenticated: public.is_supervisor_or_above((SELECT auth.uid())) OR (public.is_gerente_pa() AND pa_id = public.current_user_pa_id()) OR (pu<br>authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' |
 | `pa_singularidades` | enabled | public: true<br>public: EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'dev')) | public: EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'dev')) | public: EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'dev')) | public: EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'dev')) |
 | `password_reset_requests` | enabled | public: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role)<br>authenticated: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role) | public: true<br>anon, authenticated: status = 'pending' AND reviewed_at IS NULL AND reviewed_by IS NULL AND user_id IS NULL<br>authenticated: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role) | public: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role)<br>authenticated: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role) | authenticated: has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role) |
 | `permissions` | enabled | authenticated: has_role(auth.uid(), 'admin'::app_role)<br>authenticated: true | authenticated: has_role(auth.uid(), 'admin'::app_role) | authenticated: has_role(auth.uid(), 'admin'::app_role) | authenticated: has_role(auth.uid(), 'admin'::app_role) |
@@ -253,7 +253,7 @@
 | `sicoob_approval_requests` | enabled | public: auth.uid() = requester_id<br>public: EXISTS ( SELECT 1 FROM profiles WHERE id = auth.uid() AND (role IN ('supervisor', 'dev', 'gestor_compras') OR (role = 'gerente_pa' A<br>authenticated: requester_id = auth.uid() OR approver_id = auth.uid() OR public.sicoob_current_actor_can_read_order(order_id) | public: auth.uid() = requester_id | authenticated: requester_id = auth.uid() OR public.sicoob_current_actor_can_approve_order(order_id, false) | — |
 | `sicoob_approval_worker_dispatches` | enabled | PUBLIC: false | PUBLIC: false | PUBLIC: false | PUBLIC: false |
 | `sicoob_budget_audit` | não encontrado | sem RLS | sem RLS | sem RLS | sem RLS |
-| `sicoob_centrais` | enabled | public: auth.role() = 'authenticated' | — | — | — |
+| `sicoob_centrais` | enabled | public: auth.role() = 'authenticated' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' | authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2' |
 | `sicoob_delivery_allocations` | enabled | authenticated: public.sicoob_current_actor_can_receive_destination(destination_id) OR EXISTS ( SELECT 1 FROM public.sicoob_delivery_destinat | — | — | — |
 | `sicoob_delivery_destinations` | enabled | authenticated: public.sicoob_current_actor_can_view_all_consolidation(consolidation_id) OR public.sicoob_current_actor_can_receive_destinati | — | — | — |
 | `sicoob_delivery_receipt_events` | enabled | authenticated: EXISTS ( SELECT 1 FROM public.sicoob_delivery_allocations a JOIN public.sicoob_delivery_destinations d ON d.id = a.destinatio | — | — | — |
@@ -314,7 +314,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 308 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 316 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -345,6 +345,7 @@
 - `scripts/qa/simular-conversao-pedido-sicoob.py`
 - `scripts/qa/simular-convites-sicoob.py`
 - `scripts/qa/simular-documentos-sicoob.py`
+- `scripts/qa/simular-escopo-gerencial-sicoob.py`
 - `scripts/qa/simular-escopo-orcamento-ativo.py`
 - `scripts/qa/simular-financeiro-arte-sicoob.py`
 - `scripts/qa/simular-kit-orcamento-sicoob.py`
@@ -355,7 +356,9 @@
 - `scripts/qa/simular-recompra-sicoob.py`
 - `scripts/qa/simular-relatorios-agendados-cron.py`
 - `scripts/qa/simular-salvamento-orcamento-atomico.py`
+- `scripts/qa/simular-sla-pedido-sicoob.py`
 - `scripts/qa/simular-taxonomia-marketing.py`
+- `scripts/qa/simular-verba-e-sla-sicoob.py`
 - `scripts/qa/simular-webhook-internal-auth.py`
 - `scripts/regras_negocio/generate.py`
 - `scripts/scan-rls-security.mjs`
@@ -463,14 +466,13 @@
 - `supabase/functions/webhook-inbound/index.ts`
 - `supabase/migrations/20251214200524_1f519508-285c-4649-ba22-b40d67618e67.sql`
 - `supabase/migrations/20260219133353_4495e564-cec8-44b1-a590-1fb18ca8c91d.sql`
-- `supabase/migrations/20260301000000_fix_cleanup_old_notifications_drop.sql`
-- `supabase/migrations/20260314133410_b4a5983b-76fc-4419-b422-a590dc0fa2ed.sql`
-- `supabase/migrations/20260323164400_3d7928d1-f21a-4599-b4a4-0af60c245542.sql`
-- … +158 (lista completa em `context.json`)
+- … +166 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 
 - `_can_act_on_behalf_of_others`
+- `_cooperativa_verba_distribuida`
+- `_trava_pa_da_verba`
 - `accept_sicoob_invitation`
 - `acquire_ai_quota`
 - `add_product_novelty`
@@ -500,6 +502,7 @@
 - `auto_revoke_orphan_full_keys`
 - `bulk_update_quote_status_atomic`
 - `can_approve_discount`
+- `can_decide_limit_increase`
 - `can_grant_mcp_full`
 - `can_manage`
 - `can_manage_connections`
@@ -543,6 +546,7 @@
 - `consume_quote_price_attestation`
 - `consume_step_up_token`
 - `convert_quote_to_sicoob_order`
+- `cooperativa_verba_distribuida`
 - `create_default_notification_preferences`
 - `create_organization_with_owner`
 - `create_quote_version_atomic`
@@ -552,6 +556,7 @@
 - `create_sicoob_order_consolidation`
 - `current_user_cooperativa_id`
 - `current_user_pa_id`
+- `decide_limit_increase_request`
 - `decide_sicoob_order_artwork`
 - `dispatch_quote_webhook_event`
 - `dispatch_scheduled_reports`
@@ -727,6 +732,7 @@
 - `record_sicoob_order_payment`
 - `record_sicoob_order_status_event`
 - `refresh_mv_benchmark_setorial`
+- `refresh_sicoob_order_sla_status`
 - `refresh_sicoob_reorder_quote`
 - `refund_sicoob_order_payment`
 - `register_quote_price_attestation`
@@ -783,13 +789,18 @@
 - `sicoob_current_actor_can_view_all_consolidation`
 - `sicoob_export_orders_for_actor`
 - `sicoob_inviter_can_issue`
+- `sicoob_pa_notification_settings_set`
+- `sicoob_pa_slack_webhook`
 - `snapshot_hardening_status`
 - `soft_delete_record`
 - `submit_quote_response`
 - `submit_signed_quote_response`
 - `sync_external_connections_from_credentials`
+- `tg_cooperativa_budget_not_below_distributed`
 - `tg_pa_budget_entries_competencia_aberta`
 - `tg_pa_budget_entries_immutable`
+- `tg_pa_budget_respects_cooperativa_ceiling`
+- `tg_pa_transfer_respects_cooperativa_ceiling`
 - `tg_recalc_pa_budget_states`
 - `tg_set_order_cost_center`
 - `tg_sicoob_order_budget_after_insert`
@@ -863,16 +874,16 @@ Middleware matcher (Next.js): nenhum
 | grant | authenticated | execute | `seed_discount_test_users`, `cleanup_discount_test_data`, `get_bundle_suggestions`, `get_client_top_products`, `get_industry_top_products`, `get_industry_benchmark_stats`, `get_web_vitals_summary`, `check_hardening_status`, `get_top_favorited_products`, `get_favorites_weekly_count`, `set_connections_auto_test_interval`, `get_connections_auto_test_interval`, `set_connection_failure_window_minutes`, `get_connection_failure_window_minutes`, `get_auto_test_job_status` … +128 |
 | grant | authenticated | insert, select | `telemetry_events`, `telemetry_logs` |
 | grant | authenticated | select | `test_suites_runs`, `sicoob_approval_delegations`, `sicoob_invitations`, `sicoob_invitation_events`, `pa_budgets`, `cooperativa_budgets`, `catalog_marketing_terms`, `catalog_marketing_term_usage`, `sicoob_rls_audit_logs`, `access_blocked_log` |
-| grant | authenticated | select, insert | `quote_save_idempotency`, `search_analytics`, `search_analytics`, `pa_budget_entries` |
+| grant | authenticated | select, insert | `quote_save_idempotency`, `search_analytics`, `search_analytics`, `pa_budget_entries`, `limit_increase_requests` |
 | grant | authenticated | select, insert, update | `cost_centers` |
-| grant | authenticated | select, insert, update, delete | `notification_preferences`, `quote_save_idempotency`, `catalog_marketing_terms`, `catalog_product_marketing`, `pa_budget_allocations` |
+| grant | authenticated | select, insert, update, delete | `notification_preferences`, `quote_save_idempotency`, `catalog_marketing_terms`, `catalog_product_marketing`, `pa_budget_allocations`, `sicoob_centrais` |
 | grant | authenticated, anon | execute | `search_products_semantic`, `can_view_audit_logs`, `can_view_telemetry`, `can_view_connections`, `can_manage_connections` |
-| grant | authenticated, service_role | execute | `get_web_vitals_regression`, `audit_ownership_orphans`, `audit_rls_coverage`, `audit_rls_matrix`, `audit_security_definer_acl`, `assert_database_auditor`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `audit_actor_email`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial` … +40 |
+| grant | authenticated, service_role | execute | `get_web_vitals_regression`, `audit_ownership_orphans`, `audit_rls_coverage`, `audit_rls_matrix`, `audit_security_definer_acl`, `assert_database_auditor`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `audit_actor_email`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial` … +47 |
 | grant | authenticated, service_role | select | `v_full_scope_grants`, `catalog_marketing_term_usage` |
 | grant | authenticated, service_role | select, insert, update, delete | `personalization_simulations` |
 | grant | postgres, service_role | execute | `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `auto_revoke_orphan_full_keys`, `cleanup_webhook_logs`, `retry_failed_webhook_deliveries` |
-| grant | service_role | all | `telemetry_events`, `telemetry_logs`, `test_suites_runs`, `notification_preferences`, `search_analytics`, `search_analytics` |
-| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +65 |
+| grant | service_role | all | `telemetry_events`, `telemetry_logs`, `test_suites_runs`, `notification_preferences`, `search_analytics`, `search_analytics`, `limit_increase_requests` |
+| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +66 |
 | grant | service_role | insert | `access_blocked_log` |
 | grant | service_role | select | `quote_approval_evidence_keys`, `sicoob_approval_delivery_archive` |
 | grant | service_role | select, insert, update, delete | `sicoob_approval_deliveries` |
@@ -881,9 +892,9 @@ Middleware matcher (Next.js): nenhum
 | grant | supabase_auth_admin, service_role | execute | `create_default_notification_preferences` |
 | revoke | PUBLIC | all | `cleanup_old_notifications`, `get_web_vitals_summary`, `get_web_vitals_regression`, `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `set_connections_auto_test_interval`, `set_connection_failure_window_minutes`, `get_auto_test_job_status`, `check_telemetry_regression`, `log_full_scope_grant`, `log_access_denied`, `record_dev_route_telemetry`, `auto_revoke_orphan_full_keys`, `log_rls_denial`, `audit_ownership_orphans` … +84 |
 | revoke | PUBLIC | execute | `check_sicoob_access_matrix`, `public`, `can_manage`, `can_view_all_sales`, `get_user_org_ids`, `has_role`, `is_admin`, `is_dev`, `is_kit_collaborator`, `is_kit_owner`, `is_supervisor_or_above`, `can_manage`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +11 |
-| revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +74 |
+| revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +82 |
 | revoke | PUBLIC, anon | execute | `is_order_owner_or_admin`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial`, `audit_security_definer_acl`, `audit_security_definer_acl`, `can_manage`, `get_user_pa_id`, `get_user_cooperative_id`, `get_user_singular_id`, `is_kit_owner`, `is_kit_collaborator`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +8 |
-| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +91 |
+| revoke | PUBLIC, anon, authenticated | all | `cleanup_security_logs`, `check_mcp_abuse_threshold`, `is_gestor_compras`, `is_gerente_pa`, `is_vendedor_role`, `current_user_pa_id`, `current_user_cooperativa_id`, `refresh_mv_benchmark_setorial`, `audit_rls_matrix`, `audit_rls_coverage`, `check_tables_rls`, `check_sicoob_access_matrix`, `audit_actor_email`, `get_enum_values`, `check_rls_enabled` … +100 |
 | revoke | PUBLIC, anon, authenticated | execute | `validate_order_status`, `log_order_status_change`, `record_public_token_failure`, `search_products_semantic`, `check_rate_limit`, `increment_webhook_endpoint_metrics`, `tg_sync_pa_budget_planejada`, `tg_recalc_pa_budget_states`, `tg_pa_budget_entries_immutable`, `tg_pa_budget_entries_competencia_aberta`, `tg_set_order_cost_center`, `tg_validate_order_allocations`, `tg_sicoob_order_budget_after_insert` |
 | revoke | PUBLIC, anon, authenticated, service_role | all | `guard_profile_authority_fields`, `convert_quote_to_sicoob_order_core_20261013`, `create_quote_version_atomic_core_20261013`, `apply_local_quote_approval_response_core_20261013`, `bulk_update_quote_status_atomic_core_20261013`, `approve_quote_with_pdf_atomic_core_20261013`, `request_discount_approval_atomic_core_20261013`, `respond_discount_approval_atomic_core_20261013`, `handle_row_version`, `guard_quote_governance_write`, `assert_quote_content_editable`, `guard_quote_item_content_write`, `guard_quote_personalization_content_write`, `assert_quote_transition`, `webhook_retry_claims` … +6 |
 | revoke | PUBLIC,anon,authenticated | all | `enqueue_sicoob_approval_event`, `claim_sicoob_approval_delivery`, `validate_sicoob_order_document`, `preserve_sicoob_artwork_requirement`, `sicoob_approval_worker_dispatches`, `dispatch_sicoob_approval_worker`, `monitor_sicoob_approval_worker`, `register_sicoob_clean_document`, `validate_sicoob_order_document`, `register_sicoob_clean_document` |
@@ -900,6 +911,7 @@ Middleware matcher (Next.js): nenhum
 | revoke | authenticated | insert, update, delete | `pa_budgets`, `cooperativa_budgets` |
 | revoke | authenticated, anon | all | `e2e_cleanup_check_rate_limit` |
 | revoke | authenticated, anon | insert, update, delete | `sicoob_quote_reorder_requests` |
+| revoke | authenticated, anon | select | `pa_notification_settings` |
 | revoke | public | all | `seed_discount_test_users`, `cleanup_discount_test_data`, `search_products_semantic`, `audit_rls_coverage`, `audit_rls_matrix` |
 | revoke | public | execute | `cleanup_test_auth_orphans` |
 | revoke | public, anon | all | `execute_role_migration_batch` |
@@ -913,9 +925,7 @@ Middleware matcher (Next.js): nenhum
 | `catalog_marketing_term_usage` | acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/hooks/useCatalogMarketing.ts` |
 | `discount_approval_requests` | front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/components/admin/DiscountApprovalQueue.tsx` |
 | `scheduled_notifications` | front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/hooks/useNotificationOmnichannel.ts` |
-| `sicoob_centrais` | front faz INSERT mas nenhuma política RLS permite INSERT → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
-| `sicoob_centrais` | front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
-| `sicoob_centrais` | front faz DELETE mas nenhuma política RLS permite DELETE → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
+| `sicoob_budget_audit` | acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/services/sicoob/budgetService.ts` |
 | `v_sicoob_hierarchy` | acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/components/sicoob/HierarchyPath.tsx` |
 
 ## Multi-tenancy

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "870bfb1f7b61137bfb9adefeaf4733f0a0f3173a",
+  "sha": "18833012e744a6aafadaa92c318887240c29b9a7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 01:16 UTC",
-  "files_total": 5356,
-  "code_files": 3916,
-  "code_lines": 577650
+  "generated_at": "2026-11-27 06:24 UTC",
+  "files_total": 5379,
+  "code_files": 3937,
+  "code_lines": 582917
  },
  "version": "1.3.2",
- "facts_hash": "d1e5f1056a21c5cc",
+ "facts_hash": "2b8a3dd151b84c39",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,11 +355,11 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1514,
-   ".tsx": 1499,
-   ".sql": 695,
+   ".ts": 1516,
+   ".tsx": 1506,
+   ".sql": 703,
    ".mjs": 146,
-   ".py": 69,
+   ".py": 73,
    ".cjs": 7,
    ".js": 6
   },
@@ -15825,12 +15825,34 @@
       "fk": "cost_centers.id ON DELETE SET NULL",
       "generated": "",
       "src": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql"
+     },
+     {
+      "name": "sla_closed_at",
+      "type": "timestamptz",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+     },
+     {
+      "name": "sla_closed_status",
+      "type": "text",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+     },
+     {
+      "name": "sla_closed_outcome",
+      "type": "text",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
      }
     ],
     "constraints": [
      "constraint check_positive_total CHECK (total_amount >= 0)",
      "constraint sicoob_orders_commercial_components_nonnegative CHECK ( merchandise_amount >= 0 AND personalization_amount >= 0 AND negotiation_markup_amount >= 0 AND commercial_subtotal_amount >= 0 AND discount_amount >= 0 AND shipping_amount >= 0 )",
-     "constraint sicoob_orders_brl_v1_reconciled CHECK ( pricing_formula_version <> 'brl-v1' OR ( abs(commercial_subtotal_amount - (merchandise_amount + personalization_amount + negotiation_markup_amount)) <= 0.01 AND discount_amount <= commercial_subtotal_amount AND abs(total_amount - (commercial_subtota …"
+     "constraint sicoob_orders_brl_v1_reconciled CHECK ( pricing_formula_version <> 'brl-v1' OR ( abs(commercial_subtotal_amount - (merchandise_amount + personalization_amount + negotiation_markup_amount)) <= 0.01 AND discount_amount <= commercial_subtotal_amount AND abs(total_amount - (commercial_subtota …",
+     "constraint sicoob_orders_sla_closed_outcome_check CHECK (sla_closed_outcome IS NULL OR sla_closed_outcome IN ('approved', 'rejected', 'escalated', 'cancelled'))"
     ],
     "src": "supabase/migrations/20260502144243_1a4cfdfa-bdfb-4c0d-9a34-8a4d8730d915.sql",
     "comment": "",
@@ -18763,7 +18785,7 @@
      },
      {
       "name": "requested_by",
-      "type": "UUID REFERENCES auth.users(id)",
+      "type": "UUID REFERENCES auth.users(id) SET DEFAULT auth.uid()",
       "fk": "users.id",
       "generated": "",
       "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
@@ -32481,26 +32503,6 @@
     "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
    },
    {
-    "name": "Users can view their own PA limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "SELECT",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND ( p.role IN ('admin', 'supervisor') OR (p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_id) OR (p.role = 'gestor_singular' AND EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = limit_increase_requests. …",
-    "check": "",
-    "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
-   },
-   {
-    "name": "PA Managers can insert limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "INSERT",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "",
-    "check": "EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_id )",
-    "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
-   },
-   {
     "name": "Apenas administradores podem ver execuções de QA",
     "table": "qa_runs",
     "cmd": "SELECT",
@@ -32769,16 +32771,6 @@
     "using": "auth.uid() = user_id",
     "check": "",
     "src": "supabase/migrations/20260504211811_2c878015-23d1-40c7-8b0b-2a442cf2411e.sql"
-   },
-   {
-    "name": "Admins can manage notification settings",
-    "table": "pa_notification_settings",
-    "cmd": "ALL",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "public.has_role(auth.uid(), 'admin')",
-    "check": "",
-    "src": "supabase/migrations/20260504214012_d5a939e8-1967-4e68-9104-e655131c628a.sql"
    },
    {
     "name": "Managers can view their PA notification settings",
@@ -33207,16 +33199,6 @@
     "roles": "authenticated",
     "mode": "permissive",
     "using": "has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = auth.uid() OR o.organization_id IN (SELECT get_user_org_ids(auth.uid())))) OR EXISTS (SELECT 1 FROM public.sicoob_orders …",
-    "check": "",
-    "src": "supabase/migrations/20260522200433_ee407c31-c9af-469b-9490-6729f7d75583.sql"
-   },
-   {
-    "name": "order_comments_select_scoped",
-    "table": "order_comments",
-    "cmd": "SELECT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND (o.seller_id = auth.uid() OR o.organization_id IN (SELECT get_user_org_ids(auth.uid())))) OR EXISTS (SELECT 1 FROM public.sicoob_orders so …",
     "check": "",
     "src": "supabase/migrations/20260522200433_ee407c31-c9af-469b-9490-6729f7d75583.sql"
    },
@@ -34589,6 +34571,116 @@
     "using": "public.pa_budget_allocation_write_ok(order_id)",
     "check": "",
     "src": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql"
+   },
+   {
+    "name": "limit_increase_requests_scope_select",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role) ) ) OR ( (public.has_role((SELECT auth.uid()), 'ge …",
+    "check": "",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "name": "limit_increase_requests_scope_insert",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_requests.approved_by IS NULL AND limit_increase_requests.rejection_reason IS NULL AND ( public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente …",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_insert",
+    "table": "sicoob_centrais",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_update",
+    "table": "sicoob_centrais",
+    "cmd": "UPDATE",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_delete",
+    "table": "sicoob_centrais",
+    "cmd": "DELETE",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_order_audit_events_escopo_gerencial",
+    "table": "order_audit_events",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = (SELECT auth.uid()) OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid())))) ) OR EXISTS ( SELECT 1 FROM public.sicoob_orders so WHERE so.id = order_audit_events.order_id AND ( so …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "order_comments_select_scoped",
+    "table": "order_comments",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND ( public.can_view_all_sales() OR (public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role) AND (o.organization_id IS NULL OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid()))))) OR o.se …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Users can view their own PA limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = (SELECT auth.uid()) )",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "PA Managers can insert limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND rejection_reason IS NULL",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "sicoob_pa_notification_settings_escopo_gerencial",
+    "table": "pa_notification_settings",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_supervisor_or_above((SELECT auth.uid())) OR (public.is_gerente_pa() AND pa_id = public.current_user_pa_id()) OR (public.is_gestor_compras() AND EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_notification_settings.pa_id AND pa.cooperativa_id = public.current_user_coope …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Admins can manage notification settings",
+    "table": "pa_notification_settings",
+    "cmd": "ALL",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
    }
   ],
   "triggers": [
@@ -36427,6 +36519,51 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
+   },
+   {
+    "name": "set_sicoob_order_sla_deadline",
+    "when": "BEFORE INSERT OR UPDATE OF STATUS",
+    "table": "sicoob_orders",
+    "function": "set_sicoob_order_sla_deadline",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "name": "close_sicoob_order_sla",
+    "when": "BEFORE INSERT OR UPDATE OF STATUS",
+    "table": "sicoob_orders",
+    "function": "close_sicoob_order_sla",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "name": "trg_pa_budget_respects_cooperativa_ceiling",
+    "when": "BEFORE INSERT OR UPDATE OF VERBA_TOTAL, VERBA_PLANEJADA, ANO, MES, PA_ID",
+    "table": "pa_budgets",
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "name": "trg_cooperativa_budget_not_below_distributed",
+    "when": "BEFORE INSERT OR UPDATE OF VERBA_TOTAL, ANO, MES",
+    "table": "cooperativa_budgets",
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "name": "trg_pa_transfer_respects_cooperativa_ceiling",
+    "when": "AFTER UPDATE OF COOPERATIVA_ID",
+    "table": "postos_atendimento",
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "functions": {
@@ -39255,12 +39392,12 @@
    },
    "check_order_sla": {
     "args": "",
-    "returns": "TRIGGER",
+    "returns": "trigger",
     "lang": "plpgsql",
-    "src": "supabase/migrations/20260503204301_c4d68747-216a-4854-a3ec-b51ec46f98a1.sql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
     "security_definer": false,
-    "search_path": false,
-    "body": "BEGIN IF NEW.sla_deadline IS NOT NULL THEN IF NEW.sla_deadline < now() THEN NEW.sla_status := 'critical'; ELSIF NEW.sla_deadline < now() + interval '2 hours' THEN NEW.sla_status := 'warning'; ELSE NEW.sla_status := 'normal'; END IF; END IF; RETURN NEW; END;",
+    "search_path": true,
+    "body": "BEGIN IF NEW.sla_deadline IS NOT NULL AND COALESCE( CASE WHEN TG_OP = 'INSERT' THEN NEW.status ELSE OLD.status END, NEW.status ) IN ('pending', 'waiting_approval', 'escalated_to_board') THEN IF NEW.sla_deadline < now() THEN NEW.sla_status := 'critical'; ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN NEW.sla_status := 'warning'; ELSE NEW.sla_status := 'normal'; END IF; END IF; RETURN NEW; END;",
     "raises": [],
     "tables": []
    },
@@ -42367,6 +42504,249 @@
      "NEW",
      "profiles",
      "workspace_notifications"
+    ]
+   },
+   "set_sicoob_order_sla_deadline": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_entrou_em_aprovacao boolean; BEGIN IF TG_OP = 'INSERT' THEN v_entrou_em_aprovacao := NEW.status IN ('waiting_approval', 'escalated_to_board'); ELSE v_entrou_em_aprovacao := NEW.status IN ('waiting_approval', 'escalated_to_board') AND OLD.status IS DISTINCT FROM NEW.status; END IF; IF v_entrou_em_aprovacao THEN NEW.sla_deadline := now() + interval '48 hours'; NEW.sla_status := 'normal'; END IF; RETURN NEW; END;",
+    "raises": [],
+    "tables": [
+     "NEW"
+    ]
+   },
+   "refresh_sicoob_order_sla_status": {
+    "args": "",
+    "returns": "integer",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_count integer; BEGIN WITH alvo AS ( SELECT id, CASE WHEN status::text NOT IN ('pending', 'waiting_approval', 'escalated_to_board') THEN 'normal' WHEN sla_deadline < now() THEN 'critical' WHEN sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning' ELSE 'normal' END AS novo_status FROM public.sicoob_orders WHERE sla_deadline IS NOT NULL AND (status IN ('pending', 'waiting_approval', 'escalated_to_board') OR sla_status IN ('critical', 'warning')) ) UPDATE public.sicoob_orders o SET sla_status = a.novo_status FROM alvo a WHERE o.id = a.id AND o.sla_status IS DISTINCT FROM a.novo_status; GET DIAGNOSTICS v_count = ROW_COUNT; RETURN v_count; END;",
+    "raises": [],
+    "tables": [
+     "a",
+     "alvo",
+     "sicoob_orders"
+    ]
+   },
+   "close_sicoob_order_sla": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "BEGIN IF OLD.sla_deadline IS NOT NULL AND OLD.status IN ('waiting_approval', 'escalated_to_board') AND NEW.status IS DISTINCT FROM OLD.status THEN NEW.sla_closed_at := now(); NEW.sla_closed_status := CASE WHEN OLD.sla_deadline < now() THEN 'critical' WHEN OLD.sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning' ELSE 'normal' END; NEW.sla_closed_outcome := CASE WHEN NEW.status = 'rejected' THEN 'rejected' WHEN NEW.status = 'cancelled' THEN 'cancelled' WHEN NEW.status = 'escalated_to_board' THEN 'escalated' ELSE 'approved' END; END IF; RETURN NEW; END;",
+    "raises": [],
+    "tables": [
+     "OLD"
+    ]
+   },
+   "can_decide_limit_increase": {
+    "args": "p_request_id uuid",
+    "returns": "boolean",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT (SELECT auth.uid()) IS NOT NULL AND ( public.is_admin((SELECT auth.uid())) OR EXISTS ( SELECT 1 FROM public.limit_increase_requests AS request JOIN public.postos_atendimento AS service_point ON service_point.id = request.pa_id WHERE request.id = p_request_id AND service_point.is_active IS TRUE AND service_point.cooperativa_id = public.current_user_cooperativa_id() AND public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) ) );",
+    "raises": [],
+    "tables": [
+     "limit_increase_requests",
+     "postos_atendimento"
+    ]
+   },
+   "decide_limit_increase_request": {
+    "args": "p_request_id uuid, p_approve boolean, p_reason text DEFAULT NULL",
+    "returns": "public.limit_increase_requests",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_actor uuid := (SELECT auth.uid()); v_reason text := NULLIF(btrim(COALESCE(p_reason, '')), ''); v_request public.limit_increase_requests; v_target public.pa_budgets; v_competencia timestamp; v_ano int; v_mes int; v_ocupada numeric(14,2); v_limite_texto text; v_tem_verba boolean := FALSE; BEGIN SELECT * INTO v_request FROM public.limit_increase_requests AS request WHERE request.id = p_request_id FOR UPDATE; IF NOT FOUND THEN RAISE EXCEPTION 'Solicitação de aumento de verba % não encontrada.', p_request_id USING ERRCODE = 'no_data_found'; END IF; IF NOT public.can_decide_limit_increase(p_request_id) THEN RAISE EXCEPTION 'Você não tem autoridade para decidir o aumento de verba deste PA …",
+    "raises": [
+     "Solicitação de aumento de verba % não encontrada.",
+     "Você não tem autoridade para decidir o aumento de verba deste PA.",
+     "Esta solicitação já foi decidida (%).",
+     "Informe o motivo da recusa.",
+     "O limite solicitado (%) é inválido.",
+     "A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado.",
+     "O limite solicitado (R$ %) é menor que a verba já ocupada na competência %/% (R$ %).",
+     "O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento."
+    ],
+    "tables": [
+     "limit_increase_requests",
+     "pa_budgets",
+     "v_competencia",
+     "v_limite_texto",
+     "v_request",
+     "v_target"
+    ]
+   },
+   "sicoob_pa_slack_webhook": {
+    "args": "p_pa_id uuid",
+    "returns": "text",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_url text; BEGIN IF NOT public.is_supervisor_or_above(auth.uid()) THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Somente a administracao consulta o webhook do Slack.'; END IF; IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Conclua a verificacao em duas etapas para consultar o webhook do Slack.'; END IF; SELECT s.webhook_url INTO v_url FROM public.pa_notification_settings s WHERE s.pa_id = p_pa_id AND s.channel = 'slack' LIMIT 1; RETURN v_url; END;",
+    "raises": [],
+    "tables": [
+     "pa_notification_settings",
+     "v_url"
+    ]
+   },
+   "sicoob_pa_notification_settings_set": {
+    "args": "p_pa_id uuid, p_channel text, p_webhook_url text DEFAULT NULL, p_recipient_email text DEFAULT NULL, p_is_active boolean DEFAULT NULL",
+    "returns": "void",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "BEGIN IF NOT public.is_supervisor_or_above(auth.uid()) THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Somente a administracao grava as configuracoes de notificacao.'; END IF; IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Conclua a verificacao em duas etapas para alterar as configuracoes de notificacao.'; END IF; IF p_channel NOT IN ('slack', 'email') THEN RAISE EXCEPTION USING ERRCODE='22023', MESSAGE='Canal de notificacao invalido: use slack ou email.'; END IF; IF p_pa_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id) THEN RAISE EXCEPTION USING ERRCODE='23503', MESSAGE='PA ine …",
+    "raises": [],
+    "tables": [
+     "SET",
+     "pa_notification_settings",
+     "postos_atendimento"
+    ]
+   },
+   "_cooperativa_verba_distribuida": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "numeric",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT COALESCE(SUM(pb.verba_total), 0)::numeric(14,2) FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pa.id = pb.pa_id WHERE pa.cooperativa_id = p_cooperativa_id AND pb.ano = p_ano AND pb.mes = p_mes;",
+    "raises": [],
+    "tables": [
+     "pa_budgets",
+     "postos_atendimento"
+    ]
+   },
+   "_pode_ver_verba_da_cooperativa": {
+    "args": "p_cooperativa_id uuid",
+    "returns": "boolean",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT COALESCE( auth.uid() IS NULL OR public.is_admin(auth.uid()) OR (p_cooperativa_id IS NOT NULL AND p_cooperativa_id = public.current_user_cooperativa_id() AND (public.has_role(auth.uid(), 'gestor_compras'::public.app_role) OR public.has_role(auth.uid(), 'comprador_singular'::public.app_role))), false );",
+    "raises": [],
+    "tables": []
+   },
+   "_trava_competencia_da_cooperativa": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "void",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT pg_advisory_xact_lock( hashtextextended(p_cooperativa_id::text || ':' || p_ano::text || ':' || p_mes::text, 0) );",
+    "raises": [],
+    "tables": []
+   },
+   "cooperativa_verba_distribuida": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "numeric",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "BEGIN IF public._pode_ver_verba_da_cooperativa(p_cooperativa_id) IS NOT TRUE THEN RAISE EXCEPTION 'Sem permissao para consultar a verba desta cooperativa.' USING ERRCODE = '42501'; END IF; RETURN public._cooperativa_verba_distribuida(p_cooperativa_id, p_ano, p_mes); END;",
+    "raises": [
+     "Sem permissao para consultar a verba desta cooperativa."
+    ],
+    "tables": []
+   },
+   "tg_pa_budget_respects_cooperativa_ceiling": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_cooperativa_id uuid; v_cooperativa_antiga uuid; v_teto numeric(14,2); v_distribuido numeric(14,2); v_total numeric(14,2); v_valor_novo numeric(14,2); v_valor_antigo numeric(14,2); v_detalhado boolean; BEGIN IF TG_OP = 'INSERT' THEN v_valor_novo := COALESCE(NULLIF(NEW.verba_planejada, 0), NEW.verba_total, 0); ELSE v_valor_novo := COALESCE( CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada THEN NEW.verba_planejada END, CASE WHEN NEW.verba_total IS DISTINCT FROM OLD.verba_total THEN NEW.verba_total END, NEW.verba_planejada, NEW.verba_total, 0 ); v_valor_antigo := COALESCE( CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada THEN OLD.verba_planejada END, …",
+    "raises": [
+     "A soma das verbas dos PAs (R$ %) passaria do teto da cooperativa (R$ %) em %/%; ajuste o teto ou reduza a verba de outro PA.",
+     "As verbas desta competencia ultrapassam o teto da cooperativa."
+    ],
+    "tables": [
+     "OLD",
+     "cooperativa_budgets",
+     "postos_atendimento",
+     "v_cooperativa_antiga",
+     "v_cooperativa_id",
+     "v_teto"
+    ]
+   },
+   "tg_cooperativa_budget_not_below_distributed": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_distribuido numeric(14,2); v_detalhado boolean; BEGIN v_detalhado := public._pode_ver_verba_da_cooperativa(NEW.cooperativa_id); PERFORM public._trava_competencia_da_cooperativa(NEW.cooperativa_id, NEW.ano, NEW.mes); v_distribuido := public._cooperativa_verba_distribuida(NEW.cooperativa_id, NEW.ano, NEW.mes); IF v_distribuido > COALESCE(NEW.verba_total, 0) THEN IF v_detalhado THEN RAISE EXCEPTION 'O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.', NEW.verba_total::text, round(v_distribuido, 2)::text, NEW.mes, NEW.ano USING ERRCODE = '23514'; END IF; RAISE EXCEPTION 'O teto informado fica abaixo do j …",
+    "raises": [
+     "O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.",
+     "O teto informado fica abaixo do ja distribuido nesta competencia."
+    ],
+    "tables": []
+   },
+   "tg_pa_transfer_respects_cooperativa_ceiling": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_competencia record; v_teto numeric(14,2); v_soma numeric(14,2); v_detalhado boolean; BEGIN IF NEW.cooperativa_id IS NOT DISTINCT FROM OLD.cooperativa_id THEN RETURN NULL; END IF; v_detalhado := public._pode_ver_verba_da_cooperativa(NEW.cooperativa_id); FOR v_competencia IN SELECT DISTINCT pb.ano, pb.mes FROM public.pa_budgets pb WHERE pb.pa_id = NEW.id ORDER BY pb.ano, pb.mes LOOP PERFORM public._trava_competencia_da_cooperativa( NEW.cooperativa_id, v_competencia.ano, v_competencia.mes ); SELECT cb.verba_total INTO v_teto FROM public.cooperativa_budgets cb WHERE cb.cooperativa_id = NEW.cooperativa_id AND cb.ano = v_competencia.ano AND cb.mes = v_competencia.mes; CONTINUE WHEN v_tet …",
+    "raises": [
+     "A transferencia levaria as verbas da cooperativa de destino a R$ % em %/%, acima do teto de R$ %. Ajuste o teto do destino ou reduza a verba do PA.",
+     "A transferencia de PA ultrapassa o teto da cooperativa de destino."
+    ],
+    "tables": [
+     "OLD",
+     "cooperativa_budgets",
+     "pa_budgets",
+     "v_teto"
+    ]
+   },
+   "_trava_pa_da_verba": {
+    "args": "p_pa_id uuid",
+    "returns": "void",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id FOR SHARE;",
+    "raises": [],
+    "tables": [
+     "postos_atendimento"
+    ]
+   },
+   "salvar_verba_pa": {
+    "args": "p_pa_id uuid, p_ano integer, p_mes integer, p_verba_total numeric, p_limite_alcada numeric DEFAULT NULL, p_observacoes text DEFAULT NULL, p_budget_id uuid DEFAULT NULL",
+    "returns": "uuid",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_budget_id uuid; BEGIN IF p_pa_id IS NULL THEN RAISE EXCEPTION 'Informe o posto de atendimento da verba.' USING ERRCODE = '22023'; END IF; IF p_budget_id IS NULL THEN PERFORM public._trava_pa_da_verba(p_pa_id); v_budget_id := gen_random_uuid(); INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, limite_alcada, observacoes) VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_limite_alcada, p_observacoes); ELSE PERFORM public._trava_pa_da_verba(p_pa_id); UPDATE public.pa_budgets SET verba_total = p_verba_total, limite_alcada = p_limite_alcada, observacoes = p_observacoes WHERE id = p_budget_id AND pa_id = p_pa_id AND ano = p_ano AND mes = p_mes; IF NOT FOUND THEN …",
+    "raises": [
+     "Informe o posto de atendimento da verba.",
+     "Verba nao encontrada para este posto e competencia."
+    ],
+    "tables": [
+     "pa_budgets"
     ]
    },
    "check_migration_status": {
@@ -47891,8 +48271,8 @@
     "src": "supabase/migrations/20260922150000_reconcile_audit_controls.sql"
    },
    "sicoob_budget_audit": {
-    "body": "SELECT pb.pa_id, pa.nome as pa_nome, pb.ano, pb.mes, pb.verba_total, pb.verba_consumida as verba_registrada, COALESCE(SUM(so.total_amount), 0) as verba_calculada_pedidos, (pb.verba_consumida - COALESCE(SUM(so.total_amount), 0)) as discrepancia FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pb.pa_id = pa.id LEFT JOIN public.sicoob_orders so ON so.pa_id = pb.pa_id AND so.status IN ('confirmed', 'logistic', 'completed') AND EXTRACT(YEAR FROM so.created_at) = pb.ano AND EXTRACT(MONTH FROM so.created_at) = pb.mes GROUP BY pb.id, pa.nome",
-    "src": "supabase/migrations/20260503214557_f7ee25b6-d301-487d-9004-564116dc4100.sql"
+    "body": "SELECT pb.pa_id, pa.nome as pa_nome, pb.ano, pb.mes, pb.verba_total, pb.verba_consumida as verba_registrada, COALESCE(SUM(so.total_amount), 0) as verba_calculada_pedidos, (pb.verba_consumida - COALESCE(SUM(so.total_amount), 0)) as discrepancia FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pb.pa_id = pa.id LEFT JOIN public.sicoob_orders so ON so.pa_id = pb.pa_id AND so.status IN ( 'confirmed', 'logistic', 'in_production', 'in_separation', 'in_transit', 'delivered', 'completed' ) AND EXTRACT(YEAR FROM so.created_at) = pb.ano AND EXTRACT(MONTH FROM so.created_at) = pb.mes GROUP B …",
+    "src": "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql"
    },
    "v_sicoob_hierarchy": {
     "body": "SELECT c.id as central_id, c.name as central_name, c.primary_color as central_color, s.id as singular_id, s.nome as singular_name, s.codigo as singular_code, s.sicoob_tema_id as tema_id, t.name as tema_name, pa.id as pa_id, pa.nome as pa_name, pa.codigo as pa_code FROM public.sicoob_centrais c JOIN public.cooperativas s ON s.central_id = c.id JOIN public.postos_atendimento pa ON pa.cooperativa_id = s.id LEFT JOIN public.sicoob_temas t ON s.sicoob_tema_id = t.id",
@@ -48541,6 +48921,12 @@
    "supabase/migrations/20261125133000_harden_push_subscriptions_initplan.sql",
    "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
    "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
+   "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+   "supabase/migrations/20261126121000_limit_increase_decision.sql",
+   "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
+   "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+   "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+   "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -55273,6 +55659,238 @@
     "objkind": "function",
     "roles": "service_role",
     "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "set_sicoob_order_sla_deadline",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "refresh_sicoob_order_sla_status",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "refresh_sicoob_order_sla_status",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "close_sicoob_order_sla",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "can_decide_limit_increase",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "decide_limit_increase_request",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "can_decide_limit_increase",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "decide_limit_increase_request",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "select, insert",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "all",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "select, insert, update, delete",
+    "object": "sicoob_centrais",
+    "objkind": "table",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "select",
+    "object": "pa_notification_settings",
+    "objkind": "table",
+    "roles": "authenticated, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "sicoob_pa_slack_webhook",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "sicoob_pa_slack_webhook",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "sicoob_pa_notification_settings_set",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "sicoob_pa_notification_settings_set",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_pode_ver_verba_da_cooperativa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_trava_competencia_da_cooperativa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_pa_budget_respects_cooperativa_ceiling",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_cooperativa_budget_not_below_distributed",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_trava_pa_da_verba",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "_trava_pa_da_verba",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "salvar_verba_pa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "salvar_verba_pa",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "raises": [
@@ -55990,6 +56608,91 @@
     "function": "validate_scheduled_report_email",
     "msg": "email_to must match your registered email address",
     "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Solicitação de aumento de verba % não encontrada.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Você não tem autoridade para decidir o aumento de verba deste PA.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Esta solicitação já foi decidida (%).",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Informe o motivo da recusa.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O limite solicitado (%) é inválido.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O limite solicitado (R$ %) é menor que a verba já ocupada na competência %/% (R$ %).",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "cooperativa_verba_distribuida",
+    "msg": "Sem permissao para consultar a verba desta cooperativa.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "msg": "A soma das verbas dos PAs (R$ %) passaria do teto da cooperativa (R$ %) em %/%; ajuste o teto ou reduza a verba de outro PA.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "msg": "As verbas desta competencia ultrapassam o teto da cooperativa.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "msg": "O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "msg": "O teto informado fica abaixo do ja distribuido nesta competencia.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "msg": "A transferencia levaria as verbas da cooperativa de destino a R$ % em %/%, acima do teto de R$ %. Ajuste o teto do destino ou reduza a verba do PA.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "msg": "A transferencia de PA ultrapassa o teto da cooperativa de destino.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "salvar_verba_pa",
+    "msg": "Informe o posto de atendimento da verba.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "salvar_verba_pa",
+    "msg": "Verba nao encontrada para este posto e competencia.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "seed": [],
@@ -61337,6 +62040,13 @@
     "file": "src/routes/config/admin.ts"
    },
    {
+    "path": "/admin/centrais",
+    "component": "lazyWithRetry",
+    "guard": "",
+    "roles": [],
+    "file": "src/routes/config/admin.ts"
+   },
+   {
     "path": "/admin/cms",
     "component": "lazyWithRetry",
     "guard": "",
@@ -62811,7 +63521,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1313,
+  "components_count": 1320,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -65406,8 +66116,8 @@
   },
   {
    "module": "scripts",
-   "files": 171,
-   "lines": 40502,
+   "files": 175,
+   "lines": 42016,
    "tables": [
     "a",
     "admin_audit_log",
@@ -65642,8 +66352,8 @@
   },
   {
    "module": "src/components",
-   "files": 1138,
-   "lines": 168448,
+   "files": 1141,
+   "lines": 169302,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66229,7 +66939,7 @@
   {
    "module": "src/integrations",
    "files": 3,
-   "lines": 13647,
+   "lines": 13709,
    "tables": [],
    "exports": [
     "index.ts: lovable",
@@ -66254,7 +66964,7 @@
   {
    "module": "src/lib",
    "files": 170,
-   "lines": 23111,
+   "lines": 23116,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -66422,7 +67132,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52311,
+   "lines": 52423,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -66656,7 +67366,7 @@
   {
    "module": "src/routes",
    "files": 9,
-   "lines": 525,
+   "lines": 529,
    "tables": [],
    "exports": [
     "clientRoutes.ts: CLIENT_DETAIL_ROUTE, clientDetailPath",
@@ -66690,9 +67400,10 @@
   },
   {
    "module": "src/services",
-   "files": 25,
-   "lines": 3820,
+   "files": 26,
+   "lines": 4087,
    "tables": [
+    "cooperativa_budgets",
     "cooperativas",
     "cost_centers",
     "limit_increase_requests",
@@ -66716,6 +67427,7 @@
     "sicoob_approval_delegations",
     "sicoob_approval_policies",
     "sicoob_approval_requests",
+    "sicoob_budget_audit",
     "sicoob_order_history",
     "sicoob_order_item_logs",
     "sicoob_order_items",
@@ -66737,8 +67449,9 @@
     "approvalDelegationService.ts: ApprovalDelegation, DelegationCandidate, sicoobApprovalDelegationService",
     "approvalPolicyService.ts: ApprovalPolicy, PolicyScope, PublishPolicyInput, CloseActiveOptions, BASELINE_POLICY, isPolicyInForce",
     "approvalService.ts: ApprovalAuthority, sicoobApprovalService",
-    "budgetService.ts: sicoobBudgetService",
+    "budgetService.ts: BudgetPeriod, currentBudgetPeriod, sicoobBudgetService",
     "commonService.ts: sicoobCommonService",
+    "cooperativaBudgetService.ts: COOPERATIVA_CEILING_QUERY_KEY, cooperativaCeilingQueryKey, CooperativaCeiling, loadCeiling, loadDistributedTotal, SaveCeilingInput",
     "costCenterService.ts: CostCenter, OrderAllocation, costCenterService",
     "documentIngestService.ts: SicoobDocumentPurpose, sicoobDocumentIngestService",
     "fulfillmentService.ts: UpdateSicoobShipmentInput, sicoobFulfillmentService",
@@ -66778,6 +67491,7 @@
     "src/services/sicoob/approvalService.ts",
     "src/services/sicoob/budgetService.ts",
     "src/services/sicoob/commonService.ts",
+    "src/services/sicoob/cooperativaBudgetService.ts",
     "src/services/sicoob/costCenterService.ts",
     "src/services/sicoob/documentIngestService.ts",
     "src/services/sicoob/fulfillmentService.ts",
@@ -66864,7 +67578,7 @@
   {
    "module": "src/types",
    "files": 28,
-   "lines": 4073,
+   "lines": 4076,
    "tables": [],
    "exports": [
     "advancedFilters.ts: ColorOption, CategoryOption, TechniqueOption, SupplierOption, MaterialOption, StockFilterOption",
@@ -67319,8 +68033,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 632,
-   "lines": 56967,
+   "files": 638,
+   "lines": 58352,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -67424,8 +68138,8 @@
   },
   {
    "module": "tests",
-   "files": 733,
-   "lines": 98091,
+   "files": 740,
+   "lines": 99152,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -67969,6 +68683,17 @@
     "select": [
      "scripts/ai-context/gerar.unit.mjs",
      "supabase/functions/crm-db-bridge/index.ts"
+    ]
+   },
+   "cooperativa_budgets": {
+    "select": [
+     "src/services/sicoob/cooperativaBudgetService.ts"
+    ],
+    "update": [
+     "src/services/sicoob/cooperativaBudgetService.ts"
+    ],
+    "insert": [
+     "src/services/sicoob/cooperativaBudgetService.ts"
     ]
    },
    "cooperativas": {
@@ -68837,19 +69562,11 @@
      "src/hooks/usePaBudget.ts",
      "src/hooks/useQuoteBuilderState.ts",
      "src/pages/admin/AdminVerbasPage.tsx",
-     "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
      "src/pages/sicoob/reports/SicoobReportsPage.tsx",
      "src/services/sicoob/budgetService.ts",
      "src/services/sicoob/managerStatsService.ts",
      "src/services/sicoob/statsService.ts",
      "supabase/functions/e2e-auth-test/index.ts"
-    ],
-    "update": [
-     "src/pages/admin/AdminVerbasPage.tsx"
-    ],
-    "insert": [
-     "src/pages/admin/AdminVerbasPage.tsx",
-     "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
     ],
     "ref": [
      "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
@@ -68873,9 +69590,6 @@
    },
    "pa_notification_settings": {
     "select": [
-     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx"
-    ],
-    "upsert": [
      "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx"
     ]
    },
@@ -69587,6 +70301,11 @@
      "supabase/functions/sicoob-seed-qa/index.ts"
     ]
    },
+   "sicoob_budget_audit": {
+    "select": [
+     "src/services/sicoob/budgetService.ts"
+    ]
+   },
    "sicoob_centrais": {
     "select": [
      "src/pages/admin/AdminCentraisPage.tsx",
@@ -70203,6 +70922,14 @@
     "company_id",
     "deleted_at"
    ],
+   "cooperativa_budgets": [
+    "ano",
+    "cooperativa_id",
+    "id",
+    "limite_alcada",
+    "mes",
+    "verba_total"
+   ],
    "cooperativas": [
     "codigo",
     "id",
@@ -70447,7 +71174,8 @@
     "kit_master_id"
    ],
    "limit_increase_requests": [
-    "pa_id"
+    "pa_id",
+    "status"
    ],
    "login_attempts": [
     "created_at",
@@ -70669,7 +71397,11 @@
     "pa_id"
    ],
    "pa_notification_settings": [
-    "pa_id"
+    "channel",
+    "id",
+    "is_active",
+    "pa_id",
+    "recipient_email"
    ],
    "permissions": [
     "id"
@@ -71038,6 +71770,16 @@
     "status",
     "threshold_at_request",
     "updated_at"
+   ],
+   "sicoob_budget_audit": [
+    "ano",
+    "discrepancia",
+    "mes",
+    "pa_id",
+    "pa_nome",
+    "verba_calculada_pedidos",
+    "verba_registrada",
+    "verba_total"
    ],
    "sicoob_centrais": [
     "id",
@@ -72260,6 +73002,9 @@
     "src/hooks/quotes/useQuotes.ts",
     "src/services/quoteStatusTransition.ts"
    ],
+   "can_decide_limit_increase": [
+    "src/services/sicoob/approvalService.ts"
+   ],
    "can_grant_mcp_full": [
     "src/components/admin/security/keys/useCanGrantMcpFull.ts",
     "supabase/functions/full-op-diagnostics/index.ts",
@@ -72331,6 +73076,9 @@
    "convert_quote_to_sicoob_order": [
     "src/services/OrderService.ts"
    ],
+   "cooperativa_verba_distribuida": [
+    "src/services/sicoob/cooperativaBudgetService.ts"
+   ],
    "copy_group_personalization_to_product": [
     "src/components/admin/personalization-manager/usePersonalizationManager.ts",
     "src/components/admin/personalization/GroupInheritance.tsx"
@@ -72352,6 +73100,9 @@
    ],
    "dashboard_rpc": [
     "scripts/ai-context/gerar.unit.mjs"
+   ],
+   "decide_limit_increase_request": [
+    "src/services/sicoob/approvalService.ts"
    ],
    "decide_sicoob_order_artwork": [
     "src/hooks/orders/extensions/useOrderPilotApprovals.ts"
@@ -72681,6 +73432,10 @@
    "runtime_rpc": [
     "scripts/ai-context/gerar.unit.mjs"
    ],
+   "salvar_verba_pa": [
+    "src/pages/admin/AdminVerbasPage.tsx",
+    "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
+   ],
    "save_quote_atomic_attested": [
     "src/services/QuoteService.ts"
    ],
@@ -72714,6 +73469,12 @@
    ],
    "sicoob_export_orders_for_actor": [
     "supabase/functions/process-batch-export/index.ts"
+   ],
+   "sicoob_pa_notification_settings_set": [
+    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx"
+   ],
+   "sicoob_pa_slack_webhook": [
+    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx"
    ],
    "submit_signed_quote_response": [
     "supabase/functions/quote-approval/index.ts"
@@ -73471,7 +74232,6 @@
    "company_addresses",
    "company_contacts",
    "component_media",
-   "cooperativa_budgets",
    "entity_versions",
    "feature_flags",
    "future_stock_entries",
@@ -73525,7 +74285,6 @@
    "seller_gamification",
    "sicoob_approval_delivery_archive",
    "sicoob_approval_worker_dispatches",
-   "sicoob_budget_audit",
    "sicoob_delivery_allocations",
    "sicoob_delivery_destinations",
    "sicoob_delivery_receipt_events",
@@ -74593,6 +75352,11 @@
     "file": "src/components/search/VisualSearchButton.tsx",
     "field": "visual-search-input",
     "rules": "accept=image/*, disabled=controller.isLoading"
+   },
+   {
+    "file": "src/components/sicoob/CooperativaCeilingCard.tsx",
+    "field": "teto-cooperativa",
+    "rules": "type=number, min=0, step=0.01"
    },
    {
     "file": "src/components/sicoob/orders/OrderInvoicesTab.tsx",
@@ -76283,6 +77047,10 @@
     "msg": "A consulta não retornou valor"
    },
    {
+    "file": "scripts/qa/simular-cadastro-centrais.py",
+    "msg": "A consulta não retornou valor"
+   },
+   {
     "file": "scripts/qa/simular-consolidacao-sicoob.py",
     "msg": "A consulta não retornou valor"
    },
@@ -76297,6 +77065,10 @@
    {
     "file": "scripts/qa/simular-duplicacao-pedido-atomica.py",
     "msg": "A consulta não retornou valor"
+   },
+   {
+    "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+    "msg": "Verificacoes reprovadas: "
    },
    {
     "file": "scripts/qa/simular-escopo-orcamento-ativo.py",
@@ -78003,8 +78775,20 @@
     "msg": "Não foi possível desativar o MFA."
    },
    {
+    "file": "src/components/sicoob/BudgetAuditCard.tsx",
+    "msg": ";\nimport { Badge } from "
+   },
+   {
     "file": "src/components/sicoob/BudgetExceededBanner.tsx",
     "msg": ";\nimport { AlertCircle } from "
+   },
+   {
+    "file": "src/components/sicoob/CooperativaCeilingCard.tsx",
+    "msg": ";\nimport { Button } from "
+   },
+   {
+    "file": "src/components/sicoob/CooperativaCeilingCard.tsx",
+    "msg": "Não foi possível salvar o teto"
    },
    {
     "file": "src/components/sicoob/GestorComprasMetrics.tsx",
@@ -78013,6 +78797,22 @@
    {
     "file": "src/components/sicoob/GestorComprasMetrics.tsx",
     "msg": ">\n        <AlertCircle className="
+   },
+   {
+    "file": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+    "msg": " className="
+   },
+   {
+    "file": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+    "msg": "Erro ao aprovar aumento de verba: "
+   },
+   {
+    "file": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+    "msg": "Erro ao recusar aumento de verba: "
+   },
+   {
+    "file": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+    "msg": "Informe o motivo da recusa."
    },
    {
     "file": "src/components/sicoob/orders/AIOrderPredictor.tsx",
@@ -79504,10 +80304,6 @@
    },
    {
     "file": "src/pages/admin/AdminCentraisPage.tsx",
-    "msg": "Erro ao excluir Central"
-   },
-   {
-    "file": "src/pages/admin/AdminCentraisPage.tsx",
     "msg": "Erro ao salvar Central"
    },
    {
@@ -80061,6 +80857,14 @@
    {
     "file": "src/services/sicoob/approvalPolicyService.ts",
     "msg": "Informe a versão da política."
+   },
+   {
+    "file": "src/services/sicoob/approvalService.ts",
+    "msg": "Informe a justificativa da solicitação."
+   },
+   {
+    "file": "src/services/sicoob/approvalService.ts",
+    "msg": "Informe um valor adicional maior que zero."
    },
    {
     "file": "src/services/sicoob/costCenterService.ts",
@@ -81185,6 +81989,10 @@
     "value": "agente"
    },
    {
+    "file": "src/services/sicoob/approvalService.ts",
+    "value": "true"
+   },
+   {
     "file": "src/services/sicoob/userService.ts",
     "value": "undefined"
    },
@@ -81367,6 +82175,10 @@
    {
     "file": "tests/scenarios/sql/order-duplicate-atomic-fixture.sql",
     "value": "manager"
+   },
+   {
+    "file": "tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql",
+    "value": "admin"
    }
   ],
   "comments": [
@@ -82025,6 +82837,10 @@
    {
     "file": "src/components/security/useSecurityData.ts",
     "text": "\").eq(\"user_id\", userId).eq(\"type\", \"security\").order(\"created_at\", { ascending: false }).limit(10),"
+   },
+   {
+    "file": "src/components/sicoob/CooperativaCeilingCard.tsx",
+    "text": "Mesma regra das policies de escrita de cooperativa_budgets: papel estrito"
    },
    {
     "file": "src/components/sicoob/orders/OrderCostCenterAllocation.tsx",
@@ -83219,6 +84035,10 @@
     "text": "* useSellerCartsPage — Business logic hook for SellerCartsPage"
    },
    {
+    "file": "src/pages/sicoob/PAWalletPage.tsx",
+    "text": "posto anterior nao pode ser servido para a conta nova."
+   },
+   {
     "file": "src/pages/sicoob/StorefrontDemoPage.tsx",
     "text": "4D6869]\">Mínimo: {product.minimum} unidades</p>"
    },
@@ -83253,6 +84073,18 @@
    {
     "file": "src/services/sicoob/approvalPolicyService.ts",
     "text": "- `createdUntil`: substitui apenas versões criadas até este instante, evitando"
+   },
+   {
+    "file": "src/services/sicoob/approvalService.ts",
+    "text": "Fila de aprovação dos pedidos de aumento de verba. A RLS devolve apenas os"
+   },
+   {
+    "file": "src/services/sicoob/cooperativaBudgetService.ts",
+    "text": "1. `authenticated` tem UPDATE apenas em `verba_total, limite_alcada,"
+   },
+   {
+    "file": "src/services/sicoob/cooperativaBudgetService.ts",
+    "text": "chave no `ON CONFLICT DO UPDATE SET` e seria recusado por permissao, por"
    },
    {
     "file": "src/services/sicoob/costCenterService.ts",
@@ -83917,6 +84749,18 @@
    {
     "file": "supabase/migrations/20261008010000_fix_plpgsql_lint_failures.sql",
     "text": "%s. Preço, mínimo e estoque reconsultados; disponibilidade não reservada.', v_source.quote_number),"
+   },
+   {
+    "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "text": "a soma das verbas dos PAs da cooperativa nao pode passar do teto;"
+   },
+   {
+    "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "text": "o teto nao pode ser reduzido abaixo do que ja esta distribuido aos PAs;"
+   },
+   {
+    "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "text": "a transferencia de um PA para outra Singular nao pode estourar o teto de"
    },
    {
     "file": "tests/setup-ref-warning-capture.ts",
@@ -91129,6 +91973,11 @@
     "rule": "constraint sicoob_orders_brl_v1_reconciled CHECK ( pricing_formula_version <> 'brl-v1' OR ( abs(commercial_subtotal_amount - (merchandise_amount + personalization_amount + negotiation_markup_amount)) <= 0.01 AND discount_amount <= commercial_subtotal_amount AND abs(total_amount - (commercial_subtota …"
    },
    {
+    "table": "sicoob_orders",
+    "column": "(tabela)",
+    "rule": "constraint sicoob_orders_sla_closed_outcome_check CHECK (sla_closed_outcome IS NULL OR sla_closed_outcome IN ('approved', 'rejected', 'escalated', 'cancelled'))"
+   },
+   {
     "table": "sicoob_order_items",
     "column": "id",
     "rule": "PK; default gen_random_uuid()"
@@ -92366,7 +93215,7 @@
    {
     "table": "limit_increase_requests",
     "column": "requested_by",
-    "rule": "FK → users.id"
+    "rule": "default auth.uid(); FK → users.id"
    },
    {
     "table": "limit_increase_requests",
@@ -95816,6 +96665,11 @@
     "value": "'Esta é uma notificação de teste do sistema de segurança.'"
    },
    {
+    "file": "src/components/sicoob/BudgetAuditCard.tsx",
+    "name": "CENTAVO",
+    "value": "0.005"
+   },
+   {
     "file": "src/components/simulator/TechniqueCard.tsx",
     "name": "PRIMARY_FOREGROUND_TEXT",
     "value": "'text-primary-foreground'"
@@ -97109,6 +97963,11 @@
     "file": "src/services/sicoob/approvalService.ts",
     "name": "UNAUTHENTICATED_MESSAGE",
     "value": "\"Usuário não autenticado\""
+   },
+   {
+    "file": "src/services/sicoob/cooperativaBudgetService.ts",
+    "name": "UNIQUE_VIOLATION",
+    "value": "\"23505\""
    },
    {
     "file": "src/services/sicoob/logisticsReportService.ts",
@@ -104118,7 +104977,37 @@
    {
     "file": "src/lib/rbac/route-matrix.ts",
     "field": "role",
+    "value": "admin",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
     "value": "authenticated",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
+    "value": "admin",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
+    "value": "admin",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
+    "value": "admin",
+    "kind": "escreve"
+   },
+   {
+    "file": "src/lib/rbac/route-matrix.ts",
+    "field": "role",
+    "value": "admin",
     "kind": "escreve"
    },
    {
@@ -105581,6 +106470,12 @@
    },
    {
     "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "field": "sla_closed_status",
+    "value": "critical",
+    "kind": "compara"
+   },
+   {
+    "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
     "field": "status",
     "value": "pending",
     "kind": "compara"
@@ -105613,6 +106508,24 @@
     "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
     "field": "status",
     "value": "pending",
+    "kind": "compara"
+   },
+   {
+    "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "field": "sla_closed_status",
+    "value": "critical",
+    "kind": "compara"
+   },
+   {
+    "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "field": "sla_closed_status",
+    "value": "warning",
+    "kind": "compara"
+   },
+   {
+    "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "field": "sla_closed_status",
+    "value": "critical",
     "kind": "compara"
    },
    {
@@ -105748,6 +106661,12 @@
     "kind": "filtra"
    },
    {
+    "file": "src/services/sicoob/approvalService.ts",
+    "field": "status",
+    "value": "pending",
+    "kind": "filtra"
+   },
+   {
     "file": "src/services/sicoob/logisticsReportService.ts",
     "field": "status",
     "value": "delivered",
@@ -105798,6 +106717,12 @@
    {
     "file": "src/services/sicoob/orderService.ts",
     "field": "status",
+    "value": "all",
+    "kind": "compara"
+   },
+   {
+    "file": "src/services/sicoob/orderService.ts",
+    "field": "sla_status",
     "value": "all",
     "kind": "compara"
    },
@@ -112003,6 +112928,12 @@
    },
    {
     "file": "src/services/sicoob/orderService.ts",
+    "name": "applySlaFilter",
+    "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
+    "body": "if (filters?.sla_status && filters.sla_status !== \"all\") return query.eq(\"sla_status\", filters.sla_status); return query;"
+   },
+   {
+    "file": "src/services/sicoob/orderService.ts",
     "name": "applyOrganizationFilters",
     "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
     "body": "let filtered = query; if (filters?.pa_id && filters.pa_id !== \"all\") filtered = filtered.eq(\"pa_id\", filters.pa_id); if (filters?.cooperative_id && filters.cooperative_id !== \"all\") { filtered = filtered.eq(\"cooperative_id\", filters.cooperative_id); } return filtered;"
@@ -114000,12 +114931,24 @@
     "line": "AND created_at > now() - interval '20 hours'"
    },
    {
+    "file": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "line": "NEW.sla_deadline := now() + interval '48 hours';"
+   },
+   {
+    "file": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "line": "SET sla_deadline = created_at + interval '48 hours',"
+   },
+   {
     "file": "tests/scenarios/operacoes-internas-seguras.mjs",
     "line": "assert.match(migration, /DELETE FROM public\\.webhook_retry_claims[\\s\\S]*claimed_at < now\\(\\) - interval '90 days'/);"
    },
    {
     "file": "tests/scenarios/sql/public-quote-approval-fixture.sql",
     "line": "status text NOT NULL DEFAULT 'active', expires_at timestamptz DEFAULT now() + interval '7 days',"
+   },
+   {
+    "file": "tests/scenarios/sql/sicoob-order-sla-fixture.sql",
+    "line": "ELSIF NEW.sla_deadline < now() + interval '2 hours' THEN"
    },
    {
     "file": "tests/scenarios/sql/verba-lifecycle-fixture.sql",
@@ -121832,6 +122775,34 @@
     "name": "mantém o histórico retornado pela fonte externa"
    },
    {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "AdminCentraisPage"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "lista as Centrais cadastradas com código e região"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "cadastra uma Central enviando nome e código ao banco"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "exclui a Central somente depois da confirmação"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "não exclui quando a confirmação é recusada"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "explica o vínculo quando o banco recusa a exclusão da Central"
+   },
+   {
+    "file": "tests/components/admin/AdminCentraisPage.test.tsx",
+    "name": "avisa no diálogo que vínculos impedem a exclusão"
+   },
+   {
     "file": "tests/components/admin/AiQuotaManager.test.tsx",
     "name": "gestão de quotas de IA"
    },
@@ -124834,6 +125805,122 @@
    {
     "file": "tests/components/sicoob/ApprovalPolicyTab.test.tsx",
     "name": "reabre o formulário sugerindo a próxima versão após publicar"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "BudgetAuditCard"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "abre na competência mais recente com verba registrada"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "mostra a verba registrada e o calculado pelos pedidos"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "destaca o PA com divergência em vez de marcar como conciliado"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "marca como conciliado quando a discrepância é zero"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "avisa quando não há verba registrada na competência"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "mostra o erro real quando a consulta falha"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "recarrega a conciliação ao trocar de competência"
+   },
+   {
+    "file": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+    "name": "mostra o erro da consulta de competências em vez de tela vazia"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "teto da cooperativa"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "mostra teto, distribuído e disponível da competência"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "avisa quando as verbas dos PAs passam do teto"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "sem teto definido, deixa o gestor definir o valor"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "salva o teto digitado na competência exibida"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "quem não é gestor vê o teto, mas não edita"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "supervisor e dev não editam o teto sem o papel estrito de admin"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "admin estrito edita o teto"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "sem cooperativa vinculada não consulta nada"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "não envia teto vazio como R$ 0"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "ao voltar para uma competência já carregada, o campo mostra o teto daquele mês"
+   },
+   {
+    "file": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+    "name": "rotula a competência em pt-BR"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "LimitIncreaseApprovalsCard"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "lista o pedido pendente com PA, solicitante e motivo"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "mostra o estado vazio quando não há pedidos pendentes"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "desabilita as duas decisões quando o banco nega autoridade"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "aprova o pedido somente depois da confirmação"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "mostra falha de carga em vez de "
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "não aprova quando a confirmação é recusada"
+   },
+   {
+    "file": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+    "name": "exige motivo para recusar e envia a recusa com o texto informado"
    },
    {
     "file": "tests/components/sicoob/OrderInvoicesTab.amount.test.ts",
@@ -142081,7 +143168,31 @@
    },
    {
     "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "soma o valor adicional ao limite atual para gravar o teto pedido"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "recusa adicional não positivo antes de tocar o banco"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "recusa justificativa vazia antes de tocar o banco"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
     "name": "falha sem sessão em vez de inserir pedido sem solicitante"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "sicoobApprovalService.decideLimitIncreaseRequest"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "aprova via RPC de decisão"
+   },
+   {
+    "file": "tests/services/sicoobApprovalService.test.ts",
+    "name": "recusa via RPC de decisão com o motivo informado"
    },
    {
     "file": "tests/services/sicoobBudgetService.test.ts",
@@ -142225,6 +143336,18 @@
    },
    {
     "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "sicoobOrderService.listOrders"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "filtra SLA critico no servidor, antes de paginar"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "nao envia filtro de SLA quando o recorte e todos"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
     "name": "sicoobOrderService.getItemLogs"
    },
    {
@@ -142274,6 +143397,50 @@
    {
     "file": "tests/services/sicoob/approvalPolicyService.test.ts",
     "name": "ignora versão encerrada da própria Singular e herda a global"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "saveCeiling"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "atualiza a competência existente sem tentar inserir"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "insere quando a competência ainda não tem teto"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "refaz o update quando outra sessão cria a linha antes do insert"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "propaga o erro de permissão do insert em vez de mascará-lo"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "propaga o erro do update"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "loadDistributedTotal"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "soma no banco, para incluir PAs inativos que a policy esconde"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "propaga o erro da RPC"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "cooperativaCeilingQueryKey"
+   },
+   {
+    "file": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+    "name": "delimita a família de cache usada por quem aloca verba"
    },
    {
     "file": "tests/services/sicoob/userService.syncUserRole.test.ts",
@@ -142482,6 +143649,14 @@
    {
     "file": "tests/sicoob/rbac-routes-integrity.test.ts",
     "name": "registra a instalação do PWA como rota autenticada"
+   },
+   {
+    "file": "tests/sicoob/rbac-routes-integrity.test.ts",
+    "name": "o cadastro de Centrais tem rota, guarda de admin e entrada no menu"
+   },
+   {
+    "file": "tests/sicoob/rbac-routes-integrity.test.ts",
+    "name": "nenhum item de menu leva a /403: a visibilidade segue a guarda de rota"
    },
    {
     "file": "tests/sicoob/rbac-routes-integrity.test.ts",
@@ -152042,26 +153217,6 @@
     "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
    },
    {
-    "name": "Users can view their own PA limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "SELECT",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND ( p.role IN ('admin', 'supervisor') OR (p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_id) OR (p.role = 'gestor_singular' AND EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = limit_increase_requests. …",
-    "check": "",
-    "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
-   },
-   {
-    "name": "PA Managers can insert limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "INSERT",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "",
-    "check": "EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_id )",
-    "src": "supabase/migrations/20260503195511_9bfebfbb-30c5-44b0-b1b4-7fa3a00d6bdb.sql"
-   },
-   {
     "name": "Apenas administradores podem ver execuções de QA",
     "table": "qa_runs",
     "cmd": "SELECT",
@@ -152330,16 +153485,6 @@
     "using": "auth.uid() = user_id",
     "check": "",
     "src": "supabase/migrations/20260504211811_2c878015-23d1-40c7-8b0b-2a442cf2411e.sql"
-   },
-   {
-    "name": "Admins can manage notification settings",
-    "table": "pa_notification_settings",
-    "cmd": "ALL",
-    "roles": "public",
-    "mode": "permissive",
-    "using": "public.has_role(auth.uid(), 'admin')",
-    "check": "",
-    "src": "supabase/migrations/20260504214012_d5a939e8-1967-4e68-9104-e655131c628a.sql"
    },
    {
     "name": "Managers can view their PA notification settings",
@@ -152768,16 +153913,6 @@
     "roles": "authenticated",
     "mode": "permissive",
     "using": "has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = auth.uid() OR o.organization_id IN (SELECT get_user_org_ids(auth.uid())))) OR EXISTS (SELECT 1 FROM public.sicoob_orders …",
-    "check": "",
-    "src": "supabase/migrations/20260522200433_ee407c31-c9af-469b-9490-6729f7d75583.sql"
-   },
-   {
-    "name": "order_comments_select_scoped",
-    "table": "order_comments",
-    "cmd": "SELECT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND (o.seller_id = auth.uid() OR o.organization_id IN (SELECT get_user_org_ids(auth.uid())))) OR EXISTS (SELECT 1 FROM public.sicoob_orders so …",
     "check": "",
     "src": "supabase/migrations/20260522200433_ee407c31-c9af-469b-9490-6729f7d75583.sql"
    },
@@ -154150,6 +155285,116 @@
     "using": "public.pa_budget_allocation_write_ok(order_id)",
     "check": "",
     "src": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql"
+   },
+   {
+    "name": "limit_increase_requests_scope_select",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role) ) ) OR ( (public.has_role((SELECT auth.uid()), 'ge …",
+    "check": "",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "name": "limit_increase_requests_scope_insert",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_requests.approved_by IS NULL AND limit_increase_requests.rejection_reason IS NULL AND ( public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente …",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_insert",
+    "table": "sicoob_centrais",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_update",
+    "table": "sicoob_centrais",
+    "cmd": "UPDATE",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_centrais_admin_delete",
+    "table": "sicoob_centrais",
+    "cmd": "DELETE",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "name": "sicoob_order_audit_events_escopo_gerencial",
+    "table": "order_audit_events",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = (SELECT auth.uid()) OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid())))) ) OR EXISTS ( SELECT 1 FROM public.sicoob_orders so WHERE so.id = order_audit_events.order_id AND ( so …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "order_comments_select_scoped",
+    "table": "order_comments",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND ( public.can_view_all_sales() OR (public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role) AND (o.organization_id IS NULL OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid()))))) OR o.se …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Users can view their own PA limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = (SELECT auth.uid()) )",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "PA Managers can insert limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND rejection_reason IS NULL",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "sicoob_pa_notification_settings_escopo_gerencial",
+    "table": "pa_notification_settings",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_supervisor_or_above((SELECT auth.uid())) OR (public.is_gerente_pa() AND pa_id = public.current_user_pa_id()) OR (public.is_gestor_compras() AND EXISTS ( SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = pa_notification_settings.pa_id AND pa.cooperativa_id = public.current_user_coope …",
+    "check": "",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Admins can manage notification settings",
+    "table": "pa_notification_settings",
+    "cmd": "ALL",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
    }
   ],
   "db_triggers": [
@@ -155988,6 +157233,51 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261123090000_notify_singular_quote_decision.sql"
+   },
+   {
+    "name": "set_sicoob_order_sla_deadline",
+    "when": "BEFORE INSERT OR UPDATE OF STATUS",
+    "table": "sicoob_orders",
+    "function": "set_sicoob_order_sla_deadline",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "name": "close_sicoob_order_sla",
+    "when": "BEFORE INSERT OR UPDATE OF STATUS",
+    "table": "sicoob_orders",
+    "function": "close_sicoob_order_sla",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "name": "trg_pa_budget_respects_cooperativa_ceiling",
+    "when": "BEFORE INSERT OR UPDATE OF VERBA_TOTAL, VERBA_PLANEJADA, ANO, MES, PA_ID",
+    "table": "pa_budgets",
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "name": "trg_cooperativa_budget_not_below_distributed",
+    "when": "BEFORE INSERT OR UPDATE OF VERBA_TOTAL, ANO, MES",
+    "table": "cooperativa_budgets",
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "name": "trg_pa_transfer_respects_cooperativa_ceiling",
+    "when": "AFTER UPDATE OF COOPERATIVA_ID",
+    "table": "postos_atendimento",
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "db_functions": {
@@ -158816,12 +160106,12 @@
    },
    "check_order_sla": {
     "args": "",
-    "returns": "TRIGGER",
+    "returns": "trigger",
     "lang": "plpgsql",
-    "src": "supabase/migrations/20260503204301_c4d68747-216a-4854-a3ec-b51ec46f98a1.sql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
     "security_definer": false,
-    "search_path": false,
-    "body": "BEGIN IF NEW.sla_deadline IS NOT NULL THEN IF NEW.sla_deadline < now() THEN NEW.sla_status := 'critical'; ELSIF NEW.sla_deadline < now() + interval '2 hours' THEN NEW.sla_status := 'warning'; ELSE NEW.sla_status := 'normal'; END IF; END IF; RETURN NEW; END;",
+    "search_path": true,
+    "body": "BEGIN IF NEW.sla_deadline IS NOT NULL AND COALESCE( CASE WHEN TG_OP = 'INSERT' THEN NEW.status ELSE OLD.status END, NEW.status ) IN ('pending', 'waiting_approval', 'escalated_to_board') THEN IF NEW.sla_deadline < now() THEN NEW.sla_status := 'critical'; ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN NEW.sla_status := 'warning'; ELSE NEW.sla_status := 'normal'; END IF; END IF; RETURN NEW; END;",
     "raises": [],
     "tables": []
    },
@@ -161930,6 +163220,249 @@
      "workspace_notifications"
     ]
    },
+   "set_sicoob_order_sla_deadline": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_entrou_em_aprovacao boolean; BEGIN IF TG_OP = 'INSERT' THEN v_entrou_em_aprovacao := NEW.status IN ('waiting_approval', 'escalated_to_board'); ELSE v_entrou_em_aprovacao := NEW.status IN ('waiting_approval', 'escalated_to_board') AND OLD.status IS DISTINCT FROM NEW.status; END IF; IF v_entrou_em_aprovacao THEN NEW.sla_deadline := now() + interval '48 hours'; NEW.sla_status := 'normal'; END IF; RETURN NEW; END;",
+    "raises": [],
+    "tables": [
+     "NEW"
+    ]
+   },
+   "refresh_sicoob_order_sla_status": {
+    "args": "",
+    "returns": "integer",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_count integer; BEGIN WITH alvo AS ( SELECT id, CASE WHEN status::text NOT IN ('pending', 'waiting_approval', 'escalated_to_board') THEN 'normal' WHEN sla_deadline < now() THEN 'critical' WHEN sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning' ELSE 'normal' END AS novo_status FROM public.sicoob_orders WHERE sla_deadline IS NOT NULL AND (status IN ('pending', 'waiting_approval', 'escalated_to_board') OR sla_status IN ('critical', 'warning')) ) UPDATE public.sicoob_orders o SET sla_status = a.novo_status FROM alvo a WHERE o.id = a.id AND o.sla_status IS DISTINCT FROM a.novo_status; GET DIAGNOSTICS v_count = ROW_COUNT; RETURN v_count; END;",
+    "raises": [],
+    "tables": [
+     "a",
+     "alvo",
+     "sicoob_orders"
+    ]
+   },
+   "close_sicoob_order_sla": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "BEGIN IF OLD.sla_deadline IS NOT NULL AND OLD.status IN ('waiting_approval', 'escalated_to_board') AND NEW.status IS DISTINCT FROM OLD.status THEN NEW.sla_closed_at := now(); NEW.sla_closed_status := CASE WHEN OLD.sla_deadline < now() THEN 'critical' WHEN OLD.sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning' ELSE 'normal' END; NEW.sla_closed_outcome := CASE WHEN NEW.status = 'rejected' THEN 'rejected' WHEN NEW.status = 'cancelled' THEN 'cancelled' WHEN NEW.status = 'escalated_to_board' THEN 'escalated' ELSE 'approved' END; END IF; RETURN NEW; END;",
+    "raises": [],
+    "tables": [
+     "OLD"
+    ]
+   },
+   "can_decide_limit_increase": {
+    "args": "p_request_id uuid",
+    "returns": "boolean",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT (SELECT auth.uid()) IS NOT NULL AND ( public.is_admin((SELECT auth.uid())) OR EXISTS ( SELECT 1 FROM public.limit_increase_requests AS request JOIN public.postos_atendimento AS service_point ON service_point.id = request.pa_id WHERE request.id = p_request_id AND service_point.is_active IS TRUE AND service_point.cooperativa_id = public.current_user_cooperativa_id() AND public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) ) );",
+    "raises": [],
+    "tables": [
+     "limit_increase_requests",
+     "postos_atendimento"
+    ]
+   },
+   "decide_limit_increase_request": {
+    "args": "p_request_id uuid, p_approve boolean, p_reason text DEFAULT NULL",
+    "returns": "public.limit_increase_requests",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_actor uuid := (SELECT auth.uid()); v_reason text := NULLIF(btrim(COALESCE(p_reason, '')), ''); v_request public.limit_increase_requests; v_target public.pa_budgets; v_competencia timestamp; v_ano int; v_mes int; v_ocupada numeric(14,2); v_limite_texto text; v_tem_verba boolean := FALSE; BEGIN SELECT * INTO v_request FROM public.limit_increase_requests AS request WHERE request.id = p_request_id FOR UPDATE; IF NOT FOUND THEN RAISE EXCEPTION 'Solicitação de aumento de verba % não encontrada.', p_request_id USING ERRCODE = 'no_data_found'; END IF; IF NOT public.can_decide_limit_increase(p_request_id) THEN RAISE EXCEPTION 'Você não tem autoridade para decidir o aumento de verba deste PA …",
+    "raises": [
+     "Solicitação de aumento de verba % não encontrada.",
+     "Você não tem autoridade para decidir o aumento de verba deste PA.",
+     "Esta solicitação já foi decidida (%).",
+     "Informe o motivo da recusa.",
+     "O limite solicitado (%) é inválido.",
+     "A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado.",
+     "O limite solicitado (R$ %) é menor que a verba já ocupada na competência %/% (R$ %).",
+     "O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento."
+    ],
+    "tables": [
+     "limit_increase_requests",
+     "pa_budgets",
+     "v_competencia",
+     "v_limite_texto",
+     "v_request",
+     "v_target"
+    ]
+   },
+   "sicoob_pa_slack_webhook": {
+    "args": "p_pa_id uuid",
+    "returns": "text",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_url text; BEGIN IF NOT public.is_supervisor_or_above(auth.uid()) THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Somente a administracao consulta o webhook do Slack.'; END IF; IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Conclua a verificacao em duas etapas para consultar o webhook do Slack.'; END IF; SELECT s.webhook_url INTO v_url FROM public.pa_notification_settings s WHERE s.pa_id = p_pa_id AND s.channel = 'slack' LIMIT 1; RETURN v_url; END;",
+    "raises": [],
+    "tables": [
+     "pa_notification_settings",
+     "v_url"
+    ]
+   },
+   "sicoob_pa_notification_settings_set": {
+    "args": "p_pa_id uuid, p_channel text, p_webhook_url text DEFAULT NULL, p_recipient_email text DEFAULT NULL, p_is_active boolean DEFAULT NULL",
+    "returns": "void",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "BEGIN IF NOT public.is_supervisor_or_above(auth.uid()) THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Somente a administracao grava as configuracoes de notificacao.'; END IF; IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Conclua a verificacao em duas etapas para alterar as configuracoes de notificacao.'; END IF; IF p_channel NOT IN ('slack', 'email') THEN RAISE EXCEPTION USING ERRCODE='22023', MESSAGE='Canal de notificacao invalido: use slack ou email.'; END IF; IF p_pa_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id) THEN RAISE EXCEPTION USING ERRCODE='23503', MESSAGE='PA ine …",
+    "raises": [],
+    "tables": [
+     "SET",
+     "pa_notification_settings",
+     "postos_atendimento"
+    ]
+   },
+   "_cooperativa_verba_distribuida": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "numeric",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT COALESCE(SUM(pb.verba_total), 0)::numeric(14,2) FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pa.id = pb.pa_id WHERE pa.cooperativa_id = p_cooperativa_id AND pb.ano = p_ano AND pb.mes = p_mes;",
+    "raises": [],
+    "tables": [
+     "pa_budgets",
+     "postos_atendimento"
+    ]
+   },
+   "_pode_ver_verba_da_cooperativa": {
+    "args": "p_cooperativa_id uuid",
+    "returns": "boolean",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT COALESCE( auth.uid() IS NULL OR public.is_admin(auth.uid()) OR (p_cooperativa_id IS NOT NULL AND p_cooperativa_id = public.current_user_cooperativa_id() AND (public.has_role(auth.uid(), 'gestor_compras'::public.app_role) OR public.has_role(auth.uid(), 'comprador_singular'::public.app_role))), false );",
+    "raises": [],
+    "tables": []
+   },
+   "_trava_competencia_da_cooperativa": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "void",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT pg_advisory_xact_lock( hashtextextended(p_cooperativa_id::text || ':' || p_ano::text || ':' || p_mes::text, 0) );",
+    "raises": [],
+    "tables": []
+   },
+   "cooperativa_verba_distribuida": {
+    "args": "p_cooperativa_id uuid, p_ano integer, p_mes integer",
+    "returns": "numeric",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "BEGIN IF public._pode_ver_verba_da_cooperativa(p_cooperativa_id) IS NOT TRUE THEN RAISE EXCEPTION 'Sem permissao para consultar a verba desta cooperativa.' USING ERRCODE = '42501'; END IF; RETURN public._cooperativa_verba_distribuida(p_cooperativa_id, p_ano, p_mes); END;",
+    "raises": [
+     "Sem permissao para consultar a verba desta cooperativa."
+    ],
+    "tables": []
+   },
+   "tg_pa_budget_respects_cooperativa_ceiling": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_cooperativa_id uuid; v_cooperativa_antiga uuid; v_teto numeric(14,2); v_distribuido numeric(14,2); v_total numeric(14,2); v_valor_novo numeric(14,2); v_valor_antigo numeric(14,2); v_detalhado boolean; BEGIN IF TG_OP = 'INSERT' THEN v_valor_novo := COALESCE(NULLIF(NEW.verba_planejada, 0), NEW.verba_total, 0); ELSE v_valor_novo := COALESCE( CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada THEN NEW.verba_planejada END, CASE WHEN NEW.verba_total IS DISTINCT FROM OLD.verba_total THEN NEW.verba_total END, NEW.verba_planejada, NEW.verba_total, 0 ); v_valor_antigo := COALESCE( CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada THEN OLD.verba_planejada END, …",
+    "raises": [
+     "A soma das verbas dos PAs (R$ %) passaria do teto da cooperativa (R$ %) em %/%; ajuste o teto ou reduza a verba de outro PA.",
+     "As verbas desta competencia ultrapassam o teto da cooperativa."
+    ],
+    "tables": [
+     "OLD",
+     "cooperativa_budgets",
+     "postos_atendimento",
+     "v_cooperativa_antiga",
+     "v_cooperativa_id",
+     "v_teto"
+    ]
+   },
+   "tg_cooperativa_budget_not_below_distributed": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_distribuido numeric(14,2); v_detalhado boolean; BEGIN v_detalhado := public._pode_ver_verba_da_cooperativa(NEW.cooperativa_id); PERFORM public._trava_competencia_da_cooperativa(NEW.cooperativa_id, NEW.ano, NEW.mes); v_distribuido := public._cooperativa_verba_distribuida(NEW.cooperativa_id, NEW.ano, NEW.mes); IF v_distribuido > COALESCE(NEW.verba_total, 0) THEN IF v_detalhado THEN RAISE EXCEPTION 'O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.', NEW.verba_total::text, round(v_distribuido, 2)::text, NEW.mes, NEW.ano USING ERRCODE = '23514'; END IF; RAISE EXCEPTION 'O teto informado fica abaixo do j …",
+    "raises": [
+     "O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.",
+     "O teto informado fica abaixo do ja distribuido nesta competencia."
+    ],
+    "tables": []
+   },
+   "tg_pa_transfer_respects_cooperativa_ceiling": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_competencia record; v_teto numeric(14,2); v_soma numeric(14,2); v_detalhado boolean; BEGIN IF NEW.cooperativa_id IS NOT DISTINCT FROM OLD.cooperativa_id THEN RETURN NULL; END IF; v_detalhado := public._pode_ver_verba_da_cooperativa(NEW.cooperativa_id); FOR v_competencia IN SELECT DISTINCT pb.ano, pb.mes FROM public.pa_budgets pb WHERE pb.pa_id = NEW.id ORDER BY pb.ano, pb.mes LOOP PERFORM public._trava_competencia_da_cooperativa( NEW.cooperativa_id, v_competencia.ano, v_competencia.mes ); SELECT cb.verba_total INTO v_teto FROM public.cooperativa_budgets cb WHERE cb.cooperativa_id = NEW.cooperativa_id AND cb.ano = v_competencia.ano AND cb.mes = v_competencia.mes; CONTINUE WHEN v_tet …",
+    "raises": [
+     "A transferencia levaria as verbas da cooperativa de destino a R$ % em %/%, acima do teto de R$ %. Ajuste o teto do destino ou reduza a verba do PA.",
+     "A transferencia de PA ultrapassa o teto da cooperativa de destino."
+    ],
+    "tables": [
+     "OLD",
+     "cooperativa_budgets",
+     "pa_budgets",
+     "v_teto"
+    ]
+   },
+   "_trava_pa_da_verba": {
+    "args": "p_pa_id uuid",
+    "returns": "void",
+    "lang": "sql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id FOR SHARE;",
+    "raises": [],
+    "tables": [
+     "postos_atendimento"
+    ]
+   },
+   "salvar_verba_pa": {
+    "args": "p_pa_id uuid, p_ano integer, p_mes integer, p_verba_total numeric, p_limite_alcada numeric DEFAULT NULL, p_observacoes text DEFAULT NULL, p_budget_id uuid DEFAULT NULL",
+    "returns": "uuid",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_budget_id uuid; BEGIN IF p_pa_id IS NULL THEN RAISE EXCEPTION 'Informe o posto de atendimento da verba.' USING ERRCODE = '22023'; END IF; IF p_budget_id IS NULL THEN PERFORM public._trava_pa_da_verba(p_pa_id); v_budget_id := gen_random_uuid(); INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, limite_alcada, observacoes) VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_limite_alcada, p_observacoes); ELSE PERFORM public._trava_pa_da_verba(p_pa_id); UPDATE public.pa_budgets SET verba_total = p_verba_total, limite_alcada = p_limite_alcada, observacoes = p_observacoes WHERE id = p_budget_id AND pa_id = p_pa_id AND ano = p_ano AND mes = p_mes; IF NOT FOUND THEN …",
+    "raises": [
+     "Informe o posto de atendimento da verba.",
+     "Verba nao encontrada para este posto e competencia."
+    ],
+    "tables": [
+     "pa_budgets"
+    ]
+   },
    "check_migration_status": {
     "args": "",
     "returns": "?",
@@ -162731,6 +164264,91 @@
     "function": "validate_scheduled_report_email",
     "msg": "email_to must match your registered email address",
     "src": "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Solicitação de aumento de verba % não encontrada.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Você não tem autoridade para decidir o aumento de verba deste PA.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Esta solicitação já foi decidida (%).",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "Informe o motivo da recusa.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O limite solicitado (%) é inválido.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O limite solicitado (R$ %) é menor que a verba já ocupada na competência %/% (R$ %).",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "decide_limit_increase_request",
+    "msg": "O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento.",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "function": "cooperativa_verba_distribuida",
+    "msg": "Sem permissao para consultar a verba desta cooperativa.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "msg": "A soma das verbas dos PAs (R$ %) passaria do teto da cooperativa (R$ %) em %/%; ajuste o teto ou reduza a verba de outro PA.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_budget_respects_cooperativa_ceiling",
+    "msg": "As verbas desta competencia ultrapassam o teto da cooperativa.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "msg": "O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_cooperativa_budget_not_below_distributed",
+    "msg": "O teto informado fica abaixo do ja distribuido nesta competencia.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "msg": "A transferencia levaria as verbas da cooperativa de destino a R$ % em %/%, acima do teto de R$ %. Ajuste o teto do destino ou reduza a verba do PA.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "msg": "A transferencia de PA ultrapassa o teto da cooperativa de destino.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "salvar_verba_pa",
+    "msg": "Informe o posto de atendimento da verba.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "function": "salvar_verba_pa",
+    "msg": "Verba nao encontrada para este posto e competencia.",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "db_generated": [],
@@ -162748,8 +164366,8 @@
     "src": "supabase/migrations/20260922150000_reconcile_audit_controls.sql"
    },
    "sicoob_budget_audit": {
-    "body": "SELECT pb.pa_id, pa.nome as pa_nome, pb.ano, pb.mes, pb.verba_total, pb.verba_consumida as verba_registrada, COALESCE(SUM(so.total_amount), 0) as verba_calculada_pedidos, (pb.verba_consumida - COALESCE(SUM(so.total_amount), 0)) as discrepancia FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pb.pa_id = pa.id LEFT JOIN public.sicoob_orders so ON so.pa_id = pb.pa_id AND so.status IN ('confirmed', 'logistic', 'completed') AND EXTRACT(YEAR FROM so.created_at) = pb.ano AND EXTRACT(MONTH FROM so.created_at) = pb.mes GROUP BY pb.id, pa.nome",
-    "src": "supabase/migrations/20260503214557_f7ee25b6-d301-487d-9004-564116dc4100.sql"
+    "body": "SELECT pb.pa_id, pa.nome as pa_nome, pb.ano, pb.mes, pb.verba_total, pb.verba_consumida as verba_registrada, COALESCE(SUM(so.total_amount), 0) as verba_calculada_pedidos, (pb.verba_consumida - COALESCE(SUM(so.total_amount), 0)) as discrepancia FROM public.pa_budgets pb JOIN public.postos_atendimento pa ON pb.pa_id = pa.id LEFT JOIN public.sicoob_orders so ON so.pa_id = pb.pa_id AND so.status IN ( 'confirmed', 'logistic', 'in_production', 'in_separation', 'in_transit', 'delivered', 'completed' ) AND EXTRACT(YEAR FROM so.created_at) = pb.ano AND EXTRACT(MONTH FROM so.created_at) = pb.mes GROUP B …",
+    "src": "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql"
    },
    "v_sicoob_hierarchy": {
     "body": "SELECT c.id as central_id, c.name as central_name, c.primary_color as central_color, s.id as singular_id, s.nome as singular_name, s.codigo as singular_code, s.sicoob_tema_id as tema_id, t.name as tema_name, pa.id as pa_id, pa.nome as pa_name, pa.codigo as pa_code FROM public.sicoob_centrais c JOIN public.cooperativas s ON s.central_id = c.id JOIN public.postos_atendimento pa ON pa.cooperativa_id = s.id LEFT JOIN public.sicoob_temas t ON s.sicoob_tema_id = t.id",
@@ -163084,6 +164702,10 @@
    {
     "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
     "limit": "100"
+   },
+   {
+    "file": "src/services/sicoob/budgetService.ts",
+    "limit": "1"
    },
    {
     "file": "src/services/sicoob/managerStatsService.ts",
@@ -163611,6 +165233,14 @@
      ],
      "default": "normal",
      "type": "TEXT DEFAULT 'normal' CHECK (sla_status IN ('normal', 'warning', 'critical'))"
+    },
+    {
+     "table": "sicoob_orders",
+     "column": "sla_closed_status",
+     "enum": "",
+     "allowed": [],
+     "default": "",
+     "type": "text"
     },
     {
      "table": "sicoob_order_history",
@@ -166141,6 +167771,9 @@
       "compara:src/pages/sicoob/orders/OrdersPage.tsx",
       "compara:supabase/migrations/20260504161835_585add0d-394c-4f4d-b587-589750c70f37.sql"
      ],
+     "all": [
+      "compara:src/services/sicoob/orderService.ts"
+     ],
      "met": [
       "compara:supabase/functions/monthly-health-report/index.ts"
      ]
@@ -166214,6 +167847,14 @@
       "compara:src/pages/sicoob/SicoobInvitationAcceptPage.tsx"
      ]
     },
+    "sla_closed_status": {
+     "critical": [
+      "compara:src/pages/sicoob/orders/OrderDetailPage.tsx"
+     ],
+     "warning": [
+      "compara:src/pages/sicoob/orders/OrderDetailPage.tsx"
+     ]
+    },
     "last_status": {
      "succeeded": [
       "compara:supabase/functions/connections-hub-audit/audit-core.ts"
@@ -166244,7 +167885,6 @@
    "gerente_pa",
    "gestor_compras",
    "gestor_pa",
-   "gestor_singular",
    "granted",
    "manager",
    "member",
@@ -167778,10 +169418,12 @@
    "limit_increase_requests": {
     "rls": "enabled",
     "SELECT": [
-     "public: EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND ( p.role IN ('admin', 'supervisor') OR (p.role = 'gestor_pa' AN"
+     "authenticated: public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((",
+     "authenticated: public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = "
     ],
     "INSERT": [
-     "public: EXISTS ( SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'gestor_pa' AND limit_increase_requests.pa_id = p.pa_i"
+     "authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_",
+     "authenticated: public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND re"
     ],
     "UPDATE": [],
     "DELETE": []
@@ -168193,7 +169835,8 @@
     "rls": "enabled",
     "SELECT": [
      "anon: false",
-     "authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE"
+     "authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE",
+     "authenticated: EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_audit_events.order_id AND (o.seller_id = (SELECT auth.uid()) OR o.o"
     ],
     "INSERT": [
      "authenticated: false",
@@ -168212,7 +169855,7 @@
     "rls": "enabled",
     "SELECT": [
      "anon: false",
-     "authenticated: has_role(auth.uid(),'admin'::app_role) OR has_role(auth.uid(),'dev'::app_role) OR EXISTS (SELECT 1 FROM public.orders o WHERE"
+     "authenticated: EXISTS ( SELECT 1 FROM public.orders o WHERE o.id = order_comments.order_id AND ( public.can_view_all_sales() OR (public.has_"
     ],
     "INSERT": [
      "authenticated: public.is_order_owner_or_admin(order_id) AND author_id = auth.uid()",
@@ -168600,17 +170243,18 @@
    "pa_notification_settings": {
     "rls": "enabled",
     "SELECT": [
-     "public: public.has_role(auth.uid(), 'admin')",
-     "public: EXISTS ( SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.pa_id = pa_notification_settings.pa_id AND (profi"
+     "public: EXISTS ( SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.pa_id = pa_notification_settings.pa_id AND (profi",
+     "authenticated: public.is_supervisor_or_above((SELECT auth.uid())) OR (public.is_gerente_pa() AND pa_id = public.current_user_pa_id()) OR (pu",
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
     ],
     "INSERT": [
-     "public: public.has_role(auth.uid(), 'admin')"
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
     ],
     "UPDATE": [
-     "public: public.has_role(auth.uid(), 'admin')"
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
     ],
     "DELETE": [
-     "public: public.has_role(auth.uid(), 'admin')"
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
     ]
    },
    "pa_singularidades": {
@@ -169836,9 +171480,15 @@
     "SELECT": [
      "public: auth.role() = 'authenticated'"
     ],
-    "INSERT": [],
-    "UPDATE": [],
-    "DELETE": []
+    "INSERT": [
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
+    ],
+    "UPDATE": [
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
+    ],
+    "DELETE": [
+     "authenticated: public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'"
+    ]
    },
    "sicoob_delivery_allocations": {
     "rls": "enabled",
@@ -170561,24 +172211,10 @@
     ]
    },
    {
-    "table": "sicoob_centrais",
-    "issue": "front faz INSERT mas nenhuma política RLS permite INSERT → vai falhar/retornar vazio para usuários",
+    "table": "sicoob_budget_audit",
+    "issue": "acessada do front (1 arquivo(s)) sem RLS (não encontrado)",
     "files": [
-     "src/pages/admin/AdminCentraisPage.tsx"
-    ]
-   },
-   {
-    "table": "sicoob_centrais",
-    "issue": "front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários",
-    "files": [
-     "src/pages/admin/AdminCentraisPage.tsx"
-    ]
-   },
-   {
-    "table": "sicoob_centrais",
-    "issue": "front faz DELETE mas nenhuma política RLS permite DELETE → vai falhar/retornar vazio para usuários",
-    "files": [
-     "src/pages/admin/AdminCentraisPage.tsx"
+     "src/services/sicoob/budgetService.ts"
     ]
    },
    {
@@ -170619,6 +172255,7 @@
    "scripts/qa/simular-conversao-pedido-sicoob.py",
    "scripts/qa/simular-convites-sicoob.py",
    "scripts/qa/simular-documentos-sicoob.py",
+   "scripts/qa/simular-escopo-gerencial-sicoob.py",
    "scripts/qa/simular-escopo-orcamento-ativo.py",
    "scripts/qa/simular-financeiro-arte-sicoob.py",
    "scripts/qa/simular-kit-orcamento-sicoob.py",
@@ -170629,7 +172266,9 @@
    "scripts/qa/simular-recompra-sicoob.py",
    "scripts/qa/simular-relatorios-agendados-cron.py",
    "scripts/qa/simular-salvamento-orcamento-atomico.py",
+   "scripts/qa/simular-sla-pedido-sicoob.py",
    "scripts/qa/simular-taxonomia-marketing.py",
+   "scripts/qa/simular-verba-e-sla-sicoob.py",
    "scripts/qa/simular-webhook-internal-auth.py",
    "scripts/regras_negocio/generate.py",
    "scripts/scan-rls-security.mjs",
@@ -170859,6 +172498,10 @@
    "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
    "supabase/migrations/20261125100000_notification_functions_contract.sql",
    "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
+   "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+   "supabase/migrations/20261126121000_limit_increase_decision.sql",
+   "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+   "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
    "tests/e2e/cleanup-name-filter-guard.test.ts",
@@ -170887,6 +172530,7 @@
    "tests/scenarios/sql/sicoob-cross-cooperative-rls-fixture.sql",
    "tests/scenarios/sql/sicoob-finance-artwork-fixture.sql",
    "tests/scenarios/sql/sicoob-notification-outbox-fixture.sql",
+   "tests/scenarios/sql/sicoob-order-sla-fixture.sql",
    "tests/scenarios/sql/sicoob-reorder-fixture.sql",
    "tests/scenarios/sql/verba-lifecycle-fixture.sql",
    "tests/scenarios/supabase-sql-client.scenario.mjs",
@@ -170901,6 +172545,8 @@
   ],
   "security_definer_fns": [
    "_can_act_on_behalf_of_others",
+   "_cooperativa_verba_distribuida",
+   "_trava_pa_da_verba",
    "accept_sicoob_invitation",
    "acquire_ai_quota",
    "add_product_novelty",
@@ -170930,6 +172576,7 @@
    "auto_revoke_orphan_full_keys",
    "bulk_update_quote_status_atomic",
    "can_approve_discount",
+   "can_decide_limit_increase",
    "can_grant_mcp_full",
    "can_manage",
    "can_manage_connections",
@@ -170973,6 +172620,7 @@
    "consume_quote_price_attestation",
    "consume_step_up_token",
    "convert_quote_to_sicoob_order",
+   "cooperativa_verba_distribuida",
    "create_default_notification_preferences",
    "create_organization_with_owner",
    "create_quote_version_atomic",
@@ -170982,6 +172630,7 @@
    "create_sicoob_order_consolidation",
    "current_user_cooperativa_id",
    "current_user_pa_id",
+   "decide_limit_increase_request",
    "decide_sicoob_order_artwork",
    "dispatch_quote_webhook_event",
    "dispatch_scheduled_reports",
@@ -171157,6 +172806,7 @@
    "record_sicoob_order_payment",
    "record_sicoob_order_status_event",
    "refresh_mv_benchmark_setorial",
+   "refresh_sicoob_order_sla_status",
    "refresh_sicoob_reorder_quote",
    "refund_sicoob_order_payment",
    "register_quote_price_attestation",
@@ -171213,13 +172863,18 @@
    "sicoob_current_actor_can_view_all_consolidation",
    "sicoob_export_orders_for_actor",
    "sicoob_inviter_can_issue",
+   "sicoob_pa_notification_settings_set",
+   "sicoob_pa_slack_webhook",
    "snapshot_hardening_status",
    "soft_delete_record",
    "submit_quote_response",
    "submit_signed_quote_response",
    "sync_external_connections_from_credentials",
+   "tg_cooperativa_budget_not_below_distributed",
    "tg_pa_budget_entries_competencia_aberta",
    "tg_pa_budget_entries_immutable",
+   "tg_pa_budget_respects_cooperativa_ceiling",
+   "tg_pa_transfer_respects_cooperativa_ceiling",
    "tg_recalc_pa_budget_states",
    "tg_set_order_cost_center",
    "tg_sicoob_order_budget_after_insert",
@@ -177720,6 +179375,238 @@
     "objkind": "function",
     "roles": "service_role",
     "src": "supabase/migrations/20261125100000_notification_functions_contract.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "set_sicoob_order_sla_deadline",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "refresh_sicoob_order_sla_status",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "refresh_sicoob_order_sla_status",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "close_sicoob_order_sla",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "can_decide_limit_increase",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "decide_limit_increase_request",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "can_decide_limit_increase",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "decide_limit_increase_request",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "select, insert",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "all",
+    "object": "limit_increase_requests",
+    "objkind": "table",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261126121000_limit_increase_decision.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "select, insert, update, delete",
+    "object": "sicoob_centrais",
+    "objkind": "table",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "select",
+    "object": "pa_notification_settings",
+    "objkind": "table",
+    "roles": "authenticated, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "sicoob_pa_slack_webhook",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "sicoob_pa_slack_webhook",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "sicoob_pa_notification_settings_set",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "sicoob_pa_notification_settings_set",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_pode_ver_verba_da_cooperativa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_trava_competencia_da_cooperativa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cooperativa_verba_distribuida",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_pa_budget_respects_cooperativa_ceiling",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_cooperativa_budget_not_below_distributed",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "tg_pa_transfer_respects_cooperativa_ceiling",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "_trava_pa_da_verba",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "_trava_pa_da_verba",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "salvar_verba_pa",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "salvar_verba_pa",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
    }
   ],
   "guards": [
@@ -180677,23 +182564,9 @@
    },
    {
     "kind": "rls",
-    "msg": "`sicoob_centrais`: front faz INSERT mas nenhuma política RLS permite INSERT → vai falhar/retornar vazio para usuários",
+    "msg": "`sicoob_budget_audit`: acessada do front (1 arquivo(s)) sem RLS (não encontrado)",
     "where": [
-     "src/pages/admin/AdminCentraisPage.tsx"
-    ]
-   },
-   {
-    "kind": "rls",
-    "msg": "`sicoob_centrais`: front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários",
-    "where": [
-     "src/pages/admin/AdminCentraisPage.tsx"
-    ]
-   },
-   {
-    "kind": "rls",
-    "msg": "`sicoob_centrais`: front faz DELETE mas nenhuma política RLS permite DELETE → vai falhar/retornar vazio para usuários",
-    "where": [
-     "src/pages/admin/AdminCentraisPage.tsx"
+     "src/services/sicoob/budgetService.ts"
     ]
    },
    {
@@ -181390,6 +183263,7 @@
    "`external_connections_sync_log.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`webhook_delivery_metrics.http_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`sicoob_orders.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
+   "`sicoob_orders.sla_closed_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`sicoob_order_history.previous_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`sicoob_order_history.new_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`sicoob_rls_audit_logs.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
@@ -185862,7 +187736,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1803,
+   "lines": 1827,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -186605,7 +188479,7 @@
   },
   "scripts/qa/postgres_ready.py": {
    "path": "scripts/qa/postgres_ready.py",
-   "lines": 257,
+   "lines": 259,
    "exports": [
     "def _flag",
     "def docker_is_mandatory",
@@ -186712,6 +188586,23 @@
    ],
    "role_checks": [
     "false"
+   ],
+   "doc": "!/usr/bin/env python3"
+  },
+  "scripts/qa/simular-cadastro-centrais.py": {
+   "path": "scripts/qa/simular-cadastro-centrais.py",
+   "lines": 281,
+   "exports": [
+    "def command",
+    "def sql",
+    "def as_actor",
+    "def scalar"
+   ],
+   "errors": [
+    "A consulta não retornou valor"
+   ],
+   "rule_comments": [
+    "`aal` reproduz a claim de segundo fator do token (aal1 = senha apenas,"
    ],
    "doc": "!/usr/bin/env python3"
   },
@@ -186859,6 +188750,30 @@
     "A consulta não retornou valor"
    ],
    "doc": "!/usr/bin/env python3"
+  },
+  "scripts/qa/simular-escopo-gerencial-sicoob.py": {
+   "path": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+   "lines": 475,
+   "exports": [
+    "def command",
+    "def sql",
+    "def secao",
+    "def como"
+   ],
+   "errors": [
+    "Verificacoes reprovadas: "
+   ],
+   "role_checks": [
+    "admin",
+    "dev",
+    "manager",
+    "supervisor"
+   ],
+   "doc": "!/usr/bin/env python3",
+   "side_effects": [
+    "slack.com"
+   ],
+   "uses_service_role": true
   },
   "scripts/qa/simular-escopo-orcamento-ativo.py": {
    "path": "scripts/qa/simular-escopo-orcamento-ativo.py",
@@ -187165,6 +189080,38 @@
    ],
    "uses_service_role": true
   },
+  "scripts/qa/simular-sla-pedido-sicoob.py": {
+   "path": "scripts/qa/simular-sla-pedido-sicoob.py",
+   "lines": 262,
+   "exports": [
+    "def command",
+    "def sql",
+    "def scalar",
+    "def estado"
+   ],
+   "rule_comments": [
+    "Estado anterior à migration: pedido em fluxo há dias sem prazo nenhum.",
+    "1. Quem já estava em fluxo recebe o prazo mais antigo possível e aparece vencido.",
+    "3. Fora do fluxo de aprovação não se inventa prazo.",
+    "4. Saída da aprovação preserva o prazo histórico.",
+    "6. Limiar documentado (80% do prazo = 9 h 36 min restantes de 48 h), tanto na",
+    "é pulado silenciosamente, então o CI provava apenas a chamada manual da rotina."
+   ],
+   "doc": "!/usr/bin/env python3",
+   "temporal": [
+    "('{CONFIRMADO}', 'confirmed', now() - interval '10 days', 400);",
+    "('{PARADO}', 'waiting_approval', now() - interval '5 days', 900),",
+    "SET sla_deadline = now() - interval '9 days', sla_status = 'critical'",
+    "f\"UPDATE public.sicoob_orders SET sla_deadline = now() + interval '1 hour' WHERE id = '{PENDENTE}';\"",
+    "f\"UPDATE public.sicoob_orders SET sla_deadline = now() - interval '30 minutes' WHERE id = '{PENDENTE}';\"",
+    "sql(f\"UPDATE public.sicoob_orders SET sla_deadline = now() + interval '10 hours' WHERE id = '{PENDENTE}';\")",
+    "sql(f\"UPDATE public.sicoob_orders SET sla_deadline = now() + interval '5 hours' WHERE id = '{PENDENTE}';\")"
+   ],
+   "percents": [
+    "# 6. Limiar documentado (80% do prazo = 9 h 36 min restantes de 48 h), tanto na"
+   ],
+   "uses_service_role": true
+  },
   "scripts/qa/simular-taxonomia-marketing.py": {
    "path": "scripts/qa/simular-taxonomia-marketing.py",
    "lines": 125,
@@ -187178,7 +189125,7 @@
   },
   "scripts/qa/simular-verba-atomica.py": {
    "path": "scripts/qa/simular-verba-atomica.py",
-   "lines": 160,
+   "lines": 199,
    "exports": [
     "def command",
     "def sql",
@@ -187191,6 +189138,41 @@
    "percents": [
     "# Popen soltos passavam em ~50% das execuções mesmo SEM o FOR UPDATE."
    ]
+  },
+  "scripts/qa/simular-verba-e-sla-sicoob.py": {
+   "path": "scripts/qa/simular-verba-e-sla-sicoob.py",
+   "lines": 431,
+   "exports": [
+    "def command",
+    "def sql",
+    "def secao",
+    "def como"
+   ],
+   "role_checks": [
+    "admin",
+    "dev"
+   ],
+   "rule_comments": [
+    "\"permission denied for function\" antes de chegar na regra do teto e os",
+    "3) Teto da cooperativa: `cooperativa_budgets.verba_total` e o limite",
+    "4) Ciclo de SLA: aprovacao fecha o ciclo com o atraso real. O prazo vai",
+    "conforme o prazo do ciclo e o `check_order_sla` reescreve o estado ativo",
+    "em seguida. O que importa e que o alerta fique coerente com o prazo.",
+    "6) Escalacao: fecha o ciclo do primeiro prazo e abre um novo.",
+    "8) Cancelamento em aprovacao nao pode virar \"aprovado com atraso\"."
+   ],
+   "doc": "!/usr/bin/env python3",
+   "temporal": [
+    "(sla_deadline > now() + interval '47 hours')::text",
+    "UPDATE public.sicoob_orders SET status = 'confirmed', sla_deadline = now() - interval '4 days',",
+    "UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '1 day',",
+    "UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '5 hours',",
+    "VALUES ('{ORDER1}', 'QA-1', 'confirmed', now() - interval '3 days', 'critical');",
+    "sql(f\"\"\"UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '1 hour',",
+    "sql(f\"\"\"UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '2 hours',",
+    "sql(f\"\"\"UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '3 hours',"
+   ],
+   "uses_service_role": true
   },
   "scripts/qa/simular-verba-legada.py": {
    "path": "scripts/qa/simular-verba-legada.py",
@@ -200169,6 +202151,8 @@
    "lines": 705,
    "exports": [
     "const navGroups",
+    "function hasDeclaredAccess",
+    "function hasRouteAccess",
     "function withItemBadge",
     "const SidebarReorganized"
    ],
@@ -206776,6 +208760,23 @@
     "function ThemeResetDialog"
    ]
   },
+  "src/components/sicoob/BudgetAuditCard.tsx": {
+   "path": "src/components/sicoob/BudgetAuditCard.tsx",
+   "lines": 240,
+   "exports": [
+    "const BUDGET_AUDIT_QUERY_KEY",
+    "function BudgetAuditCard"
+   ],
+   "errors": [
+    ";\nimport { Badge } from "
+   ],
+   "params": [
+    {
+     "name": "CENTAVO",
+     "value": "0.005"
+    }
+   ]
+  },
   "src/components/sicoob/BudgetExceededBanner.tsx": {
    "path": "src/components/sicoob/BudgetExceededBanner.tsx",
    "lines": 33,
@@ -206784,6 +208785,27 @@
    ],
    "errors": [
     ";\nimport { AlertCircle } from "
+   ]
+  },
+  "src/components/sicoob/CooperativaCeilingCard.tsx": {
+   "path": "src/components/sicoob/CooperativaCeilingCard.tsx",
+   "lines": 287,
+   "exports": [
+    "function competenceLabel",
+    "function CooperativaCeilingCard"
+   ],
+   "errors": [
+    ";\nimport { Button } from ",
+    "Não foi possível salvar o teto"
+   ],
+   "html_constraints": [
+    {
+     "field": "teto-cooperativa",
+     "rules": "type=number, min=0, step=0.01"
+    }
+   ],
+   "rule_comments": [
+    "Mesma regra das policies de escrita de cooperativa_budgets: papel estrito"
    ]
   },
   "src/components/sicoob/GestorComprasMetrics.tsx": {
@@ -206815,6 +208837,20 @@
      "pa_id"
     ]
    }
+  },
+  "src/components/sicoob/LimitIncreaseApprovalsCard.tsx": {
+   "path": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+   "lines": 327,
+   "exports": [
+    "const LIMIT_INCREASE_APPROVALS_QUERY_KEY",
+    "function LimitIncreaseApprovalsCard"
+   ],
+   "errors": [
+    " className=",
+    "Erro ao aprovar aumento de verba: ",
+    "Erro ao recusar aumento de verba: ",
+    "Informe o motivo da recusa."
+   ]
   },
   "src/components/sicoob/SicoobStatusBadge.tsx": {
    "path": "src/components/sicoob/SicoobStatusBadge.tsx",
@@ -219310,7 +221346,7 @@
   },
   "src/integrations/supabase/types.ts": {
    "path": "src/integrations/supabase/types.ts",
-   "lines": 13536,
+   "lines": 13598,
    "exports": [
     "type Json",
     "type Database",
@@ -223091,7 +225127,7 @@
   },
   "src/lib/rbac/route-matrix.ts": {
    "path": "src/lib/rbac/route-matrix.ts",
-   "lines": 158,
+   "lines": 163,
    "exports": [
     "type RouteRole",
     "type RouteGuard",
@@ -223298,7 +225334,32 @@
     },
     {
      "field": "role",
+     "value": "admin",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
      "value": "authenticated",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "admin",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "admin",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "admin",
+     "kind": "escreve"
+    },
+    {
+     "field": "role",
+     "value": "admin",
      "kind": "escreve"
     },
     {
@@ -226063,7 +228124,7 @@
   },
   "src/pages/admin/AdminCentraisPage.tsx": {
    "path": "src/pages/admin/AdminCentraisPage.tsx",
-   "lines": 269,
+   "lines": 276,
    "exports": [
     "function AdminCentraisPage"
    ],
@@ -226092,7 +228153,6 @@
    },
    "errors": [
     "Erro ao carregar Centrais Regionais",
-    "Erro ao excluir Central",
     "Erro ao salvar Central",
     "Nome e código são obrigatórios"
    ]
@@ -226643,7 +228703,7 @@
   },
   "src/pages/admin/AdminVerbasPage.tsx": {
    "path": "src/pages/admin/AdminVerbasPage.tsx",
-   "lines": 583,
+   "lines": 587,
    "exports": [
     "function AdminVerbasPage",
     "function BudgetFormDialog"
@@ -226670,14 +228730,6 @@
      "op": "select"
     },
     {
-     "table": "pa_budgets",
-     "op": "update"
-    },
-    {
-     "table": "pa_budgets",
-     "op": "insert"
-    },
-    {
      "table": "pa_category_thresholds",
      "op": "insert"
     },
@@ -226699,13 +228751,13 @@
      "id",
      "nome"
     ],
-    "pa_budgets": [
-     "id"
-    ],
     "pa_category_thresholds": [
      "id"
     ]
    },
+   "rpc": [
+    "salvar_verba_pa"
+   ],
    "errors": [
     "Erro ao carregar módulo de exportação",
     "Erro ao carregar orçamentos/verbas",
@@ -227540,7 +229592,7 @@
   },
   "src/pages/admin/sicoob/tabs/BudgetsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
-   "lines": 334,
+   "lines": 344,
    "exports": [
     "const BudgetsTab"
    ],
@@ -227552,11 +229604,10 @@
     {
      "table": "postos_atendimento",
      "op": "select"
-    },
-    {
-     "table": "pa_budgets",
-     "op": "insert,select"
     }
+   ],
+   "rpc": [
+    "salvar_verba_pa"
    ],
    "errors": [
     ";\nimport { useAuth } from ",
@@ -227667,7 +229718,7 @@
   },
   "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
-   "lines": 184,
+   "lines": 230,
    "exports": [
     "const NotificationSettingsTab"
    ],
@@ -227679,10 +229730,6 @@
     {
      "table": "pa_notification_settings",
      "op": "select"
-    },
-    {
-     "table": "pa_notification_settings",
-     "op": "upsert"
     }
    ],
    "table_cols": {
@@ -227691,9 +229738,17 @@
      "nome"
     ],
     "pa_notification_settings": [
-     "pa_id"
+     "channel",
+     "id",
+     "is_active",
+     "pa_id",
+     "recipient_email"
     ]
    },
+   "rpc": [
+    "sicoob_pa_notification_settings_set",
+    "sicoob_pa_slack_webhook"
+   ],
    "errors": [
     "Erro ao salvar: "
    ],
@@ -227703,7 +229758,7 @@
   },
   "src/pages/admin/sicoob/tabs/PAsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/PAsTab.tsx",
-   "lines": 457,
+   "lines": 460,
    "exports": [
     "const PAsTab"
    ],
@@ -229105,7 +231160,7 @@
   },
   "src/pages/sicoob/GestorApprovalsPage.tsx": {
    "path": "src/pages/sicoob/GestorApprovalsPage.tsx",
-   "lines": 203,
+   "lines": 206,
    "exports": [
     "function GestorApprovalsPage"
    ],
@@ -229123,7 +231178,7 @@
   },
   "src/pages/sicoob/GestorAuditPage.tsx": {
    "path": "src/pages/sicoob/GestorAuditPage.tsx",
-   "lines": 205,
+   "lines": 208,
    "exports": [
     "function GestorAuditPage"
    ],
@@ -229149,7 +231204,7 @@
   },
   "src/pages/sicoob/GestorBudgetsPage.tsx": {
    "path": "src/pages/sicoob/GestorBudgetsPage.tsx",
-   "lines": 26,
+   "lines": 30,
    "exports": [
     "function GestorBudgetsPage"
    ]
@@ -229334,7 +231389,7 @@
   },
   "src/pages/sicoob/PADashboardPage.tsx": {
    "path": "src/pages/sicoob/PADashboardPage.tsx",
-   "lines": 291,
+   "lines": 293,
    "exports": [
     "function PADashboardPage"
    ],
@@ -229348,7 +231403,7 @@
   },
   "src/pages/sicoob/PAWalletPage.tsx": {
    "path": "src/pages/sicoob/PAWalletPage.tsx",
-   "lines": 405,
+   "lines": 414,
    "exports": [
     "function PAWalletPage"
    ],
@@ -229378,6 +231433,9 @@
      "value": "rejected",
      "kind": "compara"
     }
+   ],
+   "rule_comments": [
+    "posto anterior nao pode ser servido para a conta nova."
    ],
    "percents": [
     "Você atingiu mais de 90% da verba mensal. Novos pedidos podem exigir aprovação manual"
@@ -229520,7 +231578,7 @@
   },
   "src/pages/sicoob/orders/OrderDetailPage.tsx": {
    "path": "src/pages/sicoob/orders/OrderDetailPage.tsx",
-   "lines": 325,
+   "lines": 343,
    "exports": [
     "function OrderDetailPage"
    ],
@@ -229547,6 +231605,11 @@
      "field": "state",
      "value": "loading",
      "kind": "escreve"
+    },
+    {
+     "field": "sla_closed_status",
+     "value": "critical",
+     "kind": "compara"
     },
     {
      "field": "status",
@@ -229576,6 +231639,21 @@
     {
      "field": "status",
      "value": "pending",
+     "kind": "compara"
+    },
+    {
+     "field": "sla_closed_status",
+     "value": "critical",
+     "kind": "compara"
+    },
+    {
+     "field": "sla_closed_status",
+     "value": "warning",
+     "kind": "compara"
+    },
+    {
+     "field": "sla_closed_status",
+     "value": "critical",
      "kind": "compara"
     },
     {
@@ -229660,7 +231738,7 @@
   },
   "src/pages/sicoob/orders/OrdersPage.tsx": {
    "path": "src/pages/sicoob/orders/OrdersPage.tsx",
-   "lines": 314,
+   "lines": 317,
    "exports": [
     "function OrdersPage"
    ],
@@ -230003,7 +232081,7 @@
   },
   "src/routes/config/admin.ts": {
    "path": "src/routes/config/admin.ts",
-   "lines": 82,
+   "lines": 86,
    "exports": [
     "const adminRoutes"
    ],
@@ -230034,6 +232112,12 @@
     },
     {
      "path": "/admin/categories",
+     "component": "lazyWithRetry",
+     "guard": "",
+     "roles": []
+    },
+    {
+     "path": "/admin/centrais",
      "component": "lazyWithRetry",
      "guard": "",
      "roles": []
@@ -231407,7 +233491,7 @@
   },
   "src/services/sicoob/approvalService.ts": {
    "path": "src/services/sicoob/approvalService.ts",
-   "lines": 176,
+   "lines": 270,
    "exports": [
     "type ApprovalAuthority",
     "const sicoobApprovalService"
@@ -231427,6 +233511,14 @@
     },
     {
      "table": "limit_increase_requests",
+     "op": "select"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
+    },
+    {
+     "table": "limit_increase_requests",
      "op": "insert"
     }
    ],
@@ -231436,15 +233528,22 @@
      "user_id"
     ],
     "limit_increase_requests": [
-     "pa_id"
+     "pa_id",
+     "status"
     ]
    },
    "rpc": [
     "approve_sicoob_order",
+    "can_decide_limit_increase",
+    "decide_limit_increase_request",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
     "request_sicoob_order_approval",
     "sicoob_current_actor_approval_authority"
+   ],
+   "errors": [
+    "Informe a justificativa da solicitação.",
+    "Informe um valor adicional maior que zero."
    ],
    "params": [
     {
@@ -231462,13 +233561,26 @@
      "field": "status",
      "value": "pending",
      "kind": "filtra"
+    },
+    {
+     "field": "status",
+     "value": "pending",
+     "kind": "filtra"
     }
+   ],
+   "role_checks": [
+    "true"
+   ],
+   "rule_comments": [
+    "Fila de aprovação dos pedidos de aumento de verba. A RLS devolve apenas os"
    ]
   },
   "src/services/sicoob/budgetService.ts": {
    "path": "src/services/sicoob/budgetService.ts",
-   "lines": 54,
+   "lines": 100,
    "exports": [
+    "type BudgetPeriod",
+    "function currentBudgetPeriod",
     "const sicoobBudgetService"
    ],
    "tables": [
@@ -231483,6 +233595,18 @@
     {
      "table": "pa_budgets",
      "op": "select"
+    },
+    {
+     "table": "sicoob_budget_audit",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_budget_audit",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_budget_audit",
+     "op": "select"
     }
    ],
    "table_cols": {
@@ -231494,8 +233618,21 @@
      "ano",
      "mes",
      "pa_id"
+    ],
+    "sicoob_budget_audit": [
+     "ano",
+     "discrepancia",
+     "mes",
+     "pa_id",
+     "pa_nome",
+     "verba_calculada_pedidos",
+     "verba_registrada",
+     "verba_total"
     ]
-   }
+   },
+   "pagination": [
+    "1"
+   ]
   },
   "src/services/sicoob/commonService.ts": {
    "path": "src/services/sicoob/commonService.ts",
@@ -231525,6 +233662,56 @@
    },
    "channels": [
     "sicoob-orders-realtime:${crypto.randomUUID()}"
+   ]
+  },
+  "src/services/sicoob/cooperativaBudgetService.ts": {
+   "path": "src/services/sicoob/cooperativaBudgetService.ts",
+   "lines": 120,
+   "exports": [
+    "const COOPERATIVA_CEILING_QUERY_KEY",
+    "function cooperativaCeilingQueryKey",
+    "interface CooperativaCeiling",
+    "function loadCeiling",
+    "function loadDistributedTotal",
+    "interface SaveCeilingInput",
+    "function saveCeiling"
+   ],
+   "tables": [
+    {
+     "table": "cooperativa_budgets",
+     "op": "select"
+    },
+    {
+     "table": "cooperativa_budgets",
+     "op": "select,update"
+    },
+    {
+     "table": "cooperativa_budgets",
+     "op": "insert"
+    }
+   ],
+   "table_cols": {
+    "cooperativa_budgets": [
+     "ano",
+     "cooperativa_id",
+     "id",
+     "limite_alcada",
+     "mes",
+     "verba_total"
+    ]
+   },
+   "rpc": [
+    "cooperativa_verba_distribuida"
+   ],
+   "params": [
+    {
+     "name": "UNIQUE_VIOLATION",
+     "value": "\"23505\""
+    }
+   ],
+   "rule_comments": [
+    "1. `authenticated` tem UPDATE apenas em `verba_total, limite_alcada,",
+    "chave no `ON CONFLICT DO UPDATE SET` e seria recusado por permissao, por"
    ]
   },
   "src/services/sicoob/costCenterService.ts": {
@@ -231785,7 +233972,7 @@
   },
   "src/services/sicoob/orderService.ts": {
    "path": "src/services/sicoob/orderService.ts",
-   "lines": 316,
+   "lines": 323,
    "exports": [
     "const sicoobOrderService"
    ],
@@ -231867,6 +234054,11 @@
      "kind": "compara"
     },
     {
+     "field": "sla_status",
+     "value": "all",
+     "kind": "compara"
+    },
+    {
      "field": "status",
      "value": "rejected",
      "kind": "compara"
@@ -231885,6 +234077,11 @@
      "name": "applyStatusFilter",
      "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
      "body": "if (filters?.statuses?.length) return query.in(\"status\", filters.statuses); if (filters?.status && filters.status !== \"all\") return query.eq(\"status\", filters.status); return query;"
+    },
+    {
+     "name": "applySlaFilter",
+     "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
+     "body": "if (filters?.sla_status && filters.sla_status !== \"all\") return query.eq(\"sla_status\", filters.sla_status); return query;"
     },
     {
      "name": "applyOrganizationFilters",
@@ -232910,7 +235107,7 @@
   },
   "src/types/sicoob/orders.ts": {
    "path": "src/types/sicoob/orders.ts",
-   "lines": 155,
+   "lines": 158,
    "exports": [
     "type OrderStatus",
     "interface StatusConfig",
@@ -246619,6 +248816,43 @@
    "path": "supabase/migrations/20261125230000_wrap_auth_calls_in_public_policies.sql",
    "lines": 75
   },
+  "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql": {
+   "path": "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+   "lines": 244,
+   "temporal": [
+    "NEW.sla_deadline := now() + interval '48 hours';",
+    "SET sla_deadline = created_at + interval '48 hours',"
+   ],
+   "uses_service_role": true
+  },
+  "supabase/migrations/20261126121000_limit_increase_decision.sql": {
+   "path": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+   "lines": 305,
+   "uses_service_role": true
+  },
+  "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql": {
+   "path": "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
+   "lines": 35
+  },
+  "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql": {
+   "path": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+   "lines": 45
+  },
+  "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql": {
+   "path": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+   "lines": 279,
+   "uses_service_role": true
+  },
+  "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql": {
+   "path": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+   "lines": 477,
+   "rule_comments": [
+    "a soma das verbas dos PAs da cooperativa nao pode passar do teto;",
+    "o teto nao pode ser reduzido abaixo do que ja esta distribuido aos PAs;",
+    "a transferencia de um PA para outra Singular nao pode estourar o teto de"
+   ],
+   "uses_service_role": true
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -249291,6 +251525,20 @@
     "mantém o histórico retornado pela fonte externa"
    ]
   },
+  "tests/components/admin/AdminCentraisPage.test.tsx": {
+   "path": "tests/components/admin/AdminCentraisPage.test.tsx",
+   "lines": 147,
+   "is_test": true,
+   "tests": [
+    "AdminCentraisPage",
+    "lista as Centrais cadastradas com código e região",
+    "cadastra uma Central enviando nome e código ao banco",
+    "exclui a Central somente depois da confirmação",
+    "não exclui quando a confirmação é recusada",
+    "explica o vínculo quando o banco recusa a exclusão da Central",
+    "avisa no diálogo que vínculos impedem a exclusão"
+   ]
+  },
   "tests/components/admin/AiQuotaManager.test.tsx": {
    "path": "tests/components/admin/AiQuotaManager.test.tsx",
    "lines": 27,
@@ -250981,6 +253229,61 @@
     "acompanha a virada da vigência com a tela aberta, sem recarregar",
     "mostra a versao recem-publicada sem cair no padrao do sistema",
     "reabre o formulário sugerindo a próxima versão após publicar"
+   ]
+  },
+  "tests/components/sicoob/BudgetAuditCard.test.tsx": {
+   "path": "tests/components/sicoob/BudgetAuditCard.test.tsx",
+   "lines": 112,
+   "is_test": true,
+   "tests": [
+    "BudgetAuditCard",
+    "abre na competência mais recente com verba registrada",
+    "mostra a verba registrada e o calculado pelos pedidos",
+    "destaca o PA com divergência em vez de marcar como conciliado",
+    "marca como conciliado quando a discrepância é zero",
+    "avisa quando não há verba registrada na competência",
+    "mostra o erro real quando a consulta falha",
+    "recarrega a conciliação ao trocar de competência",
+    "mostra o erro da consulta de competências em vez de tela vazia"
+   ]
+  },
+  "tests/components/sicoob/CooperativaCeilingCard.test.tsx": {
+   "path": "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+   "lines": 177,
+   "is_test": true,
+   "doc": "O teto da cooperativa existia so no banco: `cooperativa_budgets` tinha tabela, policies e unique, nenhuma tela e nenhum consumidor. O card e a unica forma de o gestor ver o teto contra o que ja foi distribuido aos PAs e de altera-lo.",
+   "tests": [
+    "teto da cooperativa",
+    "mostra teto, distribuído e disponível da competência",
+    "avisa quando as verbas dos PAs passam do teto",
+    "sem teto definido, deixa o gestor definir o valor",
+    "salva o teto digitado na competência exibida",
+    "quem não é gestor vê o teto, mas não edita",
+    "supervisor e dev não editam o teto sem o papel estrito de admin",
+    "admin estrito edita o teto",
+    "sem cooperativa vinculada não consulta nada",
+    "não envia teto vazio como R$ 0",
+    "ao voltar para uma competência já carregada, o campo mostra o teto daquele mês",
+    "rotula a competência em pt-BR"
+   ]
+  },
+  "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx": {
+   "path": "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+   "lines": 130,
+   "is_test": true,
+   "errors": [
+    ");\n    expect(alerta).toHaveTextContent("
+   ],
+   "doc": "G-04: o pedido de aumento de verba era gravado e nunca chegava a ninguém (nenhuma policy de UPDATE e RPC de decisão inexistente). O card tem que listar os pendentes, respeitar a autoridade devolvida pelo banco e decidir por RPC, exigindo motivo na recusa.",
+   "tests": [
+    "LimitIncreaseApprovalsCard",
+    "lista o pedido pendente com PA, solicitante e motivo",
+    "mostra o estado vazio quando não há pedidos pendentes",
+    "desabilita as duas decisões quando o banco nega autoridade",
+    "aprova o pedido somente depois da confirmação",
+    "mostra falha de carga em vez de ",
+    "não aprova quando a confirmação é recusada",
+    "exige motivo para recusar e envia a recusa com o texto informado"
    ]
   },
   "tests/components/sicoob/OrderInvoicesTab.amount.test.ts": {
@@ -259219,6 +261522,13 @@
    ],
    "uses_service_role": true
   },
+  "tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql": {
+   "path": "tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql",
+   "lines": 90,
+   "role_checks": [
+    "admin"
+   ]
+  },
   "tests/scenarios/sql/sicoob-consolidation-fixture.sql": {
    "path": "tests/scenarios/sql/sicoob-consolidation-fixture.sql",
    "lines": 56
@@ -259241,6 +261551,14 @@
    ],
    "uses_service_role": true
   },
+  "tests/scenarios/sql/sicoob-order-sla-fixture.sql": {
+   "path": "tests/scenarios/sql/sicoob-order-sla-fixture.sql",
+   "lines": 49,
+   "temporal": [
+    "ELSIF NEW.sla_deadline < now() + interval '2 hours' THEN"
+   ],
+   "uses_service_role": true
+  },
   "tests/scenarios/sql/sicoob-order-status-events-fixture.sql": {
    "path": "tests/scenarios/sql/sicoob-order-status-events-fixture.sql",
    "lines": 91,
@@ -259259,7 +261577,7 @@
   },
   "tests/scenarios/sql/verba-atomica-fixture.sql": {
    "path": "tests/scenarios/sql/verba-atomica-fixture.sql",
-   "lines": 65
+   "lines": 92
   },
   "tests/scenarios/sql/verba-base.sql": {
    "path": "tests/scenarios/sql/verba-base.sql",
@@ -260527,14 +262845,20 @@
   },
   "tests/services/sicoobApprovalService.test.ts": {
    "path": "tests/services/sicoobApprovalService.test.ts",
-   "lines": 68,
+   "lines": 127,
    "is_test": true,
    "tests": [
     "sicoobApprovalService.rejectOrderWithoutApproval",
     "registra a rejeição sem solicitação pela RPC auditável",
     "sicoobApprovalService.createLimitIncreaseRequest",
     "grava o solicitante, que é o que a policy de INSERT exige",
-    "falha sem sessão em vez de inserir pedido sem solicitante"
+    "soma o valor adicional ao limite atual para gravar o teto pedido",
+    "recusa adicional não positivo antes de tocar o banco",
+    "recusa justificativa vazia antes de tocar o banco",
+    "falha sem sessão em vez de inserir pedido sem solicitante",
+    "sicoobApprovalService.decideLimitIncreaseRequest",
+    "aprova via RPC de decisão",
+    "recusa via RPC de decisão com o motivo informado"
    ]
   },
   "tests/services/sicoobBudgetService.test.ts": {
@@ -260588,9 +262912,10 @@
   },
   "tests/services/sicoobOrderService.test.ts": {
    "path": "tests/services/sicoobOrderService.test.ts",
-   "lines": 232,
+   "lines": 272,
    "is_test": true,
    "rule_comments": [
+    "* Builder minimo do PostgREST: a cadeia termina no segundo `.order()`. */",
     "* Builder minimo do PostgREST: resolve no terminador da cadeia. */"
    ],
    "tests": [
@@ -260608,6 +262933,9 @@
     "recusa transição inválida antes de chamar o banco",
     "usa RPC transacional para status comuns e encaminha a observação",
     "propaga falha da transição sem tentar efeitos adicionais no cliente",
+    "sicoobOrderService.listOrders",
+    "filtra SLA critico no servidor, antes de paginar",
+    "nao envia filtro de SLA quando o recorte e todos",
     "sicoobOrderService.getItemLogs",
     "resolve o autor por profiles.user_id sem embed irresolvivel",
     "nao consulta profiles quando nenhum log tem autor"
@@ -260645,6 +262973,29 @@
     "cai no padrão técnico quando não há versão própria nem global",
     "não herda versão agendada para o futuro",
     "ignora versão encerrada da própria Singular e herda a global"
+   ]
+  },
+  "tests/services/sicoob/cooperativaBudgetService.test.ts": {
+   "path": "tests/services/sicoob/cooperativaBudgetService.test.ts",
+   "lines": 133,
+   "is_test": true,
+   "rule_comments": [
+    "* O teto da cooperativa nao pode ser gravado com upsert do PostgREST:",
+    "`authenticated` recebe UPDATE apenas em `verba_total, limite_alcada,"
+   ],
+   "doc": "O teto da cooperativa nao pode ser gravado com upsert do PostgREST: `authenticated` recebe UPDATE apenas em `verba_total, limite_alcada, observacoes` (20261013115605:259-265) e o `ON CONFLICT DO UPDATE SET` inclui as colunas da chave. Estes testes travam a gravacao em update-primeiro / insert-depois …",
+   "tests": [
+    "saveCeiling",
+    "atualiza a competência existente sem tentar inserir",
+    "insere quando a competência ainda não tem teto",
+    "refaz o update quando outra sessão cria a linha antes do insert",
+    "propaga o erro de permissão do insert em vez de mascará-lo",
+    "propaga o erro do update",
+    "loadDistributedTotal",
+    "soma no banco, para incluir PAs inativos que a policy esconde",
+    "propaga o erro da RPC",
+    "cooperativaCeilingQueryKey",
+    "delimita a família de cache usada por quem aloca verba"
    ]
   },
   "tests/services/sicoob/userService.syncUserRole.test.ts": {
@@ -260763,12 +263114,14 @@
   },
   "tests/sicoob/rbac-routes-integrity.test.ts": {
    "path": "tests/sicoob/rbac-routes-integrity.test.ts",
-   "lines": 39,
+   "lines": 136,
    "is_test": true,
    "tests": [
     "SICOOB RBAC Routes Integrity",
     "should contain all matrix-mandated routes",
     "registra a instalação do PWA como rota autenticada",
+    "o cadastro de Centrais tem rota, guarda de admin e entrada no menu",
+    "nenhum item de menu leva a /403: a visibilidade segue a guarda de rota",
     "todo destino do menu mobile tem rota registrada"
    ]
   },
@@ -261652,10 +264005,76 @@
   }
  },
  "git": {
-  "sha": "870bfb1f7b61137bfb9adefeaf4733f0a0f3173a",
+  "sha": "18833012e744a6aafadaa92c318887240c29b9a7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "1883301",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: teto da cooperativa passa a valer no banco e ganha tela (DB-19) (#473)",
+    "files": [
+     ".github/workflows/ci.yml",
+     ".github/workflows/sicoob-ci.yml",
+     ".impeccable/hook.cache.json",
+     "docs/execucao/evidencias/cadastro-centrais.json",
+     "docs/execucao/evidencias/verba-atomica.json",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
+     "scripts/automation.config.json",
+     "scripts/db/.check-runtime-refs-allowlist.json",
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "scripts/qa/postgres_ready.py",
+     "scripts/qa/simular-cadastro-centrais.py",
+     "scripts/qa/simular-escopo-gerencial-sicoob.py",
+     "scripts/qa/simular-sla-pedido-sicoob.py",
+     "scripts/qa/simular-verba-atomica.py",
+     "scripts/qa/simular-verba-e-sla-sicoob.py",
+     "src/components/layout/SidebarReorganized.tsx",
+     "src/components/sicoob/BudgetAuditCard.tsx",
+     "src/components/sicoob/CooperativaCeilingCard.tsx",
+     "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+     "src/integrations/supabase/types.ts",
+     "src/lib/rbac/route-matrix.ts",
+     "src/pages/admin/AdminCentraisPage.tsx",
+     "src/pages/admin/AdminVerbasPage.tsx",
+     "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
+     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+     "src/pages/admin/sicoob/tabs/PAsTab.tsx",
+     "src/pages/sicoob/GestorApprovalsPage.tsx",
+     "src/pages/sicoob/GestorAuditPage.tsx",
+     "src/pages/sicoob/GestorBudgetsPage.tsx",
+     "src/pages/sicoob/PADashboardPage.tsx",
+     "src/pages/sicoob/PAWalletPage.tsx",
+     "src/pages/sicoob/orders/OrderDetailPage.tsx",
+     "src/pages/sicoob/orders/OrdersPage.tsx",
+     "src/routes/config/admin.ts",
+     "src/services/sicoob/approvalService.ts",
+     "src/services/sicoob/budgetService.ts",
+     "src/services/sicoob/cooperativaBudgetService.ts",
+     "src/services/sicoob/orderService.ts",
+     "src/types/sicoob/orders.ts",
+     "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+     "supabase/migrations/20261126121000_limit_increase_decision.sql",
+     "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
+     "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+     "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+     "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+     "tests/components/admin/AdminCentraisPage.test.tsx",
+     "tests/components/sicoob/BudgetAuditCard.test.tsx",
+     "tests/components/sicoob/CooperativaCeilingCard.test.tsx",
+     "tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx",
+     "tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql",
+     "tests/scenarios/sql/sicoob-order-sla-fixture.sql",
+     "tests/scenarios/sql/verba-atomica-fixture.sql",
+     "tests/services/sicoob/cooperativaBudgetService.test.ts",
+     "tests/services/sicoobApprovalService.test.ts",
+     "tests/services/sicoobOrderService.test.ts",
+     "tests/sicoob/rbac-routes-integrity.test.ts"
+    ]
+   },
    {
     "sha": "870bfb1",
     "date": "2026-11-26",
@@ -262033,22 +264452,12 @@
      "tests/scenarios/notification-guard-postgres.scenario.mjs",
      "tests/scenarios/supabase-sql-client.scenario.mjs"
     ]
-   },
-   {
-    "sha": "afdb894",
-    "date": "2026-11-25",
-    "author": "dependabot[bot]",
-    "subject": "chore(deps)(deps-dev): Bump the development-all group with 3 updates (#407)",
-    "files": [
-     "package-lock.json",
-     "package.json"
-    ]
    }
   ],
   "hot_files": [
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    8
+    9
    ],
    [
     "docs/RECUPERACAO/anexo-testes-orfaos.md",
@@ -262056,11 +264465,43 @@
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
-    6
+    7
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    5
+    6
+   ],
+   [
+    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
+    3
+   ],
+   [
+    "src/components/layout/SidebarReorganized.tsx",
+    2
+   ],
+   [
+    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    2
+   ],
+   [
+    "src/pages/sicoob/GestorBudgetsPage.tsx",
+    2
+   ],
+   [
+    "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    2
+   ],
+   [
+    "src/services/sicoob/approvalService.ts",
+    2
+   ],
+   [
+    "src/services/sicoob/orderService.ts",
+    2
+   ],
+   [
+    "tests/services/sicoobApprovalService.test.ts",
+    2
    ],
    [
     "src/components/layout/MfaGate.tsx",
@@ -262075,10 +264516,6 @@
     2
    ],
    [
-    "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-    2
-   ],
-   [
     "src/contexts/AuthContext.tsx",
     2
    ],
@@ -262087,43 +264524,15 @@
     2
    ],
    [
-    "docs/RECUPERACAO/README.md",
+    ".github/workflows/ci.yml",
     1
    ],
    [
-    "docs/RECUPERACAO/reauditoria.md",
+    ".github/workflows/sicoob-ci.yml",
     1
    ],
    [
-    "src/pages/admin/AdminBusinessDashboardPage.tsx",
-    1
-   ],
-   [
-    "src/components/cart/CartApprovalThresholdNotice.tsx",
-    1
-   ],
-   [
-    "src/components/cart/CartHeaderButton.tsx",
-    1
-   ],
-   [
-    "src/components/cart/MiniCart.tsx",
-    1
-   ],
-   [
-    "src/hooks/admin/useApprovalThreshold.ts",
-    1
-   ],
-   [
-    "src/hooks/usePaBudget.ts",
-    1
-   ],
-   [
-    "src/lib/sicoob/paBudgetState.ts",
-    1
-   ],
-   [
-    "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    ".impeccable/hook.cache.json",
     1
    ]
   ]

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `870bfb1f7b` · branch `main` · 2026-11-27 01:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `18833012e7` · branch `main` · 2026-11-27 06:24 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -311,7 +311,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `permissions` | Authenticated users can read permissions | SELECT | authenticated | permissive | `true` |  |
 | `role_permissions` | Admins can manage role_permissions | ALL | authenticated | permissive | `has_role(auth.uid(), 'admin')` | `has_role(auth.uid(), 'admin')` |
 | `role_permissions` | Authenticated users can read role_permissions | SELECT | authenticated | permissive | `true` |  |
-| … +591 linhas — lista completa em `context.json` | | | | | | |
+| … +598 linhas — lista completa em `context.json` | | | | | | |
 
 ## C. Restrições de dados (obrigatório / único / default / CHECK / FK / calculada)
 
@@ -617,7 +617,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `personalization_simulations` | `seller_id` | obrigatório; FK → users.id ON DELETE CASCADE |
 | `personalization_simulations` | `product_name` | obrigatório |
 | `personalization_simulations` | `quantity` | default 1; CHECK quantity > 0 |
-| … +1910 linhas — lista completa em `context.json` | | |
+| … +1911 linhas — lista completa em `context.json` | | |
 
 ## D. Automações no banco (triggers e funções — regras que rodam sozinhas)
 
@@ -827,6 +827,11 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | trg_validate_sicoob_order_budget | BEFORE UPDATE OF STATUS, PA_ID, TOTAL_AMOUNT, CREATED_AT | `sicoob_orders` | `validate_sicoob_order_budget` |  |
 | trg_validate_sicoob_order_budget_ins | AFTER INSERT | `sicoob_orders` | `tg_sicoob_order_budget_after_insert` |  |
 | trg_notify_singular_quote_decision | AFTER UPDATE OF STATUS | `quotes` | `notify_singular_quote_decision` |  |
+| set_sicoob_order_sla_deadline | BEFORE INSERT OR UPDATE OF STATUS | `sicoob_orders` | `set_sicoob_order_sla_deadline` |  |
+| close_sicoob_order_sla | BEFORE INSERT OR UPDATE OF STATUS | `sicoob_orders` | `close_sicoob_order_sla` |  |
+| trg_pa_budget_respects_cooperativa_ceiling | BEFORE INSERT OR UPDATE OF VERBA_TOTAL, VERBA_PLANEJADA, ANO, MES, PA_ID | `pa_budgets` | `tg_pa_budget_respects_cooperativa_ceiling` |  |
+| trg_cooperativa_budget_not_below_distributed | BEFORE INSERT OR UPDATE OF VERBA_TOTAL, ANO, MES | `cooperativa_budgets` | `tg_cooperativa_budget_not_below_distributed` |  |
+| trg_pa_transfer_respects_cooperativa_ceiling | AFTER UPDATE OF COOPERATIVA_ID | `postos_atendimento` | `tg_pa_transfer_respects_cooperativa_ceiling` |  |
 
 Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banco):
 
@@ -975,6 +980,23 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `pa_budget_validate_allocations` | Rateio do pedido % soma %, mas o pedido vale %. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
 | `pa_budget_validate_allocations` | Rateio do pedido % esta em % por cento; precisa fechar em 100. | `supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql` |
 | `validate_scheduled_report_email` | email_to must match your registered email address | `supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql` |
+| `decide_limit_increase_request` | Solicitação de aumento de verba % não encontrada. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | Você não tem autoridade para decidir o aumento de verba deste PA. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | Esta solicitação já foi decidida (%). | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | Informe o motivo da recusa. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | O limite solicitado (%) é inválido. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | O limite solicitado (R$ %) é menor que a verba já ocupada na competência %/% (R$ %). | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `decide_limit_increase_request` | O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento. | `supabase/migrations/20261126121000_limit_increase_decision.sql` |
+| `cooperativa_verba_distribuida` | Sem permissao para consultar a verba desta cooperativa. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_pa_budget_respects_cooperativa_ceiling` | A soma das verbas dos PAs (R$ %) passaria do teto da cooperativa (R$ %) em %/%; ajuste o teto ou reduza a verba de outro PA. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_pa_budget_respects_cooperativa_ceiling` | As verbas desta competencia ultrapassam o teto da cooperativa. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_cooperativa_budget_not_below_distributed` | O teto da cooperativa (R$ %) ficaria abaixo do ja distribuido aos PAs (R$ %) em %/%. Reduza as verbas dos PAs antes de baixar o teto. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_cooperativa_budget_not_below_distributed` | O teto informado fica abaixo do ja distribuido nesta competencia. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_pa_transfer_respects_cooperativa_ceiling` | A transferencia levaria as verbas da cooperativa de destino a R$ % em %/%, acima do teto de R$ %. Ajuste o teto do destino ou reduza a verba do PA. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `tg_pa_transfer_respects_cooperativa_ceiling` | A transferencia de PA ultrapassa o teto da cooperativa de destino. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `salvar_verba_pa` | Informe o posto de atendimento da verba. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
+| `salvar_verba_pa` | Verba nao encontrada para este posto e competencia. | `supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql` |
 
 ## E. Estados, máquinas de estado e transições
 
@@ -1020,6 +1042,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `webhook_delivery_metrics` | `http_status` | **livre (sem enum/CHECK)** |  |
 | `sicoob_orders` | `status` | **livre (sem enum/CHECK)** | `draft` |
 | `sicoob_orders` | `sla_status` | `critical`, `normal`, `warning` | `normal` |
+| `sicoob_orders` | `sla_closed_status` | **livre (sem enum/CHECK)** |  |
 | `sicoob_order_history` | `previous_status` | **livre (sem enum/CHECK)** |  |
 | `sicoob_order_history` | `new_status` | **livre (sem enum/CHECK)** |  |
 | `sicoob_approval_requests` | `status` | `approved`, `pending`, `rejected` | `pending` |
@@ -1388,7 +1411,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
-| … +103 linhas — lista completa em `context.json` | | | |
+| … +106 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -1992,6 +2015,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `discount_percent` | type=number, min=0, max=100, step=0.1 | `src/components/quotes/QuoteTemplateForm.tsx` |
 | `discount_amount` | type=number, min=0, step=0.01 | `src/components/quotes/QuoteTemplateForm.tsx` |
 | `visual-search-input` | accept=image/*, disabled=controller.isLoading | `src/components/search/VisualSearchButton.tsx` |
+| `teto-cooperativa` | type=number, min=0, step=0.01 | `src/components/sicoob/CooperativaCeilingCard.tsx` |
 | `issuedAt` | type=date | `src/components/sicoob/orders/OrderInvoicesTab.tsx` |
 | `payment-installment` | type=number, min=1, step=1, readOnly, readonly=true | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
 | `payment-due-date` | type=date | `src/components/sicoob/orders/OrderPaymentsTab.tsx` |
@@ -4147,6 +4171,10 @@ _nenhum item encontrado_
   ```
   if (filters?.statuses?.length) return query.in("status", filters.statuses); if (filters?.status && filters.status !== "all") return query.eq("status", filters.status); return query;
   ```
+- **applySlaFilter(query: SicoobOrderQuery, filters?: OrderListFilters)** — `src/services/sicoob/orderService.ts`
+  ```
+  if (filters?.sla_status && filters.sla_status !== "all") return query.eq("sla_status", filters.sla_status); return query;
+  ```
 - **applyOrganizationFilters(query: SicoobOrderQuery, filters?: OrderListFilters)** — `src/services/sicoob/orderService.ts`
   ```
   let filtered = query; if (filters?.pa_id && filters.pa_id !== "all") filtered = filtered.eq("pa_id", filters.pa_id); if (filters?.cooperative_id && filters.cooperative_id !== "all") { filtered = filtered.eq("cooperative_id", filters.cooperative_id); } return filtered;
@@ -4775,6 +4803,7 @@ _nenhum item encontrado_
 | `SIZE` | `220` | `src/components/search/voice/VoiceOrb.tsx` |
 | `TEST_NOTIFICATION_TITLE` | `'Teste de notificação'` | `src/components/security/PushNotificationSettings.tsx` |
 | `TEST_NOTIFICATION_BODY` | `'Esta é uma notificação de teste do sistema de segurança.'` | `src/components/security/PushNotificationSettings.tsx` |
+| `CENTAVO` | `0.005` | `src/components/sicoob/BudgetAuditCard.tsx` |
 | `PRIMARY_FOREGROUND_TEXT` | `'text-primary-foreground'` | `src/components/simulator/TechniqueCard.tsx` |
 | `PRIMARY_BACKGROUND` | `'bg-primary'` | `src/components/simulator/TechniqueCardHelpers.tsx` |
 | `PRIMARY_TEXT` | `'text-primary'` | `src/components/simulator/TechniqueCardHelpers.tsx` |
@@ -4919,8 +4948,7 @@ _nenhum item encontrado_
 | `CACHE_MS` | `15` | `src/lib/cloud-status.ts` |
 | `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
 | `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
-| `CRM_DB_BRIDGE_FUNCTION` | `"crm-db-bridge"` | `src/lib/crm-db.ts` |
-| … +185 linhas — lista completa em `context.json` | | |
+| … +187 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5226,7 +5254,7 @@ _nenhum item encontrado_
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +89 linhas — lista completa em `context.json` | |
+| … +92 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5312,6 +5340,7 @@ _nenhum item encontrado_
 | 500 | `src/pages/admin/telemetry/useTelemetryData.ts` |
 | 100 | `src/pages/sicoob/GestorAuditPage.tsx` |
 | 100 | `src/pages/sicoob/SicoobInvitationsPage.tsx` |
+| 1 | `src/services/sicoob/budgetService.ts` |
 | 0 | `src/services/sicoob/managerStatsService.ts` |
 | 10 | `src/services/sicoob/managerStatsService.ts` |
 | 5 | `src/services/sicoob/managerStatsService.ts` |
@@ -5507,10 +5536,12 @@ _nenhum item encontrado_
 | PostgreSQL descartável encerrou antes de ficar pronto. Últimas linhas do log:\n | `scripts/qa/postgres_ready.py` |
 | PostgreSQL descartável não concluiu a inicialização. Últimas linhas do log:\n | `scripts/qa/postgres_ready.py` |
 | A consulta não retornou valor | `scripts/qa/simular-autoridade-verbas-sicoob.py` |
+| A consulta não retornou valor | `scripts/qa/simular-cadastro-centrais.py` |
 | A consulta não retornou valor | `scripts/qa/simular-consolidacao-sicoob.py` |
 | A consulta não retornou valor | `scripts/qa/simular-convites-sicoob.py` |
 | A consulta não retornou o valor esperado | `scripts/qa/simular-delegacao-aprovacao-sicoob.py` |
 | A consulta não retornou valor | `scripts/qa/simular-duplicacao-pedido-atomica.py` |
+| Verificacoes reprovadas:  | `scripts/qa/simular-escopo-gerencial-sicoob.py` |
 | consulta sem resultado | `scripts/qa/simular-escopo-orcamento-ativo.py` |
 | A consulta não retornou o valor esperado | `scripts/qa/simular-eventos-status-sicoob.py` |
 | A consulta não retornou valor | `scripts/qa/simular-financeiro-arte-sicoob.py` |
@@ -5654,9 +5685,7 @@ _nenhum item encontrado_
 | Erro ao adicionar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao atualizar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao atualizar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1029 linhas — lista completa em `context.json` | |
+| … +1039 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5709,6 +5738,7 @@ _nenhum item encontrado_
 | `supervisor` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `vendedor` | `src/pages/admin/AdminUsuariosPage.tsx` |
 | `agente` | `src/services/admin/UserService.ts` |
+| `true` | `src/services/sicoob/approvalService.ts` |
 | `undefined` | `src/services/sicoob/userService.ts` |
 | `null` | `supabase/functions/_shared/authorize.ts` |
 | `admin` | `supabase/functions/block-ip-temporarily/index.ts` |
@@ -5755,8 +5785,9 @@ _nenhum item encontrado_
 | `admin` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
+| `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7478 testes em 774 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7536 testes em 779 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5845,6 +5876,7 @@ _nenhum item encontrado_
 | `tests/lib/rbac-permissions.test.ts` | 20 | RBAC Permission Matrix · admin · has access to everything · manager … |
 | `tests/pages/QuoteBuilder.test.ts` | 20 | QuoteBuilder — Item Calculations · calculates single item total · calculates quote subtotal · handles empty items list … |
 | `tests/scripts/db-scripts-hardening.test.ts` | 20 | drift do ledger — nomes de arquivo · .sql fora do padrão vira pendência em vez de sumir · arquivo no padrão e alinhado ao ledger continua sem pendência · classificador do backlog de migrations — operações destrutivas … |
+| `tests/services/sicoobOrderService.test.ts` | 20 | sicoobOrderService.reorderOrder · delega a revalidação de catálogo à Edge Function autenticada · reutiliza a chave gerenciada quando a primeira resposta é perdida · preserva a chave em memória quando o sessionStorage recusa escrita … |
 | `tests/services/sicoob/userService.syncUserRole.test.ts` | 20 | syncUserRole — o papel da tela chega em user_roles · traduz  · traduz  · não regrava o papel técnico dev, que é preservado na limpeza … |
 | `tests/types/quote-types.test.ts` | 20 | QuoteHistoryEntry shape · has all required fields · allows nullable fields · metadata defaults to empty object … |
 | `tests/components/ReplenishmentToolbar.test.tsx` | 19 | ReplenishmentToolbar · renders title and count badge · shows loading state when isLoading with zero total · shows filtered/total when hasActiveFilters … |
@@ -5869,7 +5901,6 @@ _nenhum item encontrado_
 | `tests/hooks/voice-modules.test.ts` | 17 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry non-retryable errors … |
 | `tests/lib/external-db-immutable-cache.test.ts` | 17 | immutableCache.getCachedByIds — básico · cache miss puro: 1 chamada bridge com filtro id=in.(...) · cache hit puro: 0 chamadas bridge · hit parcial: bridge é chamada só com os ids faltantes … |
 | `tests/lib/filter-dev-only-items.test.ts` | 17 | filterDevOnlyItems — visibilidade por papel · vendedor (não-dev, não-admin) NÃO vê nenhum item devOnly · admin (não-dev) NÃO vê itens devOnly, mas vê adminOnly · dev vê TODOS os itens, inclusive devOnly … |
-| `tests/services/sicoobOrderService.test.ts` | 17 | sicoobOrderService.reorderOrder · delega a revalidação de catálogo à Edge Function autenticada · reutiliza a chave gerenciada quando a primeira resposta é perdida · preserva a chave em memória quando o sessionStorage recusa escrita … |
 | `tests/utils/price-freshness-coverage.test.ts` | 17 | getPriceFreshness — bordas de threshold · dia exatamente no meio do threshold ainda é  · um dia após o meio do threshold vira  · dia exatamente no threshold ainda é  … |
 | `tests/components/DevRoute.test.tsx` | 16 | DevRoute — loading e anônimo · mostra spinner enquanto isLoading=true · redireciona anon para /login (sem expor a página técnica) · DevRoute — DEV passa por telemetria, conexões e MCP … |
 | `tests/components/admin/SecretField.test.tsx` | 16 | SecretField — banner de sufixo inválido (<4 chars) · constante MIN_SUFFIX_LENGTH é 4 (premissa do banner) · não exibe banner quando o input está vazio · exibe banner para %i char(s) com a contagem correta (%s) … |
@@ -5915,6 +5946,7 @@ _nenhum item encontrado_
 | `tests/components/admin/pluralization.test.tsx` | 12 | diagnoseMaskedSuffix — pluralização (1 caractere vs N caracteres) · 1 char → singular ( · 2 chars → plural ( · 3 chars → plural ( … |
 | `tests/components/quotes/AIRecommendationsPanel.test.tsx` | 12 | AIRecommendationsPanel · exibe perfil, total de produtos e estado inicial · habilita a ação com cliente inicial e catálogo disponível · envia o perfil editado e os produtos ao hook … |
 | `tests/components/sicoob/ApprovalPolicyTab.test.tsx` | 12 | ApprovalPolicyTab · mostra o padrão do sistema quando nenhuma versão foi publicada · mostra a versão vigente e as regras em vigor da Singular · publica nova versão com as regras escolhidas … |
+| `tests/components/sicoob/CooperativaCeilingCard.test.tsx` | 12 | teto da cooperativa · mostra teto, distribuído e disponível da competência · avisa quando as verbas dos PAs passam do teto · sem teto definido, deixa o gestor definir o valor … |
 | `tests/components/simulator/UpsellPlusPlus.test.ts` | 12 | UpsellPlusPlus generateSuggestions · suggests adding position when unused locations exist · does NOT suggest position when no engravings exist · suggests technique upgrade when premium option available … |
 | `tests/edge-functions/sicoob-kit-quote-catalog.test.ts` | 12 | catálogo servidor da conversão de kit · exige contagem exata para impedir validação sobre resposta truncada · usa nome, SKU e preço vigentes da variante · agrega duas linhas da mesma variante antes de validar o saldo … |
 | `tests/hooks/quoteHelpers.priceConfirmed.test.ts` | 12 | quoteHelpers — persistência do price_confirmed_at (save) · inclui price_confirmed_at no payload quando o vendedor confirmou · envia null quando o vendedor ainda NÃO confirmou · normaliza undefined → null (defensivo contra serialização) … |
@@ -5949,6 +5981,8 @@ _nenhum item encontrado_
 | `tests/search/GlobalSearchHelpers.test.tsx` | 11 | RankBadge · renders Trophy icon for index 0 · renders Medal for index 1 · renders  … |
 | `tests/security/privileged-client-data-guards.test.ts` | 11 | barreiras estaticas para dados privilegiados de clientes · carrega todos os papeis e falha fechado para vinculo invalido · autoriza o shape completo antes de resolver a credencial service-role externa · ignora comentario que cita a tag de rota ao medir o bloco … |
 | `tests/services/orderService.test.ts` | 11 | OrderService.convertQuoteToOrder · delega toda a conversão à RPC transacional do domínio Sicoob · não envia identidade ou organização fornecida pelo navegador ao banco · propaga a falha atômica devolvida pela RPC … |
+| `tests/services/sicoobApprovalService.test.ts` | 11 | sicoobApprovalService.rejectOrderWithoutApproval · registra a rejeição sem solicitação pela RPC auditável · sicoobApprovalService.createLimitIncreaseRequest · grava o solicitante, que é o que a policy de INSERT exige … |
+| `tests/services/sicoob/cooperativaBudgetService.test.ts` | 11 | saveCeiling · atualiza a competência existente sem tentar inserir · insere quando a competência ainda não tem teto · refaz o update quando outra sessão cria a linha antes do insert … |
 | `e2e/editor-permissions.spec.ts` | 10 | Gestor de Compras — permissões e navegação · acessa catálogo, orçamentos e painéis próprios da Singular · carrega os módulos de governança e gestão de compras · bloqueia painéis administrativos reservados ao supervisor … |
 | `tests/a11y/onda5-a11y.test.tsx` | 10 | Onda 5 — auditoria automatizada axe-core (WCAG 2.1 AA) · MagicUpVariationComparator · não viola regras WCAG com 3 variações (button-name, aria-*, nested-interactive) · não viola WCAG quando uma variação está ativa e outra é vencedora (aria-pressed/aria-current) … |
 | `tests/components/AdminConexoesAccess.test.tsx` | 10 | Acesso a /admin/conexoes · redireciona para /login quando não há sessão · exibe bloqueio técnico para vendedor · exibe bloqueio técnico para supervisor … |
@@ -5988,6 +6022,7 @@ _nenhum item encontrado_
 | `tests/components/products/ProductSparkline.labels.test.tsx` | 9 | ProductSparkline — origem dos dados · renders the sparkline SVG when real data is available · does NOT show old  · identifica as saídas de estoque na grade de métricas … |
 | `tests/components/quotes/QuoteAutoSave.transicao.test.tsx` | 9 | QuoteAutoSave quando o orçamento deixa de ser editável · grava no mesmo rascunho a edição feita durante o envio · apaga o rascunho do orçamento que o usuário descartou · não apaga o rascunho que outra aba gravou … |
 | `tests/components/quotes/QuoteShareDialog.test.tsx` | 9 | QuoteShareDialog · reutiliza o token ativo e compartilha somente a rota pública · gera um novo token pelo fluxo canônico quando não há link · oferece novo link quando o token está %s … |
+| `tests/components/sicoob/BudgetAuditCard.test.tsx` | 9 | BudgetAuditCard · abre na competência mais recente com verba registrada · mostra a verba registrada e o calculado pelos pedidos · destaca o PA com divergência em vez de marcar como conciliado … |
 | `tests/contexts/AuthContext.test.tsx` | 9 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
 | `tests/e2e/infra-banners-prod.test.tsx` | 9 | E2E Infra Banners — Modo PROD (Usuário Não-Dev) · CloudStatusBanner · OCULTA mensagem técnica  · EXIBE mensagem crítica  … |
 | `tests/edge-functions/parseAiResponse.test.ts` | 9 | parseAiResponse · parses tool call arguments correctly · falls back to content parsing when no tool calls · returns fallback for invalid JSON in tool call args … |
@@ -6022,6 +6057,7 @@ _nenhum item encontrado_
 | `tests/components/admin/connections/ZoneCommandPalette.test.tsx` | 8 | useZoneCommandPalette · não captura Ctrl+K, reservado à barra global de comandos · ignora o atalho quando o foco está num <input> · ZoneCommandPalette — interação … |
 | `tests/components/novelties/NoveltyCards.test.tsx` | 8 | NoveltyGridCard — label changes (PR) · renders  · does NOT render the old  · renders the ProductSparkline for the product … |
 | `tests/components/products/ProductCardImage.private-storage.test.tsx` | 8 | imagem privada do catálogo · assina a referência durável e não gera srcSet sem autorização · mantém uma imagem pública sem pedir assinatura · não trata rota de storage de outro domínio como imagem privada … |
+| `tests/components/sicoob/LimitIncreaseApprovalsCard.test.tsx` | 8 | LimitIncreaseApprovalsCard · lista o pedido pendente com PA, solicitante e motivo · mostra o estado vazio quando não há pedidos pendentes · desabilita as duas decisões quando o banco nega autoridade … |
 | `tests/hooks/useClientHealthScore.reliable-data.test.ts` | 8 | score de saúde com fonte comprovada · não trata o score sentinela desconhecido como um zero real · não fabrica score, potencial ou recomendação quando a amostra é insuficiente · não publica score global com amostra setorial insuficiente, mesmo havendo recência do cliente … |
 | `tests/hooks/useClientsComparison.availability.test.tsx` | 8 | useSingleClientComparisonRow — disponibilidade por fonte · descarta afinidade em cache após falha e usa histórico confiável como fallback · isola falhas de categoria e usa a afinidade confiável como fallback do topo · propaga CRM indisponível para métricas dependentes do ramo e permite retry … |
 | `tests/hooks/useDebounce.test.ts` | 8 | useDebounce · should return initial value immediately · should debounce value changes · should reset timer on rapid value changes … |
@@ -6055,12 +6091,7 @@ _nenhum item encontrado_
 | `e2e/flows/01-auth.spec.ts` | 7 | Fluxo: Auth · renderiza form de login com elementos essenciais · rejeita credenciais inválidas e permanece em /login · valida email malformado … |
 | `e2e/flows/22-header-sticky.spec.ts` | 7 | @header-sticky Header sticky — rotas autenticadas (app + quotes) [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} · @header-sticky Header sticky — rotas admin [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} … |
 | `e2e/flows/p0/08-password-recovery.spec.ts` | 7 | P0 — Password recovery · positivo: /reset-password com token válido aceita senha forte e habilita submit · negativo: acesso a /reset-password SEM token → mensagem ou redirect, nunca habilita reset · negativo: senha fraca dispara validação inline (não chama auth) … |
-| `e2e/routes/sicoob/orders-list.spec.ts` | 7 | Sicoob Orders List · render: shows orders list page with filters · filters: combined filter and combined results · pagination & sorting: validates chronological consistency on timeline … |
-| `supabase/functions/_shared/ai-usage-stream.test.ts` | 7 | extractUsageFromSseLine lê o uso final de um stream compatível com OpenAI · extractUsageFromSseLine ignora fragmentos, eventos sem uso e marcador final · trackStreamingResponse finaliza uma vez no EOF e registra os tokens · trackStreamingResponse registra uso parcial ao consumidor cancelar … |
-| `supabase/functions/crm-db-bridge/firstRowAsRecord.test.ts` | 7 | toRecord: returns null for null/undefined/primitives/arrays · toRecord: returns null for GenericStringError-like payload · toRecord: returns the object itself for a plain row · firstRowAsRecord: null for non-array/empty inputs … |
-| `supabase/functions/external-db-bridge/lightweightSelect.e2e.test.ts` | 7 | E2E force-lightweight: products + limit=51 + select= · E2E force-lightweight: products + limit=300 + select omitido → lightweight · E2E no-force: products + fetch por id (filters.id) → payload completo · E2E no-force: products + limit=50 (boundary) + select= … |
-| `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
-| … +474 linhas — lista completa em `context.json` | | |
+| … +479 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6414,6 +6445,7 @@ _nenhum item encontrado_
 | Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, | `src/components/search/useGlobalSearch.ts` |
 | ").eq("user_id", userId).order("created_at", { ascending: false }).limit(20), | `src/components/security/useSecurityData.ts` |
 | ").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10), | `src/components/security/useSecurityData.ts` |
+| Mesma regra das policies de escrita de cooperativa_budgets: papel estrito | `src/components/sicoob/CooperativaCeilingCard.tsx` |
 | Status que ja comprometem verba: o rateio nao pode ficar defasado neles, | `src/components/sicoob/orders/OrderCostCenterAllocation.tsx` |
 | 1024 * 1024) { toast.error("O comprovante deve ter no máximo 5 MB."); return; } | `src/components/sicoob/orders/OrderLogisticsTab.tsx` |
 | Separar a decisão do componente mantém a regra testável e a complexidade | `src/components/sicoob/orders/utils/amount.ts` |
@@ -6549,5 +6581,4 @@ _nenhum item encontrado_
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
 | neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
-| foi atingido — neste caso o caller deve mostrar tela de erro estável. | `src/lib/chunk-recovery.ts` |
-| … +354 linhas — lista completa em `context.json` | |
+| … +362 linhas — lista completa em `context.json` | |

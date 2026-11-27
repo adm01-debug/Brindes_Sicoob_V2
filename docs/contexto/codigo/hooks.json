@@ -1702,7 +1702,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 159,
+   "usado_por": 162,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -9974,7 +9974,7 @@
    "edges": [],
    "hooks_internos": [],
    "canais_realtime": [],
-   "usado_por": 22,
+   "usado_por": 23,
    "usado_por_arquivos": [
     "src/components/admin/CouponManager.tsx",
     "src/components/admin/OwnershipRepairDialog.tsx",
@@ -9983,6 +9983,7 @@
     "src/components/admin/suppliers-manager/useSuppliersManager.ts",
     "src/components/cart/MiniCart.tsx",
     "src/components/common/GlobalConfirmDialog.tsx",
+    "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
     "src/hooks/useSmartNavigation.ts",
     "src/pages/KitBuilderPage.tsx",
     "src/pages/admin/AdminCMSPage.tsx",

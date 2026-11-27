@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1181,
+ "total": 1184,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -14191,6 +14191,23 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/sicoob/BudgetAuditCard.tsx",
+   "exports": [
+    "BUDGET_AUDIT_QUERY_KEY",
+    "BudgetAuditCard"
+   ],
+   "export_default": "BudgetAuditCard",
+   "linhas": 240,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useAuth"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/sicoob/BudgetExceededBanner.tsx",
    "exports": [
     "BudgetExceededBanner"
@@ -14205,6 +14222,22 @@
    "edges": [],
    "usado_por": 0,
    "orfao": true
+  },
+  {
+   "arquivo": "src/components/sicoob/CooperativaCeilingCard.tsx",
+   "exports": [
+    "CooperativaCeilingCard"
+   ],
+   "export_default": "CooperativaCeilingCard",
+   "linhas": 287,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useAuth"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
   },
   {
    "arquivo": "src/components/sicoob/GestorComprasMetrics.tsx",
@@ -14237,6 +14270,23 @@
    ],
    "edges": [],
    "usado_por": 2,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
+   "exports": [
+    "LIMIT_INCREASE_APPROVALS_QUERY_KEY",
+    "LimitIncreaseApprovalsCard"
+   ],
+   "export_default": null,
+   "linhas": 327,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useAuth"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
    "orfao": false
   },
   {
@@ -14938,7 +14988,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 40,
+   "usado_por": 42,
    "orfao": false
   },
   {
@@ -14969,7 +15019,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 512,
+   "usado_por": 514,
    "orfao": false
   },
   {
@@ -15004,7 +15054,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 637,
+   "usado_por": 639,
    "orfao": false
   },
   {
@@ -15038,7 +15088,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 397,
+   "usado_por": 400,
    "orfao": false
   },
   {
@@ -15151,7 +15201,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 139,
+   "usado_por": 140,
    "orfao": false
   },
   {
@@ -15319,7 +15369,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 269,
+   "usado_por": 271,
    "orfao": false
   },
   {
@@ -15618,7 +15668,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 158,
+   "usado_por": 161,
    "orfao": false
   },
   {
@@ -15727,7 +15777,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 79,
+   "usado_por": 81,
    "orfao": false
   },
   {
@@ -15759,7 +15809,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 63,
+   "usado_por": 64,
    "orfao": false
   },
   {
@@ -15924,7 +15974,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 159,
+   "usado_por": 162,
    "orfao": false
   },
   {
@@ -16182,14 +16232,14 @@
     "AdminCentraisPage"
    ],
    "export_default": "AdminCentraisPage",
-   "linhas": 269,
+   "linhas": 276,
    "dominio": "pages/admin",
    "hooks_locais": [],
    "tabelas": [
     "sicoob_centrais"
    ],
    "edges": [],
-   "usado_por": 0,
+   "usado_por": 1,
    "orfao": false
   },
   {
@@ -16551,7 +16601,7 @@
     "BudgetFormDialog"
    ],
    "export_default": "AdminVerbasPage",
-   "linhas": 583,
+   "linhas": 587,
    "dominio": "pages/admin",
    "hooks_locais": [],
    "tabelas": [
@@ -16918,7 +16968,7 @@
     "BudgetsTab"
    ],
    "export_default": null,
-   "linhas": 334,
+   "linhas": 344,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth"
@@ -16957,7 +17007,7 @@
     "NotificationSettingsTab"
    ],
    "export_default": null,
-   "linhas": 184,
+   "linhas": 230,
    "dominio": "pages/admin",
    "hooks_locais": [],
    "tabelas": [
@@ -16974,7 +17024,7 @@
     "PAsTab"
    ],
    "export_default": null,
-   "linhas": 457,
+   "linhas": 460,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth"
@@ -18359,7 +18409,7 @@
     "GestorApprovalsPage"
    ],
    "export_default": "GestorApprovalsPage",
-   "linhas": 203,
+   "linhas": 206,
    "dominio": "pages/sicoob",
    "hooks_locais": [],
    "tabelas": [],
@@ -18373,7 +18423,7 @@
     "GestorAuditPage"
    ],
    "export_default": "GestorAuditPage",
-   "linhas": 205,
+   "linhas": 208,
    "dominio": "pages/sicoob",
    "hooks_locais": [],
    "tabelas": [
@@ -18390,7 +18440,7 @@
     "GestorBudgetsPage"
    ],
    "export_default": "GestorBudgetsPage",
-   "linhas": 26,
+   "linhas": 30,
    "dominio": "pages/sicoob",
    "hooks_locais": [],
    "tabelas": [],
@@ -18469,7 +18519,7 @@
     "OrderDetailPage"
    ],
    "export_default": "OrderDetailPage",
-   "linhas": 325,
+   "linhas": 343,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useApprovalRequests",
@@ -18514,7 +18564,7 @@
     "OrdersPage"
    ],
    "export_default": "OrdersPage",
-   "linhas": 314,
+   "linhas": 317,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth"
@@ -18548,7 +18598,7 @@
     "PADashboardPage"
    ],
    "export_default": "PADashboardPage",
-   "linhas": 291,
+   "linhas": 293,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth",
@@ -18565,7 +18615,7 @@
     "PAWalletPage"
    ],
    "export_default": "PAWalletPage",
-   "linhas": 405,
+   "linhas": 414,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth"

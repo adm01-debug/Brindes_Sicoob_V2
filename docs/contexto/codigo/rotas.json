@@ -2,10 +2,10 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "resumo": {
-  "urls": 142,
+  "urls": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
-  "itens_menu": 87,
+  "itens_menu": 88,
   "lazy": 79
  },
  "urls": [
@@ -804,6 +804,34 @@
     "manager"
    ],
    "arquivos_puxados": 51
+  },
+  {
+   "protegida": false,
+   "wrappers": [],
+   "pai": null,
+   "indice": false,
+   "lazy": true,
+   "tipo": "tela",
+   "caminho": "/admin/centrais",
+   "componente": null,
+   "arquivo": "src/pages/admin/AdminCentraisPage.tsx",
+   "definida_em": "src/routes/config/admin.ts",
+   "hooks": [
+    "useEffect",
+    "useState"
+   ],
+   "hooks_locais": [],
+   "tabelas": [
+    "sicoob_centrais"
+   ],
+   "rpcs": [],
+   "edges": [],
+   "canais_realtime": [],
+   "flags": [],
+   "papeis": [
+    "dialog"
+   ],
+   "arquivos_puxados": 12
   },
   {
    "protegida": true,
@@ -2281,6 +2309,7 @@
     "useUserRoles"
    ],
    "tabelas": [
+    "cooperativa_budgets",
     "cooperativas",
     "pa_budgets",
     "pa_notification_settings",
@@ -2293,10 +2322,14 @@
     "user_roles"
    ],
    "rpcs": [
+    "cooperativa_verba_distribuida",
     "create_sicoob_approval_delegation",
     "get_sicoob_access_state",
     "list_sicoob_approval_delegate_candidates",
-    "revoke_sicoob_approval_delegation"
+    "revoke_sicoob_approval_delegation",
+    "salvar_verba_pa",
+    "sicoob_pa_notification_settings_set",
+    "sicoob_pa_slack_webhook"
    ],
    "edges": [
     "crm-db-bridge",
@@ -2315,7 +2348,7 @@
     "supervisor",
     "vendedor"
    ],
-   "arquivos_puxados": 56
+   "arquivos_puxados": 57
   },
   {
    "protegida": true,
@@ -2633,17 +2666,22 @@
    "hooks": [
     "useEffect",
     "useQuery",
+    "useQueryClient",
     "useState"
    ],
    "hooks_locais": [],
    "tabelas": [
     "admin_audit_log",
+    "cooperativa_budgets",
     "pa_budgets",
     "pa_category_thresholds",
     "postos_atendimento",
     "product_categories"
    ],
-   "rpcs": [],
+   "rpcs": [
+    "cooperativa_verba_distribuida",
+    "salvar_verba_pa"
+   ],
    "edges": [],
    "canais_realtime": [],
    "flags": [],
@@ -2651,7 +2689,7 @@
     "dialog",
     "progressbar"
    ],
-   "arquivos_puxados": 15
+   "arquivos_puxados": 16
   },
   {
    "protegida": true,
@@ -5356,7 +5394,9 @@
     "user_roles"
    ],
    "rpcs": [
-    "get_sicoob_access_state"
+    "get_sicoob_access_state",
+    "sicoob_pa_notification_settings_set",
+    "sicoob_pa_slack_webhook"
    ],
    "edges": [
     "crm-db-bridge",
@@ -5384,29 +5424,57 @@
    "arquivo": "src/pages/sicoob/GestorApprovalsPage.tsx",
    "definida_em": "src/routes/config/sicoob-rbac.ts",
    "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useMemo",
     "useMutation",
     "useNavigate",
     "useQuery",
-    "useQueryClient"
+    "useQueryClient",
+    "useRef",
+    "useState",
+    "useUserProfile",
+    "useUserRoles"
    ],
-   "hooks_locais": [],
+   "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useUserProfile",
+    "useUserRoles"
+   ],
    "tabelas": [
     "limit_increase_requests",
     "profiles",
-    "sicoob_approval_requests"
+    "sicoob_approval_requests",
+    "user_roles"
    ],
    "rpcs": [
     "approve_sicoob_order",
+    "can_decide_limit_increase",
+    "decide_limit_increase_request",
+    "get_sicoob_access_state",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
     "request_sicoob_order_approval",
     "sicoob_current_actor_approval_authority"
    ],
-   "edges": [],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
    "canais_realtime": [],
    "flags": [],
-   "papeis": [],
-   "arquivos_puxados": 13
+   "papeis": [
+    "admin",
+    "alert",
+    "dialog",
+    "manager"
+   ],
+   "arquivos_puxados": 42
   },
   {
    "protegida": true,
@@ -5420,20 +5488,50 @@
    "arquivo": "src/pages/sicoob/GestorAuditPage.tsx",
    "definida_em": "src/routes/config/sicoob-rbac.ts",
    "hooks": [
+    "useAuth",
+    "useAuthAAL",
+    "useBudgetAuditData",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useMemo",
     "useQuery",
-    "useState"
+    "useRef",
+    "useState",
+    "useUserProfile",
+    "useUserRoles"
    ],
-   "hooks_locais": [],
+   "hooks_locais": [
+    "useAuth",
+    "useAuthAAL",
+    "useUserProfile",
+    "useUserRoles"
+   ],
    "tabelas": [
+    "pa_budgets",
+    "postos_atendimento",
+    "profiles",
+    "sicoob_budget_audit",
     "sicoob_manager_audit",
-    "sicoob_orders"
+    "sicoob_orders",
+    "user_roles"
    ],
-   "rpcs": [],
-   "edges": [],
+   "rpcs": [
+    "get_sicoob_access_state"
+   ],
+   "edges": [
+    "crm-db-bridge",
+    "external-db-bridge",
+    "log-login-attempt"
+   ],
    "canais_realtime": [],
    "flags": [],
-   "papeis": [],
-   "arquivos_puxados": 9
+   "papeis": [
+    "admin",
+    "alert",
+    "manager"
+   ],
+   "arquivos_puxados": 39
   },
   {
    "protegida": true,
@@ -5970,6 +6068,7 @@
     "useRef",
     "useStartEnrollment",
     "useState",
+    "useTetoData",
     "useUserProfile",
     "useUserRoles",
     "useVerifyEnrollment"
@@ -5981,13 +6080,16 @@
     "useUserRoles"
    ],
    "tabelas": [
+    "cooperativa_budgets",
     "pa_budgets",
     "postos_atendimento",
     "profiles",
     "user_roles"
    ],
    "rpcs": [
-    "get_sicoob_access_state"
+    "cooperativa_verba_distribuida",
+    "get_sicoob_access_state",
+    "salvar_verba_pa"
    ],
    "edges": [
     "crm-db-bridge",
@@ -6002,7 +6104,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 41
+   "arquivos_puxados": 46
   },
   {
    "protegida": true,
@@ -8618,10 +8720,13 @@
     "postos_atendimento",
     "profiles",
     "sicoob_approval_requests",
+    "sicoob_budget_audit",
     "user_roles"
    ],
    "rpcs": [
     "approve_sicoob_order",
+    "can_decide_limit_increase",
+    "decide_limit_increase_request",
     "get_sicoob_access_state",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
@@ -10488,8 +10593,10 @@
    "rpcs": [
     "add_sicoob_order_invoice",
     "approve_sicoob_order",
+    "can_decide_limit_increase",
     "confirm_sicoob_order",
     "convert_quote_to_sicoob_order",
+    "decide_limit_increase_request",
     "decide_sicoob_order_artwork",
     "duplicate_order_atomic",
     "get_sicoob_access_state",
@@ -11680,6 +11787,15 @@
    "papeis_nao_resolvidos": null,
    "definido_em": "src/components/layout/SidebarReorganized.tsx",
    "resolve_para": "src/pages/admin/AdminCategoriesPage.tsx"
+  },
+  {
+   "rotulo": "Centrais",
+   "destino": "/admin/centrais",
+   "grupo": null,
+   "papeis": [],
+   "papeis_nao_resolvidos": null,
+   "definido_em": "src/components/layout/SidebarReorganized.tsx",
+   "resolve_para": "src/pages/admin/AdminCentraisPage.tsx"
   },
   {
    "rotulo": "Central de Notificações",

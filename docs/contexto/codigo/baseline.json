@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "870bfb1f7b61137bfb9adefeaf4733f0a0f3173a",
+  "commit": "18833012e744a6aafadaa92c318887240c29b9a7",
   "branch": "main",
-  "data_commit": "2026-11-27T00:43:00Z",
+  "data_commit": "2026-11-27T03:23:55-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "1883301",
+    "data": "2026-11-27",
+    "assunto": "feat: teto da cooperativa passa a valer no banco e ganha tela (DB-19) (#473)"
+   },
    {
     "sha": "870bfb1",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "950c2f5",
     "data": "2026-11-25",
     "assunto": "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)"
-   },
-   {
-    "sha": "514293d",
-    "data": "2026-11-25",
-    "assunto": "docs: reavalia os vereditos dos testes divergentes (#447)"
    }
   ],
-  "arquivos_mudados_7d": 969,
+  "arquivos_mudados_7d": 1003,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -144,11 +144,23 @@
     "mudancas": 41
    },
    {
-    "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
-    "mudancas": 23
+    "pasta": "src/pages/admin",
+    "mudancas": 25
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 24
+   },
+   {
+    "pasta": "src/pages/sicoob",
+    "mudancas": 24
+   },
+   {
+    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
+    "mudancas": 23
+   },
+   {
+    "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
     "mudancas": 23
    },
    {
@@ -156,20 +168,16 @@
     "mudancas": 22
    },
    {
-    "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
-    "mudancas": 21
-   },
-   {
     "pasta": "src/hooks/bi",
     "mudancas": 20
    },
    {
-    "pasta": "src/pages/admin",
-    "mudancas": 20
+    "pasta": "src/components/sicoob",
+    "mudancas": 19
    },
    {
-    "pasta": "src/pages/sicoob",
-    "mudancas": 17
+    "pasta": "src/services/sicoob",
+    "mudancas": 18
    },
    {
     "pasta": "tests/components/bi",
@@ -184,26 +192,18 @@
     "mudancas": 16
    },
    {
-    "pasta": "src/components/sicoob",
-    "mudancas": 16
-   },
-   {
     "pasta": "src/components/quotes",
-    "mudancas": 14
-   },
-   {
-    "pasta": "src/services/sicoob",
     "mudancas": 14
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 30
+    "mudancas": 31
    },
    {
     "arquivo": "package.json",
-    "mudancas": 23
+    "mudancas": 22
    },
    {
     "arquivo": "PENDENCIAS.md",
@@ -215,10 +215,14 @@
    },
    {
     "arquivo": "package-lock.json",
-    "mudancas": 19
+    "mudancas": 18
    },
    {
     "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 15
+   },
+   {
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     "mudancas": 14
    },
    {
@@ -226,11 +230,11 @@
     "mudancas": 13
    },
    {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    "mudancas": 13
+    "arquivo": ".github/workflows/codeql.yml",
+    "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
+    "arquivo": "scripts/automation.config.json",
     "mudancas": 12
    },
    {
@@ -238,7 +242,7 @@
     "mudancas": 12
    },
    {
-    "arquivo": "scripts/automation.config.json",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 11
    },
    {
@@ -250,16 +254,12 @@
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 10
-   },
-   {
     "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
     "mudancas": 10
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 9
+    "mudancas": 10
    },
    {
     "arquivo": "src/pages/KitBuilderPage.tsx",
@@ -267,6 +267,10 @@
    },
    {
     "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "src/services/sicoob/orderService.ts",
     "mudancas": 9
    },
    {
@@ -282,26 +286,22 @@
     "mudancas": 8
    },
    {
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+    "mudancas": 8
+   },
+   {
     "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
     "mudancas": 8
    },
    {
-    "arquivo": "src/services/QuoteService.ts",
+    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
     "mudancas": 8
-   },
-   {
-    "arquivo": "src/services/sicoob/orderService.ts",
-    "mudancas": 8
-   },
-   {
-    "arquivo": ".github/workflows/bundle-check.yml",
-    "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 245
+    "commits": 246
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5353,
-  "arquivos_codigo": 3239,
-  "linhas_codigo": 512826,
-  "rotas": 142,
+  "arquivos_total": 5375,
+  "arquivos_codigo": 3252,
+  "linhas_codigo": 516542,
+  "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
-  "itens_menu": 87,
+  "itens_menu": 88,
   "modulos": 146,
-  "componentes": 1181,
+  "componentes": 1184,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 632,
-  "cron_jobs": 28,
-  "testes": 964,
+  "migrations": 638,
+  "cron_jobs": 29,
+  "testes": 973,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3491
+   "linhas": 3515
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -691,8 +691,8 @@
    "linhas": 161
   },
   "scripts/qa": {
-   "arquivos": 40,
-   "linhas": 9664
+   "arquivos": 44,
+   "linhas": 11154
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1138,
-   "linhas": 168448
+   "arquivos": 1141,
+   "linhas": 169302
   },
   "src/constants": {
    "arquivos": 3,
@@ -804,11 +804,11 @@
   },
   "src/integrations": {
    "arquivos": 3,
-   "linhas": 13647
+   "linhas": 13709
   },
   "src/lib": {
    "arquivos": 170,
-   "linhas": 23111
+   "linhas": 23116
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,15 +816,15 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52311
+   "linhas": 52423
   },
   "src/routes": {
    "arquivos": 9,
-   "linhas": 525
+   "linhas": 529
   },
   "src/services": {
-   "arquivos": 25,
-   "linhas": 3820
+   "arquivos": 26,
+   "linhas": 4087
   },
   "src/stores": {
    "arquivos": 6,
@@ -840,7 +840,7 @@
   },
   "src/types": {
    "arquivos": 26,
-   "linhas": 3990
+   "linhas": 3993
   },
   "src/utils": {
    "arquivos": 37,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 174,
-   "linhas": 30718
+   "arquivos": 178,
+   "linhas": 31284
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -983,8 +983,8 @@
    "linhas": 1469
   },
   "tests/services": {
-   "arquivos": 17,
-   "linhas": 1889
+   "arquivos": 18,
+   "linhas": 2121
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,
@@ -996,7 +996,7 @@
   },
   "tests/sicoob": {
    "arquivos": 9,
-   "linhas": 511
+   "linhas": 608
   },
   "tests/sicoob-status-mapping.test.ts": {
    "arquivos": 1,
@@ -1054,7 +1054,7 @@
  "maiores_arquivos": [
   {
    "arquivo": "src/integrations/supabase/types.ts",
-   "linhas": 13536
+   "linhas": 13598
   },
   {
    "arquivo": "scripts/regras_negocio/generate.py",
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1803
+   "linhas": 1827
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",
@@ -1394,6 +1394,7 @@
    "saved_filters",
    "scheduled_reports",
    "search_analytics",
+   "sicoob_orders",
    "sicoob_rls_audit_logs",
    "system_settings",
    "user_preferences",

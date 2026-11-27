@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2275,
- "arestas": 9255,
+ "nos": 2279,
+ "arestas": 9291,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 641
+   "importado_por": 643
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,19 +14,19 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 514
+   "importado_por": 516
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 421
+   "importado_por": 423
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 400
+   "importado_por": 403
   },
   {
    "arquivo": "src/components/ui/input.tsx",
-   "importado_por": 271
+   "importado_por": 273
   },
   {
    "arquivo": "src/components/ui/tooltip.tsx",
@@ -34,11 +34,11 @@
   },
   {
    "arquivo": "src/contexts/AuthContext.tsx",
-   "importado_por": 170
+   "importado_por": 173
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
-   "importado_por": 158
+   "importado_por": 161
   },
   {
    "arquivo": "src/components/ui/label.tsx",
@@ -50,7 +50,7 @@
   },
   {
    "arquivo": "src/components/ui/dialog.tsx",
-   "importado_por": 141
+   "importado_por": 142
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
@@ -69,12 +69,12 @@
    "importado_por": 84
   },
   {
-   "arquivo": "src/lib/logger.ts",
+   "arquivo": "src/components/ui/table.tsx",
    "importado_por": 81
   },
   {
-   "arquivo": "src/components/ui/table.tsx",
-   "importado_por": 79
+   "arquivo": "src/lib/logger.ts",
+   "importado_por": 81
   },
   {
    "arquivo": "src/lib/external-db/index.ts",
@@ -86,7 +86,7 @@
   },
   {
    "arquivo": "src/components/ui/textarea.tsx",
-   "importado_por": 63
+   "importado_por": 64
   },
   {
    "arquivo": "src/components/ui/switch.tsx",
@@ -102,7 +102,7 @@
   },
   {
    "arquivo": "src/lib/format.ts",
-   "importado_por": 47
+   "importado_por": 50
   },
   {
    "arquivo": "src/components/ui/popover.tsx",
@@ -114,7 +114,7 @@
   },
   {
    "arquivo": "src/components/ui/alert.tsx",
-   "importado_por": 40
+   "importado_por": 42
   },
   {
    "arquivo": "src/components/ui/dropdown-menu.tsx",
@@ -149,6 +149,10 @@
    "importado_por": 28
   },
   {
+   "arquivo": "src/stores/useConfirmDialogStore.ts",
+   "importado_por": 28
+  },
+  {
    "arquivo": "src/types/product-catalog.ts",
    "importado_por": 28
   },
@@ -158,10 +162,6 @@
   },
   {
    "arquivo": "src/components/ui/progress.tsx",
-   "importado_por": 27
-  },
-  {
-   "arquivo": "src/lib/crm-db.ts",
    "importado_por": 27
   }
  ],
@@ -499,7 +499,7 @@
   {
    "modulo": "stores",
    "depende_de": 2,
-   "importado_por": 22
+   "importado_por": 23
   },
   {
    "modulo": "components/catalog",

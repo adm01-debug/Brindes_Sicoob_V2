@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `870bfb1f7b` · branch `main` · 2026-11-27 01:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `18833012e7` · branch `main` · 2026-11-27 06:24 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -260,7 +260,7 @@
 | `sicoob_order_items` | _(sem COMMENT ON TABLE — significado não documentado)_ | 18 colunas | migration |
 | `sicoob_order_payments` | _(sem COMMENT ON TABLE — significado não documentado)_ | 17 colunas | migration |
 | `sicoob_order_shipments` | _(sem COMMENT ON TABLE — significado não documentado)_ | 13 colunas | migration |
-| `sicoob_orders` | _(sem COMMENT ON TABLE — significado não documentado)_ | 33 colunas | migration |
+| `sicoob_orders` | _(sem COMMENT ON TABLE — significado não documentado)_ | 36 colunas | migration |
 | `sicoob_performance_reports` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `sicoob_quote_reorder_requests` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
 | `sicoob_reorder_requests` | _(sem COMMENT ON TABLE — significado não documentado)_ | 7 colunas | migration |
@@ -446,9 +446,7 @@ _nenhum item encontrado_
 | rls | `catalog_marketing_term_usage`: acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/hooks/useCatalogMarketing.ts` |
 | rls | `discount_approval_requests`: front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/components/admin/DiscountApprovalQueue.tsx` |
 | rls | `scheduled_notifications`: front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/hooks/useNotificationOmnichannel.ts` |
-| rls | `sicoob_centrais`: front faz INSERT mas nenhuma política RLS permite INSERT → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
-| rls | `sicoob_centrais`: front faz UPDATE mas nenhuma política RLS permite UPDATE → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
-| rls | `sicoob_centrais`: front faz DELETE mas nenhuma política RLS permite DELETE → vai falhar/retornar vazio para usuários | `src/pages/admin/AdminCentraisPage.tsx` |
+| rls | `sicoob_budget_audit`: acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/services/sicoob/budgetService.ts` |
 | rls | `v_sicoob_hierarchy`: acessada do front (1 arquivo(s)) sem RLS (não encontrado) | `src/components/sicoob/HierarchyPath.tsx` |
 | edge | edge function `dashboard-edge` invocada mas não existe em supabase/functions/ | `scripts/ai-context/gerar.unit.mjs` |
 | edge | edge function `fixture-edge` invocada mas não existe em supabase/functions/ | `scripts/ai-context/gerar.unit.mjs` |
@@ -575,6 +573,7 @@ _nenhum item encontrado_
 - `external_connections_sync_log.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `webhook_delivery_metrics.http_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `sicoob_orders.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
+- `sicoob_orders.sla_closed_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `sicoob_order_history.previous_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `sicoob_order_history.new_status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `sicoob_rls_audit_logs.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.

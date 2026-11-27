@@ -7313,10 +7313,31 @@
    "src/components/ui/alert-dialog.tsx",
    "src/components/ui/button.tsx"
   ],
+  "src/components/sicoob/BudgetAuditCard.tsx": [
+   "src/components/ui/alert.tsx",
+   "src/components/ui/badge.tsx",
+   "src/components/ui/card.tsx",
+   "src/components/ui/input.tsx",
+   "src/components/ui/skeleton.tsx",
+   "src/components/ui/table.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/lib/format.ts",
+   "src/services/sicoob/budgetService.ts"
+  ],
   "src/components/sicoob/BudgetExceededBanner.tsx": [
    "src/components/ui/alert.tsx",
    "src/hooks/sicoob/useSicoobBudget.ts",
    "src/lib/format.ts"
+  ],
+  "src/components/sicoob/CooperativaCeilingCard.tsx": [
+   "src/components/ui/alert.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/components/ui/input.tsx",
+   "src/components/ui/skeleton.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/lib/format.ts",
+   "src/services/sicoob/cooperativaBudgetService.ts"
   ],
   "src/components/sicoob/GestorComprasMetrics.tsx": [
    "src/components/ui/alert.tsx",
@@ -7330,6 +7351,19 @@
   "src/components/sicoob/HierarchyPath.tsx": [
    "src/integrations/supabase/client.ts",
    "src/lib/utils.ts"
+  ],
+  "src/components/sicoob/LimitIncreaseApprovalsCard.tsx": [
+   "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/components/ui/dialog.tsx",
+   "src/components/ui/skeleton.tsx",
+   "src/components/ui/table.tsx",
+   "src/components/ui/textarea.tsx",
+   "src/contexts/AuthContext.tsx",
+   "src/lib/format.ts",
+   "src/services/sicoob/approvalService.ts",
+   "src/stores/useConfirmDialogStore.ts"
   ],
   "src/components/sicoob/SicoobStatusBadge.tsx": [
    "src/components/ui/badge.tsx",
@@ -11235,6 +11269,7 @@
    "src/components/ui/tabs.tsx",
    "src/integrations/supabase/client.ts",
    "src/integrations/supabase/types.ts",
+   "src/services/sicoob/cooperativaBudgetService.ts",
    "src/stores/useConfirmDialogStore.ts"
   ],
   "src/pages/admin/AdminVideoVariantsPage.tsx": [
@@ -11448,7 +11483,8 @@
    "src/components/ui/table.tsx",
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
-   "src/integrations/supabase/types.ts"
+   "src/integrations/supabase/types.ts",
+   "src/services/sicoob/cooperativaBudgetService.ts"
   ],
   "src/pages/admin/sicoob/tabs/CooperativasTab.tsx": [
    "src/components/ui/button.tsx",
@@ -11477,6 +11513,7 @@
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
    "src/integrations/supabase/types.ts",
+   "src/services/sicoob/cooperativaBudgetService.ts",
    "src/stores/useConfirmDialogStore.ts"
   ],
   "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx": [
@@ -11769,6 +11806,7 @@
   ],
   "src/pages/sicoob/GestorApprovalsPage.tsx": [
    "src/components/seo/PageSEO.tsx",
+   "src/components/sicoob/LimitIncreaseApprovalsCard.tsx",
    "src/components/ui/badge.tsx",
    "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
@@ -11780,6 +11818,7 @@
   ],
   "src/pages/sicoob/GestorAuditPage.tsx": [
    "src/components/seo/PageSEO.tsx",
+   "src/components/sicoob/BudgetAuditCard.tsx",
    "src/components/ui/badge.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/input.tsx",
@@ -11790,6 +11829,7 @@
   "src/pages/sicoob/GestorBudgetsPage.tsx": [
    "src/components/layout/MfaGate.tsx",
    "src/components/seo/PageSEO.tsx",
+   "src/components/sicoob/CooperativaCeilingCard.tsx",
    "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
   ],
   "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx": [
@@ -12055,6 +12095,7 @@
    "src/pages/admin/AdminCadastrosPage.tsx",
    "src/pages/admin/AdminCampanhasPage.tsx",
    "src/pages/admin/AdminCategoriesPage.tsx",
+   "src/pages/admin/AdminCentraisPage.tsx",
    "src/pages/admin/AdminCooperativasPage.tsx",
    "src/pages/admin/AdminNewsletterPage.tsx",
    "src/pages/admin/AdminPAsPage.tsx",
@@ -12251,6 +12292,9 @@
    "src/integrations/supabase/client.ts"
   ],
   "src/services/sicoob/commonService.ts": [
+   "src/integrations/supabase/client.ts"
+  ],
+  "src/services/sicoob/cooperativaBudgetService.ts": [
    "src/integrations/supabase/client.ts"
   ],
   "src/services/sicoob/costCenterService.ts": [

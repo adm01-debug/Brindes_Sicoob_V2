@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 632,
+ "migrations": 638,
  "seeds": [],
  "avisos": [
   "47 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -109,6 +109,10 @@
  ],
  "funcoes": [
   "_can_act_on_behalf_of_others",
+  "_cooperativa_verba_distribuida",
+  "_pode_ver_verba_da_cooperativa",
+  "_trava_competencia_da_cooperativa",
+  "_trava_pa_da_verba",
   "accept_sicoob_invitation",
   "acquire_ai_quota",
   "add_product_novelty",
@@ -140,6 +144,7 @@
   "auto_revoke_orphan_full_keys",
   "bulk_update_quote_status_atomic",
   "can_approve_discount",
+  "can_decide_limit_increase",
   "can_grant_mcp_full",
   "can_manage",
   "can_manage_connections",
@@ -179,6 +184,7 @@
   "cleanup_security_logs",
   "cleanup_test_auth_orphans",
   "cleanup_webhook_logs",
+  "close_sicoob_order_sla",
   "complete_optimization",
   "confirm_sicoob_order",
   "connections_auto_test_interval_from_schedule",
@@ -186,6 +192,7 @@
   "consume_quote_price_attestation",
   "consume_step_up_token",
   "convert_quote_to_sicoob_order",
+  "cooperativa_verba_distribuida",
   "copy_group_personalization_to_product",
   "create_default_notification_preferences",
   "create_organization_with_owner",
@@ -196,6 +203,7 @@
   "create_sicoob_order_consolidation",
   "current_user_cooperativa_id",
   "current_user_pa_id",
+  "decide_limit_increase_request",
   "decide_sicoob_order_artwork",
   "determine_sicoob_order_flow_status",
   "dispatch_quote_webhook_event",
@@ -391,6 +399,7 @@
   "record_sicoob_order_payment",
   "record_sicoob_order_status_event",
   "refresh_mv_benchmark_setorial",
+  "refresh_sicoob_order_sla_status",
   "refresh_sicoob_reorder_quote",
   "refund_sicoob_order_payment",
   "register_quote_price_attestation",
@@ -416,6 +425,7 @@
   "revoke_sicoob_invitation",
   "revoke_sicoob_user_access",
   "rotate_quote_approval_evidence_key",
+  "salvar_verba_pa",
   "save_quote_atomic",
   "save_quote_atomic_attested",
   "save_quote_atomic_idempotent",
@@ -432,6 +442,7 @@
   "set_optimization_queue_updated_at",
   "set_postgrest_request_timeout",
   "set_quote_hierarchy",
+  "set_sicoob_order_sla_deadline",
   "sicoob_actor_can_approve",
   "sicoob_actor_can_manage_consolidation",
   "sicoob_actor_can_manage_finance",
@@ -455,14 +466,19 @@
   "sicoob_export_orders_for_actor",
   "sicoob_guard_reorder_catalog_validity",
   "sicoob_inviter_can_issue",
+  "sicoob_pa_notification_settings_set",
+  "sicoob_pa_slack_webhook",
   "snapshot_hardening_status",
   "soft_delete_record",
   "submit_quote_response",
   "submit_signed_quote_response",
   "sync_external_connections_from_credentials",
   "sync_is_active_with_deleted_at",
+  "tg_cooperativa_budget_not_below_distributed",
   "tg_pa_budget_entries_competencia_aberta",
   "tg_pa_budget_entries_immutable",
+  "tg_pa_budget_respects_cooperativa_ceiling",
+  "tg_pa_transfer_respects_cooperativa_ceiling",
   "tg_recalc_pa_budget_states",
   "tg_set_order_cost_center",
   "tg_set_updated_at",
@@ -1178,6 +1194,13 @@
    "funcao": "log_sicoob_admin_action"
   },
   {
+   "nome": "trg_pa_transfer_respects_cooperativa_ceiling",
+   "quando": "after",
+   "evento": "update of cooperativa_id",
+   "tabela": "postos_atendimento",
+   "funcao": "tg_pa_transfer_respects_cooperativa_ceiling"
+  },
+  {
    "nome": "trg_pas_updated",
    "quando": "before",
    "evento": "update",
@@ -1738,6 +1761,20 @@
    "funcao": "protect_sicoob_order_payment"
   },
   {
+   "nome": "close_sicoob_order_sla",
+   "quando": "before",
+   "evento": "insert or update of status",
+   "tabela": "sicoob_orders",
+   "funcao": "close_sicoob_order_sla"
+  },
+  {
+   "nome": "set_sicoob_order_sla_deadline",
+   "quando": "before",
+   "evento": "insert or update of status",
+   "tabela": "sicoob_orders",
+   "funcao": "set_sicoob_order_sla_deadline"
+  },
+  {
    "nome": "tr_capture_sicoob_order_approval_policy",
    "quando": "before",
    "evento": "insert or update",
@@ -2008,6 +2045,11 @@
    "nome": "sicoob-materialize-overdue-payments",
    "agenda": "17 * * * *",
    "migration": "20260922225200_materialize_overdue_sicoob_payments.sql"
+  },
+  {
+   "nome": "sicoob-refresh-order-sla",
+   "agenda": "*/15 * * * *",
+   "migration": "20261126120000_sicoob_order_sla_lifecycle.sql"
   },
   {
    "nome": "snapshot-hardening-daily",
@@ -8943,13 +8985,13 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 0,
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [
     "trg_coop_budgets_updated"
    ],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "cooperativas": {
    "colunas": {
@@ -14216,7 +14258,7 @@
      "tipo": "uuid",
      "nn": false,
      "pk": false,
-     "default": null,
+     "default": "auth.uid()",
      "ref": "auth"
     },
     "requested_limit": {
@@ -14244,15 +14286,27 @@
    "rls": true,
    "policies": [
     {
+     "nome": "limit_increase_requests_scope_insert",
+     "comando": "insert",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "limit_increase_requests_scope_select",
+     "comando": "select",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
      "nome": "PA Managers can insert limit requests",
      "comando": "insert",
-     "para": "public",
+     "para": "authenticated",
      "tipo": "permissive"
     },
     {
      "nome": "Users can view their own PA limit requests",
      "comando": "select",
-     "para": "public",
+     "para": "authenticated",
      "tipo": "permissive"
     }
    ],
@@ -18341,6 +18395,12 @@
      "comando": "select",
      "para": "authenticated",
      "tipo": "permissive"
+    },
+    {
+     "nome": "sicoob_order_audit_events_escopo_gerencial",
+     "comando": "select",
+     "para": "authenticated",
+     "tipo": "permissive"
     }
    ],
    "indices": [
@@ -22354,13 +22414,19 @@
     {
      "nome": "Admins can manage notification settings",
      "comando": "all",
-     "para": "public",
+     "para": "authenticated",
      "tipo": "permissive"
     },
     {
      "nome": "Managers can view their PA notification settings",
      "comando": "select",
      "para": "public",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "sicoob_pa_notification_settings_escopo_gerencial",
+     "comando": "select",
+     "para": "authenticated",
      "tipo": "permissive"
     }
    ],
@@ -23587,6 +23653,7 @@
    ],
    "triggers": [
     "tr_audit_pas",
+    "trg_pa_transfer_respects_cooperativa_ceiling",
     "trg_pas_updated"
    ],
    "sem_rls": false,
@@ -33607,6 +33674,24 @@
      "comando": "select",
      "para": "public",
      "tipo": "permissive"
+    },
+    {
+     "nome": "sicoob_centrais_admin_delete",
+     "comando": "delete",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "sicoob_centrais_admin_insert",
+     "comando": "insert",
+     "para": "authenticated",
+     "tipo": "permissive"
+    },
+    {
+     "nome": "sicoob_centrais_admin_update",
+     "comando": "update",
+     "para": "authenticated",
+     "tipo": "permissive"
     }
    ],
    "indices": [],
@@ -35936,6 +36021,27 @@
      "default": "0",
      "ref": null
     },
+    "sla_closed_at": {
+     "tipo": "timestamptz",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "sla_closed_outcome": {
+     "tipo": "text",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "sla_closed_status": {
+     "tipo": "text",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
     "sla_deadline": {
      "tipo": "timestamp with time zone",
      "nn": false,
@@ -36098,6 +36204,8 @@
     "pricing_formula_version": "string",
     "requires_artwork": "boolean",
     "shipping_amount": "number",
+    "sla_closed_at": "string | null",
+    "sla_closed_status": "string | null",
     "sla_deadline": "string | null",
     "sla_status": "string | null",
     "source_quote_id": "string | null",
@@ -36108,7 +36216,9 @@
     "updated_at": "string"
    },
    "drift": {
-    "so_na_migration": [],
+    "so_na_migration": [
+     "sla_closed_outcome"
+    ],
     "so_no_types": []
    },
    "usada_no_front": 8,
@@ -36119,6 +36229,8 @@
     "sicoob-seed-qa"
    ],
    "triggers": [
+    "close_sicoob_order_sla",
+    "set_sicoob_order_sla_deadline",
     "tr_capture_sicoob_order_approval_policy",
     "tr_guard_sicoob_approval_status_transition",
     "tr_preserve_sicoob_artwork_requirement",
@@ -41004,6 +41116,11 @@
    "usada_em": 2
   },
   {
+   "nome": "can_decide_limit_increase",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
    "nome": "can_grant_mcp_full",
    "definida": true,
    "usada_em": 5
@@ -41089,6 +41206,11 @@
    "usada_em": 1
   },
   {
+   "nome": "cooperativa_verba_distribuida",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
    "nome": "copy_group_personalization_to_product",
    "definida": true,
    "usada_em": 2
@@ -41115,6 +41237,11 @@
   },
   {
    "nome": "create_sicoob_order_consolidation",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "decide_limit_increase_request",
    "definida": true,
    "usada_em": 1
   },
@@ -41574,6 +41701,11 @@
    "usada_em": 1
   },
   {
+   "nome": "salvar_verba_pa",
+   "definida": true,
+   "usada_em": 2
+  },
+  {
    "nome": "save_quote_atomic_attested",
    "definida": true,
    "usada_em": 1
@@ -41620,6 +41752,16 @@
   },
   {
    "nome": "sicoob_export_orders_for_actor",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "sicoob_pa_notification_settings_set",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "sicoob_pa_slack_webhook",
    "definida": true,
    "usada_em": 1
   },

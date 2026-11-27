@@ -1,14 +1,14 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 257,
+ "total": 258,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
   "lib": 170,
   "python": 12,
-  "services": 25,
+  "services": 26,
   "stores": 6,
   "utils": 37
  },
@@ -672,7 +672,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 404,
+   "usado_por": 405,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -736,7 +736,7 @@
     "services/sicoob",
     "utils"
    ],
-   "coberto_por_testes": 17,
+   "coberto_por_testes": 18,
    "orfao": false
   },
   {
@@ -753,7 +753,7 @@
     "TablesUpdate"
    ],
    "export_default": null,
-   "linhas": 13536,
+   "linhas": 13598,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -911,7 +911,7 @@
     "lib/navigation",
     "pages/sicoob"
    ],
-   "coberto_por_testes": 4,
+   "coberto_por_testes": 5,
    "orfao": false
   },
   {
@@ -2615,7 +2615,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 44,
+   "usado_por": 47,
    "usado_por_modulos": [
     "components/bi",
     "components/collections",
@@ -3312,7 +3312,7 @@
     "components/navigation",
     "lib/navigation"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {
@@ -4351,7 +4351,7 @@
     "summarizeRoutes"
    ],
    "export_default": null,
-   "linhas": 158,
+   "linhas": 163,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -6280,7 +6280,7 @@
     "sicoobApprovalService"
    ],
    "export_default": null,
-   "linhas": 176,
+   "linhas": 270,
    "tabelas": [
     "limit_increase_requests",
     "profiles",
@@ -6288,6 +6288,8 @@
    ],
    "rpcs": [
     "approve_sicoob_order",
+    "can_decide_limit_increase",
+    "decide_limit_increase_request",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
     "request_sicoob_order_approval",
@@ -6299,8 +6301,9 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 4,
+   "usado_por": 5,
    "usado_por_modulos": [
+    "components/sicoob",
     "hooks",
     "pages/sicoob"
    ],
@@ -6311,13 +6314,16 @@
    "arquivo": "src/services/sicoob/budgetService.ts",
    "camada": "services",
    "exports": [
+    "BudgetPeriod",
+    "currentBudgetPeriod",
     "sicoobBudgetService"
    ],
    "export_default": null,
-   "linhas": 54,
+   "linhas": 100,
    "tabelas": [
     "pa_budgets",
-    "postos_atendimento"
+    "postos_atendimento",
+    "sicoob_budget_audit"
    ],
    "rpcs": [],
    "edges": [],
@@ -6326,8 +6332,9 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 2,
+   "usado_por": 3,
    "usado_por_modulos": [
+    "components/sicoob",
     "hooks/sicoob",
     "pages/sicoob"
    ],
@@ -6356,6 +6363,40 @@
    "usado_por": 2,
    "usado_por_modulos": [
     "pages/sicoob"
+   ],
+   "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/services/sicoob/cooperativaBudgetService.ts",
+   "camada": "services",
+   "exports": [
+    "COOPERATIVA_CEILING_QUERY_KEY",
+    "CooperativaCeiling",
+    "SaveCeilingInput",
+    "cooperativaCeilingQueryKey",
+    "loadCeiling",
+    "loadDistributedTotal",
+    "saveCeiling"
+   ],
+   "export_default": null,
+   "linhas": 120,
+   "tabelas": [
+    "cooperativa_budgets"
+   ],
+   "rpcs": [
+    "cooperativa_verba_distribuida"
+   ],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 4,
+   "usado_por_modulos": [
+    "components/sicoob",
+    "pages/admin"
    ],
    "coberto_por_testes": 1,
    "orfao": false
@@ -6511,7 +6552,7 @@
     "sicoobOrderService"
    ],
    "export_default": null,
-   "linhas": 316,
+   "linhas": 323,
    "tabelas": [
     "profiles",
     "sicoob_order_item_logs",
@@ -6723,11 +6764,12 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 22,
+   "usado_por": 23,
    "usado_por_modulos": [
     "components/admin",
     "components/cart",
     "components/common",
+    "components/sicoob",
     "hooks",
     "pages",
     "pages/admin",
