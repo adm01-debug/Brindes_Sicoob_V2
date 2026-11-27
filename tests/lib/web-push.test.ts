@@ -183,6 +183,31 @@ describe('web-push', () => {
     });
   });
 
+  it('mensagem de 5000 caracteres nao estoura o registro de 4096 bytes', async () => {
+    const { inscricao, chavePrivada, publica, auth } = await parUa();
+    const corpo = await cifrarCarga(
+      { title: 'Alerta', body: 'x'.repeat(5000), url: '/x', tag: 't' },
+      inscricao,
+    );
+
+    // 16 salt + 4 tamanho + 1 tamanho da chave + 65 chave + 16 tag do GCM.
+    expect(corpo.length).toBeLessThanOrEqual(16 + 4 + 1 + 65 + 4096);
+
+    const { texto } = await decifrarComoNavegador(corpo, chavePrivada, publica, auth);
+    const carga = JSON.parse(texto.slice(0, -1));
+    expect(carga.title).toBe('Alerta');
+    expect(carga.url).toBe('/x');
+    expect(carga.body.length).toBeLessThan(5000);
+    expect(carga.body.endsWith('...')).toBe(true);
+  });
+
+  it('rejeita salt que nao tenha 16 bytes', async () => {
+    const { inscricao } = await parUa();
+    await expect(
+      cifrarCarga({ title: 'A', body: 'b' }, inscricao, new Uint8Array(8)),
+    ).rejects.toThrow(/16 bytes/);
+  });
+
   it('rejeita chave VAPID publica com formato invalido', async () => {
     await expect(
       montarCabecalhoVapid({

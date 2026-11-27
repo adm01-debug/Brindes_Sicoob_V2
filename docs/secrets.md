@@ -48,6 +48,9 @@ Não versionar valores, tokens, senhas, URL com credenciais ou screenshots que o
 | `RESEND_API_KEY` | e-mail da fila de aprovações Sicoob e relatórios | **configuração remota ainda não verificada** |
 | `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
 | `SICOOB_APPROVAL_WORKER_SECRET` | autenticação HTTP dedicada do worker da outbox, sem transmitir a service role | **configuração remota ainda não verificada** |
+| `VAPID_PUBLIC_KEY` | `send-notification`; chave publica VAPID (base64url, 65 bytes) que assina o JWT do Web Push. Precisa ser a mesma que o front recebe em `VITE_VAPID_PUBLIC_KEY` - chave diferente faz o servico de push recusar com 401/403 | **configurar nas Edge Functions antes de publicar** |
+| `VAPID_PRIVATE_KEY` | `send-notification`; chave privada ES256 correspondente. Sem ela ou sem a publica, nenhum push e enviado e a entrega sai como `skipped` (a notificacao continua em `workspace_notifications`) | **configurar nas Edge Functions antes de publicar** |
+| `VAPID_SUBJECT` | `send-notification`; contato exigido pelo RFC 8292 (`mailto:` ou URL). Padrao `mailto:contato@sicoob.com.br` quando ausente | **configurar nas Edge Functions antes de publicar** |
 | `INTERNAL_FUNCTION_SECRET` | `send-notification`, `process-batch-export`, `monthly-health-report` e `connections-auto-test`; autentica chamadas de cron/Edge antes de criar cliente service role | **configurar nas Edge Functions antes de publicar** |
 | `WEBHOOK_DISPATCHER_SECRET` | `webhook-dispatcher`; segredo interno dedicado para disparos operacionais e retries | **configurar na Edge Function e no Vault antes de publicar a migration** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |

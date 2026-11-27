@@ -125,7 +125,7 @@ export async function cifrarCarga(
   inscricao: InscricaoPush,
   saltFixo?: Uint8Array,
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const textoPlano = encoder.encode(JSON.stringify(carga));
+  const textoPlano = encoder.encode(cargaQueCabe(carga));
 
   const chaveServidor = await crypto.subtle.generateKey(
     { name: 'ECDH', namedCurve: 'P-256' },
@@ -149,7 +149,10 @@ export async function cifrarCarga(
     await crypto.subtle.deriveBits({ name: 'ECDH', public: chaveCliente }, chaveServidor.privateKey, 256),
   );
 
+  // O salt tem 16 bytes por RFC 8188 §2.1 e o teste usa um fixo para tornar a
+  // decifra reproduzivel. Tamanho diferente desloca o cabecalho do registro.
   const salt = copiarBuffer(saltFixo ?? crypto.getRandomValues(new Uint8Array(16)));
+  if (salt.length !== 16) throw new Error('salt do Web Push precisa ter 16 bytes');
 
   // RFC 8291 §3.4: PRK_key = HKDF-Extract(auth_secret, ecdh_secret).
   // O ecdh_secret e o IKM e o auth_secret da inscricao e o salt — antes estavam
@@ -207,6 +210,37 @@ export function cargaPadrao(carga: CargaPush): string {
     url: carga.url ?? '/',
     tag: carga.tag ?? 'sicoob',
   });
+}
+
+/**
+ * O corpo vai em um unico registro de 4096 bytes (RFC 8188 §4), dos quais 103
+ * sao cabecalho e 16 a tag do GCM. O schema de `send-notification` aceita 5000
+ * caracteres de mensagem, entao um alerta longo nao caberia e o AES-GCM
+ * lancaria erro — o push inteiro se perderia. Aqui a mensagem e truncada ate
+ * o JSON final caber, preservando titulo, url e tag.
+ */
+const LIMITE_CARGA_BYTES = 4096 - 103 - 16 - 4;
+
+export function cargaQueCabe(carga: CargaPush): string {
+  const completa = cargaPadrao(carga);
+  if (encoder.encode(completa).length <= LIMITE_CARGA_BYTES) return completa;
+
+  // Trunca por code point para nao partir um par substituto.
+  const caracteres = Array.from(carga.body);
+  let baixo = 0;
+  let alto = caracteres.length;
+  let melhor = cargaPadrao({ ...carga, body: '' });
+  while (baixo <= alto) {
+    const meio = Math.floor((baixo + alto) / 2);
+    const tentativa = cargaPadrao({ ...carga, body: `${caracteres.slice(0, meio).join('')}...` });
+    if (encoder.encode(tentativa).length <= LIMITE_CARGA_BYTES) {
+      melhor = tentativa;
+      baixo = meio + 1;
+    } else {
+      alto = meio - 1;
+    }
+  }
+  return melhor;
 }
 
 /** Envia o push; nunca lanca — devolve o resultado para o chamador decidir. */
