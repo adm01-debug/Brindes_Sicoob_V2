@@ -53,6 +53,7 @@ const VALID_TABS = [
   'coupons',
   'access',
   'audit',
+  'config-audit',
   'sicoob-hierarchy',
   'system-config',
 ] as const;
