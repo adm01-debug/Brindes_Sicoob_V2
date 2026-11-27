@@ -54332,9 +54332,13 @@
             {
               "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 16,
+          "code_total_files": 17,
           "cron": [],
           "db": [
             "public.user_can_access_cooperativa",
@@ -54418,9 +54422,13 @@
             {
               "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
               "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 13,
+          "code_total_files": 14,
           "cron": [],
           "db": [
             "public.user_can_access_cooperativa",
@@ -58137,7 +58145,7 @@
               "hits": 4
             }
           ],
-          "code_total_files": 171,
+          "code_total_files": 172,
           "cron": [],
           "db": [
             "public._can_act_on_behalf_of_others",
@@ -58472,9 +58480,13 @@
             {
               "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 24,
+          "code_total_files": 25,
           "cron": [],
           "db": [
             "public.guard_profile_authority_fields",
@@ -66133,9 +66145,13 @@
             {
               "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
               "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+              "hits": 4
             }
           ],
-          "code_total_files": 2,
+          "code_total_files": 3,
           "cron": [],
           "db": [
             "public.pa_budget_close_competence",

@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 09:18 UTC
+
+- **functions** alterado (5): `public.current_user_cooperativa_id()`, `public.current_user_pa_id()`, `public.has_role(_user_id uuid, _role app_role)`, `public.is_admin(_user_id uuid)`, `public.user_can_access_pa(p_pa_id uuid)`
+
 ## 2026-11-27 07:18 UTC
 
 - **cron jobs** adicionado (1): `36:scheduled-reports-worker`
