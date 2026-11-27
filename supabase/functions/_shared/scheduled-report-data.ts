@@ -358,7 +358,7 @@ async function salesSection(
     // pelo vendedor precisa ser explícito: o worker roda com service_role e a
     // RLS de `sicoob_order_invoices` não seria aplicada.
     supabase.from("sicoob_order_invoices")
-      .select("order_id, invoice_number, amount, issued_at, sicoob_orders!inner(created_by)")
+      .select("order_id, invoice_number, amount, issued_at, created_at, sicoob_orders!inner(created_by)")
       .eq("sicoob_orders.created_by", sellerId)
       .gte("issued_at", since.slice(0, 10))
       .lt("issued_at", until.slice(0, 10))
@@ -401,7 +401,7 @@ async function salesSection(
   if (publicApprovalsRes.error) throw publicApprovalsRes.error;
   if (lateInvoicesRes.error) throw lateInvoicesRes.error;
 
-  const invoices = new Map<string, { number: string; amount: number | null; issuedAt: string }>();
+  const invoices = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
     const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
@@ -417,6 +417,7 @@ async function salesSection(
       number: String(inv.invoice_number ?? ""),
       amount,
       issuedAt: String(inv.issued_at ?? ""),
+      registeredAt: String(inv.created_at ?? inv.issued_at ?? ""),
     });
   }
   const invoiceRows = [...invoices.values()]
@@ -431,24 +432,41 @@ async function salesSection(
   // Ajustes: nota registrada na janela cuja emissao e anterior a ela. Sem a
   // deduplicacao por (pedido, numero) a mesma nota entrara duas vezes quando o
   // pdf e o xml forem anexados em ciclos diferentes.
+  //
+  // "Anterior" e medido pela data (dia) de registro, nao pela emissao: PDF e
+  // XML da MESMA nota podem ter datas de emissao divergentes, e o anexo com
+  // emissao igual ou posterior ao fechamento entrava aqui mesmo tendo sido
+  // registrado dentro da janela — ou seja, virava ajuste de um faturamento que
+  // ja estava no periodo. A nota emitida e registrada no mesmo ciclo nao e
+  // ajuste: ela ja esta no faturamento acima.
   const sinceDate = since.slice(0, 10);
   const lateAdjustments = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
     const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    // Nota emitida DENTRO da janela já está no faturamento do período, foi
+    // anexada no período dela: contar como ajuste somaria o mesmo valor duas
+    // vezes em relatórios diferentes (ou no mesmo, se o anexo tiver data
+    // divergente entre PDF e XML). Só é ajuste o que foi emitido ANTES.
+    if (issuedAtDoAnexo >= sinceDate) continue;
     if (invoices.has(key)) continue;
     const existing = lateAdjustments.get(key);
     if (existing) {
       if (existing.amount === null && amount !== null) existing.amount = amount;
       continue;
     }
+    const registeredAt = String(inv.created_at ?? "");
+    // A comparacao usa o REGISTRO (quando a nota entrou no sistema), nao a
+    // emissao: anexo registrado fora da janela em que foi emitido e o que
+    // caracteriza ajuste de ciclo.
+    if (!registeredAt || registeredAt.slice(0, 10) < sinceDate) continue;
     const issuedAt = String(inv.issued_at ?? "");
-    if (issuedAt && issuedAt >= sinceDate) continue;
     lateAdjustments.set(key, {
       number: String(inv.invoice_number ?? ""),
       amount,
       issuedAt,
-      registeredAt: String(inv.created_at ?? ""),
+      registeredAt,
     });
   }
   const lateRows = [...lateAdjustments.values()]
@@ -461,7 +479,7 @@ async function salesSection(
     escapeHtml(money(inv.amount ?? 0)),
   ]);
   const lateSection = lateBodies.length === 0 ? "" : "<h3>Ajustes de faturamento</h3>"
-    + `<p><strong>Notas anexadas no per\u00edodo com emiss\u00e3o anterior:</strong> ${lateRows.length} \u2014 `
+    + `<p><strong>Notas registradas no per\u00edodo com emiss\u00e3o anterior ao registro:</strong> ${lateRows.length} \u2014 `
     + `<strong>valor:</strong> ${escapeHtml(money(lateTotal))}</p>`
     + table(["Nota", "Emiss\u00e3o", "Registrada em", "Valor"], lateBodies.slice(0, ROW_LIMIT))
     + (lateBodies.length > ROW_LIMIT

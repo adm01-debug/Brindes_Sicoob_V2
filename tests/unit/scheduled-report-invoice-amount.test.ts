@@ -14,15 +14,16 @@ type Linha = Record<string, unknown>;
  */
 function clienteFalso(invoices: Linha[], lateInvoices: Linha[]) {
   const builder = (tabela: string) => {
+    // A mesma tabela e consultada duas vezes (faturamento por `issued_at` e
+    // ajustes por `created_at`), entao cada `from()` novo zera a coluna.
     let coluna = '';
     const chain: Record<string, unknown> = {
       select: () => chain,
-      eq: (col: string) => {
-        coluna = col;
-        return chain;
-      },
+      eq: () => chain,
+      // Vence o primeiro `gte` da consulta: a lista devolvida e a das notas
+      // do periodo (emissao) ou a das notas registradas (registro).
       gte: (col: string) => {
-        coluna = col;
+        if (!coluna) coluna = col;
         return chain;
       },
       lt: () => chain,
@@ -89,6 +90,36 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
     expect(ajustes).toContain('250,00');
     expect(ajustes).not.toContain('500,00');
+    expect(ajustes).toContain('1 \u2014');
+  });
+
+  it('nao trata como ajuste a nota registrada no periodo, mesmo com as datas de emissao divergentes entre PDF e XML', async () => {
+    // PDF emitido em 07/03 e XML emitido em 09/03 (mesma nota, datas
+    // divergentes), ambos registrados em 09/03 — antes do fechamento do ciclo
+    // (10/03): nada vira ajuste, porque a nota foi registrada dentro do
+    // periodo em que foi emitida e esta no faturamento.
+    const html = await relatorio(
+      [],
+      [
+        { order_id: 'ped-2', invoice_number: '555', amount: 100, issued_at: '2026-03-07', created_at: '2026-03-09T10:00:00.000Z' },
+        { order_id: 'ped-2', invoice_number: '555', amount: 100, issued_at: '2026-03-09', created_at: '2026-03-09T10:02:00.000Z' },
+      ],
+    );
+
+    expect(html).not.toContain('Ajustes de faturamento');
+  });
+
+  it('conta como ajuste a nota registrada no periodo cuja emissao e anterior ao registro', async () => {
+    const html = await relatorio(
+      [],
+      [
+        { order_id: 'ped-3', invoice_number: '777', amount: 400, issued_at: '2026-01-20', created_at: '2026-03-04T10:00:00.000Z' },
+        { order_id: 'ped-3', invoice_number: '777', amount: 400, issued_at: '2026-01-20', created_at: '2026-03-06T10:00:00.000Z' },
+      ],
+    );
+
+    const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    expect(ajustes).toContain('400,00');
     expect(ajustes).toContain('1 \u2014');
   });
 
