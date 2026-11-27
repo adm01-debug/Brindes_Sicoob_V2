@@ -5,9 +5,11 @@
 -- mesclado e nao pode ser editado (etapa 14 do plano), entao a correcao vem
 -- numa migration nova.
 --
--- O DROP so roda quando a assinatura esta errada: depois dele a funcao e
--- recriada nesta mesma migration, com o corpo identico ao do 004. Nunca
--- deixa o banco sem a funcao.
+-- O DROP so roda quando a assinatura ainda e a antiga (INTEGER). Depois dele
+-- a funcao e recriada nesta mesma migration, com a assinatura VIGENTE
+-- estabelecida por 20261125100000_notification_functions_contract.sql:
+-- RETURNS VOID, SECURITY DEFINER, SET search_path = public e a mesma ACL.
+-- Nunca deixa o banco sem a funcao.
 DO $fix_cleanup$
 BEGIN
   IF EXISTS (
@@ -15,25 +17,28 @@ BEGIN
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public'
       AND p.proname = 'cleanup_old_notifications'
-      AND pg_get_function_result(p.oid) <> 'integer'
+      AND p.pronargs = 0
+      AND pg_get_function_result(p.oid) <> 'void'
   ) THEN
     DROP FUNCTION public.cleanup_old_notifications();
+  END IF;
+
+  IF to_regprocedure('public.cleanup_old_notifications()') IS NULL THEN
+    CREATE FUNCTION public.cleanup_old_notifications()
+    RETURNS VOID
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    SET search_path = public
+    AS $fn$
+    BEGIN
+      DELETE FROM public.notifications
+      WHERE created_at < NOW() - INTERVAL '90 days' AND is_read = TRUE;
+    END;
+    $fn$;
   END IF;
 END;
 $fix_cleanup$;
 
-CREATE OR REPLACE FUNCTION cleanup_old_notifications()
-RETURNS INT AS $$
-DECLARE
-  v_deleted INT;
-BEGIN
-  WITH deleted AS (
-    DELETE FROM notifications
-    WHERE created_at < NOW() - INTERVAL '90 days'
-      AND is_read = true
-    RETURNING *
-  )
-  SELECT COUNT(*)::INT INTO v_deleted FROM deleted;
-  RETURN v_deleted;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+REVOKE ALL ON FUNCTION public.cleanup_old_notifications() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.cleanup_old_notifications() FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.cleanup_old_notifications() TO service_role;
