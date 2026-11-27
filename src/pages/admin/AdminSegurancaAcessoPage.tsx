@@ -27,6 +27,7 @@ import { ForceGlobalLogoutDialog } from "@/components/admin/security/ForceGlobal
 import { RecentAuditTable } from "@/components/admin/security/RecentAuditTable";
 import { SuspiciousTokensPanel } from "@/components/admin/security/SuspiciousTokensPanel";
 import { HardeningHealthCard } from "@/components/admin/security/HardeningHealthCard";
+import { DatabaseIntegrityCard } from "@/components/admin/security/DatabaseIntegrityCard";
 import { ActiveIpsList } from "@/components/admin/security/ActiveIpsList";
 import { AutoDefenseTab } from "@/components/admin/security/AutoDefenseTab";
 
@@ -187,6 +188,8 @@ export default function AdminSegurancaAcessoPage() {
         </div>
 
         <HardeningHealthCard />
+
+        <DatabaseIntegrityCard />
 
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label="Detecções (200 últimas)" value={stats.total} icon={<Activity className="h-4 w-4 text-muted-foreground" />} />
