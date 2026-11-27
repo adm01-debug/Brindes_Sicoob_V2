@@ -312,7 +312,9 @@ export default function PAWalletPage() {
   const [requestReason, setRequestReason] = React.useState('');
 
   const { data: budget } = useQuery({
-    queryKey: ['pa-budget', user?.id],
+    // A chave carrega o usuario: em troca de conta na mesma aba o cache do
+    // posto anterior nao pode ser servido para a conta nova.
+    queryKey: ['pa-budget', paId, user?.id],
     queryFn: () => {
       if (!paId) return null;
       return sicoobBudgetService.getBudgetByPa(paId);
@@ -321,7 +323,7 @@ export default function PAWalletPage() {
   });
 
   const { data: requests } = useQuery({
-    queryKey: ['budget-requests', paId],
+    queryKey: ['budget-requests', paId, user?.id],
     queryFn: () => {
       if (!paId) return [];
       return sicoobApprovalService.listLimitIncreaseRequests(paId);
