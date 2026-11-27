@@ -15,6 +15,7 @@ import { SecretField } from "./SecretField";
 import { useSecretsManager } from "@/hooks/useSecretsManager";
 import { GitHubCredentialsTester } from "./GitHubCredentialsTester";
 import { IssueMcpKeyForm } from "./IssueMcpKeyForm";
+import { McpAccessViolationsPanel } from "./McpAccessViolationsPanel";
 import { isFullAccess } from "@/lib/mcp/scopes";
 import { useDevChallenge } from "@/contexts/DevChallengeContext";
 import { sanitizeError } from "@/lib/security/sanitize-error";
@@ -235,6 +236,7 @@ export function McpTab() {
           )}
         </CardContent>
       </Card>
+      <McpAccessViolationsPanel />
     </div>
   );
 }
