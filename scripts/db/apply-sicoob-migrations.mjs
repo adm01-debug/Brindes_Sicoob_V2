@@ -266,7 +266,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
-    sha256: "5ca3e51c8d597796b4695ec49d81a2540a086f981854a5681913462631ebf5ca",
+    sha256: "96bbd7070064555a32f48422d84088b17ab3b6a0dacab876ad614ce253359cad",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

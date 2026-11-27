@@ -148,8 +148,37 @@ DECLARE
   v_teto               numeric(14,2);
   v_distribuido        numeric(14,2);
   v_total              numeric(14,2);
+  v_valor_novo         numeric(14,2);
+  v_valor_antigo       numeric(14,2);
   v_detalhado          boolean;
 BEGIN
+  -- `verba_planejada` é o valor autoritativo desde o livro de verba; o gatilho
+  -- `trg_sync_pa_budget_planejada` só espelha para `verba_total` DEPOIS deste
+  -- (a ordem dos gatilhos BEFORE é alfabética). Ler `NEW.verba_total` aqui dava
+  -- o valor antigo quando a decisão de aumento gravava `verba_planejada`, e a
+  -- aprovação passava por cima do teto da cooperativa sem ser notada.
+  IF TG_OP = 'INSERT' THEN
+    v_valor_novo := COALESCE(NEW.verba_planejada, NEW.verba_total, 0);
+  ELSE
+    v_valor_novo := COALESCE(
+      CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada
+           THEN NEW.verba_planejada END,
+      CASE WHEN NEW.verba_total IS DISTINCT FROM OLD.verba_total
+           THEN NEW.verba_total END,
+      NEW.verba_planejada,
+      NEW.verba_total,
+      0
+    );
+    v_valor_antigo := COALESCE(
+      CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada
+           THEN OLD.verba_planejada END,
+      CASE WHEN NEW.verba_total IS DISTINCT FROM OLD.verba_total
+           THEN OLD.verba_total END,
+      OLD.verba_planejada,
+      OLD.verba_total,
+      0
+    );
+  END IF;
   -- FOR SHARE: espera uma transferencia de PA em andamento e o relê já no
   -- destino, para nao validar a verba contra o teto da Singular de origem.
   SELECT pa.cooperativa_id INTO v_cooperativa_id
@@ -187,11 +216,11 @@ BEGIN
     IF v_cooperativa_antiga IS NOT DISTINCT FROM v_cooperativa_id
        AND OLD.ano = NEW.ano
        AND OLD.mes = NEW.mes THEN
-      v_distribuido := v_distribuido - COALESCE(OLD.verba_total, 0);
+      v_distribuido := v_distribuido - v_valor_antigo;
     END IF;
   END IF;
 
-  v_total := v_distribuido + COALESCE(NEW.verba_total, 0);
+  v_total := v_distribuido + v_valor_novo;
 
   IF v_total > v_teto THEN
     IF v_detalhado THEN
@@ -213,7 +242,7 @@ REVOKE ALL ON FUNCTION public.tg_pa_budget_respects_cooperativa_ceiling() FROM P
 
 DROP TRIGGER IF EXISTS trg_pa_budget_respects_cooperativa_ceiling ON public.pa_budgets;
 CREATE TRIGGER trg_pa_budget_respects_cooperativa_ceiling
-BEFORE INSERT OR UPDATE OF verba_total, ano, mes, pa_id ON public.pa_budgets
+BEFORE INSERT OR UPDATE OF verba_total, verba_planejada, ano, mes, pa_id ON public.pa_budgets
 FOR EACH ROW EXECUTE FUNCTION public.tg_pa_budget_respects_cooperativa_ceiling();
 
 -- ---------------------------------------------------------------------------

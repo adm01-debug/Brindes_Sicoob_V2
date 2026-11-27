@@ -26,9 +26,14 @@ vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => mockAuth }));
 
 const toastSuccess = vi.fn();
 const toastError = vi.fn();
-vi.mock('sonner', () => ({ toast: { success: (m: string) => toastSuccess(m), error: (...a: unknown[]) => toastError(...a) } }));
+vi.mock('sonner', () => ({
+  toast: { success: (m: string) => toastSuccess(m), error: (...a: unknown[]) => toastError(...a) },
+}));
 
-import { CooperativaCeilingCard, competenceLabel } from '@/components/sicoob/CooperativaCeilingCard';
+import {
+  CooperativaCeilingCard,
+  competenceLabel,
+} from '@/components/sicoob/CooperativaCeilingCard';
 
 function renderizar(no: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -42,6 +47,7 @@ beforeEach(() => {
   mockAuth.isGestorCompras = true;
   mockAuth.isDev = false;
   mockAuth.isSupervisor = false;
+  mockAuth.rolesRaw = [];
   loadCeiling.mockResolvedValue({ verbaTotal: 10_000, limiteAlcada: null });
   loadDistributedTotal.mockResolvedValue(4_000);
   saveCeiling.mockResolvedValue(undefined);
@@ -100,6 +106,26 @@ describe('teto da cooperativa', () => {
     expect(screen.queryByRole('button', { name: 'Salvar teto' })).not.toBeInTheDocument();
   });
 
+  it('supervisor e dev não editam o teto sem o papel estrito de admin', async () => {
+    mockAuth.isGestorCompras = false;
+    mockAuth.isDev = true;
+    mockAuth.isSupervisor = true;
+    renderizar(<CooperativaCeilingCard />);
+
+    expect(
+      await screen.findByText('Somente o gestor da cooperativa define o teto.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Salvar teto' })).not.toBeInTheDocument();
+  });
+
+  it('admin estrito edita o teto', async () => {
+    mockAuth.isGestorCompras = false;
+    mockAuth.rolesRaw = ['admin'];
+    renderizar(<CooperativaCeilingCard />);
+
+    expect(await screen.findByRole('button', { name: 'Salvar teto' })).toBeInTheDocument();
+  });
+
   it('sem cooperativa vinculada não consulta nada', async () => {
     mockAuth.cooperativaId = null;
     renderizar(<CooperativaCeilingCard />);
@@ -122,12 +148,15 @@ describe('teto da cooperativa', () => {
 
   it('ao voltar para uma competência já carregada, o campo mostra o teto daquele mês', async () => {
     loadCeiling.mockImplementation((_id: string, _ano: number, mes: number) =>
-      Promise.resolve({ verbaTotal: mes * 100, limiteAlcada: null }));
+      Promise.resolve({ verbaTotal: mes * 100, limiteAlcada: null }),
+    );
 
     renderizar(<CooperativaCeilingCard />);
     const inicial = new Date().getMonth() + 1;
 
-    await waitFor(() => expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Próxima competência' }));
     await waitFor(() =>
@@ -135,7 +164,9 @@ describe('teto da cooperativa', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Competência anterior' }));
-    await waitFor(() => expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Teto mensal (R$)')).toHaveValue(inicial * 100),
+    );
   });
 
   it('rotula a competência em pt-BR', () => {
