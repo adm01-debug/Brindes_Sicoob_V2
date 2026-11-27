@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
+  "sha": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 09:04 UTC",
-  "files_total": 5380,
-  "code_files": 3938,
-  "code_lines": 583171
+  "generated_at": "2026-11-27 09:52 UTC",
+  "files_total": 5384,
+  "code_files": 3942,
+  "code_lines": 584117
  },
  "version": "1.3.2",
- "facts_hash": "e85c72d31c6e7163",
+ "facts_hash": "0b11ff5677ce40b7",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1516,
+   ".ts": 1520,
    ".tsx": 1506,
    ".sql": 704,
    ".mjs": 146,
@@ -66118,7 +66118,7 @@
   {
    "module": "scripts",
    "files": 175,
-   "lines": 42072,
+   "lines": 42080,
    "tables": [
     "a",
     "admin_audit_log",
@@ -66687,7 +66687,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48812,
+   "lines": 48838,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67783,8 +67783,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 223,
-   "lines": 36724,
+   "files": 225,
+   "lines": 37224,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -68139,8 +68139,8 @@
   },
   {
    "module": "tests",
-   "files": 740,
-   "lines": 99227,
+   "files": 742,
+   "lines": 99639,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -70196,6 +70196,9 @@
     ],
     "delete": [
      "src/hooks/useScheduledReports.ts"
+    ],
+    "ref": [
+     "supabase/functions/send-scheduled-reports/index.ts"
     ]
    },
    "search_analytics": {
@@ -71819,6 +71822,7 @@
    ],
    "sicoob_order_invoices": [
     "amount",
+    "created_at",
     "file_path",
     "id",
     "invoice_number",
@@ -84353,6 +84357,22 @@
     "text": "o período inteiro: com um limite baixo eles somavam só a amostra mais recente"
    },
    {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "text": "linha do XML e repetia o valor inteiro no ajuste. A regra e: se existe"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "text": "A nota que ja entrou no faturamento do ciclo nao pode reaparecer em"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "text": "anexo da nota faturada ainda pode ser a unica evidencia de valor. A regra"
+   },
+   {
+    "file": "supabase/functions/_shared/scheduled-report-data.ts",
+    "text": "abaixo aproveita esses anexos apenas para completar um ajuste ja aberto por"
+   },
+   {
     "file": "supabase/functions/_shared/validate.ts",
     "text": "Shared input validation utilities for edge functions"
    },
@@ -84679,6 +84699,14 @@
    {
     "file": "supabase/functions/semantic-search/index.ts",
     "text": "Rate limit: 100 req/min por usuário (busca pode ser intensa)"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.ts",
+    "text": "antigos: um agendamento que nunca podera ser entregue, se apenas \"pulado\","
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "text": "O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as"
    },
    {
     "file": "supabase/functions/send-scheduled-reports/report-types.ts",
@@ -97163,6 +97191,11 @@
     "value": "3000"
    },
    {
+    "file": "src/hooks/useScheduledReports.ts",
+    "name": "BRASILIA_OFFSET_MS",
+    "value": "3"
+   },
+   {
     "file": "src/hooks/useScrollLockFix.ts",
     "name": "DATA_STATE_ATTRIBUTE",
     "value": "'data-state'"
@@ -98266,6 +98299,11 @@
     "file": "supabase/functions/send-scheduled-reports/index.ts",
     "name": "BATCH_LIMIT",
     "value": "20"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "name": "BRASILIA_OFFSET_MS",
+    "value": "3"
    },
    {
     "file": "supabase/functions/sicoob-artwork-register/identity.ts",
@@ -109093,24 +109131,6 @@
    {
     "file": "supabase/functions/send-scheduled-reports/index.ts",
     "field": "status",
-    "value": "deactivated",
-    "kind": "escreve"
-   },
-   {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "field": "status",
-    "value": "skipped",
-    "kind": "escreve"
-   },
-   {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "field": "status",
-    "value": "error",
-    "kind": "escreve"
-   },
-   {
-    "file": "supabase/functions/send-scheduled-reports/index.ts",
-    "field": "status",
     "value": "blocked",
     "kind": "compara"
    },
@@ -109130,6 +109150,18 @@
     "file": "supabase/functions/send-scheduled-reports/report-delivery.ts",
     "field": "status",
     "value": "sent",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.ts",
+    "field": "status",
+    "value": "deactivated",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.ts",
+    "field": "status",
+    "value": "error",
     "kind": "escreve"
    },
    {
@@ -111517,12 +111549,6 @@
     "body": "const currentValue = goal.current_value || 0; const currentQuotes = goal.current_quotes || 0; const currentConversions = goal.current_conversions || 0; const newValue = currentValue + increment.addValue; const newQuotes = currentQuotes + increment.addQuotes; const newConversions = currentConversions + increment.addConversions; const targetQuotes = goal.target_quotes ?? 0; const targetConversions = goal.target_conversions ?? 0; const isAchieved = newValue >= goal.target_value && targetWasReached( …"
    },
    {
-    "file": "src/hooks/useScheduledReports.ts",
-    "name": "calculateNextRun",
-    "params": "frequency: ReportFrequency",
-    "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …"
-   },
-   {
     "file": "src/hooks/useSecretsManager.ts",
     "name": "shouldClearSecrets",
     "params": "error: SecretError",
@@ -113398,7 +113424,7 @@
     "file": "supabase/functions/send-scheduled-reports/report-types.ts",
     "name": "calculateNextRun",
     "params": "frequency: unknown, reference: Date, anchorDay: number | null = null,",
-    "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …"
+    "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as // 21h de Brasilia ja e dia 1 em UTC, e avancar por UTC pulava um mes. const brasilia = new Date(reference.getTime() - BRASILIA_OFFSET_MS); const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : brasilia.getUTCDate(); next.setTime(Date.UTC( brasilia.getUTCFullYear( …"
    },
    {
     "file": "supabase/functions/send-transactional-email/resolve.ts",
@@ -114204,6 +114230,10 @@
    },
    {
     "file": "src/hooks/useScheduledReports.ts",
+    "line": "const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;"
+   },
+   {
+    "file": "src/hooks/useScheduledReports.ts",
     "line": "return new Date(now.getTime() + 24 * 60 * 60 * 1000);"
    },
    {
@@ -114605,6 +114635,10 @@
    {
     "file": "supabase/functions/semantic-search/index.ts",
     "line": "constructor(ttlMs: number = 5 * 60 * 1000, maxEntries: number = 1000) {"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.ts",
+    "line": "const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;"
    },
    {
     "file": "supabase/functions/send-scheduled-reports/report-types.ts",
@@ -117795,6 +117829,30 @@
     "name": "relatório só é persistido depois da confirmação do provedor"
    },
    {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "decide entrega quando papel, conta e e-mail estao coerentes"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "decide desativar quando o usuario perdeu o papel"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "decide desativar conta inativada, que continua com os papeis"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "decide desativar quando o e-mail do agendamento ficou para tras"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "lote cheio de agendamentos impossiveis nao trava o proximo valido"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+    "name": "falha de um agendamento nao interrompe o lote"
+   },
+   {
     "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
     "name": "todo tipo aceito pelo CHECK do banco tem gerador"
    },
@@ -117885,6 +117943,22 @@
    {
     "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
     "name": "ignora resposta recusada do link público"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "vendas mostram em ajustes a nota anexada depois do fechamento"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "mensal mantem o dia de criacao como ancora depois de fevereiro"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "ancora usa o dia de Brasilia, nao o de UTC"
+   },
+   {
+    "file": "supabase/functions/send-scheduled-reports/report-types.test.ts",
+    "name": "mensal avanca a partir do mes de Brasilia, nao do mes UTC"
    },
    {
     "file": "supabase/functions/send-transactional-email/index.test.ts",
@@ -134783,6 +134857,38 @@
     "name": "não consulta o catálogo quando o construtor está editando orçamento existente"
    },
    {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "calculateNextRun mensal"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "estreia no dia de Brasília quando a criação já é outro dia no navegador"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "não cai no dia 27 quando criado às 22h30 em Brasília"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "criado às 21h de Brasília não fica na véspera"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "ancora no dia 31 e respeita o último dia do mês destino"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "calculateNextRun diário e semanal"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "diário soma 24h"
+   },
+   {
+    "file": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+    "name": "semanal soma 7 dias"
+   },
+   {
     "file": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
     "name": "buildTogglePatch"
    },
@@ -144045,6 +144151,62 @@
    {
     "file": "tests/unit/process-scheduled-reports-scope.test.ts",
     "name": "recusa relatório sem usuário proprietário válido (%s)"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "faturamento por nota fiscal no relatorio agendado"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "preserva o valor informado no anexo anterior quando o mais recente vem em branco"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nao soma em ajustes o anexo atrasado de nota que ja esta no faturamento"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nao soma a mesma nota duas vezes nos ajustes quando os dois anexos trazem valor"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nota do faturamento com anexo em branco usa o valor do anexo atrasado"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nao trata como ajuste a nota registrada no periodo, mesmo com as datas de emissao divergentes entre PDF e XML"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "conta como ajuste a nota registrada no periodo cuja emissao e anterior ao registro"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "XML ja faturado no ciclo nao soma o valor de novo no ajuste"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "ajuste herda o valor do anexo anterior quando o que comprova atraso vem em branco"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "ajuste herda o valor tambem quando o anexo em branco vem primeiro"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nao herda o valor da nota a partir de anexo emitido no ciclo seguinte"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "nao soma em ajustes a nota cujo anexo do ciclo entrou no faturamento"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "anexo antigo sem data de emissao nao entra nos ajustes"
+   },
+   {
+    "file": "tests/unit/scheduled-report-invoice-amount.test.ts",
+    "name": "no faturamento do periodo, o anexo sem valor nao zera a nota"
    },
    {
     "file": "tests/unit/sicoob-document-inspection.test.ts",
@@ -167001,7 +167163,7 @@
       "escreve:supabase/functions/mcp-keys-update/index.ts",
       "escreve:supabase/functions/mcp-server/index.ts",
       "escreve:supabase/functions/process-scheduled-reports/index.ts",
-      "escreve:supabase/functions/send-scheduled-reports/index.ts"
+      "escreve:supabase/functions/send-scheduled-reports/report-eligibility.ts"
      ],
      "missing": [
       "compara:src/components/admin/connections/MaskedSuffixBadge.tsx",
@@ -167035,7 +167197,6 @@
       "escreve:src/pages/admin/telemetry/useOptimizationQueue.ts",
       "escreve:supabase/functions/full-op-diagnostics/index.ts",
       "escreve:supabase/functions/process-scheduled-reports/index.ts",
-      "escreve:supabase/functions/send-scheduled-reports/index.ts",
       "escreve:tests/scenarios/e2e-smoke-summary.scenario.mjs"
      ],
      "passed": [
@@ -167516,7 +167677,7 @@
      ],
      "deactivated": [
       "escreve:supabase/functions/process-scheduled-reports/index.ts",
-      "escreve:supabase/functions/send-scheduled-reports/index.ts"
+      "escreve:supabase/functions/send-scheduled-reports/report-eligibility.ts"
      ],
      "digested": [
       "escreve:supabase/functions/send-notification/index.ts"
@@ -181962,7 +182123,7 @@
     "msg": "valor `deactivated` para `status` usado no código não existe em nenhum enum do banco/TS",
     "where": [
      "escreve:supabase/functions/process-scheduled-reports/index.ts",
-     "escreve:supabase/functions/send-scheduled-reports/index.ts"
+     "escreve:supabase/functions/send-scheduled-reports/report-eligibility.ts"
     ]
    },
    {
@@ -187789,7 +187950,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1831,
+   "lines": 1839,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -217067,14 +217228,15 @@
   },
   "src/hooks/useScheduledReports.ts": {
    "path": "src/hooks/useScheduledReports.ts",
-   "lines": 204,
+   "lines": 230,
    "exports": [
     "type ReportFrequency",
     "type ReportType",
     "interface ScheduledReport",
     "interface CreateReportInput",
     "function buildTogglePatch",
-    "function useScheduledReports"
+    "function useScheduledReports",
+    "function calculateNextRun"
    ],
    "tables": [
     {
@@ -217124,17 +217286,17 @@
      "values": "sales | quotes | clients | products | orders"
     }
    ],
+   "params": [
+    {
+     "name": "BRASILIA_OFFSET_MS",
+     "value": "3"
+    }
+   ],
    "hooks": [
     "useScheduledReports"
    ],
-   "calc_fns": [
-    {
-     "name": "calculateNextRun",
-     "params": "frequency: ReportFrequency",
-     "body": "const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …"
-    }
-   ],
    "temporal": [
+    "const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;",
     "return new Date(now.getTime() + 24 * 60 * 60 * 1000);",
     "return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);"
    ]
@@ -237421,7 +237583,7 @@
   },
   "supabase/functions/_shared/scheduled-report-data.ts": {
    "path": "supabase/functions/_shared/scheduled-report-data.ts",
-   "lines": 448,
+   "lines": 584,
    "exports": [
     "interface ScheduledReportRow",
     "function generateScheduledReportHtml"
@@ -237474,6 +237636,10 @@
     {
      "table": "quotes",
      "op": "select"
+    },
+    {
+     "table": "sicoob_order_invoices",
+     "op": "select"
     }
    ],
    "table_cols": {
@@ -237521,6 +237687,7 @@
     ],
     "sicoob_order_invoices": [
      "amount",
+     "created_at",
      "invoice_number",
      "issued_at",
      "order_id"
@@ -237541,7 +237708,11 @@
     }
    ],
    "rule_comments": [
-    "o período inteiro: com um limite baixo eles somavam só a amostra mais recente"
+    "o período inteiro: com um limite baixo eles somavam só a amostra mais recente",
+    "linha do XML e repetia o valor inteiro no ajuste. A regra e: se existe",
+    "A nota que ja entrou no faturamento do ciclo nao pode reaparecer em",
+    "anexo da nota faturada ainda pode ser a unica evidencia de valor. A regra",
+    "abaixo aproveita esses anexos apenas para completar um ajuste ja aberto por"
    ],
    "pagination": [
     "1",
@@ -243957,7 +244128,7 @@
   },
   "supabase/functions/send-scheduled-reports/index.ts": {
    "path": "supabase/functions/send-scheduled-reports/index.ts",
-   "lines": 156,
+   "lines": 166,
    "tables": [
     {
      "table": "scheduled_reports",
@@ -243968,12 +244139,12 @@
      "op": "select"
     },
     {
-     "table": "scheduled_reports",
-     "op": "update"
-    },
-    {
      "table": "profiles",
      "op": "select"
+    },
+    {
+     "table": "scheduled_reports",
+     "op": "ref"
     },
     {
      "table": "scheduled_reports",
@@ -243992,6 +244163,7 @@
     ],
     "profiles": [
      "email",
+     "is_active",
      "user_id"
     ]
    },
@@ -244010,21 +244182,6 @@
     }
    ],
    "status_values": [
-    {
-     "field": "status",
-     "value": "deactivated",
-     "kind": "escreve"
-    },
-    {
-     "field": "status",
-     "value": "skipped",
-     "kind": "escreve"
-    },
-    {
-     "field": "status",
-     "value": "error",
-     "kind": "escreve"
-    },
     {
      "field": "status",
      "value": "blocked",
@@ -244074,9 +244231,55 @@
     }
    ]
   },
+  "supabase/functions/send-scheduled-reports/report-eligibility.test.ts": {
+   "path": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+   "lines": 161,
+   "is_test": true,
+   "errors": [
+    "resend fora do ar"
+   ],
+   "doc": "deno-lint-ignore-file no-import-prefix",
+   "tests": [
+    "decide entrega quando papel, conta e e-mail estao coerentes",
+    "decide desativar quando o usuario perdeu o papel",
+    "decide desativar conta inativada, que continua com os papeis",
+    "decide desativar quando o e-mail do agendamento ficou para tras",
+    "lote cheio de agendamentos impossiveis nao trava o proximo valido",
+    "falha de um agendamento nao interrompe o lote"
+   ]
+  },
+  "supabase/functions/send-scheduled-reports/report-eligibility.ts": {
+   "path": "supabase/functions/send-scheduled-reports/report-eligibility.ts",
+   "lines": 93,
+   "exports": [
+    "type ScheduledReportEligibility",
+    "interface ScheduledReportSignals",
+    "function decideScheduledReportEligibility",
+    "interface ScheduledReportBatchItem",
+    "interface ScheduledReportBatchOutcome",
+    "interface ScheduledReportBatchDependencies",
+    "function runScheduledReportBatch"
+   ],
+   "status_values": [
+    {
+     "field": "status",
+     "value": "deactivated",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "error",
+     "kind": "escreve"
+    }
+   ],
+   "rule_comments": [
+    "antigos: um agendamento que nunca podera ser entregue, se apenas \"pulado\","
+   ],
+   "doc": "Elegibilidade de um relatorio agendado, isolada do Supabase para poder ser testada sem banco. O lote do worker pega os 20 agendamentos vencidos mais antigos: um agendamento que nunca podera ser entregue, se apenas \"pulado\", volta a ocupar vaga em toda rodada e — com 20 assim — o 21o valido nunca e p …"
+  },
   "supabase/functions/send-scheduled-reports/report-types.test.ts": {
    "path": "supabase/functions/send-scheduled-reports/report-types.test.ts",
-   "lines": 555,
+   "lines": 636,
    "is_test": true,
    "errors": [
     "sem erro"
@@ -244105,12 +244308,16 @@
     "vendas contam aprovação feita pelo link público",
     "proposta aprovada no painel e no link público conta uma vez",
     "conta a aprovação que depois virou pedido",
-    "ignora resposta recusada do link público"
+    "ignora resposta recusada do link público",
+    "vendas mostram em ajustes a nota anexada depois do fechamento",
+    "mensal mantem o dia de criacao como ancora depois de fevereiro",
+    "ancora usa o dia de Brasilia, nao o de UTC",
+    "mensal avanca a partir do mes de Brasilia, nao do mes UTC"
    ]
   },
   "supabase/functions/send-scheduled-reports/report-types.ts": {
    "path": "supabase/functions/send-scheduled-reports/report-types.ts",
-   "lines": 115,
+   "lines": 134,
    "exports": [
     "const SCHEDULED_REPORT_TYPES",
     "type ScheduledReportType",
@@ -244126,7 +244333,14 @@
      "values": "\"sales\", \"quotes\", \"clients\", \"products\", \"orders\","
     }
    ],
+   "params": [
+    {
+     "name": "BRASILIA_OFFSET_MS",
+     "value": "3"
+    }
+   ],
    "rule_comments": [
+    "O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as",
     "* Dia do mês que o agendamento deve manter como âncora quando for mensal. */"
    ],
    "doc": "Catálogo único dos tipos de relatório agendado. Precisa coincidir com o CHECK de `scheduled_reports.report_type` (20260402110748) e com `ReportType` do frontend (`src/hooks/useScheduledReports.ts`): um tipo existir aqui e não ser tratado fazia o agendamento sair com o entregável genérico, sem os dad …",
@@ -244134,10 +244348,11 @@
     {
      "name": "calculateNextRun",
      "params": "frequency: unknown, reference: Date, anchorDay: number | null = null,",
-     "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …"
+     "body": "const next = new Date(reference.getTime()); switch (frequency) { case \"daily\": next.setUTCDate(next.getUTCDate() + 1); break; case \"monthly\": { // O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as // 21h de Brasilia ja e dia 1 em UTC, e avancar por UTC pulava um mes. const brasilia = new Date(reference.getTime() - BRASILIA_OFFSET_MS); const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : brasilia.getUTCDate(); next.setTime(Date.UTC( brasilia.getUTCFullYear( …"
     }
    ],
    "temporal": [
+    "const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;",
     "return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();"
    ]
   },
@@ -257854,6 +258069,25 @@
     "não consulta o catálogo quando o construtor está editando orçamento existente"
    ]
   },
+  "tests/hooks/scheduled-reports/calculate-next-run.test.ts": {
+   "path": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+   "lines": 55,
+   "is_test": true,
+   "temporal": [
+    "expect(new Date(next.getTime() - 3 * 60 * 60 * 1000).toISOString().slice(0, 16)).toBe('2026-04-10T21:00');",
+    "new Date(data.getTime() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);"
+   ],
+   "tests": [
+    "calculateNextRun mensal",
+    "estreia no dia de Brasília quando a criação já é outro dia no navegador",
+    "não cai no dia 27 quando criado às 22h30 em Brasília",
+    "criado às 21h de Brasília não fica na véspera",
+    "ancora no dia 31 e respeita o último dia do mês destino",
+    "calculateNextRun diário e semanal",
+    "diário soma 24h",
+    "semanal soma 7 dias"
+   ]
+  },
   "tests/hooks/scheduled-reports/toggle-patch.test.ts": {
    "path": "tests/hooks/scheduled-reports/toggle-patch.test.ts",
    "lines": 38,
@@ -261482,7 +261716,7 @@
   },
   "tests/scenarios/relatorios-agendados-cron.mjs": {
    "path": "tests/scenarios/relatorios-agendados-cron.mjs",
-   "lines": 138,
+   "lines": 157,
    "rule_comments": [
     "formulário sob o limite do gate de lint; as regras continuam as mesmas."
    ],
@@ -263407,6 +263641,41 @@
     "recusa relatório sem usuário proprietário válido (%s)"
    ]
   },
+  "tests/unit/scheduled-report-invoice-amount.test.ts": {
+   "path": "tests/unit/scheduled-report-invoice-amount.test.ts",
+   "lines": 338,
+   "is_test": true,
+   "params": [
+    {
+     "name": "SELLER",
+     "value": "'11111111-1111-1111-1111-111111111111'"
+    },
+    {
+     "name": "ZERO_REAL",
+     "value": "'R$\\u00A00,00'"
+    }
+   ],
+   "rule_comments": [
+    "ajuste nao pode repetir os 250,00.",
+    "antigo nao pode reabrir o valor no subtotal de ajustes."
+   ],
+   "tests": [
+    "faturamento por nota fiscal no relatorio agendado",
+    "preserva o valor informado no anexo anterior quando o mais recente vem em branco",
+    "nao soma em ajustes o anexo atrasado de nota que ja esta no faturamento",
+    "nao soma a mesma nota duas vezes nos ajustes quando os dois anexos trazem valor",
+    "nota do faturamento com anexo em branco usa o valor do anexo atrasado",
+    "nao trata como ajuste a nota registrada no periodo, mesmo com as datas de emissao divergentes entre PDF e XML",
+    "conta como ajuste a nota registrada no periodo cuja emissao e anterior ao registro",
+    "XML ja faturado no ciclo nao soma o valor de novo no ajuste",
+    "ajuste herda o valor do anexo anterior quando o que comprova atraso vem em branco",
+    "ajuste herda o valor tambem quando o anexo em branco vem primeiro",
+    "nao herda o valor da nota a partir de anexo emitido no ciclo seguinte",
+    "nao soma em ajustes a nota cujo anexo do ciclo entrou no faturamento",
+    "anexo antigo sem data de emissao nao entra nos ajustes",
+    "no faturamento do periodo, o anexo sem valor nao zera a nota"
+   ]
+  },
   "tests/unit/sicoob-document-inspection.test.ts": {
    "path": "tests/unit/sicoob-document-inspection.test.ts",
    "lines": 47,
@@ -264093,10 +264362,30 @@
   }
  },
  "git": {
-  "sha": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
+  "sha": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "00689b5",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)",
+    "files": [
+     ".github/workflows/ci.yml",
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "src/hooks/useScheduledReports.ts",
+     "supabase/functions/_shared/scheduled-report-data.ts",
+     "supabase/functions/send-scheduled-reports/index.ts",
+     "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+     "supabase/functions/send-scheduled-reports/report-eligibility.ts",
+     "supabase/functions/send-scheduled-reports/report-types.test.ts",
+     "supabase/functions/send-scheduled-reports/report-types.ts",
+     "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+     "tests/scenarios/relatorios-agendados-cron.mjs",
+     "tests/unit/scheduled-report-invoice-amount.test.ts"
+    ]
+   },
    {
     "sha": "7f57d03",
     "date": "2026-11-27",
@@ -264531,18 +264820,6 @@
      "src/components/intelligence/ConversionFunnel.tsx",
      "tests/components/intelligence/analytics-query-errors.test.tsx"
     ]
-   },
-   {
-    "sha": "bc1b6c5",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "chore: recupera 21 testes de branches nao incorporadas (#444)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "tests/edge-functions/catalog-readonly-rpc.test.ts",
-     "tests/hooks/useCategoryRanking.errors.test.tsx",
-     "tests/hooks/useClientBI.real-data.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -264551,16 +264828,16 @@
     9
    ],
    [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    8
-   ],
-   [
     "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
     7
    ],
    [
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
+    7
+   ],
+   [
     "scripts/db/apply-sicoob-migrations.mjs",
-    5
+    6
    ],
    [
     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
@@ -264573,6 +264850,10 @@
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
     3
+   ],
+   [
+    ".github/workflows/ci.yml",
+    2
    ],
    [
     "scripts/qa/simular-escopo-gerencial-sicoob.py",
@@ -264621,10 +264902,6 @@
    [
     "src/contexts/AuthContext.tsx",
     2
-   ],
-   [
-    "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
-    1
    ]
   ]
  }

@@ -2976,8 +2976,8 @@
   {
    "nome": "send-scheduled-reports",
    "entrada": "supabase/functions/send-scheduled-reports/index.ts",
-   "arquivos": 3,
-   "linhas": 307,
+   "arquivos": 4,
+   "linhas": 429,
    "verify_jwt": false,
    "metodos": [
     "OPTIONS",
@@ -3006,7 +3006,7 @@
    "chamada_por_edges": [],
    "chamada_por_sql_ou_cron": true,
    "orfa": false,
-   "testes": 2
+   "testes": 3
   },
   {
    "nome": "send-transactional-email",

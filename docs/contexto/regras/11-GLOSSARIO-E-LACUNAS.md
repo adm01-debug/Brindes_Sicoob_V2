@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f57d039a2` · branch `main` · 2026-11-27 09:04 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `00689b5e02` · branch `main` · 2026-11-27 09:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -350,7 +350,7 @@ _nenhum item encontrado_
 | status | valor `in_progress` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/bitrix-sync/index.ts` |
 | status | valor `scope_mismatch` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/e2e-cleanup/index.ts` |
 | status | valor `alert_sent` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/error-monitor/index.ts` |
-| status | valor `deactivated` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/process-scheduled-reports/index.ts`<br>`escreve:supabase/functions/send-scheduled-reports/index.ts` |
+| status | valor `deactivated` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/process-scheduled-reports/index.ts`<br>`escreve:supabase/functions/send-scheduled-reports/report-eligibility.ts` |
 | status | valor `digested` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:supabase/functions/send-notification/index.ts` |
 | status | valor `local_sem_ledger` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:tests/scenarios/migration-ledger.mjs` |
 | status | valor `nome_divergente` para `status` usado no código não existe em nenhum enum do banco/TS | `escreve:tests/scenarios/migration-ledger.mjs` |

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f57d039a2` · branch `main` · 2026-11-27 09:04 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `00689b5e02` · branch `main` · 2026-11-27 09:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1324,7 +1324,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `crit` | compara | `src/components/admin/telemetry/PlatformFailureCards.tsx` |
 | `status` | `critical` | compara | `src/components/inventory/StockDashboard.tsx`<br>`src/components/sicoob/orders/SLABadge.tsx`<br>`src/pages/sicoob/orders/OrdersKanbanPage.tsx`<br>`src/types/stock.ts` |
 | `status` | `current` | compara | `src/components/mockup/GeneratingOverlay.tsx`<br>`src/components/orders/MultiLevelTracker.tsx`<br>`src/components/sicoob/orders/LogisticsCommandCenter.tsx` |
-| `status` | `deactivated` | escreve | `supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/index.ts` |
+| `status` | `deactivated` | escreve | `supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/report-eligibility.ts` |
 | `status` | `degraded` | compara | `src/components/admin/telemetry/AppHealthDashboard.tsx`<br>`src/lib/external-db/invoke.ts` |
 | `status` | `delivered` | compara, escreve | `src/components/common/StatusTimeline.tsx`<br>`src/pages/sicoob/LogisticsReportPage.tsx`<br>`src/services/sicoob/logisticsReportService.ts`<br>`supabase/functions/semantic-search/index.ts` |
 | `status` | `denied` | compara, escreve, filtra | `src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/admin/security/keys/audit/useStepUpAttempts.ts`<br>`supabase/functions/mcp-keys-issue/index.ts`<br>`supabase/functions/mcp-keys-revoke/index.ts`<br>`supabase/functions/mcp-keys-rotate/index.ts`<br>… +3 |
@@ -1401,7 +1401,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `sem-comparativo` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `sent` | compara, escreve, filtra | `src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/quotes/QuoteKanbanBoard.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useSalesHistory.ts`<br>… +8 |
 | `status` | `short` | compara, escreve | `src/components/admin/connections/MaskedSuffixBadge.tsx`<br>`src/lib/masked-suffix.ts` |
-| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-scheduled-reports/index.ts`<br>… +2 |
+| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/system-healthcheck/index.ts`<br>… +1 |
 | `status` | `slow` | compara | `supabase/functions/_shared/external-db-telemetry.ts` |
 | `status` | `stale` | compara | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/utils/price-freshness.ts` |
 | `status` | `step_up_error` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/lib/auth/invoke-full-scope.ts`<br>`src/pages/admin/DevChallengeExamplesPage.tsx` |
@@ -3216,10 +3216,6 @@ _nenhum item encontrado_
   ```
   const currentValue = goal.current_value || 0; const currentQuotes = goal.current_quotes || 0; const currentConversions = goal.current_conversions || 0; const newValue = currentValue + increment.addValue; const newQuotes = currentQuotes + increment.addQuotes; const newConversions = currentConversions + increment.addConversions; const targetQuotes = goal.target_quotes ?? 0; const targetConversions = goal.target_conversions ?? 0; const isAchieved = newValue >= goal.target_value && targetWasReached( …
   ```
-- **calculateNextRun(frequency: ReportFrequency)** — `src/hooks/useScheduledReports.ts`
-  ```
-  const now = new Date(); switch (frequency) { case 'daily': return new Date(now.getTime() + 24 * 60 * 60 * 1000); case 'weekly': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); case 'monthly': { // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia // 1 e limitar ao último dia do mês destino mantém o agendamento mensal. const next = new Date(now); const day = next.getDate(); next.setDate(1); next.setMonth(next.getMonth() + 1); const lastDay = new Date(next.getFullYear …
-  ```
 - **shouldClearSecrets(error: SecretError)** — `src/hooks/useSecretsManager.ts`
   ```
   return ["unauthenticated", "forbidden", "permission_denied"].includes(error.code);
@@ -4470,7 +4466,7 @@ _nenhum item encontrado_
   ```
 - **calculateNextRun(frequency: unknown, reference: Date, anchorDay: number | null = null,)** — `supabase/functions/send-scheduled-reports/report-types.ts`
   ```
-  const next = new Date(reference.getTime()); switch (frequency) { case "daily": next.setUTCDate(next.getUTCDate() + 1); break; case "monthly": { // O dia-âncora é o dia original do agendamento, não o dia da última // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava // preso no 28 em todos os meses seguintes. const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : next.getUTCDate(); next.setUTCDate(1); next.setUTCMonth(next.getUTCMonth() + 1); next.setUTCDat …
+  const next = new Date(reference.getTime()); switch (frequency) { case "daily": next.setUTCDate(next.getUTCDate() + 1); break; case "monthly": { // O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as // 21h de Brasilia ja e dia 1 em UTC, e avancar por UTC pulava um mes. const brasilia = new Date(reference.getTime() - BRASILIA_OFFSET_MS); const day = anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : brasilia.getUTCDate(); next.setTime(Date.UTC( brasilia.getUTCFullYear( …
   ```
 - **validEmail(value: unknown)** — `supabase/functions/send-transactional-email/resolve.ts`
   ```
@@ -4900,6 +4896,7 @@ _nenhum item encontrado_
 | `REPLENISHMENT_WINDOW_DAYS` | `30` | `src/hooks/useReplenishments.ts` |
 | `MIN_REPLENISHMENT_DELTA_MS` | `86` | `src/hooks/useReplenishments.ts` |
 | `DEFAULT_MS` | `3000` | `src/hooks/useRetestCooldownSetting.ts` |
+| `BRASILIA_OFFSET_MS` | `3` | `src/hooks/useScheduledReports.ts` |
 | `DATA_STATE_ATTRIBUTE` | `'data-state'` | `src/hooks/useScrollLockFix.ts` |
 | `MAX_ENTRIES` | `50` | `src/hooks/useScrollRestoration.ts` |
 | `MAX_HISTORY` | `10` | `src/hooks/useSearch.ts` |
@@ -4948,8 +4945,7 @@ _nenhum item encontrado_
 | `MAX_HARD_RELOADS` | `2` | `src/lib/chunk-recovery.ts` |
 | `CACHE_MS` | `15` | `src/lib/cloud-status.ts` |
 | `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
-| `CONSECUTIVE_FAILURE_THRESHOLD` | `3` | `src/lib/connections-config.ts` |
-| … +187 linhas — lista completa em `context.json` | | |
+| … +189 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5149,6 +5145,7 @@ _nenhum item encontrado_
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useReplenishments.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useSalesHistory.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useSalesHistoryMacro.ts` |
+| `const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;` | `src/hooks/useScheduledReports.ts` |
 | `return new Date(now.getTime() + 24 * 60 * 60 * 1000);` | `src/hooks/useScheduledReports.ts` |
 | `return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);` | `src/hooks/useScheduledReports.ts` |
 | `gcTime: 5 * 60 * 1000,` | `src/hooks/useSellerCarts.ts` |
@@ -5250,12 +5247,11 @@ _nenhum item encontrado_
 | `const timeoutId = setTimeout(() => controller.abort(), 10000);` | `supabase/functions/secure-upload/index.ts` |
 | `const searchCache = new TTLCache<SearchIntent>(5 * 60 * 1000, 1000);` | `supabase/functions/semantic-search/index.ts` |
 | `constructor(ttlMs: number = 5 * 60 * 1000, maxEntries: number = 1000) {` | `supabase/functions/semantic-search/index.ts` |
+| `const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `const CATALOG_QUERY_VALIDITY_MS = 5 * 60 * 1000;` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
-| `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +92 linhas — lista completa em `context.json` | |
+| … +94 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5788,7 +5784,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7543 testes em 779 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7575 testes em 782 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5838,6 +5834,7 @@ _nenhum item encontrado_
 | `tests/pages/ProductDetail.test.ts` | 29 | mapPromobrindToProduct — full integration · maps basic fields correctly · maps colors with hex, code, images · maps materials from comma-separated string … |
 | `tests/e2e/orders-module.test.ts` | 28 | E2E Orders — Status Machine · expõe todos os estados aceitos pelo banco · E2E Orders — Status Flow · %s → %s … |
 | `tests/lib/kit-builder-price.test.ts` | 28 | kit-builder price-calculator · calculateBoxPrice · returns 0 for null box · multiplies box price by quantity … |
+| `supabase/functions/send-scheduled-reports/report-types.test.ts` | 27 | todo tipo aceito pelo CHECK do banco tem gerador · próxima execução fica ancorada em 8h e avança o período · janela do período segue a frequência · relatório de orçamentos filtra pelo dono do agendamento … |
 | `tests/stock-types.test.ts` | 27 | calculateStockStatus · returns out_of_stock when current is 0 · returns incoming when current is 0 but in transit > 0 · returns critical when current <= 25% of min … |
 | `tests/components/KitComposition.test.tsx` | 27 | KitComposition · renders trigger card with component count · renders header with correct component and piece counts in dialog · renders singular  … |
 | `tests/e2e/catalog-price-freshness-badge.test.tsx` | 27 | E2E Catálogo — visibilidade do PriceFreshnessBadge por host · Produto FRESH (5d, threshold 60d) — preço dentro do prazo · Card (icon-only) NÃO renderiza badge · EnhancedCard (icon-only) NÃO renderiza badge … |
@@ -5847,7 +5844,6 @@ _nenhum item encontrado_
 | `tests/hooks/voice/retry.test.ts` | 25 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry on non-retryable error … |
 | `tests/lib/query-config-extended.test.ts` | 24 | CACHE_TIMES constants · VERY_STABLE is 1 hour · STABLE is 30 min · TECNICAS is 15 min … |
 | `supabase/functions/external-db-bridge/callerSelectIsHeavy.test.ts` | 23 | extractBaseColumn: nome simples · extractBaseColumn: alias PostgREST  · extractBaseColumn: operadores JSON  · extractBaseColumn: alias + JSON op combinados … |
-| `supabase/functions/send-scheduled-reports/report-types.test.ts` | 23 | todo tipo aceito pelo CHECK do banco tem gerador · próxima execução fica ancorada em 8h e avança o período · janela do período segue a frequência · relatório de orçamentos filtra pelo dono do agendamento … |
 | `tests/components/PriceFreshnessBadge.catalog-visibility.test.tsx` | 23 | PriceFreshnessBadge — visibilidade nos componentes do catálogo · ProductCard / EnhancedProductCard / ProductTableView (variant= · NÃO renderiza quando fresh (preço atualizado dentro de 50% do threshold) · NÃO renderiza quando o status é unknown (data ausente) … |
 | `tests/scripts/e2e-summaries.test.ts` | 23 | lib/playwright-report · status efetivo respeita test.fail() e flaky · runErrors lê a primeira linha de cada erro do run · normaliza o caminho relativo ao testDir com o prefixo e2e/ … |
 | `tests/scripts/rules-rls-estatico.test.ts` | 23 | rules/rls-estatico · tabela criada sem RLS aparece como rls=false · ENABLE em migration posterior liga; DISABLE desliga (último vence) · conta policies e ignora SQL comentado … |
@@ -5927,6 +5923,7 @@ _nenhum item encontrado_
 | `tests/scripts/autofix-colors.test.ts` | 14 | autofix colors-map · texto: qualquer tom vira o token · fundo claro vira /10 (ou /5 quando já tinha opacidade) · fundo forte vira sólido … |
 | `tests/scripts/rules-definer-search-path.test.ts` | 14 | rules/plano-definer-sem-search-path · acusa DEFINER sem SET (atributos antes do corpo) · aceita SET search_path antes ou depois do corpo · reconhece o schema public entre aspas (CREATE, ALTER e DROP) … |
 | `tests/unit/fuzzing.test.ts` | 14 | Fuzz Testing — Input Resilience · String Fields · handles buffer overflows / extreme lengths · handles unicode and emojis … |
+| `tests/unit/scheduled-report-invoice-amount.test.ts` | 14 | faturamento por nota fiscal no relatorio agendado · preserva o valor informado no anexo anterior quando o mais recente vem em branco · nao soma em ajustes o anexo atrasado de nota que ja esta no faturamento · nao soma a mesma nota duas vezes nos ajustes quando os dois anexos trazem valor … |
 | `e2e/rbac-navigation.spec.ts` | 13 | RBAC e navegação · Perfil vendedor · acessa as áreas comerciais · recebe 403 nas áreas administrativas … |
 | `tests/components/PriceFreshnessBadge.quickViewAlwaysShow.test.tsx` | 13 | Quick View / hosts compactos — alwaysShow=false respeita aging\|stale · variant=%s sem alwaysShow · fresh: NÃO renderiza badge · unknown: NÃO renderiza badge … |
 | `tests/components/search/HighlightMatch.test.tsx` | 13 | HighlightMatch · Renderização básica · renderiza texto sem query · renderiza texto com query curta (< 2 chars) sem highlight … |
@@ -6071,6 +6068,7 @@ _nenhum item encontrado_
 | `tests/hooks/useWorkspaceNotifications-cache-invalidation.test.tsx` | 8 | useWorkspaceNotifications — cache invalidation after mutations · markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch · clearAll removes the sessionStorage cache entry and triggers a silent re-fetch · re-fetch after markAllAsRead bypasses the 5s prefetch TTL window … |
 | `tests/hooks/useWorkspaceNotifications-prefetch.test.tsx` | 8 | useWorkspaceNotifications — prefetch TTL idempotency · does not refetch when prefetch is called within 5s of last fetch · refetches when prefetch is called after the 5s TTL window · never toggles isLoading=true during a silent prefetch … |
 | `tests/hooks/bi/useClientSeasonality.test.tsx` | 8 | useClientSeasonality · não classifica setor sem atividade e sem três compradores como amostra real · não transforma a média de duas empresas em sazonalidade do setor · cadastro no ramo não é histórico: três cadastros com um comprador não viram setor … |
+| `tests/hooks/scheduled-reports/calculate-next-run.test.ts` | 8 | calculateNextRun mensal · estreia no dia de Brasília quando a criação já é outro dia no navegador · não cai no dia 27 quando criado às 22h30 em Brasília · criado às 21h de Brasília não fica na véspera … |
 | `tests/lib/format-utils.test.ts` | 8 | formatCurrency · formats zero · formats positive values · formats negative values … |
 | `tests/lib/overlay.test.tsx` | 8 | overlay — detecção com componentes Radix reais · tooltip aberto NÃO conta como overlay · popover aberto conta como overlay · dialog Radix real fecha com dismissTopmostOverlay … |
 | `tests/lib/product-record-images.test.ts` | 8 | resolveProductRecordImages · assina as referencias privadas guardadas no proprio registro do produto · mantem o valor original quando o storage nao consegue assinar · resolveProductImageRecords … |
@@ -6090,9 +6088,7 @@ _nenhum item encontrado_
 | `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
 | `tests/workflows/WorkflowEditDialog.test.tsx` | 8 | WorkflowEditDialog · renders nothing when step is null · renders dialog with step data · shows prompt textarea for agent type … |
 | `e2e/order-status-rbac.spec.ts` | 7 | Pedidos Sicoob — RBAC canônico · vendedor consulta a lista de pedidos · vendedor acompanha pedidos pelo kanban · gestor acessa pedidos e o módulo de gestão de compras … |
-| `e2e/flows/01-auth.spec.ts` | 7 | Fluxo: Auth · renderiza form de login com elementos essenciais · rejeita credenciais inválidas e permanece em /login · valida email malformado … |
-| `e2e/flows/22-header-sticky.spec.ts` | 7 | @header-sticky Header sticky — rotas autenticadas (app + quotes) [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} · @header-sticky Header sticky — rotas admin [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} … |
-| … +479 linhas — lista completa em `context.json` | | |
+| … +482 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6582,4 +6578,4 @@ _nenhum item encontrado_
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
 | neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
-| … +365 linhas — lista completa em `context.json` | |
+| … +371 linhas — lista completa em `context.json` | |

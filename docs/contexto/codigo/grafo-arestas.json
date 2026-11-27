@@ -12936,6 +12936,7 @@
    "supabase/functions/_shared/scheduled-report-data.ts",
    "supabase/functions/_shared/scheduled-report-email.ts",
    "supabase/functions/send-scheduled-reports/report-delivery.ts",
+   "supabase/functions/send-scheduled-reports/report-eligibility.ts",
    "supabase/functions/send-scheduled-reports/report-types.ts"
   ],
   "supabase/functions/send-transactional-email/index.ts": [

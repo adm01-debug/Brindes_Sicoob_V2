@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 973,
+ "total": 976,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 735
+  "unit": 738
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 716
+   "arquivos": 718
   },
   {
    "padrao": "e2e/",
@@ -28,7 +28,7 @@
   },
   {
    "padrao": "co-localizado (*.test)",
-   "arquivos": 47
+   "arquivos": 48
   },
   {
    "padrao": "co-localizado (__tests__)",
@@ -1920,14 +1920,23 @@
    "casos": 2
   },
   {
+   "arquivo": "supabase/functions/send-scheduled-reports/report-eligibility.test.ts",
+   "tipo": "unit",
+   "linhas": 161,
+   "testa": [
+    "supabase/functions/send-scheduled-reports/report-eligibility.ts"
+   ],
+   "casos": 6
+  },
+  {
    "arquivo": "supabase/functions/send-scheduled-reports/report-types.test.ts",
    "tipo": "unit",
-   "linhas": 555,
+   "linhas": 636,
    "testa": [
     "supabase/functions/_shared/scheduled-report-data.ts",
     "supabase/functions/send-scheduled-reports/report-types.ts"
    ],
-   "casos": 23
+   "casos": 27
   },
   {
    "arquivo": "supabase/functions/send-transactional-email/index.test.ts",
@@ -4520,6 +4529,15 @@
    "testa": [
     "src/hooks/quotes/quoteTypes.ts",
     "src/hooks/quotes/quoteVariantIdentity.ts"
+   ],
+   "casos": 6
+  },
+  {
+   "arquivo": "tests/hooks/scheduled-reports/calculate-next-run.test.ts",
+   "tipo": "unit",
+   "linhas": 55,
+   "testa": [
+    "src/hooks/useScheduledReports.ts"
    ],
    "casos": 6
   },
@@ -7368,7 +7386,7 @@
   {
    "arquivo": "tests/scenarios/relatorios-agendados-cron.mjs",
    "tipo": "unit",
-   "linhas": 138,
+   "linhas": 157,
    "testa": [],
    "casos": 10
   },
@@ -8244,6 +8262,15 @@
    "casos": 2
   },
   {
+   "arquivo": "tests/unit/scheduled-report-invoice-amount.test.ts",
+   "tipo": "unit",
+   "linhas": 338,
+   "testa": [
+    "supabase/functions/_shared/scheduled-report-data.ts"
+   ],
+   "casos": 13
+  },
+  {
    "arquivo": "tests/unit/sicoob-document-inspection.test.ts",
    "tipo": "unit",
    "linhas": 47,
@@ -8840,7 +8867,7 @@
   "src/hooks/useReplenishments.ts": 1,
   "src/hooks/useReplenishmentsSelectionMode.ts": 1,
   "src/hooks/useSalesGoals.ts": 1,
-  "src/hooks/useScheduledReports.ts": 1,
+  "src/hooks/useScheduledReports.ts": 2,
   "src/hooks/useScreenDirtyState.ts": 3,
   "src/hooks/useScroll.ts": 1,
   "src/hooks/useScrollRestoration.ts": 1,
@@ -9068,7 +9095,7 @@
   "supabase/functions/_shared/prompt-safety.ts": 1,
   "supabase/functions/_shared/read-limited-body.ts": 1,
   "supabase/functions/_shared/retry-backoff.ts": 1,
-  "supabase/functions/_shared/scheduled-report-data.ts": 1,
+  "supabase/functions/_shared/scheduled-report-data.ts": 2,
   "supabase/functions/_shared/scheduled-report-email.ts": 2,
   "supabase/functions/_shared/webhook-dispatcher-contract.ts": 1,
   "supabase/functions/bi-share-dossier/contract.ts": 1,
@@ -9084,6 +9111,7 @@
   "supabase/functions/product-webhook/index.ts": 1,
   "supabase/functions/quote-price-attestation/contract.ts": 2,
   "supabase/functions/send-scheduled-reports/report-delivery.ts": 1,
+  "supabase/functions/send-scheduled-reports/report-eligibility.ts": 1,
   "supabase/functions/send-scheduled-reports/report-types.ts": 1,
   "supabase/functions/send-transactional-email/deliver.ts": 1,
   "supabase/functions/send-transactional-email/templates.ts": 1,

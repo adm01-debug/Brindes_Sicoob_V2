@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
+  "commit": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
   "branch": "main",
-  "data_commit": "2026-11-27T06:04:00-03:00",
+  "data_commit": "2026-11-27T06:51:40-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "00689b5",
+    "data": "2026-11-27",
+    "assunto": "fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)"
+   },
    {
     "sha": "7f57d03",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "bebc2c9",
     "data": "2026-11-25",
     "assunto": "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)"
-   },
-   {
-    "sha": "4ec46e6",
-    "data": "2026-11-25",
-    "assunto": "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)"
    }
   ],
-  "arquivos_mudados_7d": 1006,
+  "arquivos_mudados_7d": 1010,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -141,15 +141,15 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 41
+    "mudancas": 42
+   },
+   {
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 26
    },
    {
     "pasta": "src/pages/admin",
     "mudancas": 26
-   },
-   {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 25
    },
    {
     "pasta": "src/pages/sicoob",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 32
+    "mudancas": 33
    },
    {
     "arquivo": "package.json",
@@ -219,7 +219,7 @@
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 15
+    "mudancas": 16
    },
    {
     "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -250,10 +250,6 @@
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
-    "mudancas": 10
-   },
-   {
     "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
     "mudancas": 10
    },
@@ -264,6 +260,10 @@
    {
     "arquivo": "src/services/sicoob/orderService.ts",
     "mudancas": 10
+   },
+   {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 9
    },
    {
     "arquivo": "src/pages/KitBuilderPage.tsx",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 248
+    "commits": 249
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5376,
-  "arquivos_codigo": 3252,
-  "linhas_codigo": 516700,
+  "arquivos_total": 5380,
+  "arquivos_codigo": 3256,
+  "linhas_codigo": 517646,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 639,
   "cron_jobs": 29,
-  "testes": 973,
+  "testes": 976,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3519
+   "linhas": 3527
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48812
+   "linhas": 48838
   },
   "src/integrations": {
    "arquivos": 3,
@@ -847,8 +847,8 @@
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 223,
-   "linhas": 36724
+   "arquivos": 225,
+   "linhas": 37224
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 161,
-   "linhas": 18732
+   "arquivos": 162,
+   "linhas": 18787
   },
   "tests/integration": {
    "arquivos": 4,
@@ -968,7 +968,7 @@
   },
   "tests/scenarios": {
    "arquivos": 38,
-   "linhas": 3252
+   "linhas": 3271
   },
   "tests/scripts": {
    "arquivos": 35,
@@ -1031,8 +1031,8 @@
    "linhas": 160
   },
   "tests/unit": {
-   "arquivos": 12,
-   "linhas": 813
+   "arquivos": 13,
+   "linhas": 1151
   },
   "tests/utils": {
    "arquivos": 20,
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1831
+   "linhas": 1839
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",
@@ -1154,12 +1154,12 @@
   }
  ],
  "qualidade": {
-  "any": 524,
+  "any": 525,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 75
+  "arquivos_acima_500_linhas": 76
  },
  "todos": [
   {
