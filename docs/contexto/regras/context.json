@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
+  "sha": "c5128f439dd6e173f187a4c3034cfa05d0017ff2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 09:52 UTC",
+  "generated_at": "2026-11-27 11:19 UTC",
   "files_total": 5384,
-  "code_files": 3942,
-  "code_lines": 584117
+  "code_files": 3943,
+  "code_lines": 584231
  },
  "version": "1.3.2",
- "facts_hash": "0b11ff5677ce40b7",
+ "facts_hash": "03d0011209b6db92",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1520,
+   ".ts": 1521,
    ".tsx": 1506,
    ".sql": 704,
    ".mjs": 146,
@@ -67133,7 +67133,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52430,
+   "lines": 52460,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -68139,8 +68139,8 @@
   },
   {
    "module": "tests",
-   "files": 742,
-   "lines": 99639,
+   "files": 743,
+   "lines": 99723,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -112755,6 +112755,12 @@
     "body": "return new Intl.NumberFormat(\"pt-BR\", { style: \"currency\", currency: \"BRL\", }).format(value);"
    },
    {
+    "file": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    "name": "valorAtualDoCampo",
+    "params": "channel: 'slack' | 'email', getSetting: (c: 'slack' | 'email'",
+    "body": "NotificationSettingPayload,"
+   },
+   {
     "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
     "name": "canEditScopeOf",
     "params": "profileUserId: string | null",
@@ -144247,6 +144253,38 @@
    {
     "file": "tests/unit/sicoob-document-scanner.test.ts",
     "name": "aceita somente parecer limpo com motor identificado e envia identidade nos headers"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "slaClosedLabel"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "descreve o fechamento de cada desfecho dentro do prazo"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "descreve o fechamento critico com as horas de atraso"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "trata desfecho ausente ou desconhecido como aprovado"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "nao busca desfecho no prototype do Object"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "rotula como no prazo o status real exibido na tela"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "aplica atraso minimo de 1h e usa o fechamento quando falta o prazo"
+   },
+   {
+    "file": "tests/unit/sla-closed-label.test.ts",
+    "name": "nao rotula quando a data de fechamento e invalida ou ausente"
    },
    {
     "file": "tests/unit/hooks/useDevGate.test.ts",
@@ -229946,31 +229984,31 @@
   },
   "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
-   "lines": 236,
+   "lines": 263,
    "exports": [
     "const NotificationSettingsTab"
    ],
    "tables": [
     {
-     "table": "postos_atendimento",
+     "table": "pa_notification_settings",
      "op": "select"
     },
     {
-     "table": "pa_notification_settings",
+     "table": "postos_atendimento",
      "op": "select"
     }
    ],
    "table_cols": {
-    "postos_atendimento": [
-     "id",
-     "nome"
-    ],
     "pa_notification_settings": [
      "channel",
      "id",
      "is_active",
      "pa_id",
      "recipient_email"
+    ],
+    "postos_atendimento": [
+     "id",
+     "nome"
     ]
    },
    "rpc": [
@@ -229982,6 +230020,13 @@
    ],
    "rule_comments": [
     "usuario entra na chave porque trocar de conta na mesma aba nao pode servir"
+   ],
+   "calc_fns": [
+    {
+     "name": "valorAtualDoCampo",
+     "params": "channel: 'slack' | 'email', getSetting: (c: 'slack' | 'email'",
+     "body": "NotificationSettingPayload,"
+    }
    ],
    "side_effects": [
     "slack.com"
@@ -231809,8 +231854,9 @@
   },
   "src/pages/sicoob/orders/OrderDetailPage.tsx": {
    "path": "src/pages/sicoob/orders/OrderDetailPage.tsx",
-   "lines": 343,
+   "lines": 346,
    "exports": [
+    "function slaClosedLabel",
     "function OrderDetailPage"
    ],
    "navigates": [
@@ -263700,6 +263746,25 @@
     "aceita somente parecer limpo com motor identificado e envia identidade nos headers"
    ]
   },
+  "tests/unit/sla-closed-label.test.ts": {
+   "path": "tests/unit/sla-closed-label.test.ts",
+   "lines": 84,
+   "is_test": true,
+   "rule_comments": [
+    "Fechou no prazo exato (0h) em status critico: o rotulo mostra 1h.",
+    "Sem `sla_deadline`, o prazo e o proprio fechamento: mesmo resultado."
+   ],
+   "tests": [
+    "slaClosedLabel",
+    "descreve o fechamento de cada desfecho dentro do prazo",
+    "descreve o fechamento critico com as horas de atraso",
+    "trata desfecho ausente ou desconhecido como aprovado",
+    "nao busca desfecho no prototype do Object",
+    "rotula como no prazo o status real exibido na tela",
+    "aplica atraso minimo de 1h e usa o fechamento quando falta o prazo",
+    "nao rotula quando a data de fechamento e invalida ou ausente"
+   ]
+  },
   "tests/unit/hooks/useDevGate.test.ts": {
    "path": "tests/unit/hooks/useDevGate.test.ts",
    "lines": 60,
@@ -264362,10 +264427,23 @@
   }
  },
  "git": {
-  "sha": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
+  "sha": "c5128f439dd6e173f187a4c3034cfa05d0017ff2",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "c5128f4",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "fix: devolve a main ao verde no gate de complexidade do ESLint (#481)",
+    "files": [
+     ".gitignore",
+     ".impeccable/hook.cache.json",
+     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+     "src/pages/sicoob/orders/OrderDetailPage.tsx",
+     "tests/unit/sla-closed-label.test.ts"
+    ]
+   },
    {
     "sha": "00689b5",
     "date": "2026-11-27",
@@ -264810,16 +264888,6 @@
     "files": [
      "docs/RECUPERACAO/anexo-testes-orfaos.md"
     ]
-   },
-   {
-    "sha": "1e59beb",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: funil de conversao nao mostra zeros falsos quando a consulta falha (#445)",
-    "files": [
-     "src/components/intelligence/ConversionFunnel.tsx",
-     "tests/components/intelligence/analytics-query-errors.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -264841,6 +264909,10 @@
    ],
    [
     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    4
+   ],
+   [
+    "src/pages/sicoob/orders/OrderDetailPage.tsx",
     3
    ],
    [
@@ -264850,6 +264922,10 @@
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
     3
+   ],
+   [
+    ".impeccable/hook.cache.json",
+    2
    ],
    [
     ".github/workflows/ci.yml",
@@ -264876,10 +264952,6 @@
     2
    ],
    [
-    "src/pages/sicoob/orders/OrderDetailPage.tsx",
-    2
-   ],
-   [
     "src/services/sicoob/approvalService.ts",
     2
    ],
@@ -264897,10 +264969,6 @@
    ],
    [
     "src/services/sicoob/userService.ts",
-    2
-   ],
-   [
-    "src/contexts/AuthContext.tsx",
     2
    ]
   ]

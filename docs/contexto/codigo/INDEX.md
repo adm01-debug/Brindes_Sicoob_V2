@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `00689b5e02ede4047e9a08298a63a06fef1bfb01` (2026-11-27T06:51:40-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `c5128f439dd6e173f187a4c3034cfa05d0017ff2` (2026-11-27T08:19:10-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (3028), Markdown (974), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
+- linguagens: TypeScript (3029), Markdown (974), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5380 |
-| arquivos_codigo | 3256 |
-| linhas_codigo | 517646 |
+| arquivos_total | 5381 |
+| arquivos_codigo | 3257 |
+| linhas_codigo | 517760 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 295 |
 | migrations | 639 |
 | cron_jobs | 29 |
-| testes | 976 |
+| testes | 977 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 974 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (1009), src/pages (163), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (170), src/utils (37), src/services (26)
-- testes: tests/ (718), e2e/ (150), outro (58)
+- testes: tests/ (719), e2e/ (150), outro (58)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37538 nós · 62612 arestas · 2784 comunidades · grafo do commit `00689b5e`
-- comunidades maiores: ref_hooks (659), ref_components (455), ref_lib (326), ref_integrations (261), sonner (241), framer-motion (223), ref_contexts (216), react-router-dom (216), date-fns (201), getCorsHeaders (193), ref_node_assert (172), react (171)
+- 37549 nós · 62629 arestas · 2791 comunidades · grafo do commit `c5128f43`
+- comunidades maiores: ref_lib (566), ref_components (421), lucide-react (306), @tanstack/react-query (233), react (222), sonner (222), framer-motion (220), react-router-dom (208), getCorsHeaders (203), ref_contexts (198), ref_integrations (195), date-fns (187)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -491,13 +491,13 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/ci.yml (16)
 - docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (14)
 - .github/workflows/deploy-sicoob-functions.yml (13)
-- .github/workflows/codeql.yml (12)
 - scripts/automation.config.json (12)
-- src/hooks/useQuoteBuilderState.ts (12)
+- .github/workflows/codeql.yml (11)
 - .github/workflows/sicoob-ci.yml (11)
+- src/hooks/useQuoteBuilderState.ts (11)
 - .github/workflows/e2e.yml (10)
-- src/hooks/quote/useQuoteInitialization.ts (10)
-- src/integrations/supabase/types.ts (10)
+- .github/workflows/lighthouse.yml (9)
+- src/hooks/quote/useQuoteInitialization.ts (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -701,6 +701,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `c5128f4` fix: devolve a main ao verde no gate de complexidade do ESLint (#481)
 - 2026-11-27 `00689b5` fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)
 - 2026-11-27 `7f57d03` infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)
 - 2026-11-27 `7f80db7` fix: cartão de SLA crítico ignora pedido fora da etapa de aprovação (#478)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-26 `3dbc153` fix: link do aviso de alcada abre a fila de aprovacoes (#467)
 - 2026-11-26 `b5b924a` fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)
 - 2026-11-26 `5321aef` fix: aba de vínculos passa a conceder o papel real em user_roles (SIC-010) (#464)
-- 2026-11-26 `20deb10` fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

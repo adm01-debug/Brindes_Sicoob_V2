@@ -17007,7 +17007,7 @@
     "NotificationSettingsTab"
    ],
    "export_default": null,
-   "linhas": 236,
+   "linhas": 263,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth"
@@ -18521,7 +18521,7 @@
     "OrderDetailPage"
    ],
    "export_default": "OrderDetailPage",
-   "linhas": 343,
+   "linhas": 346,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useApprovalRequests",

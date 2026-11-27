@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "00689b5e02ede4047e9a08298a63a06fef1bfb01",
+  "commit": "c5128f439dd6e173f187a4c3034cfa05d0017ff2",
   "branch": "main",
-  "data_commit": "2026-11-27T06:51:40-03:00",
+  "data_commit": "2026-11-27T08:19:10-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "c5128f4",
+    "data": "2026-11-27",
+    "assunto": "fix: devolve a main ao verde no gate de complexidade do ESLint (#481)"
+   },
    {
     "sha": "00689b5",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "f0354ac",
     "data": "2026-11-25",
     "assunto": "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)"
-   },
-   {
-    "sha": "bebc2c9",
-    "data": "2026-11-25",
-    "assunto": "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)"
    }
   ],
-  "arquivos_mudados_7d": 1010,
+  "arquivos_mudados_7d": 1012,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -144,16 +144,16 @@
     "mudancas": 42
    },
    {
+    "pasta": "src/pages/admin",
+    "mudancas": 27
+   },
+   {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 26
    },
    {
-    "pasta": "src/pages/admin",
-    "mudancas": 26
-   },
-   {
     "pasta": "src/pages/sicoob",
-    "mudancas": 25
+    "mudancas": 26
    },
    {
     "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
@@ -230,19 +230,19 @@
     "mudancas": 13
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 12
-   },
-   {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 12
    },
    {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
-    "mudancas": 12
+    "arquivo": ".github/workflows/codeql.yml",
+    "mudancas": 11
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 11
    },
    {
@@ -250,19 +250,15 @@
     "mudancas": 10
    },
    {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 9
+   },
+   {
     "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
-    "mudancas": 10
+    "mudancas": 9
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 10
-   },
-   {
-    "arquivo": "src/services/sicoob/orderService.ts",
-    "mudancas": 10
-   },
-   {
-    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 9
    },
    {
@@ -270,7 +266,11 @@
     "mudancas": 9
    },
    {
-    "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "src/services/sicoob/orderService.ts",
     "mudancas": 9
    },
    {
@@ -294,14 +294,14 @@
     "mudancas": 8
    },
    {
-    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "arquivo": "src/pages/QuoteBuilderPage.tsx",
     "mudancas": 8
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 249
+    "commits": 250
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5380,
-  "arquivos_codigo": 3256,
-  "linhas_codigo": 517646,
+  "arquivos_total": 5381,
+  "arquivos_codigo": 3257,
+  "linhas_codigo": 517760,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 639,
   "cron_jobs": 29,
-  "testes": 976,
+  "testes": 977,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52430
+   "linhas": 52460
   },
   "src/routes": {
    "arquivos": 9,
@@ -1031,8 +1031,8 @@
    "linhas": 160
   },
   "tests/unit": {
-   "arquivos": 13,
-   "linhas": 1151
+   "arquivos": 14,
+   "linhas": 1235
   },
   "tests/utils": {
    "arquivos": 20,

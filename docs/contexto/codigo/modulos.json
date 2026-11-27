@@ -12711,7 +12711,7 @@
    "modulo": "pages/admin",
    "arquivos": 70,
    "testes": 3,
-   "linhas": 18010,
+   "linhas": 18037,
    "itens_menu": [
     "Acesso & Bots",
     "Aprovações de desconto",
@@ -14510,7 +14510,7 @@
    "modulo": "pages/sicoob",
    "arquivos": 22,
    "testes": 0,
-   "linhas": 7232,
+   "linhas": 7235,
    "itens_menu": [
     "Acompanhamento",
     "Agregados e recebimentos",

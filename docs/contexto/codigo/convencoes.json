@@ -21,7 +21,7 @@
    "src/services (26)"
   ],
   "testes": [
-   "tests/ (718)",
+   "tests/ (719)",
    "e2e/ (150)",
    "outro (58)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix: devolve a main ao verde no gate de complexidade do ESLint (#481)",
    "fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)",
    "infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)",
    "fix: cartão de SLA crítico ignora pedido fora da etapa de aprovação (#478)",
-   "feat: teto da cooperativa passa a valer no banco e ganha tela (DB-19) (#473)",
-   "docs: fecha a terceira rodada da re-auditoria (52 PRs fora do ledger, 13 merges colapsados, sonda de produção) (#476)"
+   "feat: teto da cooperativa passa a valer no banco e ganha tela (DB-19) (#473)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

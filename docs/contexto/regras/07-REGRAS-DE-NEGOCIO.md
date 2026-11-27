@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `00689b5e02` · branch `main` · 2026-11-27 09:52 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c5128f439d` · branch `main` · 2026-11-27 11:19 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4020,6 +4020,10 @@ _nenhum item encontrado_
   ```
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", }).format(value);
   ```
+- **valorAtualDoCampo(channel: 'slack' | 'email', getSetting: (c: 'slack' | 'email')** — `src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx`
+  ```
+  NotificationSettingPayload,
+  ```
 - **canEditScopeOf(profileUserId: string | null)** — `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`
   ```
   const isSelf = !!actorUser?.id && actorUser.id === profileUserId; return isSelf ? gates.canEditOwnProfile : gates.canEditOtherProfile;
@@ -5784,7 +5788,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7575 testes em 782 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7583 testes em 783 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6086,9 +6090,9 @@ _nenhum item encontrado_
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
 | `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
 | `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
+| `tests/unit/sla-closed-label.test.ts` | 8 | slaClosedLabel · descreve o fechamento de cada desfecho dentro do prazo · descreve o fechamento critico com as horas de atraso · trata desfecho ausente ou desconhecido como aprovado … |
 | `tests/workflows/WorkflowEditDialog.test.tsx` | 8 | WorkflowEditDialog · renders nothing when step is null · renders dialog with step data · shows prompt textarea for agent type … |
-| `e2e/order-status-rbac.spec.ts` | 7 | Pedidos Sicoob — RBAC canônico · vendedor consulta a lista de pedidos · vendedor acompanha pedidos pelo kanban · gestor acessa pedidos e o módulo de gestão de compras … |
-| … +482 linhas — lista completa em `context.json` | | |
+| … +483 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
