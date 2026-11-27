@@ -253,6 +253,18 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(faturamento).toContain('9090');
     expect(faturamento).toContain(ZERO_REAL);
     expect(faturamento).not.toContain('400,00');
+
+    // Segundo ciclo com os MESMOS anexos: agora so o XML esta na janela do
+    // faturamento (emitido em 12/03) e o valor aparece exatamente uma vez no
+    // total dos dois relatorios.
+    const proximoCiclo = await relatorio(
+      [{ order_id: 'ped-7', invoice_number: '9090', amount: 400, issued_at: '2026-03-12', created_at: '2026-03-09T10:00:00.000Z', sicoob_orders: { created_by: SELLER } }],
+      [{ order_id: 'ped-7', invoice_number: '9090', amount: 400, issued_at: '2026-03-12', created_at: '2026-03-09T10:00:00.000Z' }],
+    );
+    const faturamentoSeguinte = proximoCiclo.slice(0, proximoCiclo.indexOf('Propostas aprovadas'));
+    expect(faturamentoSeguinte).toContain('400,00');
+    expect(faturamento).not.toContain('400,00');
+    expect(proximoCiclo).not.toContain('Ajustes de faturamento');
   });
 
   it('nao soma em ajustes a nota cujo anexo do ciclo entrou no faturamento', async () => {
