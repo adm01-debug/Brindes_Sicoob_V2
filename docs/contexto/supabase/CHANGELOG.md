@@ -2,6 +2,11 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 23:15 UTC
+
+- **functions** alterado (1): `public.cleanup_old_notifications()`
+- **lints** removido (2): `rpc_anon_executable:public.cleanup_old_notifications()`, `secdef_mutable_search_path:public.cleanup_old_notifications()`
+
 ## 2026-11-27 22:16 UTC
 
 - **cron jobs** adicionado (1): `39:connections-health-check`

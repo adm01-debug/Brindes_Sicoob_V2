@@ -53651,9 +53651,13 @@
             {
               "file": "supabase/migrations/20261125193000_revoke_execute_legacy_notification_helpers.sql",
               "hits": 5
+            },
+            {
+              "file": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 8,
+          "code_total_files": 9,
           "cron": [
             "8:cleanup-old-notifications"
           ],
@@ -53662,18 +53666,20 @@
           "views": []
         },
         "comment": null,
-        "config": null,
+        "config": [
+          "search_path=public"
+        ],
         "definition": null,
-        "definition_sha": "7aa18571f964bf00",
-        "execute_api_roles": "anon, authenticated, service_role",
-        "execute_public": true,
+        "definition_sha": "6a77ee805e74aff7",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
         "is_trigger_fn": false,
         "kind": "function",
         "language": "plpgsql",
         "leakproof": false,
         "name": "cleanup_old_notifications",
         "owner": "postgres",
-        "returns": "integer",
+        "returns": "void",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -80644,12 +80650,6 @@
       {
         "code": "secdef_mutable_search_path",
         "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
-        "object": "public.cleanup_old_notifications()",
-        "severity": "ALTA"
-      },
-      {
-        "code": "secdef_mutable_search_path",
-        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
         "object": "public.get_unread_count()",
         "severity": "ALTA"
       },
@@ -80957,12 +80957,6 @@
         "code": "realtime_replica_identity",
         "detail": "Publicada no Realtime sem REPLICA IDENTITY FULL: eventos de UPDATE/DELETE não trazem `old` completo.",
         "object": "public.search_analytics",
-        "severity": "INFO"
-      },
-      {
-        "code": "rpc_anon_executable",
-        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
-        "object": "public.cleanup_old_notifications()",
         "severity": "INFO"
       },
       {

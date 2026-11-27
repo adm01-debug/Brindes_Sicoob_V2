@@ -4,7 +4,6 @@ Verificações objetivas feitas no catálogo. Um agente deve ler isto antes de p
 
 | severidade | código | objeto | detalhe |
 |---|---|---|---|
-| ALTA | secdef_mutable_search_path | public.cleanup_old_notifications() | SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path. |
 | ALTA | secdef_mutable_search_path | public.get_unread_count() | SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path. |
 | ALTA | secdef_mutable_search_path | public.is_dnd_active(p_user_id uuid) | SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path. |
 | ALTA | secdef_mutable_search_path | public.mark_all_notifications_read() | SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path. |
@@ -57,7 +56,6 @@ Verificações objetivas feitas no catálogo. Um agente deve ler isto antes de p
 | INFO | realtime_replica_identity | public.notifications | Publicada no Realtime sem REPLICA IDENTITY FULL: eventos de UPDATE/DELETE não trazem `old` completo. |
 | INFO | realtime_replica_identity | public.product_views | Publicada no Realtime sem REPLICA IDENTITY FULL: eventos de UPDATE/DELETE não trazem `old` completo. |
 | INFO | realtime_replica_identity | public.search_analytics | Publicada no Realtime sem REPLICA IDENTITY FULL: eventos de UPDATE/DELETE não trazem `old` completo. |
-| INFO | rpc_anon_executable | public.cleanup_old_notifications() | SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública). |
 | INFO | rpc_anon_executable | public.get_public_favorite_list(_token text) | SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública). |
 | INFO | rpc_anon_executable | public.get_public_favorite_reactions(_token text, _anon_id text) | SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública). |
 | INFO | rpc_anon_executable | public.get_sicoob_invitation(p_token text) | SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública). |
