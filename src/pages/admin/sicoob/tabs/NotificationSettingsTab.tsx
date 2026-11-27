@@ -10,13 +10,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface NotificationSettingPayload {
   channel: 'slack' | 'email';
-  webhook_url: string | null;
-  recipient_email: string | null;
-  is_active: boolean | null;
+  /** Campos são patch: o que não mudou não entra no payload (NULL no banco = não mexer). */
+  webhook_url?: string | null;
+  recipient_email?: string | null;
+  is_active?: boolean | null;
 }
 
 interface NotificationSettingsTabProps {
-  /** Leitura liberada ao gestor; gravar pa_notification_settings exige o papel `admin`. */
+  /** Leitura liberada ao gestor; gravar pa_notification_settings exige `is_supervisor_or_above`. */
   readOnly?: boolean;
 }
 
@@ -31,7 +32,7 @@ async function carregarWebhookSlack(paId: string, readOnly: boolean): Promise<st
 }
 
 /** Campos do webhook do Slack ficam vazios para quem nao administra. */
-function webhookExibido(readOnly: boolean, webhookUrl: string | null) {
+function webhookExibido(readOnly: boolean, webhookUrl: string | null | undefined) {
   return {
     valor: readOnly ? '' : webhookUrl ?? '',
     dica: readOnly ? 'Visível apenas para a administração' : 'https://hooks.slack.com/services/...',
@@ -76,13 +77,14 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
     mutationFn: async (payload: NotificationSettingPayload) => {
       // A coluna `webhook_url` esta fora do GRANT de `authenticated`, entao o
       // upsert direto falha no ON CONFLICT (o PostgreSQL exige SELECT na coluna).
-      // A gravacao passa pela RPC restrita a administracao.
+      // A gravacao passa pela RPC restrita a administracao; argumento NULL significa
+      // "nao mexer", por isso so o campo alterado sai no payload.
       const { error } = await supabase.rpc("sicoob_pa_notification_settings_set", {
         p_pa_id: selectedPa!,
         p_channel: payload.channel,
-        p_webhook_url: payload.webhook_url,
-        p_recipient_email: payload.recipient_email,
-        p_is_active: payload.is_active,
+        p_webhook_url: payload.webhook_url ?? null,
+        p_recipient_email: payload.recipient_email ?? null,
+        p_is_active: payload.is_active ?? null,
       });
       if (error) throw error;
     },
@@ -156,7 +158,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                     <Switch
                       checked={getSetting('slack').is_active ?? false}
                       disabled={readOnly}
-                      onCheckedChange={(val) => salvar({ ...getSetting('slack'), is_active: val })}
+                      onCheckedChange={(val) => salvar({ channel: 'slack', is_active: val })}
                     />
                   </div>
                 </CardHeader>
@@ -167,7 +169,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       placeholder={webhookExibido(readOnly, null).dica}
                       defaultValue={webhookExibido(readOnly, getSetting('slack').webhook_url).valor}
                       disabled={readOnly}
-                      onBlur={(e) => salvar({ ...getSetting('slack'), webhook_url: e.target.value })}
+                      onBlur={(e) => salvar({ channel: 'slack', webhook_url: e.target.value })}
                     />
                   </div>
                 </CardContent>
@@ -184,7 +186,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                     <Switch
                       checked={getSetting('email').is_active ?? false}
                       disabled={readOnly}
-                      onCheckedChange={(val) => salvar({ ...getSetting('email'), is_active: val })}
+                      onCheckedChange={(val) => salvar({ channel: 'email', is_active: val })}
                     />
                   </div>
                 </CardHeader>
@@ -195,7 +197,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       placeholder="gestor@singular.com.br"
                       defaultValue={getSetting('email').recipient_email ?? ''}
                       disabled={readOnly}
-                      onBlur={(e) => salvar({ ...getSetting('email'), recipient_email: e.target.value })}
+                      onBlur={(e) => salvar({ channel: 'email', recipient_email: e.target.value })}
                     />
                   </div>
                 </CardContent>

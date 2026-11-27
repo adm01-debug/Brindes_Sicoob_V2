@@ -21,9 +21,11 @@
 --   `limit_increase_requests.requested_by` passa a ser exigido, para o
 --   solicitante ver o proprio pedido.
 -- Decisoes:
---   - `supervisor` segue privilegiado (o comentario original dizia
---     "Privileged roles"), agora pelo papel real via has_role. `logistics` sai:
---     nao existe em `app_role` e nunca pode ser concedido.
+--   - `supervisor` segue privilegiado onde o dado e operacional (auditoria,
+--     configuracoes, RPCs), agora pelo papel real via has_role. Em
+--     `order_comments` nao ha privilegio amplo: o comentario herda o escopo de
+--     `orders`, entao supervisor ve comentario dos pedidos da propria
+--     organizacao e dos pedidos sem organizacao.
 --   - Solicitar aumento de alcada passa a exigir acesso ao PA
 --     (user_can_access_pa), que e o que a tela /pa/verba oferece; antes a
 --     policy nao deixava ninguem inserir. A aprovacao continua nas RPCs.
@@ -43,6 +45,11 @@
 --     nao e afetado.
 --   - `limit_increase_requests` aceita apenas insercao pendente e sem aprovador:
 --     quem solicita nao escolhe o proprio veredito; aprovar segue nas RPCs.
+--   - A RPC de gravacao aceita `is_supervisor_or_above`; a leitura de
+--     `pa_notification_settings` passa a aceitar o mesmo conjunto, para a tela
+--     nunca abrir vazia para quem pode gravar.
+--   - Na RPC de gravacao, argumento NULL significa "nao mexer" (o navegador manda
+--     so o campo alterado) e string vazia significa "limpar".
 -- Idempotente: DROP POLICY IF EXISTS antes de cada CREATE POLICY.
 
 -- =====================================================
@@ -73,25 +80,23 @@ USING (
 -- =====================================================
 -- 2) order_comments
 -- =====================================================
+-- O comentario herda o escopo do pedido: `order_comments.order_id` tem FK para
+-- `public.orders` (20260502174252:207), entao a leitura espelha `orders_select_scope`
+-- (20260426125603:105). O ramo anterior liberava tudo para `is_supervisor_or_above`,
+-- inclusive comentarios de pedidos de outra organizacao.
 DROP POLICY IF EXISTS "order_comments_select_scoped" ON public.order_comments;
 CREATE POLICY "order_comments_select_scoped"
 ON public.order_comments FOR SELECT TO authenticated
 USING (
-  public.is_supervisor_or_above((SELECT auth.uid()))
-  OR EXISTS (
+  EXISTS (
     SELECT 1 FROM public.orders o
      WHERE o.id = order_comments.order_id
-       AND (o.seller_id = (SELECT auth.uid())
-            OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid()))))
-  )
-  OR EXISTS (
-    SELECT 1 FROM public.sicoob_orders so
-     WHERE so.id = order_comments.order_id
        AND (
-         so.created_by = (SELECT auth.uid())
-         OR (public.is_gerente_pa() AND so.pa_id = public.current_user_pa_id())
-         OR (public.is_gestor_compras() AND so.cooperative_id = public.current_user_cooperativa_id())
-         OR public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role)
+         public.can_view_all_sales()
+         OR (public.has_role((SELECT auth.uid()), 'supervisor'::public.app_role)
+             AND (o.organization_id IS NULL
+                  OR o.organization_id IN (SELECT public.get_user_org_ids((SELECT auth.uid())))))
+         OR o.seller_id = (SELECT auth.uid())
        )
   )
 );
@@ -125,7 +130,10 @@ DROP POLICY IF EXISTS "sicoob_pa_notification_settings_escopo_gerencial" ON publ
 CREATE POLICY "sicoob_pa_notification_settings_escopo_gerencial"
 ON public.pa_notification_settings FOR SELECT TO authenticated
 USING (
-  (public.is_gerente_pa() AND pa_id = public.current_user_pa_id())
+  -- Quem grava pela RPC (`is_supervisor_or_above`) precisa ler a mesma linha:
+  -- sem isso o supervisor abria a tela vazia e regravava valores neutros.
+  public.is_supervisor_or_above((SELECT auth.uid()))
+  OR (public.is_gerente_pa() AND pa_id = public.current_user_pa_id())
   OR (public.is_gestor_compras() AND EXISTS (
         SELECT 1 FROM public.postos_atendimento pa
          WHERE pa.id = pa_notification_settings.pa_id
@@ -215,9 +223,12 @@ BEGIN
   INSERT INTO public.pa_notification_settings (pa_id, channel, webhook_url, recipient_email, is_active)
   VALUES (p_pa_id, p_channel, p_webhook_url, p_recipient_email, COALESCE(p_is_active, false))
   ON CONFLICT (pa_id, channel) DO UPDATE
-    SET webhook_url = EXCLUDED.webhook_url,
-        recipient_email = EXCLUDED.recipient_email,
-        is_active = EXCLUDED.is_active;
+    -- Preservar o que nao veio no payload: o navegador manda so o campo alterado
+    -- (ligar/desligar o canal nao pode apagar o destino ja gravado). NULL = "nao
+    -- mexer"; string vazia = "limpar".
+    SET webhook_url = COALESCE(EXCLUDED.webhook_url, public.pa_notification_settings.webhook_url),
+        recipient_email = COALESCE(EXCLUDED.recipient_email, public.pa_notification_settings.recipient_email),
+        is_active = COALESCE(p_is_active, public.pa_notification_settings.is_active);
 END;
 $function$;
 
