@@ -10,6 +10,11 @@ const mockFrom = vi.fn(() => ({
   update: (...args: unknown[]) => mockUpdate(...args),
 }));
 
+/** Deixa as microtasks pendentes rodarem até o update ser disparado. */
+async function flushMicrotasks(): Promise<void> {
+  for (let i = 0; i < 10; i += 1) await Promise.resolve();
+}
+
 /** Encadeamento do PostgREST: eq(...).eq(...)…maybeSingle() devolve `resultado`. */
 function encadeamento(resultado: unknown) {
   const no: Record<string, unknown> = {};
@@ -191,16 +196,30 @@ describe('pushSubscriptions', () => {
     instalarNavegador({ existente: subscription });
     mockUpdate.mockReturnValue(encadeamento({ error: null }));
     const ordem: string[] = [];
+    // Resolve só depois de um tick: se o código cancelasse a inscrição local
+    // antes de esperar o banco, 'navegador' apareceria primeiro.
+    let liberarBanco: () => void = () => {};
+    const respostaPendente = new Promise<void>((r) => { liberarBanco = r; });
     mockUpdate.mockImplementation(() => {
       ordem.push('banco');
-      return encadeamento({ error: null });
+      const enc = encadeamento({ error: null }) as Record<string, unknown> & {
+        then: (res: (v: unknown) => unknown) => Promise<unknown>;
+      };
+      enc.then = (resolve: (v: unknown) => unknown) =>
+        respostaPendente.then(() => resolve({ error: null }));
+      return enc;
     });
     subscription.unsubscribe.mockImplementation(async () => {
       ordem.push('navegador');
       return true;
     });
 
-    await expect(mod.desinscreverPush('user-1')).resolves.toBe(true);
+    const desinscricao = mod.desinscreverPush('user-1');
+    await flushMicrotasks();
+    expect(ordem).toEqual(['banco']);
+
+    liberarBanco();
+    await expect(desinscricao).resolves.toBe(true);
     expect(ordem).toEqual(['banco', 'navegador']);
   });
 
