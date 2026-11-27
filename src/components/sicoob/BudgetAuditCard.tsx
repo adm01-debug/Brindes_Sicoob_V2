@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Scale } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Scale, Search } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/format";
 import { sicoobBudgetService, type BudgetPeriod } from "@/services/sicoob/budgetService";
+import { BudgetEntriesDialog } from "@/components/sicoob/BudgetEntriesDialog";
 
 export const BUDGET_AUDIT_QUERY_KEY = "sicoob-budget-audit";
 
@@ -124,7 +125,13 @@ function DiscrepanciaBadge({ row }: { row: BudgetAuditRow }) {
   );
 }
 
-function BudgetAuditTable({ rows }: { rows: BudgetAuditRow[] }) {
+function BudgetAuditTable({
+  rows,
+  onDetalhar,
+}: {
+  rows: BudgetAuditRow[];
+  onDetalhar: (row: BudgetAuditRow) => void;
+}) {
   return (
     <Table>
       <TableHeader>
@@ -141,15 +148,18 @@ function BudgetAuditTable({ rows }: { rows: BudgetAuditRow[] }) {
         {rows.map((row) => (
           <TableRow
             key={`${row.pa_id}-${row.ano}-${row.mes}`}
-            className={hasDivergencia(row) ? "bg-destructive/5" : undefined}
+            className={hasDivergencia(row) ? "bg-destructive/5 cursor-pointer hover:bg-destructive/10" : "cursor-pointer"}
+            onClick={() => onDetalhar(row)}
+            title="Ver os lançamentos que compõem este saldo"
           >
             <TableCell className="font-medium">{row.pa_nome ?? "PA sem nome"}</TableCell>
             <TableCell>{formatCompetencia(row.ano, row.mes)}</TableCell>
             <TableCell>{formatCurrency(row.verba_total ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_registrada ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_calculada_pedidos ?? 0)}</TableCell>
-            <TableCell>
+            <TableCell className="flex items-center gap-1">
               <DiscrepanciaBadge row={row} />
+              <Search className="h-3 w-3 text-muted-foreground" />
             </TableCell>
           </TableRow>
         ))}
@@ -208,8 +218,25 @@ function DivergenciaAlert({ count }: { count: number }) {
   );
 }
 
+function DetalheDaVerba({ linha, aoFechar }: { linha: BudgetAuditRow | null; aoFechar: () => void }) {
+  if (!linha?.pa_id) return null;
+  return (
+    <BudgetEntriesDialog
+      aberto
+      aoMudarAbertura={(aberto) => {
+        if (!aberto) aoFechar();
+      }}
+      paId={linha.pa_id}
+      paNome={linha.pa_nome}
+      ano={linha.ano ?? 0}
+      mes={linha.mes ?? 0}
+    />
+  );
+}
+
 export function BudgetAuditCard() {
   const { rows, error, isLoading, period, setPeriod } = useBudgetAuditData();
+  const [detalhe, setDetalhe] = React.useState<BudgetAuditRow | null>(null);
   const divergentes = countDivergencias(rows);
   const temLinhas = Boolean(rows && rows.length > 0);
 
@@ -230,8 +257,11 @@ export function BudgetAuditCard() {
       <CardContent className="space-y-4">
         <BudgetAuditStatus isLoading={isLoading} error={error} rows={rows} />
         {temLinhas && divergentes > 0 && <DivergenciaAlert count={divergentes} />}
-        {temLinhas && !isLoading && !error && <BudgetAuditTable rows={rows ?? []} />}
+        {temLinhas && !isLoading && !error && (
+          <BudgetAuditTable rows={rows ?? []} onDetalhar={setDetalhe} />
+        )}
       </CardContent>
+      <DetalheDaVerba linha={detalhe} aoFechar={() => setDetalhe(null)} />
     </Card>
   );
 }

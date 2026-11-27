@@ -11800,6 +11800,20 @@ export type Database = {
         }
         Returns: string
       }
+      pa_budget_reconcile: {
+        Args: { p_ano: number; p_mes: number; p_pa_id: string }
+        Returns: {
+          comprometido_agregado: number
+          comprometido_livro: number
+          consumido_agregado: number
+          consumido_livro: number
+          divergente: boolean
+          pa_budget_id: string
+          planejado: number
+          reservado_agregado: number
+          reservado_livro: number
+        }[]
+      }
       apply_local_quote_approval_response: {
         Args: {
           _response: string
