@@ -101,6 +101,21 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
     if (!readOnly) upsertMutation.mutate(payload);
   };
 
+  // O onBlur dispara mesmo quando o usuario so passou pelo campo (ou apertou Tab).
+  // Sem esta guarda a URL/webhook vazia do PA atual seria gravada por cima do
+  // valor real ao trocar de PA, porque o DEFAULT do Input nao carrega o segredo.
+  const salvarTextoDoCampo = (
+    channel: 'slack' | 'email',
+    campo: 'webhook_url' | 'recipient_email',
+    digitado: string,
+  ) => {
+    const atual = channel === 'slack'
+      ? webhookExibido(readOnly, getSetting('slack').webhook_url).valor
+      : getSetting('email').recipient_email ?? '';
+    if (digitado.trim() === atual) return;
+    salvar(channel === 'slack' ? { channel, webhook_url: digitado } : { channel, recipient_email: digitado });
+  };
+
   const getSetting = (channel: 'slack' | 'email'): NotificationSettingPayload => {
     const setting = settings?.find(s => s.channel === channel);
     return setting
@@ -172,7 +187,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       placeholder={webhookExibido(readOnly, null).dica}
                       defaultValue={webhookExibido(readOnly, getSetting('slack').webhook_url).valor}
                       disabled={readOnly}
-                      onBlur={(e) => salvar({ channel: 'slack', webhook_url: e.target.value })}
+                      onBlur={(e) => salvarTextoDoCampo('slack', 'webhook_url', e.target.value)}
                     />
                   </div>
                 </CardContent>
@@ -200,7 +215,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       placeholder="gestor@singular.com.br"
                       defaultValue={getSetting('email').recipient_email ?? ''}
                       disabled={readOnly}
-                      onBlur={(e) => salvar({ channel: 'email', recipient_email: e.target.value })}
+                      onBlur={(e) => salvarTextoDoCampo('email', 'recipient_email', e.target.value)}
                     />
                   </div>
                 </CardContent>
