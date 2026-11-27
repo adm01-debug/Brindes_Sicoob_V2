@@ -109,6 +109,9 @@ async function degradedBatchResult(
   return queries.map(() => ({ success: false, error: message }));
 }
 
+/**
+ * Executa múltiplas queries SELECT no CRM em uma única invocação.
+ */
 export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]> {
   const startedAt = performance.now();
   const body = { operation: "batch", queries };
