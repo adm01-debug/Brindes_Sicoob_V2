@@ -79,6 +79,11 @@ function RequestStatusIcon({ status }: { status: string }) {
 function RequestHistoryRow({ request }: { request: LimitIncreaseRequest }) {
   const requestStatus = request.status ?? 'pending';
   const presentation = REQUEST_PRESENTATION[requestStatus] ?? PENDING_REQUEST_PRESENTATION;
+  // `requested_limit` guarda o teto total pedido; o aumento é a diferença para o
+  // teto vigente no momento do pedido (mesma conta da fila de aprovações).
+  const requestedLimit = request.requested_limit || 0;
+  const currentLimit = request.current_limit ?? null;
+  const adicional = currentLimit === null ? requestedLimit : requestedLimit - currentLimit;
   const createdAt = request.created_at ? new Date(request.created_at) : null;
   const createdLabel = createdAt
     ? `${createdAt.toLocaleDateString('pt-BR')} • ${createdAt.toLocaleTimeString('pt-BR')}`
@@ -97,7 +102,12 @@ function RequestHistoryRow({ request }: { request: LimitIncreaseRequest }) {
         </div>
         <div>
           <div className="text-sm font-bold">
-            Aumento de {formatCurrency(request.requested_limit || 0)}
+            Aumento de {formatCurrency(adicional)}
+            {currentLimit !== null ? (
+              <span className="ml-1 text-xs font-medium text-muted-foreground">
+                (de {formatCurrency(currentLimit)} para {formatCurrency(requestedLimit)})
+              </span>
+            ) : null}
           </div>
           <div className="max-w-[300px] truncate text-xs text-muted-foreground">
             {request.reason}
