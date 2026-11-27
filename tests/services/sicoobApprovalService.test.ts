@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   rpc: vi.fn(),
   from: vi.fn(),
+  insert: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -20,6 +21,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getUser.mockResolvedValue({ data: { user: { id: "gestor-1" } } });
   mocks.rpc.mockResolvedValue({ data: null, error: null });
+  mocks.from.mockReturnValue({ insert: mocks.insert });
+  mocks.insert.mockResolvedValue({ error: null });
 });
 
 describe("sicoobApprovalService.rejectOrderWithoutApproval", () => {
@@ -50,10 +53,44 @@ describe("sicoobApprovalService.createLimitIncreaseRequest", () => {
     expect(insert).toHaveBeenCalledExactlyOnceWith({
       pa_id: "pa-1",
       requested_by: "gestor-1",
+      current_limit: null,
       requested_limit: 5000,
       reason: "Aumento sazonal",
       status: "pending",
     });
+  });
+
+  it("soma o valor adicional ao limite atual para gravar o teto pedido", async () => {
+    await sicoobApprovalService.createLimitIncreaseRequest(
+      "pa-1",
+      80000,
+      "Demanda extra de dezembro",
+      50000,
+    );
+
+    expect(mocks.from).toHaveBeenCalledWith("limit_increase_requests");
+    expect(mocks.insert).toHaveBeenCalledExactlyOnceWith({
+      pa_id: "pa-1",
+      requested_by: "gestor-1",
+      current_limit: 50000,
+      requested_limit: 130000,
+      reason: "Demanda extra de dezembro",
+      status: "pending",
+    });
+  });
+
+  it("recusa adicional não positivo antes de tocar o banco", async () => {
+    await expect(
+      sicoobApprovalService.createLimitIncreaseRequest("pa-1", 0, "sem valor", 50000),
+    ).rejects.toThrow("maior que zero");
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("recusa justificativa vazia antes de tocar o banco", async () => {
+    await expect(
+      sicoobApprovalService.createLimitIncreaseRequest("pa-1", 1000, "   ", 50000),
+    ).rejects.toThrow("justificativa");
+    expect(mocks.from).not.toHaveBeenCalled();
   });
 
   it("falha sem sessão em vez de inserir pedido sem solicitante", async () => {
@@ -63,5 +100,27 @@ describe("sicoobApprovalService.createLimitIncreaseRequest", () => {
       sicoobApprovalService.createLimitIncreaseRequest("pa-1", 1, "motivo"),
     ).rejects.toThrow("Usuário não autenticado");
     expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+
+describe("sicoobApprovalService.decideLimitIncreaseRequest", () => {
+  it("aprova via RPC de decisão", async () => {
+    await sicoobApprovalService.approveLimitIncreaseRequest("req-1");
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("decide_limit_increase_request", {
+      p_request_id: "req-1",
+      p_approve: true,
+    });
+  });
+
+  it("recusa via RPC de decisão com o motivo informado", async () => {
+    await sicoobApprovalService.rejectLimitIncreaseRequest("req-1", "Verba comprometida");
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("decide_limit_increase_request", {
+      p_request_id: "req-1",
+      p_approve: false,
+      p_reason: "Verba comprometida",
+    });
   });
 });
