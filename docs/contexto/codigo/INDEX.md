@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `da92e3553b6f8f58d6efc3a81ffaf92a5bec2644` (2026-11-26T19:28:42-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `870bfb1f7b61137bfb9adefeaf4733f0a0f3173a` (2026-11-27T00:43:00Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -475,17 +475,17 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37343 nós · 62263 arestas · 2756 comunidades · grafo do commit `da92e355`
-- comunidades maiores: ref_integrations (533), ref_components (518), ref_lib (384), ref_hooks (307), ref_node_fs (250), lucide-react (232), framer-motion (217), react-router-dom (189), ai-usage.ts (188), ref_contexts (188), getCorsHeaders (187), ref_pages (167)
+- 37351 nós · 62281 arestas · 2745 comunidades · grafo do commit `870bfb1f`
+- comunidades maiores: vitest (597), ref_components (460), ref_integrations (371), ref_node_fs (261), ref_hooks (260), @tanstack/react-query (256), ref_lib (244), ref_contexts (194), getCorsHeaders (193), expert-chat/index.ts (189), framer-motion (184), react (179)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
 - scripts/db/apply-sicoob-migrations.mjs (30)
-- package.json (24)
+- package.json (23)
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
-- package-lock.json (20)
+- package-lock.json (19)
 - .github/workflows/ci.yml (14)
 - .github/workflows/deploy-sicoob-functions.yml (13)
 - docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (13)
@@ -699,6 +699,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `870bfb1` docs: fecha a terceira rodada da re-auditoria (52 PRs fora do ledger, 13 merges colapsados, sonda de produção) (#476)
 - 2026-11-26 `da92e35` fix: tira os "insights" fictícios do painel executivo e o R$ 0 enganoso (#475)
 - 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
 - 2026-11-26 `ee56b7f` fix: verba e alçada usam a competência do pedido (SIC-028) (#469)
@@ -713,7 +714,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-25 `ce42c9f` fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)
 - 2026-11-25 `d036bf1` fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)
 - 2026-11-26 `791ef78` fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)
-- 2026-11-25 `76245cc` fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

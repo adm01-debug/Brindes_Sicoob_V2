@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "da92e3553b6f8f58d6efc3a81ffaf92a5bec2644",
+  "sha": "870bfb1f7b61137bfb9adefeaf4733f0a0f3173a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-26 22:31 UTC",
+  "generated_at": "2026-11-27 01:16 UTC",
   "files_total": 5356,
   "code_files": 3916,
   "code_lines": 577650
@@ -261652,10 +261652,20 @@
   }
  },
  "git": {
-  "sha": "da92e3553b6f8f58d6efc3a81ffaf92a5bec2644",
+  "sha": "870bfb1f7b61137bfb9adefeaf4733f0a0f3173a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "870bfb1",
+    "date": "2026-11-26",
+    "author": "adm01-debug",
+    "subject": "docs: fecha a terceira rodada da re-auditoria (52 PRs fora do ledger, 13 merges colapsados, sonda de produção) (#476)",
+    "files": [
+     "docs/RECUPERACAO/README.md",
+     "docs/RECUPERACAO/reauditoria.md"
+    ]
+   },
    {
     "sha": "da92e35",
     "date": "2026-11-26",
@@ -262033,16 +262043,6 @@
      "package-lock.json",
      "package.json"
     ]
-   },
-   {
-    "sha": "7bf44fc",
-    "date": "2026-11-25",
-    "author": "dependabot[bot]",
-    "subject": "chore(deps)(deps): Bump the production-minor-patch group with 4 updates (#406)",
-    "files": [
-     "package-lock.json",
-     "package.json"
-    ]
    }
   ],
   "hot_files": [
@@ -262087,12 +262087,12 @@
     2
    ],
    [
-    "package-lock.json",
-    2
+    "docs/RECUPERACAO/README.md",
+    1
    ],
    [
-    "package.json",
-    2
+    "docs/RECUPERACAO/reauditoria.md",
+    1
    ],
    [
     "src/pages/admin/AdminBusinessDashboardPage.tsx",
