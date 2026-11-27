@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 15:17 UTC
+
+- **functions** alterado (1): `public.pa_budget_reconcile(p_pa_id uuid, p_ano integer, p_mes integer)`
+
 ## 2026-11-27 13:17 UTC
 
 - **functions** alterado (2): `public.audit_security_definer_acl()`, `public.check_security_health()`

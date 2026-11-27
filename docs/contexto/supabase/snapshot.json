@@ -60962,9 +60962,13 @@
             {
               "file": "scripts/qa/simular-verba-lifecycle.py",
               "hits": 2
+            },
+            {
+              "file": "src/components/sicoob/BudgetEntriesDialog.tsx",
+              "hits": 1
             }
           ],
-          "code_total_files": 1,
+          "code_total_files": 2,
           "cron": [],
           "db": [],
           "triggers": [],
