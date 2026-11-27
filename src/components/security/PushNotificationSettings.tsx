@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/contexts/AuthContext';
 import { inscricaoAtiva } from '@/lib/push-subscription';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -20,13 +21,22 @@ import {
 const TEST_NOTIFICATION_TITLE = 'Teste de notificação';
 const TEST_NOTIFICATION_BODY = 'Esta é uma notificação de teste do sistema de segurança.';
 
-export function PushNotificationSettings() {
+export function PushNotificationSettings({ managingOther = false }: { managingOther?: boolean }) {
   const settings = usePushNotificationSettings();
   if (!settings.isSupported) return <UnsupportedPushCard />;
   return (
     <Card>
       <PushHeader enabled={settings.isEnabled} />
       <CardContent className="space-y-6">
+        {managingOther && (
+          <div className="flex items-start gap-3 rounded-lg border border-orange/30 bg-orange/5 p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 text-orange" />
+            <p className="text-sm">
+              A inscrição de push vale <strong>somente para o seu próprio dispositivo</strong>.
+              As ações abaixo alteram a sua conta, não a do usuário que você está gerenciando.
+            </p>
+          </div>
+        )}
         <PushStatus {...settings} />
         {settings.permission === 'denied' && <PermissionDeniedNotice />}
         {settings.isEnabled && (
@@ -39,20 +49,29 @@ export function PushNotificationSettings() {
 
 function usePushNotificationSettings() {
   const {
-    push: { isSupported, isEnabled, permission, requestPermission, showSecurityAlert, removerInscricao },
+    push: { isSupported, isEnabled, permission, requestPermission, showSecurityAlert, removerInscricao, inscricao },
   } = useNotifications();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isRequesting, setIsRequesting] = useState(false);
   const [inscrito, setInscrito] = useState(false);
 
   const sincronizarInscricao = useCallback(() => {
-    void inscricaoAtiva().then(setInscrito);
-  }, []);
+    if (!user) return;
+    void inscricaoAtiva(user.id).then(setInscrito);
+  }, [user]);
 
   useEffect(() => {
     if (permission === 'granted') sincronizarInscricao();
     else setInscrito(false);
   }, [permission, sincronizarInscricao]);
+
+  // Após uma tentativa de inscrição, o estado do hook manda: falha de gravação
+  // não pode aparecer como "inscrito" só porque o navegador tem a subscription.
+  useEffect(() => {
+    if (inscricao === 'ativa') setInscrito(true);
+    if (inscricao === 'inativa' || inscricao === 'falhou') setInscrito(false);
+  }, [inscricao]);
 
   const handleDisableNotifications = async () => {
     setIsRequesting(true);

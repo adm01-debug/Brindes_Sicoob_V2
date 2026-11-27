@@ -10,8 +10,11 @@ interface NotificationPermissionState {
   isEnabled: boolean;
 }
 
+export type EstadoInscricao = 'desconhecida' | 'ativa' | 'inativa' | 'falhou';
+
 export function usePushNotifications() {
   const { user } = useAuth();
+  const [inscricao, setInscricao] = useState<EstadoInscricao>('desconhecida');
   const [state, setState] = useState<NotificationPermissionState>({
     permission: 'default',
     isSupported: false,
@@ -43,15 +46,17 @@ export function usePushNotifications() {
       }));
 
       // Permissão só libera notificação local. Para receber com o app fechado é
-      // preciso inscrever o navegador e persistir o endpoint.
-      if (permission === 'granted' && user) {
-        const resultado = await inscreverPush(user.id);
-        if (!resultado.ok) {
-          logger.warn(`[push] inscrição não concluída: ${resultado.motivo}`, resultado.detalhe);
-        }
-      }
+      // preciso inscrever o navegador e persistir o endpoint. Se a gravação
+      // falhar a permissão continua concedida, mas não há entrega — quem chama
+      // precisa saber, então a inscrição é registrada no estado.
+      if (permission !== 'granted' || !user) return permission === 'granted';
 
-      return permission === 'granted';
+      const resultado = await inscreverPush(user.id);
+      setInscricao(resultado.ok ? 'ativa' : 'falhou');
+      if (!resultado.ok) {
+        logger.warn(`[push] inscrição não concluída: ${resultado.motivo}`, resultado.detalhe);
+      }
+      return true;
     } catch {
       return false;
     }
@@ -182,7 +187,9 @@ export function usePushNotifications() {
 
   const removerInscricao = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
-    return desinscreverPush(user.id);
+    const ok = await desinscreverPush(user.id);
+    if (ok) setInscricao('inativa');
+    return ok;
   }, [user]);
 
   return {
@@ -191,5 +198,6 @@ export function usePushNotifications() {
     showNotification,
     showSecurityAlert,
     removerInscricao,
+    inscricao,
   };
 }

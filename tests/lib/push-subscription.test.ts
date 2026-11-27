@@ -1,7 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUpsert = vi.fn();
-const mockFrom = vi.fn(() => ({ upsert: mockUpsert }));
+const mockSelect = vi.fn();
+const mockUpdate = vi.fn();
+const mockEq = vi.fn();
+const mockFrom = vi.fn(() => ({
+  upsert: mockUpsert,
+  select: (...args: unknown[]) => mockSelect(...args),
+  update: (...args: unknown[]) => mockUpdate(...args),
+}));
+
+/** Encadeamento do PostgREST: eq(...).eq(...)…maybeSingle() devolve `resultado`. */
+function encadeamento(resultado: unknown) {
+  const no: Record<string, unknown> = {};
+  no.eq = (...args: unknown[]) => {
+    mockEq(...args);
+    return no;
+  };
+  no.maybeSingle = async () => resultado;
+  // O builder do PostgREST é thenable: `await update().eq().eq()` resolve em
+  // { error }. O mock precisa expor `then` para reproduzir isso.
+  no.then = (resolve: (v: unknown) => unknown) => Promise.resolve(resultado).then(resolve);
+  return no;
+}
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (...args: unknown[]) => mockFrom(...args) },
@@ -48,6 +69,9 @@ describe('pushSubscriptions', () => {
     mockUpsert.mockReset();
     mockUpsert.mockResolvedValue({ error: null });
     mockFrom.mockClear();
+    mockSelect.mockReset();
+    mockUpdate.mockReset();
+    mockEq.mockReset();
     // A chave é lida no import do módulo; definir antes de carregá-lo.
     vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8');
   });
@@ -135,12 +159,59 @@ describe('pushSubscriptions', () => {
     expect(Array.from(bytes)).toEqual([0xfb, 0xff]);
   });
 
-  it('inscricaoAtiva reflete a presença de subscription no navegador', async () => {
+  it('inscricaoAtiva só confirma quando existe linha ativa daquela conta', async () => {
     const mod = await carregarModulo();
     instalarNavegador({ existente: subscription });
-    await expect(mod.inscricaoAtiva()).resolves.toBe(true);
+    mockSelect.mockReturnValue(encadeamento({ data: { id: 'linha-1' }, error: null }));
 
+    await expect(mod.inscricaoAtiva('user-1')).resolves.toBe(true);
+    expect(mockEq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(mockEq).toHaveBeenCalledWith('endpoint', 'https://push.exemplo/abc');
+    expect(mockEq).toHaveBeenCalledWith('is_active', true);
+  });
+
+  it('inscricaoAtiva é false quando a conta atual não gravou o endpoint', async () => {
+    const mod = await carregarModulo();
+    instalarNavegador({ existente: subscription });
+    mockSelect.mockReturnValue(encadeamento({ data: null, error: null }));
+
+    await expect(mod.inscricaoAtiva('outra-conta')).resolves.toBe(false);
+  });
+
+  it('inscricaoAtiva é false sem inscrição no navegador', async () => {
+    const mod = await carregarModulo();
     instalarNavegador();
-    await expect(mod.inscricaoAtiva()).resolves.toBe(false);
+
+    await expect(mod.inscricaoAtiva('user-1')).resolves.toBe(false);
+    expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('desinscreverPush desativa o banco antes de descartar a inscrição local', async () => {
+    const mod = await carregarModulo();
+    instalarNavegador({ existente: subscription });
+    mockUpdate.mockReturnValue(encadeamento({ error: null }));
+    const ordem: string[] = [];
+    mockUpdate.mockImplementation(() => {
+      ordem.push('banco');
+      return encadeamento({ error: null });
+    });
+    subscription.unsubscribe.mockImplementation(async () => {
+      ordem.push('navegador');
+      return true;
+    });
+
+    await expect(mod.desinscreverPush('user-1')).resolves.toBe(true);
+    expect(ordem).toEqual(['banco', 'navegador']);
+  });
+
+  it('desinscreverPush mantém a inscrição local quando o banco rejeita', async () => {
+    const mod = await carregarModulo();
+    instalarNavegador({ existente: subscription });
+    mockUpdate.mockReturnValue(encadeamento({ error: { message: 'negado' } }));
+    const unsubscribe = vi.fn(async () => true);
+    subscription.unsubscribe = unsubscribe;
+
+    await expect(mod.desinscreverPush('user-1')).resolves.toBe(false);
+    expect(unsubscribe).not.toHaveBeenCalled();
   });
 });

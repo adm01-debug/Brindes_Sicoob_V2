@@ -137,16 +137,21 @@ export async function desinscreverPush(userId: string): Promise<boolean> {
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) return true;
 
-    const endpoint = subscription.endpoint;
-    await subscription.unsubscribe();
-
+    // O banco vem primeiro: `unsubscribe()` apaga a única referência ao
+    // endpoint, então se o update falhasse depois dele a linha ficaria ativa
+    // para sempre e sem como ser corrigida pela UI.
     const { error } = await supabase
       .from('push_subscriptions')
       .update({ is_active: false })
       .eq('user_id', userId)
-      .eq('endpoint', endpoint);
+      .eq('endpoint', subscription.endpoint);
 
-    if (error) logger.warn('[push] endpoint não desativado:', error.message);
+    if (error) {
+      logger.error('[push] endpoint não desativado, inscrição local mantida:', error.message);
+      return false;
+    }
+
+    await subscription.unsubscribe();
     return true;
   } catch (error) {
     logger.error('[push] falha ao desinscrever:', error);
@@ -154,15 +159,33 @@ export async function desinscreverPush(userId: string): Promise<boolean> {
   }
 }
 /**
- * Indica se este navegador já tem uma inscrição ativa. É o que diferencia
- * "permissão concedida" (notificação local) de "vai receber com o app fechado".
+ * Inscrição ativa **da conta informada** neste navegador.
+ *
+ * A inscrição do navegador é do service worker, não da sessão: trocar de conta
+ * no mesmo navegador herda a inscrição da conta anterior. Por isso o estado só
+ * conta quando existe a linha `(user_id, endpoint)` no banco — sem isso a tela
+ * mostraria "inscrito" para quem nunca gravou nada.
  */
-export async function inscricaoAtiva(): Promise<boolean> {
+export async function inscricaoAtiva(userId: string): Promise<boolean> {
   if (!pushSuportadoNoNavegador()) return false;
   try {
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
-    return sub !== null;
+    if (!sub) return false;
+
+    const { data, error } = await supabase
+      .from('push_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('endpoint', sub.endpoint)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error) {
+      logger.warn('[push] não foi possível conferir a inscrição:', error.message);
+      return false;
+    }
+    return data !== null;
   } catch {
     return false;
   }
