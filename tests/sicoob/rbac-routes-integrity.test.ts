@@ -54,6 +54,16 @@ describe('SICOOB RBAC Routes Integrity', () => {
     for (const papel of ['gerente_pa', 'comprador_pac', 'comprador_singular', 'vendedor']) {
       expect(enxerga(papel), `${papel} não deve enxergar Centrais`).toBe(false);
     }
+
+    // O grupo pai é filtrado antes dos itens em useVisibleSidebarGroups: se
+    // "Estrutura SICOOB" virasse restrito a dev, Centrais sumiria para o
+    // supervisor sem que as checagens acima falhassem.
+    const grupoPai = navGroups.filter((grupo) =>
+      grupo.items.some((item) => (item.children ?? []).some((filho) => filho.href === '/admin/centrais')),
+    );
+    expect(grupoPai).toHaveLength(1);
+    expect(grupoPai[0]?.devOnly ?? false).toBe(false);
+    expect(grupoPai[0]?.adminOnly ?? false).toBe(true);
   });
 
   it('nenhum item de menu leva a /403: a visibilidade segue a guarda de rota', () => {

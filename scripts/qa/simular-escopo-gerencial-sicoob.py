@@ -212,9 +212,20 @@ try:
         ));
     """)
 
-    # Segundo patch: troca de e-mail e limpeza explicita do webhook.
+    # Segundo patch: troca de e-mail e limpeza explicita do webhook. O webhook e
+    # conferido entre as duas chamadas: se a primeira apagasse o destino, a
+    # asserção final (webhook ja limpo de proposito) passaria sem provar nada.
     sql(como(ADMIN, f"""
       SELECT public.sicoob_pa_notification_settings_set('{PA1}', 'slack', p_recipient_email := 'novo@test');
+    """))
+    sql(f"""
+      INSERT INTO public.qa_results (name, ok) VALUES
+        ('trocar_email_preserva_webhook_antes_da_limpeza', (
+          SELECT webhook_url = '{WEBHOOK}' AND recipient_email = 'novo@test'
+            FROM public.pa_notification_settings WHERE pa_id = '{PA1}' AND channel = 'slack'
+        ));
+    """)
+    sql(como(ADMIN, f"""
       SELECT public.sicoob_pa_notification_settings_set('{PA1}', 'slack', p_webhook_url := '');
     """))
     sql(f"""
