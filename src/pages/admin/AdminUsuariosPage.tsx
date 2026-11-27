@@ -41,7 +41,7 @@ import { EditUserDialog } from '@/components/admin/users/EditUserDialog';
 import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
 import { DeleteUserDialog } from '@/components/admin/users/DeleteUserDialog';
 import { PromotionDialog } from '@/components/admin/users/PromotionDialog';
-import { RoleAuditLogPanel } from '@/components/admin/users/RoleAuditLogPanel';
+import { RawConfigAuditPanel, RoleAuditLogPanel } from '@/components/admin/users/RoleAuditLogPanel';
 import { DevAccessAuditAlert } from '@/components/admin/DevAccessAuditAlert';
 import { type UserWithRole } from '@/components/admin/users/types';
 
@@ -210,6 +210,7 @@ function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean
       {isDev && (
         <TabsContent value="audit">
           <RoleAuditLogPanel />
+          <RawConfigAuditPanel />
         </TabsContent>
       )}
       <TabsContent value="sicoob-hierarchy">
