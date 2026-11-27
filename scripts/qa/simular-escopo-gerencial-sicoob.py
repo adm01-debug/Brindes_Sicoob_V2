@@ -39,9 +39,15 @@ SELLER = "44444444-4444-4444-4444-444444444444"
 
 PA1 = "aaaaaaaa-0000-0000-0000-000000000001"
 PA2 = "aaaaaaaa-0000-0000-0000-000000000002"
+# Mesmo dono do PA1 (cooperativa ORG1): o gerente enxerga o PA inteiro, entao
+# pedido de outro autor aqui e dele tambem — o que ele nao pode e abrir em nome
+# de terceiro nem ver posto de outra cooperativa.
+PA3 = "aaaaaaaa-0000-0000-0000-000000000003"
 ORG1 = "bbbbbbbb-0000-0000-0000-000000000001"
 ORG2 = "bbbbbbbb-0000-0000-0000-000000000002"
 REQ1 = "eeeeeeee-0000-0000-0000-000000000001"
+REQ2 = "eeeeeeee-0000-0000-0000-000000000002"
+REQ3 = "eeeeeeee-0000-0000-0000-000000000003"
 ORDER1 = "cccccccc-0000-0000-0000-000000000001"
 ORDER2 = "cccccccc-0000-0000-0000-000000000002"
 ORDER3 = "cccccccc-0000-0000-0000-000000000003"
@@ -242,7 +248,8 @@ SEED = f"""
 
   INSERT INTO public.postos_atendimento (id, nome, cooperativa_id, is_active) VALUES
     ('{PA1}', 'PA Aracaju', '{ORG1}', true),
-    ('{PA2}', 'PA Salvador', '{ORG2}', true);
+    ('{PA2}', 'PA Salvador', '{ORG2}', true),
+    ('{PA3}', 'PA Nossa Senhora do Socorro', '{ORG1}', true);
 
   INSERT INTO public.user_roles (user_id, role) VALUES
     ('{ADMIN}', 'admin'),
@@ -267,7 +274,12 @@ SEED = f"""
   -- Pedido de aumento do PA1 aberto pelo gerente: e a fila que gerente e
   -- comprador do PA1 devem ver, e que nenhum outro posto pode enxergar.
   INSERT INTO public.limit_increase_requests (id, pa_id, requested_by, current_limit, requested_limit, reason) VALUES
-    ('{REQ1}', '{PA1}', '{GERENTE}', 1000, 2500, 'Campanha de fim de ano');
+    ('{REQ1}', '{PA1}', '{GERENTE}', 1000, 2500, 'Campanha de fim de ano'),
+    -- Mesmo PA, autor diferente: o gerente ve (escopo e do posto) mas nao
+    -- decide em nome de quem pediu.
+    ('{REQ2}', '{PA1}', '{SELLER}', 500, 800, 'Reposicao de estoque'),
+    -- Outro posto da MESMA cooperativa: o escopo e por PA, nao por cooperativa.
+    ('{REQ3}', '{PA3}', '{SELLER}', 700, 1200, 'Abertura de nova frente');
 
   -- Verba de fevereiro/2026 para exercitar a recusa (nao altera verba) sem
   -- depender da competencia corrente do servidor de teste.
@@ -377,7 +389,22 @@ try:
     # nenhum outro posto e enxergado por eles, e inserir em nome alheio falha.
     sql(como(GERENTE, f"""
       INSERT INTO public.qa_results (name, ok) VALUES
-        ('gerente_ve_o_pedido_do_proprio_pa', (SELECT count(*) = 1 FROM public.limit_increase_requests));
+        ('gerente_ve_o_pedido_do_proprio_pa', (SELECT count(*) = 2 FROM public.limit_increase_requests)),
+        ('gerente_ve_pedido_de_outro_autor_no_proprio_pa', (
+          SELECT count(*) = 1 FROM public.limit_increase_requests WHERE id = '{REQ2}'
+        )),
+        ('gerente_nao_ve_pedido_de_outro_pa_da_mesma_cooperativa', (
+          SELECT count(*) = 0 FROM public.limit_increase_requests WHERE id = '{REQ3}'
+        ));
+      DO $qa$
+      BEGIN
+        INSERT INTO public.limit_increase_requests (pa_id, requested_by, current_limit, requested_limit, reason)
+        VALUES ('{PA3}', '{SELLER}', 10, 20, 'em nome de outro autor');
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_nome_de_outro_autor', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_nome_de_outro_autor', true);
+      END
+      $qa$;
       DO $qa$
       BEGIN
         INSERT INTO public.limit_increase_requests (pa_id, current_limit, requested_limit, reason)
@@ -390,7 +417,7 @@ try:
     """))
     sql(como(ADMIN, f"""
       INSERT INTO public.qa_results (name, ok) VALUES
-        ('admin_ve_a_fila_de_aumentos', (SELECT count(*) = 1 FROM public.limit_increase_requests));
+        ('admin_ve_a_fila_de_aumentos', (SELECT count(*) = 3 FROM public.limit_increase_requests));
     """))
 
     # Decisao: recusa exige motivo, o comprador do PA nao tem autoridade, o
@@ -402,6 +429,22 @@ try:
         INSERT INTO public.qa_results (name, ok) VALUES ('gerente_do_pa_nao_decide_o_proprio_pedido', false);
       EXCEPTION WHEN insufficient_privilege THEN
         INSERT INTO public.qa_results (name, ok) VALUES ('gerente_do_pa_nao_decide_o_proprio_pedido', true);
+      END
+      $qa$;
+      DO $qa$
+      BEGIN
+        PERFORM public.decide_limit_increase_request('{REQ2}', true, NULL);
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_decide_pedido_de_outro_autor', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_decide_pedido_de_outro_autor', true);
+      END
+      $qa$;
+      DO $qa$
+      BEGIN
+        PERFORM public.decide_limit_increase_request('{REQ3}', true, NULL);
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_decide_pedido_de_outro_pa', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_decide_pedido_de_outro_pa', true);
       END
       $qa$;
     """))
