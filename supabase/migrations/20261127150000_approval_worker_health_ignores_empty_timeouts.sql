@@ -28,9 +28,13 @@ BEGIN
     RAISE EXCEPTION 'monitor_sicoob_approval_worker nao existe';
   END IF;
 
-  IF position(v_old_filter IN v_definition) = 0 THEN
-    RAISE NOTICE 'monitor_sicoob_approval_worker ja corrigido ou fora do formato esperado';
+  IF position(v_new_filter IN v_definition) > 0 THEN
+    RAISE NOTICE 'monitor_sicoob_approval_worker ja possui a agregacao corrigida';
     RETURN;
+  END IF;
+
+  IF position(v_old_filter IN v_definition) = 0 THEN
+    RAISE EXCEPTION 'monitor_sicoob_approval_worker divergiu do formato esperado; correcao nao aplicada';
   END IF;
 
   EXECUTE replace(v_definition, v_old_filter, v_new_filter);

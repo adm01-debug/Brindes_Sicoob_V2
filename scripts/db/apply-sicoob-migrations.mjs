@@ -280,6 +280,10 @@ const TARGETS = [
     file: "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
     sha256: "705624daf4195c21391d63cb3aa02acb19782f8b3ec68adfb53e520509a1508b",
   },
+  {
+    file: "supabase/migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql",
+    sha256: "dec81f57fe2e8613e91eb3ca3c7823013d1ae8c49c1ee29c5a1f4252919694ad",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
@@ -466,11 +470,15 @@ function latestDefiner(targets, functionName) {
 }
 
 // O corpo esperado do monitor é a função original (20260922225500) com os
-// dois patches de correlação/timeout aplicados pela migration 20261015102000.
-// O patch substitui os blocos antigos pelos novos; derivá-los em Node evita
-// guardar o corpo copiado e mantém a validação por igualdade total (hash).
-function approvalWorkerMonitorBody(targets) {
-  const base = latestDefiner(targets, "monitor_sicoob_approval_worker")?.sql
+// três patches aplicados: correlação/timeout (20261015102000) e a agregação
+// que ignora timeouts sem entrega pendente (20261127150000). Cada patch
+// declara seus blocos $old_$/$new_$; derivá-los em Node evita guardar o corpo
+// copiado e mantém a validação por igualdade total (hash).
+const MONITOR_HEALTH_PATCH = "supabase/migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql";
+
+export function approvalWorkerMonitorBody(targets) {
+  // Só a definição original cria o corpo; as migrations seguintes são patches.
+  const base = targets.find((target) => target.sql.includes("CREATE OR REPLACE FUNCTION public.monitor_sicoob_approval_worker("))?.sql
     ?? readFileSync(join(ROOT, "supabase/migrations/20260922225500_monitor_sicoob_approval_worker.sql"), "utf8");
   const patch = latestDefiner(targets, "dispatch_sicoob_approval_worker")?.sql
     ?? readFileSync(join(ROOT, "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql"), "utf8");
@@ -479,15 +487,18 @@ function approvalWorkerMonitorBody(targets) {
     if (labelIndex < 0) throw new Error(`Bloco $${marker}$ não encontrado no patch do monitor.`);
     return sql.slice(labelIndex + `:= $${marker}$`.length, sql.indexOf(`$${marker}$;`, labelIndex));
   };
-  const apply = (source, marker, targetSql) => {
-    const oldBlock = findBlock(patch, `old_${marker}`);
-    const newBlock = findBlock(patch, `new_${marker}`);
+  const apply = (sourcePatch, marker, targetSql) => {
+    const oldBlock = findBlock(sourcePatch, `old_${marker}`);
+    const newBlock = findBlock(sourcePatch, `new_${marker}`);
     const replaced = targetSql.replace(oldBlock, newBlock);
     if (replaced === targetSql) throw new Error(`Patch ${marker} não encontrado no corpo do monitor.`);
     return replaced;
   };
   const body = extractFunctionBody(base, "monitor_sicoob_approval_worker");
-  return apply(patch, "response", apply(patch, "timeout", body));
+  const health = targets.find((target) => target.file === MONITOR_HEALTH_PATCH)?.sql
+    ?? readFileSync(join(ROOT, MONITOR_HEALTH_PATCH), "utf8");
+  const withTimeouts = apply(patch, "response", apply(patch, "timeout", body));
+  return apply(health, "filter", withTimeouts);
 }
 
 function extractFunctionBody(sql, functionName) {
