@@ -1094,13 +1094,15 @@ Isto não compara o código publicado com a `main` — essa é outra medição
 - `tests/` da tag `arquivo/claude-fix-prod-cors-audit-261118-1034`: 46 arquivos ausentes na
   `main`, dos quais 5 dependem de módulo que não existe mais, 3 de módulo renomeado e 38
   apontam para módulo existente. A amostra adjudicada vale **só para o contrato de erro**:
-  `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` cobre as duas
-  mensagens (`QUOTE_LOAD_FAILED`, `QUOTE_LOAD_NOT_FOUND`) como
-  `tests/hooks/useQuoteInitialization.loading.test.tsx` na ref. A ref cobre **mais**: com
-  `reloadKey` a nova tentativa acontece no próprio hook (efeito reexecutado, 2 chamadas a
-  `fetchQuote`), enquanto a `main` recarrega a página (`QuoteBuilderPage.tsx:182`) e o hook dela
-  não tem `reloadKey`. Essa parte **não está adjudicada** — é melhoria da ref ainda não portada,
-  não equivalente. Os demais arquivos seguem **não adjudicados um a um**: por isso a tag fica.
+  `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` cobre os dois desfechos
+  (`QUOTE_LOAD_FAILED`/`QUOTE_LOAD_NOT_FOUND`, com textos mais longos que os da ref), como
+  `tests/hooks/useQuoteInitialization.loading.test.tsx` na ref cobre com
+  "Não foi possível carregar o orçamento." e "Orçamento não encontrado.". A ref cobre **mais**:
+  com `reloadKey` a nova tentativa acontece no próprio hook (`:46-51`, efeito reexecutado, 2
+  chamadas a `fetchQuote`), enquanto a `main` recarrega a página (`QuoteBuilderPage.tsx:182`) e o
+  hook dela não tem `reloadKey`. Essa parte **não está adjudicada** — é melhoria da ref ainda não
+  portada, não equivalente. Os demais arquivos seguem **não adjudicados um a um**: por isso a tag
+  fica.
 - `WEBHOOK_DISPATCHER_SECRET` (provisionamento) e a fila de PRs de rule 8 seguem como estavam.
 - `DIRECTORY_CAP = 200` em `src/hooks/useCrmCompanies.ts:36`: o teto de 200 é do **front**, não
   da política do portal — `portal-access-policy.ts:118-122` aceita `limit` até 100 e `offset` até
