@@ -147,9 +147,14 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    de teste ausentes na `main`, 5 dependem de módulo que não existe mais, 3 de módulo renomeado
    e 38 apontam para módulo existente — nos adjudicados, a `main` cobre o mesmo contrato com
    outro nome. Os não adjudicados um a um são a razão de a tag ficar em vez da branch.
-6. ~~**`connections-auto-test` divergente em produção**~~ — **RESOLVIDO em 26/11/2026**: a
-   função está na allowlist do workflow de publicação; a sonda das 57 funções invocadas pelo
-   front não devolveu nenhum `404 NOT_FOUND`.
+6. **`connections-auto-test`: allowlist resolvida, divergência de código ainda aberta** — a
+   função entrou na allowlist do workflow (`deploy-sicoob-functions.yml:59`), o que a torna
+   publicável; mas a publicação é manual (`workflow_dispatch` com `PUBLICAR`) e a última
+   comparação de artefatos, em 18/11/2026, mediu **2 de 20** strings ausentes em produção
+   (`RELATORIO_CI.md:956`), sem nova medição desde então. Continua pendente até a função ser
+   publicada e remedida. A sonda de 26/11/2026 mediu outra coisa: que as funções referenciadas
+   pelo front **existem** (nenhum `NOT_FOUND` de gateway) — não comparou o código publicado com
+   a `main`.
 
 Saíram desta lista por terem PR aberta ou mergeada: métricas do Gestor de Compras (#332
 mergeada, #333), trava otimista e fila única do Kit Builder (#327, #334, #341), auditoria da

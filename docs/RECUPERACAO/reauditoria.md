@@ -969,16 +969,18 @@ ser recuperada ou declarada obsoleta por escrito".
 As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
 escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
 
-## Terceira rodada — 26/11/2026: as PRs fechadas que nunca estiveram neste documento
+## Terceira rodada — 26/11/2026: as PRs fechadas que nunca estiveram no `prs.md`
 
 As duas rodadas anteriores mediram os descartes **que já estavam** no ledger. Esta mede o que
-nunca esteve: das 475 PRs do repositório, **90 foram fechadas sem merge** e o `prs.md` cita 38.
-As outras **52** foram confrontadas uma a uma com a `main` de hoje.
+nunca esteve **no arquivo `prs.md`** — o recorte é a citação no ledger, não a pasta: 5 destas 52
+já têm veredito nas seções D7–D9 **deste** documento (#105, #114, #116, #117 e #118) e voltam
+aqui porque não eram citadas no `prs.md`. Das 475 PRs do repositório, **90 foram fechadas sem
+merge** e o `prs.md` cita 38. As outras **52** foram confrontadas uma a uma com a `main` de hoje.
 
 ### Método (repetível)
 
 ```
-gh pr list --state all --limit 500 --json number,state,title,headRefName,mergedAt
+gh pr list --state all --limit 500 --json number,state,title,headRefName,baseRefName,mergedAt
 git fetch origin 'refs/pull/*/head:refs/recovered/*'
 git diff --numstat origin/main refs/recovered/<n>          # o que a ref tem por arquivo
 git cat-file -e origin/main:<caminho>                       # arquivo existe na main?
@@ -1036,14 +1038,43 @@ apagada, mas o head está na tag `arquivo/claude-fix-prod-cors-audit-261118-1034
 | #359 | sinal de dirty | `useScreenDirtyState` + `useQuoteInitialization` na `main` |
 | #412 | hash da allowlist de verba | `20261122120000_pa_budget_full_lifecycle.sql` com sha256 `a95d26fb…7141d8` = o da allowlist |
 
-### Sonda de produção — nenhuma tela chama função inexistente
+### Sonda de produção — as 65 funções referenciadas pelo front existem no ambiente
 
-`supabase/config.toml` declara `project_id = "cfmzkthhgliqelozlmwu"`. As **57** funções
-invocadas por `supabase.functions.invoke('<nome>')` no `src/` foram chamadas contra
-`https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/<nome>`: **44×401, 9×400, 4×403,
-zero `404 NOT_FOUND`**. Função ausente devolveria `{"code":"NOT_FOUND"}`, como acontece com um
-nome inventado. Ou seja: a allowlist do workflow de publicação não é a lista do que está no ar —
-o ambiente tem mais funções publicadas do que as 22 do `deploy-sicoob-functions.yml`.
+`supabase/config.toml` declara `project_id = "cfmzkthhgliqelozlmwu"`. A rodada anterior media só
+as chamadas por `supabase.functions.invoke('<nome>')`; esta inclui também as chamadas por URL
+literal e por `getSupabaseFunctionUrl('<nome>')` — **65 nomes** extraídos de `src/**/*.{ts,tsx}`,
+cada um chamado com `POST {}` sem credencial contra
+`https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/<nome>`: **47×401, 11×400, 6×403, 1×404**.
+Lista medida, agrupada pela resposta (as 57 do `invoke` são subconjunto):
+
+```
+401: admin-audit-hook analyze-logo-colors auth-integrity-check bi-copilot bi-share-dossier
+     block-ip-temporarily cnpj-lookup comparison-ai-advisor connection-tester
+     connections-hub-audit elevenlabs-scribe-token elevenlabs-tts expert-chat
+     external-connections-sync external-db-inspect force-global-logout full-op-diagnostics
+     generate-ad-prompt generate-mockup generate-product-seo get-app-logs
+     github-credentials-test manage-users market-intelligence-insights materials-api
+     mcp-keys-issue mcp-keys-revoke mcp-keys-update mcp-server ownership-audit
+     ownership-repair rls-matrix-export secrets-manager secure-upload semantic-search
+     send-transactional-email sicoob-approval-reconciliation sicoob-artwork-register
+     sicoob-document-ingest sicoob-kit-quote sicoob-reorder sicoob-seed system-healthcheck
+     trends-insights validate-access visual-search voice-agent
+400: collections-public-react comparisons-public-react detect-new-device dropbox-list
+     external-db-bridge favorites-public-react kit-ai-builder log-login-attempt quote-approval
+     sync-quote-bitrix webhook-dispatcher
+403: ai-recommendations categories-api crm-db-bridge image-proxy kit-identity-suggest
+     kit-public-view
+404: webhook-inbound
+```
+
+O único `404` **não** é função ausente: `{"error":"endpoint não encontrado"}` é resposta do
+próprio handler (corpo fora do contrato) e vem com `x-deno-execution-id` — o Deno executou. O
+`404` de gateway tem outra assinatura: um nome inventado devolve `sb-error-code: NOT_FOUND` +
+`{"code":"NOT_FOUND","message":"Requested function was not found"}`, sem header de execução.
+Conclusão restrita ao que foi medido: **nenhuma das 65 funções referenciadas pelo front falta no
+ambiente**, e a allowlist do workflow de publicação (22 nomes) não é a lista do que está no ar.
+Isto não compara o código publicado com a `main` — essa é outra medição
+(`RELATORIO_CI.md:943-960`, item 5 do `README.md`), ainda pendente para `connections-auto-test`.
 
 ### Três pendências que envelheceram (correção desta rodada)
 
@@ -1062,10 +1093,19 @@ o ambiente tem mais funções publicadas do que as 22 do `deploy-sicoob-function
 
 - `tests/` da tag `arquivo/claude-fix-prod-cors-audit-261118-1034`: 46 arquivos ausentes na
   `main`, dos quais 5 dependem de módulo que não existe mais, 3 de módulo renomeado e 38
-  apontam para módulo existente — amostra adjudicada mostrou contrato equivalente com outro
-  nome (ex.: `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` contra
-  `useQuoteInitialization.loading.test.ts` na ref). **Não adjudicados um a um**: por isso a tag
-  fica.
+  apontam para módulo existente. A amostra adjudicada vale **só para o contrato de erro**:
+  `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` cobre as duas
+  mensagens (`QUOTE_LOAD_FAILED`, `QUOTE_LOAD_NOT_FOUND`) como
+  `tests/hooks/useQuoteInitialization.loading.test.tsx` na ref. A ref cobre **mais**: com
+  `reloadKey` a nova tentativa acontece no próprio hook (efeito reexecutado, 2 chamadas a
+  `fetchQuote`), enquanto a `main` recarrega a página (`QuoteBuilderPage.tsx:182`) e o hook dela
+  não tem `reloadKey`. Essa parte **não está adjudicada** — é melhoria da ref ainda não portada,
+  não equivalente. Os demais arquivos seguem **não adjudicados um a um**: por isso a tag fica.
 - `WEBHOOK_DISPATCHER_SECRET` (provisionamento) e a fila de PRs de rule 8 seguem como estavam.
-- `DIRECTORY_CAP = 200` em `src/hooks/useCrmCompanies.ts:36` limita o diretório do orçamento;
-  é contrato documentado do portal (`portal-access-policy.ts`), não trabalho perdido.
+- `DIRECTORY_CAP = 200` em `src/hooks/useCrmCompanies.ts:36`: o teto de 200 é do **front**, não
+  da política do portal — `portal-access-policy.ts:118-122` aceita `limit` até 100 e `offset` até
+  10.000. O próprio código o chama de "histórico destes seletores, preservado para não mudar o
+  payload" (`:35`), e o mesmo teto alcança a tela de Clientes (`ClientsPage.tsx:114`) e o seletor
+  do BI (`components/bi/ClientSelector.tsx:22`). Não é trabalho perdido, é limitação declarada do
+  front: fica registrada como divergência de UX, com o número em 200 onde a política permitiria
+  paginar até 10.000.
