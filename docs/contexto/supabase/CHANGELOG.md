@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 19:13 UTC
+
+- **cron jobs** adicionado (1): `37:prune-cron-job-run-details`
+
 ## 2026-11-27 18:19 UTC
 
 - **functions** alterado (1): `public.monitor_sicoob_approval_worker()`

@@ -23,3 +23,4 @@ Horários em UTC. Execuções recentes em `cron-runs.md`.
 | 27 | connections-auto-test | `*/15 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_sicoob_connections_auto_test();` |
 | 35 | connections-health-check | `7,22,37,52 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_sicoob_connections_health_check();` |
 | 36 | scheduled-reports-worker | `*/10 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_scheduled_reports();` |
+| 37 | prune-cron-job-run-details | `17 3 * * *` | sim | postgres | postgres | `     DELETE FROM cron.job_run_details     WHERE end_time < now() - interval '7 days';   ` |

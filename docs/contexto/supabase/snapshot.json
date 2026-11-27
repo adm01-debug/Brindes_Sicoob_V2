@@ -50445,6 +50445,15 @@
           "jobname": "scheduled-reports-worker",
           "schedule": "*/10 * * * *",
           "username": "postgres"
+        },
+        {
+          "active": true,
+          "command": "\n    DELETE FROM cron.job_run_details\n    WHERE end_time < now() - interval '7 days';\n  ",
+          "database": "postgres",
+          "jobid": 37,
+          "jobname": "prune-cron-job-run-details",
+          "schedule": "17 3 * * *",
+          "username": "postgres"
         }
       ]
     },
