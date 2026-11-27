@@ -1,3 +1,4 @@
+import { SLA_APPROVAL_STAGES } from "@/lib/sicoob/sla-cycle";
 import { supabase } from "@/integrations/supabase/client";
 import { beginReorderIntent, completeReorderIntent } from "./reorderIdempotency";
 import {
@@ -44,8 +45,14 @@ function applyStatusFilter(query: SicoobOrderQuery, filters?: OrderListFilters):
 }
 
 function applySlaFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
-  if (filters?.sla_status && filters.sla_status !== "all") return query.eq("sla_status", filters.sla_status);
-  return query;
+  if (!filters?.sla_status || filters.sla_status === "all") return query;
+  const filtered = query.eq("sla_status", filters.sla_status);
+  // "Urgências" é o drill-down do cartão de SLA crítico, e o cartão só conta
+  // pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui
+  // o pedido que já foi aprovado e cujo valor gravado ainda não foi recalculado
+  // — o cartão mostrava zero e a lista mostrava o pedido.
+  if (filters.sla_status === "critical") return filtered.in("status", [...SLA_APPROVAL_STAGES]);
+  return filtered;
 }
 
 function applyOrganizationFilters(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {

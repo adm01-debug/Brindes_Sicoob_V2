@@ -269,3 +269,54 @@ describe("sicoobOrderService.getItemLogs", () => {
     expect(result[0]).not.toHaveProperty("user");
   });
 });
+
+describe("sicoobOrderService.listOrders — filtro de urgências", () => {
+  function builderEspiao() {
+    const chamadas: Array<[string, unknown]> = [];
+    const builder: any = {
+      select: () => builder,
+      eq: (coluna: string, valor: unknown) => {
+        chamadas.push([`eq:${coluna}`, valor]);
+        return builder;
+      },
+      in: (coluna: string, valores: unknown) => {
+        chamadas.push([`in:${coluna}`, valores]);
+        return builder;
+      },
+      gte: () => builder,
+      lt: () => builder,
+      or: () => builder,
+      ilike: () => builder,
+      range: () => builder,
+      order: () => builder,
+      then: (resolve: (v: unknown) => unknown) => resolve({ data: [], error: null, count: 0 }),
+    };
+    return { builder, chamadas };
+  }
+
+  it("“Ver Urgências” só lista pedidos em etapa de aprovação", async () => {
+    const { builder, chamadas } = builderEspiao();
+    mocks.from.mockReturnValue(builder);
+
+    await sicoobOrderService.listOrders({ sla_status: "critical", page: 1, pageSize: 10 });
+
+    // O cartão de SLA crítico conta apenas etapas de aprovação: sem o mesmo
+    // recorte aqui, um pedido já aprovado (sla_status ainda `critical` até o
+    // recálculo periódico) aparecia na lista com o cartão zerado.
+    expect(chamadas).toContainEqual(["eq:sla_status", "critical"]);
+    expect(chamadas).toContainEqual([
+      "in:status",
+      ["pending", "waiting_approval", "escalated_to_board"],
+    ]);
+  });
+
+  it.each(["warning", "normal"])("o filtro %s continua sem recorte de etapa", async (sla) => {
+    const { builder, chamadas } = builderEspiao();
+    mocks.from.mockReturnValue(builder);
+
+    await sicoobOrderService.listOrders({ sla_status: sla, page: 1, pageSize: 10 });
+
+    expect(chamadas).toContainEqual(["eq:sla_status", sla]);
+    expect(chamadas.some(([chave]) => chave === "in:status")).toBe(false);
+  });
+});
