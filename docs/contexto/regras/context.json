@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
+  "sha": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 18:22 UTC",
-  "files_total": 5394,
-  "code_files": 3952,
-  "code_lines": 586092
+  "generated_at": "2026-11-27 20:26 UTC",
+  "files_total": 5396,
+  "code_files": 3954,
+  "code_lines": 586755
  },
  "version": "1.3.2",
- "facts_hash": "ff567bc08b49a8d6",
+ "facts_hash": "375521a9ef1df49d",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,7 +355,7 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1526,
+   ".ts": 1528,
    ".tsx": 1510,
    ".sql": 704,
    ".mjs": 146,
@@ -61159,12 +61159,16 @@
      "notification_digests",
      "notification_logs",
      "notification_preferences",
+     "push_subscriptions",
      "scheduled_notifications",
      "workspace_notifications"
     ],
     "env": [
      "SUPABASE_SERVICE_ROLE_KEY",
-     "SUPABASE_URL"
+     "SUPABASE_URL",
+     "VAPID_PRIVATE_KEY",
+     "VAPID_PUBLIC_KEY",
+     "VAPID_SUBJECT"
     ],
     "external": [],
     "invokes": [],
@@ -67795,8 +67799,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 225,
-   "lines": 37224,
+   "files": 226,
+   "lines": 37625,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -67865,6 +67869,7 @@
     "product_views",
     "products",
     "profiles",
+    "push_subscriptions",
     "qa_run_steps",
     "qa_runs",
     "query_telemetry",
@@ -68019,6 +68024,7 @@
     "supabase/functions/_shared/structured-logger.ts",
     "supabase/functions/_shared/supabase-client-adapter.ts",
     "supabase/functions/_shared/validate.ts",
+    "supabase/functions/_shared/web-push.ts",
     "supabase/functions/_shared/webhook-dispatcher-contract.ts",
     "supabase/functions/_shared/zod-validate.ts",
     "supabase/functions/_shared/tests/integration.test.ts",
@@ -68040,8 +68046,7 @@
     "supabase/functions/commemorative-dates/index.ts",
     "supabase/functions/comparison-ai-advisor/index.ts",
     "supabase/functions/comparison-price-watcher/index.ts",
-    "supabase/functions/comparisons-public-react/index.ts",
-    "supabase/functions/connection-tester/index.ts"
+    "supabase/functions/comparisons-public-react/index.ts"
    ]
   },
   {
@@ -68151,8 +68156,8 @@
   },
   {
    "module": "tests",
-   "files": 748,
-   "lines": 100328,
+   "files": 749,
+   "lines": 100590,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -69910,10 +69915,12 @@
      "src/lib/push-subscription.ts"
     ],
     "update": [
-     "src/lib/push-subscription.ts"
+     "src/lib/push-subscription.ts",
+     "supabase/functions/send-notification/index.ts"
     ],
     "select": [
-     "src/lib/push-subscription.ts"
+     "src/lib/push-subscription.ts",
+     "supabase/functions/send-notification/index.ts"
     ]
    },
    "qa_release_evidences": {
@@ -71609,9 +71616,11 @@
     "resource_type"
    ],
    "push_subscriptions": [
+    "auth",
     "endpoint",
     "id",
     "is_active",
+    "p256dh",
     "user_id"
    ],
    "qa_release_evidences": [
@@ -72916,6 +72925,15 @@
    ],
    "TEST_USER_PASSWORD": [
     "supabase/functions/mcp-keys-issue/rls-isolation.test.ts"
+   ],
+   "VAPID_PRIVATE_KEY": [
+    "supabase/functions/send-notification/index.ts"
+   ],
+   "VAPID_PUBLIC_KEY": [
+    "supabase/functions/send-notification/index.ts"
+   ],
+   "VAPID_SUBJECT": [
+    "supabase/functions/send-notification/index.ts"
    ],
    "VIRUSTOTAL_API_KEY": [
     "supabase/functions/secure-upload/index.ts"
@@ -81171,6 +81189,18 @@
     "msg": "[${context}] service client não satisfaz forma de SupabaseClient — "
    },
    {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "msg": "VAPID_PRIVATE_KEY invalida: esperado segredo EC P-256 (32 bytes)"
+   },
+   {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "msg": "VAPID_PUBLIC_KEY invalida: esperado ponto EC P-256 nao comprimido (65 bytes)"
+   },
+   {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "msg": "salt do Web Push precisa ter 16 bytes"
+   },
+   {
     "file": "supabase/functions/ai-recommendations/index.ts",
     "msg": "No JSON object/array found in AI response"
    },
@@ -84499,6 +84529,18 @@
     "text": "Returns a descriptive error string if validation fails, null if OK."
    },
    {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "text": "* Usa apenas WebCrypto (HMAC-SHA256 para o VAPID, ECDH P-256 + HKDF +"
+   },
+   {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "text": "seguido do padding opcional. A carga nao pode terminar com 0x02 fora do"
+   },
+   {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "text": "404/410 = inscricao morta no provedor (navegador desinstalado, permissao revogada)."
+   },
+   {
     "file": "supabase/functions/_shared/zod-validate.ts",
     "text": "* Shared Zod validation utilities for edge functions."
    },
@@ -84813,6 +84855,10 @@
    {
     "file": "supabase/functions/semantic-search/index.ts",
     "text": "Rate limit: 100 req/min por usuário (busca pode ser intensa)"
+   },
+   {
+    "file": "supabase/functions/send-notification/index.ts",
+    "text": "Detalhe interno do banco fica so no log; o retorno traz apenas o codigo."
    },
    {
     "file": "supabase/functions/send-scheduled-reports/report-eligibility.ts",
@@ -98270,6 +98316,11 @@
     "value": "\"duplicate\""
    },
    {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "name": "LIMITE_CARGA_BYTES",
+    "value": "4096"
+   },
+   {
     "file": "supabase/functions/bi-copilot/index.ts",
     "name": "MODEL",
     "value": "\"google/gemini-2.5-flash\""
@@ -109231,7 +109282,19 @@
    {
     "file": "supabase/functions/send-notification/index.ts",
     "field": "status",
-    "value": "success",
+    "value": "skipped",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-notification/index.ts",
+    "field": "status",
+    "value": "failed",
+    "kind": "escreve"
+   },
+   {
+    "file": "supabase/functions/send-notification/index.ts",
+    "field": "status",
+    "value": "skipped",
     "kind": "escreve"
    },
    {
@@ -114725,6 +114788,10 @@
    {
     "file": "supabase/functions/_shared/mcp-scopes.ts",
     "line": "export const FULL_SCOPE_MAX_TTL_MS = 180 * 24 * 60 * 60 * 1000;"
+   },
+   {
+    "file": "supabase/functions/_shared/web-push.ts",
+    "line": "const exp = agora + (params.expiracaoSegundos ?? 12 * 60 * 60);"
    },
    {
     "file": "supabase/functions/block-ip-temporarily/index.ts",
@@ -139389,6 +139456,46 @@
    {
     "file": "tests/lib/validate.test.ts",
     "name": "returns false for zero/negative/NaN"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "web-push"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "monta o cabecalho VAPID com assinatura verificavel"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "cifra a carga de forma que o navegador consiga decifrar"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "o navegador decifra mesmo sem saber que a chave veio do nosso codigo"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "mensagem de 5000 caracteres nao estoura o registro de 4096 bytes"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "rejeita salt que nao tenha 16 bytes"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "rejeita chave VAPID publica com formato invalido"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "marca como expirada a inscricao removida no provedor (410)"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "nao lanca quando o provedor esta inacessivel"
+   },
+   {
+    "file": "tests/lib/web-push.test.ts",
+    "name": "envia os cabecalhos exigidos pelo provedor quando da certo"
    },
    {
     "file": "tests/lib/auth/apply-seller-scope.test.ts",
@@ -167349,6 +167456,7 @@
       "escreve:src/components/admin/connections/SmokeTestChecklist.tsx",
       "escreve:supabase/functions/bitrix-sync/index.ts",
       "escreve:supabase/functions/process-batch-export/index.ts",
+      "escreve:supabase/functions/send-notification/index.ts",
       "escreve:supabase/functions/sicoob-seed-qa/index.ts",
       "escreve:supabase/functions/webhook-dispatcher/index.ts"
      ],
@@ -167571,7 +167679,6 @@
       "escreve:supabase/functions/mcp-keys-rotate/index.ts",
       "escreve:supabase/functions/mcp-keys-update/index.ts",
       "escreve:supabase/functions/mcp-server/index.ts",
-      "escreve:supabase/functions/send-notification/index.ts",
       "escreve:supabase/functions/webhook-dispatcher/index.ts",
       "filtra:src/pages/admin/RLSAuditPage.tsx"
      ],
@@ -167655,6 +167762,7 @@
       "escreve:src/pages/admin/telemetry/useOptimizationQueue.ts",
       "escreve:supabase/functions/full-op-diagnostics/index.ts",
       "escreve:supabase/functions/process-scheduled-reports/index.ts",
+      "escreve:supabase/functions/send-notification/index.ts",
       "escreve:tests/scenarios/e2e-smoke-summary.scenario.mjs"
      ],
      "passed": [
@@ -238505,6 +238613,42 @@
     }
    ]
   },
+  "supabase/functions/_shared/web-push.ts": {
+   "path": "supabase/functions/_shared/web-push.ts",
+   "lines": 305,
+   "exports": [
+    "type InscricaoPush",
+    "type CargaPush",
+    "type ResultadoEnvio",
+    "function base64UrlParaBytes",
+    "function bytesParaBase64Url",
+    "function montarCabecalhoVapid",
+    "function cifrarCarga",
+    "function cargaPadrao",
+    "function cargaQueCabe",
+    "function enviarPush"
+   ],
+   "errors": [
+    "VAPID_PRIVATE_KEY invalida: esperado segredo EC P-256 (32 bytes)",
+    "VAPID_PUBLIC_KEY invalida: esperado ponto EC P-256 nao comprimido (65 bytes)",
+    "salt do Web Push precisa ter 16 bytes"
+   ],
+   "params": [
+    {
+     "name": "LIMITE_CARGA_BYTES",
+     "value": "4096"
+    }
+   ],
+   "rule_comments": [
+    "* Usa apenas WebCrypto (HMAC-SHA256 para o VAPID, ECDH P-256 + HKDF +",
+    "seguido do padding opcional. A carga nao pode terminar com 0x02 fora do",
+    "404/410 = inscricao morta no provedor (navegador desinstalado, permissao revogada)."
+   ],
+   "doc": "Envio de Web Push (RFC 8030/8291/8292) sem dependencia externa. Usa apenas WebCrypto (HMAC-SHA256 para o VAPID, ECDH P-256 + HKDF + AES-128-GCM para a carga). Roda tanto no Deno quanto no Node >= 18, o que permite testar o payload sem subir a edge function. A chave privada VAPID vem de `VAPID_PRIVAT …",
+   "temporal": [
+    "const exp = agora + (params.expiracaoSegundos ?? 12 * 60 * 60);"
+   ]
+  },
   "supabase/functions/_shared/webhook-dispatcher-contract.ts": {
    "path": "supabase/functions/_shared/webhook-dispatcher-contract.ts",
    "lines": 23,
@@ -244710,7 +244854,7 @@
   },
   "supabase/functions/send-notification/index.ts": {
    "path": "supabase/functions/send-notification/index.ts",
-   "lines": 184,
+   "lines": 280,
    "tables": [
     {
      "table": "notification_preferences",
@@ -244723,6 +244867,14 @@
     {
      "table": "notification_logs",
      "op": "insert"
+    },
+    {
+     "table": "push_subscriptions",
+     "op": "select"
+    },
+    {
+     "table": "push_subscriptions",
+     "op": "update"
     },
     {
      "table": "scheduled_notifications",
@@ -244745,6 +244897,14 @@
     "notification_preferences": [
      "user_id"
     ],
+    "push_subscriptions": [
+     "auth",
+     "endpoint",
+     "id",
+     "is_active",
+     "p256dh",
+     "user_id"
+    ],
     "notification_digests": [
      "id",
      "status",
@@ -244753,7 +244913,10 @@
    },
    "env": [
     "SUPABASE_SERVICE_ROLE_KEY",
-    "SUPABASE_URL"
+    "SUPABASE_URL",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_PUBLIC_KEY",
+    "VAPID_SUBJECT"
    ],
    "zod": [
     {
@@ -244767,7 +244930,17 @@
    "status_values": [
     {
      "field": "status",
-     "value": "success",
+     "value": "skipped",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "failed",
+     "kind": "escreve"
+    },
+    {
+     "field": "status",
+     "value": "skipped",
      "kind": "escreve"
     },
     {
@@ -244795,6 +244968,9 @@
      "value": "pending",
      "kind": "filtra"
     }
+   ],
+   "rule_comments": [
+    "Detalhe interno do banco fica so no log; o retorno traz apenas o codigo."
    ],
    "uses_service_role": true
   },
@@ -260630,6 +260806,32 @@
     "returns false for zero/negative/NaN"
    ]
   },
+  "tests/lib/web-push.test.ts": {
+   "path": "tests/lib/web-push.test.ts",
+   "lines": 262,
+   "is_test": true,
+   "errors": [
+    "ECONNREFUSED"
+   ],
+   "temporal": [
+    "expect(corpo.exp).toBe(1_700_000_000 + 12 * 60 * 60);"
+   ],
+   "tests": [
+    "web-push",
+    "monta o cabecalho VAPID com assinatura verificavel",
+    "cifra a carga de forma que o navegador consiga decifrar",
+    "o navegador decifra mesmo sem saber que a chave veio do nosso codigo",
+    "mensagem de 5000 caracteres nao estoura o registro de 4096 bytes",
+    "rejeita salt que nao tenha 16 bytes",
+    "rejeita chave VAPID publica com formato invalido",
+    "marca como expirada a inscricao removida no provedor (410)",
+    "nao lanca quando o provedor esta inacessivel",
+    "envia os cabecalhos exigidos pelo provedor quando da certo"
+   ],
+   "side_effects": [
+    "fcm."
+   ]
+  },
   "tests/lib/auth/apply-seller-scope.test.ts": {
    "path": "tests/lib/auth/apply-seller-scope.test.ts",
    "lines": 67,
@@ -265155,10 +265357,22 @@
   }
  },
  "git": {
-  "sha": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
+  "sha": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "6098796",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: envio real de web push pelo send-notification (#488)",
+    "files": [
+     "docs/secrets.md",
+     "supabase/functions/_shared/web-push.ts",
+     "supabase/functions/send-notification/index.ts",
+     "tests/lib/web-push.test.ts"
+    ]
+   },
    {
     "sha": "fcebed9",
     "date": "2026-11-27",
@@ -265610,17 +265824,6 @@
      "tests/components/bi/ClientSeasonalityHeatmap.industry-error.test.tsx",
      "tests/hooks/bi/useClientSeasonality.test.tsx",
      "tests/hooks/useClientSeasonality.real-data.test.ts"
-    ]
-   },
-   {
-    "sha": "f0354ac",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: seletor de produto nao reabre quando a cotacao nao aceita edicao (#454)",
-    "files": [
-     "src/components/quotes/QuoteProductSelector.tsx",
-     "src/pages/QuoteBuilderPage.tsx",
-     "tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx"
     ]
    }
   ],

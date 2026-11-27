@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `fcebed92c3` · branch `main` · 2026-11-27 18:22 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `609879657c` · branch `main` · 2026-11-27 20:26 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1339,7 +1339,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `escalated_to_board` | compara | `src/pages/sicoob/orders/OrderDetailPage.tsx`<br>`src/pages/sicoob/orders/OrdersPage.tsx` |
 | `status` | `expired` | compara, escreve | `src/components/admin/security/SuspiciousTokensPanel.tsx`<br>`src/components/admin/security/keys/McpKeyDetailsDrawer.tsx`<br>`src/components/admin/security/keys/McpKeyRow.tsx`<br>`src/components/admin/security/keys/useMcpKeys.ts`<br>`src/components/pdf/PropostaComercialTailwind.tsx`<br>… +5 |
 | `status` | `fail` | compara, escreve | `src/components/admin/connections/ConnectionTestHistoryPanel.tsx`<br>`src/hooks/useConnectionsOverviewFilters.ts`<br>`src/pages/admin/qa/QARunDetailPage.tsx`<br>`supabase/functions/full-op-diagnostics/index.ts` |
-| `status` | `failed` | compara, escreve | `src/components/admin/CatalogQualityDashboard.tsx`<br>`src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/components/layout/sidebar/SidebarFooterHealth.tsx`<br>`src/components/orders/BatchExportDialog.tsx`<br>`src/components/orders/MultiLevelTracker.tsx`<br>… +6 |
+| `status` | `failed` | compara, escreve | `src/components/admin/CatalogQualityDashboard.tsx`<br>`src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/components/layout/sidebar/SidebarFooterHealth.tsx`<br>`src/components/orders/BatchExportDialog.tsx`<br>`src/components/orders/MultiLevelTracker.tsx`<br>… +7 |
 | `status` | `failure` | filtra | `src/pages/admin/RLSAuditPage.tsx` |
 | `status` | `forbidden` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `fresh` | compara | `src/components/products/PriceFreshnessBadge.tsx` |
@@ -1401,12 +1401,12 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `sem-comparativo` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `sent` | compara, escreve, filtra | `src/components/dashboard/QuickActionsPanel.tsx`<br>`src/components/quotes/QuoteKanbanBoard.tsx`<br>`src/components/quotes/QuoteNextActionBanner.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useSalesHistory.ts`<br>… +8 |
 | `status` | `short` | compara, escreve | `src/components/admin/connections/MaskedSuffixBadge.tsx`<br>`src/lib/masked-suffix.ts` |
-| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/system-healthcheck/index.ts`<br>… +1 |
+| `status` | `skipped` | compara, escreve | `src/components/admin/connections/SmokeTestChecklist.tsx`<br>`src/pages/admin/telemetry/useOptimizationQueue.ts`<br>`supabase/functions/full-op-diagnostics/index.ts`<br>`supabase/functions/process-scheduled-reports/index.ts`<br>`supabase/functions/send-notification/index.ts`<br>… +2 |
 | `status` | `slow` | compara | `supabase/functions/_shared/external-db-telemetry.ts` |
 | `status` | `stale` | compara | `src/components/products/PriceFreshnessBadge.tsx`<br>`src/utils/price-freshness.ts` |
 | `status` | `step_up_error` | compara, escreve | `src/components/admin/connections/IssueMcpKeyForm.tsx`<br>`src/components/admin/security/keys/RotateMcpKeyDialog.tsx`<br>`src/components/admin/security/keys/UpdateMcpKeyDialog.tsx`<br>`src/lib/auth/invoke-full-scope.ts`<br>`src/pages/admin/DevChallengeExamplesPage.tsx` |
 | `status` | `string` | compara | `src/lib/cloud-status.ts`<br>`src/lib/quote-status-config.ts`<br>`supabase/functions/process-batch-export/index.ts`<br>`supabase/functions/send-transactional-email/index.ts` |
-| `status` | `success` | compara, escreve, filtra | `src/components/admin/connections/FailedDeliveriesPanel.tsx`<br>`src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/kit-builder/VolumeIndicator.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useAiUsage.ts`<br>… +13 |
+| `status` | `success` | compara, escreve, filtra | `src/components/admin/connections/FailedDeliveriesPanel.tsx`<br>`src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/kit-builder/VolumeIndicator.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useAiUsage.ts`<br>… +12 |
 | `status` | `super` | compara, escreve | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
@@ -4958,7 +4958,7 @@ _nenhum item encontrado_
 | `EXPERT_CHAT_MAX_MESSAGE_LENGTH` | `5` | `src/lib/assistant-message-window.ts` |
 | `WINDOW_MS` | `30` | `src/lib/chunk-recovery.ts` |
 | `MAX_HARD_RELOADS` | `2` | `src/lib/chunk-recovery.ts` |
-| … +191 linhas — lista completa em `context.json` | | |
+| … +192 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5244,6 +5244,7 @@ _nenhum item encontrado_
 | `setTimeout(resolve, 5000);` | `src/utils/proposalPdfReactGenerator.ts` |
 | `const DEFAULT_TTL_MS = 10 * 60 * 1000; // 10min — tabelas estáticas` | `supabase/functions/_shared/external-db-cache.ts` |
 | `export const FULL_SCOPE_MAX_TTL_MS = 180 * 24 * 60 * 60 * 1000;` | `supabase/functions/_shared/mcp-scopes.ts` |
+| `const exp = agora + (params.expiracaoSegundos ?? 12 * 60 * 60);` | `supabase/functions/_shared/web-push.ts` |
 | `const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();` | `supabase/functions/block-ip-temporarily/index.ts` |
 | `Date.now() - STALE_SECRET_DAYS * 24 * 60 * 60 * 1000,` | `supabase/functions/connections-health-check/index.ts` |
 | `const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();` | `supabase/functions/connections-health-check/index.ts` |
@@ -5263,8 +5264,7 @@ _nenhum item encontrado_
 | `constructor(ttlMs: number = 5 * 60 * 1000, maxEntries: number = 1000) {` | `supabase/functions/semantic-search/index.ts` |
 | `const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();` | `supabase/functions/send-scheduled-reports/report-types.ts` |
-| `const CATALOG_QUERY_VALIDITY_MS = 5 * 60 * 1000;` | `supabase/functions/sicoob-reorder/catalog.ts` |
-| … +95 linhas — lista completa em `context.json` | |
+| … +96 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5696,7 +5696,7 @@ _nenhum item encontrado_
 |  className= | `src/components/admin/personalization-manager/ProductPersonalizationManager.tsx` |
 | Erro ao adicionar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1042 linhas — lista completa em `context.json` | |
+| … +1045 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5800,7 +5800,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7649 testes em 788 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7659 testes em 789 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6017,6 +6017,7 @@ _nenhum item encontrado_
 | `tests/lib/quote-status-config.test.ts` | 10 | isQuoteCommerciallyEditable · permite alteração no estado %s · preserva a versão histórica no estado %s · preserva o histórico no estado %s … |
 | `tests/lib/saida-da-tela.test.ts` | 10 | textoDaSaida · promete gravar quando o autosave cobre a saida · avisa descarte quando a gravacao falhou · avisa descarte no conflito com outra aba e nao tenta gravar de novo … |
 | `tests/lib/supplier-colors.test.ts` | 10 | getSupplierColors · returns XBZ colors for xbz supplier · returns Spot colors for SPOT supplier · returns Spot colors for Stricker supplier … |
+| `tests/lib/web-push.test.ts` | 10 | web-push · monta o cabecalho VAPID com assinatura verificavel · cifra a carga de forma que o navegador consiga decifrar · o navegador decifra mesmo sem saber que a chave veio do nosso codigo … |
 | `tests/lib/auth/apply-seller-scope.test.ts` | 10 | applySellerScope · aplica .eq( · permite trocar a coluna do filtro (ex.: user_id) · NÃO aplica filtro quando escopo é all (admin/dev) … |
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
 | `tests/lib/sicoob/sla-cycle.test.ts` | 10 | getSlaCycleStartedAt · usa o início da escalada atual, sem reaproveitar o ciclo anterior · usa a transição mais recente para aprovação pendente · com o status repetido, usa a transição mais recente — não a primeira da lista … |
@@ -6103,8 +6104,7 @@ _nenhum item encontrado_
 | `tests/scripts/tscheck-files.test.ts` | 8 | tscheck-files · caminho absoluto também casa com a saída relativa do tsc · não confunde prefixo: pedir src/bad não acusa src/bad.ts · arquivo sem erro passa (exit 0) … |
 | `tests/security/search-analytics-legacy-insert.spec.ts` | 8 | search_analytics — compatibilidade de insert legado · normalizador sobrescreve user_id e seller_id com auth.uid() · normalizador não preserva autoria enviada pelo cliente · normalizador roda como SECURITY INVOKER com search_path fixado … |
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
-| `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
-| … +488 linhas — lista completa em `context.json` | | |
+| … +489 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6594,4 +6594,4 @@ _nenhum item encontrado_
 | Permission check | `src/hooks/quotes/useQuotes.ts` |
 | * Fallback heurístico (legado): usado APENAS quando o RPC oficial falha | `src/hooks/simulation/simulationPriceFetcher.ts` |
 | IMPORTANTE: USA SOMENTE O BD EXTERNO PROMOBRIND! | `src/hooks/tecnicas/useTecnicasList.ts` |
-| … +375 linhas — lista completa em `context.json` | |
+| … +379 linhas — lista completa em `context.json` | |

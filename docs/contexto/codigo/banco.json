@@ -26533,7 +26533,9 @@
     "so_no_types": []
    },
    "usada_no_front": 1,
-   "usada_em_edges": [],
+   "usada_em_edges": [
+    "send-notification"
+   ],
    "triggers": [],
    "sem_rls": false,
    "nao_usada": false

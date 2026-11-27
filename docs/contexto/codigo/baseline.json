@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
+  "commit": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
   "branch": "main",
-  "data_commit": "2026-11-27T15:22:00-03:00",
+  "data_commit": "2026-11-27T17:26:01-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "6098796",
+    "data": "2026-11-27",
+    "assunto": "feat: envio real de web push pelo send-notification (#488)"
+   },
    {
     "sha": "fcebed9",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "d036bf1",
     "data": "2026-11-25",
     "assunto": "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)"
-   },
-   {
-    "sha": "791ef78",
-    "data": "2026-11-26",
-    "assunto": "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)"
    }
   ],
-  "arquivos_mudados_7d": 1030,
+  "arquivos_mudados_7d": 353,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -141,7 +141,7 @@
    },
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 42
+    "mudancas": 43
    },
    {
     "pasta": "src/pages/admin",
@@ -219,7 +219,7 @@
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 15
+    "mudancas": 14
    },
    {
     "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -227,22 +227,18 @@
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 13
+    "mudancas": 12
    },
    {
     "arquivo": "scripts/automation.config.json",
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 11
-   },
-   {
     "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 11
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 10
    },
    {
@@ -250,7 +246,7 @@
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
+    "arquivo": ".github/workflows/codeql.yml",
     "mudancas": 9
    },
    {
@@ -266,7 +262,7 @@
     "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
+    "arquivo": ".github/workflows/e2e.yml",
     "mudancas": 8
    },
    {
@@ -294,14 +290,18 @@
     "mudancas": 8
    },
    {
-    "arquivo": ".github/workflows/bundle-check.yml",
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 7
+   },
+   {
+    "arquivo": "scripts/qa/postgres_ready.py",
     "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 255
+    "commits": 256
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5391,
-  "arquivos_codigo": 3266,
-  "linhas_codigo": 519621,
+  "arquivos_total": 5393,
+  "arquivos_codigo": 3268,
+  "linhas_codigo": 520284,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -328,7 +328,7 @@
   "tabelas": 295,
   "migrations": 639,
   "cron_jobs": 29,
-  "testes": 982,
+  "testes": 983,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 975
@@ -847,8 +847,8 @@
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 225,
-   "linhas": 37224
+   "arquivos": 226,
+   "linhas": 37625
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -931,8 +931,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 84,
-   "linhas": 9962
+   "arquivos": 85,
+   "linhas": 10224
   },
   "tests/load": {
    "arquivos": 1,
@@ -1154,7 +1154,7 @@
   }
  ],
  "qualidade": {
-  "any": 525,
+  "any": 527,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

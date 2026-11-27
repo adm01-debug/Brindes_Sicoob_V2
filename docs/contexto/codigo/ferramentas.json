@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (3038)",
+   "TypeScript (3040)",
    "Markdown (975)",
    "SQL (704)",
    "JSON (296)",
@@ -1222,7 +1222,7 @@
   {
    "arquivo": "docs/secrets.md",
    "titulo": "Inventário de segredos e variáveis de ambiente",
-   "linhas": 133
+   "linhas": 136
   }
  ],
  "docs_em_subpastas": [
@@ -1345,6 +1345,9 @@
    "TEST_USER_EMAIL",
    "TEST_USER_JWT",
    "TEST_USER_PASSWORD",
+   "VAPID_PRIVATE_KEY",
+   "VAPID_PUBLIC_KEY",
+   "VAPID_SUBJECT",
    "VIRUSTOTAL_API_KEY",
    "VITE_CRM_BRIDGE_URL",
    "VITE_EXTERNAL_DB_URL",
@@ -1717,6 +1720,10 @@
    },
    {
     "host": "fake-crm.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "fcm.googleapis.com",
     "arquivos": 1
    },
    {

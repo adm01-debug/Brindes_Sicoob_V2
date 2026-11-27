@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 982,
+ "total": 983,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 744
+  "unit": 745
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 724
+   "arquivos": 725
   },
   {
    "padrao": "e2e/",
@@ -6674,6 +6674,15 @@
    "casos": 3
   },
   {
+   "arquivo": "tests/lib/web-push.test.ts",
+   "tipo": "unit",
+   "linhas": 262,
+   "testa": [
+    "supabase/functions/_shared/web-push.ts"
+   ],
+   "casos": 9
+  },
+  {
    "arquivo": "tests/load/basic-smoke.js",
    "tipo": "unit",
    "linhas": 41,
@@ -9157,6 +9166,7 @@
   "supabase/functions/_shared/retry-backoff.ts": 1,
   "supabase/functions/_shared/scheduled-report-data.ts": 2,
   "supabase/functions/_shared/scheduled-report-email.ts": 2,
+  "supabase/functions/_shared/web-push.ts": 1,
   "supabase/functions/_shared/webhook-dispatcher-contract.ts": 1,
   "supabase/functions/bi-share-dossier/contract.ts": 1,
   "supabase/functions/connections-auto-test/index.ts": 3,

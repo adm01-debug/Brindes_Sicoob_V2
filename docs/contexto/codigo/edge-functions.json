@@ -87,6 +87,7 @@
   "supabase/functions/_shared/supabase-client-adapter.ts",
   "supabase/functions/_shared/tests/integration.test.ts",
   "supabase/functions/_shared/validate.ts",
+  "supabase/functions/_shared/web-push.ts",
   "supabase/functions/_shared/webhook-dispatcher-contract.ts",
   "supabase/functions/_shared/zod-validate.ts"
  ],
@@ -2942,7 +2943,7 @@
    "nome": "send-notification",
    "entrada": "supabase/functions/send-notification/index.ts",
    "arquivos": 1,
-   "linhas": 184,
+   "linhas": 280,
    "verify_jwt": false,
    "metodos": [
     "OPTIONS",
@@ -2952,20 +2953,25 @@
     "notification_digests",
     "notification_logs",
     "notification_preferences",
+    "push_subscriptions",
     "scheduled_notifications",
     "workspace_notifications"
    ],
    "rpcs": [],
    "env": [
     "SUPABASE_SERVICE_ROLE_KEY",
-    "SUPABASE_URL"
+    "SUPABASE_URL",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_PUBLIC_KEY",
+    "VAPID_SUBJECT"
    ],
    "buckets": [],
    "chama_edges": [],
    "hosts_externos": [],
    "usa_shared": [
     "cors.ts",
-    "internal-service-auth.ts"
+    "internal-service-auth.ts",
+    "web-push.ts"
    ],
    "chamada_pelo_front": [],
    "chamada_por_edges": [],

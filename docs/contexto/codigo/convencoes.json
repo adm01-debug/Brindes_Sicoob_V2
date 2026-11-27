@@ -21,7 +21,7 @@
    "src/services (26)"
   ],
   "testes": [
-   "tests/ (724)",
+   "tests/ (725)",
    "e2e/ (150)",
    "outro (58)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: envio real de web push pelo send-notification (#488)",
    "feat: inscreve o navegador no Web Push e persiste o endpoint (#486)",
    "feat: painel de tentativas de acesso indevido às chaves MCP (#487)",
    "docs: veredito das tabelas sem referência no front (#485)",
-   "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)",
-   "feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)"
+   "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

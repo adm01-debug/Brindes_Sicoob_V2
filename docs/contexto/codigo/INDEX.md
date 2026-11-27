@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fcebed92c3731bc9fe9e1acfd8477af468dda91a` (2026-11-27T15:22:00-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `609879657c525e8ebbfe6b1e9fd0c660d30db3e6` (2026-11-27T17:26:01-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (3038), Markdown (975), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
+- linguagens: TypeScript (3040), Markdown (975), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5391 |
-| arquivos_codigo | 3266 |
-| linhas_codigo | 519621 |
+| arquivos_total | 5393 |
+| arquivos_codigo | 3268 |
+| linhas_codigo | 520284 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -48,7 +48,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | tabelas | 295 |
 | migrations | 639 |
 | cron_jobs | 29 |
-| testes | 982 |
+| testes | 983 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 975 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (1012), src/pages (163), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (171), src/utils (37), src/services (26)
-- testes: tests/ (724), e2e/ (150), outro (58)
+- testes: tests/ (725), e2e/ (150), outro (58)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -393,7 +393,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `secure-upload` — tabelas: file_scan_logs; chamada por 2 arquivo(s) do front
 - `semantic-search` — tabelas: -; chamada por 1 arquivo(s) do front
 - `send-digest` (verify_jwt=false) — tabelas: workspace_notifications; chamada por 0 arquivo(s) do front
-- `send-notification` (verify_jwt=false) — tabelas: notification_digests, notification_logs, notification_preferences, scheduled_notifications, workspace_notifications; chamada por 0 arquivo(s) do front
+- `send-notification` (verify_jwt=false) — tabelas: notification_digests, notification_logs, notification_preferences, push_subscriptions, scheduled_notifications, workspace_notifications; chamada por 0 arquivo(s) do front
 - `send-scheduled-reports` (verify_jwt=false) — tabelas: profiles, scheduled_reports, user_roles; chamada por 0 arquivo(s) do front, por SQL/cron
 - `send-transactional-email` — tabelas: profiles, quote_approval_tokens; chamada por 1 arquivo(s) do front
 - `sicoob-approval-notifications` (verify_jwt=false) — tabelas: sicoob_approval_requests; chamada por 0 arquivo(s) do front, por SQL/cron
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37647 nós · 62810 arestas · 2804 comunidades · grafo do commit `fcebed92`
-- comunidades maiores: ref_components (778), lucide-react (375), ref_lib (314), react (288), sonner (279), ref_integrations (275), ref_node_fs (244), framer-motion (214), react-router-dom (209), getCorsHeaders (202), expert-chat/index.ts (188), ref_node_assert (158)
+- 37676 nós · 62861 arestas · 2820 comunidades · grafo do commit `60987965`
+- comunidades maiores: ref_hooks (669), ref_integrations (525), ref_lib (351), react (274), lucide-react (272), ref_node_fs (235), ref_components (230), react-router-dom (226), framer-motion (200), ref_stores (177), date-fns (174), ai-usage.ts (173)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -488,16 +488,16 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
 - package-lock.json (17)
-- .github/workflows/ci.yml (15)
+- .github/workflows/ci.yml (14)
 - docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (14)
-- .github/workflows/deploy-sicoob-functions.yml (13)
+- .github/workflows/deploy-sicoob-functions.yml (12)
 - scripts/automation.config.json (12)
-- .github/workflows/sicoob-ci.yml (11)
 - src/integrations/supabase/types.ts (11)
-- .github/workflows/codeql.yml (10)
+- .github/workflows/sicoob-ci.yml (10)
 - src/hooks/useQuoteBuilderState.ts (10)
-- .github/workflows/e2e.yml (9)
+- .github/workflows/codeql.yml (9)
 - src/hooks/quote/useQuoteInitialization.ts (9)
+- src/pages/KitBuilderPage.tsx (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -696,11 +696,12 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - `docs/deploy-flow.md` — Fluxo de Deploy — Promo Brindes (92 linhas)
 - `docs/order-workflow.md` — Workflow de Pedidos - Documentação Técnica (35 linhas)
 - `docs/plano-melhorias-50-etapas.md` — Runbook de correções e melhorias — 50 etapas (102 linhas)
-- `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (133 linhas)
+- `docs/secrets.md` — Inventário de segredos e variáveis de ambiente (136 linhas)
 - subpastas de docs/: docs/pendencias (685), docs/execucao (92), docs/plano-implementacao (24), docs/RECUPERACAO (11), docs/pesquisa (11), docs/adr (10), docs/audits (9), docs/agentes (7), docs/qa (3), docs/RUNBOOKS (2), docs/architecture (2), docs/security (2), docs/testing (2), docs/externo (1)
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `6098796` feat: envio real de web push pelo send-notification (#488)
 - 2026-11-27 `fcebed9` feat: inscreve o navegador no Web Push e persiste o endpoint (#486)
 - 2026-11-27 `978aef0` feat: painel de tentativas de acesso indevido às chaves MCP (#487)
 - 2026-11-27 `4d74fa8` docs: veredito das tabelas sem referência no front (#485)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-26 `da92e35` fix: tira os "insights" fictícios do painel executivo e o R$ 0 enganoso (#475)
 - 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
 - 2026-11-26 `ee56b7f` fix: verba e alçada usam a competência do pedido (SIC-028) (#469)
-- 2026-11-26 `e5e0f47` fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
