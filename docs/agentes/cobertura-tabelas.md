@@ -28,13 +28,15 @@ Sobram 46 tabelas. Destas:
   `step_up_tokens`, `step_up_challenges`, `step_up_audit_log`, `quote_consolidations`,
   `sicoob_approval_deliveries`, `sicoob_approval_delivery_archive`,
   `sicoob_delivery_receipt_events`, `sicoob_invitation_events`, `admin_config_audit`.
+- **2 têm dados e nenhuma tela:** `mcp_access_violations` (2.060 linhas) e
+  `quote_approval_evidence_keys` (1). O evento acontece e não há superfície para olhar.
 - **1 é órfã de verdade:** `push_subscriptions` (ver abaixo).
-- **As demais 27** têm migration e código de backend mas **0 linhas** em produção: são
-  funcionalidades construídas e nunca usadas. Ver a tabela de decisão.
+- **As demais 25** têm migration e código de backend mas **0 linhas** em produção: são
+  funcionalidades construídas e nunca usadas.
 
-Conta: 18 partições + 1 backup + 17 infra + 1 órfã + 27 sem uso = **64**.
+Conta: 18 partições + 1 backup + 17 infra + 2 com dados + 1 órfã + 25 sem uso = **64**.
 
-## As 27 com backend e zero linhas
+## As 27 sem tela: 25 vazias e 2 com dados
 
 `bitrix_deals`, `bitrix_sync_logs`, `webhook_configs`, `webhook_logs`, `notification_templates`,
 `notification_channels`, `manager_notification_config`, `quote_audit_logs`,
@@ -43,17 +45,24 @@ Conta: 18 partições + 1 backup + 17 infra + 1 órfã + 27 sem uso = **64**.
 `follow_up_reminders`, `sicoob_performance_reports`, `sicoob_document_registry`,
 `sicoob_kit_quote_requests`, `sicoob_quote_reorder_requests`, `sicoob_reorder_requests`,
 `pontos_atendimento`, `order_logistics_tracking`, `mcp_access_violations`,
-`quote_approval_evidence_keys`, `admin_audit_log`.
+`quote_approval_evidence_keys`.
 
-**Não são lacunas de tela.** São tabelas que a operação nunca alimentou. Criar uma tela
-para `blog_posts` não faz o blog existir; criar tela de `webhook_configs` não gera webhook.
-A pergunta certa é de negócio (o recurso vai ser usado?), e enquanto a resposta for não, tela
-é custo sem retorno. Duas merecem atenção separada porque o backend está ativo:
+`admin_audit_log` aparece na varredura apenas pelas partições filhas; a tabela-mãe é lida
+pelo front normalmente.
 
-- `mcp_access_violations` — **2.060 linhas** de varredura anônima. O evento acontece; falta
-  visão. É o único caso com evidência de uso real e sem superfície.
-- `admin_config_audit` — 123 linhas, parou em 27/10. Acompanha a mudança de configuração;
-  `admin_audit_log` já cobre o mesmo terreno.
+**As 25 vazias não são lacunas de tela.** São tabelas que a operação nunca alimentou.
+Criar uma tela para `blog_posts` não faz o blog existir; criar tela de `webhook_configs`
+não gera webhook. A pergunta certa é de negócio (o recurso vai ser usado?), e enquanto a
+resposta for não, tela é custo sem retorno.
+
+**As 2 com dados são lacuna real de superfície:**
+
+- `mcp_access_violations` — **2.060 linhas**, todas de varredura anônima. O evento acontece
+  em produção e não há como enxergá-lo pela interface. É o caso mais evidente.
+- `quote_approval_evidence_keys` — 1 linha; acompanha evidência de aprovação de orçamento.
+
+`admin_config_audit` (123 linhas, parou em 27/10) está na lista de infra: acompanha mudança
+de configuração, e `admin_audit_log` — 21.779 linhas, com tela — já cobre o mesmo terreno.
 
 ## `push_subscriptions` — o elo que falta
 
