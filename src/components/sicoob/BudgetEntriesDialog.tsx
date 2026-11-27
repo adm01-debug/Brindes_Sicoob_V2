@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useScrollLockFix } from "@/hooks/useScrollLockFix";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -289,6 +290,9 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
   const lancamentos = lancamentosQuery.data ?? [];
   const carregando = lancamentosQuery.isLoading || reconciliacaoQuery.isLoading;
   const competencia = `${String(mes).padStart(2, "0")}/${ano}`;
+  // onCloseAutoFocus sobrescreve a limpeza do DialogContent, entao a rolagem
+  // fica a cargo do hook, que respeita outras sobreposicoes abertas.
+  useScrollLockFix();
 
   return (
     <Dialog open={aberto} onOpenChange={aoMudarAbertura}>
@@ -296,20 +300,10 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
         className="max-w-4xl"
         onCloseAutoFocus={(evento) => {
           if (!gatilhoAtual) return;
-          evento.preventDefault();
+          // Só o foco é redirecionado; a limpeza de rolagem continua sendo feita
+          // pelo DialogContent, que executa este callback antes do próprio handler.
           gatilhoAtual.focus();
-          // preventDefault tira a limpeza de rolagem do DialogContent; refaz aqui.
-          requestAnimationFrame(() => {
-            for (const el of [document.documentElement, document.body]) {
-              el.removeAttribute("data-scroll-locked");
-              el.style.overflow = "";
-              el.style.overflowY = "";
-              el.style.paddingRight = "";
-              el.style.marginRight = "";
-              el.style.position = "";
-              el.style.pointerEvents = "";
-            }
-          });
+          evento.preventDefault();
         }}
       >
         <DialogHeader>
