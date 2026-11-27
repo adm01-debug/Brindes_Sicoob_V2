@@ -155,10 +155,19 @@ function TabelaDoLivro({ lancamentos }: { lancamentos: LancamentoDeVerba[] }) {
   );
 }
 
-function ResumoDosTotais({ lancamentos, semPedido }: { lancamentos: LancamentoDeVerba[]; semPedido: LancamentoDeVerba[] }) {
+function ResumoDosTotais({
+  lancamentos,
+  semPedido,
+  reconciliacao,
+}: {
+  lancamentos: LancamentoDeVerba[];
+  semPedido: LancamentoDeVerba[];
+  reconciliacao: ReconciliacaoDeVerba | null;
+}) {
   const totalSemPedido = semPedido
     .filter((l) => l.estado === "consumido")
     .reduce((soma, l) => soma + numeroOuZero(l.valor), 0);
+  const existeDivergencia = reconciliacao?.divergente === true;
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-3 gap-3 text-sm">
@@ -175,7 +184,7 @@ function ResumoDosTotais({ lancamentos, semPedido }: { lancamentos: LancamentoDe
           <div className="font-semibold">{formatCurrency(totalDoLivro(lancamentos, "reservado"))}</div>
         </div>
       </div>
-      {totalSemPedido > 0 && (
+      {totalSemPedido > 0 && existeDivergencia && (
         <p className="text-xs text-muted-foreground">
           {formatCurrency(totalSemPedido)} de consumo não vem de nenhum pedido — é o que explica a maior parte
           da discrepância na coluna “Calculado nos pedidos”.
@@ -227,7 +236,11 @@ function ConteudoDoLivro({
   return (
     <>
       <SeloDeConciliacao reconciliacao={reconciliacao} />
-      <ResumoDosTotais lancamentos={lancamentos} semPedido={lancamentosSemPedido(lancamentos)} />
+      <ResumoDosTotais
+        lancamentos={lancamentos}
+        semPedido={lancamentosSemPedido(lancamentos)}
+        reconciliacao={reconciliacao}
+      />
       <TabelaDoLivro lancamentos={lancamentos} />
     </>
   );
@@ -237,6 +250,8 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
   const lancamentosQuery = useQuery({
     queryKey: ["pa_budget_entries", paId, ano, mes],
     enabled: aberto && !!paId,
+    refetchOnMount: "always",
+    staleTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pa_budget_entries")
@@ -253,6 +268,8 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
   const reconciliacaoQuery = useQuery({
     queryKey: ["pa_budget_reconcile", paId, ano, mes],
     enabled: aberto && !!paId,
+    refetchOnMount: "always",
+    staleTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("pa_budget_reconcile", {
         p_pa_id: paId,
@@ -279,12 +296,17 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
             comprometido.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
           <AvisosDeFalha reconciliacao={reconciliacaoQuery} lancamentos={lancamentosQuery} />
           {carregando ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Carregando lançamentos…
             </div>
+          ) : lancamentosQuery.isError || reconciliacaoQuery.isError ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              Não foi possível ler o livro desta competência. Os totais ficam ocultos até a leitura
+              funcionar — ausência de lançamentos não foi confirmada.
+            </p>
           ) : (
             <ConteudoDoLivro
               reconciliacao={reconciliacaoQuery.data ?? null}

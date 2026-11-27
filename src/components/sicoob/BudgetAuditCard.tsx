@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Scale, Search } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -148,18 +149,25 @@ function BudgetAuditTable({
         {rows.map((row) => (
           <TableRow
             key={`${row.pa_id}-${row.ano}-${row.mes}`}
-            className={hasDivergencia(row) ? "bg-destructive/5 cursor-pointer hover:bg-destructive/10" : "cursor-pointer"}
-            onClick={() => onDetalhar(row)}
-            title="Ver os lançamentos que compõem este saldo"
+            className={hasDivergencia(row) ? "bg-destructive/5" : undefined}
           >
             <TableCell className="font-medium">{row.pa_nome ?? "PA sem nome"}</TableCell>
             <TableCell>{formatCompetencia(row.ano, row.mes)}</TableCell>
             <TableCell>{formatCurrency(row.verba_total ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_registrada ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_calculada_pedidos ?? 0)}</TableCell>
-            <TableCell className="flex items-center gap-1">
+            <TableCell className="flex items-center gap-2">
               <DiscrepanciaBadge row={row} />
-              <Search className="h-3 w-3 text-muted-foreground" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => onDetalhar(row)}
+                aria-label={`Ver os lançamentos que compõem o saldo de ${row.pa_nome ?? "PA sem nome"} em ${formatCompetencia(row.ano, row.mes)}`}
+              >
+                <Search className="h-3.5 w-3.5" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
