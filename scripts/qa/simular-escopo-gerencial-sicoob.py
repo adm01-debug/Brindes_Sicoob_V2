@@ -398,8 +398,10 @@ try:
         ));
       DO $qa$
       BEGIN
+        -- No PA do proprio gerente: assim a recusa so pode vir da autoria, nao
+        -- do escopo de posto (no PA3 a policy recusaria mesmo com o autor certo).
         INSERT INTO public.limit_increase_requests (pa_id, requested_by, current_limit, requested_limit, reason)
-        VALUES ('{PA3}', '{SELLER}', 10, 20, 'em nome de outro autor');
+        VALUES ('{PA1}', '{SELLER}', 10, 20, 'em nome de outro autor');
         INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_nome_de_outro_autor', false);
       EXCEPTION WHEN insufficient_privilege THEN
         INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_nome_de_outro_autor', true);
