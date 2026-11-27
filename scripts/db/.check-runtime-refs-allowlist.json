@@ -28,6 +28,7 @@
     "cost_centers": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
     "pa_budget_allocations": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
     "pa_budget_replace_allocations": "RPC criada na migration 20261122120000_pa_budget_full_lifecycle.sql (PR #401) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "salvar_verba_pa": "RPC reescrita na migration 20261126170000_cooperativa_budget_ceiling.sql (PR #473) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
     "cooperativa_verba_distribuida": "RPC criada na migration 20261126170000_cooperativa_budget_ceiling.sql (PR #473) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário"
     }
 }
