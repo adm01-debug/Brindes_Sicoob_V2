@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "c89d884e505518e789cf5d29a39b574be0933112",
+  "commit": "1fea5d734235691f06bf95ed6c6e913bb6d698ee",
   "branch": "main",
-  "data_commit": "2026-11-27T22:36:03Z",
+  "data_commit": "2026-11-27T23:31:57Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "1fea5d7",
+    "data": "2026-11-27",
+    "assunto": "fix: status do CRM mostra conexao pendente em vez de tabelas ausentes (#492)"
+   },
    {
     "sha": "c89d884",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "20deb10",
     "data": "2026-11-26",
     "assunto": "fix: estabiliza o gate de testes contra o log pendente no teardown do worker (#463)"
-   },
-   {
-    "sha": "6f109c4",
-    "data": "2026-11-26",
-    "assunto": "feat: tela de gestão das políticas de aprovação por Singular (#461)"
    }
   ],
-  "arquivos_mudados_7d": 353,
+  "arquivos_mudados_7d": 355,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -262,10 +262,6 @@
     "mudancas": 8
    },
    {
-    "arquivo": "AGENTS.md",
-    "mudancas": 8
-   },
-   {
     "arquivo": "docs/RECUPERACAO/anexo-testes-orfaos.md",
     "mudancas": 8
    },
@@ -286,6 +282,10 @@
     "mudancas": 7
    },
    {
+    "arquivo": "AGENTS.md",
+    "mudancas": 7
+   },
+   {
     "arquivo": "scripts/qa/postgres_ready.py",
     "mudancas": 7
    },
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 258
+    "commits": 259
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5395,
   "arquivos_codigo": 3269,
-  "linhas_codigo": 520579,
+  "linhas_codigo": 520649,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -808,7 +808,7 @@
   },
   "src/lib": {
    "arquivos": 171,
-   "linhas": 23325
+   "linhas": 23343
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52522
+   "linhas": 52546
   },
   "src/routes": {
    "arquivos": 9,
@@ -932,7 +932,7 @@
   },
   "tests/lib": {
    "arquivos": 85,
-   "linhas": 10224
+   "linhas": 10252
   },
   "tests/load": {
    "arquivos": 1,

@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c89d884e50` · branch `main` · 2026-11-27 22:36 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `1fea5d7342` · branch `main` · 2026-11-27 23:32 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1409,7 +1409,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `success` | compara, escreve, filtra | `src/components/admin/connections/FailedDeliveriesPanel.tsx`<br>`src/components/admin/security/keys/audit/McpAuditRow.tsx`<br>`src/components/kit-builder/VolumeIndicator.tsx`<br>`src/components/settings/NotificationOmnichannelPanel.tsx`<br>`src/hooks/useAiUsage.ts`<br>… +12 |
 | `status` | `super` | compara, escreve | `src/components/bi/ClientCategoryRadar.tsx` |
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
-| `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
+| `status` | `unconfigured` | compara, escreve | `src/components/admin/connections/DataSourceDebugTab.tsx`<br>`src/pages/SystemStatusPage.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
 | … +107 linhas — lista completa em `context.json` | | | |
 
@@ -5800,7 +5800,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7662 testes em 790 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7664 testes em 790 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5859,6 +5859,7 @@ _nenhum item encontrado_
 | `tests/hooks/useReplenishments.test.ts` | 26 | Replenishment utility functions · isReplenishment · returns true when updated_at is 1+ day after created_at · returns false when updated_at equals created_at (new product) … |
 | `tests/e2e/seller-carts.test.ts` | 25 | E2E Carts — Cart Total Calculation · calculates correctly · empty cart is 0 · single item … |
 | `tests/hooks/voice/retry.test.ts` | 25 | withRetry · returns result on first success · retries on retryable error and succeeds · does not retry on non-retryable error … |
+| `tests/lib/crm-db-fixed.test.ts` | 24 | invokeCrmDb · returns data on success · throws on edge function error (non-retryable) · throws on query error in data … |
 | `tests/lib/query-config-extended.test.ts` | 24 | CACHE_TIMES constants · VERY_STABLE is 1 hour · STABLE is 30 min · TECNICAS is 15 min … |
 | `supabase/functions/external-db-bridge/callerSelectIsHeavy.test.ts` | 23 | extractBaseColumn: nome simples · extractBaseColumn: alias PostgREST  · extractBaseColumn: operadores JSON  · extractBaseColumn: alias + JSON op combinados … |
 | `tests/components/PriceFreshnessBadge.catalog-visibility.test.tsx` | 23 | PriceFreshnessBadge — visibilidade nos componentes do catálogo · ProductCard / EnhancedProductCard / ProductTableView (variant= · NÃO renderiza quando fresh (preço atualizado dentro de 50% do threshold) · NÃO renderiza quando o status é unknown (data ausente) … |
@@ -5874,7 +5875,6 @@ _nenhum item encontrado_
 | `tests/functions/portal-access-policy.test.ts` | 22 | papéis de leitura e escrita do CRM · não dá leitura genérica a vendedor nem a agente · restringe escrita a dev e admin · nega tudo para quem não tem papel … |
 | `tests/hooks/useSearch.test.ts` | 22 | useSearch · Histórico · isola o histórico por escopo de usuário e cooperativa · adiciona termo ao histórico … |
 | `tests/hooks/useSimulatorWizard.test.ts` | 22 | WIZARD_STEPS · has exactly 4 steps in correct order · getStepIndex · returns correct indices … |
-| `tests/lib/crm-db-fixed.test.ts` | 22 | invokeCrmDb · returns data on success · throws on edge function error (non-retryable) · throws on query error in data … |
 | `tests/lib/product-types.test.ts` | 22 | getProductImageUrl · should prefer primary_image_url · should fallback to image_url · should fallback to first image in images array … |
 | `tests/rls/telemetry-logs-connections-access.test.ts` | 22 | Helpers semânticos — alinhamento com gates primitivos · can_view_audit_logs(${r}) === is_dev(${r}) · can_view_telemetry(${r}) === is_supervisor_or_above(${r}) · can_view_connections(${r}) === is_supervisor_or_above(${r}) … |
 | `tests/utils/price-freshness.extreme-thresholds.test.ts` | 22 | getPriceFreshness — thresholds inválidos voltam ao default 60d · threshold $label → default 60d e classifica corretamente · getPriceFreshness — threshold = 1 dia (cotação volátil) · hoje (0d) ainda é fresh — vendedor não é alarmado no mesmo dia … |

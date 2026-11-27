@@ -6038,11 +6038,11 @@
   {
    "arquivo": "tests/lib/crm-db-fixed.test.ts",
    "tipo": "unit",
-   "linhas": 144,
+   "linhas": 172,
    "testa": [
     "src/lib/crm-db.ts"
    ],
-   "casos": 14
+   "casos": 16
   },
   {
    "arquivo": "tests/lib/custom-kit-status.test.ts",

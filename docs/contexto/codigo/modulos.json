@@ -10323,7 +10323,7 @@
    "modulo": "lib",
    "arquivos": 62,
    "testes": 0,
-   "linhas": 8614,
+   "linhas": 8632,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -11853,7 +11853,7 @@
    "modulo": "pages",
    "arquivos": 68,
    "testes": 0,
-   "linhas": 19519,
+   "linhas": 19543,
    "itens_menu": [
     "Análise de Tendências",
     "Busca por Preço",

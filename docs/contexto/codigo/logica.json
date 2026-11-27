@@ -1675,6 +1675,7 @@
     "insertCrm",
     "invokeCrmBatch",
     "invokeCrmDb",
+    "isUnconfiguredMessage",
     "searchCrm",
     "selectCrm",
     "selectCrmById",
@@ -1682,7 +1683,7 @@
     "updateCrmByFilter"
    ],
    "export_default": null,
-   "linhas": 535,
+   "linhas": 553,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
