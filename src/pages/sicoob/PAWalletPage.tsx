@@ -102,6 +102,11 @@ function RequestHistoryRow({ request }: { request: LimitIncreaseRequest }) {
           <div className="max-w-[300px] truncate text-xs text-muted-foreground">
             {request.reason}
           </div>
+          {requestStatus === 'rejected' && request.rejection_reason ? (
+            <div className="max-w-[300px] truncate text-xs font-medium text-destructive">
+              Motivo da recusa: {request.rejection_reason}
+            </div>
+          ) : null}
           <div className="mt-1 text-[10px] font-medium uppercase text-muted-foreground">
             {createdLabel}
           </div>
@@ -324,6 +329,8 @@ export default function PAWalletPage() {
     enabled: Boolean(paId),
   });
 
+  const amounts = readPaBudgetAmounts(budget);
+
   const createRequest = useMutation({
     mutationFn: () => {
       if (!paId) throw new Error('PA não identificado');
@@ -331,6 +338,7 @@ export default function PAWalletPage() {
         paId,
         Number(requestedAmount),
         requestReason,
+        amounts.planejada,
       );
     },
     onSuccess: () => {
@@ -347,7 +355,6 @@ export default function PAWalletPage() {
     },
   });
 
-  const amounts = readPaBudgetAmounts(budget);
   const currentPeriod = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
 
   return (

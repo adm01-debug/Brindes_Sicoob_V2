@@ -62,3 +62,30 @@ CREATE TABLE public.sicoob_manager_audit (
   details jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- PA exigido pela view de conciliação (nome do posto no relatório).
+CREATE TABLE public.postos_atendimento (
+  id uuid PRIMARY KEY,
+  nome text NOT NULL
+);
+
+-- Cópia da view legada de conciliação, que somava apenas três estados. A
+-- migration de correção precisa substituí-la pelo conjunto que o gatilho
+-- debita; se a lista voltar a divergir, a simulação acusa discrepância.
+CREATE VIEW public.sicoob_budget_audit AS
+SELECT
+    pb.pa_id,
+    pa.nome as pa_nome,
+    pb.ano,
+    pb.mes,
+    pb.verba_total,
+    pb.verba_consumida as verba_registrada,
+    COALESCE(SUM(so.total_amount), 0) as verba_calculada_pedidos,
+    (pb.verba_consumida - COALESCE(SUM(so.total_amount), 0)) as discrepancia
+FROM public.pa_budgets pb
+JOIN public.postos_atendimento pa ON pb.pa_id = pa.id
+LEFT JOIN public.sicoob_orders so ON so.pa_id = pb.pa_id
+    AND so.status IN ('confirmed', 'logistic', 'completed')
+    AND EXTRACT(YEAR FROM so.created_at) = pb.ano
+    AND EXTRACT(MONTH FROM so.created_at) = pb.mes
+GROUP BY pb.id, pa.nome;

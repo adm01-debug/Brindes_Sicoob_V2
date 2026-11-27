@@ -10,6 +10,7 @@ from postgres_ready import run_overlapping, wait_for_postgres
 CONTAINER = "sicoob-verba-atomica-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql"
+CONCILIACAO_MIGRATION = ROOT / "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql"
 FIXTURE = ROOT / "tests/scenarios/sql/verba-atomica-fixture.sql"
 PA = "00000000-0000-4000-8000-000000000001"
 COOP = "00000000-0000-4000-8000-000000000010"
@@ -50,6 +51,7 @@ def actor_sql(actor, statement, *, check=True):
 result = {
     "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
     "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracao_conciliacao": str(CONCILIACAO_MIGRATION.relative_to(ROOT)),
     "producao_verificada": False,
 }
 
@@ -63,6 +65,7 @@ try:
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
+    sql(CONCILIACAO_MIGRATION.read_text())
     sql(f"""
       INSERT INTO pa_budgets (pa_id, ano, mes, verba_total, limite_alcada)
       VALUES ('{PA}', EXTRACT(YEAR FROM now()), EXTRACT(MONTH FROM now()), 1000, 500);
@@ -149,6 +152,42 @@ try:
         "dentro_da_alcada": direct_state,
         "estado_desatualizado": "bloqueado",
         "acima_da_alcada": "bloqueado",
+    }
+
+    # Conciliação: o débito do gatilho e a soma da view precisam cobrir o mesmo
+    # conjunto de estados. Pedido debitado em produção/trânsito/entrega tem de
+    # aparecer em verba_calculada_pedidos; discrepância != 0 é divergência falsa.
+    sql(f"""
+      INSERT INTO postos_atendimento (id, nome) VALUES ('{PA}', 'PA TESTE - SIM');
+      INSERT INTO sicoob_orders (id, pa_id, cooperative_id, status, total_amount) VALUES
+        ('00000000-0000-4000-8000-000000000107', '{PA}', '{COOP}', 'waiting_approval', 100),
+        ('00000000-0000-4000-8000-000000000108', '{PA}', '{COOP}', 'waiting_approval', 100),
+        ('00000000-0000-4000-8000-000000000109', '{PA}', '{COOP}', 'waiting_approval', 100),
+        ('00000000-0000-4000-8000-000000000110', '{PA}', '{COOP}', 'waiting_approval', 100);
+      UPDATE sicoob_orders SET status='confirmed' WHERE id IN (
+        '00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000108',
+        '00000000-0000-4000-8000-000000000109','00000000-0000-4000-8000-000000000110');
+      UPDATE sicoob_orders SET status='in_production' WHERE id IN (
+        '00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000108',
+        '00000000-0000-4000-8000-000000000109','00000000-0000-4000-8000-000000000110');
+      UPDATE sicoob_orders SET status='in_separation' WHERE id IN (
+        '00000000-0000-4000-8000-000000000108','00000000-0000-4000-8000-000000000109',
+        '00000000-0000-4000-8000-000000000110');
+      UPDATE sicoob_orders SET status='in_transit' WHERE id IN (
+        '00000000-0000-4000-8000-000000000109','00000000-0000-4000-8000-000000000110');
+      UPDATE sicoob_orders SET status='delivered' WHERE id='00000000-0000-4000-8000-000000000110';
+    """)
+    conciliacao = sql(
+        "SELECT verba_registrada::text || '|' || verba_calculada_pedidos::text || '|' || discrepancia::text "
+        f"FROM sicoob_budget_audit WHERE pa_id = '{PA}';"
+    ).stdout.strip()
+    debitado = sql("SELECT verba_consumida::text FROM pa_budgets WHERE pa_id = '" + PA + "';").stdout.strip()
+    assert conciliacao == f"{debitado}|{debitado}|0.00", (conciliacao, debitado)
+    result["conciliacao"] = {
+        "verba_registrada": debitado,
+        "verba_calculada_pedidos": debitado,
+        "discrepancia": "0.00",
+        "estados_debitados_sem_divergencia": "in_production, in_separation, in_transit, delivered",
     }
 
     result["resultado"] = "aprovado"
