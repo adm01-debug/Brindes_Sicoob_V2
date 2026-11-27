@@ -129,6 +129,10 @@ const TARGETS = [
       sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
     },
   {
+    file: "supabase/migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql",
+    sha256: "dec81f57fe2e8613e91eb3ca3c7823013d1ae8c49c1ee29c5a1f4252919694ad",
+  },
+  {
     file: "supabase/migrations/20261127190000_prune_cron_job_run_details.sql",
     sha256: "172e2ae3d128b70f90ca9f597a92e503023092c190fce60414cf42fbe3e95392",
   },
@@ -472,12 +476,14 @@ function latestDefiner(targets, functionName) {
 
 // O corpo esperado do monitor é a função original (20260922225500) com todos os
 // patches aplicados depois dela, em ordem cronológica: a correlação/timeout de
-// 20261015102000 e a janela de resposta de 20261127153000. O patch substitui os
+// 20261015102000, a janela de resposta de 20261127153000 e a agregacao de saude de
+// 20261127150000, que so conta timeout como falha quando ha entrega pendente. O patch substitui os
 // blocos antigos pelos novos; derivá-los em Node evita guardar o corpo copiado
 // e mantém a validação por igualdade total (hash).
 const MONITOR_PATCHES = [
   "20261015102000_fix_pg_net_recycled_request_ids.sql",
   "20261127153000_fix_approval_dispatch_response_skew.sql",
+  "20261127150000_approval_worker_health_ignores_empty_timeouts.sql",
 ];
 
 export function approvalWorkerMonitorBody() {
@@ -499,7 +505,10 @@ export function approvalWorkerMonitorBody() {
   };
   return patches.reduce((body, patch) => {
     let atual = body;
-    for (const marker of ["timeout", "response"]) {
+    // Cada patch declara seus marcadores como blocos $old_<nome>$; descobrir a
+    // lista no proprio SQL evita manter um catalogo aqui a cada correcao nova.
+    const markers = [...patch.matchAll(/:= \$old_([a-z_]+)\$/g)].map((m) => m[1]);
+    for (const marker of markers) {
       // Patch mais recente já pode ter substituído o bloco: nesse caso ele é pulado.
       if (!patch.includes(`$old_${marker}$`)) continue;
       try {
