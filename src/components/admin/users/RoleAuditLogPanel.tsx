@@ -419,7 +419,10 @@ interface ConfigAuditData {
   profilesMap: Map<string, ProfileLite>;
 }
 
-/** Busca a trilha bruta e os perfis de ator/alvo em uma unica ida ao banco. */
+/**
+ * Busca a trilha bruta e, quando existem atores ou alvos, os perfis em uma
+ * segunda consulta sequencial. As duas passam pela mesma policy de admin/gestor.
+ */
 async function fetchConfigAudit(): Promise<ConfigAuditData> {
   const { data: entries, error } = await supabase
     .from("admin_config_audit")
@@ -458,7 +461,7 @@ function ConfigAuditHeader({ isFetching, onRefresh }: { isFetching: boolean; onR
         <div>
           <CardTitle>Trilha bruta (admin_config_audit)</CardTitle>
           <CardDescription>
-            Estado linha a linha gravado pelo trigger direto na tabela ? inclui mudan?as feitas por servi?os, sem ator no JWT.
+            Estado linha a linha gravado pelo trigger direto na tabela: inclui mudanças feitas por serviços, sem ator no JWT.
           </CardDescription>
         </div>
       </div>
@@ -471,7 +474,7 @@ function ConfigAuditHeader({ isFetching, onRefresh }: { isFetching: boolean; onR
 }
 
 export function RawConfigAuditPanel() {
-  // A chave de cache inclui o usu?rio da sess?o: sem isso, trocar de conta na
+  // A chave de cache inclui o usuário da sessão: sem isso, trocar de conta na
   // mesma aba reaproveitava por 15 s os eventos (nomes e e-mails) carregados
   // pela conta anterior, mesmo quando o banco j? barrava a nova leitura.
   const { user } = useAuth();
@@ -494,7 +497,7 @@ export function RawConfigAuditPanel() {
           isError={isError}
         />
         <p className="text-[11px] text-muted-foreground mt-3">
-          Mostrando at? 200 registros mais recentes de <code>user_roles</code>.
+          Mostrando até 200 registros mais recentes de <code>user_roles</code>.
         </p>
       </CardContent>
     </Card>
