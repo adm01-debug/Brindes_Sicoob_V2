@@ -246,7 +246,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
-    sha256: "dd488ac13fc76804f355e4c3171808d80dfd2cac1edf206bba9d75a758366c29",
+    sha256: "d214c4b254543c610211f2568e41fb8e338fe890c9cbf5d161a4c0bf7cf2f764",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

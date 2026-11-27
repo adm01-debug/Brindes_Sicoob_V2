@@ -52,7 +52,9 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
   });
 
   const { data: settings } = useQuery({
-    queryKey: ["pa_notification_settings", selectedPa],
+    // Modo no cache: o gestor le sem webhook (readOnly) e a administracao le com
+    // webhook; a mesma chave serviria o resultado de uma tela na outra.
+    queryKey: ["pa_notification_settings", selectedPa, readOnly ? "leitura" : "admin"],
     queryFn: async () => {
       if (!selectedPa) return [];
       const { data, error } = await supabase
@@ -72,15 +74,16 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
 
   const upsertMutation = useMutation({
     mutationFn: async (payload: NotificationSettingPayload) => {
-      const { error } = await supabase
-        .from("pa_notification_settings")
-        .upsert({
-          pa_id: selectedPa!,
-          channel: payload.channel,
-          webhook_url: payload.webhook_url,
-          recipient_email: payload.recipient_email,
-          is_active: payload.is_active
-        }, { onConflict: 'pa_id,channel' });
+      // A coluna `webhook_url` esta fora do GRANT de `authenticated`, entao o
+      // upsert direto falha no ON CONFLICT (o PostgreSQL exige SELECT na coluna).
+      // A gravacao passa pela RPC restrita a administracao.
+      const { error } = await supabase.rpc("sicoob_pa_notification_settings_set", {
+        p_pa_id: selectedPa!,
+        p_channel: payload.channel,
+        p_webhook_url: payload.webhook_url,
+        p_recipient_email: payload.recipient_email,
+        p_is_active: payload.is_active,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

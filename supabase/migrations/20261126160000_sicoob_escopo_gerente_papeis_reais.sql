@@ -77,8 +77,7 @@ DROP POLICY IF EXISTS "order_comments_select_scoped" ON public.order_comments;
 CREATE POLICY "order_comments_select_scoped"
 ON public.order_comments FOR SELECT TO authenticated
 USING (
-  public.has_role((SELECT auth.uid()), 'admin'::public.app_role)
-  OR public.has_role((SELECT auth.uid()), 'dev'::public.app_role)
+  public.is_supervisor_or_above((SELECT auth.uid()))
   OR EXISTS (
     SELECT 1 FROM public.orders o
      WHERE o.id = order_comments.order_id
@@ -154,7 +153,7 @@ AS $function$
 DECLARE
   v_url text;
 BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
+  IF NOT public.is_supervisor_or_above(auth.uid()) THEN
     RAISE EXCEPTION USING ERRCODE='42501',
       MESSAGE='Somente a administracao consulta o webhook do Slack.';
   END IF;
@@ -171,3 +170,56 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.sicoob_pa_slack_webhook(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.sicoob_pa_slack_webhook(uuid) TO authenticated, service_role;
+
+-- =====================================================
+-- 8) pa_notification_settings: a gravacao tambem passa por RPC
+-- =====================================================
+-- Por que existe:
+--   Com `webhook_url` fora do GRANT de coluna de `authenticated`, o upsert do
+--   PostgREST (`INSERT ... ON CONFLICT DO UPDATE`) falha: o PostgreSQL exige
+--   SELECT na coluna lida pela expressao de `DO UPDATE`, mesmo quando o valor
+--   chega por `EXCLUDED.webhook_url`. Ou seja, revogar a leitura sem mover a
+--   escrita quebraria o salvamento dos dois canais (inclusive o de e-mail, que
+--   manda `webhook_url: null`).
+--   A gravacao passa a ser esta RPC SECURITY DEFINER, que valida o papel e
+--   escreve as colunas que o navegador nao pode ler. E o unico caminho de
+--   escrita da tela (`NotificationSettingsTab`).
+CREATE OR REPLACE FUNCTION public.sicoob_pa_notification_settings_set(
+  p_pa_id uuid,
+  p_channel text,
+  p_webhook_url text DEFAULT NULL,
+  p_recipient_email text DEFAULT NULL,
+  p_is_active boolean DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+BEGIN
+  IF NOT public.is_supervisor_or_above(auth.uid()) THEN
+    RAISE EXCEPTION USING ERRCODE='42501',
+      MESSAGE='Somente a administracao grava as configuracoes de notificacao.';
+  END IF;
+
+  IF p_channel NOT IN ('slack', 'email') THEN
+    RAISE EXCEPTION USING ERRCODE='22023',
+      MESSAGE='Canal de notificacao invalido: use slack ou email.';
+  END IF;
+
+  IF p_pa_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.postos_atendimento pa WHERE pa.id = p_pa_id) THEN
+    RAISE EXCEPTION USING ERRCODE='23503',
+      MESSAGE='PA inexistente para a configuracao de notificacao.';
+  END IF;
+
+  INSERT INTO public.pa_notification_settings (pa_id, channel, webhook_url, recipient_email, is_active)
+  VALUES (p_pa_id, p_channel, p_webhook_url, p_recipient_email, COALESCE(p_is_active, false))
+  ON CONFLICT (pa_id, channel) DO UPDATE
+    SET webhook_url = EXCLUDED.webhook_url,
+        recipient_email = EXCLUDED.recipient_email,
+        is_active = EXCLUDED.is_active;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.sicoob_pa_notification_settings_set(uuid, text, text, text, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.sicoob_pa_notification_settings_set(uuid, text, text, text, boolean) TO authenticated, service_role;
