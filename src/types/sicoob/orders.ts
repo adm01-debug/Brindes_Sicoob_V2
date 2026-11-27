@@ -82,6 +82,7 @@ export interface SicoobOrder {
   sla_deadline?: string;
   sla_closed_at?: string;
   sla_closed_status?: 'normal' | 'warning' | 'critical';
+  sla_closed_outcome?: 'approved' | 'rejected' | 'escalated';
   pa?: { nome: string };
   cooperativa?: { nome: string };
 }

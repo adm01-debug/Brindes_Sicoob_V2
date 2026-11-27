@@ -158,7 +158,11 @@ BEGIN
   -- o valor antigo quando a decisão de aumento gravava `verba_planejada`, e a
   -- aprovação passava por cima do teto da cooperativa sem ser notada.
   IF TG_OP = 'INSERT' THEN
-    v_valor_novo := COALESCE(NEW.verba_planejada, NEW.verba_total, 0);
+    -- `verba_planejada` tem DEFAULT 0: no INSERT o valor autoritativo e
+    -- `verba_total`, porque o espelho (`trg_sync_pa_budget_planejada`) so roda
+    -- depois deste gatilho, em ordem alfabetica. Preferir a coluna zerada aqui
+    -- fazia toda verba inserida entrar como 0 e passar pelo teto.
+    v_valor_novo := COALESCE(NULLIF(NEW.verba_planejada, 0), NEW.verba_total, 0);
   ELSE
     v_valor_novo := COALESCE(
       CASE WHEN NEW.verba_planejada IS DISTINCT FROM OLD.verba_planejada
@@ -194,6 +198,8 @@ BEGIN
 
   PERFORM public._trava_competencia_da_cooperativa(v_cooperativa_id, NEW.ano, NEW.mes);
 
+  -- `verba_total` e o teto da cooperativa cobrado dos PAs; `teto_verba_pa` e
+  -- apenas o saldo inicial da tela e nao serve como limite.
   SELECT cb.verba_total INTO v_teto
     FROM public.cooperativa_budgets cb
    WHERE cb.cooperativa_id = v_cooperativa_id
@@ -422,8 +428,8 @@ BEGIN
     -- a coluna id apenas para esta gravacao.
     v_budget_id := gen_random_uuid();
 
-    INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, verba_planejada, limite_alcada, observacoes)
-    VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_verba_total, p_limite_alcada, p_observacoes);
+    INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, limite_alcada, observacoes)
+    VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_limite_alcada, p_observacoes);
   ELSE
     -- PA e competencia nao mudam na edicao: os dois formularios desabilitam
     -- esses campos e o grant de UPDATE cobre so verba, alcada e observacoes.
@@ -435,7 +441,6 @@ BEGIN
 
     UPDATE public.pa_budgets
        SET verba_total = p_verba_total,
-           verba_planejada = p_verba_total,
            limite_alcada = p_limite_alcada,
            observacoes = p_observacoes
      WHERE id = p_budget_id
@@ -461,4 +466,11 @@ GRANT EXECUTE ON FUNCTION public.salvar_verba_pa(uuid, integer, integer, numeric
 -- INSERT e por coluna: sem id no grant a criacao pela tela falha com
 -- "permission denied for table pa_budgets". Escrever o proprio id nao amplia
 -- autoridade, porque a linha continua barrada pelas policies de escopo.
+--
+-- `verba_planejada` NAO entra nos grants: quem escreve essa coluna e o
+-- gatilho trg_sync_pa_budget_planejada, que espelha `verba_total`. Se a RPC
+-- listasse a coluna, o banco recusaria a gravacao inteira com "permission
+-- denied for table pa_budgets" (o privilegio de coluna nao e encoberto pelo
+-- de tabela, e a policy permissiva nao substitui o GRANT), deixando criar e
+-- editar verbas quebrados para todo mundo, inclusive administracao.
 GRANT INSERT (id) ON public.pa_budgets TO authenticated;

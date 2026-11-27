@@ -8,6 +8,32 @@
 --
 -- Aqui o prazo volta a ser definido sem tocar em `status`.
 
+-- O encerramento do ciclo precisa de coluna propria: `sla_deadline` é
+-- sobrescrito a cada entrada em aprovação (escalação redefine o prazo) e
+-- `sla_status` volta a 'normal' nos ciclos seguintes. Sem estas duas colunas,
+-- o gatilho de encerramento abaixo abortava a decisão do pedido com
+-- "record NEW has no field sla_closed_at" (42703), que é o erro que bloqueava
+-- Aprovar/Recusar em `waiting_approval`.
+ALTER TABLE public.sicoob_orders
+  ADD COLUMN IF NOT EXISTS sla_closed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS sla_closed_status text,
+  ADD COLUMN IF NOT EXISTS sla_closed_outcome text;
+
+-- `sla_closed_outcome` separa o desfecho do ciclo ('approved', 'rejected',
+-- 'escalated'). Sem ele a tela mostrava "Aprovado com N h de atraso" em pedido
+-- recusado, porque toda saída de `waiting_approval` gravava `sla_closed_*`.
+ALTER TABLE public.sicoob_orders
+  DROP CONSTRAINT IF EXISTS sicoob_orders_sla_closed_outcome_check;
+ALTER TABLE public.sicoob_orders
+  ADD CONSTRAINT sicoob_orders_sla_closed_outcome_check
+  CHECK (sla_closed_outcome IS NULL OR sla_closed_outcome IN ('approved', 'rejected', 'escalated'));
+
+-- Reversão:
+--   ALTER TABLE public.sicoob_orders
+--     DROP COLUMN IF EXISTS sla_closed_at,
+--     DROP COLUMN IF EXISTS sla_closed_status,
+--     DROP COLUMN IF EXISTS sla_closed_outcome;
+
 CREATE OR REPLACE FUNCTION public.set_sicoob_order_sla_deadline()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -95,11 +121,28 @@ BEGIN
        AND (status IN ('pending', 'waiting_approval', 'escalated_to_board')
             OR sla_status IN ('critical', 'warning'))
   )
+  -- O gatilho `check_order_sla` roda no BEFORE deste UPDATE e, com o prazo
+  -- ainda vencido, regravaria 'critical' em cima do 'normal'. Só que o pedido
+  -- saiu da aprovação: o ciclo já terminou, então ele é encerrado aqui pelas
+  -- colunas `sla_closed_*` (o encerramento é o que a tela de gestão lê) em vez
+  -- de seguir reaparecendo no contador de alertas a cada execução.
   UPDATE public.sicoob_orders o
-     SET sla_status = a.novo_status
+     SET sla_status = a.novo_status,
+         sla_closed_at = CASE
+           WHEN a.novo_status = 'normal'
+              AND o.sla_closed_at IS NULL
+              AND o.status::text NOT IN ('waiting_approval', 'escalated_to_board') THEN now()
+           ELSE o.sla_closed_at
+         END,
+         sla_closed_status = CASE
+           WHEN a.novo_status = 'normal' AND o.sla_closed_status IS NULL THEN 'critical'
+           ELSE COALESCE(o.sla_closed_status, 'critical')
+         END,
+         sla_closed_outcome = COALESCE(o.sla_closed_outcome, 'approved')
     FROM alvo a
    WHERE o.id = a.id
-     AND o.sla_status IS DISTINCT FROM a.novo_status;
+     AND (o.sla_status IS DISTINCT FROM a.novo_status
+          OR (a.novo_status = 'normal' AND o.sla_closed_at IS NULL));
 
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RETURN v_count;
@@ -139,7 +182,11 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
+  -- `sla_closed_at IS NULL` protege o ciclo anterior já registrado: o
+  -- recálculo passa por aqui a cada 15 minutos enquanto houver alerta pendente,
+  -- e sem essa guarda sobrescreveria a data do primeiro encerramento.
   IF OLD.sla_deadline IS NOT NULL
+     AND OLD.sla_closed_at IS NULL
      AND OLD.status IN ('waiting_approval', 'escalated_to_board')
      AND NEW.status IS DISTINCT FROM OLD.status THEN
     NEW.sla_closed_at := now();
@@ -147,6 +194,15 @@ BEGIN
       WHEN OLD.sla_deadline < now() THEN 'critical'
       WHEN OLD.sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning'
       ELSE 'normal'
+    END;
+    -- Desfecho do ciclo medido ANTES de a aprovação reescrever o prazo:
+    -- recusado nunca vira "aprovado com atraso", e a escalação fecha o ciclo
+    -- com o desfecho real, mesmo que `set_sicoob_order_sla_deadline` abra um
+    -- novo prazo no mesmo UPDATE (é a mesma linha, então `sla_closed_*` fica).
+    NEW.sla_closed_outcome := CASE
+      WHEN NEW.status = 'rejected' THEN 'rejected'
+      WHEN NEW.status = 'escalated_to_board' THEN 'escalated'
+      ELSE 'approved'
     END;
   END IF;
 

@@ -202,6 +202,24 @@ STUBS = f"""
     VALUES (_user_id, _title, _message, _type, _category, _action_url, _metadata)
   $$;
 
+  -- Auditoria: a policy da secao 1 junta `order_audit_events` com `orders`
+  -- (escopo de vendedor/organizacao) e o ramo Sicoob le `sicoob_orders`. Sem
+  -- as duas tabelas a secao 1 nao aplicava e a policy ficava sem cobertura.
+  CREATE TABLE public.order_audit_events (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+    event_type text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  );
+  CREATE TABLE public.sicoob_orders (
+    id uuid PRIMARY KEY,
+    created_by uuid,
+    pa_id uuid,
+    cooperative_id uuid
+  );
+  ALTER TABLE public.order_audit_events ENABLE ROW LEVEL SECURITY;
+  GRANT SELECT ON public.order_audit_events, public.sicoob_orders TO authenticated;
+
   CREATE TABLE public.qa_results (name text PRIMARY KEY, ok boolean);
   GRANT SELECT ON public.pa_notification_settings, public.postos_atendimento TO authenticated;
   GRANT SELECT ON public.order_comments, public.orders,tie_placeholder TO authenticated;
@@ -275,6 +293,9 @@ try:
     ])
     wait_for_postgres(command, CONTAINER)
     sql(STUBS)
+    # A secao 1 (auditoria) precisa vir junto: e nela que mora o ramo de escopo
+    # que a fila gerencial usa como referencia de leitura.
+    sql(secao("-- 1) order_audit_events", "-- 2) order_comments"))
     sql(secao("-- 2) order_comments", "-- 5) limit_increase_requests"))
     sql(secao("-- 6) pa_notification_settings"))
     # 3) RLS de limit_increase_requests: sem estas policies a fila de aumentos
