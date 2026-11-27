@@ -123,6 +123,43 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(ajustes).toContain('1 \u2014');
   });
 
+  it('XML anexado no ciclo anterior nao volta como ajuste quando o PDF entra no ciclo atual', async () => {
+    // A nota 12345 ja esta no faturamento do periodo pelo XML. O PDF da mesma
+    // nota foi emitido antes, mas chegou agora: a consulta de ajustes devolve
+    // as DUAS linhas (PDF e XML) porque ambas foram registradas na janela.
+    // Somar o XML aqui repetiria o valor inteiro do faturamento.
+    const html = await relatorio(
+      [
+        {
+          order_id: 'ped-1',
+          invoice_number: '12345',
+          amount: 250,
+          issued_at: '2026-02-20',
+          sicoob_orders: { created_by: SELLER },
+        },
+      ],
+      [
+        { order_id: 'ped-1', invoice_number: '12345', amount: 250, issued_at: '2026-02-20', created_at: '2026-03-05T10:00:00.000Z' },
+        { order_id: 'ped-1', invoice_number: '12345', amount: 250, issued_at: '2026-02-20', created_at: '2026-03-02T10:00:00.000Z' },
+      ],
+    );
+
+    expect(html).not.toContain('Ajustes de faturamento');
+  });
+
+  it('anexo antigo sem data de emissao nao entra nos ajustes', async () => {
+    // A coluna `issued_at` nasceu opcional; comparar string vazia com a janela
+    // classificava a nota como emitida antes do periodo e inflava a contagem.
+    const html = await relatorio(
+      [],
+      [
+        { order_id: 'ped-4', invoice_number: '888', amount: 900, issued_at: null, created_at: '2026-03-05T10:00:00.000Z' },
+      ],
+    );
+
+    expect(html).not.toContain('Ajustes de faturamento');
+  });
+
   it('no faturamento do periodo, o anexo sem valor nao zera a nota', async () => {
     const html = await relatorio(
       [

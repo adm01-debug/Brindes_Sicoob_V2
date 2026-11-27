@@ -30,6 +30,10 @@ export interface CreateReportInput {
   filters?: Record<string, Json>;
 }
 
+// Mesmo deslocamento fixo do servidor (Brasília não tem mais horário de
+// verão desde 2019), para o dia da âncora bater nos dois lados.
+const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;
+
 const FREQUENCY_LABELS: Record<ReportFrequency, string> = {
   daily: 'Diário',
   weekly: 'Semanal',
@@ -192,7 +196,11 @@ function calculateNextRun(frequency: ReportFrequency): Date {
       // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia
       // 1 e limitar ao último dia do mês destino mantém o agendamento mensal.
       const next = new Date(now);
-      const day = next.getDate();
+      // Dia no calendário de Brasília, não no do navegador: a âncora do
+      // agendamento é recalculada no servidor por `getAnchorDay` (UTC-3). Com
+      // o dia local um relatório criado às 22h30 em UTC-3 nascia com âncora
+      // 28 e passava a rodar dia 27 nas entregas seguintes.
+      const day = new Date(now.getTime() - BRASILIA_OFFSET_MS).getUTCDate();
       next.setDate(1);
       next.setMonth(next.getMonth() + 1);
       const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();

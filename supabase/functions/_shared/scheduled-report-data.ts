@@ -439,18 +439,30 @@ async function salesSection(
   // registrado dentro da janela — ou seja, virava ajuste de um faturamento que
   // ja estava no periodo. A nota emitida e registrada no mesmo ciclo nao e
   // ajuste: ela ja esta no faturamento acima.
+  //
+  // A deduplicacao tambem e contra o faturamento do ciclo (`invoices`), nao so
+  // entre os anexos antigos: quando o XML entra num ciclo e o PDF no seguinte, a
+  // segunda consulta devolve a linha do PDF (emitida antes) e a do XML, que ja
+  // entrou no faturamento. Filtrar so por `lateAdjustments` deixava passar a
+  // linha do XML e repetia o valor inteiro no ajuste. A regra e: se existe
+  // anexo do ciclo atual com a mesma nota, o historico daquela nota e ignorado.
   const sinceDate = since.slice(0, 10);
   const lateAdjustments = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    if (invoices.has(key)) continue;
     const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
     const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
     // Nota emitida DENTRO da janela já está no faturamento do período, foi
     // anexada no período dela: contar como ajuste somaria o mesmo valor duas
     // vezes em relatórios diferentes (ou no mesmo, se o anexo tiver data
     // divergente entre PDF e XML). Só é ajuste o que foi emitido ANTES.
+    // Anexo antigo sem data de emissao (a coluna nasceu opcional e so passou a
+    // ser exigida na tela na PR #403) nao tem como provar atraso: comparar
+    // string vazia com a janela classificava a nota como emitida antes do
+    // periodo e inflava a contagem de ajustes sem evidencia.
+    if (!issuedAtDoAnexo) continue;
     if (issuedAtDoAnexo >= sinceDate) continue;
-    if (invoices.has(key)) continue;
     const existing = lateAdjustments.get(key);
     if (existing) {
       if (existing.amount === null && amount !== null) existing.amount = amount;
