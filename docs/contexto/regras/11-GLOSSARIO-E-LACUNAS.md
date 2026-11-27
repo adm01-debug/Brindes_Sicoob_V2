@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d4ee2a4c47` · branch `main` · 2026-11-27 14:33 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `978aef0948` · branch `main` · 2026-11-27 17:13 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -195,7 +195,7 @@
 | `products` | _(sem COMMENT ON TABLE — significado não documentado)_ | 32 colunas | migration |
 | `profiles` | _(sem COMMENT ON TABLE — significado não documentado)_ | 20 colunas | migration |
 | `public_token_failures` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
-| `push_subscriptions` | _(sem COMMENT ON TABLE — significado não documentado)_ | 9 colunas | migration |
+| `push_subscriptions` | _(sem COMMENT ON TABLE — significado não documentado)_ | 10 colunas | migration |
 | `qa_release_evidences` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `qa_releases` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `qa_rls_audits` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |

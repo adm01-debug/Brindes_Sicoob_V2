@@ -7506,7 +7506,7 @@
    "hooks_exportados": [
     "usePushNotifications"
    ],
-   "linhas": 184,
+   "linhas": 196,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],

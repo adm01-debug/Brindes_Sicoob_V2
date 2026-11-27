@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1186,
+ "total": 1187,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -1203,12 +1203,28 @@
    "orfao": false
   },
   {
+   "arquivo": "src/components/admin/connections/McpAccessViolationsPanel.tsx",
+   "exports": [
+    "McpAccessViolationsPanel"
+   ],
+   "export_default": null,
+   "linhas": 121,
+   "dominio": "components/admin",
+   "hooks_locais": [],
+   "tabelas": [
+    "mcp_access_violations"
+   ],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/admin/connections/McpTab.tsx",
    "exports": [
     "McpTab"
    ],
    "export_default": null,
-   "linhas": 241,
+   "linhas": 243,
    "dominio": "components/admin",
    "hooks_locais": [
     "useDevChallenge",
@@ -14029,7 +14045,7 @@
     "PushNotificationSettings"
    ],
    "export_default": null,
-   "linhas": 249,
+   "linhas": 324,
    "dominio": "components/security",
    "hooks_locais": [
     "useNotifications",
@@ -15061,7 +15077,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 516,
+   "usado_por": 517,
    "orfao": false
   },
   {
@@ -15096,7 +15112,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 641,
+   "usado_por": 642,
    "orfao": false
   },
   {
@@ -15130,7 +15146,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 401,
+   "usado_por": 402,
    "orfao": false
   },
   {

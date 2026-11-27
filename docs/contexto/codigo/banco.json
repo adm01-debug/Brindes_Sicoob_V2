@@ -15833,11 +15833,11 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 0,
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "mcp_api_keys": {
    "colunas": {
@@ -26516,11 +26516,27 @@
     "user_id->auth"
    ],
    "criada_em": "005_push_subscriptions.sql",
-   "usada_no_front": 0,
+   "colunas_types": {
+    "auth": "string",
+    "created_at": "string | null",
+    "device_type": "string | null",
+    "endpoint": "string",
+    "id": "string",
+    "is_active": "boolean | null",
+    "last_used_at": "string | null",
+    "p256dh": "string",
+    "user_agent": "string | null",
+    "user_id": "string | null"
+   },
+   "drift": {
+    "so_na_migration": [],
+    "so_no_types": []
+   },
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "qa_release_evidences": {
    "colunas": {

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
+  "sha": "978aef094822b292ad790c3ad910834c8a9d9e93",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 14:33 UTC",
-  "files_total": 5389,
-  "code_files": 3948,
-  "code_lines": 585297
+  "generated_at": "2026-11-27 17:13 UTC",
+  "files_total": 5394,
+  "code_files": 3952,
+  "code_lines": 585945
  },
  "version": "1.3.2",
- "facts_hash": "57b9f26e57d1d8fb",
+ "facts_hash": "4f2e7d9ad0691758",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1524,
-   ".tsx": 1508,
+   ".ts": 1526,
+   ".tsx": 1510,
    ".sql": 704,
    ".mjs": 146,
    ".py": 73,
@@ -796,6 +796,13 @@
       "fk": "",
       "generated": "",
       "src": "supabase/migrations/20251227100003_push_subscriptions.sql"
+     },
+     {
+      "name": "device_type",
+      "type": "string | null",
+      "fk": "",
+      "generated": "",
+      "src": "src/integrations/supabase/types.ts"
      }
     ],
     "constraints": [],
@@ -57581,6 +57588,7 @@
      "notification_digests",
      "notification_logs",
      "notification_preferences",
+     "push_subscriptions",
      "scheduled_notifications",
      "seller_cart_items",
      "seller_carts",
@@ -57594,7 +57602,7 @@
     "rpc_transitive": [
      "get_sicoob_access_state"
     ],
-    "deps_count": 77
+    "deps_count": 78
    },
    {
     "path": "",
@@ -63522,7 +63530,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1322,
+  "components_count": 1324,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -66353,8 +66361,8 @@
   },
   {
    "module": "src/components",
-   "files": 1143,
-   "lines": 170015,
+   "files": 1144,
+   "lines": 170213,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66376,6 +66384,7 @@
     "ip_access_control",
     "kit_share_tokens",
     "login_attempts",
+    "mcp_access_violations",
     "mcp_api_keys",
     "mcp_key_auto_revocations",
     "mockup_prompt_configs",
@@ -66689,7 +66698,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48838,
+   "lines": 48850,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66942,7 +66951,7 @@
   {
    "module": "src/integrations",
    "files": 3,
-   "lines": 13723,
+   "lines": 13770,
    "tables": [],
    "exports": [
     "index.ts: lovable",
@@ -66966,10 +66975,11 @@
   },
   {
    "module": "src/lib",
-   "files": 170,
-   "lines": 23129,
+   "files": 171,
+   "lines": 23299,
    "tables": [
     "admin_audit_log",
+    "push_subscriptions",
     "quotes",
     "telemetry_events",
     "workspace_notifications"
@@ -67011,10 +67021,10 @@
     "print-area-grouping.ts: groupPrintAreasByComponent, getUniqueTechniques, filterGroupsByTechnique, filterGroupsByComponent, FlattenedTechnique, flattenTechniques",
     "private-storage.ts: PrivateStorageBucket, PRIVATE_STORAGE_URL_TTL_SECONDS, clearPrivateStorageUrlCache, createPrivateStorageReference, parsePrivateStorageReference, isPrivateStorageUrl",
     "product-bounds-detector.ts: ProductBounds, detectProductBounds, clearBoundsCache",
+    "push-subscription.ts: ResultadoInscricao, base64UrlParaBytes, pushSuportadoNoNavegador, inscreverPush, desinscreverPush, inscricaoAtiva",
     "qa-seed.ts: runQaSeed",
     "query-config.ts: CACHE_TIMES, GC_TIMES, QUERY_KEY_PREFIXES, createQueryClient, getStaleTimeForKey, getGcTimeForKey",
-    "quote-status-config.ts: QuoteStatusConfig, QUOTE_STATUS_CONFIG, isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset, canBulkMarkQuotesPending, getQuoteStatusLabel",
-    "request-id-injection.ts: injectRequestId"
+    "quote-status-config.ts: QuoteStatusConfig, QUOTE_STATUS_CONFIG, isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset, canBulkMarkQuotesPending, getQuoteStatusLabel"
    ],
    "docs": [
     "assistant-message-window.ts: Contrato de tamanho aceito pela Edge Function expert-chat.",
@@ -67087,6 +67097,7 @@
     "src/lib/print-area-grouping.ts",
     "src/lib/private-storage.ts",
     "src/lib/product-bounds-detector.ts",
+    "src/lib/push-subscription.ts",
     "src/lib/qa-seed.ts",
     "src/lib/query-config.ts",
     "src/lib/quote-status-config.ts",
@@ -67128,8 +67139,7 @@
     "src/lib/bi/categoryResolver.ts",
     "src/lib/bi/demoClient.ts",
     "src/lib/bi/dossierPdfGenerator.ts",
-    "src/lib/bi/executive-summary.ts",
-    "src/lib/bi/industryRecommendations.ts"
+    "src/lib/bi/executive-summary.ts"
    ]
   },
   {
@@ -68141,8 +68151,8 @@
   },
   {
    "module": "tests",
-   "files": 746,
-   "lines": 100013,
+   "files": 748,
+   "lines": 100234,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -68277,6 +68287,7 @@
     "tests/components/KitComposition.test.tsx",
     "tests/components/LastTestLine.test.tsx",
     "tests/components/LoadingScreen.test.tsx",
+    "tests/components/McpAccessViolationsPanel.test.tsx",
     "tests/components/MfaGate.test.tsx",
     "tests/components/NavigationHistoryMenu.test.tsx",
     "tests/components/NotificationDrawer-a11y.test.tsx",
@@ -68305,8 +68316,7 @@
     "tests/components/QuoteApprovalCard.test.tsx",
     "tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx",
     "tests/components/QuoteBuilderSummaryColumn.readOnly.test.tsx",
-    "tests/components/QuoteBuilderSummaryColumn.staleFilter.test.tsx",
-    "tests/components/QuoteBuilderSummaryColumn.staleReactivity.test.tsx"
+    "tests/components/QuoteBuilderSummaryColumn.staleFilter.test.tsx"
    ]
   }
  ],
@@ -69283,6 +69293,11 @@
      "supabase/functions/materials-api/index.ts"
     ]
    },
+   "mcp_access_violations": {
+    "select": [
+     "src/components/admin/connections/McpAccessViolationsPanel.tsx"
+    ]
+   },
    "mcp_api_keys": {
     "select": [
      "src/components/admin/connections/IntegrationsHealthCard.tsx",
@@ -69888,6 +69903,14 @@
      "src/components/admin/security/AnomalyCards.tsx",
      "src/components/admin/security/SuspiciousTokensPanel.tsx",
      "src/components/admin/security/TopOffenderIpsCard.tsx"
+    ]
+   },
+   "push_subscriptions": {
+    "upsert": [
+     "src/lib/push-subscription.ts"
+    ],
+    "update": [
+     "src/lib/push-subscription.ts"
     ]
    },
    "qa_release_evidences": {
@@ -71258,6 +71281,15 @@
     "id",
     "is_active"
    ],
+   "mcp_access_violations": [
+    "created_at",
+    "id",
+    "ip_address",
+    "operation",
+    "reason",
+    "source",
+    "user_agent"
+   ],
    "mcp_api_keys": [
     "created_at",
     "created_by",
@@ -71572,6 +71604,10 @@
     "reason",
     "resource_id",
     "resource_type"
+   ],
+   "push_subscriptions": [
+    "endpoint",
+    "user_id"
    ],
    "qa_release_evidences": [
     "release_id"
@@ -72988,6 +73024,9 @@
     "tests/rls/no-empty-rls-policies.test.ts",
     "tests/rls/personas.test.ts"
    ],
+   "VITE_VAPID_PUBLIC_KEY": [
+    "src/lib/push-subscription.ts"
+   ],
    "WEBHOOK_HMAC_SECRET": [
     "scripts/simulate-webhooks.mjs"
    ],
@@ -74279,7 +74318,6 @@
    "magic_up_public_shares",
    "magic_up_reactions",
    "manager_notification_config",
-   "mcp_access_violations",
    "mcp_full_grantors",
    "mockup_templates",
    "notification_channels",
@@ -74305,7 +74343,6 @@
    "product_group_location_techniques",
    "product_group_locations",
    "product_novelties",
-   "push_subscriptions",
    "quote_approval_evidence_keys",
    "quote_audit_logs",
    "quote_consolidations",
@@ -77494,6 +77531,10 @@
    {
     "file": "src/components/admin/connections/LastSyncRunPanel.tsx",
     "msg": "Falha ao executar sync: ${error.message}"
+   },
+   {
+    "file": "src/components/admin/connections/McpAccessViolationsPanel.tsx",
+    "msg": "Erro ao carregar violações de acesso"
    },
    {
     "file": "src/components/admin/connections/McpTab.tsx",
@@ -81930,6 +81971,10 @@
     "value": "denied"
    },
    {
+    "file": "src/components/security/PushNotificationSettings.tsx",
+    "value": "granted"
+   },
+   {
     "file": "src/hooks/usePushNotifications.tsx",
     "value": "granted"
    },
@@ -81960,6 +82005,10 @@
    {
     "file": "src/lib/assistant-message-window.ts",
     "value": "user"
+   },
+   {
+    "file": "src/lib/push-subscription.ts",
+    "value": "denied"
    },
    {
     "file": "src/lib/sw-register.ts",
@@ -83196,6 +83245,10 @@
     "text": "só vale quando há selo/valor na tela — e isso vem apenas da inteligência."
    },
    {
+    "file": "src/hooks/usePushNotifications.tsx",
+    "text": "Permissão só libera notificação local. Para receber com o app fechado é"
+   },
+   {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "text": "campos depois do snapshot inicial e isso não pode contar como \"alteração"
    },
@@ -83506,6 +83559,10 @@
    {
     "file": "src/lib/private-storage.ts",
     "text": "Variante tolerante: um objeto removido ou sem permissão de leitura devolve"
+   },
+   {
+    "file": "src/lib/push-subscription.ts",
+    "text": "\"permissão concedida\" (notificação local) de \"vai receber com o app fechado\"."
    },
    {
     "file": "src/lib/sentry.ts",
@@ -96047,6 +96104,11 @@
     "file": "src/components/admin/connections/KeysValidationTab.tsx",
     "name": "AMBER_TEXT",
     "value": "\"text-amber-600\""
+   },
+   {
+    "file": "src/components/admin/connections/McpAccessViolationsPanel.tsx",
+    "name": "LIMITE",
+    "value": "50"
    },
    {
     "file": "src/components/admin/connections/RotateSecretConfirmDialog.tsx",
@@ -120643,6 +120705,22 @@
     "name": "has min-h-screen for full page"
    },
    {
+    "file": "tests/components/McpAccessViolationsPanel.test.tsx",
+    "name": "McpAccessViolationsPanel"
+   },
+   {
+    "file": "tests/components/McpAccessViolationsPanel.test.tsx",
+    "name": "lista a violação com motivo traduzido e origem"
+   },
+   {
+    "file": "tests/components/McpAccessViolationsPanel.test.tsx",
+    "name": "mostra o total de eventos no cabeçalho"
+   },
+   {
+    "file": "tests/components/McpAccessViolationsPanel.test.tsx",
+    "name": "mostra estado vazio quando não há tentativa registrada"
+   },
+   {
     "file": "tests/components/MfaGate.test.tsx",
     "name": "MfaGate das telas do gestor"
    },
@@ -137889,6 +137967,42 @@
    {
     "file": "tests/lib/purchasing-sla.test.ts",
     "name": "formata o número quando ele é confiável"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "pushSubscriptions"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "reporta navegador sem suporte quando PushManager não existe"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "não inscreve quando a permissão foi negada"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "cria a inscrição e persiste com a chave natural (user_id, endpoint)"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "reaproveita a inscrição existente em vez de criar outra"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "devolve falha de persistência quando o upsert erra"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "reporta falta de chave configurada sem tocar no navegador"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "converte base64url do VAPID para bytes"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "inscricaoAtiva reflete a presença de subscription no navegador"
    },
    {
     "file": "tests/lib/query-config-extended.test.ts",
@@ -192789,9 +192903,46 @@
     }
    ]
   },
+  "src/components/admin/connections/McpAccessViolationsPanel.tsx": {
+   "path": "src/components/admin/connections/McpAccessViolationsPanel.tsx",
+   "lines": 121,
+   "exports": [
+    "function McpAccessViolationsPanel"
+   ],
+   "tables": [
+    {
+     "table": "mcp_access_violations",
+     "op": "select"
+    },
+    {
+     "table": "mcp_access_violations",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "mcp_access_violations": [
+     "created_at",
+     "id",
+     "ip_address",
+     "operation",
+     "reason",
+     "source",
+     "user_agent"
+    ]
+   },
+   "errors": [
+    "Erro ao carregar violações de acesso"
+   ],
+   "params": [
+    {
+     "name": "LIMITE",
+     "value": "50"
+    }
+   ]
+  },
   "src/components/admin/connections/McpTab.tsx": {
    "path": "src/components/admin/connections/McpTab.tsx",
-   "lines": 241,
+   "lines": 243,
    "exports": [
     "function McpTab"
    ],
@@ -209089,7 +209240,7 @@
   },
   "src/components/security/PushNotificationSettings.tsx": {
    "path": "src/components/security/PushNotificationSettings.tsx",
-   "lines": 249,
+   "lines": 324,
    "exports": [
     "function PushNotificationSettings"
    ],
@@ -209107,7 +209258,8 @@
     }
    ],
    "role_checks": [
-    "denied"
+    "denied",
+    "granted"
    ]
   },
   "src/components/security/SecurityDashboard.tsx": {
@@ -216536,7 +216688,7 @@
   },
   "src/hooks/usePushNotifications.tsx": {
    "path": "src/hooks/usePushNotifications.tsx",
-   "lines": 184,
+   "lines": 196,
    "exports": [
     "function usePushNotifications"
    ],
@@ -216570,6 +216722,9 @@
    ],
    "role_checks": [
     "granted"
+   ],
+   "rule_comments": [
+    "Permissão só libera notificação local. Para receber com o app fechado é"
    ],
    "hooks": [
     "usePushNotifications"
@@ -221986,7 +222141,7 @@
   },
   "src/integrations/supabase/types.ts": {
    "path": "src/integrations/supabase/types.ts",
-   "lines": 13612,
+   "lines": 13659,
    "exports": [
     "type Json",
     "type Database",
@@ -222979,6 +223134,44 @@
      "body": "const productRatio = pixels.productPixels / (width * height); if (pixels.productPixels < 100 || productRatio < 0.01) { return { ...DEFAULT_BOUNDS, imageAspectRatio }; } if (productRatio > 0.95) { return { fractionX: 0.95, fractionY: 0.95, centerX: 0.5, centerY: 0.5, detected: true, imageAspectRatio }; } const boundsWidth = pixels.maxX - pixels.minX; const boundsHeight = pixels.maxY - pixels.minY; return { fractionX: Math.min(1, (boundsWidth / width) + margin * 2), fractionY: Math.min(1, (boundsH …"
     }
    ]
+  },
+  "src/lib/push-subscription.ts": {
+   "path": "src/lib/push-subscription.ts",
+   "lines": 170,
+   "exports": [
+    "type ResultadoInscricao",
+    "function base64UrlParaBytes",
+    "function pushSuportadoNoNavegador",
+    "function inscreverPush",
+    "function desinscreverPush",
+    "function inscricaoAtiva"
+   ],
+   "tables": [
+    {
+     "table": "push_subscriptions",
+     "op": "upsert"
+    },
+    {
+     "table": "push_subscriptions",
+     "op": "update"
+    }
+   ],
+   "table_cols": {
+    "push_subscriptions": [
+     "endpoint",
+     "user_id"
+    ]
+   },
+   "env": [
+    "VITE_VAPID_PUBLIC_KEY"
+   ],
+   "role_checks": [
+    "denied"
+   ],
+   "rule_comments": [
+    "\"permissão concedida\" (notificação local) de \"vai receber com o app fechado\"."
+   ],
+   "doc": "src/lib/push-subscription.ts"
   },
   "src/lib/qa-seed.ts": {
    "path": "src/lib/qa-seed.ts",
@@ -251094,6 +251287,18 @@
     "has min-h-screen for full page"
    ]
   },
+  "tests/components/McpAccessViolationsPanel.test.tsx": {
+   "path": "tests/components/McpAccessViolationsPanel.test.tsx",
+   "lines": 74,
+   "is_test": true,
+   "doc": "McpAccessViolationsPanel — a tabela `mcp_access_violations` acumulou ~2.060 tentativas recusadas sem nenhuma leitura na UI. O painel precisa listar, traduzir o motivo e não quebrar quando não há evento.",
+   "tests": [
+    "McpAccessViolationsPanel",
+    "lista a violação com motivo traduzido e origem",
+    "mostra o total de eventos no cabeçalho",
+    "mostra estado vazio quando não há tentativa registrada"
+   ]
+  },
   "tests/components/MfaGate.test.tsx": {
    "path": "tests/components/MfaGate.test.tsx",
    "lines": 80,
@@ -259816,6 +260021,22 @@
     "formata o número quando ele é confiável"
    ]
   },
+  "tests/lib/push-subscription.test.ts": {
+   "path": "tests/lib/push-subscription.test.ts",
+   "lines": 147,
+   "is_test": true,
+   "tests": [
+    "pushSubscriptions",
+    "reporta navegador sem suporte quando PushManager não existe",
+    "não inscreve quando a permissão foi negada",
+    "cria a inscrição e persiste com a chave natural (user_id, endpoint)",
+    "reaproveita a inscrição existente em vez de criar outra",
+    "devolve falha de persistência quando o upsert erra",
+    "reporta falta de chave configurada sem tocar no navegador",
+    "converte base64url do VAPID para bytes",
+    "inscricaoAtiva reflete a presença de subscription no navegador"
+   ]
+  },
   "tests/lib/query-config-extended.test.ts": {
    "path": "tests/lib/query-config-extended.test.ts",
    "lines": 84,
@@ -264886,10 +265107,36 @@
   }
  },
  "git": {
-  "sha": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
+  "sha": "978aef094822b292ad790c3ad910834c8a9d9e93",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "978aef0",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: painel de tentativas de acesso indevido às chaves MCP (#487)",
+    "files": [
+     ".env.production.example",
+     "src/components/admin/connections/McpAccessViolationsPanel.tsx",
+     "src/components/admin/connections/McpTab.tsx",
+     "src/components/security/PushNotificationSettings.tsx",
+     "src/hooks/usePushNotifications.tsx",
+     "src/integrations/supabase/types.ts",
+     "src/lib/push-subscription.ts",
+     "tests/components/McpAccessViolationsPanel.test.tsx",
+     "tests/lib/push-subscription.test.ts"
+    ]
+   },
+   {
+    "sha": "4d74fa8",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "docs: veredito das tabelas sem referência no front (#485)",
+    "files": [
+     "docs/agentes/cobertura-tabelas.md"
+    ]
+   },
    {
     "sha": "d4ee2a4",
     "date": "2026-11-27",
@@ -265331,28 +265578,6 @@
      "tests/lib/uxMetrics.test.ts",
      "tests/pages/is-demo-mode.test.ts"
     ]
-   },
-   {
-    "sha": "4ec46e6",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "src/components/intelligence/MarketIntelligenceChart.tsx",
-     "tests/components/intelligence/MarketIntelligenceChart.stale-cache.test.tsx"
-    ]
-   },
-   {
-    "sha": "3f6b0e0",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "src/pages/PublicFavoriteListPage.tsx",
-     "tests/pages/PublicFavoriteListPage.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -265369,12 +265594,16 @@
     6
    ],
    [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    6
-   ],
-   [
     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
     4
+   ],
+   [
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
+    4
+   ],
+   [
+    "src/integrations/supabase/types.ts",
+    3
    ],
    [
     "src/pages/sicoob/orders/OrderDetailPage.tsx",
@@ -265390,10 +265619,6 @@
    ],
    [
     "src/components/sicoob/BudgetAuditCard.tsx",
-    2
-   ],
-   [
-    "src/integrations/supabase/types.ts",
     2
    ],
    [

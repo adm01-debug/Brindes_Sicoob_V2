@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 980,
+ "total": 982,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 742
+  "unit": 744
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 722
+   "arquivos": 724
   },
   {
    "padrao": "e2e/",
@@ -2931,6 +2931,15 @@
     "src/pages/magic-up/magicUpStrategy.ts"
    ],
    "casos": 5
+  },
+  {
+   "arquivo": "tests/components/McpAccessViolationsPanel.test.tsx",
+   "tipo": "unit",
+   "linhas": 74,
+   "testa": [
+    "src/components/admin/connections/McpAccessViolationsPanel.tsx"
+   ],
+   "casos": 3
   },
   {
    "arquivo": "tests/components/MfaGate.test.tsx",
@@ -6428,6 +6437,15 @@
    "casos": 12
   },
   {
+   "arquivo": "tests/lib/push-subscription.test.ts",
+   "tipo": "unit",
+   "linhas": 147,
+   "testa": [
+    "src/lib/push-subscription.ts"
+   ],
+   "casos": 8
+  },
+  {
    "arquivo": "tests/lib/query-config-extended.test.ts",
    "tipo": "unit",
    "linhas": 84,
@@ -8619,6 +8637,7 @@
   "src/components/admin/connections/ExplainModeContext.tsx": 1,
   "src/components/admin/connections/LastTestLine.tsx": 2,
   "src/components/admin/connections/MaskedSuffixBadge.tsx": 2,
+  "src/components/admin/connections/McpAccessViolationsPanel.tsx": 1,
   "src/components/admin/connections/SecretField.tsx": 3,
   "src/components/admin/connections/ZoneCommandPalette.tsx": 1,
   "src/components/admin/connections/ZoneRefreshButton.tsx": 1,
@@ -8986,6 +9005,7 @@
   "src/lib/personalization/rpc-validator.ts": 1,
   "src/lib/print-area-grouping.ts": 1,
   "src/lib/private-storage.ts": 1,
+  "src/lib/push-subscription.ts": 1,
   "src/lib/qa-seed.ts": 1,
   "src/lib/query-config.ts": 3,
   "src/lib/quote-status-config.ts": 1,

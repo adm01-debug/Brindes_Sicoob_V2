@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 258,
+ "total": 259,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
-  "lib": 170,
+  "lib": 171,
   "python": 12,
   "services": 26,
   "stores": 6,
@@ -672,7 +672,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 407,
+   "usado_por": 409,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -753,7 +753,7 @@
     "TablesUpdate"
    ],
    "export_default": null,
-   "linhas": 13612,
+   "linhas": 13659,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -3052,7 +3052,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 80,
+   "usado_por": 81,
    "usado_por_modulos": [
     "components/admin",
     "components/compare",
@@ -4223,6 +4223,39 @@
     "hooks"
    ],
    "coberto_por_testes": 0,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/lib/push-subscription.ts",
+   "camada": "lib",
+   "exports": [
+    "ResultadoInscricao",
+    "base64UrlParaBytes",
+    "desinscreverPush",
+    "inscreverPush",
+    "inscricaoAtiva",
+    "pushSuportadoNoNavegador"
+   ],
+   "export_default": null,
+   "linhas": 170,
+   "tabelas": [
+    "push_subscriptions"
+   ],
+   "rpcs": [],
+   "edges": [],
+   "env": [
+    "VITE_VAPID_PUBLIC_KEY"
+   ],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "components/security",
+    "hooks"
+   ],
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

@@ -896,10 +896,17 @@
    "src/lib/masked-suffix.ts",
    "src/lib/utils.ts"
   ],
+  "src/components/admin/connections/McpAccessViolationsPanel.tsx": [
+   "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/integrations/supabase/client.ts"
+  ],
   "src/components/admin/connections/McpTab.tsx": [
    "src/components/admin/connections/ConnectionTestHistoryPanel.tsx",
    "src/components/admin/connections/GitHubCredentialsTester.tsx",
    "src/components/admin/connections/IssueMcpKeyForm.tsx",
+   "src/components/admin/connections/McpAccessViolationsPanel.tsx",
    "src/components/admin/connections/SecretField.tsx",
    "src/components/ui/badge.tsx",
    "src/components/ui/button.tsx",
@@ -7238,7 +7245,8 @@
    "src/components/ui/card.tsx",
    "src/components/ui/switch.tsx",
    "src/hooks/use-toast.ts",
-   "src/hooks/useNotifications.ts"
+   "src/hooks/useNotifications.ts",
+   "src/lib/push-subscription.ts"
   ],
   "src/components/security/SecurityDashboard.tsx": [
    "src/components/security/SecurityDashboardSections.tsx",
@@ -9110,7 +9118,8 @@
   "src/hooks/usePushNotifications.tsx": [
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
-   "src/lib/logger.ts"
+   "src/lib/logger.ts",
+   "src/lib/push-subscription.ts"
   ],
   "src/hooks/useQuoteApproval.ts": [
    "src/contexts/AuthContext.tsx",
@@ -9778,6 +9787,10 @@
    "src/integrations/supabase/client.ts"
   ],
   "src/lib/product-bounds-detector.ts": [
+   "src/lib/logger.ts"
+  ],
+  "src/lib/push-subscription.ts": [
+   "src/integrations/supabase/client.ts",
    "src/lib/logger.ts"
   ],
   "src/lib/qa-seed.ts": [

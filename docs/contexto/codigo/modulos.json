@@ -170,13 +170,13 @@
   },
   {
    "modulo": "components/admin",
-   "arquivos": 296,
+   "arquivos": 297,
    "testes": 0,
-   "linhas": 51627,
+   "linhas": 51750,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 243,
+   "componentes": 244,
    "hooks_locais": [
     "useAccessSecurity",
     "useAdminPermissions",
@@ -387,6 +387,7 @@
     "ip_whitelist",
     "kit_share_tokens",
     "login_attempts",
+    "mcp_access_violations",
     "mcp_api_keys",
     "mcp_key_auto_revocations",
     "mockup_prompt_configs",
@@ -522,6 +523,7 @@
      "ip_access_control",
      "kit_share_tokens",
      "login_attempts",
+     "mcp_access_violations",
      "mcp_api_keys",
      "mcp_key_auto_revocations",
      "mockup_prompt_configs",
@@ -3510,6 +3512,7 @@
     "product_views",
     "profiles",
     "proposals",
+    "push_subscriptions",
     "quote_approval_tokens",
     "quote_item_personalizations",
     "quote_items",
@@ -3590,7 +3593,8 @@
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PROJECT_ID",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -4620,6 +4624,7 @@
    ],
    "tabelas": [
     "profiles",
+    "push_subscriptions",
     "user_roles",
     "workspace_notifications"
    ],
@@ -4637,7 +4642,8 @@
     "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -6296,7 +6302,7 @@
    "modulo": "components/security",
    "arquivos": 11,
    "testes": 0,
-   "linhas": 3121,
+   "linhas": 3196,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -6332,6 +6338,7 @@
     "login_attempts",
     "notifications",
     "profiles",
+    "push_subscriptions",
     "telemetry_events",
     "user_known_devices",
     "user_roles",
@@ -6351,7 +6358,8 @@
     "VITE_LOVABLE_PREVIEW",
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -6380,7 +6388,8 @@
     "components/ui",
     "contexts",
     "hooks",
-    "integrations/supabase"
+    "integrations/supabase",
+    "lib"
    ],
    "pacotes_externos": [
     "date-fns",
@@ -7295,7 +7304,7 @@
    "modulo": "hooks",
    "arquivos": 211,
    "testes": 0,
-   "linhas": 35925,
+   "linhas": 35937,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -8125,6 +8134,7 @@
     "product_price_freshness_overrides",
     "product_views",
     "profiles",
+    "push_subscriptions",
     "quote_approval_tokens",
     "quote_comments",
     "quote_history",
@@ -8208,7 +8218,8 @@
     "VITE_SENTRY_DSN",
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -10213,7 +10224,7 @@
    "modulo": "integrations/supabase",
    "arquivos": 2,
    "testes": 0,
-   "linhas": 13684,
+   "linhas": 13731,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10308,9 +10319,9 @@
   },
   {
    "modulo": "lib",
-   "arquivos": 61,
+   "arquivos": 62,
    "testes": 0,
-   "linhas": 8418,
+   "linhas": 8588,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10714,6 +10725,7 @@
     "product_views",
     "profiles",
     "proposals",
+    "push_subscriptions",
     "quote_approval_tokens",
     "quote_item_personalizations",
     "quote_items",
@@ -10788,7 +10800,8 @@
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PROJECT_ID",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -10833,6 +10846,7 @@
     ],
     "tabelas": [
      "admin_audit_log",
+     "push_subscriptions",
      "telemetry_events"
     ],
     "rpcs": [
@@ -10887,6 +10901,7 @@
     "components/replenishments",
     "components/routing",
     "components/search",
+    "components/security",
     "components/settings",
     "components/sicoob",
     "components/simulation",
@@ -12446,6 +12461,7 @@
     "product_views",
     "profiles",
     "proposals",
+    "push_subscriptions",
     "quote_approval_tokens",
     "quote_comments",
     "quote_history",
@@ -12544,7 +12560,8 @@
     "VITE_SHOW_DEV_INFRA_MESSAGES",
     "VITE_SUPABASE_PROJECT_ID",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [],
    "papeis": [
@@ -13036,6 +13053,7 @@
     "kit_share_tokens",
     "kit_templates",
     "login_attempts",
+    "mcp_access_violations",
     "mcp_api_keys",
     "mcp_key_auto_revocations",
     "mockup_prompt_configs",
@@ -13061,6 +13079,7 @@
     "product_views",
     "profiles",
     "public_token_failures",
+    "push_subscriptions",
     "qa_rls_audits",
     "query_telemetry",
     "quote_approval_tokens",
@@ -13148,7 +13167,8 @@
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PROJECT_ID",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [
     "FEATURE_GROUPS"
@@ -15453,6 +15473,7 @@
     "magic_up_brand_kits",
     "magic_up_campaigns",
     "magic_up_generations",
+    "mcp_access_violations",
     "mcp_api_keys",
     "mcp_key_auto_revocations",
     "mockup_drafts",
@@ -15493,6 +15514,7 @@
     "profiles",
     "proposals",
     "public_token_failures",
+    "push_subscriptions",
     "qa_rls_audits",
     "query_telemetry",
     "quote_approval_tokens",
@@ -15660,7 +15682,8 @@
     "VITE_SENTRY_DSN",
     "VITE_SUPABASE_PROJECT_ID",
     "VITE_SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_URL",
+    "VITE_VAPID_PUBLIC_KEY"
    ],
    "flags": [
     "ENABLE_DEMO_PAGES",

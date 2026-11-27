@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d4ee2a4c47` · branch `main` · 2026-11-27 14:33 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `978aef0948` · branch `main` · 2026-11-27 17:13 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4671,6 +4671,7 @@ _nenhum item encontrado_
 | `MUTED_TEXT` | `"text-muted-foreground"` | `src/components/admin/connections/KeysValidationTab.tsx` |
 | `DESTRUCTIVE_TEXT` | `"text-destructive"` | `src/components/admin/connections/KeysValidationTab.tsx` |
 | `AMBER_TEXT` | `"text-amber-600"` | `src/components/admin/connections/KeysValidationTab.tsx` |
+| `LIMITE` | `50` | `src/components/admin/connections/McpAccessViolationsPanel.tsx` |
 | `MAX_NOTES` | `200` | `src/components/admin/connections/RotateSecretConfirmDialog.tsx` |
 | `MAX_RECENT` | `8` | `src/components/admin/connections/SecretsManagerHealthPanel.tsx` |
 | `SERVICE_ROLE_LABEL` | `"Service Role Key"` | `src/components/admin/connections/SupabaseConnectionsTab.tsx` |
@@ -4956,8 +4957,7 @@ _nenhum item encontrado_
 | `EXPERT_CHAT_MAX_MESSAGE_LENGTH` | `5` | `src/lib/assistant-message-window.ts` |
 | `WINDOW_MS` | `30` | `src/lib/chunk-recovery.ts` |
 | `MAX_HARD_RELOADS` | `2` | `src/lib/chunk-recovery.ts` |
-| `CACHE_MS` | `15` | `src/lib/cloud-status.ts` |
-| … +190 linhas — lista completa em `context.json` | | |
+| … +191 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5648,6 +5648,7 @@ _nenhum item encontrado_
 | Falha ao emitir chave | `src/components/admin/connections/IssueMcpKeyForm.tsx` |
 | Não foi possível emitir a chave | `src/components/admin/connections/IssueMcpKeyForm.tsx` |
 | Falha ao executar sync: ${error.message} | `src/components/admin/connections/LastSyncRunPanel.tsx` |
+| Erro ao carregar violações de acesso | `src/components/admin/connections/McpAccessViolationsPanel.tsx` |
 | Erro ao carregar chaves | `src/components/admin/connections/McpTab.tsx` |
 | Erro ao revogar | `src/components/admin/connections/McpTab.tsx` |
 | Falha ao atualizar cache | `src/components/admin/connections/RefreshFromDbButton.tsx` |
@@ -5694,8 +5695,7 @@ _nenhum item encontrado_
 |  className= | `src/components/admin/personalization-manager/ProductPersonalizationManager.tsx` |
 | Erro ao adicionar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1041 linhas — lista completa em `context.json` | |
+| … +1042 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5721,6 +5721,7 @@ _nenhum item encontrado_
 | `user` | `src/components/expert/chat/useExpertChat.ts` |
 | `false` | `src/components/products/ProductCard.tsx` |
 | `denied` | `src/components/security/PushNotificationSettings.tsx` |
+| `granted` | `src/components/security/PushNotificationSettings.tsx` |
 | `granted` | `src/hooks/usePushNotifications.tsx` |
 | `comprador_pac` | `src/hooks/useQuoteBuilderState.ts` |
 | `admin` | `src/hooks/useQuoteTemplates.ts` |
@@ -5729,6 +5730,7 @@ _nenhum item encontrado_
 | `roleName` | `src/hooks/useRBAC.tsx` |
 | `supervisor` | `src/hooks/useRBAC.tsx` |
 | `user` | `src/lib/assistant-message-window.ts` |
+| `denied` | `src/lib/push-subscription.ts` |
 | `denied` | `src/lib/sw-register.ts` |
 | `granted` | `src/lib/sw-register.ts` |
 | `admin` | `src/lib/access/role-policy.ts` |
@@ -5797,7 +5799,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7632 testes em 786 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7645 testes em 788 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6049,6 +6051,7 @@ _nenhum item encontrado_
 | `tests/hooks/quote/quote-url-prefill.test.ts` | 9 | pré-carga de orçamento por URL · busca IDs de produto, comparação e tendência sem confiar em preço ou quantidade da URL · expande comparação em lista, remove IDs repetidos e associa cliente sem aceitar nome fornecido pela URL · ignora IDs vazios ou excessivamente longos e limita a carga de produtos … |
 | `tests/integration/discountApprovalFlow.test.ts` | 9 | E2E: Vendedor solicita aprovação de desconto · confirma pedido, status e histórico em uma RPC e só então notifica admins · retorna false se não houver usuário autenticado · não envia notificação se nenhum admin existir … |
 | `tests/lib/format.test.ts` | 9 | formatCurrency · should format positive values in BRL · should format zero · should format negative values … |
+| `tests/lib/push-subscription.test.ts` | 9 | pushSubscriptions · reporta navegador sem suporte quando PushManager não existe · não inscreve quando a permissão foi negada · cria a inscrição e persiste com a chave natural (user_id, endpoint) … |
 | `tests/lib/secret-validators.test.ts` | 9 | validateSecret — guarda de sufixo mínimo (4 chars) · expõe MIN_SUFFIX_LENGTH = 4 · rejeita valor vazio sem mensagem (apenas hint) · rejeita 1 char com mensagem específica de sufixo (singular) … |
 | `tests/p0/external-integrations.test.ts` | 9 | P0 — integrações externas · catálogo: mantém referências já obtidas disponíveis no cache local · catálogo: sinaliza indisponibilidade confirmada sem tratar falha como lista vazia · consulta CNPJ: valida entrada, autentica e usa fetch externo com timeout/circuit breaker … |
 | `tests/pages/GestorCompras.metrics.test.tsx` | 9 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
@@ -6100,8 +6103,7 @@ _nenhum item encontrado_
 | `tests/security/search-analytics-legacy-insert.spec.ts` | 8 | search_analytics — compatibilidade de insert legado · normalizador sobrescreve user_id e seller_id com auth.uid() · normalizador não preserva autoria enviada pelo cliente · normalizador roda como SECURITY INVOKER com search_path fixado … |
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
 | `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
-| `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
-| … +486 linhas — lista completa em `context.json` | | |
+| … +488 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6532,6 +6534,7 @@ _nenhum item encontrado_
 | * Hook para buscar apenas a imagem principal | `src/hooks/useProductImages.ts` |
 | Falha de uma das consultas não pode virar "produto sem indicadores": o painel | `src/hooks/useProductIntelligenceBadges.ts` |
 | só vale quando há selo/valor na tela — e isso vem apenas da inteligência. | `src/hooks/useProductIntelligenceBadges.ts` |
+| Permissão só libera notificação local. Para receber com o app fechado é | `src/hooks/usePushNotifications.tsx` |
 | campos depois do snapshot inicial e isso não pode contar como "alteração | `src/hooks/useQuoteBuilderState.ts` |
 | * Status que a tela deve passar a considerar vigente, ou `null` quando nada | `src/hooks/useQuoteBuilderState.ts` |
 | trabalho não salvo e não pode ser levada embora na saída para o detalhe. | `src/hooks/useQuoteBuilderState.ts` |
@@ -6590,5 +6593,4 @@ _nenhum item encontrado_
 | IMPORTANTE: USA SOMENTE O BD EXTERNO PROMOBRIND! | `src/hooks/tecnicas/useTecnicasList.ts` |
 | origem deve ser feita via body/URL, não via header global. | `src/integrations/supabase/client.ts` |
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
-| * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
-| … +372 linhas — lista completa em `context.json` | |
+| … +374 linhas — lista completa em `context.json` | |

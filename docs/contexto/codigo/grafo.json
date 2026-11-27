@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2282,
- "arestas": 9309,
+ "nos": 2284,
+ "arestas": 9318,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 645
+   "importado_por": 646
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,15 +14,15 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 518
+   "importado_por": 519
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 425
+   "importado_por": 427
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 404
+   "importado_por": 405
   },
   {
    "arquivo": "src/components/ui/input.tsx",
@@ -74,7 +74,7 @@
   },
   {
    "arquivo": "src/lib/logger.ts",
-   "importado_por": 81
+   "importado_por": 82
   },
   {
    "arquivo": "src/lib/external-db/index.ts",
@@ -439,7 +439,7 @@
   {
    "modulo": "lib",
    "depende_de": 11,
-   "importado_por": 93
+   "importado_por": 94
   },
   {
    "modulo": "pages",

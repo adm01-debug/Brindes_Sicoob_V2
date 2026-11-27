@@ -2,11 +2,21 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
+  "commit": "978aef094822b292ad790c3ad910834c8a9d9e93",
   "branch": "main",
-  "data_commit": "2026-11-27T11:33:04-03:00",
+  "data_commit": "2026-11-27T14:13:09-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "978aef0",
+    "data": "2026-11-27",
+    "assunto": "feat: painel de tentativas de acesso indevido às chaves MCP (#487)"
+   },
+   {
+    "sha": "4d74fa8",
+    "data": "2026-11-27",
+    "assunto": "docs: veredito das tabelas sem referência no front (#485)"
+   },
    {
     "sha": "d4ee2a4",
     "data": "2026-11-27",
@@ -121,19 +131,9 @@
     "sha": "76245cc",
     "data": "2026-11-25",
     "assunto": "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)"
-   },
-   {
-    "sha": "50898b5",
-    "data": "2026-11-25",
-    "assunto": "fix: falha de consulta nao pode parecer fila vazia (#452)"
-   },
-   {
-    "sha": "2701a09",
-    "data": "2026-11-25",
-    "assunto": "fix: erro e vazio nos selos de inteligencia do produto (#448)"
    }
   ],
-  "arquivos_mudados_7d": 1020,
+  "arquivos_mudados_7d": 1029,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -156,15 +156,15 @@
     "mudancas": 26
    },
    {
+    "pasta": "src/components/admin",
+    "mudancas": 25
+   },
+   {
     "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
     "mudancas": 23
    },
    {
     "pasta": "docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016",
-    "mudancas": 23
-   },
-   {
-    "pasta": "src/components/admin",
     "mudancas": 23
    },
    {
@@ -215,11 +215,11 @@
    },
    {
     "arquivo": "package-lock.json",
-    "mudancas": 18
+    "mudancas": 17
    },
    {
     "arquivo": ".github/workflows/ci.yml",
-    "mudancas": 16
+    "mudancas": 15
    },
    {
     "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
@@ -234,27 +234,23 @@
     "mudancas": 12
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
-    "mudancas": 11
-   },
-   {
     "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 11
    },
    {
-    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 11
    },
    {
+    "arquivo": ".github/workflows/codeql.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/e2e.yml",
-    "mudancas": 10
-   },
-   {
-    "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 10
-   },
-   {
-    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 9
    },
    {
@@ -270,11 +266,7 @@
     "mudancas": 9
    },
    {
-    "arquivo": "src/services/sicoob/orderService.ts",
-    "mudancas": 9
-   },
-   {
-    "arquivo": ".github/workflows/security.yml",
+    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 8
    },
    {
@@ -296,12 +288,20 @@
    {
     "arquivo": "src/pages/QuoteBuilderPage.tsx",
     "mudancas": 8
+   },
+   {
+    "arquivo": "src/services/sicoob/orderService.ts",
+    "mudancas": 8
+   },
+   {
+    "arquivo": ".github/workflows/bundle-check.yml",
+    "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 252
+    "commits": 254
    },
    {
     "autor": "dependabot[bot]",
@@ -314,24 +314,24 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5386,
-  "arquivos_codigo": 3262,
-  "linhas_codigo": 518826,
+  "arquivos_total": 5391,
+  "arquivos_codigo": 3266,
+  "linhas_codigo": 519474,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 88,
   "modulos": 146,
-  "componentes": 1186,
+  "componentes": 1187,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 639,
   "cron_jobs": 29,
-  "testes": 980,
+  "testes": 982,
   "workflows": 17,
   "scripts": 121,
-  "docs_md": 974
+  "docs_md": 975
  },
  "por_pasta": {
   "docs/execucao": {
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1143,
-   "linhas": 170015
+   "arquivos": 1144,
+   "linhas": 170213
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,15 +800,15 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48838
+   "linhas": 48850
   },
   "src/integrations": {
    "arquivos": 3,
-   "linhas": 13723
+   "linhas": 13770
   },
   "src/lib": {
-   "arquivos": 170,
-   "linhas": 23129
+   "arquivos": 171,
+   "linhas": 23299
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -883,8 +883,8 @@
    "linhas": 348
   },
   "tests/components": {
-   "arquivos": 178,
-   "linhas": 31284
+   "arquivos": 179,
+   "linhas": 31358
   },
   "tests/contexts": {
    "arquivos": 3,
@@ -931,8 +931,8 @@
    "linhas": 908
   },
   "tests/lib": {
-   "arquivos": 83,
-   "linhas": 9721
+   "arquivos": 84,
+   "linhas": 9868
   },
   "tests/load": {
    "arquivos": 1,
@@ -1054,7 +1054,7 @@
  "maiores_arquivos": [
   {
    "arquivo": "src/integrations/supabase/types.ts",
-   "linhas": 13612
+   "linhas": 13659
   },
   {
    "arquivo": "scripts/regras_negocio/generate.py",
@@ -1545,7 +1545,8 @@
    "VITE_SICOOB_TEST_USER_PASSWORD",
    "VITE_SUPABASE_PROJECT_ID",
    "VITE_SUPABASE_PUBLISHABLE_KEY",
-   "VITE_SUPABASE_URL"
+   "VITE_SUPABASE_URL",
+   "VITE_VAPID_PUBLIC_KEY"
   ],
   "ciclos_de_import": 15,
   "possiveis_segredos_no_codigo": [

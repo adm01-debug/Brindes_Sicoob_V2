@@ -3,8 +3,8 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (3034)",
-   "Markdown (974)",
+   "TypeScript (3038)",
+   "Markdown (975)",
    "SQL (704)",
    "JSON (296)",
    "JavaScript (158)",
@@ -1256,7 +1256,7 @@
   },
   {
    "pasta": "docs/agentes",
-   "arquivos_md": 6
+   "arquivos_md": 7
   },
   {
    "pasta": "docs/qa",
@@ -1302,7 +1302,8 @@
    "VITE_SICOOB_TEST_USER_PASSWORD",
    "VITE_SUPABASE_PROJECT_ID",
    "VITE_SUPABASE_PUBLISHABLE_KEY",
-   "VITE_SUPABASE_URL"
+   "VITE_SUPABASE_URL",
+   "VITE_VAPID_PUBLIC_KEY"
   ],
   "usadas_nas_edges": [
    "ALLOW_HTTP_FETCH",
@@ -1387,7 +1388,8 @@
    "VITE_SICOOB_TEST_USER_PASSWORD",
    "VITE_SUPABASE_PROJECT_ID",
    "VITE_SUPABASE_PUBLISHABLE_KEY",
-   "VITE_SUPABASE_URL"
+   "VITE_SUPABASE_URL",
+   "VITE_VAPID_PUBLIC_KEY"
   ],
   "secrets_em_workflows": [
    "E2E_ADMIN_EMAIL",
@@ -1823,6 +1825,10 @@
    },
    {
     "host": "promobrind-real.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "push.exemplo",
     "arquivos": 1
    },
    {

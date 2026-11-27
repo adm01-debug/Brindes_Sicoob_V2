@@ -1005,6 +1005,7 @@
     "external_connections_sync_log",
     "inbound_webhook_endpoints",
     "inbound_webhook_events",
+    "mcp_access_violations",
     "mcp_api_keys",
     "outbound_webhooks",
     "secret_rotation_log",
@@ -1048,7 +1049,7 @@
     "switch",
     "toolbar"
    ],
-   "arquivos_puxados": 163
+   "arquivos_puxados": 164
   },
   {
    "protegida": true,
@@ -1191,6 +1192,7 @@
     "external_connections_sync_log",
     "inbound_webhook_endpoints",
     "inbound_webhook_events",
+    "mcp_access_violations",
     "mcp_api_keys",
     "outbound_webhooks",
     "secret_rotation_log",
@@ -1234,7 +1236,7 @@
     "switch",
     "toolbar"
    ],
-   "arquivos_puxados": 163
+   "arquivos_puxados": 164
   },
   {
    "protegida": true,
@@ -2072,6 +2074,7 @@
     "login_attempts",
     "notifications",
     "profiles",
+    "push_subscriptions",
     "telemetry_events",
     "user_known_devices",
     "user_roles",
@@ -2098,7 +2101,7 @@
     "manager",
     "status"
    ],
-   "arquivos_puxados": 73
+   "arquivos_puxados": 74
   },
   {
    "protegida": true,
@@ -7337,6 +7340,7 @@
     "notification_logs",
     "notification_preferences",
     "profiles",
+    "push_subscriptions",
     "scheduled_notifications",
     "user_roles",
     "workspace_notifications"
@@ -7358,7 +7362,7 @@
     "dialog",
     "manager"
    ],
-   "arquivos_puxados": 53
+   "arquivos_puxados": 54
   },
   {
    "protegida": true,
