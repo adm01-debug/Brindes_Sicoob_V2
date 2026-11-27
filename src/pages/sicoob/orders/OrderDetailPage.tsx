@@ -125,22 +125,23 @@ function rejectAction(context: ActionContext) {
   };
 }
 
-function slaClosedLabel(order: { sla_closed_status?: string; sla_closed_outcome?: string; sla_closed_at?: string; sla_deadline?: string }) {
+const VERBO_POR_DESFECHO: Record<string, string> = {
+  approved: "Aprovado",
+  rejected: "Recusado",
+  cancelled: "Cancelado",
+  escalated: "Escalado",
+};
+
+export function slaClosedLabel(order: { sla_closed_status?: string; sla_closed_outcome?: string; sla_closed_at?: string; sla_deadline?: string }) {
   const outcome = order.sla_closed_outcome ?? "approved";
   const fechouEm = new Date(order.sla_closed_at ?? "").getTime();
   if (!Number.isFinite(fechouEm)) return null;
   const prazo = order.sla_deadline ? new Date(order.sla_deadline).getTime() : fechouEm;
   const atrasoHoras = Math.max(1, Math.floor((fechouEm - prazo) / 3600000));
 
-  if (order.sla_closed_status !== "critical") {
-    if (outcome === "rejected") return "Recusado no limite do prazo";
-    if (outcome === "cancelled") return "Cancelado no limite do prazo";
-    if (outcome === "escalated") return "Escalado no limite do prazo";
-    return "Aprovado no limite do prazo";
-  }
-
-  const prefixo = outcome === "rejected" ? "Recusado com" : outcome === "cancelled" ? "Cancelado com" : outcome === "escalated" ? "Escalado com" : "Aprovado com";
-  return `${prefixo} ${atrasoHoras} h de atraso`;
+  const verbo = VERBO_POR_DESFECHO[outcome] ?? VERBO_POR_DESFECHO.approved;
+  if (order.sla_closed_status !== "critical") return `${verbo} no limite do prazo`;
+  return `${verbo} com ${atrasoHoras} h de atraso`;
 }
 
 function escalateAction(context: ActionContext) {

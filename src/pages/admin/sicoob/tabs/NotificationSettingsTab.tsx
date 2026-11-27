@@ -40,10 +40,70 @@ function webhookExibido(readOnly: boolean, webhookUrl: string | null | undefined
   };
 }
 
+/**
+ * A coluna `webhook_url` esta fora do GRANT de `authenticated`, entao o upsert
+ * direto falha no ON CONFLICT (o PostgreSQL exige SELECT na coluna). A gravacao
+ * passa pela RPC restrita a administracao; argumento NULL significa "nao mexer",
+ * por isso so o campo alterado sai no payload.
+ */
+async function salvarConfiguracao(paId: string, payload: NotificationSettingPayload) {
+  const { error } = await supabase.rpc("sicoob_pa_notification_settings_set", {
+    p_pa_id: paId,
+    p_channel: payload.channel,
+    p_webhook_url: payload.webhook_url ?? null,
+    p_recipient_email: payload.recipient_email ?? null,
+    p_is_active: payload.is_active ?? null,
+  });
+  if (error) throw error;
+}
+
+/** Valor que o campo ja mostra: sem ele a guarda de onBlur nao tem referencia. */
+function valorAtualDoCampo(
+  channel: 'slack' | 'email',
+  getSetting: (c: 'slack' | 'email') => NotificationSettingPayload,
+  readOnly: boolean,
+): string {
+  if (channel !== 'slack') return getSetting('email').recipient_email ?? '';
+  return webhookExibido(readOnly, getSetting('slack').webhook_url).valor;
+}
+
+type ConfiguracaoDoPa = Awaited<ReturnType<typeof carregarConfiguracoes>>[number];
+
+async function carregarConfiguracoes(paId: string | null, readOnly: boolean) {
+  if (!paId) return [];
+  const { data, error } = await supabase
+    .from("pa_notification_settings")
+    .select("id, pa_id, channel, recipient_email, is_active")
+    .eq("pa_id", paId);
+  if (error) throw error;
+  const rows = data ?? [];
+  const webhook = await carregarWebhookSlack(paId, readOnly);
+  return rows.map((row) => ({
+    ...row,
+    webhook_url: row.channel === "slack" ? webhook : null,
+  }));
+}
+
+function configuracaoDoCanal(
+  settings: ConfiguracaoDoPa[] | undefined,
+  channel: 'slack' | 'email',
+): NotificationSettingPayload {
+  const setting = settings?.find((s) => s.channel === channel);
+  if (!setting) return { channel, is_active: false, webhook_url: '', recipient_email: '' };
+  return {
+    channel,
+    is_active: setting.is_active,
+    webhook_url: setting.webhook_url,
+    recipient_email: setting.recipient_email,
+  };
+}
+
 export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettingsTabProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [selectedPa, setSelectedPa] = useState<string | null>(null);
+  // A tela de leitura e a de administracao nao compartilham cache.
+  const modo = readOnly ? "leitura" : "admin";
 
   const { data: pas } = useQuery({
     queryKey: ["postos_atendimento_names"],
@@ -59,39 +119,13 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
     // webhook; a mesma chave serviria o resultado de uma tela na outra. O id do
     // usuario entra na chave porque trocar de conta na mesma aba nao pode servir
     // o cache da conta anterior (a RLS so vale para a requisicao, nao para o cache).
-    queryKey: ["pa_notification_settings", user?.id, selectedPa, readOnly ? "leitura" : "admin"],
-    queryFn: async () => {
-      if (!selectedPa) return [];
-      const { data, error } = await supabase
-        .from("pa_notification_settings")
-        .select("id, pa_id, channel, recipient_email, is_active")
-        .eq("pa_id", selectedPa);
-      if (error) throw error;
-      const rows = data ?? [];
-      const webhook = await carregarWebhookSlack(selectedPa, readOnly);
-      return rows.map((row) => ({
-        ...row,
-        webhook_url: row.channel === "slack" ? webhook : null,
-      }));
-    },
+    queryKey: ["pa_notification_settings", user?.id, selectedPa, modo],
+    queryFn: () => carregarConfiguracoes(selectedPa, readOnly),
     enabled: !!selectedPa,
   });
 
   const upsertMutation = useMutation({
-    mutationFn: async (payload: NotificationSettingPayload) => {
-      // A coluna `webhook_url` esta fora do GRANT de `authenticated`, entao o
-      // upsert direto falha no ON CONFLICT (o PostgreSQL exige SELECT na coluna).
-      // A gravacao passa pela RPC restrita a administracao; argumento NULL significa
-      // "nao mexer", por isso so o campo alterado sai no payload.
-      const { error } = await supabase.rpc("sicoob_pa_notification_settings_set", {
-        p_pa_id: selectedPa!,
-        p_channel: payload.channel,
-        p_webhook_url: payload.webhook_url ?? null,
-        p_recipient_email: payload.recipient_email ?? null,
-        p_is_active: payload.is_active ?? null,
-      });
-      if (error) throw error;
-    },
+    mutationFn: (payload: NotificationSettingPayload) => salvarConfiguracao(selectedPa!, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pa_notification_settings", user?.id, selectedPa] });
       toast.success("Configurações salvas!");
@@ -113,24 +147,17 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
     campo: 'webhook_url' | 'recipient_email',
     digitado: string,
   ) => {
-    const atual = channel === 'slack'
-      ? webhookExibido(readOnly, getSetting('slack').webhook_url).valor
-      : getSetting('email').recipient_email ?? '';
-    if (digitado.trim() === atual) return;
-    salvar(channel === 'slack' ? { channel, webhook_url: digitado } : { channel, recipient_email: digitado });
+    if (!podeSalvar) return;
+    if (digitado.trim() === valorAtualDoCampo(channel, getSetting, readOnly)) return;
+    const payload: NotificationSettingPayload = channel === 'slack'
+      ? { channel, webhook_url: digitado }
+      : { channel, recipient_email: digitado };
+    salvar(payload);
   };
 
-  const getSetting = (channel: 'slack' | 'email'): NotificationSettingPayload => {
-    const setting = settings?.find(s => s.channel === channel);
-    return setting
-      ? {
-          channel,
-          is_active: setting.is_active,
-          webhook_url: setting.webhook_url,
-          recipient_email: setting.recipient_email,
-        }
-      : { channel, is_active: false, webhook_url: '', recipient_email: '' };
-  };
+  const getSetting = (channel: 'slack' | 'email') => configuracaoDoCanal(settings, channel);
+  const podeSalvar = !readOnly;
+  const ativo = (channel: 'slack' | 'email') => getSetting(channel).is_active ?? false;
 
   return (
     <div className="space-y-6">
@@ -178,7 +205,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       Slack Webhook
                     </CardTitle>
                     <Switch
-                      checked={getSetting('slack').is_active ?? false}
+                      checked={ativo('slack')}
                       disabled={readOnly}
                       onCheckedChange={(val) => salvar({ channel: 'slack', is_active: val })}
                     />
@@ -207,7 +234,7 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
                       E-mail do Gestor
                     </CardTitle>
                     <Switch
-                      checked={getSetting('email').is_active ?? false}
+                      checked={ativo('email')}
                       disabled={readOnly}
                       onCheckedChange={(val) => salvar({ channel: 'email', is_active: val })}
                     />
