@@ -351,14 +351,14 @@ async function salesSection(
   since: string,
   until: string,
 ): Promise<string> {
-  const [invoicesRes, approvalsRes, publicApprovalsRes] = await Promise.all([
+  const [invoicesRes, approvalsRes, publicApprovalsRes, lateInvoicesRes] = await Promise.all([
     // Faturamento: nota fiscal emitida na janela. `pdf` e `xml` da mesma nota
     // são documentos distintos do mesmo valor — contar os dois dobraria o
     // faturamento, daí a deduplicação por (order_id, invoice_number). O filtro
     // pelo vendedor precisa ser explícito: o worker roda com service_role e a
     // RLS de `sicoob_order_invoices` não seria aplicada.
     supabase.from("sicoob_order_invoices")
-      .select("order_id, invoice_number, amount, issued_at, sicoob_orders!inner(created_by)")
+      .select("order_id, invoice_number, amount, issued_at, created_at, sicoob_orders!inner(created_by)")
       .eq("sicoob_orders.created_by", sellerId)
       .gte("issued_at", since.slice(0, 10))
       .lt("issued_at", until.slice(0, 10))
@@ -384,29 +384,164 @@ async function salesSection(
       .lt("client_response_at", until)
       .order("client_response_at", { ascending: false })
       .limit(SCAN_LIMIT),
+    // Nota anexada depois do fechamento do ciclo nao entrava em relatorio
+    // nenhum: a consulta principal filtra por `issued_at` e a janela do ciclo
+    // seguinte comeca depois. Selecionar pela data de registro devolve essas
+    // notas como ajuste do ciclo em que foram anexadas.
+    supabase.from("sicoob_order_invoices")
+      .select("order_id, invoice_number, amount, issued_at, created_at, sicoob_orders!inner(created_by)")
+      .eq("sicoob_orders.created_by", sellerId)
+      .gte("created_at", since)
+      .lt("created_at", until)
+      .order("created_at", { ascending: false })
+      .limit(SCAN_LIMIT),
   ]);
   if (invoicesRes.error) throw invoicesRes.error;
   if (approvalsRes.error) throw approvalsRes.error;
   if (publicApprovalsRes.error) throw publicApprovalsRes.error;
+  if (lateInvoicesRes.error) throw lateInvoicesRes.error;
 
-  const invoices = new Map<string, { number: string; amount: number; issuedAt: string }>();
+  const invoices = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
-    if (invoices.has(key)) continue;
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    const existing = invoices.get(key);
+    // O valor do anexo é opcional (a tela aceita em branco) e PDF/XML da mesma
+    // nota são linhas distintas: o valor fica `null` até o fim da deduplicação
+    // para que o anexo sem valor, lido primeiro, não zere a nota do relatório.
+    if (existing) {
+      if (existing.amount === null && amount !== null) existing.amount = amount;
+      continue;
+    }
     invoices.set(key, {
       number: String(inv.invoice_number ?? ""),
-      amount: Number(inv.amount ?? 0),
+      amount,
       issuedAt: String(inv.issued_at ?? ""),
+      registeredAt: String(inv.created_at ?? inv.issued_at ?? ""),
     });
+  }
+  // A nota do faturamento herda o valor de qualquer anexo dela: o anexo do ciclo
+  // pode estar em branco e o valor estar no anexo atrasado (ou no PDF e nao no
+  // XML). Sem isso a nota aparecia por R$ 0,00 no relatorio e, como o anexo
+  // atrasado nao entra em ajustes de nota faturada, o valor sumia de vez.
+  // O anexo com emissao a partir do fechamento entra no faturamento do ciclo
+  // seguinte: herdar o valor dele aqui somava o mesmo valor nos dois relatorios.
+  const untilDate = until.slice(0, 10);
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const existing = invoices.get(key);
+    if (!existing || existing.amount !== null) continue;
+    if (inv.amount === null || inv.amount === undefined) continue;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
+    if (issuedAtDoAnexo && issuedAtDoAnexo >= untilDate) continue;
+    existing.amount = Number(inv.amount);
   }
   const invoiceRows = [...invoices.values()]
     .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
-  const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + inv.amount, 0);
+  const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
   const invoiceBodies = invoiceRows.map((inv) => [
     escapeHtml(inv.number),
     escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "—"),
-    escapeHtml(money(inv.amount)),
+    escapeHtml(money(inv.amount ?? 0)),
   ]);
+
+  // Ajustes: nota registrada na janela cuja emissao e anterior a ela. Sem a
+  // deduplicacao por (pedido, numero) a mesma nota entrara duas vezes quando o
+  // pdf e o xml forem anexados em ciclos diferentes.
+  //
+  // "Anterior" e medido pela data (dia) de registro, nao pela emissao: PDF e
+  // XML da MESMA nota podem ter datas de emissao divergentes, e o anexo com
+  // emissao igual ou posterior ao fechamento entrava aqui mesmo tendo sido
+  // registrado dentro da janela — ou seja, virava ajuste de um faturamento que
+  // ja estava no periodo. A nota emitida e registrada no mesmo ciclo nao e
+  // ajuste: ela ja esta no faturamento acima.
+  //
+  // A deduplicacao tambem e contra o faturamento do ciclo (`invoices`), nao so
+  // entre os anexos antigos: quando o XML entra num ciclo e o PDF no seguinte, a
+  // segunda consulta devolve a linha do PDF (emitida antes) e a do XML, que ja
+  // entrou no faturamento. Filtrar so por `lateAdjustments` deixava passar a
+  // linha do XML e repetia o valor inteiro no ajuste. A regra e: se existe
+  // anexo do ciclo atual com a mesma nota, o historico daquela nota so pode
+  // completar o valor de um ajuste ja aberto (ver o bloco abaixo).
+  const sinceDate = since.slice(0, 10);
+  // A nota que ja entrou no faturamento do ciclo nao pode reaparecer em
+  // "Ajustes" com o mesmo valor. Descartar o anexo cegamente tambem nao serve:
+  // a mesma nota tem PDF e XML e so um deles pode comprovar o atraso, entao o
+  // anexo da nota faturada ainda pode ser a unica evidencia de valor. A regra
+  // abaixo aproveita esses anexos apenas para completar um ajuste ja aberto por
+  // outro anexo da mesma nota.
+  // Valor que o anexo ja faturado informa: a consulta de ajustes nao garante
+  // ordem, entao o ajuste pode abrir DEPOIS de o anexo faturado passar.
+  // E por LINHA, nao por nota: o anexo do ciclo atual e o anexo antigo da mesma
+  // nota compartilham a chave, e so o primeiro esta no faturamento.
+  const valorDaNota = new Map<string, number | null>();
+  const ajustesCandidatos = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
+  // Duas passadas: o valor de reserva da nota precisa estar completo antes de
+  // decidir quem abre o ajuste, porque a consulta nao garante ordem e o anexo
+  // que comprova o atraso pode vir em branco.
+  // So serve de reserva o anexo que NAO vai ser contado em nenhum relatorio. O
+  // anexo emitido depois do fechamento entra no faturamento do ciclo seguinte:
+  // usar o valor dele aqui adiantava para este ciclo o mesmo valor que o ciclo
+  // seguinte somaria de novo.
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    if (amount === null) continue;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
+    if (issuedAtDoAnexo && issuedAtDoAnexo >= untilDate) continue;
+    if (valorDaNota.get(key) === undefined) valorDaNota.set(key, amount);
+  }
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    // A nota esta no faturamento do ciclo se QUALQUER anexo dela foi emitido
+    // dentro da janela. E por nota (chave), nao por linha: somar o anexo antigo
+    // de uma nota ja faturada repetiria o valor no subtotal de ajustes.
+    if (invoices.has(key)) continue;
+    // Quem comprova atraso e ESTA linha: anexo emitido antes da janela e
+    // registrado dentro dela. Anexo do periodo nao serve, e anexo sem data de
+    // emissao (a coluna nasceu opcional e so passou a ser exigida na tela na
+    // PR #403) nao tem como provar atraso: comparar string vazia com a janela
+    // classificava a nota como emitida antes do periodo e inflava a contagem.
+    if (!issuedAtDoAnexo || issuedAtDoAnexo >= sinceDate) continue;
+    const registeredAt = String(inv.created_at ?? "");
+    // A comparacao usa o REGISTRO (quando a nota entrou no sistema), nao a
+    // emissao: anexo registrado fora da janela em que foi emitido e o que
+    // caracteriza ajuste de ciclo.
+    if (!registeredAt || registeredAt.slice(0, 10) < sinceDate) continue;
+    const existing = ajustesCandidatos.get(key);
+    if (existing) {
+      if (existing.amount === null && amount !== null) existing.amount = amount;
+      continue;
+    }
+    ajustesCandidatos.set(key, {
+      number: String(inv.invoice_number ?? ""),
+      // O anexo que abre o ajuste pode vir sem valor; nesse caso herda o valor
+      // ja informado por outro anexo da mesma nota.
+      amount: amount ?? valorDaNota.get(key) ?? null,
+      issuedAt: String(inv.issued_at ?? ""),
+      registeredAt,
+    });
+  }
+  const lateAdjustments = ajustesCandidatos;
+  const lateRows = [...lateAdjustments.values()]
+    .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
+  const lateTotal = lateRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
+  const lateBodies = lateRows.map((inv) => [
+    escapeHtml(inv.number),
+    escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "\u2014"),
+    escapeHtml(inv.registeredAt ? new Date(inv.registeredAt).toLocaleDateString("pt-BR") : "\u2014"),
+    escapeHtml(money(inv.amount ?? 0)),
+  ]);
+  const lateSection = lateBodies.length === 0 ? "" : "<h3>Ajustes de faturamento</h3>"
+    + `<p><strong>Notas registradas no per\u00edodo com emiss\u00e3o anterior ao registro:</strong> ${lateRows.length} \u2014 `
+    + `<strong>valor:</strong> ${escapeHtml(money(lateTotal))}</p>`
+    + table(["Nota", "Emiss\u00e3o", "Registrada em", "Valor"], lateBodies.slice(0, ROW_LIMIT))
+    + (lateBodies.length > ROW_LIMIT
+      ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${lateBodies.length}.</p>`
+      : "")
+    + "<p>N\u00e3o somadas ao faturamento do per\u00edodo \u2014 a nota foi anexada depois da emiss\u00e3o.</p>";
 
   // A mesma proposta pode ter `approved_at` do painel e `client_response_at` do
   // link público; contar as duas dobraria o valor aprovado.
@@ -437,6 +572,7 @@ async function salesSection(
     + (invoiceBodies.length > ROW_LIMIT
       ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${invoiceBodies.length}.</p>`
       : "")
+    + lateSection
     + "<h3>Propostas aprovadas no período</h3>"
     + `<p><strong>Aprovadas:</strong> ${approvalRows.length} — `
     + `<strong>valor:</strong> ${escapeHtml(money(approvedTotal))}</p>`

@@ -84,15 +84,20 @@ export function calculateNextRun(
       next.setUTCDate(next.getUTCDate() + 1);
       break;
     case "monthly": {
-      // O dia-âncora é o dia original do agendamento, não o dia da última
-      // execução: um agendamento do dia 31 passava por 28 de fevereiro e ficava
-      // preso no 28 em todos os meses seguintes.
+      // O mes de negocio e o de Brasilia, nao o de UTC: um envio no dia 31 as
+      // 21h de Brasilia ja e dia 1 em UTC, e avancar por UTC pulava um mes.
+      const brasilia = new Date(reference.getTime() - BRASILIA_OFFSET_MS);
       const day = anchorDay && anchorDay >= 1 && anchorDay <= 31
         ? anchorDay
-        : next.getUTCDate();
-      next.setUTCDate(1);
-      next.setUTCMonth(next.getUTCMonth() + 1);
-      next.setUTCDate(Math.min(day, lastDayOfMonth(next.getUTCFullYear(), next.getUTCMonth())));
+        : brasilia.getUTCDate();
+      next.setTime(Date.UTC(
+        brasilia.getUTCFullYear(),
+        brasilia.getUTCMonth() + 1,
+        Math.min(
+          day,
+          lastDayOfMonth(brasilia.getUTCFullYear(), brasilia.getUTCMonth() + 1),
+        ),
+      ));
       break;
     }
     case "weekly":
@@ -106,9 +111,23 @@ export function calculateNextRun(
 
 /** Dia do mês que o agendamento deve manter como âncora quando for mensal. */
 export function getAnchorDay(nextRunAt: unknown, createdAt: unknown = null): number | null {
-  const candidate = new Date(String(nextRunAt ?? ""));
-  if (!Number.isNaN(candidate.getTime())) return candidate.getUTCDate();
-  const fallback = new Date(String(createdAt ?? ""));
-  if (!Number.isNaN(fallback.getTime())) return fallback.getUTCDate();
-  return null;
+  // O dia de criacao e a ancora: `next_run_at` ja pode ter passado pelo clamp de
+  // fevereiro (31 de janeiro virou 28) e usar esse dia prendia o mensal no 28 em
+  // todos os meses seguintes. Sem `created_at`, o dia da proxima execucao e o
+  // melhor palpite disponivel.
+  return brasiliaDay(createdAt) ?? brasiliaDay(nextRunAt);
+}
+
+const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * Dia do calendario de Brasilia (UTC-3, sem horario de verao desde 2019) — o
+ * mesmo que o front usa ao criar o agendamento (`calculateNextRun` local). Ler o
+ * dia em UTC adiantava para o dia seguinte tudo criado depois das 21h.
+ */
+function brasiliaDay(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = new Date(String(value));
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(parsed.getTime() - BRASILIA_OFFSET_MS).getUTCDate();
 }

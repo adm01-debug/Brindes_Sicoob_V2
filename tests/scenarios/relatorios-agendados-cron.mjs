@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 const MIGRATION = 'supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql';
@@ -87,7 +87,26 @@ for (const worker of [
       /is_active: false/,
       'sem desativar, o relatório vencido volta a ocupar vaga do lote',
     );
-    assert.match(source, /acesso_revogado/);
+    // O worker de envio delega a decisão para um módulo puro: o motivo precisa
+    // continuar existindo em algum ponto do caminho percorrido pelo worker.
+    const decisionModule = `${worker.replace(/index\.ts$/, '')}report-eligibility.ts`;
+    if (existsSync(decisionModule)) {
+      // Juntar os dois arquivos provava só o texto: sem importar e chamar o
+      // módulo, o motivo existe mas não chega ao fluxo real do worker.
+      assert.match(
+        source,
+        /from "\.\/report-eligibility\.ts"/,
+        `${worker}: precisa importar o módulo de decisão`,
+      );
+      assert.match(
+        source,
+        /decideScheduledReportEligibility\(/,
+        `${worker}: precisa chamar a decisão de elegibilidade`,
+      );
+      assert.match(readFileSync(decisionModule, 'utf8'), /acesso_revogado/);
+    } else {
+      assert.match(source, /acesso_revogado/);
+    }
   });
 }
 

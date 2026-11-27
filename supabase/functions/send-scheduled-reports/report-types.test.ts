@@ -552,3 +552,84 @@ Deno.test("ignora resposta recusada do link público", async () => {
   assertEquals(html.includes("Aprovadas:</strong> 0"), true);
   assertEquals(html.includes("900,00"), false);
 });
+
+Deno.test("vendas mostram em ajustes a nota anexada depois do fechamento", async () => {
+  const { client } = fakeSupabase({
+    sicoob_order_invoices: {
+      data: [
+        // Emitida dentro da janela: faturamento normal.
+        { order_id: "o1", invoice_number: "NF-1", file_type: "pdf", amount: 100, issued_at: "2026-11-20", created_at: "2026-11-21T10:00:00.000Z" },
+        // Emitida antes da janela e anexada dentro dela: sem a secao de ajustes
+        // essa nota nunca aparecia em relatorio nenhum.
+        { order_id: "o3", invoice_number: "NF-3", file_type: "pdf", amount: 70, issued_at: "2026-11-01", created_at: "2026-11-21T11:00:00.000Z" },
+        { order_id: "o3", invoice_number: "NF-3", file_type: "xml", amount: 70, issued_at: "2026-11-01", created_at: "2026-11-21T11:05:00.000Z" },
+      ],
+    },
+    quotes: { data: [] },
+  });
+
+  const html = await generateScheduledReportHtml(client as any, report("sales"), NOW);
+
+  assertEquals(html.includes("Ajustes de faturamento"), true);
+  assertEquals(html.includes("Notas emitidas:</strong> 1"), true);
+  assertEquals(html.includes("100,00"), true);
+  // O ajuste nao entra no faturamento do periodo (100 + 70 = 170).
+  assertEquals(html.includes("170,00"), false);
+  // PDF e XML da mesma nota entram como um ajuste so, e fora do faturamento.
+  assertEquals(html.split("NF-3").length - 1, 1);
+  const ajustes = html.slice(html.indexOf("Ajustes de faturamento"));
+  // Uma linha na tabela + o total da secao: o PDF e o XML viraram um ajuste so.
+  assertEquals(ajustes.split("70,00").length - 1, 2);
+});
+
+Deno.test("mensal mantem o dia de criacao como ancora depois de fevereiro", () => {
+  const criado = "2026-01-31T13:00:00.000Z";
+  const fevereiro = calculateNextRun(
+    "monthly",
+    new Date(criado),
+    getAnchorDay(criado, criado),
+  );
+  assertEquals(fevereiro.toISOString(), "2026-02-28T08:00:00.000Z");
+
+  const marco = calculateNextRun(
+    "monthly",
+    fevereiro,
+    getAnchorDay(fevereiro.toISOString(), criado),
+  );
+  assertEquals(marco.toISOString(), "2026-03-31T08:00:00.000Z");
+
+  const abril = calculateNextRun(
+    "monthly",
+    marco,
+    getAnchorDay(marco.toISOString(), criado),
+  );
+  assertEquals(abril.toISOString(), "2026-04-30T08:00:00.000Z");
+});
+
+Deno.test("ancora usa o dia de Brasilia, nao o de UTC", () => {
+  // 31/01 as 22h em Brasilia ja e 01/02 em UTC.
+  assertEquals(
+    getAnchorDay("2026-02-28T08:00:00.000Z", "2026-02-01T01:00:00.000Z"),
+    31,
+  );
+});
+
+Deno.test("mensal avanca a partir do mes de Brasilia, nao do mes UTC", () => {
+  // 31/07 as 21h de Brasilia ja e 01/08 00h em UTC. Avancando pelo mes UTC, a
+  // entrega de agosto era pulada e o mensal so voltava em setembro.
+  const virada = new Date("2026-08-01T00:00:00.000Z");
+  assertEquals(
+    calculateNextRun("monthly", virada, 31).toISOString(),
+    "2026-08-31T08:00:00.000Z",
+  );
+  // O dia-ancora 31 nao existe em setembro: cai no ultimo dia do mes.
+  assertEquals(
+    calculateNextRun("monthly", new Date("2026-09-01T00:00:00.000Z"), 31).toISOString(),
+    "2026-09-30T08:00:00.000Z",
+  );
+  // Sem ancora, o dia vem do calendario de Brasilia e nao vira dia 1.
+  assertEquals(
+    calculateNextRun("monthly", new Date("2026-08-01T00:00:00.000Z")).toISOString(),
+    "2026-08-31T08:00:00.000Z",
+  );
+});
