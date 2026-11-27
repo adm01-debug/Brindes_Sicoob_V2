@@ -123,28 +123,56 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(ajustes).toContain('1 \u2014');
   });
 
-  it('XML anexado no ciclo anterior nao volta como ajuste quando o PDF entra no ciclo atual', async () => {
-    // A nota 12345 ja esta no faturamento do periodo pelo XML. O PDF da mesma
-    // nota foi emitido antes, mas chegou agora: a consulta de ajustes devolve
-    // as DUAS linhas (PDF e XML) porque ambas foram registradas na janela.
-    // Somar o XML aqui repetiria o valor inteiro do faturamento.
+  it('XML ja faturado no ciclo nao soma o valor de novo no ajuste', async () => {
+    // A nota 12345 entrou no faturamento pelo XML (emitida em 09/03, dentro da
+    // janela que comeca em 08/03). O PDF da MESMA nota foi emitido em 20/02 —
+    // antes da janela — e chegou agora: a consulta de ajustes devolve as duas
+    // linhas porque ambas foram registradas no periodo. O XML e o unico anexo
+    // que comprova atraso, mas o valor dele ja esta no faturamento, entao o
+    // ajuste nao pode repetir os 250,00.
     const html = await relatorio(
       [
         {
           order_id: 'ped-1',
           invoice_number: '12345',
           amount: 250,
-          issued_at: '2026-02-20',
+          issued_at: '2026-03-09',
           sicoob_orders: { created_by: SELLER },
         },
       ],
       [
+        { order_id: 'ped-1', invoice_number: '12345', amount: 250, issued_at: '2026-03-09', created_at: '2026-03-09T10:00:00.000Z' },
         { order_id: 'ped-1', invoice_number: '12345', amount: 250, issued_at: '2026-02-20', created_at: '2026-03-05T10:00:00.000Z' },
-        { order_id: 'ped-1', invoice_number: '12345', amount: 250, issued_at: '2026-02-20', created_at: '2026-03-02T10:00:00.000Z' },
       ],
     );
 
     expect(html).not.toContain('Ajustes de faturamento');
+  });
+
+  it('ajuste nao fica em R$ 0,00 quando o valor esta no anexo ja faturado', async () => {
+    // PDF antigo (sem valor) abre o ajuste; o XML da mesma nota, que ja esta no
+    // faturamento e por isso nao abre ajuste, e o unico anexo com valor. Antes
+    // o anexo faturado era descartado e a nota atrasada entrava como R$ 0,00.
+    // O XML aparece PRIMEIRO na consulta de registro (ordem do banco).
+    const html = await relatorio(
+      [
+        {
+          order_id: 'ped-5',
+          invoice_number: '4321',
+          amount: 300,
+          issued_at: '2026-03-09',
+          sicoob_orders: { created_by: SELLER },
+        },
+      ],
+      [
+        { order_id: 'ped-5', invoice_number: '4321', amount: 300, issued_at: '2026-03-09', created_at: '2026-03-09T10:00:00.000Z' },
+        { order_id: 'ped-5', invoice_number: '4321', amount: null, issued_at: '2026-02-01', created_at: '2026-03-04T10:00:00.000Z' },
+      ],
+    );
+
+    const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    expect(ajustes).toContain('300,00');
+    expect(ajustes).not.toContain('R$ 0,00');
   });
 
   it('anexo antigo sem data de emissao nao entra nos ajustes', async () => {
