@@ -129,6 +129,10 @@ const TARGETS = [
       sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
     },
   {
+    file: "supabase/migrations/20261127190000_prune_cron_job_run_details.sql",
+    sha256: "172e2ae3d128b70f90ca9f597a92e503023092c190fce60414cf42fbe3e95392",
+  },
+  {
     file: "supabase/migrations/20261127153000_fix_approval_dispatch_response_skew.sql",
     sha256: "6082565e4a220576a0287cb4d972634d9a9e298d0dcfd64a5f03bd9d0e823332",
   },
