@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c5128f439d` · branch `main` · 2026-11-27 11:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `81c7ae3465` · branch `main` · 2026-11-27 12:39 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -314,7 +314,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 316 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 317 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -377,6 +377,7 @@
 - `src/components/admin/connections/secretNormalizers.ts`
 - `src/components/admin/connections/secretValidators.ts`
 - `src/components/admin/connections/secretWhitelist.ts`
+- `src/components/admin/security/DatabaseIntegrityCard.tsx`
 - `src/lib/sensitive-masking.ts`
 - `src/pages/admin/AdminConexoesStatusPage.tsx`
 - `src/pages/admin/OwnershipAuditAdminPage.tsx`
@@ -465,8 +466,7 @@
 - `supabase/functions/webhook-dispatcher/index.ts`
 - `supabase/functions/webhook-inbound/index.ts`
 - `supabase/migrations/20251214200524_1f519508-285c-4649-ba22-b40d67618e67.sql`
-- `supabase/migrations/20260219133353_4495e564-cec8-44b1-a590-1fb18ca8c91d.sql`
-- … +166 (lista completa em `context.json`)
+- … +167 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 

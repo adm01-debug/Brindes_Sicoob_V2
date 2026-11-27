@@ -2136,11 +2136,14 @@
     "login_attempts",
     "profiles",
     "public_token_failures",
+    "qa_rls_audits",
     "quote_approval_tokens",
     "request_rate_limits"
    ],
    "rpcs": [
-    "check_hardening_status"
+    "audit_security_definer_acl",
+    "check_hardening_status",
+    "check_security_health"
    ],
    "edges": [
     "block-ip-temporarily",
@@ -2151,7 +2154,7 @@
    "papeis": [
     "dialog"
    ],
-   "arquivos_puxados": 28
+   "arquivos_puxados": 29
   },
   {
    "protegida": true,

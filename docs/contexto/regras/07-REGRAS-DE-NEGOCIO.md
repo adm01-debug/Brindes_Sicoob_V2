@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c5128f439d` · branch `main` · 2026-11-27 11:19 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `81c7ae3465` · branch `main` · 2026-11-27 12:39 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -4692,6 +4692,7 @@ _nenhum item encontrado_
 | `EXTERNAL_DB_BRIDGE` | `'external-db-bridge'` | `src/components/admin/products/sections/engraving/useEngravingWizard.ts` |
 | `MAX_FILE_SIZE` | `100` | `src/components/admin/products/video-gallery/types.ts` |
 | `EXTERNAL_DB_BRIDGE` | `'external-db-bridge'` | `src/components/admin/products/video-gallery/useProductVideoGallery.ts` |
+| `IDADE_MAXIMA_AUDITORIA_MS` | `7` | `src/components/admin/security/DatabaseIntegrityCard.tsx` |
 | `ALL_CREATORS` | `"__all__"` | `src/components/admin/security/keys/McpKeysFilters.tsx` |
 | `PAGE_SIZE` | `50` | `src/components/admin/security/keys/audit/useMcpAuditFeed.ts` |
 | `DESTRUCTIVE_METRIC_TEXT` | `'text-destructive font-semibold'` | `src/components/admin/telemetry/AppHealthDashboard.tsx` |
@@ -4948,8 +4949,7 @@ _nenhum item encontrado_
 | `WINDOW_MS` | `30` | `src/lib/chunk-recovery.ts` |
 | `MAX_HARD_RELOADS` | `2` | `src/lib/chunk-recovery.ts` |
 | `CACHE_MS` | `15` | `src/lib/cloud-status.ts` |
-| `HIGH_LATENCY_MS` | `2000` | `src/lib/cloud-status.ts` |
-| … +189 linhas — lista completa em `context.json` | | |
+| … +190 linhas — lista completa em `context.json` | | |
 
 ### H.2 Prazos, expirações e janelas de tempo
 
@@ -5009,6 +5009,7 @@ _nenhum item encontrado_
 | `const expiresAt = new Date(base.getTime() + 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/ActiveIpsList.tsx` |
 | `const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/AnomalyCards.tsx` |
 | `const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/AutoDefenseTab.tsx` |
+| `export const IDADE_MAXIMA_AUDITORIA_MS = 7 * 24 * 60 * 60 * 1000;` | `src/components/admin/security/DatabaseIntegrityCard.tsx` |
 | `const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/HardeningTrendChart.tsx` |
 | `const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/SuspiciousTokensPanel.tsx` |
 | `const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();` | `src/components/admin/security/TopOffenderIpsCard.tsx` |
@@ -5254,8 +5255,7 @@ _nenhum item encontrado_
 | `const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `return new Date(reference.getTime() - days * 24 * 60 * 60 * 1000).toISOString();` | `supabase/functions/send-scheduled-reports/report-types.ts` |
 | `const CATALOG_QUERY_VALIDITY_MS = 5 * 60 * 1000;` | `supabase/functions/sicoob-reorder/catalog.ts` |
-| `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
-| … +94 linhas — lista completa em `context.json` | |
+| … +95 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5274,6 +5274,7 @@ _nenhum item encontrado_
 | 20 | `src/components/admin/connections/useRecentIncidents.ts` |
 | 1000 | `src/components/admin/security/AnomalyCards.tsx` |
 | 20 | `src/components/admin/security/AutoDefenseTab.tsx` |
+| 1 | `src/components/admin/security/DatabaseIntegrityCard.tsx` |
 | 50 | `src/components/admin/security/RecentAuditTable.tsx` |
 | 20 | `src/components/admin/security/SecureUploadManager.tsx` |
 | 2000 | `src/components/admin/security/SuspiciousTokensPanel.tsx` |
@@ -5686,7 +5687,7 @@ _nenhum item encontrado_
 | Erro ao adicionar componente | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao adicionar localização | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
 | Erro ao associar técnica | `src/components/admin/personalization-manager/usePersonalizationManager.ts` |
-| … +1039 linhas — lista completa em `context.json` | |
+| … +1041 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5788,7 +5789,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7583 testes em 783 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7610 testes em 784 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5842,6 +5843,7 @@ _nenhum item encontrado_
 | `tests/stock-types.test.ts` | 27 | calculateStockStatus · returns out_of_stock when current is 0 · returns incoming when current is 0 but in transit > 0 · returns critical when current <= 25% of min … |
 | `tests/components/KitComposition.test.tsx` | 27 | KitComposition · renders trigger card with component count · renders header with correct component and piece counts in dialog · renders singular  … |
 | `tests/e2e/catalog-price-freshness-badge.test.tsx` | 27 | E2E Catálogo — visibilidade do PriceFreshnessBadge por host · Produto FRESH (5d, threshold 60d) — preço dentro do prazo · Card (icon-only) NÃO renderiza badge · EnhancedCard (icon-only) NÃO renderiza badge … |
+| `tests/unit/database-integrity-card.test.ts` | 27 | resumoRls · aprova quando todas as tabelas tem RLS e nenhuma e permissiva · reprova listando quantas faltam e quantas sao permissivas · reprova quando so ha permissivas, sem nenhuma tabela sem RLS … |
 | `tests/e2e/profile-user.test.ts` | 26 | E2E Profile — Form Validation · accepts valid profile · rejects empty name · rejects short name … |
 | `tests/hooks/useReplenishments.test.ts` | 26 | Replenishment utility functions · isReplenishment · returns true when updated_at is 1+ day after created_at · returns false when updated_at equals created_at (new product) … |
 | `tests/e2e/seller-carts.test.ts` | 25 | E2E Carts — Cart Total Calculation · calculates correctly · empty cart is 0 · single item … |
@@ -6091,8 +6093,7 @@ _nenhum item encontrado_
 | `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
 | `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
 | `tests/unit/sla-closed-label.test.ts` | 8 | slaClosedLabel · descreve o fechamento de cada desfecho dentro do prazo · descreve o fechamento critico com as horas de atraso · trata desfecho ausente ou desconhecido como aprovado … |
-| `tests/workflows/WorkflowEditDialog.test.tsx` | 8 | WorkflowEditDialog · renders nothing when step is null · renders dialog with step data · shows prompt textarea for agent type … |
-| … +483 linhas — lista completa em `context.json` | | |
+| … +484 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
@@ -6338,6 +6339,7 @@ _nenhum item encontrado_
 | * useProductsManager — Business logic hook for ProductsManager. | `src/components/admin/products/useProductsManager.ts` |
 | 1024 * 1024) return 'Máximo 2MB'; | `src/components/admin/products/new-supplier/useNewSupplierForm.ts` |
 | * useEngravingWizard — Business logic for the engraving wizard | `src/components/admin/products/sections/engraving/useEngravingWizard.ts` |
+| * Leitura parcial nao pode virar selo verde: se qualquer RPC falhou, o estado | `src/components/admin/security/DatabaseIntegrityCard.tsx` |
 | - Somente FULL (chaves com escopo *) | `src/components/admin/security/keys/McpKeysFilters.tsx` |
 | * Improvement: Strictly typed operational logic and improved validation feedback. | `src/components/admin/security/role-migration/RoleMigrationPanel.tsx` |
 | 1024 * 1024) return 'Imagem deve ter no máximo 2MB'; | `src/components/admin/suppliers-manager/useSuppliersManager.ts` |
@@ -6581,5 +6583,4 @@ _nenhum item encontrado_
 | origem deve ser feita via body/URL, não via header global. | `src/integrations/supabase/client.ts` |
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
-| neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
-| … +371 linhas — lista completa em `context.json` | |
+| … +372 linhas — lista completa em `context.json` | |

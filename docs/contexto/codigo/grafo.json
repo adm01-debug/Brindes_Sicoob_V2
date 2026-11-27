@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2280,
- "arestas": 9295,
+ "nos": 2281,
+ "arestas": 9301,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 643
+   "importado_por": 644
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,15 +14,15 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 516
+   "importado_por": 517
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 423
+   "importado_por": 424
   },
   {
    "arquivo": "src/components/ui/card.tsx",
-   "importado_por": 403
+   "importado_por": 404
   },
   {
    "arquivo": "src/components/ui/input.tsx",
@@ -122,7 +122,7 @@
   },
   {
    "arquivo": "src/hooks/use-toast.ts",
-   "importado_por": 37
+   "importado_por": 38
   },
   {
    "arquivo": "src/components/ui/alert-dialog.tsx",

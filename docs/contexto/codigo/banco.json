@@ -26835,11 +26835,11 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 0,
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "qa_run_steps": {
    "colunas": {
@@ -41111,6 +41111,11 @@
    "usada_em": 1
   },
   {
+   "nome": "audit_security_definer_acl",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
    "nome": "bulk_update_quote_status_atomic",
    "definida": true,
    "usada_em": 2
@@ -41147,6 +41152,11 @@
   },
   {
    "nome": "check_rls_enabled",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "check_security_health",
    "definida": true,
    "usada_em": 1
   },

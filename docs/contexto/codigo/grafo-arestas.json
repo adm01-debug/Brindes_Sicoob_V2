@@ -1910,6 +1910,13 @@
    "src/hooks/use-toast.ts",
    "src/integrations/supabase/client.ts"
   ],
+  "src/components/admin/security/DatabaseIntegrityCard.tsx": [
+   "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/card.tsx",
+   "src/hooks/use-toast.ts",
+   "src/integrations/supabase/client.ts"
+  ],
   "src/components/admin/security/ForceGlobalLogoutDialog.tsx": [
    "src/components/ui/button.tsx",
    "src/components/ui/dialog.tsx",
@@ -11134,6 +11141,7 @@
    "src/components/admin/security/ActiveIpsList.tsx",
    "src/components/admin/security/AnomalyCards.tsx",
    "src/components/admin/security/AutoDefenseTab.tsx",
+   "src/components/admin/security/DatabaseIntegrityCard.tsx",
    "src/components/admin/security/ForceGlobalLogoutDialog.tsx",
    "src/components/admin/security/HardeningHealthCard.tsx",
    "src/components/admin/security/RecentAuditTable.tsx",

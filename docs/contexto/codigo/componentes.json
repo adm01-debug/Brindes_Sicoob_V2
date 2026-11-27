@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1184,
+ "total": 1185,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -3052,6 +3052,27 @@
     "block-ip-temporarily"
    ],
    "usado_por": 2,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+   "exports": [
+    "DatabaseIntegrity",
+    "DatabaseIntegrityCard",
+    "IDADE_MAXIMA_AUDITORIA_MS",
+    "Resumo"
+   ],
+   "export_default": null,
+   "linhas": 318,
+   "dominio": "components/admin",
+   "hooks_locais": [
+    "useToast"
+   ],
+   "tabelas": [
+    "qa_rls_audits"
+   ],
+   "edges": [],
+   "usado_por": 1,
    "orfao": false
   },
   {
@@ -15019,7 +15040,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 514,
+   "usado_por": 515,
    "orfao": false
   },
   {
@@ -15054,7 +15075,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 639,
+   "usado_por": 640,
    "orfao": false
   },
   {
@@ -15088,7 +15109,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 400,
+   "usado_por": 401,
    "orfao": false
   },
   {
@@ -16481,7 +16502,7 @@
     "AdminSegurancaAcessoPage"
    ],
    "export_default": "AdminSegurancaAcessoPage",
-   "linhas": 476,
+   "linhas": 479,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useToast"

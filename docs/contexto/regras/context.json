@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "c5128f439dd6e173f187a4c3034cfa05d0017ff2",
+  "sha": "81c7ae34653363cf898b20c95a4b6462de435fd0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 11:19 UTC",
-  "files_total": 5384,
-  "code_files": 3943,
-  "code_lines": 584231
+  "generated_at": "2026-11-27 12:39 UTC",
+  "files_total": 5386,
+  "code_files": 3945,
+  "code_lines": 584686
  },
  "version": "1.3.2",
- "facts_hash": "03d0011209b6db92",
+ "facts_hash": "0b506151a8608df0",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1521,
-   ".tsx": 1506,
+   ".ts": 1522,
+   ".tsx": 1507,
    ".sql": 704,
    ".mjs": 146,
    ".py": 73,
@@ -63522,7 +63522,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1320,
+  "components_count": 1321,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -66353,8 +66353,8 @@
   },
   {
    "module": "src/components",
-   "files": 1141,
-   "lines": 169302,
+   "files": 1142,
+   "lines": 169620,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66394,6 +66394,7 @@
     "products",
     "profiles",
     "public_token_failures",
+    "qa_rls_audits",
     "quote_approval_tokens",
     "quote_comments",
     "quote_history",
@@ -67133,7 +67134,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52460,
+   "lines": 52463,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -68139,8 +68140,8 @@
   },
   {
    "module": "tests",
-   "files": 743,
-   "lines": 99723,
+   "files": 744,
+   "lines": 99857,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -69897,6 +69898,11 @@
     ],
     "insert": [
      "src/pages/admin/qa/ReleaseEvidencesPage.tsx"
+    ]
+   },
+   "qa_rls_audits": {
+    "select": [
+     "src/components/admin/security/DatabaseIntegrityCard.tsx"
     ]
    },
    "qa_run_steps": {
@@ -73003,6 +73009,9 @@
    "audit_rls_matrix": [
     "supabase/functions/rls-matrix-export/index.ts"
    ],
+   "audit_security_definer_acl": [
+    "src/components/admin/security/DatabaseIntegrityCard.tsx"
+   ],
    "bulk_update_quote_status_atomic": [
     "src/hooks/quotes/useQuotes.ts",
     "src/services/quoteStatusTransition.ts"
@@ -73035,6 +73044,9 @@
    ],
    "check_rls_enabled": [
     "supabase/functions/migration-health-check/index.ts"
+   ],
+   "check_security_health": [
+    "src/components/admin/security/DatabaseIntegrityCard.tsx"
    ],
    "check_tables_rls": [
     "scripts/lib/audit-evidence.mjs",
@@ -74274,7 +74286,6 @@
    "product_group_locations",
    "product_novelties",
    "push_subscriptions",
-   "qa_rls_audits",
    "quote_approval_evidence_keys",
    "quote_audit_logs",
    "quote_consolidations",
@@ -77923,6 +77934,14 @@
    {
     "file": "src/components/admin/security/BlockIpButton.tsx",
     "msg": "IP obrigatório"
+   },
+   {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "msg": "Não foi possível verificar a integridade"
+   },
+   {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "msg": "Parte da integridade não pôde ser lida"
    },
    {
     "file": "src/components/admin/security/ForceGlobalLogoutDialog.tsx",
@@ -82415,6 +82434,10 @@
    {
     "file": "src/components/admin/products/sections/engraving/useEngravingWizard.ts",
     "text": "* useEngravingWizard — Business logic for the engraving wizard"
+   },
+   {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "text": "* Leitura parcial nao pode virar selo verde: se qualquer RPC falhou, o estado"
    },
    {
     "file": "src/components/admin/security/keys/McpKeysFilters.tsx",
@@ -96149,6 +96172,11 @@
     "file": "src/components/admin/products/video-gallery/useProductVideoGallery.ts",
     "name": "EXTERNAL_DB_BRIDGE",
     "value": "'external-db-bridge'"
+   },
+   {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "name": "IDADE_MAXIMA_AUDITORIA_MS",
+    "value": "7"
    },
    {
     "file": "src/components/admin/security/keys/McpKeysFilters.tsx",
@@ -113673,6 +113701,10 @@
    {
     "file": "src/components/admin/security/AutoDefenseTab.tsx",
     "line": "const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();"
+   },
+   {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "line": "export const IDADE_MAXIMA_AUDITORIA_MS = 7 * 24 * 60 * 60 * 1000;"
    },
    {
     "file": "src/components/admin/security/HardeningTrendChart.tsx",
@@ -144083,6 +144115,114 @@
     "name": "returns Portuguese labels"
    },
    {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "resumoRls"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "aprova quando todas as tabelas tem RLS e nenhuma e permissiva"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "reprova listando quantas faltam e quantas sao permissivas"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "reprova quando so ha permissivas, sem nenhuma tabela sem RLS"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "reprova, em vez de aprovar, quando nao existe auditoria registrada"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "resumoAcl"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "aprova quando o banco nao devolve nenhum achado"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "reprova e conta os achados"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "nao afirma ausencia de achados quando a leitura falhou"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "resumoHealth"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "nao confia no system_status fixo: deriva dos achados"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "reprova sem leitura"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "avisoDeCobertura"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "avisa quando parte do total nao aparece como verificada"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "nao avisa quando nao ha divergencia"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "auditoriaVencida"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "vence quando o dado passa de 7 dias"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "vence sem data legivel"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "resumoRls com dado vencido"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "nao da selo verde quando a auditoria esta velha, mesmo sem achados"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "mantem a aprovacao com dado recente"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "statusDeIntegridade"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "APROVA so quando tudo foi lido e nada tem achado"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "marca PARCIAL quando alguma leitura falhou, em vez de aprovar"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "marca ATENCAO quando ha achado, mesmo com leitura parcial"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "auditoria vencida sem achado nao vira ATENCAO: nao ha problema confirmado"
+   },
+   {
+    "file": "tests/unit/database-integrity-card.test.ts",
+    "name": "auditoria vencida nao mascara achado real de RLS"
+   },
+   {
     "file": "tests/unit/fuzzing.test.ts",
     "name": "Fuzz Testing — Input Resilience"
    },
@@ -164688,6 +164828,10 @@
     "limit": "20"
    },
    {
+    "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+    "limit": "1"
+   },
+   {
     "file": "src/components/admin/security/RecentAuditTable.tsx",
     "limit": "50"
    },
@@ -172539,6 +172683,7 @@
    "src/components/admin/connections/secretNormalizers.ts",
    "src/components/admin/connections/secretValidators.ts",
    "src/components/admin/connections/secretWhitelist.ts",
+   "src/components/admin/security/DatabaseIntegrityCard.tsx",
    "src/lib/sensitive-masking.ts",
    "src/pages/admin/AdminConexoesStatusPage.tsx",
    "src/pages/admin/OwnershipAuditAdminPage.tsx",
@@ -195645,6 +195790,52 @@
    "side_effects": [
     "invoke("
    ]
+  },
+  "src/components/admin/security/DatabaseIntegrityCard.tsx": {
+   "path": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+   "lines": 318,
+   "exports": [
+    "interface DatabaseIntegrity",
+    "interface Resumo",
+    "const IDADE_MAXIMA_AUDITORIA_MS",
+    "function auditoriaVencida",
+    "function resumoRls",
+    "function resumoAcl",
+    "function resumoHealth",
+    "function avisoDeCobertura",
+    "function statusDeIntegridade",
+    "function DatabaseIntegrityCard"
+   ],
+   "tables": [
+    {
+     "table": "qa_rls_audits",
+     "op": "select"
+    }
+   ],
+   "rpc": [
+    "audit_security_definer_acl",
+    "check_security_health"
+   ],
+   "errors": [
+    "Não foi possível verificar a integridade",
+    "Parte da integridade não pôde ser lida"
+   ],
+   "params": [
+    {
+     "name": "IDADE_MAXIMA_AUDITORIA_MS",
+     "value": "7"
+    }
+   ],
+   "rule_comments": [
+    "* Leitura parcial nao pode virar selo verde: se qualquer RPC falhou, o estado"
+   ],
+   "temporal": [
+    "export const IDADE_MAXIMA_AUDITORIA_MS = 7 * 24 * 60 * 60 * 1000;"
+   ],
+   "pagination": [
+    "1"
+   ],
+   "uses_service_role": true
   },
   "src/components/admin/security/ForceGlobalLogoutDialog.tsx": {
    "path": "src/components/admin/security/ForceGlobalLogoutDialog.tsx",
@@ -228757,7 +228948,7 @@
   },
   "src/pages/admin/AdminSegurancaAcessoPage.tsx": {
    "path": "src/pages/admin/AdminSegurancaAcessoPage.tsx",
-   "lines": 476,
+   "lines": 479,
    "exports": [
     "function AdminSegurancaAcessoPage"
    ],
@@ -263641,6 +263832,40 @@
     "returns Portuguese labels"
    ]
   },
+  "tests/unit/database-integrity-card.test.ts": {
+   "path": "tests/unit/database-integrity-card.test.ts",
+   "lines": 134,
+   "is_test": true,
+   "tests": [
+    "resumoRls",
+    "aprova quando todas as tabelas tem RLS e nenhuma e permissiva",
+    "reprova listando quantas faltam e quantas sao permissivas",
+    "reprova quando so ha permissivas, sem nenhuma tabela sem RLS",
+    "reprova, em vez de aprovar, quando nao existe auditoria registrada",
+    "resumoAcl",
+    "aprova quando o banco nao devolve nenhum achado",
+    "reprova e conta os achados",
+    "nao afirma ausencia de achados quando a leitura falhou",
+    "resumoHealth",
+    "nao confia no system_status fixo: deriva dos achados",
+    "reprova sem leitura",
+    "avisoDeCobertura",
+    "avisa quando parte do total nao aparece como verificada",
+    "nao avisa quando nao ha divergencia",
+    "auditoriaVencida",
+    "vence quando o dado passa de 7 dias",
+    "vence sem data legivel",
+    "resumoRls com dado vencido",
+    "nao da selo verde quando a auditoria esta velha, mesmo sem achados",
+    "mantem a aprovacao com dado recente",
+    "statusDeIntegridade",
+    "APROVA so quando tudo foi lido e nada tem achado",
+    "marca PARCIAL quando alguma leitura falhou, em vez de aprovar",
+    "marca ATENCAO quando ha achado, mesmo com leitura parcial",
+    "auditoria vencida sem achado nao vira ATENCAO: nao ha problema confirmado",
+    "auditoria vencida nao mascara achado real de RLS"
+   ]
+  },
   "tests/unit/fuzzing.test.ts": {
    "path": "tests/unit/fuzzing.test.ts",
    "lines": 105,
@@ -264427,10 +264652,21 @@
   }
  },
  "git": {
-  "sha": "c5128f439dd6e173f187a4c3034cfa05d0017ff2",
+  "sha": "81c7ae34653363cf898b20c95a4b6462de435fd0",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "81c7ae3",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)",
+    "files": [
+     "src/components/admin/security/DatabaseIntegrityCard.tsx",
+     "src/pages/admin/AdminSegurancaAcessoPage.tsx",
+     "tests/unit/database-integrity-card.test.ts"
+    ]
+   },
    {
     "sha": "c5128f4",
     "date": "2026-11-27",
@@ -264879,15 +265115,6 @@
      "src/hooks/bi/useIndustryTrends.ts",
      "tests/hooks/bi/useIndustryTrends.test.tsx"
     ]
-   },
-   {
-    "sha": "514293d",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "docs: reavalia os vereditos dos testes divergentes (#447)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md"
-    ]
    }
   ],
   "hot_files": [
@@ -264900,11 +265127,11 @@
     7
    ],
    [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    7
+    "scripts/db/apply-sicoob-migrations.mjs",
+    6
    ],
    [
-    "scripts/db/apply-sicoob-migrations.mjs",
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
     6
    ],
    [

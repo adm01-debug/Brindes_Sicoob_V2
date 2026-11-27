@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 977,
+ "total": 978,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 739
+  "unit": 740
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 719
+   "arquivos": 720
   },
   {
    "padrao": "e2e/",
@@ -8216,6 +8216,15 @@
    "casos": 15
   },
   {
+   "arquivo": "tests/unit/database-integrity-card.test.ts",
+   "tipo": "unit",
+   "linhas": 134,
+   "testa": [
+    "src/components/admin/security/DatabaseIntegrityCard.tsx"
+   ],
+   "casos": 20
+  },
+  {
    "arquivo": "tests/unit/fuzzing.test.ts",
    "tipo": "unit",
    "linhas": 105,
@@ -8601,6 +8610,7 @@
   "src/components/admin/connections/useFocusContext.ts": 1,
   "src/components/admin/connections/useZoneCollapse.ts": 1,
   "src/components/admin/products/ProductFormSchema.ts": 1,
+  "src/components/admin/security/DatabaseIntegrityCard.tsx": 1,
   "src/components/admin/telemetry/TelemetryCharts.tsx": 1,
   "src/components/ai/AIChat.tsx": 1,
   "src/components/ai/AIMockupAssistant.tsx": 2,
