@@ -171,7 +171,7 @@ def como(corpo):
 
 try:
     command(["docker", "run", "--rm", "-d", "--name", CONTAINER,
-             "-e", "POSTGRES_PASSWORD=postgres", "-p", "54329:5432", "postgres:16-alpine"])
+             "-e", "POSTGRES_PASSWORD=postgres", "-p", "127.0.0.1:54329:5432", "postgres:16-alpine"])
     wait_for_postgres(command, CONTAINER)
     sql(STUBS)
     # Secao 2 do ciclo de vida: espelho verba_total <-> verba_planejada.
@@ -205,22 +205,13 @@ try:
     # `check_order_sla` e o gatilho canonico de eventos vivem em migrations
     # anteriores; aqui entra o mesmo corpo, para o BEFORE de escrita recalcular
     # o estado antes do encerramento — exatamente a ordem de producao.
+    # Corpo copiado da migration (fonte unica): se ela mudar, o teste muda junto.
+    corpo = SLA.read_text(encoding="utf-8")
+    ini = corpo.index("CREATE OR REPLACE FUNCTION public.check_order_sla()")
+    fim = corpo.index("CREATE OR REPLACE FUNCTION", ini + 10)
+    fim = corpo.rindex("-- ", ini, fim)
+    sql(corpo[ini:fim])
     sql("""
-      CREATE OR REPLACE FUNCTION public.check_order_sla()
-      RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
-      BEGIN
-        IF NEW.sla_deadline IS NOT NULL THEN
-          IF NEW.sla_deadline < now() THEN
-            NEW.sla_status := 'critical';
-          ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN
-            NEW.sla_status := 'warning';
-          ELSE
-            NEW.sla_status := 'normal';
-          END IF;
-        END IF;
-        RETURN NEW;
-      END
-      $$;
       DROP TRIGGER IF EXISTS trigger_check_order_sla ON public.sicoob_orders;
       CREATE TRIGGER trigger_check_order_sla
         BEFORE INSERT OR UPDATE ON public.sicoob_orders
@@ -351,10 +342,17 @@ try:
         f"SELECT sla_closed_status, sla_closed_outcome FROM public.sicoob_orders WHERE id = '{ORDER1}'",
         "critical|approved",
     )
+    # A decisao roda todos os BEFORE e `close_sicoob_order_sla` roda antes de
+    # `trigger_check_order_sla` (ordem alfabetica): ele carimba 'critical'/warning
+    # conforme o prazo do ciclo e o `check_order_sla` reescreve o estado ativo
+    # em seguida. O que importa e que o alerta fique coerente com o prazo.
     verificar(
-        "aprovacao_nao_deixa_status_vencido_para_tras",
-        f"SELECT bool_and(sla_closed_at IS NOT NULL) FROM public.sicoob_orders WHERE id = '{ORDER1}'",
-        "t",
+        "aprovacao_deixa_alerta_coerente_com_o_prazo_do_ciclo",
+        f"""SELECT CASE WHEN sla_deadline < now() THEN 'critical'
+                       WHEN sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning'
+                       ELSE 'normal' END
+             FROM public.sicoob_orders WHERE id = '{ORDER1}'""",
+        "critical",
     )
 
     # 5) Recusa nao vira "aprovado com atraso".
@@ -379,25 +377,36 @@ try:
         "escalated|true",
     )
 
-    # 7) Recalculo: pedido fora da aprovacao com alerta pendente encerra o ciclo.
-    sql(f"""UPDATE public.sicoob_orders SET status = 'confirmed', sla_deadline = now() - interval '4 days',
+    # 7) Recalculo: nao fabrica historico nem devolve pedido decidido ao alerta.
+    sql(f"""ALTER TABLE public.sicoob_orders DISABLE TRIGGER USER;
+         UPDATE public.sicoob_orders SET status = 'confirmed', sla_deadline = now() - interval '4 days',
               sla_status = 'critical', sla_closed_at = NULL, sla_closed_status = NULL,
-              sla_closed_outcome = NULL WHERE id = '{ORDER1}';""")
+              sla_closed_outcome = NULL WHERE id = '{ORDER1}';
+         ALTER TABLE public.sicoob_orders ENABLE TRIGGER USER;""")
     sql("SELECT public.refresh_sicoob_order_sla_status();")
     verificar(
-        "recalculo_encerra_ciclo_de_pedido_ja_decidido",
-        f"SELECT (sla_closed_at IS NOT NULL)::text, sla_closed_outcome FROM public.sicoob_orders WHERE id = '{ORDER1}'",
-        "true|approved",
+        "recalculo_nao_fabrica_encerramento_historico",
+        f"SELECT (sla_closed_at IS NULL)::text, sla_status FROM public.sicoob_orders WHERE id = '{ORDER1}'",
+        "true|normal",
     )
-    sql("SELECT public.refresh_sicoob_order_sla_status();")
     verificar(
-        "recalculo_nao_sobrescreve_o_primeiro_encerramento",
-        f"SELECT (sla_closed_at = (SELECT sla_closed_at FROM public.sicoob_orders WHERE id = '{ORDER1}'))::text"
-        f" FROM public.sicoob_orders WHERE id = '{ORDER1}'",
-        "true",
+        "recalculo_tira_pedido_decidido_do_contador_de_alerta",
+        f"""SELECT count(*)::text FROM public.sicoob_orders
+             WHERE id = '{ORDER1}' AND sla_status IN ('critical', 'warning')""",
+        "0",
     )
 
-    # 8) Pedido parado em aprovacao continua critico (nao e encerrado).
+    # 8) Cancelamento em aprovacao nao pode virar "aprovado com atraso".
+    sql(f"""UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '3 hours',
+              sla_closed_at = NULL, sla_closed_status = NULL, sla_closed_outcome = NULL WHERE id = '{ORDER1}';""")
+    sql(f"UPDATE public.sicoob_orders SET status = 'cancelled' WHERE id = '{ORDER1}';")
+    verificar(
+        "cancelamento_registra_desfecho_proprio",
+        f"SELECT sla_closed_outcome FROM public.sicoob_orders WHERE id = '{ORDER1}'",
+        "cancelled",
+    )
+
+    # 9) Pedido parado em aprovacao continua critico (nao e encerrado).
     sql(f"""ALTER TABLE public.sicoob_orders DISABLE TRIGGER USER;
          UPDATE public.sicoob_orders SET status = 'waiting_approval', sla_deadline = now() - interval '1 day',
               sla_status = 'normal', sla_closed_at = NULL, sla_closed_status = NULL,

@@ -20,15 +20,23 @@ ALTER TABLE public.sicoob_orders
   ADD COLUMN IF NOT EXISTS sla_closed_outcome text;
 
 -- `sla_closed_outcome` separa o desfecho do ciclo ('approved', 'rejected',
--- 'escalated'). Sem ele a tela mostrava "Aprovado com N h de atraso" em pedido
+-- 'escalated', 'cancelled'). Sem ele a tela mostrava "Aprovado com N h de atraso" em pedido
 -- recusado, porque toda saída de `waiting_approval` gravava `sla_closed_*`.
 ALTER TABLE public.sicoob_orders
   DROP CONSTRAINT IF EXISTS sicoob_orders_sla_closed_outcome_check;
 ALTER TABLE public.sicoob_orders
   ADD CONSTRAINT sicoob_orders_sla_closed_outcome_check
-  CHECK (sla_closed_outcome IS NULL OR sla_closed_outcome IN ('approved', 'rejected', 'escalated'));
+  CHECK (sla_closed_outcome IS NULL OR sla_closed_outcome IN ('approved', 'rejected', 'escalated', 'cancelled'));
 
--- Reversão:
+-- Reversão (executar nesta ordem: gatilhos, cron e depois as colunas):
+--   DROP TRIGGER IF EXISTS close_sicoob_order_sla ON public.sicoob_orders;
+--   DROP TRIGGER IF EXISTS set_sicoob_order_sla_deadline ON public.sicoob_orders;
+--   DROP FUNCTION IF EXISTS public.close_sicoob_order_sla();
+--   DROP FUNCTION IF EXISTS public.set_sicoob_order_sla_deadline();
+--   DROP FUNCTION IF EXISTS public.refresh_sicoob_order_sla_status();
+--   DROP FUNCTION IF EXISTS public.check_order_sla();
+--   SELECT cron.unschedule('sicoob-refresh-order-sla') WHERE EXISTS
+--     (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron');
 --   ALTER TABLE public.sicoob_orders
 --     DROP COLUMN IF EXISTS sla_closed_at,
 --     DROP COLUMN IF EXISTS sla_closed_status,
@@ -80,7 +88,15 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
-  IF NEW.sla_deadline IS NOT NULL THEN
+  -- Fora do fluxo de aprovação o prazo é histórico: recalcular 'critical' ali
+  -- devolvia o pedido já decidido ao contador de alertas a cada escrita.
+  -- Em UPDATE, `status` só existe em NEW quando a coluna está no SET; nas
+  -- escritas que mexem apenas em SLA (recálculo) o valor atual vem de OLD.
+  IF NEW.sla_deadline IS NOT NULL
+     AND COALESCE(
+           CASE WHEN TG_OP = 'INSERT' THEN NEW.status ELSE OLD.status END,
+           NEW.status
+         ) IN ('pending', 'waiting_approval', 'escalated_to_board') THEN
     IF NEW.sla_deadline < now() THEN
       NEW.sla_status := 'critical';
     ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN
@@ -122,27 +138,18 @@ BEGIN
             OR sla_status IN ('critical', 'warning'))
   )
   -- O gatilho `check_order_sla` roda no BEFORE deste UPDATE e, com o prazo
-  -- ainda vencido, regravaria 'critical' em cima do 'normal'. Só que o pedido
-  -- saiu da aprovação: o ciclo já terminou, então ele é encerrado aqui pelas
-  -- colunas `sla_closed_*` (o encerramento é o que a tela de gestão lê) em vez
-  -- de seguir reaparecendo no contador de alertas a cada execução.
+  -- ainda vencido, regravaria 'critical' em cima do 'normal'. Ele agora ignora
+  -- status fora do fluxo, então basta gravar o estado real do prazo.
+  --
+  -- O encerramento histórico NÃO é fabricado aqui: `sla_closed_*` só é escrito
+  -- pelo gatilho `close_sicoob_order_sla`, que vê a transição real. Preencher
+  -- na rotina carimbava 'approved' com atraso em pedido recusado ou decidido
+  -- dentro do prazo, usando a data da execução como data da decisão.
   UPDATE public.sicoob_orders o
-     SET sla_status = a.novo_status,
-         sla_closed_at = CASE
-           WHEN a.novo_status = 'normal'
-              AND o.sla_closed_at IS NULL
-              AND o.status::text NOT IN ('waiting_approval', 'escalated_to_board') THEN now()
-           ELSE o.sla_closed_at
-         END,
-         sla_closed_status = CASE
-           WHEN a.novo_status = 'normal' AND o.sla_closed_status IS NULL THEN 'critical'
-           ELSE COALESCE(o.sla_closed_status, 'critical')
-         END,
-         sla_closed_outcome = COALESCE(o.sla_closed_outcome, 'approved')
+     SET sla_status = a.novo_status
     FROM alvo a
    WHERE o.id = a.id
-     AND (o.sla_status IS DISTINCT FROM a.novo_status
-          OR (a.novo_status = 'normal' AND o.sla_closed_at IS NULL));
+     AND o.sla_status IS DISTINCT FROM a.novo_status;
 
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RETURN v_count;
@@ -163,8 +170,7 @@ GRANT EXECUTE ON FUNCTION public.refresh_sicoob_order_sla_status() TO service_ro
 -- consta no UPDATE. Sem isso o pedido vira crítico em silêncio e o solicitante
 -- nunca recebe o aviso de SLA.
 UPDATE public.sicoob_orders
-   SET sla_deadline = created_at + interval '48 hours',
-       sla_status = sla_status
+   SET sla_deadline = created_at + interval '48 hours'
  WHERE sla_deadline IS NULL
    AND status IN ('waiting_approval', 'escalated_to_board');
 
@@ -182,11 +188,11 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
-  -- `sla_closed_at IS NULL` protege o ciclo anterior já registrado: o
-  -- recálculo passa por aqui a cada 15 minutos enquanto houver alerta pendente,
-  -- e sem essa guarda sobrescreveria a data do primeiro encerramento.
+  -- Só transição de status chega aqui (o gatilho é OF status), então não há
+  -- regravação periódica: cada ciclo encerrado sobrescreve `sla_closed_*` com
+  -- os dados do ciclo que acabou de terminar. Bloquear quando `sla_closed_at`
+  -- já existia impedia a diretoria de registrar o ciclo da escalação.
   IF OLD.sla_deadline IS NOT NULL
-     AND OLD.sla_closed_at IS NULL
      AND OLD.status IN ('waiting_approval', 'escalated_to_board')
      AND NEW.status IS DISTINCT FROM OLD.status THEN
     NEW.sla_closed_at := now();
@@ -201,6 +207,7 @@ BEGIN
     -- novo prazo no mesmo UPDATE (é a mesma linha, então `sla_closed_*` fica).
     NEW.sla_closed_outcome := CASE
       WHEN NEW.status = 'rejected' THEN 'rejected'
+      WHEN NEW.status = 'cancelled' THEN 'cancelled'
       WHEN NEW.status = 'escalated_to_board' THEN 'escalated'
       ELSE 'approved'
     END;

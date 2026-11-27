@@ -134,11 +134,12 @@ function slaClosedLabel(order: { sla_closed_status?: string; sla_closed_outcome?
 
   if (order.sla_closed_status !== "critical") {
     if (outcome === "rejected") return "Recusado no limite do prazo";
+    if (outcome === "cancelled") return "Cancelado no limite do prazo";
     if (outcome === "escalated") return "Escalado no limite do prazo";
     return "Aprovado no limite do prazo";
   }
 
-  const prefixo = outcome === "rejected" ? "Recusado com" : outcome === "escalated" ? "Escalado com" : "Aprovado com";
+  const prefixo = outcome === "rejected" ? "Recusado com" : outcome === "cancelled" ? "Cancelado com" : outcome === "escalated" ? "Escalado com" : "Aprovado com";
   return `${prefixo} ${atrasoHoras} h de atraso`;
 }
 
