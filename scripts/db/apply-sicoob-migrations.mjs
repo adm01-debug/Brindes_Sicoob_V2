@@ -246,11 +246,11 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
-    sha256: "d48040d53c46f75173f88991167a3efb92c5c802763cd87bb60a55fa733ac474",
+    sha256: "4ade57ae4213bfd1b4090493d2f7f2b4e40505119f967c7d0e40c143117738a5",
   },
   {
     file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
-    sha256: "081df063b42f2cdf49123d5f702ad31347f09c0a8b7e3d4c5717cd21abfd00a5",
+    sha256: "efc517add544267cd14dbf00919832cf9685bf1d6007bd056277709e4a7f0875",
   },
   {
     file: "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
@@ -266,7 +266,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
-    sha256: "96bbd7070064555a32f48422d84088b17ab3b6a0dacab876ad614ce253359cad",
+    sha256: "8b38b6b043f292f2d707f92766db7f9425591ccf35d9c524e5fe166252dba1ba",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

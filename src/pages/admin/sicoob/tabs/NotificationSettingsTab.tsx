@@ -146,7 +146,10 @@ export const NotificationSettingsTab = ({ readOnly = false }: NotificationSettin
           </div>
 
           {selectedPa && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            // Trocar de PA remonta os campos de destino: sem o key, o `defaultValue`
+            // do Input mantem o texto digitado no PA anterior e o onBlur grava esse
+            // valor no novo PA sem o usuario ter editado nada.
+            <div key={selectedPa} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Slack */}
               <Card className="border-border/60">
                 <CardHeader className="pb-3">

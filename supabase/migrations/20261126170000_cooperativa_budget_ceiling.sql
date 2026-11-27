@@ -422,8 +422,8 @@ BEGIN
     -- a coluna id apenas para esta gravacao.
     v_budget_id := gen_random_uuid();
 
-    INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, limite_alcada, observacoes)
-    VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_limite_alcada, p_observacoes);
+    INSERT INTO public.pa_budgets (id, pa_id, ano, mes, verba_total, verba_planejada, limite_alcada, observacoes)
+    VALUES (v_budget_id, p_pa_id, p_ano, p_mes, p_verba_total, p_verba_total, p_limite_alcada, p_observacoes);
   ELSE
     -- PA e competencia nao mudam na edicao: os dois formularios desabilitam
     -- esses campos e o grant de UPDATE cobre so verba, alcada e observacoes.
@@ -435,6 +435,7 @@ BEGIN
 
     UPDATE public.pa_budgets
        SET verba_total = p_verba_total,
+           verba_planejada = p_verba_total,
            limite_alcada = p_limite_alcada,
            observacoes = p_observacoes
      WHERE id = p_budget_id

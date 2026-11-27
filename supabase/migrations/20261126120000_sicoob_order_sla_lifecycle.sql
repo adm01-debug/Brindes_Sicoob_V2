@@ -82,13 +82,18 @@ BEGIN
   WITH alvo AS (
     SELECT id,
            CASE
+             -- Pedido já aprovado/concluído não tem mais prazo: continua no
+             -- recorte de status abaixo por ser histórico, mas não pode voltar
+             -- a entrar em 'critical' e reaparecer na faixa vermelha do painel.
+             WHEN status::text NOT IN ('pending', 'waiting_approval', 'escalated_to_board') THEN 'normal'
              WHEN sla_deadline < now() THEN 'critical'
              WHEN sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning'
              ELSE 'normal'
            END AS novo_status
       FROM public.sicoob_orders
      WHERE sla_deadline IS NOT NULL
-       AND status IN ('pending', 'waiting_approval', 'escalated_to_board')
+       AND (status IN ('pending', 'waiting_approval', 'escalated_to_board')
+            OR sla_status IN ('critical', 'warning'))
   )
   UPDATE public.sicoob_orders o
      SET sla_status = a.novo_status

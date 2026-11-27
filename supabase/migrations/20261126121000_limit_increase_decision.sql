@@ -76,14 +76,17 @@ BEGIN
       USING ERRCODE = 'no_data_found';
   END IF;
 
-  IF v_request.status IS DISTINCT FROM 'pending' THEN
-    RAISE EXCEPTION 'Esta solicitação já foi decidida (%).', v_request.status
-      USING ERRCODE = 'object_not_in_prerequisite_state';
-  END IF;
-
+  -- Autoridade antes da situacao: sem esta ordem, quem nao pode ver o PA
+  -- distinguiria solicitacao inexistente, pendente e ja decidida (oraculo de
+  -- existencia e de resultado sobre dados fora do proprio escopo).
   IF NOT public.can_decide_limit_increase(p_request_id) THEN
     RAISE EXCEPTION 'Você não tem autoridade para decidir o aumento de verba deste PA.'
       USING ERRCODE = 'insufficient_privilege';
+  END IF;
+
+  IF v_request.status IS DISTINCT FROM 'pending' THEN
+    RAISE EXCEPTION 'Esta solicitação já foi decidida (%).', v_request.status
+      USING ERRCODE = 'object_not_in_prerequisite_state';
   END IF;
 
   IF NOT p_approve AND v_reason IS NULL THEN
