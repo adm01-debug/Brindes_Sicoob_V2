@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSlaCycleStartedAt } from "@/lib/sicoob/sla-cycle";
+import { getSlaCycleStartedAt, isSlaApprovalStage } from "@/lib/sicoob/sla-cycle";
 
 describe("getSlaCycleStartedAt", () => {
   const history = [
@@ -47,5 +47,29 @@ describe("getSlaCycleStartedAt", () => {
     expect(getSlaCycleStartedAt("escalated_to_board", [])).toBeUndefined();
     expect(getSlaCycleStartedAt("in_production", history)).toBeUndefined();
     expect(getSlaCycleStartedAt(null, history)).toBeUndefined();
+  });
+});
+
+describe("isSlaApprovalStage", () => {
+  it("conta o SLA apenas nas etapas em que a aprovação ainda governa o pedido", () => {
+    expect(isSlaApprovalStage("pending")).toBe(true);
+    expect(isSlaApprovalStage("waiting_approval")).toBe(true);
+    expect(isSlaApprovalStage("escalated_to_board")).toBe(true);
+  });
+
+  it("não conta pedido já decidido, entregue ou cancelado como urgente", () => {
+    // Sem esta guarda o cartão "SLA crítico" somava pedido em produção e
+    // entregue, cujo prazo de aprovação já encerrou: número inflado na tela.
+    expect(isSlaApprovalStage("approved")).toBe(false);
+    expect(isSlaApprovalStage("in_production")).toBe(false);
+    expect(isSlaApprovalStage("delivered")).toBe(false);
+    expect(isSlaApprovalStage("completed")).toBe(false);
+    expect(isSlaApprovalStage("cancelled")).toBe(false);
+  });
+
+  it("trata status ausente como fora do fluxo de aprovação", () => {
+    expect(isSlaApprovalStage(null)).toBe(false);
+    expect(isSlaApprovalStage(undefined)).toBe(false);
+    expect(isSlaApprovalStage("")).toBe(false);
   });
 });
