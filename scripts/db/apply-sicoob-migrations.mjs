@@ -128,6 +128,18 @@ const TARGETS = [
       file: "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
       sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
     },
+  {
+    file: "supabase/migrations/20261127150000_approval_worker_health_ignores_empty_timeouts.sql",
+    sha256: "dec81f57fe2e8613e91eb3ca3c7823013d1ae8c49c1ee29c5a1f4252919694ad",
+  },
+  {
+    file: "supabase/migrations/20261127190000_prune_cron_job_run_details.sql",
+    sha256: "172e2ae3d128b70f90ca9f597a92e503023092c190fce60414cf42fbe3e95392",
+  },
+  {
+    file: "supabase/migrations/20261127153000_fix_approval_dispatch_response_skew.sql",
+    sha256: "6082565e4a220576a0287cb4d972634d9a9e298d0dcfd64a5f03bd9d0e823332",
+  },
     {
     file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
@@ -453,9 +465,6 @@ function dollarQuote(value, label) {
   return `${delimiter}${value}${delimiter}`;
 }
 
-// A migration autorizada mais recente que redefine a função é a fonte do corpo
-// esperado: funções forward-only podem ser substituídas por migrations novas
-// sem que o arquivo antigo deixe de constar no ledger.
 function latestDefiner(targets, functionName) {
   const declarations = [
     `CREATE OR REPLACE FUNCTION public.${functionName}(`,
@@ -465,29 +474,51 @@ function latestDefiner(targets, functionName) {
     declarations.some((declaration) => target.sql.includes(declaration)));
 }
 
-// O corpo esperado do monitor é a função original (20260922225500) com os
-// dois patches de correlação/timeout aplicados pela migration 20261015102000.
-// O patch substitui os blocos antigos pelos novos; derivá-los em Node evita
-// guardar o corpo copiado e mantém a validação por igualdade total (hash).
-function approvalWorkerMonitorBody(targets) {
-  const base = latestDefiner(targets, "monitor_sicoob_approval_worker")?.sql
-    ?? readFileSync(join(ROOT, "supabase/migrations/20260922225500_monitor_sicoob_approval_worker.sql"), "utf8");
-  const patch = latestDefiner(targets, "dispatch_sicoob_approval_worker")?.sql
-    ?? readFileSync(join(ROOT, "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql"), "utf8");
+// O corpo esperado do monitor é a função original (20260922225500) com todos os
+// patches aplicados depois dela, em ordem cronológica: a correlação/timeout de
+// 20261015102000, a janela de resposta de 20261127153000 e a agregacao de saude de
+// 20261127150000, que so conta timeout como falha quando ha entrega pendente. O patch substitui os
+// blocos antigos pelos novos; derivá-los em Node evita guardar o corpo copiado
+// e mantém a validação por igualdade total (hash).
+const MONITOR_PATCHES = [
+  "20261015102000_fix_pg_net_recycled_request_ids.sql",
+  "20261127153000_fix_approval_dispatch_response_skew.sql",
+  "20261127150000_approval_worker_health_ignores_empty_timeouts.sql",
+];
+
+export function approvalWorkerMonitorBody() {
+  // A base é sempre a declaração original: as migrations seguintes só carregam
+  // patches (blocos $old_$/$new_$), não uma definição completa da função.
+  const base = readFileSync(join(ROOT, "supabase/migrations/20260922225500_monitor_sicoob_approval_worker.sql"), "utf8");
+  const patches = MONITOR_PATCHES.map((file) => readFileSync(join(ROOT, "supabase/migrations", file), "utf8"));
   const findBlock = (sql, marker) => {
     const labelIndex = sql.indexOf(`:= $${marker}$`);
     if (labelIndex < 0) throw new Error(`Bloco $${marker}$ não encontrado no patch do monitor.`);
     return sql.slice(labelIndex + `:= $${marker}$`.length, sql.indexOf(`$${marker}$;`, labelIndex));
   };
-  const apply = (source, marker, targetSql) => {
+  const apply = (patch, source, marker) => {
     const oldBlock = findBlock(patch, `old_${marker}`);
     const newBlock = findBlock(patch, `new_${marker}`);
-    const replaced = targetSql.replace(oldBlock, newBlock);
-    if (replaced === targetSql) throw new Error(`Patch ${marker} não encontrado no corpo do monitor.`);
+    const replaced = source.replace(oldBlock, newBlock);
+    if (replaced === source) throw new Error(`Patch ${marker} não encontrado no corpo do monitor.`);
     return replaced;
   };
-  const body = extractFunctionBody(base, "monitor_sicoob_approval_worker");
-  return apply(patch, "response", apply(patch, "timeout", body));
+  return patches.reduce((body, patch) => {
+    let atual = body;
+    // Cada patch declara seus marcadores como blocos $old_<nome>$; descobrir a
+    // lista no proprio SQL evita manter um catalogo aqui a cada correcao nova.
+    const markers = [...patch.matchAll(/:= \$old_([a-z_]+)\$/g)].map((m) => m[1]);
+    for (const marker of markers) {
+      // Patch mais recente já pode ter substituído o bloco: nesse caso ele é pulado.
+      if (!patch.includes(`$old_${marker}$`)) continue;
+      try {
+        atual = apply(patch, atual, marker);
+      } catch {
+        if (!atual.includes(findBlock(patch, `new_${marker}`))) throw new Error(`Patch ${marker} não aplicável ao corpo do monitor.`);
+      }
+    }
+    return atual;
+  }, extractFunctionBody(base, "monitor_sicoob_approval_worker"));
 }
 
 function extractFunctionBody(sql, functionName) {
@@ -1009,7 +1040,7 @@ async function validateContract(client, targets) {
     && sha256(result.quote_scope_source.trim()) === sha256(
       extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     )
-    && sha256(result.monitor_source.trim()) === sha256(approvalWorkerMonitorBody(targets));
+    && sha256(result.monitor_source.trim()) === sha256(approvalWorkerMonitorBody());
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
     : value;
@@ -1229,7 +1260,7 @@ ${renderContractGuard(`
      OR NOT ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL}
      OR NOT ${APPROVAL_WORKER_MONITOR_SAFE_SQL}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.monitor_sicoob_approval_worker()'))
-        IS DISTINCT FROM ${dollarQuote(approvalWorkerMonitorBody(targets), "monitor_body")}
+        IS DISTINCT FROM ${dollarQuote(approvalWorkerMonitorBody(), "monitor_body")}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])

@@ -33,7 +33,16 @@ Deno.serve(withStructuredLogging("sicoob-approval-reconciliation", async (req) =
       ...delivery,
       destination_label: delivery.channel === "email" ? "E-mail configurado" : "Webhook Slack configurado",
     }));
-    return json({ deliveries, workerHealth: health.data });
+    // O worker despacha a cada minuto; sem este historico, um `failed_24h`
+    // alto nao diz QUANDO nem POR QUE falhou.
+    const { data: dispatches, error: erroDispatches } = await auth.supabaseAdmin
+      .from("sicoob_approval_worker_dispatches")
+      .select("id,request_id,state,status_code,error_message,requested_at,completed_at")
+      .order("requested_at", { ascending: false })
+      .limit(50);
+    if (erroDispatches) return json({ error: "historico_indisponivel" }, 503);
+
+    return json({ deliveries, workerHealth: health.data, dispatches: dispatches ?? [] });
   }
 
   if (body.action !== "reconcile" || typeof body.deliveryId !== "string" || !uuid.test(body.deliveryId)

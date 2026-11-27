@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { hasTransactionControl } from '../../scripts/db/apply-sicoob-migrations.mjs';
 
@@ -37,5 +39,30 @@ describe('hasTransactionControl — scanner de controle transacional', () => {
     "SELECT E'can\\'t stop';",
   ])('permite %s', (sql) => {
     expect(hasTransactionControl(sql)).toBe(false);
+  });
+});
+
+// O backfill de 20261127153000 só pode recuperar um timeout quando a resposta
+// do pg_net é atribuível a ele. Se um disparo mais novo reusou o mesmo
+// request_id, a resposta pertence ao mais novo e o antigo precisa continuar
+// como timeout.
+describe('backfill de timeouts do worker de aprovações', () => {
+  const sql = readFileSync(
+    join(process.cwd(), 'supabase/migrations/20261127153000_fix_approval_dispatch_response_skew.sql'),
+    'utf8',
+  );
+
+  it('descarta candidatos que tenham um disparo mais novo com o mesmo request_id', () => {
+    expect(sql).toMatch(/NOT EXISTS \(\s*SELECT 1 FROM public\.sicoob_approval_worker_dispatches novo/);
+    expect(sql).toMatch(/novo\.requested_at>d\.requested_at/);
+  });
+
+  it('só recupera disparos em timeout que tenham resposta', () => {
+    expect(sql).toMatch(/d\.state='timed_out'/);
+    expect(sql).toMatch(/EXISTS \(SELECT 1 FROM net\._http_response r WHERE r\.id=d\.request_id\)/);
+  });
+
+  it('aplica a janela de -5s na correlação da resposta', () => {
+    expect(sql).toContain("r.created >= d.requested_at - interval '5 seconds'");
   });
 });
