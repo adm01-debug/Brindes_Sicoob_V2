@@ -112,13 +112,26 @@ export interface Resumo {
   detail: string;
 }
 
-export function resumoRls(rls: RlsAuditRow | null): Resumo {
+/** Dado mais velho que isso nao sustenta um selo verde. */
+export const IDADE_MAXIMA_AUDITORIA_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function auditoriaVencida(rls: RlsAuditRow | null, agora: Date = new Date()): boolean {
+  if (!rls?.audited_at) return true;
+  const quando = new Date(rls.audited_at).getTime();
+  if (!Number.isFinite(quando)) return true;
+  return agora.getTime() - quando > IDADE_MAXIMA_AUDITORIA_MS;
+}
+
+export function resumoRls(rls: RlsAuditRow | null, agora: Date = new Date()): Resumo {
   if (!rls) return { ok: false, detail: "Nenhuma auditoria de RLS registrada" };
   const semRls = listaDeTexto(rls.tables_missing_rls);
   const permissivas = listaDeTexto(rls.tables_permissive_rls);
   const comRls = numeroOuZero(rls.tables_with_rls);
   const total = numeroOuZero(rls.tables_total);
   if (semRls.length === 0 && permissivas.length === 0) {
+    if (auditoriaVencida(rls, agora)) {
+      return { ok: false, detail: `${comRls}/${total} tabelas com RLS na última auditoria, mas o dado está desatualizado` };
+    }
     return { ok: true, detail: `${comRls}/${total} tabelas com RLS — score ${numeroOuZero(rls.score).toFixed(2)}%` };
   }
   return { ok: false, detail: `${semRls.length} sem RLS, ${permissivas.length} permissiva(s) — score ${numeroOuZero(rls.score).toFixed(2)}%` };
@@ -153,7 +166,7 @@ export function avisoDeCobertura(rls: RlsAuditRow | null): string | null {
   return null;
 }
 
-const COR_DO_STATUS: Record<string, "default" | "destructive"> = { OK: "default", ATENCAO: "destructive" };
+const COR_DO_STATUS: Record<string, "default" | "secondary" | "destructive"> = { OK: "default", PARCIAL: "secondary", ATENCAO: "destructive" };
 
 function ItemDeIntegridade({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
   return (
@@ -193,8 +206,7 @@ function ListaDeAchadosAcl({ achados }: { achados: SecDefinerFinding[] }) {
 }
 
 function CabecalhoDaIntegridade({ dados, carregando, recarregar }: { dados: DatabaseIntegrity; carregando: boolean; recarregar: () => void }) {
-  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
-  const status = temAchado ? "ATENCAO" : "OK";
+  const status = statusDeIntegridade(dados);
   return (
     <div className="flex items-center gap-2">
       <Badge variant={COR_DO_STATUS[status]}>{status}</Badge>
@@ -204,6 +216,16 @@ function CabecalhoDaIntegridade({ dados, carregando, recarregar }: { dados: Data
       </Button>
     </div>
   );
+}
+
+/**
+ * Leitura parcial nao pode virar selo verde: se qualquer RPC falhou, o estado
+ * e desconhecido, nao aprovado.
+ */
+export function statusDeIntegridade(dados: DatabaseIntegrity): "OK" | "ATENCAO" | "PARCIAL" {
+  const temAchado = !resumoRls(dados.rls).ok || dados.aclFindings.length > 0;
+  if (temAchado) return "ATENCAO";
+  return dados.errors.length > 0 ? "PARCIAL" : "OK";
 }
 
 function DatabaseIntegrityBody({ dados, carregando, recarregar }: { dados: DatabaseIntegrity | null; carregando: boolean; recarregar: () => void }) {
@@ -230,7 +252,10 @@ function DatabaseIntegrityBody({ dados, carregando, recarregar }: { dados: Datab
         </p>
       )}
       {dados.rls?.audited_at && (
-        <p className="text-xs text-muted-foreground">Última auditoria registrada em {new Date(dados.rls.audited_at).toLocaleString("pt-BR")}</p>
+        <p className="text-xs text-muted-foreground">
+          Última auditoria de RLS registrada em {new Date(dados.rls.audited_at).toLocaleString("pt-BR")}.
+          {" "}O painel lê o resultado gravado; não executa a auditoria a cada abertura.
+        </p>
       )}
       {dados.errors.length > 0 && (
         <div className="rounded-md border border-destructive/40 p-2.5 text-xs space-y-1">
@@ -258,6 +283,12 @@ export function DatabaseIntegrityCard() {
           variant: "destructive",
         });
       }
+    } catch (erro) {
+      toast({
+        title: "Não foi possível verificar a integridade",
+        description: erro instanceof Error ? erro.message : "Erro desconhecido",
+        variant: "destructive",
+      });
     } finally {
       setCarregando(false);
     }

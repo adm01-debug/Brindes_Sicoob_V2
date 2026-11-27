@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avisoDeCobertura, resumoAcl, resumoHealth, resumoRls } from '@/components/admin/security/DatabaseIntegrityCard';
+import { auditoriaVencida, avisoDeCobertura, resumoAcl, resumoHealth, resumoRls, statusDeIntegridade } from '@/components/admin/security/DatabaseIntegrityCard';
 
 const auditoria = {
   tables_total: 243,
@@ -75,5 +75,47 @@ describe('avisoDeCobertura', () => {
 
   it('nao avisa quando nao ha divergencia', () => {
     expect(avisoDeCobertura(auditoria)).toBeNull();
+  });
+});
+
+const AGORA = new Date('2026-11-27T12:00:00Z');
+
+describe('auditoriaVencida', () => {
+  it('vence quando o dado passa de 7 dias', () => {
+    expect(auditoriaVencida({ ...auditoria, audited_at: '2026-11-01T00:00:00Z' }, AGORA)).toBe(true);
+    expect(auditoriaVencida({ ...auditoria, audited_at: '2026-11-26T00:00:00Z' }, AGORA)).toBe(false);
+  });
+
+  it('vence sem data legivel', () => {
+    expect(auditoriaVencida({ ...auditoria, audited_at: 'data-invalida' }, AGORA)).toBe(true);
+    expect(auditoriaVencida(null, AGORA)).toBe(true);
+  });
+});
+
+describe('resumoRls com dado vencido', () => {
+  it('nao da selo verde quando a auditoria esta velha, mesmo sem achados', () => {
+    const r = resumoRls({ ...auditoria, audited_at: '2026-11-01T00:00:00Z' }, AGORA);
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('o dado está desatualizado');
+  });
+
+  it('mantem a aprovacao com dado recente', () => {
+    expect(resumoRls({ ...auditoria, audited_at: '2026-11-26T00:00:00Z' }, AGORA).ok).toBe(true);
+  });
+});
+
+describe('statusDeIntegridade', () => {
+  const base = { rls: auditoria, health: saude, aclFindings: [] as never[], errors: [] as string[], carregadoEm: AGORA.toISOString() };
+
+  it('APROVA so quando tudo foi lido e nada tem achado', () => {
+    expect(statusDeIntegridade(base)).toBe('OK');
+  });
+
+  it('marca PARCIAL quando alguma leitura falhou, em vez de aprovar', () => {
+    expect(statusDeIntegridade({ ...base, errors: ['Permissões de função: boom'] })).toBe('PARCIAL');
+  });
+
+  it('marca ATENCAO quando ha achado, mesmo com leitura parcial', () => {
+    expect(statusDeIntegridade({ ...base, errors: ['x'], aclFindings: [{ function_name: 'f', arguments: '', problem: 'EXECUTE', granted_to: 'anon' }] })).toBe('ATENCAO');
   });
 });
