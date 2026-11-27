@@ -139,7 +139,7 @@ export function slaClosedLabel(order: { sla_closed_status?: string; sla_closed_o
   const prazo = order.sla_deadline ? new Date(order.sla_deadline).getTime() : fechouEm;
   const atrasoHoras = Math.max(1, Math.floor((fechouEm - prazo) / 3600000));
 
-  const verbo = VERBO_POR_DESFECHO[outcome] ?? VERBO_POR_DESFECHO.approved;
+  const verbo = Object.hasOwn(VERBO_POR_DESFECHO, outcome) ? VERBO_POR_DESFECHO[outcome] : VERBO_POR_DESFECHO.approved;
   if (order.sla_closed_status !== "critical") return `${verbo} no limite do prazo`;
   return `${verbo} com ${atrasoHoras} h de atraso`;
 }

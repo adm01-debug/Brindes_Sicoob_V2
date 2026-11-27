@@ -3,7 +3,7 @@ import { slaClosedLabel } from '@/pages/sicoob/orders/OrderDetailPage';
 
 const DESFECHOS = ['approved', 'rejected', 'cancelled', 'escalated'];
 const base = {
-  sla_closed_status: 'ok',
+  sla_closed_status: 'normal',
   sla_closed_at: '2026-03-10T12:00:00.000Z',
   sla_deadline: '2026-03-10T10:00:00.000Z',
 };
@@ -46,6 +46,20 @@ describe('slaClosedLabel', () => {
       .toBe('Aprovado com 2 h de atraso');
   });
 
+  it('nao busca desfecho no prototype do Object', () => {
+    for (const herdado of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+      expect(slaClosedLabel({ ...base, sla_closed_outcome: herdado }))
+        .toBe('Aprovado no limite do prazo');
+    }
+  });
+
+  it('rotula como no prazo o status real exibido na tela', () => {
+    for (const status of ['normal', 'warning'] as const) {
+      expect(slaClosedLabel({ ...base, sla_closed_status: status, sla_closed_outcome: 'approved' }))
+        .toBe('Aprovado no limite do prazo');
+    }
+  });
+
   it('aplica atraso minimo de 1h e usa o fechamento quando falta o prazo', () => {
     // Fechou no prazo exato (0h) em status critico: o rotulo mostra 1h.
     expect(slaClosedLabel({
@@ -63,7 +77,7 @@ describe('slaClosedLabel', () => {
   });
 
   it('nao rotula quando a data de fechamento e invalida ou ausente', () => {
-    expect(slaClosedLabel({ sla_closed_status: 'ok', sla_closed_outcome: 'approved' })).toBeNull();
+    expect(slaClosedLabel({ sla_closed_status: 'normal', sla_closed_outcome: 'approved' })).toBeNull();
     expect(slaClosedLabel({ ...base, sla_closed_at: 'data-invalida' })).toBeNull();
   });
 });
