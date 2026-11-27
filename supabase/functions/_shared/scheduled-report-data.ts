@@ -351,7 +351,7 @@ async function salesSection(
   since: string,
   until: string,
 ): Promise<string> {
-  const [invoicesRes, approvalsRes, publicApprovalsRes] = await Promise.all([
+  const [invoicesRes, approvalsRes, publicApprovalsRes, lateInvoicesRes] = await Promise.all([
     // Faturamento: nota fiscal emitida na janela. `pdf` e `xml` da mesma nota
     // são documentos distintos do mesmo valor — contar os dois dobraria o
     // faturamento, daí a deduplicação por (order_id, invoice_number). O filtro
@@ -384,10 +384,22 @@ async function salesSection(
       .lt("client_response_at", until)
       .order("client_response_at", { ascending: false })
       .limit(SCAN_LIMIT),
+    // Nota anexada depois do fechamento do ciclo nao entrava em relatorio
+    // nenhum: a consulta principal filtra por `issued_at` e a janela do ciclo
+    // seguinte comeca depois. Selecionar pela data de registro devolve essas
+    // notas como ajuste do ciclo em que foram anexadas.
+    supabase.from("sicoob_order_invoices")
+      .select("order_id, invoice_number, amount, issued_at, created_at, sicoob_orders!inner(created_by)")
+      .eq("sicoob_orders.created_by", sellerId)
+      .gte("created_at", since)
+      .lt("created_at", until)
+      .order("created_at", { ascending: false })
+      .limit(SCAN_LIMIT),
   ]);
   if (invoicesRes.error) throw invoicesRes.error;
   if (approvalsRes.error) throw approvalsRes.error;
   if (publicApprovalsRes.error) throw publicApprovalsRes.error;
+  if (lateInvoicesRes.error) throw lateInvoicesRes.error;
 
   const invoices = new Map<string, { number: string; amount: number; issuedAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
@@ -407,6 +419,41 @@ async function salesSection(
     escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "—"),
     escapeHtml(money(inv.amount)),
   ]);
+
+  // Ajustes: nota registrada na janela cuja emissao e anterior a ela. Sem a
+  // deduplicacao por (pedido, numero) a mesma nota entrara duas vezes quando o
+  // pdf e o xml forem anexados em ciclos diferentes.
+  const sinceDate = since.slice(0, 10);
+  const lateAdjustments = new Map<string, { number: string; amount: number; issuedAt: string; registeredAt: string }>();
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    if (invoices.has(key) || lateAdjustments.has(key)) continue;
+    const issuedAt = String(inv.issued_at ?? "");
+    if (issuedAt && issuedAt >= sinceDate) continue;
+    lateAdjustments.set(key, {
+      number: String(inv.invoice_number ?? ""),
+      amount: Number(inv.amount ?? 0),
+      issuedAt,
+      registeredAt: String(inv.created_at ?? ""),
+    });
+  }
+  const lateRows = [...lateAdjustments.values()]
+    .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
+  const lateTotal = lateRows.reduce((sum, inv) => sum + inv.amount, 0);
+  const lateBodies = lateRows.map((inv) => [
+    escapeHtml(inv.number),
+    escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "\u2014"),
+    escapeHtml(inv.registeredAt ? new Date(inv.registeredAt).toLocaleDateString("pt-BR") : "\u2014"),
+    escapeHtml(money(inv.amount)),
+  ]);
+  const lateSection = lateBodies.length === 0 ? "" : "<h3>Ajustes de faturamento</h3>"
+    + `<p><strong>Notas anexadas no per\u00edodo com emiss\u00e3o anterior:</strong> ${lateRows.length} \u2014 `
+    + `<strong>valor:</strong> ${escapeHtml(money(lateTotal))}</p>`
+    + table(["Nota", "Emiss\u00e3o", "Registrada em", "Valor"], lateBodies.slice(0, ROW_LIMIT))
+    + (lateBodies.length > ROW_LIMIT
+      ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${lateBodies.length}.</p>`
+      : "")
+    + "<p>N\u00e3o somadas ao faturamento do per\u00edodo \u2014 a nota foi anexada depois da emiss\u00e3o.</p>";
 
   // A mesma proposta pode ter `approved_at` do painel e `client_response_at` do
   // link público; contar as duas dobraria o valor aprovado.
@@ -437,6 +484,7 @@ async function salesSection(
     + (invoiceBodies.length > ROW_LIMIT
       ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${invoiceBodies.length}.</p>`
       : "")
+    + lateSection
     + "<h3>Propostas aprovadas no período</h3>"
     + `<p><strong>Aprovadas:</strong> ${approvalRows.length} — `
     + `<strong>valor:</strong> ${escapeHtml(money(approvedTotal))}</p>`

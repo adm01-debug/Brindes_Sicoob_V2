@@ -106,9 +106,23 @@ export function calculateNextRun(
 
 /** Dia do mês que o agendamento deve manter como âncora quando for mensal. */
 export function getAnchorDay(nextRunAt: unknown, createdAt: unknown = null): number | null {
-  const candidate = new Date(String(nextRunAt ?? ""));
-  if (!Number.isNaN(candidate.getTime())) return candidate.getUTCDate();
-  const fallback = new Date(String(createdAt ?? ""));
-  if (!Number.isNaN(fallback.getTime())) return fallback.getUTCDate();
-  return null;
+  // O dia de criacao e a ancora: `next_run_at` ja pode ter passado pelo clamp de
+  // fevereiro (31 de janeiro virou 28) e usar esse dia prendia o mensal no 28 em
+  // todos os meses seguintes. Sem `created_at`, o dia da proxima execucao e o
+  // melhor palpite disponivel.
+  return brasiliaDay(createdAt) ?? brasiliaDay(nextRunAt);
+}
+
+const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * Dia do calendario de Brasilia (UTC-3, sem horario de verao desde 2019) — o
+ * mesmo que o front usa ao criar o agendamento (`calculateNextRun` local). Ler o
+ * dia em UTC adiantava para o dia seguinte tudo criado depois das 21h.
+ */
+function brasiliaDay(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = new Date(String(value));
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(parsed.getTime() - BRASILIA_OFFSET_MS).getUTCDate();
 }
