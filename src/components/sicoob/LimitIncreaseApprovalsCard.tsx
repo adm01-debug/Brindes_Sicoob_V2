@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/dialog';
 import { formatCurrency } from '@/lib/format';
 import { format } from 'date-fns';
-import { Check, X, Wallet } from 'lucide-react';
+import { AlertTriangle, Check, X, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 type LimitIncreaseRequest = Awaited<
   ReturnType<typeof sicoobApprovalService.listPendingLimitIncreaseRequests>
@@ -100,14 +101,22 @@ function LimitIncreaseRow({
   );
 }
 
+function describeQueryError(error: unknown): string | undefined {
+  return error instanceof Error ? error.message : undefined;
+}
+
 function LimitIncreaseList({
   isLoading,
+  isError,
+  errorMessage,
   requests,
   decisionPending,
   onApprove,
   onReject,
 }: {
   isLoading: boolean;
+  isError?: boolean;
+  errorMessage?: string;
   requests: LimitIncreaseRequest[] | undefined;
   decisionPending: boolean;
   onApprove: (request: LimitIncreaseRequest) => void;
@@ -118,6 +127,15 @@ function LimitIncreaseList({
       <div className="space-y-2">
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div role="alert" className="py-12 text-center text-muted-foreground">
+        <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-destructive opacity-60" />
+        <p>Não foi possível carregar os pedidos de aumento de verba.</p>
+        <p className="mt-1 text-sm">{errorMessage ?? 'Tente novamente em instantes.'}</p>
       </div>
     );
   }
@@ -160,12 +178,17 @@ function LimitIncreaseList({
 
 export function LimitIncreaseApprovalsCard() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [rejecting, setRejecting] = useState<LimitIncreaseRequest | null>(null);
   const [reason, setReason] = useState('');
 
-  const { data: requests, isLoading } = useQuery({
-    queryKey: [LIMIT_INCREASE_APPROVALS_QUERY_KEY],
+  // A chave inclui a conta: a fila é escopada pela cooperativa do usuário, e o
+  // cache global servia os pedidos da conta anterior ao trocar de sessão na
+  // mesma aba.
+  const { data: requests, isLoading, isError, error } = useQuery({
+    queryKey: [LIMIT_INCREASE_APPROVALS_QUERY_KEY, user?.id ?? null],
     queryFn: () => sicoobApprovalService.listPendingLimitIncreaseRequests(),
+    enabled: Boolean(user?.id),
   });
 
   const clearCaches = () => {
@@ -249,6 +272,8 @@ export function LimitIncreaseApprovalsCard() {
         <CardContent>
           <LimitIncreaseList
             isLoading={isLoading}
+            isError={isError}
+            errorMessage={describeQueryError(error)}
             requests={requests}
             decisionPending={decisionPending}
             onApprove={handleApprove}

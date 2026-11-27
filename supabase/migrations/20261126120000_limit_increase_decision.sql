@@ -64,6 +64,7 @@ DECLARE
   v_mes            int;
   v_ocupada        numeric(14,2);
   v_limite_texto   text;
+  v_tem_verba      boolean := FALSE;
 BEGIN
   SELECT * INTO v_request
     FROM public.limit_increase_requests AS request
@@ -100,19 +101,27 @@ BEGIN
     v_mes := EXTRACT(MONTH FROM v_competencia)::int;
 
     -- A verba do pedido não guarda competência: a decisão vale para a competência
-    -- corrente e, se ela não estiver cadastrada, para a verba aberta mais recente
-    -- do PA — exatamente a que a tela /pa/verba mostra.
+    -- corrente. Antes esta seleção caía para "a verba aberta mais recente do PA"
+    -- (ORDER BY ... ano DESC, mes DESC) e um pedido feito em novembro podia
+    -- elevar a verba de outubro — mês que o solicitante nunca viu na tela.
     SELECT * INTO v_target
       FROM public.pa_budgets AS budget
      WHERE budget.pa_id = v_request.pa_id
-       AND budget.fechada_em IS NULL
-     ORDER BY (budget.ano = v_ano AND budget.mes = v_mes) DESC,
-              budget.ano DESC,
-              budget.mes DESC
+       AND budget.ano = v_ano
+       AND budget.mes = v_mes
      LIMIT 1
      FOR UPDATE;
 
-    IF FOUND THEN
+    v_tem_verba := FOUND;
+
+    IF v_tem_verba THEN
+      IF v_target.fechada_em IS NOT NULL THEN
+        RAISE EXCEPTION
+          'A verba da competência %/% do PA já está fechada; não é possível elevar o limite de um mês encerrado.',
+          v_target.mes, v_target.ano
+          USING ERRCODE = 'object_not_in_prerequisite_state';
+      END IF;
+
       v_ocupada := COALESCE(v_target.verba_reservada, 0)
                  + COALESCE(v_target.verba_comprometida, 0)
                  + COALESCE(v_target.verba_consumida, 0);
@@ -123,13 +132,32 @@ BEGIN
           v_request.requested_limit, v_target.mes, v_target.ano, v_ocupada
           USING ERRCODE = 'check_violation';
       END IF;
+    END IF;
 
+    -- Teto monotônico: o novo limite tem de ser maior que a verba hoje vigente
+    -- (o maior entre a verba real da competência e a informada no pedido). Sem
+    -- isso, aprovar um pedido antigo e menor rebaixava uma verba já elevada por
+    -- outra aprovação — redução silenciosa que ninguém pediu.
+    IF v_request.requested_limit <= GREATEST(
+         COALESCE(v_target.verba_planejada, 0),
+         COALESCE(v_request.current_limit, 0)
+       ) THEN
+      RAISE EXCEPTION
+        'O novo limite (R$ %) precisa ser maior que a verba vigente (R$ %); este pedido foi superado por outra aprovação — recuse-o ou peça um novo aumento.',
+        v_request.requested_limit,
+        GREATEST(COALESCE(v_target.verba_planejada, 0), COALESCE(v_request.current_limit, 0))
+        USING ERRCODE = 'check_violation';
+    END IF;
+
+    IF v_tem_verba THEN
       -- verba_total é espelhado por trg_sync_pa_budget_planejada.
       UPDATE public.pa_budgets
          SET verba_planejada = v_request.requested_limit,
              updated_at = now()
        WHERE id = v_target.id;
     ELSE
+      -- Sem verba cadastrada para a competência corrente: a aprovação cria a
+      -- verba do mês com o teto aprovado (antes o efeito ia para outro mês).
       INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_planejada)
       VALUES (v_request.pa_id, v_ano, v_mes, v_request.requested_limit, v_request.requested_limit);
     END IF;
@@ -212,6 +240,12 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   limit_increase_requests.requested_by = (SELECT auth.uid())
+  -- O pedido nasce pendente e sem decisão: sem estas três condições o
+  -- solicitante podia inserir já com status 'approved', aprovar a si mesmo
+  -- gravando approved_by, ou pré-gravar um rejection_reason.
+  AND limit_increase_requests.status = 'pending'
+  AND limit_increase_requests.approved_by IS NULL
+  AND limit_increase_requests.rejection_reason IS NULL
   AND (
     public.is_admin((SELECT auth.uid()))
     OR (

@@ -238,11 +238,13 @@ function DashboardSidebar({ stats, paName }: { stats?: DashboardStats; paName: s
           <CardDescription>Precisa de ajuda com seu pedido ou verba?</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button variant="outline" className="h-12 w-full justify-start gap-3">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-sicoob-green/10">
-              <TrendingUp className="h-3 w-3 text-sicoob-green" />
-            </div>
-            <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
+          <Button variant="outline" className="h-12 w-full justify-start gap-3" asChild>
+            <Link to="/pa/verba">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-sicoob-green/10">
+                <TrendingUp className="h-3 w-3 text-sicoob-green" />
+              </div>
+              <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
+            </Link>
           </Button>
           <Button variant="outline" className="h-12 w-full justify-start gap-3" asChild>
             <Link to="/relatorios/sicoob">

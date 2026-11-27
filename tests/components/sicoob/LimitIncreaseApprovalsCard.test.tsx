@@ -91,6 +91,16 @@ describe('LimitIncreaseApprovalsCard', () => {
     expect(mocks.askConfirm).toHaveBeenCalled();
   });
 
+  it('mostra falha de carga em vez de "nenhum pedido" quando a consulta quebra', async () => {
+    mocks.list.mockRejectedValue(new Error('permission denied for table limit_increase_requests'));
+    renderWithProviders(<LimitIncreaseApprovalsCard />);
+
+    const alerta = await screen.findByRole('alert');
+    expect(alerta).toHaveTextContent('Não foi possível carregar os pedidos de aumento de verba.');
+    expect(alerta).toHaveTextContent('permission denied for table limit_increase_requests');
+    expect(screen.queryByText(/Nenhum pedido de aumento de verba/)).toBeNull();
+  });
+
   it('não aprova quando a confirmação é recusada', async () => {
     const user = userEvent.setup();
     mocks.askConfirm.mockResolvedValue(false);

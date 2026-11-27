@@ -232,6 +232,10 @@ export const sicoobApprovalService = {
     return data;
   },
 
+  // `amount` é o valor ADICIONAL digitado pelo gestor do PA; o contrato da
+  // solicitação (fila de aprovação e RPC de decisão) trabalha com o TETO
+  // absoluto em `requested_limit`. Derivar aqui evita que um pedido de
+  // R$ 5.000 sobre uma verba de R$ 50.000 vire teto de R$ 5.000 na aprovação.
   async createLimitIncreaseRequest(
     paId: string,
     amount: number,
@@ -241,12 +245,22 @@ export const sicoobApprovalService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_MESSAGE);
 
+    const adicional = Number(amount);
+    if (!Number.isFinite(adicional) || adicional <= 0) {
+      throw new Error('Informe um valor adicional maior que zero.');
+    }
+
+    const base = Number(currentLimit ?? 0);
+    const novoLimite = Math.round((base + adicional) * 100) / 100;
+    const justificativa = reason.trim();
+    if (!justificativa) throw new Error('Informe a justificativa da solicitação.');
+
     const { error } = await supabase.from("limit_increase_requests").insert({
       pa_id: paId,
       requested_by: user.id,
       current_limit: currentLimit ?? null,
-      requested_limit: amount,
-      reason: reason,
+      requested_limit: novoLimite,
+      reason: justificativa,
       status: 'pending'
     });
     
