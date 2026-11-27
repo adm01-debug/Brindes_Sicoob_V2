@@ -30,11 +30,11 @@ export type ResultadoEnvio =
 
 const encoder = new TextEncoder();
 
-export function base64UrlParaBytes(valor: string): Uint8Array {
+export function base64UrlParaBytes(valor: string): Uint8Array<ArrayBuffer> {
   const normalizado = valor.replace(/-/g, '+').replace(/_/g, '/');
   const comPadding = normalizado + '='.repeat((4 - (normalizado.length % 4)) % 4);
   const binario = atob(comPadding);
-  const bytes = new Uint8Array(binario.length);
+  const bytes = new Uint8Array(new ArrayBuffer(binario.length));
   for (let i = 0; i < binario.length; i += 1) bytes[i] = binario.charCodeAt(i);
   return bytes;
 }
@@ -45,9 +45,16 @@ export function bytesParaBase64Url(bytes: Uint8Array): string {
   return btoa(binario).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function concatenar(...partes: Uint8Array[]): Uint8Array {
+/** WebCrypto exige `ArrayBuffer` (não `ArrayBufferLike`); copia para garantir o tipo. */
+function copiarBuffer(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+  const saida = new Uint8Array(new ArrayBuffer(bytes.length));
+  saida.set(bytes);
+  return saida;
+}
+
+function concatenar(...partes: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const total = partes.reduce((soma, p) => soma + p.length, 0);
-  const saida = new Uint8Array(total);
+  const saida = new Uint8Array(new ArrayBuffer(total));
   let offset = 0;
   for (const parte of partes) {
     saida.set(parte, offset);
@@ -116,8 +123,8 @@ export async function montarCabecalhoVapid(params: {
 export async function cifrarCarga(
   carga: CargaPush,
   inscricao: InscricaoPush,
-  segredoTeste?: { chaveLocal?: Uint8Array; salt?: Uint8Array },
-): Promise<Uint8Array> {
+  saltFixo?: Uint8Array,
+): Promise<Uint8Array<ArrayBuffer>> {
   const textoPlano = encoder.encode(JSON.stringify(carga));
 
   const chaveServidor = await crypto.subtle.generateKey(
@@ -142,8 +149,7 @@ export async function cifrarCarga(
     await crypto.subtle.deriveBits({ name: 'ECDH', public: chaveCliente }, chaveServidor.privateKey, 256),
   );
 
-  const salt = segredoTeste?.salt ?? crypto.getRandomValues(new Uint8Array(16));
-  const chaveLocal = segredoTeste?.chaveLocal ?? crypto.getRandomValues(new Uint8Array(16));
+  const salt = copiarBuffer(saltFixo ?? crypto.getRandomValues(new Uint8Array(16)));
 
   // PRK = HKDF(auth_secret, ecdh_secret, "WebPush: info\0" || ua_public || as_public)
   const info = concatenar(
@@ -206,7 +212,7 @@ export async function enviarPush(
   fetchImpl: typeof fetch = fetch,
 ): Promise<ResultadoEnvio> {
   let cabecalho: string;
-  let corpo: Uint8Array;
+  let corpo: Uint8Array<ArrayBuffer>;
   try {
     cabecalho = await montarCabecalhoVapid({
       endpoint: inscricao.endpoint,
