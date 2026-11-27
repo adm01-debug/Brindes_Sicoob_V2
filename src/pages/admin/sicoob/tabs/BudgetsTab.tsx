@@ -37,6 +37,41 @@ import type { TablesInsert } from "@/integrations/supabase/types";
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Erro desconhecido";
 
+interface TotaisDaVerba {
+  alocado: number;
+  reservado: number;
+  comprometido: number;
+  consumido: number;
+  saldo: number;
+  percentual: number;
+}
+
+/**
+ * Saldo livre = planejado - reservado - comprometido - consumido.
+ * Reservado e comprometido nao sao gastos, mas ja estao presos a pedidos:
+ * ignora-los liberaria a mesma verba duas vezes para novas alocacoes.
+ */
+export function calcularTotais(b: {
+  verba_planejada?: number | null;
+  verba_total?: number | null;
+  verba_reservada?: number | null;
+  verba_comprometida?: number | null;
+  verba_consumida?: number | null;
+}): TotaisDaVerba {
+  const alocado = b.verba_planejada || b.verba_total || 0;
+  const reservado = b.verba_reservada || 0;
+  const comprometido = b.verba_comprometida || 0;
+  const consumido = b.verba_consumida || 0;
+  return {
+    alocado,
+    reservado,
+    comprometido,
+    consumido,
+    saldo: alocado - reservado - comprometido - consumido,
+    percentual: alocado > 0 ? ((consumido + reservado + comprometido) / alocado) * 100 : 0,
+  };
+}
+
 export const BudgetsTab = () => {
   const { isSupervisorOrAbove } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -275,6 +310,7 @@ export const BudgetsTab = () => {
               <TableHead>Período</TableHead>
               <TableHead>Alocado</TableHead>
               <TableHead>Utilizado</TableHead>
+              <TableHead>Reservado / comprometido</TableHead>
               <TableHead>Saldo</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -282,20 +318,19 @@ export const BudgetsTab = () => {
           <TableBody>
             {budgetsLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             ) : budgets?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8">
                   Nenhuma verba definida.
                 </TableCell>
               </TableRow>
             ) : (
               budgets?.map((b) => {
-                const balance = b.verba_total - b.verba_consumida;
-                const percentage = (b.verba_consumida / b.verba_total) * 100;
+                const { alocado, reservado, comprometido, consumido, saldo: balance, percentual: percentage } = calcularTotais(b);
                 return (
                   <TableRow key={b.id}>
                     <TableCell>
@@ -310,9 +345,12 @@ export const BudgetsTab = () => {
                       })}{" "}
                       / {b.ano}
                     </TableCell>
-                    <TableCell>{formatCurrency(b.verba_total)}</TableCell>
+                    <TableCell>{formatCurrency(alocado)}</TableCell>
                     <TableCell className="text-destructive">
-                      {formatCurrency(b.verba_consumida)}
+                      {formatCurrency(consumido)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatCurrency(reservado + comprometido)}
                     </TableCell>
                     <TableCell className="font-bold">
                       {formatCurrency(balance)}
