@@ -292,10 +292,12 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 - Prioridade: P2
 
 ### SIC-028  Indicadores de verba com competência errada e valor fixo
-- Status: STUB/MOCK
+- Status: RESOLVIDO
 - Origem: matriz P128
-- Evidência no código: `src/pages/sicoob/orders/OrderDetailPage.tsx:252` usa `verba_total || 50000` como fallback. `usePaBudget` (`:22-33`) usa o mês corrente, não a competência do pedido. `OrderBudgetIntelligence.tsx:61` mostra "Uso da Verba Trimestral" sobre dado mensal. `statsService.ts:12-13` pega a última competência cadastrada, que pode ser futura.
-- O que falta: UI e hook — competência do pedido, estado "verba não configurada" sem número inventado e rótulo correto.
+- Evidência original (histórica): `OrderDetailPage.tsx` usava `verba_total || 50000` como fallback; `usePaBudget` lia o mês corrente; `OrderBudgetIntelligence.tsx` rotulava dado mensal como trimestral; `statsService.ts` pegava a última competência cadastrada, que podia ser futura.
+- Já resolvido antes desta entrega: `OrderBudgetIntelligence` (`src/components/sicoob/orders/OrderBudgetIntelligence.tsx:221`) mostra "Competência financeira: MM/AAAA", `usePaBudget` recebe a data do pedido e o painel `OrderBudgetIntelligence` trata o estado "verba não configurada" sem número inventado.
+- O que mudou nesta entrega: `src/lib/sicoob/paBudgetState.ts` ganhou `resolveBudgetCompetence`, `pickBudgetForCompetence` (competência exata e, na falta dela, a última anterior — competência futura nunca vale) e `formatBudgetCompetence`. `src/hooks/admin/useApprovalThreshold.ts` — o hook que decide "Requer Aprovação" no pedido — passou a ler a competência de `order.created_at` em vez do mês corrente (`OrderDetailPage.tsx:64`), e a tela mostra de qual competência veio a alçada ("Alçada Atual (MM/AAAA)"). `src/services/sicoob/statsService.ts` deixou de pegar a última competência cadastrada: usa a competência corrente com a mesma regra, então orçamento do mês seguinte não vira mais o "saldo disponível" do painel do PA. A regra fixa `limite_alcada * 1.5 || 50000` de `usePaBudget` (sem consumidor e sem base em configuração) foi removida.
+- Limite conhecido (decisão do dono): `cooperativas.alcada_superior_threshold` é editável em `/admin/singulares` e em `/admin/sicoob` mas não tem efeito — o trigger que a usava (`trigger_sicoob_order_flow_intelligence`) foi removido em `20260912120000_sicoob_approval_policy_guards.sql:340` e nunca recriado, e nenhuma função compara com a coluna. Hoje o limite de "requer aprovação" vem da alçada do PA (`pa_budgets.limite_alcada`). Ligar a coluna como regra de escalonamento à Diretoria muda quais pedidos vão à Diretoria e não foi feito aqui.
 - Impacto no negócio: o gestor decide olhando um saldo que pode ser fictício.
 - Esforço: P
 - Prioridade: P2

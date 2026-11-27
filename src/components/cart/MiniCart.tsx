@@ -27,13 +27,25 @@ function MiniCartItem({ item, isUpdating, getQuantity, onQuantityChange, onRemov
   return <div className="flex gap-4"><div className="h-20 w-20 rounded-md border bg-muted overflow-hidden flex-shrink-0">{item.product_image_url ? <img src={item.product_image_url} alt={item.product_name} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">Sem foto</div>}</div><div className="flex-1 flex flex-col justify-between"><div><h4 className="text-sm font-medium line-clamp-1">{item.product_name}</h4>{item.color_name ? <p className="text-xs text-muted-foreground flex items-center gap-1">Cor: {item.color_name}{item.color_hex ? <span className="h-2 w-2 rounded-full inline-block border" style={{ backgroundColor: item.color_hex }} /> : null}</p> : null}<p className="text-sm font-bold mt-1">{formatCurrency(item.product_price)}</p></div><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-7 w-7" disabled={isUpdating} onClick={(event) => { event.preventDefault(); onQuantityChange(item.id, quantity - 1); }}><Minus className="h-3 w-3" /></Button><span className="text-sm w-6 text-center font-medium tabular-nums">{quantity}</span><Button variant="outline" size="icon" className="h-7 w-7" disabled={isUpdating} onClick={(event) => { event.preventDefault(); onQuantityChange(item.id, quantity + 1); }}><Plus className="h-3 w-3" /></Button></div><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10 transition-colors" onClick={() => onRemove(item.id)}><Trash2 className="h-4 w-4" /></Button></div></div></div>;
 }
 
-function CartApprovalThreshold({ threshold, subtotal, progress, remaining, overThreshold }: { threshold: number; subtotal: number; progress: number; remaining: number; overThreshold: boolean }) {
+function buildThresholdCopy(input: { overThreshold: boolean; threshold: number; progress: number; carryOverCompetence?: string | null }): { help: string; status: string } {
+  if (input.overThreshold) {
+    return { help: "Este pedido excede sua alçada e exigirá aprovação do Gestor da Singular.", status: "⚠️ Limite Excedido" };
+  }
+  const note = input.carryOverCompetence
+    ? ` Limite herdado da competência ${input.carryOverCompetence}: não há limite de alçada aprovado para o mês corrente, confirme com o gestor antes de finalizar.`
+    : "";
+  return {
+    help: `Você pode aprovar pedidos de até ${formatCurrency(input.threshold)} automaticamente.${note}`,
+    status: input.carryOverCompetence ? `Herdada de ${input.carryOverCompetence}` : `${input.progress.toFixed(0)}% do limite`,
+  };
+}
+
+function CartApprovalThreshold({ threshold, subtotal, progress, remaining, overThreshold, carryOverCompetence }: { threshold: number; subtotal: number; progress: number; remaining: number; overThreshold: boolean; carryOverCompetence?: string | null }) {
   if (threshold <= 0) return null;
   const containerClass = overThreshold ? "bg-destructive/5 border-destructive/20 shadow-[0_0_12px_rgba(239,68,68,0.1)]" : "bg-muted/30 border-border/50";
   const iconClass = overThreshold ? "h-4 w-4 text-destructive animate-pulse" : "h-4 w-4 text-primary";
   const statusClass = overThreshold ? "text-destructive font-bold" : "text-muted-foreground";
-  const help = overThreshold ? "Este pedido excede sua alçada e exigirá aprovação do Gestor da Singular." : `Você pode aprovar pedidos de até ${formatCurrency(threshold)} automaticamente.`;
-  const status = overThreshold ? "⚠️ Limite Excedido" : `${progress.toFixed(0)}% do limite`;
+  const { help, status } = buildThresholdCopy({ overThreshold, threshold, progress, carryOverCompetence });
   const balance = overThreshold ? `Excesso: ${formatCurrency(subtotal - threshold)}` : `Restam ${formatCurrency(remaining)}`;
   return <div className={`space-y-2 p-3 rounded-lg border transition-all duration-300 ${containerClass}`} role="region" aria-label="Informações de Alçada e Aprovação"><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-1.5"><ShieldCheck className={iconClass} aria-hidden="true" /><span className="text-xs font-semibold uppercase tracking-wider">Limite de Alçada</span></div><TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" aria-label="Mais informações sobre o limite de alçada"><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></Button></TooltipTrigger><TooltipContent className="max-w-[200px] text-xs">{help}</TooltipContent></Tooltip></TooltipProvider></div><div className="space-y-1"><Progress value={progress} className="h-1.5" aria-label={`Progresso do limite de alçada: ${progress.toFixed(0)}%`} /><div className="flex items-center justify-between text-[10px]" aria-live="polite"><span className={statusClass}>{status}</span><span className="font-bold">{balance}</span></div></div>{overThreshold ? <div className="flex items-center gap-1.5 mt-2 text-[10px] text-destructive font-semibold bg-destructive/10 p-2 rounded border border-destructive/20" role="alert" aria-live="assertive"><AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /><span>Requer aprovação da Singular após finalização</span></div> : null}</div>;
 }
@@ -50,7 +62,7 @@ export function MiniCart() {
       quantity: item.quantity,
     };
   });
-  const { threshold, needsApproval } = useApprovalThreshold(approvalItems);
+  const { threshold, needsApproval, isCarryOver, competenceLabel } = useApprovalThreshold(approvalItems);
   
   const isOverThreshold = needsApproval(subtotal);
   const thresholdProgress = threshold > 0 ? Math.min((subtotal / threshold) * 100, 100) : 0;
@@ -112,7 +124,7 @@ export function MiniCart() {
         {items.length > 0 && (
           <div className="mt-auto pt-4 space-y-4">
             <CartPaBudgetBalance />
-            <CartApprovalThreshold threshold={threshold} subtotal={subtotal} progress={thresholdProgress} remaining={remaining} overThreshold={isOverThreshold} />
+            <CartApprovalThreshold threshold={threshold} subtotal={subtotal} progress={thresholdProgress} remaining={remaining} overThreshold={isOverThreshold} carryOverCompetence={isCarryOver ? competenceLabel : null} />
 
             <Separator />
             <CouponInput />

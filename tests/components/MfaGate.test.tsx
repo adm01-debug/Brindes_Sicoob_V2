@@ -42,13 +42,11 @@ describe('MfaGate das telas do gestor', () => {
   });
 
   it('não redireciona o gestor após ativar o segundo fator', () => {
-    // O padrão do diálogo manda para /admin, que não é rota registrada (404):
-    // o gestor deve permanecer na tela em que estava (verbas/alertas).
+    // O diálogo não navega depois de ativar o segundo fator: "/admin" não é
+    // rota registrada (404) e o gestor deve permanecer em verbas/alertas.
     renderGate({ hasMFA: false });
-    expect(enrollmentProps.current).toMatchObject({
-      enforce: true,
-      redirectOnSuccess: false,
-    });
+    expect(enrollmentProps.current).toMatchObject({ enforce: true });
+    expect(enrollmentProps.current).not.toHaveProperty('redirectOnSuccess');
   });
 
   it('libera a tela no mesmo endereço quando o segundo fator fica ativo', () => {

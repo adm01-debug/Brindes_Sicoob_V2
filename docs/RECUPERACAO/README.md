@@ -132,7 +132,9 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    porque a `main` já fiscaliza a mesma regra por `scripts/check-critical-test-skip-budget.mjs`.
    Os 7 simuladores `.py` exigem Docker, não rodam neste ambiente e seguem pendentes de
    medição, sem bloquear a ref.
-3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
+3. ~~**`crm-db-bridge` na allowlist de publicação**~~ — **RESOLVIDO em 26/11/2026**:
+   `.github/workflows/deploy-sicoob-functions.yml` lista `crm-db-bridge` no laço de
+   `supabase functions deploy` (com `connections-auto-test` e `send-transactional-email`).
 4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
 5. **13 testes de BI e o tour de onboarding da branch de produção pré-re-raiz** —
    `claude/fix-prod-cors-audit-261118-1034` tem 138 arquivos ausentes da `main`; 19 não
@@ -140,9 +142,19 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    cobram a mesma regra das PRs #323 e #326 — nenhum selo de dado real sobre dado ausente —
    em 11 pontos do BI que ninguém cobriu, mais `Escape` no tour e paridade de rotas. Lista,
    motivo de cada falha e comando de origem em [`cobertura-refs.md`](cobertura-refs.md).
-   **A ref não se apaga enquanto esses 13 não entrarem ou não forem declarados obsoletos.**
-6. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
-   sem PR (`RELATORIO_CI.md`, item 4.1).
+   **Medido em 26/11/2026:** a branch já estava apagada; o head está preservado na tag
+   `arquivo/claude-fix-prod-cors-audit-261118-1034` (`eaf70aca1`) e na PR #318. Dos 46 arquivos
+   de teste ausentes na `main`, 5 dependem de módulo que não existe mais, 3 de módulo renomeado
+   e 38 apontam para módulo existente — nos adjudicados, a `main` cobre o mesmo contrato com
+   outro nome. Os não adjudicados um a um são a razão de a tag ficar em vez da branch.
+6. **`connections-auto-test`: allowlist resolvida, divergência de código ainda aberta** — a
+   função entrou na allowlist do workflow (`deploy-sicoob-functions.yml:59`), o que a torna
+   publicável; mas a publicação é manual (`workflow_dispatch` com `PUBLICAR`) e a última
+   comparação de artefatos, em 18/11/2026, mediu **2 de 20** strings ausentes em produção
+   (`RELATORIO_CI.md:956`), sem nova medição desde então. Continua pendente até a função ser
+   publicada e remedida. A sonda de 26/11/2026 mediu outra coisa: que as funções referenciadas
+   pelo front **existem** (nenhum `NOT_FOUND` de gateway) — não comparou o código publicado com
+   a `main`.
 
 Saíram desta lista por terem PR aberta ou mergeada: métricas do Gestor de Compras (#332
 mergeada, #333), trava otimista e fila única do Kit Builder (#327, #334, #341), auditoria da

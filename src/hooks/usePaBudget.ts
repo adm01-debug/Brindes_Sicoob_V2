@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { resolveBudgetCompetence } from "@/lib/sicoob/paBudgetState";
 
 export interface PaBudget {
   id: string;
@@ -32,13 +33,7 @@ export interface PaBudgetCompetence {
 }
 
 export function resolvePaBudgetCompetence(referenceDate?: string | Date): PaBudgetCompetence | null {
-  const date = referenceDate === undefined ? new Date() : new Date(referenceDate);
-  if (Number.isNaN(date.getTime())) return null;
-
-  return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-  };
+  return resolveBudgetCompetence(referenceDate);
 }
 
 function getPlannedBudget(budget?: PaBudget | null) {
@@ -81,11 +76,6 @@ function buildBudgetMetrics(budget: PaBudget | null | undefined, remainingBudget
     remainingBudget,
     consumptionPercentage: getConsumptionPercentage(budget),
   };
-}
-
-function requiresBoardApproval(budget: PaBudget | null | undefined, amount: number) {
-  if (!budget) return false;
-  return amount > (budget.limite_alcada * 1.5) || amount > 50000;
 }
 
 function buildCompetenceError(
@@ -137,6 +127,5 @@ export const usePaBudget = (paId?: string, referenceDate?: string | Date) => {
     refetch,
     isOverBudget: (amount: number) => amount > remainingBudget,
     isOverThreshold: (amount: number) => budget ? amount > budget.limite_alcada : false,
-    isBoardApprovalRequired: (amount: number) => requiresBoardApproval(budget, amount),
   };
 };

@@ -968,3 +968,152 @@ ser recuperada ou declarada obsoleta por escrito".
 
 As branches do cluster `ux-onda*` só saem depois de a PR #100 ser recuperada ou declarada obsoleta por
 escrito. As branches dependabot e de automação (`automation/inventario-estado`) são regeneráveis.
+
+## Terceira rodada — 26/11/2026: as PRs fechadas que nunca estiveram no `prs.md`
+
+As duas rodadas anteriores mediram os descartes **que já estavam** no ledger. Esta mede o que
+nunca esteve **no arquivo `prs.md`** — o recorte é a citação no ledger, não a pasta: 5 destas 52
+já têm veredito nas seções D7–D9 **deste** documento (#105, #114, #116, #117 e #118) e voltam
+aqui porque não eram citadas no `prs.md`. Das 475 PRs do repositório, **90 foram fechadas sem
+merge** e o `prs.md` cita 38. As outras **52** foram confrontadas uma a uma com a `main` de hoje.
+
+### Método (repetível)
+
+```
+gh pr list --state all --limit 500 --json number,state,title,headRefName,baseRefName,mergedAt
+git fetch origin 'refs/pull/*/head:refs/recovered/*'
+git diff --numstat origin/main refs/recovered/<n>          # o que a ref tem por arquivo
+git cat-file -e origin/main:<caminho>                       # arquivo existe na main?
+git grep -l -e <nome-do-objeto> origin/main                 # nome do objeto, nunca o do PR
+```
+
+Arquivo **ausente** na `main` é sinal de perda; arquivo que **difere** é divergência — a `main`
+pode estar à frente da ref, e só vira veredito depois de ler os dois lados.
+
+### Os 52 fora do ledger
+
+| Grupo | Quantos | Situação |
+| --- | --- | --- |
+| Dependabot (bump de dependência) | 26 | nenhum byte próprio; regeneráveis |
+| Documentação (#105, #114, #117, #118) | 4 | nenhum arquivo ausente na `main` |
+| Já absorvidas (#188, #192) | 2 | conteúdo presente |
+| **Com conteúdo próprio e residual** | **20** | tabela abaixo |
+
+### Os 20 com conteúdo próprio — veredito medido
+
+| PR | O que era | Veredito | Prova na `main` de hoje |
+| --- | --- | --- | --- |
+| #100 | UX Onda 1 (voltar fecha modal, confirmação unificada, Esc no tour) | incorporado por equivalente | `src/lib/navigation/dirty-registry.ts`; confirmação unificada (#306); voltar fecha overlay (#319); sinal de dirty (#357/#359) |
+| #116 | Motor do copiloto F06/F07/F08 (~760 linhas, 6 tabelas, 3 edge functions) | **preservado, não apagado** | `docs/plano-implementacao/plano-copiloto-vendas-sussurro-150-etapas-20261016/motor-nao-executado/` + `README-PRESERVACAO.md` (#324); sem produtor de mensagem, depende de decisão de produto |
+| #175 | Integridade de preços + workflows de CI | incorporado | `supabase/migrations/20261117092000_quote_price_attestation_gate.sql` (#317) e `supabase/functions/quote-price-attestation/` |
+| #290 | Preço atestado pelo servidor (recupera a #175) | incorporado | mesmo arquivo: `register_quote_price_attestation`, `quote_price_payload_hash`, `save_quote_atomic_attested` |
+| #201 | A-028 — `DROP` antes de `RETURNS VOID` | incorporado | `supabase/migrations/20260301000000_fix_cleanup_old_notifications_drop.sql` |
+| #385 / #392 | 42P13 do `cleanup_old_notifications` no Supabase Preview | incorporado por equivalente mais forte | `supabase/migrations/000_notification_functions_replay_guard.sql` roda **antes** de `004` e derruba a assinatura `VOID`; contrato final em `20261125100000_notification_functions_contract.sql` |
+| #286 | Remove policies "Allow all" que anulavam o RLS | incorporado | `supabase/migrations/20261118130500_block_permissive_allow_all_policies.sql` |
+| #288 | 4 migrations de hardening da #119 | incorporado | `20261118130000_harden_storage_and_public_favorites_acl.sql`, `20261118130100_enable_scoped_business_realtime.sql` (+ `…130400`, `…130500`), todas pela #305 |
+| #289 | Destaque de kit vira operação atômica no banco | incorporado | `20261118130400_pin_custom_kit_atomically.sql`; `set_custom_kit_pinned` em `src/integrations/supabase/types.ts` e `useCustomKitPersistence.ts` |
+| #298 | RPC do painel de auditoria do hub | incorporado | `get_connections_hub_operational_evidence` criada em `20261118130000_…` e consumida por `supabase/functions/connections-hub-audit/index.ts` |
+| #308 / #318 | Backport CORS (`admin-audit-hook`) na branch de produção | incorporado | a branch de produção inteira entrou pela #305 (mesmas migrations `20261118*`); `admin-audit-hook` responde em produção (sonda abaixo) |
+| #326 / #346 / #348 / #350 / #360 | BI para de carimbar número inventado como real | incorporado pela #361 | `ComparativoIndisponivel` e `AvisoDeCacheDesatualizado` em `src/components/bi/ClientVsIndustryComparison.tsx`; `MIN_SECTOR_COMPANIES` em `src/hooks/bi/useClientSeasonality.ts`; `hasIndustryData` em radar/heatmap |
+| #374 | Catraca do selo de inteligência não inventado | incorporado por equivalente | `tests/hooks/useProductIntelligenceBadges.market-data.test.tsx` cobre o mesmo contrato |
+| #394 | `send-transactional-email` na publicação de funções | incorporado | `.github/workflows/deploy-sicoob-functions.yml` lista `send-transactional-email` no laço de `supabase functions deploy` |
+
+**Nenhuma das 20 tem trabalho parcial ainda ausente da `main`** por conteúdo, arquivo ou nome de
+objeto — incluindo as duas que pareciam ser o contrário: a #385/#392 (o 42P13 do preview está
+resolvido por uma guarda de replay que roda antes do arquivo legado) e a #318 (a branch foi
+apagada, mas o head está na tag `arquivo/claude-fix-prod-cors-audit-261118-1034` e na PR).
+
+### Mergeadas fora da `main` (base colapsada)
+
+13 PRs mergeadas cujo `baseRefName` não é `main`; o merge delas não prova que o conteúdo chegou
+à `main`, por isso cada uma foi medida:
+
+| PR | Base | Situação na `main` |
+| --- | --- | --- |
+| #26, #36, #45, #46 | ramos `fix/sicoob-*` de setembro | adjudicadas em [`cobertura-refs.md`](cobertura-refs.md) (`:1127`); a página de aprovação legada que a #26 apagava **já não existe** na `main` (0 arquivos `public-approval`/`PublicQuoteApprovalPage`) |
+| #101 | `devin/1791190000-ux-onda1` (a #100, fechada sem merge) | recuperada por equivalente (`useScrollRestoration`, transição, `dirty-registry`) |
+| #251 | manutenção local | `--git-common-dir` em `scripts/maintenance/lib.mjs:198` e `:224`; `.gitignore:100` cobre `/.tools/graphify/.venv/` |
+| #341, #356 | trava do kit | #334/#341 na `main`; o aviso de saída da #356 é o sinal de dirty (#357/#359) |
+| #347, #349, #351 | BI | entraram pela #361 (mesmos tokens `ComparativoIndisponivel`/`AvisoDeCacheDesatualizado`) |
+| #359 | sinal de dirty | `useScreenDirtyState` + `useQuoteInitialization` na `main` |
+| #412 | hash da allowlist de verba | `20261122120000_pa_budget_full_lifecycle.sql` com sha256 `a95d26fb…7141d8` = o da allowlist |
+
+### Sonda de produção — as 65 funções referenciadas pelo front existem no ambiente
+
+`supabase/config.toml` declara `project_id = "cfmzkthhgliqelozlmwu"`. A rodada anterior media só
+as chamadas por `supabase.functions.invoke('<nome>')`; esta inclui também as chamadas por URL
+literal e por `getSupabaseFunctionUrl('<nome>')` — **65 nomes** extraídos de `src/**/*.{ts,tsx}`,
+cada um chamado com `POST {}` sem credencial contra
+`https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/<nome>`: **47×401, 11×400, 6×403, 1×404**.
+Lista medida, agrupada pela resposta (as 57 do `invoke` são subconjunto):
+
+```
+401: admin-audit-hook analyze-logo-colors auth-integrity-check bi-copilot bi-share-dossier
+     block-ip-temporarily cnpj-lookup comparison-ai-advisor connection-tester
+     connections-hub-audit elevenlabs-scribe-token elevenlabs-tts expert-chat
+     external-connections-sync external-db-inspect force-global-logout full-op-diagnostics
+     generate-ad-prompt generate-mockup generate-product-seo get-app-logs
+     github-credentials-test manage-users market-intelligence-insights materials-api
+     mcp-keys-issue mcp-keys-revoke mcp-keys-update mcp-server ownership-audit
+     ownership-repair rls-matrix-export secrets-manager secure-upload semantic-search
+     send-transactional-email sicoob-approval-reconciliation sicoob-artwork-register
+     sicoob-document-ingest sicoob-kit-quote sicoob-reorder sicoob-seed system-healthcheck
+     trends-insights validate-access visual-search voice-agent
+400: collections-public-react comparisons-public-react detect-new-device dropbox-list
+     external-db-bridge favorites-public-react kit-ai-builder log-login-attempt quote-approval
+     sync-quote-bitrix webhook-dispatcher
+403: ai-recommendations categories-api crm-db-bridge image-proxy kit-identity-suggest
+     kit-public-view
+404: webhook-inbound
+```
+
+O único `404` **não** é função ausente: `{"error":"endpoint não encontrado"}` é resposta do
+próprio handler (corpo fora do contrato) e vem com `x-deno-execution-id` — o Deno executou. O
+`404` de gateway tem outra assinatura: um nome inventado devolve `sb-error-code: NOT_FOUND` +
+`{"code":"NOT_FOUND","message":"Requested function was not found"}`, sem header de execução.
+Conclusão restrita ao que foi medido: **nenhuma das 65 funções referenciadas pelo front falta no
+ambiente**, e a allowlist do workflow de publicação (22 nomes) não é a lista do que está no ar.
+Isto não compara o código publicado com a `main` — essa é outra medição
+(`RELATORIO_CI.md:943-960`, item 6 do `README.md`), ainda pendente para `connections-auto-test`.
+
+Ressalva sobre o `webhook-inbound`: o `404` com `x-deno-execution-id` prova que a função está
+publicada e executa, **não** que um webhook configurado entrega. O handler devolve esse mesmo
+`404` (`{"error":"endpoint não encontrado"}`) quando o slug da URL não corresponde a um endpoint
+ativo — ou seja, com esse slug nenhuma entrega externa é aceita. Falta provisionar um endpoint
+ativo e medir a entrega ponta a ponta.
+
+### Três pendências que envelheceram (correção desta rodada)
+
+1. `src/pages/QuoteBuilderPage.tsx` **tem** estado de falha de carga: `:176-185` devolve
+   `role="alert"` com "Tentar novamente", alimentado por `quoteLoadError`
+   (`useQuoteBuilderState.ts:536`) que `useQuoteInitialization.ts:319/322/344` preenche em
+   não-encontrado e em falha. O bullet da rodada de 24/11 (`:941-943`) está vencido.
+2. `src/components/intelligence/MarketIntelligenceChart.tsx:5` hoje diz "Nunca inventa dados:
+   sem registros reais, mostra estado vazio", e a série fabricada saiu na #434. O bullet
+   `:944-945` está vencido.
+3. A tela legada de aprovação pública (`src/pages/PublicQuoteApprovalPage.tsx` e os 4 módulos de
+   `src/pages/public-approval/`) **não existe mais** na `main` — a limpeza que a #26 pedia já
+   foi feita. `src/routes/config/public.ts:45` aponta `/approve/:token` para a página nova.
+
+### O que continua aberto (e não é perda de trabalho)
+
+- `tests/` da tag `arquivo/claude-fix-prod-cors-audit-261118-1034`: 46 arquivos ausentes na
+  `main`, dos quais 5 dependem de módulo que não existe mais, 3 de módulo renomeado e 38
+  apontam para módulo existente. A amostra adjudicada vale **só para o contrato de erro**:
+  `tests/hooks/quote/useQuoteInitialization.load-error.test.tsx` na `main` cobre os dois desfechos
+  (`QUOTE_LOAD_FAILED`/`QUOTE_LOAD_NOT_FOUND`, com textos mais longos que os da ref), como
+  `tests/hooks/useQuoteInitialization.loading.test.tsx` na ref cobre com
+  "Não foi possível carregar o orçamento." e "Orçamento não encontrado.". A ref cobre **mais**:
+  com `reloadKey` a nova tentativa acontece no próprio hook (`:46-51`, efeito reexecutado, 2
+  chamadas a `fetchQuote`), enquanto a `main` recarrega a página (`QuoteBuilderPage.tsx:182`) e o
+  hook dela não tem `reloadKey`. Essa parte **não está adjudicada** — é melhoria da ref ainda não
+  portada, não equivalente. Os demais arquivos seguem **não adjudicados um a um**: por isso a tag
+  fica.
+- `WEBHOOK_DISPATCHER_SECRET` (provisionamento) e a fila de PRs de rule 8 seguem como estavam.
+- `DIRECTORY_CAP = 200` em `src/hooks/useCrmCompanies.ts:36`: o teto de 200 é do **front**, não
+  da política do portal — `portal-access-policy.ts:118-122` aceita `limit` até 100 e `offset` até
+  10.000. O próprio código o chama de "histórico destes seletores, preservado para não mudar o
+  payload" (`:35`), e o mesmo teto alcança a tela de Clientes (`ClientsPage.tsx:114`) e o seletor
+  do BI (`components/bi/ClientSelector.tsx:22`). Não é trabalho perdido, é limitação declarada do
+  front: fica registrada como divergência de UX, com o número em 200 onde a política permitiria
+  paginar até 10.000.
