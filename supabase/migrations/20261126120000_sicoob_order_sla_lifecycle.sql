@@ -54,7 +54,12 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
-  IF NEW.sla_deadline IS NOT NULL THEN
+  -- O SLA mede o tempo de aprovação: fora das etapas de aprovação o prazo já
+  -- encerrou. Sem este recorte, qualquer escrita posterior (produção, entrega,
+  -- cancelamento) reclassificava o pedido a partir de um prazo vencido e ele
+  -- reaparecia como urgência. Mesmo escopo de `refresh_sicoob_order_sla_status`.
+  IF NEW.sla_deadline IS NOT NULL
+     AND NEW.status IN ('pending', 'waiting_approval', 'escalated_to_board') THEN
     IF NEW.sla_deadline < now() THEN
       NEW.sla_status := 'critical';
     ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN

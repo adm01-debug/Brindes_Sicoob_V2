@@ -246,7 +246,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
-    sha256: "d48040d53c46f75173f88991167a3efb92c5c802763cd87bb60a55fa733ac474",
+    sha256: "aac04e2a6960a15965bab199ed7cbf05495ad080ce137f4a6e45b4d524b03b30",
   },  {
     file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
     sha256: "081df063b42f2cdf49123d5f702ad31347f09c0a8b7e3d4c5717cd21abfd00a5",

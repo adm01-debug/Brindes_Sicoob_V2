@@ -1,14 +1,14 @@
-import { supabase } from "@/integrations/supabase/client";
-import { beginReorderIntent, completeReorderIntent } from "./reorderIdempotency";
+import { supabase } from '@/integrations/supabase/client';
+import { beginReorderIntent, completeReorderIntent } from './reorderIdempotency';
 import {
   canSicoobTransitionTo,
   type OrderStatus,
   type SicoobOrder,
   type SicoobOrderItem,
   type SicoobOrderItemLog,
-} from "@/types/sicoob/orders";
+} from '@/types/sicoob/orders';
 
-const UNAUTHENTICATED_USER_ERROR = "Usuário não autenticado";
+const UNAUTHENTICATED_USER_ERROR = 'Usuário não autenticado';
 
 interface ApprovalTransitionInput {
   orderId: string;
@@ -31,41 +31,56 @@ interface OrderListFilters {
 
 function createSicoobOrderQuery() {
   return supabase
-    .from("sicoob_orders")
-    .select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)", { count: "exact" });
+    .from('sicoob_orders')
+    .select('*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)', { count: 'exact' });
 }
 
 type SicoobOrderQuery = ReturnType<typeof createSicoobOrderQuery>;
 
 function applyStatusFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
-  if (filters?.statuses?.length) return query.in("status", filters.statuses);
-  if (filters?.status && filters.status !== "all") return query.eq("status", filters.status);
+  if (filters?.statuses?.length) return query.in('status', filters.statuses);
+  if (filters?.status && filters.status !== 'all') return query.eq('status', filters.status);
   return query;
 }
 
 function applySlaFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
-  if (filters?.sla_status && filters.sla_status !== "all") return query.eq("sla_status", filters.sla_status);
-  return query;
+  if (!filters?.sla_status || filters.sla_status === 'all') return query;
+  // O SLA mede o tempo de aprovação: pedido fora das etapas de aprovação tem o
+  // prazo encerrado e pedido sem prazo nunca foi avaliado — ambos entravam no
+  // filtro (o atalho "Ver Urgências" listava até pedido cancelado).
+  const scoped = query.in('status', ['pending', 'waiting_approval', 'escalated_to_board']);
+  if (filters.sla_status === 'normal') {
+    return scoped.not('sla_deadline', 'is', null).eq('sla_status', 'normal');
+  }
+  return scoped.eq('sla_status', filters.sla_status);
 }
 
-function applyOrganizationFilters(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+function applyOrganizationFilters(
+  query: SicoobOrderQuery,
+  filters?: OrderListFilters,
+): SicoobOrderQuery {
   let filtered = query;
-  if (filters?.pa_id && filters.pa_id !== "all") filtered = filtered.eq("pa_id", filters.pa_id);
-  if (filters?.cooperative_id && filters.cooperative_id !== "all") {
-    filtered = filtered.eq("cooperative_id", filters.cooperative_id);
+  if (filters?.pa_id && filters.pa_id !== 'all') filtered = filtered.eq('pa_id', filters.pa_id);
+  if (filters?.cooperative_id && filters.cooperative_id !== 'all') {
+    filtered = filtered.eq('cooperative_id', filters.cooperative_id);
   }
   return filtered;
 }
 
-function applyPeriodAndSearch(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+function applyPeriodAndSearch(
+  query: SicoobOrderQuery,
+  filters?: OrderListFilters,
+): SicoobOrderQuery {
   let filtered = query;
-  if (filters?.from) filtered = filtered.gte("created_at", filters.from);
-  if (filters?.to) filtered = filtered.lte("created_at", filters.to);
+  if (filters?.from) filtered = filtered.gte('created_at', filters.from);
+  if (filters?.to) filtered = filtered.lte('created_at', filters.to);
   if (filters?.search) {
     // Remove caracteres sintáticos do PostgREST (, ( )) que poderiam injetar condições extras
     const term = filters.search.toLowerCase().trim().replace(/[,()]/g, '');
     if (term) {
-      filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
+      filtered = filtered.or(
+        `order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`,
+      );
     } else {
       // Busca original continha apenas pontuação removida — retornar zero resultados
       filtered = filtered.eq('order_number', '__no_match__');
@@ -80,7 +95,11 @@ function applyPagination(query: SicoobOrderQuery, filters?: OrderListFilters): S
   return query.range(from, from + filters.pageSize - 1);
 }
 
-async function prepareOrderConfirmation({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+async function prepareOrderConfirmation({
+  orderId,
+  currentStatus,
+  observations,
+}: ApprovalTransitionInput): Promise<void> {
   const { error } = await supabase.rpc('prepare_sicoob_order_confirmation', {
     p_order_id: orderId,
     p_expected_status: currentStatus,
@@ -89,7 +108,11 @@ async function prepareOrderConfirmation({ orderId, currentStatus, observations }
   if (error) throw error;
 }
 
-async function escalateOrderApproval({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+async function escalateOrderApproval({
+  orderId,
+  currentStatus,
+  observations,
+}: ApprovalTransitionInput): Promise<void> {
   const reason = observations?.trim() || '';
   if (reason.length < 10) {
     throw new Error('Informe uma justificativa de escalação com ao menos 10 caracteres.');
@@ -105,7 +128,10 @@ async function escalateOrderApproval({ orderId, currentStatus, observations }: A
   if (error) throw error;
 }
 
-async function confirmOrderWithinApproval({ orderId, currentStatus }: ApprovalTransitionInput): Promise<void> {
+async function confirmOrderWithinApproval({
+  orderId,
+  currentStatus,
+}: ApprovalTransitionInput): Promise<void> {
   const { error } = await supabase.rpc('confirm_sicoob_order', {
     p_order_id: orderId,
     p_expected_status: currentStatus,
@@ -113,7 +139,10 @@ async function confirmOrderWithinApproval({ orderId, currentStatus }: ApprovalTr
   if (error) throw error;
 }
 
-const approvalTransitionHandlers: Record<string, (input: ApprovalTransitionInput) => Promise<void>> = {
+const approvalTransitionHandlers: Record<
+  string,
+  (input: ApprovalTransitionInput) => Promise<void>
+> = {
   waiting_approval: prepareOrderConfirmation,
   escalated_to_board: escalateOrderApproval,
   confirmed: confirmOrderWithinApproval,
@@ -142,8 +171,10 @@ async function executeApprovalStatusTransition(
  * verificações no cliente melhoram a experiência do usuário.
  */
 export const sicoobOrderService = {
-  async listOrders(filters?: OrderListFilters): Promise<{ orders: SicoobOrder[], total: number }> {
-    const { data: { user } } = await supabase.auth.getUser();
+  async listOrders(filters?: OrderListFilters): Promise<{ orders: SicoobOrder[]; total: number }> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     let query = applyStatusFilter(createSicoobOrderQuery(), filters);
@@ -153,64 +184,67 @@ export const sicoobOrderService = {
     query = applyPagination(query, filters);
 
     const { data, error, count } = await query
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false });
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false });
     if (error) throw error;
-    
+
     return {
       orders: data as SicoobOrder[],
-      total: count || 0
+      total: count || 0,
     };
   },
 
   async getOrderById(id: string): Promise<SicoobOrder> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
-    const { data, error } = await supabase
-      .from("sicoob_orders")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await supabase.from('sicoob_orders').select('*').eq('id', id).single();
     if (error) throw error;
     return data as SicoobOrder;
   },
 
-
   async getOrderItems(orderId: string): Promise<SicoobOrderItem[]> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const { data, error } = await supabase
-      .from("sicoob_order_items")
-      .select("*")
-      .eq("order_id", orderId);
+      .from('sicoob_order_items')
+      .select('*')
+      .eq('order_id', orderId);
     if (error) throw error;
     return data as SicoobOrderItem[];
   },
 
   async getItemLogs(orderId: string): Promise<SicoobOrderItemLog[]> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     // `sicoob_order_item_logs.user_id` referencia `auth.users`, nao `public.profiles`:
     // o PostgREST nao resolve esse embed e devolve 400. O autor e resolvido em
     // uma segunda consulta por `profiles.user_id`.
     const { data, error } = await supabase
-      .from("sicoob_order_item_logs")
-      .select("id, action, old_data, new_data, created_at, user_id")
-      .eq("order_id", orderId)
-      .order("created_at", { ascending: false });
+      .from('sicoob_order_item_logs')
+      .select('id, action, old_data, new_data, created_at, user_id')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false });
     if (error) throw error;
 
     const rows = data ?? [];
-    const authorIds = [...new Set(rows.map((row) => row.user_id).filter((id): id is string => !!id))];
+    const authorIds = [
+      ...new Set(rows.map((row) => row.user_id).filter((id): id is string => !!id)),
+    ];
     const names = new Map<string, string>();
     if (authorIds.length > 0) {
       const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("user_id, full_name")
-        .in("user_id", authorIds);
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', authorIds);
       if (profilesError) throw profilesError;
       for (const profile of profiles ?? []) {
         if (profile.full_name) names.set(profile.user_id, profile.full_name);
@@ -223,15 +257,22 @@ export const sicoobOrderService = {
     }) as unknown as SicoobOrderItemLog[];
   },
 
-  async updateOrderStatus(orderId: string, status: string, currentStatus?: string, observations?: string): Promise<void> {
+  async updateOrderStatus(
+    orderId: string,
+    status: string,
+    currentStatus?: string,
+    observations?: string,
+  ): Promise<void> {
     if (!currentStatus) {
-      throw new Error("O status atual é obrigatório para evitar uma atualização concorrente.");
+      throw new Error('O status atual é obrigatório para evitar uma atualização concorrente.');
     }
     if (!canSicoobTransitionTo(currentStatus as OrderStatus, status as OrderStatus)) {
       throw new Error(`Transição de status inválida: de ${currentStatus} para ${status}`);
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const approvalTransitionExecuted = await executeApprovalStatusTransition(
@@ -251,7 +292,9 @@ export const sicoobOrderService = {
     }
   },
 
-  async approveOrdersBulk(orderIds: string[]): Promise<{ successes: string[], failures: { id: string, reason: string }[] }> {
+  async approveOrdersBulk(
+    orderIds: string[],
+  ): Promise<{ successes: string[]; failures: { id: string; reason: string }[] }> {
     const results = await Promise.allSettled(
       orderIds.map(async (id) => {
         const { data: order, error } = await supabase
@@ -263,18 +306,19 @@ export const sicoobOrderService = {
         if (!order) throw new Error('Pedido não encontrado ou fora do seu escopo.');
         await this.updateOrderStatus(id, 'confirmed', order.status);
         return id;
-      })
+      }),
     );
 
     const successes: string[] = [];
-    const failures: { id: string, reason: string }[] = [];
+    const failures: { id: string; reason: string }[] = [];
 
     results.forEach((res, index) => {
       if (res.status === 'fulfilled') {
         successes.push(res.value);
       } else {
         const orderId = orderIds[index];
-        if (orderId) failures.push({ id: orderId, reason: res.reason?.message || "Erro desconhecido" });
+        if (orderId)
+          failures.push({ id: orderId, reason: res.reason?.message || 'Erro desconhecido' });
       }
     });
 
@@ -318,5 +362,5 @@ export const sicoobOrderService = {
 
   async duplicateSicoobOrder(orderId: string): Promise<string> {
     return this.reorderOrder(orderId);
-  }
+  },
 };
