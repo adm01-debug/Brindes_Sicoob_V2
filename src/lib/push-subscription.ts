@@ -7,8 +7,11 @@ import { logger } from '@/lib/logger';
  * Inscrição Web Push de verdade.
  *
  * `Notification.requestPermission()` sozinho só permite notificação local, com a aba
- * aberta. Para receber com o app fechado é preciso inscrever o Service Worker no
- * push service do navegador e guardar o `endpoint` — é isso que esta camada faz.
+ * aberta. Receber com o app fechado exige duas metades: inscrever o Service Worker
+ * no push service do navegador e guardar o `endpoint` (esta camada), e um emissor
+ * no servidor que assine e envie para esse endpoint. **Hoje só a primeira metade
+ * existe**: nenhuma function envia Web Push, então o estado 'inscrito' significa
+ * dispositivo pronto para receber, não entrega garantida.
  *
  * O par VAPID identifica este servidor perante o navegador. A chave pública vai no
  * bundle por design (é pública); a privada fica só no servidor, usada para assinar

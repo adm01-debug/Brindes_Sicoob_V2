@@ -45,8 +45,8 @@ export function usePushNotifications() {
         isEnabled: permission === 'granted',
       }));
 
-      // Permissão só libera notificação local. Para receber com o app fechado é
-      // preciso inscrever o navegador e persistir o endpoint. Se a gravação
+      // Permissão só libera notificação local. A inscrição torna o dispositivo
+      // apto a receber Web Push, mas ainda falta o emissor no servidor. Se a gravação
       // falhar a permissão continua concedida, mas não há entrega — quem chama
       // precisa saber, então a inscrição é registrada no estado.
       if (permission !== 'granted' || !user) return permission === 'granted';

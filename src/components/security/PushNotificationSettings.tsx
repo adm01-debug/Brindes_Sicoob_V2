@@ -77,11 +77,11 @@ function usePushNotificationSettings() {
     setIsRequesting(true);
     try {
       const ok = await removerInscricao();
-      setInscrito(false);
+      if (ok) setInscrito(false);
       toast({
         title: ok ? 'Inscrição removida' : 'Não foi possível remover',
         description: ok
-          ? 'Este dispositivo deixou de receber notificações com o app fechado.'
+          ? 'Este dispositivo deixou de ser notificado pelo navegador.'
           : 'Tente novamente ou revise as permissões do navegador.',
         variant: ok ? 'default' : 'destructive',
       });
@@ -188,7 +188,7 @@ type AcaoStatus = {
 
 function descricaoStatus(isEnabled: boolean, inscrito: boolean): string {
   if (!isEnabled) return 'Ative para receber alertas importantes';
-  if (inscrito) return 'Este dispositivo recebe alertas mesmo com o app fechado';
+  if (inscrito) return 'Dispositivo inscrito. Os alertas chegam enquanto o app estiver aberto';
   return 'Permissão concedida, mas o dispositivo ainda não está inscrito';
 }
 
