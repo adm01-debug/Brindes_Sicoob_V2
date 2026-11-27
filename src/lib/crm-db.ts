@@ -87,6 +87,29 @@ function batchErrorMessage(data: unknown, invokeError?: { message?: string } | n
 }
 
 /**
+ * Soft-degrade do batch quando o CRM ainda nao foi configurado (placeholders
+ * EXTERNAL_CRM_URL/keys). `invokeCrmDb` ja fazia isso; sem isso a tela de status
+ * pintava as 9 tabelas de vermelho como se nao existissem.
+ *
+ * O bridge responde HTTP 500 com o corpo {"error":"CRM connection is not
+ * configured correctly"} (crm-db-bridge/index.ts:1185) — nesse caso a mensagem
+ * chega em `error`, nao no envelope de sucesso, entao o corpo precisa ser lido.
+ */
+async function degradedBatchResult(
+  queries: CrmBatchQuery[],
+  error: unknown,
+  payload: CrmBridgePayload,
+  requestId: string,
+): Promise<CrmBatchResult[] | null> {
+  const message = error
+    ? await extractCrmErrorMessage(error)
+    : payload.success ? null : (payload.error || null);
+  if (!message || !isUnconfiguredMessage(message)) return null;
+  logger.warn(`[CRM-DB] CRM not configured - batch degradado [req_id=${requestId}]`);
+  return queries.map(() => ({ success: false, error: message }));
+}
+
+/**
  * Executa múltiplas queries SELECT no CRM em uma única invocação.
  */
 export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]> {
@@ -118,15 +141,10 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
     serverRequestId: responseRequestId,
   });
 
-  if (error) {
-    console.error(`[CRM-DB] Batch error [req_id=${requestId}]:`, error);
-    throw new Error(`CRM batch error: ${error.message}`);
-  }
-
-  if (!payload.success) {
-    throw new Error(payload.error || "CRM batch unknown error");
-  }
-
+  const degraded = await degradedBatchResult(queries, error, payload, requestId);
+  if (degraded) return degraded;
+  if (error) throw new Error(`CRM batch error: ${error.message}`);
+  if (!payload.success) throw new Error(payload.error || "CRM batch unknown error");
   return payload.results || [];
 }
 
@@ -181,7 +199,7 @@ function isReadOperation(query: CrmQuery): boolean {
   );
 }
 
-function isUnconfiguredMessage(message: string): boolean {
+export function isUnconfiguredMessage(message: string): boolean {
   return /CRM connection is not configured correctly|Invalid URL|PLACEHOLDER_VALUE_TO_BE_REPLACED/i.test(message);
 }
 

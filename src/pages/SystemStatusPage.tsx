@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase, supabasePublishableKey, supabaseUrl } from '@/integrations/supabase/client';
-import { invokeCrmBatch } from '@/lib/crm-db';
+import { invokeCrmBatch, isUnconfiguredMessage } from '@/lib/crm-db';
 import {
   CheckCircle,
   XCircle,
@@ -27,7 +27,7 @@ interface StatusItem {
 
 interface CrmTableCheck {
   name: string;
-  status: 'ok' | 'error' | 'loading';
+  status: 'ok' | 'error' | 'loading' | 'unconfigured';
   rowCount?: number;
   message: string;
 }
@@ -190,8 +190,12 @@ function mapCrmTableResult(
   if (!result) return { name, status: 'error', message: 'Sem resposta' };
   if (result.unavailable)
     return { name, status: 'error', message: valueOrFallback(result.warning, 'Tabela ausente') };
-  if (!result.success)
-    return { name, status: 'error', message: valueOrFallback(result.error, 'Erro desconhecido') };
+  if (!result.success) {
+    const error = valueOrFallback(result.error, 'Erro desconhecido');
+    if (isUnconfiguredMessage(error))
+      return { name, status: 'unconfigured', message: 'Conex?o do CRM n?o configurada' };
+    return { name, status: 'error', message: error };
+  }
   const metrics = getCrmSampleMetrics(result.data);
   return {
     name,
@@ -261,6 +265,11 @@ function useSystemStatusModel() {
 
 type SystemStatusModel = ReturnType<typeof useSystemStatusModel>;
 type HealthStatus = StatusItem['status'];
+
+/** 'unconfigured' n?o ? falha de tabela: cai no visual de aviso, n?o de erro. */
+function crmDisplayStatus(table: CrmTableCheck): HealthStatus {
+  return table.status === 'unconfigured' ? 'warning' : table.status;
+}
 
 function getStatusIcon(status: HealthStatus) {
   if (status === 'ok') return <CheckCircle className="h-5 w-5 text-primary" />;
@@ -380,9 +389,17 @@ function ServiceStatusCard({ statuses }: { statuses: StatusItem[] }) {
 function CrmStatusCard({ model }: { model: SystemStatusModel }) {
   const okCount = model.crmTables.filter((table) => table.status === 'ok').length;
   const errorCount = model.crmTables.filter((table) => table.status === 'error').length;
+  const unconfiguredCount = model.crmTables.filter(
+    (table) => table.status === 'unconfigured',
+  ).length;
   return (
     <Card>
-      <CrmStatusHeader model={model} okCount={okCount} errorCount={errorCount} />
+      <CrmStatusHeader
+        model={model}
+        okCount={okCount}
+        errorCount={errorCount}
+        unconfiguredCount={unconfiguredCount}
+      />
       <CrmTableList tables={model.crmTables} />
     </Card>
   );
@@ -392,10 +409,12 @@ function CrmStatusHeader({
   model,
   okCount,
   errorCount,
+  unconfiguredCount,
 }: {
   model: SystemStatusModel;
   okCount: number;
   errorCount: number;
+  unconfiguredCount: number;
 }) {
   return (
     <CardHeader>
@@ -407,7 +426,12 @@ function CrmStatusHeader({
               {errorCount} ausente(s)
             </Badge>
           )}
-          {errorCount === 0 && okCount > 0 && (
+          {errorCount === 0 && unconfiguredCount > 0 && (
+            <Badge className="ml-2 border-warning/30 bg-warning/20 text-warning">
+              Conex?o pendente
+            </Badge>
+          )}
+          {errorCount === 0 && unconfiguredCount === 0 && okCount > 0 && (
             <Badge className="ml-2 border-primary/30 bg-primary/20 text-primary">
               {okCount}/{CRM_CRITICAL_TABLES.length} OK
             </Badge>
@@ -451,8 +475,8 @@ function CrmTableList({ tables }: { tables: CrmTableCheck[] }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {getStatusBadge(table.status)}
-            {getStatusIcon(table.status)}
+            {getStatusBadge(crmDisplayStatus(table))}
+            {getStatusIcon(crmDisplayStatus(table))}
           </div>
         </div>
       ))}

@@ -140,4 +140,32 @@ describe('invokeCrmBatch', () => {
     mockInvoke.mockResolvedValueOnce({ data: { success: false, error: 'Batch failed' }, error: null });
     await expect(invokeCrmBatch([{ table: 'companies' }])).rejects.toThrow('Batch failed');
   });
+
+  it('degrada sem throw quando o CRM ainda nao esta configurado (envelope)', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { success: false, error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+    const results = await invokeCrmBatch([{ table: 'companies' }, { table: 'suppliers' }]);
+    expect(results).toHaveLength(2);
+    expect(results.every((r) => r.success === false)).toBe(true);
+    expect(results[0].error).toContain('not configured');
+  });
+
+  it('degrada sem throw quando o bridge responde HTTP 500 de CRM nao configurado', async () => {
+    // Rota real: crm-db-bridge/index.ts:1185 responde 500 com o corpo
+    // {"error":"CRM connection is not configured correctly"}. functions.invoke
+    // entrega isso em `error`, nao em `data`.
+    const err = Object.assign(new Error('Edge Function returned a non-2xx status code'), {
+      context: new Response(
+        JSON.stringify({ error: 'CRM connection is not configured correctly' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
+      ),
+    });
+    mockInvoke.mockResolvedValueOnce({ data: null, error: err });
+    const results = await invokeCrmBatch([{ table: 'companies' }]);
+    expect(results).toHaveLength(1);
+    expect(results[0].success).toBe(false);
+    expect(results[0].error).toContain('not configured');
+  });
 });
