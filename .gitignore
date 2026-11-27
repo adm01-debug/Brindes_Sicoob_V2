@@ -101,3 +101,4 @@ reports/AUDIT_ENTERPRISE_FINAL.md
 
 # Saída local do scripts/ai-context (gerar.mjs sem --out); a oficial vai para docs/contexto na branch `contexto`
 inventario/ia/
+.impeccable/
