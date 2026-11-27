@@ -7244,6 +7244,7 @@
    "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/switch.tsx",
+   "src/contexts/AuthContext.tsx",
    "src/hooks/use-toast.ts",
    "src/hooks/useNotifications.ts",
    "src/lib/push-subscription.ts"

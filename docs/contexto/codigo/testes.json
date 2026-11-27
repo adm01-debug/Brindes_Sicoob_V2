@@ -6439,11 +6439,11 @@
   {
    "arquivo": "tests/lib/push-subscription.test.ts",
    "tipo": "unit",
-   "linhas": 147,
+   "linhas": 241,
    "testa": [
     "src/lib/push-subscription.ts"
    ],
-   "casos": 8
+   "casos": 12
   },
   {
    "arquivo": "tests/lib/query-config-extended.test.ts",

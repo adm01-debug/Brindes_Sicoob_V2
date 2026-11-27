@@ -1702,7 +1702,7 @@
     "useUserRoles"
    ],
    "canais_realtime": [],
-   "usado_por": 163,
+   "usado_por": 164,
    "usado_por_arquivos": [
     "src/App.tsx",
     "src/AuthEntry.tsx",
@@ -7506,7 +7506,7 @@
    "hooks_exportados": [
     "usePushNotifications"
    ],
-   "linhas": 196,
+   "linhas": 204,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],

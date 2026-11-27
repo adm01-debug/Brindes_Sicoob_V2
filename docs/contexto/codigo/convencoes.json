@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: inscreve o navegador no Web Push e persiste o endpoint (#486)",
    "feat: painel de tentativas de acesso indevido às chaves MCP (#487)",
    "docs: veredito das tabelas sem referência no front (#485)",
    "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)",
-   "feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)",
-   "fix: devolve a main ao verde no gate de complexidade do ESLint (#481)"
+   "feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

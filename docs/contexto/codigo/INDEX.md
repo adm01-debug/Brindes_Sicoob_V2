@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `978aef094822b292ad790c3ad910834c8a9d9e93` (2026-11-27T14:13:09-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fcebed92c3731bc9fe9e1acfd8477af468dda91a` (2026-11-27T15:22:00-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5391 |
 | arquivos_codigo | 3266 |
-| linhas_codigo | 519474 |
+| linhas_codigo | 519621 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37638 nós · 62794 arestas · 2786 comunidades · grafo do commit `978aef09`
-- comunidades maiores: ref_hooks (659), react (379), ref_lib (300), lucide-react (252), ref_integrations (251), ref_components (249), sonner (219), framer-motion (214), react-router-dom (210), expert-chat/index.ts (190), date-fns (183), ref_node_assert (175)
+- 37647 nós · 62810 arestas · 2804 comunidades · grafo do commit `fcebed92`
+- comunidades maiores: ref_components (778), lucide-react (375), ref_lib (314), react (288), sonner (279), ref_integrations (275), ref_node_fs (244), framer-motion (214), react-router-dom (209), getCorsHeaders (202), expert-chat/index.ts (188), ref_node_assert (158)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -701,6 +701,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `fcebed9` feat: inscreve o navegador no Web Push e persiste o endpoint (#486)
 - 2026-11-27 `978aef0` feat: painel de tentativas de acesso indevido às chaves MCP (#487)
 - 2026-11-27 `4d74fa8` docs: veredito das tabelas sem referência no front (#485)
 - 2026-11-27 `d4ee2a4` feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
 - 2026-11-26 `ee56b7f` fix: verba e alçada usam a competência do pedido (SIC-028) (#469)
 - 2026-11-26 `e5e0f47` fix: nao cair em 404 depois de ativar o segundo fator (redirect para /admin inexistente) (#472)
-- 2026-11-26 `6f282a4` chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

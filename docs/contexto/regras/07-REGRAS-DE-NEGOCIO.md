@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `978aef0948` · branch `main` · 2026-11-27 17:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `fcebed92c3` · branch `main` · 2026-11-27 18:22 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1477,6 +1477,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | DEV_EXPECTED_TABLES | "admin_audit_log", "ai_usage_logs", "ai_usage_quotas", "bot_detection_log", "external_connections_sync_log", "integration_credentials", "inbound_webhook_endpoints", "inbound_webhook_events", "ip_access_control", | `src/hooks/useDevAccessAudit.ts` |
 | EXTERNAL_CATEGORIES_QUERY_KEY | 'external-categories' | `src/hooks/useExternalCategoriesQuery.ts` |
 | ALLOWED_FRESHNESS_THRESHOLDS | 30, 60, 90 | `src/hooks/useProductFreshnessOverride.ts` |
+| EstadoInscricao | desconhecida \| ativa \| inativa \| falhou | `src/hooks/usePushNotifications.tsx` |
 | RoleName | dev \| supervisor \| agente | `src/hooks/useRBAC.tsx` |
 | ReplenishmentStatus | active \| expiring_soon \| expired | `src/hooks/useReplenishments.ts` |
 | StockStatus | in-stock \| low-stock \| out-of-stock | `src/hooks/useReplenishments.ts` |
@@ -5799,7 +5800,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7645 testes em 788 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7649 testes em 788 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5948,6 +5949,7 @@ _nenhum item encontrado_
 | `tests/hooks/useAutoSave.test.tsx` | 13 | useAutoSave · persiste apenas no namespace informado, preservando rascunhos simultâneos · grava o rascunho pendente quando a persistência é desligada · grava a volta ao valor inicial quando ela acontece durante o envio … |
 | `tests/hooks/useConnectionTester.test.tsx` | 13 | webhook_outbound · useConnectionTester · Timeout: preserva error_kind, timeout_ms, latency e dispara toast  · Network error: kind preservado e toast  … |
 | `tests/hooks/useProductMatch-gaps.test.ts` | 13 | FIX 1: useSupplierComparison — price zero guard · should not produce Infinity when base product price is 0 · FIX 2: name similarity edge cases · should NOT match empty-named products as complementary … |
+| `tests/lib/push-subscription.test.ts` | 13 | pushSubscriptions · reporta navegador sem suporte quando PushManager não existe · não inscreve quando a permissão foi negada · cria a inscrição e persiste com a chave natural (user_id, endpoint) … |
 | `tests/pages/Auth.test.ts` | 13 | Auth - Login Schema Validation · rejects empty email · rejects invalid email · rejects short password … |
 | `tests/scripts/rules-checkers-detalhe.test.ts` | 13 | rules/checkers — detalhe por ocorrência · mantém as linhas com arquivo e tabela, não só o cabeçalho · corrigir uma violação e introduzir outra aparece como 1 novo + 1 resolvido · remove cor ANSI e limita o volume … |
 | `tests/unit/lib/system/dev-gate/DevInfraGate.test.ts` | 13 | parseGateFlag · identifica valores verdadeiros · identifica valores falsos · retorna  … |
@@ -6051,7 +6053,6 @@ _nenhum item encontrado_
 | `tests/hooks/quote/quote-url-prefill.test.ts` | 9 | pré-carga de orçamento por URL · busca IDs de produto, comparação e tendência sem confiar em preço ou quantidade da URL · expande comparação em lista, remove IDs repetidos e associa cliente sem aceitar nome fornecido pela URL · ignora IDs vazios ou excessivamente longos e limita a carga de produtos … |
 | `tests/integration/discountApprovalFlow.test.ts` | 9 | E2E: Vendedor solicita aprovação de desconto · confirma pedido, status e histórico em uma RPC e só então notifica admins · retorna false se não houver usuário autenticado · não envia notificação se nenhum admin existir … |
 | `tests/lib/format.test.ts` | 9 | formatCurrency · should format positive values in BRL · should format zero · should format negative values … |
-| `tests/lib/push-subscription.test.ts` | 9 | pushSubscriptions · reporta navegador sem suporte quando PushManager não existe · não inscreve quando a permissão foi negada · cria a inscrição e persiste com a chave natural (user_id, endpoint) … |
 | `tests/lib/secret-validators.test.ts` | 9 | validateSecret — guarda de sufixo mínimo (4 chars) · expõe MIN_SUFFIX_LENGTH = 4 · rejeita valor vazio sem mensagem (apenas hint) · rejeita 1 char com mensagem específica de sufixo (singular) … |
 | `tests/p0/external-integrations.test.ts` | 9 | P0 — integrações externas · catálogo: mantém referências já obtidas disponíveis no cache local · catálogo: sinaliza indisponibilidade confirmada sem tratar falha como lista vazia · consulta CNPJ: valida entrada, autentica e usa fetch externo com timeout/circuit breaker … |
 | `tests/pages/GestorCompras.metrics.test.tsx` | 9 | Indicadores na tela de Gestão de Compras · mostra os números que vêm do serviço, e nenhum valor fictício · falha na consulta avisa e não inventa estimativa · cooperativa sem verba cadastrada diz isso, em vez de mostrar zero … |
@@ -6456,6 +6457,7 @@ _nenhum item encontrado_
 | 1024 * 1024) return 'A imagem deve ter no máximo 10MB.'; | `src/components/search/VisualSearchButton.tsx` |
 | * Corre a chamada semântica contra o prazo, sem deixar timer solto. */ | `src/components/search/useGlobalSearch.ts` |
 | Vazio é resposta válida: o resultado anterior não pode sobreviver aqui, | `src/components/search/useGlobalSearch.ts` |
+| não pode aparecer como "inscrito" só porque o navegador tem a subscription. | `src/components/security/PushNotificationSettings.tsx` |
 | ").eq("user_id", userId).order("created_at", { ascending: false }).limit(20), | `src/components/security/useSecurityData.ts` |
 | ").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10), | `src/components/security/useSecurityData.ts` |
 | Mesma regra das policies de escrita de cooperativa_budgets: papel estrito | `src/components/sicoob/CooperativaCeilingCard.tsx` |
@@ -6534,7 +6536,8 @@ _nenhum item encontrado_
 | * Hook para buscar apenas a imagem principal | `src/hooks/useProductImages.ts` |
 | Falha de uma das consultas não pode virar "produto sem indicadores": o painel | `src/hooks/useProductIntelligenceBadges.ts` |
 | só vale quando há selo/valor na tela — e isso vem apenas da inteligência. | `src/hooks/useProductIntelligenceBadges.ts` |
-| Permissão só libera notificação local. Para receber com o app fechado é | `src/hooks/usePushNotifications.tsx` |
+| Permissão só libera notificação local. A inscrição torna o dispositivo | `src/hooks/usePushNotifications.tsx` |
+| falhar a permissão continua concedida, mas não há entrega — quem chama | `src/hooks/usePushNotifications.tsx` |
 | campos depois do snapshot inicial e isso não pode contar como "alteração | `src/hooks/useQuoteBuilderState.ts` |
 | * Status que a tela deve passar a considerar vigente, ou `null` quando nada | `src/hooks/useQuoteBuilderState.ts` |
 | trabalho não salvo e não pode ser levada embora na saída para o detalhe. | `src/hooks/useQuoteBuilderState.ts` |
@@ -6591,6 +6594,4 @@ _nenhum item encontrado_
 | Permission check | `src/hooks/quotes/useQuotes.ts` |
 | * Fallback heurístico (legado): usado APENAS quando o RPC oficial falha | `src/hooks/simulation/simulationPriceFetcher.ts` |
 | IMPORTANTE: USA SOMENTE O BD EXTERNO PROMOBRIND! | `src/hooks/tecnicas/useTecnicasList.ts` |
-| origem deve ser feita via body/URL, não via header global. | `src/integrations/supabase/client.ts` |
-| 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
-| … +374 linhas — lista completa em `context.json` | |
+| … +375 linhas — lista completa em `context.json` | |

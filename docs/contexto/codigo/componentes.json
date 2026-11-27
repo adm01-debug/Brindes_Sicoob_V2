@@ -14045,9 +14045,10 @@
     "PushNotificationSettings"
    ],
    "export_default": null,
-   "linhas": 324,
+   "linhas": 343,
    "dominio": "components/security",
    "hooks_locais": [
+    "useAuth",
     "useNotifications",
     "useToast"
    ],
@@ -16032,7 +16033,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 163,
+   "usado_por": 164,
    "orfao": false
   },
   {

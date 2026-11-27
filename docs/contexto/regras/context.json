@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "978aef094822b292ad790c3ad910834c8a9d9e93",
+  "sha": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 17:13 UTC",
+  "generated_at": "2026-11-27 18:22 UTC",
   "files_total": 5394,
   "code_files": 3952,
-  "code_lines": 585945
+  "code_lines": 586092
  },
  "version": "1.3.2",
- "facts_hash": "4f2e7d9ad0691758",
+ "facts_hash": "ff567bc08b49a8d6",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -66362,7 +66362,7 @@
   {
    "module": "src/components",
    "files": 1144,
-   "lines": 170213,
+   "lines": 170232,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66698,7 +66698,7 @@
   {
    "module": "src/hooks",
    "files": 315,
-   "lines": 48850,
+   "lines": 48858,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -66976,7 +66976,7 @@
   {
    "module": "src/lib",
    "files": 171,
-   "lines": 23299,
+   "lines": 23325,
    "tables": [
     "admin_audit_log",
     "push_subscriptions",
@@ -68152,7 +68152,7 @@
   {
    "module": "tests",
    "files": 748,
-   "lines": 100234,
+   "lines": 100328,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -69911,6 +69911,9 @@
     ],
     "update": [
      "src/lib/push-subscription.ts"
+    ],
+    "select": [
+     "src/lib/push-subscription.ts"
     ]
    },
    "qa_release_evidences": {
@@ -71607,6 +71610,8 @@
    ],
    "push_subscriptions": [
     "endpoint",
+    "id",
+    "is_active",
     "user_id"
    ],
    "qa_release_evidences": [
@@ -75902,6 +75907,11 @@
     "file": "src/hooks/useProductFreshnessOverride.ts",
     "name": "ALLOWED_FRESHNESS_THRESHOLDS",
     "values": "30, 60, 90"
+   },
+   {
+    "file": "src/hooks/usePushNotifications.tsx",
+    "name": "EstadoInscricao",
+    "values": "desconhecida | ativa | inativa | falhou"
    },
    {
     "file": "src/hooks/useRBAC.tsx",
@@ -82933,6 +82943,10 @@
     "text": "Vazio é resposta válida: o resultado anterior não pode sobreviver aqui,"
    },
    {
+    "file": "src/components/security/PushNotificationSettings.tsx",
+    "text": "não pode aparecer como \"inscrito\" só porque o navegador tem a subscription."
+   },
+   {
     "file": "src/components/security/useSecurityData.ts",
     "text": "\").eq(\"user_id\", userId).order(\"created_at\", { ascending: false }).limit(20),"
    },
@@ -83246,7 +83260,11 @@
    },
    {
     "file": "src/hooks/usePushNotifications.tsx",
-    "text": "Permissão só libera notificação local. Para receber com o app fechado é"
+    "text": "Permissão só libera notificação local. A inscrição torna o dispositivo"
+   },
+   {
+    "file": "src/hooks/usePushNotifications.tsx",
+    "text": "falhar a permissão continua concedida, mas não há entrega — quem chama"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
@@ -83559,10 +83577,6 @@
    {
     "file": "src/lib/private-storage.ts",
     "text": "Variante tolerante: um objeto removido ou sem permissão de leitura devolve"
-   },
-   {
-    "file": "src/lib/push-subscription.ts",
-    "text": "\"permissão concedida\" (notificação local) de \"vai receber com o app fechado\"."
    },
    {
     "file": "src/lib/sentry.ts",
@@ -138002,7 +138016,23 @@
    },
    {
     "file": "tests/lib/push-subscription.test.ts",
-    "name": "inscricaoAtiva reflete a presença de subscription no navegador"
+    "name": "inscricaoAtiva só confirma quando existe linha ativa daquela conta"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "inscricaoAtiva é false quando a conta atual não gravou o endpoint"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "inscricaoAtiva é false sem inscrição no navegador"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "desinscreverPush desativa o banco antes de descartar a inscrição local"
+   },
+   {
+    "file": "tests/lib/push-subscription.test.ts",
+    "name": "desinscreverPush mantém a inscrição local quando o banco rejeita"
    },
    {
     "file": "tests/lib/query-config-extended.test.ts",
@@ -209240,7 +209270,7 @@
   },
   "src/components/security/PushNotificationSettings.tsx": {
    "path": "src/components/security/PushNotificationSettings.tsx",
-   "lines": 324,
+   "lines": 343,
    "exports": [
     "function PushNotificationSettings"
    ],
@@ -209260,6 +209290,9 @@
    "role_checks": [
     "denied",
     "granted"
+   ],
+   "rule_comments": [
+    "não pode aparecer como \"inscrito\" só porque o navegador tem a subscription."
    ]
   },
   "src/components/security/SecurityDashboard.tsx": {
@@ -216688,8 +216721,9 @@
   },
   "src/hooks/usePushNotifications.tsx": {
    "path": "src/hooks/usePushNotifications.tsx",
-   "lines": 196,
+   "lines": 204,
    "exports": [
+    "type EstadoInscricao",
     "function usePushNotifications"
    ],
    "channels": [
@@ -216697,6 +216731,12 @@
    ],
    "errors": [
     ",\n      requireInteraction: type === "
+   ],
+   "enums": [
+    {
+     "name": "EstadoInscricao",
+     "values": "desconhecida | ativa | inativa | falhou"
+    }
    ],
    "status_values": [
     {
@@ -216724,7 +216764,8 @@
     "granted"
    ],
    "rule_comments": [
-    "Permissão só libera notificação local. Para receber com o app fechado é"
+    "Permissão só libera notificação local. A inscrição torna o dispositivo",
+    "falhar a permissão continua concedida, mas não há entrega — quem chama"
    ],
    "hooks": [
     "usePushNotifications"
@@ -223137,7 +223178,7 @@
   },
   "src/lib/push-subscription.ts": {
    "path": "src/lib/push-subscription.ts",
-   "lines": 170,
+   "lines": 196,
    "exports": [
     "type ResultadoInscricao",
     "function base64UrlParaBytes",
@@ -223154,11 +223195,17 @@
     {
      "table": "push_subscriptions",
      "op": "update"
+    },
+    {
+     "table": "push_subscriptions",
+     "op": "select"
     }
    ],
    "table_cols": {
     "push_subscriptions": [
      "endpoint",
+     "id",
+     "is_active",
      "user_id"
     ]
    },
@@ -223167,9 +223214,6 @@
    ],
    "role_checks": [
     "denied"
-   ],
-   "rule_comments": [
-    "\"permissão concedida\" (notificação local) de \"vai receber com o app fechado\"."
    ],
    "doc": "src/lib/push-subscription.ts"
   },
@@ -260023,7 +260067,7 @@
   },
   "tests/lib/push-subscription.test.ts": {
    "path": "tests/lib/push-subscription.test.ts",
-   "lines": 147,
+   "lines": 241,
    "is_test": true,
    "tests": [
     "pushSubscriptions",
@@ -260034,7 +260078,11 @@
     "devolve falha de persistência quando o upsert erra",
     "reporta falta de chave configurada sem tocar no navegador",
     "converte base64url do VAPID para bytes",
-    "inscricaoAtiva reflete a presença de subscription no navegador"
+    "inscricaoAtiva só confirma quando existe linha ativa daquela conta",
+    "inscricaoAtiva é false quando a conta atual não gravou o endpoint",
+    "inscricaoAtiva é false sem inscrição no navegador",
+    "desinscreverPush desativa o banco antes de descartar a inscrição local",
+    "desinscreverPush mantém a inscrição local quando o banco rejeita"
    ]
   },
   "tests/lib/query-config-extended.test.ts": {
@@ -265107,10 +265155,23 @@
   }
  },
  "git": {
-  "sha": "978aef094822b292ad790c3ad910834c8a9d9e93",
+  "sha": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "fcebed9",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: inscreve o navegador no Web Push e persiste o endpoint (#486)",
+    "files": [
+     "src/components/security/PushNotificationSettings.tsx",
+     "src/components/security/SecurityDashboardSections.tsx",
+     "src/hooks/usePushNotifications.tsx",
+     "src/lib/push-subscription.ts",
+     "tests/lib/push-subscription.test.ts"
+    ]
+   },
    {
     "sha": "978aef0",
     "date": "2026-11-27",
@@ -265561,23 +265622,6 @@
      "src/pages/QuoteBuilderPage.tsx",
      "tests/components/quotes/QuoteProductSelector.concurrent-save.test.tsx"
     ]
-   },
-   {
-    "sha": "bebc2c9",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: recupera guardas dos testes orfaos e fecha o veredito dos 25 restantes (#453)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "src/contexts/AuthContext.tsx",
-     "src/lib/uxMetrics.ts",
-     "src/lib/validations/goalSchema.ts",
-     "src/pages/trends/is-demo-mode.ts",
-     "tests/contexts/AuthContext.test.tsx",
-     "tests/lib/sales-goal-schema.test.ts",
-     "tests/lib/uxMetrics.test.ts",
-     "tests/pages/is-demo-mode.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -265598,10 +265642,6 @@
     4
    ],
    [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
-    4
-   ],
-   [
     "src/integrations/supabase/types.ts",
     3
    ],
@@ -265616,6 +265656,26 @@
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
     3
+   ],
+   [
+    "docs/RECUPERACAO/anexo-testes-orfaos.md",
+    3
+   ],
+   [
+    "src/components/security/PushNotificationSettings.tsx",
+    2
+   ],
+   [
+    "src/hooks/usePushNotifications.tsx",
+    2
+   ],
+   [
+    "src/lib/push-subscription.ts",
+    2
+   ],
+   [
+    "tests/lib/push-subscription.test.ts",
+    2
    ],
    [
     "src/components/sicoob/BudgetAuditCard.tsx",
@@ -265643,22 +265703,6 @@
    ],
    [
     "tests/services/sicoobOrderService.test.ts",
-    2
-   ],
-   [
-    "src/components/layout/SidebarReorganized.tsx",
-    2
-   ],
-   [
-    "src/pages/sicoob/GestorBudgetsPage.tsx",
-    2
-   ],
-   [
-    "src/services/sicoob/approvalService.ts",
-    2
-   ],
-   [
-    "tests/services/sicoobApprovalService.test.ts",
     2
    ]
   ]

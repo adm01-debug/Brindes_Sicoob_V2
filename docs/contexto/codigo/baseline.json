@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "978aef094822b292ad790c3ad910834c8a9d9e93",
+  "commit": "fcebed92c3731bc9fe9e1acfd8477af468dda91a",
   "branch": "main",
-  "data_commit": "2026-11-27T14:13:09-03:00",
+  "data_commit": "2026-11-27T15:22:00-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "fcebed9",
+    "data": "2026-11-27",
+    "assunto": "feat: inscreve o navegador no Web Push e persiste o endpoint (#486)"
+   },
    {
     "sha": "978aef0",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "791ef78",
     "data": "2026-11-26",
     "assunto": "fix: impede simulacao e orcamento com produto sem preco de venda valido (#457)"
-   },
-   {
-    "sha": "76245cc",
-    "data": "2026-11-25",
-    "assunto": "fix: revoga EXECUTE anon/PUBLIC das helpers de notificação vazadas (#456)"
    }
   ],
-  "arquivos_mudados_7d": 1029,
+  "arquivos_mudados_7d": 1030,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 254
+    "commits": 255
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5391,
   "arquivos_codigo": 3266,
-  "linhas_codigo": 519474,
+  "linhas_codigo": 519621,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1144,
-   "linhas": 170213
+   "linhas": 170232
   },
   "src/constants": {
    "arquivos": 3,
@@ -800,7 +800,7 @@
   },
   "src/hooks": {
    "arquivos": 315,
-   "linhas": 48850
+   "linhas": 48858
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,7 +808,7 @@
   },
   "src/lib": {
    "arquivos": 171,
-   "linhas": 23299
+   "linhas": 23325
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -932,7 +932,7 @@
   },
   "tests/lib": {
    "arquivos": 84,
-   "linhas": 9868
+   "linhas": 9962
   },
   "tests/load": {
    "arquivos": 1,

@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `978aef0948` · branch `main` · 2026-11-27 17:13 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `fcebed92c3` · branch `main` · 2026-11-27 18:22 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -307,7 +307,7 @@
 | `order_status` (enum) | pending, confirmed, in_production, ready_for_pickup, shipped, delivered, cancelled |  | banco |
 | `fulfillment_status` (enum) | not_started, picking, packing, shipped, delivered |  | banco |
 | `org_role` (enum) | owner, admin, member |  | banco |
-| … +178 linhas — lista completa em `context.json` | | | |
+| … +179 linhas — lista completa em `context.json` | | | |
 
 ## Dados de referência (seed — planos, categorias, perfis fixos)
 
