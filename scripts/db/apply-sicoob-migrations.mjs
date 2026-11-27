@@ -262,7 +262,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
-    sha256: "6171a89841d8434fc241d2c849fd3c9dda1500de4e8f0555aa2f8b016e392ebe",
+    sha256: "ce6c283e9959dcdda84949d5b1c787cd8004889d9cd96180e7f069ad28513330",
   },
   {
     file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",

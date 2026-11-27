@@ -151,6 +151,24 @@ REVOKE SELECT ON public.pa_notification_settings FROM authenticated, anon;
 GRANT SELECT (id, pa_id, channel, recipient_email, is_active, created_at)
   ON public.pa_notification_settings TO authenticated;
 
+-- A policy permissiva herdada `Admins can manage notification settings`
+-- (20260504214012) e FOR ALL e nao olha o segundo fator: uma sessao de senha
+-- so (AAL1) escrevia a tabela direto pela API, por fora da tela e da RPC. O
+-- papel `admin` continua com politica de escrita, agora atrelada ao mesmo
+-- `aal2` que AdminRoute exige.
+DROP POLICY IF EXISTS "Admins can manage notification settings"
+  ON public.pa_notification_settings;
+CREATE POLICY "Admins can manage notification settings"
+ON public.pa_notification_settings FOR ALL TO authenticated
+USING (
+  public.is_admin((SELECT auth.uid()))
+  AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'
+)
+WITH CHECK (
+  public.is_admin((SELECT auth.uid()))
+  AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'
+);
+
 CREATE OR REPLACE FUNCTION public.sicoob_pa_slack_webhook(p_pa_id uuid)
 RETURNS text
 LANGUAGE plpgsql
@@ -164,6 +182,14 @@ BEGIN
   IF NOT public.is_supervisor_or_above(auth.uid()) THEN
     RAISE EXCEPTION USING ERRCODE='42501',
       MESSAGE='Somente a administracao consulta o webhook do Slack.';
+  END IF;
+
+  -- O segredo so sai do banco para sessao com segundo fator concluido, como
+  -- ja ocorre em sicoob_centrais: a RPC e SECURITY DEFINER e nao herda o
+  -- filtro de policy, entao a exigencia precisa estar aqui.
+  IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN
+    RAISE EXCEPTION USING ERRCODE='42501',
+      MESSAGE='Conclua a verificacao em duas etapas para consultar o webhook do Slack.';
   END IF;
 
   SELECT s.webhook_url INTO v_url
@@ -208,6 +234,12 @@ BEGIN
   IF NOT public.is_supervisor_or_above(auth.uid()) THEN
     RAISE EXCEPTION USING ERRCODE='42501',
       MESSAGE='Somente a administracao grava as configuracoes de notificacao.';
+  END IF;
+
+  -- Mesma exigencia de segundo fator da leitura do segredo.
+  IF COALESCE((SELECT auth.jwt()) ->> 'aal', 'aal1') <> 'aal2' THEN
+    RAISE EXCEPTION USING ERRCODE='42501',
+      MESSAGE='Conclua a verificacao em duas etapas para alterar as configuracoes de notificacao.';
   END IF;
 
   IF p_channel NOT IN ('slack', 'email') THEN
