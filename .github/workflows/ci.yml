@@ -24,6 +24,19 @@ jobs:
     name: Segurança, contratos e build
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      postgres-cenarios:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -65,6 +78,11 @@ jobs:
           npm run check:seller-scope
 
       - name: Executar cenários de arquitetura e segurança
+        env:
+          # Cenários que executam SQL real (guarda do contrato de notificações)
+          # rodam contra o PostgreSQL descartável do job; sem a variável eles
+          # ficam pulados e o gate de skip continua valendo.
+          SICOOB_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
         run: |
           npm run check:critical-test-skips
           npm run test:scenarios
