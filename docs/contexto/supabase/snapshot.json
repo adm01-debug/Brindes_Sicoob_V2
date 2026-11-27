@@ -52253,6 +52253,10 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260426125603_b96b3daf-08f4-4edd-bf2f-835a6c673dbf.sql",
               "hits": 31
             },
@@ -52291,9 +52295,13 @@
             {
               "file": "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 10,
+          "code_total_files": 12,
           "cron": [],
           "db": [
             "public.duplicate_order_atomic",
@@ -52756,11 +52764,15 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 2
+            },
+            {
               "file": "supabase/migrations/20260503204301_c4d68747-216a-4854-a3ec-b51ec46f98a1.sql",
               "hits": 1
             }
           ],
-          "code_total_files": 1,
+          "code_total_files": 2,
           "cron": [],
           "db": [],
           "triggers": [
@@ -54249,6 +54261,14 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql",
               "hits": 1
             },
@@ -54291,9 +54311,21 @@
             {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+              "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 11,
+          "code_total_files": 16,
           "cron": [],
           "db": [
             "public.user_can_access_cooperativa",
@@ -54326,6 +54358,14 @@
         "args": "",
         "callers": {
           "code": [
+            {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
             {
               "file": "supabase/migrations/20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql",
               "hits": 1
@@ -54361,9 +54401,17 @@
             {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+              "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 3
             }
           ],
-          "code_total_files": 9,
+          "code_total_files": 13,
           "cron": [],
           "db": [
             "public.user_can_access_cooperativa",
@@ -57021,6 +57069,10 @@
               "hits": 3
             },
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "scripts/qa/simular-escopo-orcamento-ativo.py",
               "hits": 1
             },
@@ -57123,9 +57175,13 @@
             {
               "file": "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 28,
+          "code_total_files": 30,
           "cron": [],
           "db": [
             "public.can_manage_quote_scope",
@@ -57923,12 +57979,20 @@
               "hits": 2
             },
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 12
+            },
+            {
               "file": "scripts/qa/simular-escopo-orcamento-ativo.py",
               "hits": 1
             },
             {
               "file": "scripts/qa/simular-taxonomia-marketing.py",
               "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 5
             },
             {
               "file": "src/pages/trends/trends-queries.ts",
@@ -58021,17 +58085,9 @@
             {
               "file": "supabase/migrations/20251231024837_c924e1c3-b77f-4076-9cdc-195effdf6ea2.sql",
               "hits": 4
-            },
-            {
-              "file": "supabase/migrations/20251231130817_8aeff4f3-66df-41e0-a380-c7ffe3c03f96.sql",
-              "hits": 4
-            },
-            {
-              "file": "supabase/migrations/20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql",
-              "hits": 2
             }
           ],
-          "code_total_files": 166,
+          "code_total_files": 171,
           "cron": [],
           "db": [
             "public._can_act_on_behalf_of_others",
@@ -58276,6 +58332,14 @@
               "hits": 2
             },
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260415010140_79877aa0-dbae-45cb-a872-7cc3520827b7.sql",
               "hits": 2
             },
@@ -58342,9 +58406,25 @@
             {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 7
+            },
+            {
+              "file": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+              "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+              "hits": 4
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 2
+            },
+            {
+              "file": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+              "hits": 1
             }
           ],
-          "code_total_files": 18,
+          "code_total_files": 24,
           "cron": [],
           "db": [
             "public.guard_profile_authority_fields",
@@ -58643,6 +58723,14 @@
         "callers": {
           "code": [
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260502143725_5d0dce5c-6d81-46c6-ab5d-71e0fdfc32f6.sql",
               "hits": 5
             },
@@ -58661,9 +58749,13 @@
             {
               "file": "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 5,
+          "code_total_files": 8,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -58698,6 +58790,14 @@
               "hits": 2
             },
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "scripts/qa/simular-verba-e-sla-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260502143127_cebe731a-273c-4205-8836-c8819504e437.sql",
               "hits": 8
             },
@@ -58724,9 +58824,13 @@
             {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 6
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 8,
+          "code_total_files": 11,
           "cron": [],
           "db": [
             "public.pa_budget_allocation_write_ok",
@@ -59062,6 +59166,10 @@
               "hits": 2
             },
             {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
               "file": "supabase/functions/manage-users/index.ts",
               "hits": 1
             },
@@ -59148,9 +59256,13 @@
             {
               "file": "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
               "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 3
             }
           ],
-          "code_total_files": 23,
+          "code_total_files": 25,
           "cron": [],
           "db": [
             "public.can_manage_connections",
@@ -63468,8 +63580,17 @@
       {
         "args": "p_user_id uuid, p_title text, p_message text, p_type text, p_category text, p_action_url text, p_metadata jsonb",
         "callers": {
-          "code": [],
-          "code_total_files": 0,
+          "code": [
+            {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 1
+            },
+            {
+              "file": "supabase/migrations/20261126121000_limit_increase_decision.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -65878,9 +65999,13 @@
             {
               "file": "supabase/migrations/20261122120000_pa_budget_full_lifecycle.sql",
               "hits": 4
+            },
+            {
+              "file": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+              "hits": 2
             }
           ],
-          "code_total_files": 1,
+          "code_total_files": 2,
           "cron": [],
           "db": [
             "public.pa_budget_close_competence",

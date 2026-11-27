@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 06:27 UTC
+
+- **functions** alterado (12): `public.can_view_all_sales(_user_id uuid)`, `public.check_order_sla()`, `public.current_user_cooperativa_id()`, `public.current_user_pa_id()`, `public.get_user_org_ids(_user_id uuid)`, `public.has_role(_user_id uuid, _role app_role)`, `public.is_admin(_user_id uuid)`, `public.is_gerente_pa(_user_id uuid)`, `public.is_gestor_compras(_user_id uuid)`, `public.is_supervisor_or_above(_user_id uuid)`, `public.send_notification(p_user_id uuid, p_title text, p_message text, p_type text, p_category text, p_action_url text, p_metadata jsonb)`, `public.user_can_access_pa(p_pa_id uuid)`
+
 ## 2026-11-26 10:18 UTC
 
 - **functions** alterado (2): `public.cleanup_old_notifications()`, `public.is_dnd_active(p_user_id uuid)`
