@@ -351,7 +351,7 @@ async function salesSection(
   since: string,
   until: string,
 ): Promise<string> {
-  const [invoicesRes, approvalsRes, publicApprovalsRes] = await Promise.all([
+  const [invoicesRes, approvalsRes, publicApprovalsRes, lateInvoicesRes] = await Promise.all([
     // Faturamento: nota fiscal emitida na janela. `pdf` e `xml` da mesma nota
     // são documentos distintos do mesmo valor — contar os dois dobraria o
     // faturamento, daí a deduplicação por (order_id, invoice_number). O filtro
@@ -384,10 +384,22 @@ async function salesSection(
       .lt("client_response_at", until)
       .order("client_response_at", { ascending: false })
       .limit(SCAN_LIMIT),
+    // Nota anexada depois do fechamento do ciclo nao entrava em relatorio
+    // nenhum: a consulta principal filtra por `issued_at` e a janela do ciclo
+    // seguinte comeca depois. Selecionar pela data de registro devolve essas
+    // notas como ajuste do ciclo em que foram anexadas.
+    supabase.from("sicoob_order_invoices")
+      .select("order_id, invoice_number, amount, issued_at, created_at, sicoob_orders!inner(created_by)")
+      .eq("sicoob_orders.created_by", sellerId)
+      .gte("created_at", since)
+      .lt("created_at", until)
+      .order("created_at", { ascending: false })
+      .limit(SCAN_LIMIT),
   ]);
   if (invoicesRes.error) throw invoicesRes.error;
   if (approvalsRes.error) throw approvalsRes.error;
   if (publicApprovalsRes.error) throw publicApprovalsRes.error;
+  if (lateInvoicesRes.error) throw lateInvoicesRes.error;
 
   const invoices = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
@@ -504,6 +516,7 @@ async function salesSection(
     + (invoiceBodies.length > ROW_LIMIT
       ? `<p>Exibindo as ${ROW_LIMIT} mais recentes de ${invoiceBodies.length}.</p>`
       : "")
+    + lateSection
     + "<h3>Propostas aprovadas no período</h3>"
     + `<p><strong>Aprovadas:</strong> ${approvalRows.length} — `
     + `<strong>valor:</strong> ${escapeHtml(money(approvedTotal))}</p>`

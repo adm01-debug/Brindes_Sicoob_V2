@@ -7,6 +7,9 @@ import {
 } from "../_shared/scheduled-report-email.ts";
 import { generateScheduledReportHtml } from "../_shared/scheduled-report-data.ts";
 import { calculateNextRun, getAnchorDay } from "./report-types.ts";
+import {
+  decideScheduledReportEligibility,
+} from "./report-eligibility.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,37 +60,42 @@ Deno.serve(async (req: Request) => {
 
     for (const report of dueReports) {
       try {
-        // Agendamento de usuário revogado ficaria vencido encabeçando o lote
-        // para sempre. Desativar tira ele da fila sem travar os demais.
+        // Agendamento de usuário revogado, conta inativada ou e-mail desatualizado
+        // ficaria vencido encabeçando o lote para sempre. A decisão é binária:
+        // entregar ou desativar. "Pular" devolveria o mesmo registro em toda rodada
+        // e, com 20 assim, o 21º válido nunca seria processado.
         const { data: roles, error: rolesError } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", report.user_id)
           .limit(1);
         if (rolesError) throw rolesError;
-        if (!Array.isArray(roles) || roles.length === 0) {
+
+        // O trigger `trg_validate_report_email` compara `email_to` com o perfil
+        // no INSERT/UPDATE. Se o usuário trocou de e-mail depois de agendar, o
+        // endereço gravado é o antigo — e a caixa pode ter outro dono. Revalidar
+        // aqui impede entregar dados comerciais a terceiros. `is_active` entra
+        // porque inativar a conta não remove os papéis do usuário.
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email, is_active")
+          .eq("user_id", report.user_id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+
+        const eligibility = decideScheduledReportEligibility({
+          hasRole: Array.isArray(roles) && roles.length > 0,
+          profileActive: profile?.is_active ?? null,
+          profileEmail: profile?.email ?? null,
+          emailTo: report.email_to,
+        });
+        if (eligibility.action === "deactivate") {
           const { error: deactivateError } = await supabase
             .from("scheduled_reports")
             .update({ is_active: false, updated_at: nowIso })
             .eq("id", report.id);
           if (deactivateError) throw deactivateError;
-          results.push({ id: report.id, status: "deactivated", error: "acesso_revogado" });
-          continue;
-        }
-
-        // O trigger `trg_validate_report_email` compara `email_to` com o perfil
-        // no INSERT/UPDATE. Se o usuário trocou de e-mail depois de agendar, o
-        // endereço gravado é o antigo — e a caixa pode ter outro dono. Revalidar
-        // aqui impede entregar dados comerciais a terceiros.
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("user_id", report.user_id)
-          .maybeSingle();
-        if (profileError) throw profileError;
-        const currentEmail = String(profile?.email ?? "").trim().toLowerCase();
-        if (!currentEmail || currentEmail !== String(report.email_to).trim().toLowerCase()) {
-          results.push({ id: report.id, status: "skipped", error: "email_desatualizado" });
+          results.push({ id: report.id, status: "deactivated", error: eligibility.reason });
           continue;
         }
 
