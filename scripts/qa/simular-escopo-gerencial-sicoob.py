@@ -8,6 +8,11 @@ Cobre tres pontos que o CI nao conseguia provar so lendo o SQL:
    (supervisor), e `webhook_url` continua fora do GRANT de coluna.
 3. A RPC de gravacao preserva o campo que nao veio no payload (NULL = nao mexer,
    string vazia = limpar).
+4. `limit_increase_requests` (20261126121000) aceita os papeis vigentes no lugar
+   de `gestor_pa`/`gestor_singular`: o gerente do PA abre e ve a propria fila,
+   nao abre pedido em outro posto, e a administracao ve tudo.
+5. As funcoes que devolvem o webhook e gravam a configuracao recusam sessao sem
+   segundo fator (AAL1), mesmo para admin.
 """
 
 from pathlib import Path
@@ -19,6 +24,7 @@ from postgres_ready import wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+AUMENTO = ROOT / "supabase/migrations/20261126121000_limit_increase_decision.sql"
 CONTAINER = "sicoob-escopo-gerencial-" + uuid.uuid4().hex[:10]
 
 ADMIN = "11111111-1111-1111-1111-111111111111"
@@ -52,9 +58,9 @@ def sql(statement, *, check=True):
     )
 
 
-def secao(inicio, fim=None):
+def secao(inicio, fim=None, *, arquivo=None):
     """Recorta a secao da migration pelo banner `-- N) ...` do cabecalho."""
-    linhas = MIGRATION.read_text(encoding="utf-8").splitlines()
+    linhas = (arquivo or MIGRATION).read_text(encoding="utf-8").splitlines()
     ini = next(i for i, linha in enumerate(linhas) if linha.startswith(inicio))
     if fim is None:
         return "\n".join(linhas[ini:])
@@ -71,9 +77,13 @@ STUBS = f"""
   CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
     SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
   $$;
+  CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
+    SELECT coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{{}}'::jsonb)
+  $$;
 
   CREATE TYPE public.app_role AS ENUM (
-    'dev', 'admin', 'manager', 'supervisor', 'gerente_pa', 'gestor_compras', 'seller'
+    'dev', 'admin', 'manager', 'supervisor', 'gerente_pa', 'gestor_compras',
+    'comprador_pac', 'comprador_singular', 'vendedor', 'seller'
   );
   CREATE TABLE public.user_roles (user_id uuid, role public.app_role);
   CREATE TABLE public.qa_user_orgs (user_id uuid, org_id uuid);
@@ -111,7 +121,45 @@ STUBS = f"""
     SELECT coop_id FROM public.qa_user_coop WHERE user_id = auth.uid() LIMIT 1
   $$;
 
-  CREATE TABLE public.postos_atendimento (id uuid PRIMARY KEY, nome text, cooperativa_id uuid);
+  CREATE FUNCTION public.is_admin(_user_id uuid)
+  RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+    SELECT public.has_role(_user_id, 'admin') OR public.has_role(_user_id, 'dev')
+  $$;
+
+  CREATE TABLE public.postos_atendimento (
+    id uuid PRIMARY KEY,
+    nome text,
+    cooperativa_id uuid,
+    is_active boolean DEFAULT true
+  );
+  CREATE TABLE public.pa_budgets (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    pa_id uuid NOT NULL REFERENCES public.postos_atendimento(id),
+    ano int NOT NULL,
+    mes int NOT NULL,
+    verba_total numeric(14,2),
+    verba_planejada numeric(14,2) DEFAULT 0,
+    limite_alcada numeric(14,2),
+    verba_reservada numeric(14,2) DEFAULT 0,
+    verba_comprometida numeric(14,2) DEFAULT 0,
+    verba_consumida numeric(14,2) DEFAULT 0,
+    fechada_em timestamptz,
+    updated_at timestamptz DEFAULT now(),
+    UNIQUE (pa_id, ano, mes)
+  );
+  CREATE TABLE public.limit_increase_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    pa_id uuid NOT NULL REFERENCES public.postos_atendimento(id),
+    requested_by uuid DEFAULT auth.uid(),
+    current_limit numeric(14,2),
+    requested_limit numeric(14,2),
+    reason text,
+    status text NOT NULL DEFAULT 'pending',
+    approved_by uuid,
+    rejection_reason text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
   CREATE TABLE public.pa_notification_settings (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     pa_id uuid NOT NULL REFERENCES public.postos_atendimento(id),
@@ -132,10 +180,12 @@ STUBS = f"""
 
   ALTER TABLE public.pa_notification_settings ENABLE ROW LEVEL SECURITY;
   ALTER TABLE public.order_comments ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.limit_increase_requests ENABLE ROW LEVEL SECURITY;
 
   CREATE TABLE public.qa_results (name text PRIMARY KEY, ok boolean);
   GRANT SELECT ON public.pa_notification_settings, public.postos_atendimento TO authenticated;
   GRANT SELECT ON public.order_comments, public.orders,tie_placeholder TO authenticated;
+  GRANT SELECT, INSERT ON public.limit_increase_requests TO authenticated;
   GRANT INSERT, SELECT ON public.qa_results TO authenticated;
 """
 STUBS = STUBS.replace("public.orders,tie_placeholder", "public.orders")
@@ -147,9 +197,9 @@ SEED = f"""
     ('{GERENTE}', 'qa-gerente@sicoob.test'),
     ('{SELLER}', 'qa-seller@sicoob.test');
 
-  INSERT INTO public.postos_atendimento (id, nome, cooperativa_id) VALUES
-    ('{PA1}', 'PA Aracaju', '{ORG1}'),
-    ('{PA2}', 'PA Salvador', '{ORG2}');
+  INSERT INTO public.postos_atendimento (id, nome, cooperativa_id, is_active) VALUES
+    ('{PA1}', 'PA Aracaju', '{ORG1}', true),
+    ('{PA2}', 'PA Salvador', '{ORG2}', true);
 
   INSERT INTO public.user_roles (user_id, role) VALUES
     ('{ADMIN}', 'admin'),
@@ -169,6 +219,11 @@ SEED = f"""
     ('{ORDER2}', '{SELLER}', '{ORG2}'),
     ('{ORDER3}', '{ADMIN}', NULL);
 
+  -- Pedido de aumento do PA1 aberto pelo gerente: e a fila que gerente e
+  -- comprador do PA1 devem ver, e que nenhum outro posto pode enxergar.
+  INSERT INTO public.limit_increase_requests (pa_id, requested_by, current_limit, requested_limit, reason) VALUES
+    ('{PA1}', '{GERENTE}', 1000, 2500, 'Campanha de fim de ano');
+
   INSERT INTO public.order_comments (id, order_id) VALUES
     ('dddddddd-0000-0000-0000-000000000001', '{ORDER1}'),
     ('dddddddd-0000-0000-0000-000000000002', '{ORDER2}'),
@@ -176,10 +231,11 @@ SEED = f"""
 """
 
 
-def como(usuario, corpo):
+def como(usuario, corpo, *, aal="aal2"):
     return f"""
   SET ROLE authenticated;
   SET request.jwt.claim.sub = '{usuario}';
+  SET request.jwt.claims = '{{"sub": "{usuario}", "aal": "{aal}"}}';
   {corpo}
   RESET ROLE;
 """
@@ -194,7 +250,31 @@ try:
     sql(STUBS)
     sql(secao("-- 2) order_comments", "-- 5) limit_increase_requests"))
     sql(secao("-- 6) pa_notification_settings"))
+    # 3) RLS de limit_increase_requests: sem estas policies a fila de aumentos
+    # nao tinha teste integrado (os testes do servico usam mock).
+    sql(secao("-- 3. RLS com os pap", "-- 4. Contrato ACL", arquivo=AUMENTO))
     sql(SEED)
+
+    # Sessao que so cumpriu o primeiro fator enxerga a tela, mas nao le o
+    # segredo nem grava: e o que AdminRoute impede na navegacao.
+    sql(como(ADMIN, f"""
+      DO $qa$
+      BEGIN
+        PERFORM public.sicoob_pa_slack_webhook('{PA1}');
+        INSERT INTO public.qa_results (name, ok) VALUES ('admin_aal1_nao_le_webhook', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('admin_aal1_nao_le_webhook', true);
+      END
+      $qa$;
+      DO $qa$
+      BEGIN
+        PERFORM public.sicoob_pa_notification_settings_set('{PA1}', 'slack', p_is_active := true);
+        INSERT INTO public.qa_results (name, ok) VALUES ('admin_aal1_nao_grava', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('admin_aal1_nao_grava', true);
+      END
+      $qa$;
+    """, aal="aal1"))
 
     # Leitura da administracao + primeiro patch (ligar/desligar o canal).
     sql(como(ADMIN, f"""
@@ -235,6 +315,26 @@ try:
             FROM public.pa_notification_settings WHERE pa_id = '{PA1}' AND channel = 'slack'
         ));
     """)
+
+    # Fila de aumentos: autor, gerente do PA e gestor da cooperativa enxergam;
+    # nenhum outro posto e enxergado por eles, e inserir em nome alheio falha.
+    sql(como(GERENTE, f"""
+      INSERT INTO public.qa_results (name, ok) VALUES
+        ('gerente_ve_o_pedido_do_proprio_pa', (SELECT count(*) = 1 FROM public.limit_increase_requests));
+      DO $qa$
+      BEGIN
+        INSERT INTO public.limit_increase_requests (pa_id, current_limit, requested_limit, reason)
+        VALUES ('{PA2}', 100, 200, 'posto de outra cooperativa');
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_outro_pa', false);
+      EXCEPTION WHEN insufficient_privilege THEN
+        INSERT INTO public.qa_results (name, ok) VALUES ('gerente_nao_abre_pedido_em_outro_pa', true);
+      END
+      $qa$;
+    """))
+    sql(como(ADMIN, f"""
+      INSERT INTO public.qa_results (name, ok) VALUES
+        ('admin_ve_a_fila_de_aumentos', (SELECT count(*) = 1 FROM public.limit_increase_requests));
+    """))
 
     # Escopo de leitura por papel.
     sql(como(SUPERVISOR, f"""
