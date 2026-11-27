@@ -127,6 +127,41 @@ UPDATE public.sicoob_orders
 
 SELECT public.refresh_sicoob_order_sla_status();
 
+-- O gatilho `check_order_sla` roda no BEFORE de qualquer UPDATE, depois do
+-- `set_sicoob_order_sla_deadline`: quando o pedido sai de 'waiting_approval'
+-- para aprovado já com o prazo vencido, ele regrava 'critical' e o atraso some
+-- do histórico no instante seguinte à aprovação. O evento de saída da etapa de
+-- aprovação fecha o número antes da mudança, para a tela de gestão poder
+-- mostrar o estouro real.
+CREATE OR REPLACE FUNCTION public.close_sicoob_order_sla()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  IF OLD.sla_deadline IS NOT NULL
+     AND OLD.status IN ('waiting_approval', 'escalated_to_board')
+     AND NEW.status IS DISTINCT FROM OLD.status THEN
+    NEW.sla_closed_at := now();
+    NEW.sla_closed_status := CASE
+      WHEN OLD.sla_deadline < now() THEN 'critical'
+      WHEN OLD.sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning'
+      ELSE 'normal'
+    END;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.close_sicoob_order_sla() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS close_sicoob_order_sla ON public.sicoob_orders;
+CREATE TRIGGER close_sicoob_order_sla
+BEFORE INSERT OR UPDATE OF status ON public.sicoob_orders
+FOR EACH ROW
+EXECUTE FUNCTION public.close_sicoob_order_sla();
+
 DO $block$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN

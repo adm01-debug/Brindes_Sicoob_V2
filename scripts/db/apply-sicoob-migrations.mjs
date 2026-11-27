@@ -246,7 +246,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
-    sha256: "4ade57ae4213bfd1b4090493d2f7f2b4e40505119f967c7d0e40c143117738a5",
+    sha256: "eb7c0154f138b7e584cd1635a18650f8b6767bab367c096cf5e495d922f3af90",
   },
   {
     file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
@@ -254,7 +254,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
-    sha256: "f367ecfc0f357f7f12acf59ce5fa5127d31c51a90d297ce2345b623753ac690a",
+    sha256: "ce0030238e7b43af27b1294a9dbf3756582987ac48d686ec90ce020867b0d609",
   },
   {
     file: "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",

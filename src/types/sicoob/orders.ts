@@ -80,6 +80,8 @@ export interface SicoobOrder {
   approval_policy_version?: string | null;
   sla_status?: 'normal' | 'warning' | 'critical';
   sla_deadline?: string;
+  sla_closed_at?: string;
+  sla_closed_status?: 'normal' | 'warning' | 'critical';
   pa?: { nome: string };
   cooperativa?: { nome: string };
 }

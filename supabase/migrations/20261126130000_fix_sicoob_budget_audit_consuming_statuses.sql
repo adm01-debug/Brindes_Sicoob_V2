@@ -4,6 +4,13 @@
 -- trânsito e entrega. Todo pedido nesses quatro estados virava divergência
 -- falsa na auditoria: em produção, o PA TESTE 01 fechou out/2026 com
 -- 30200 debitados contra 26300 somados (R$ 3.900,00 do pedido em produção).
+--
+-- Os estados somados são exatamente os que o gatilho de verba registra como
+-- compromissados ou consumidos (public.pa_budget_estado_do_status:
+-- confirmed, logistic, in_production, in_separation, in_transit, delivered e
+-- completed). Se a lista divergir, a auditoria volta a acusar divergência
+-- falsa — em especial antes da entrega, quando o valor já está empenhado mas
+-- ainda não consumido.
 CREATE OR REPLACE VIEW public.sicoob_budget_audit
 WITH (security_invoker = on) AS
 SELECT

@@ -10484,6 +10484,8 @@ export type Database = {
           pricing_formula_version: string
           requires_artwork: boolean
           shipping_amount: number
+          sla_closed_at: string | null
+          sla_closed_status: string | null
           sla_deadline: string | null
           sla_status: string | null
           source_quote_id: string | null
@@ -10519,6 +10521,8 @@ export type Database = {
           pricing_formula_version?: string
           requires_artwork?: boolean
           shipping_amount?: number
+          sla_closed_at?: string | null
+          sla_closed_status?: string | null
           sla_deadline?: string | null
           sla_status?: string | null
           source_quote_id?: string | null
@@ -10554,6 +10558,8 @@ export type Database = {
           pricing_formula_version?: string
           requires_artwork?: boolean
           shipping_amount?: number
+          sla_closed_at?: string | null
+          sla_closed_status?: string | null
           sla_deadline?: string | null
           sla_status?: string | null
           source_quote_id?: string | null
@@ -13228,6 +13234,8 @@ export type Database = {
           pricing_formula_version: string
           requires_artwork: boolean
           shipping_amount: number
+          sla_closed_at: string | null
+          sla_closed_status: string | null
           sla_deadline: string | null
           sla_status: string | null
           source_quote_id: string | null
