@@ -1,8 +1,9 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Scale } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Scale, Search } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/format";
 import { sicoobBudgetService, type BudgetPeriod } from "@/services/sicoob/budgetService";
+import { BudgetEntriesDialog } from "@/components/sicoob/BudgetEntriesDialog";
 
 export const BUDGET_AUDIT_QUERY_KEY = "sicoob-budget-audit";
 
@@ -124,7 +126,13 @@ function DiscrepanciaBadge({ row }: { row: BudgetAuditRow }) {
   );
 }
 
-function BudgetAuditTable({ rows }: { rows: BudgetAuditRow[] }) {
+function BudgetAuditTable({
+  rows,
+  onDetalhar,
+}: {
+  rows: BudgetAuditRow[];
+  onDetalhar: (row: BudgetAuditRow, gatilho: HTMLElement | null) => void;
+}) {
   return (
     <Table>
       <TableHeader>
@@ -148,8 +156,18 @@ function BudgetAuditTable({ rows }: { rows: BudgetAuditRow[] }) {
             <TableCell>{formatCurrency(row.verba_total ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_registrada ?? 0)}</TableCell>
             <TableCell>{formatCurrency(row.verba_calculada_pedidos ?? 0)}</TableCell>
-            <TableCell>
+            <TableCell className="flex items-center gap-2">
               <DiscrepanciaBadge row={row} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={(evento) => onDetalhar(row, evento.currentTarget)}
+                aria-label={`Ver os lançamentos que compõem o saldo de ${row.pa_nome ?? "PA sem nome"} em ${formatCompetencia(row.ano, row.mes)}`}
+              >
+                <Search className="h-3.5 w-3.5" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
@@ -208,8 +226,35 @@ function DivergenciaAlert({ count }: { count: number }) {
   );
 }
 
+function DetalheDaVerba({
+  linha,
+  gatilhoAtual,
+  aoFechar,
+}: {
+  linha: BudgetAuditRow | null;
+  gatilhoAtual: HTMLElement | null;
+  aoFechar: () => void;
+}) {
+  if (!linha?.pa_id) return null;
+  return (
+    <BudgetEntriesDialog
+      aberto
+      gatilhoAtual={gatilhoAtual}
+      aoMudarAbertura={(aberto) => {
+        if (!aberto) aoFechar();
+      }}
+      paId={linha.pa_id}
+      paNome={linha.pa_nome}
+      ano={linha.ano ?? 0}
+      mes={linha.mes ?? 0}
+    />
+  );
+}
+
 export function BudgetAuditCard() {
   const { rows, error, isLoading, period, setPeriod } = useBudgetAuditData();
+  const [detalhe, setDetalhe] = React.useState<BudgetAuditRow | null>(null);
+  const [gatilhoDoDetalhe, setGatilhoDoDetalhe] = React.useState<HTMLElement | null>(null);
   const divergentes = countDivergencias(rows);
   const temLinhas = Boolean(rows && rows.length > 0);
 
@@ -230,8 +275,21 @@ export function BudgetAuditCard() {
       <CardContent className="space-y-4">
         <BudgetAuditStatus isLoading={isLoading} error={error} rows={rows} />
         {temLinhas && divergentes > 0 && <DivergenciaAlert count={divergentes} />}
-        {temLinhas && !isLoading && !error && <BudgetAuditTable rows={rows ?? []} />}
+        {temLinhas && !isLoading && !error && (
+          <BudgetAuditTable
+            rows={rows ?? []}
+            onDetalhar={(row, gatilho) => {
+              setGatilhoDoDetalhe(gatilho);
+              setDetalhe(row);
+            }}
+          />
+        )}
       </CardContent>
+      <DetalheDaVerba
+        linha={detalhe}
+        gatilhoAtual={gatilhoDoDetalhe}
+        aoFechar={() => setDetalhe(null)}
+      />
     </Card>
   );
 }

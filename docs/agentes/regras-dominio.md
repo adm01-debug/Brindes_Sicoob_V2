@@ -63,9 +63,14 @@ upload ou cleanup de E2E.
   front `src/services/sicoob/reorderIdempotency.ts`). Mudar a ordem das linhas **não** deve gerar
   orçamento novo — não "melhore" essa ordenação.
 - **Verba de PA é mensal, por período:** `pa_budgets` consultada com `.eq("ano", …).eq("mes", …)`
-  (`src/services/sicoob/budgetService.ts:41-48`); disponível = `verba_total - verba_consumida`
-  (`src/services/sicoob/statsService.ts:32-33`). A autoridade de verba é validada por trigger **no
-  banco**, não no front (`RELATORIO_AUDITORIA_EXAUSTIVA.md:175`).
+  (`src/services/sicoob/budgetService.ts:41-48`). O saldo livre é
+  `planejado - reservado - comprometido - consumido`, onde `planejado` = `verba_planejada` (ou
+  `verba_total` quando ausente) — mesma conta de `getRemainingBudget`
+  (`src/hooks/usePaBudget.ts:49-55`) e de `readPaBudgetAmounts`
+  (`src/lib/sicoob/paBudgetState.ts:41-55`). Reservado e comprometido **não** são gastos, mas já
+  estão presos a pedidos: ignorá-los liberaria a mesma verba duas vezes para nova alocação. A
+  autoridade de verba é validada por trigger **no banco**, não no front
+  (`RELATORIO_AUDITORIA_EXAUSTIVA.md:175`).
 
 ## Edge functions
 
