@@ -883,6 +883,14 @@
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
+{
+      "id": "legacy-5d528ea2650f81f0",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-escopo-gerencial-sicoob.py"],
+      "manual": ["python3", "scripts/qa/simular-escopo-gerencial-sicoob.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
+    },
     {
       "id": "legacy-c4f512c6a76c3773",
       "kind": "legacy",

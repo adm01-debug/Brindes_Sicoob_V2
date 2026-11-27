@@ -13057,6 +13057,30 @@ export type Database = {
       }
       seed_discount_test_users: { Args: never; Returns: Json }
       seed_qa_scenario: { Args: { scenario_name: string }; Returns: Json }
+      can_decide_limit_increase: {
+        Args: { p_request_id: string }
+        Returns: boolean
+      }
+      decide_limit_increase_request: {
+        Args: {
+          p_approve: boolean
+          p_reason?: string
+          p_request_id: string
+        }
+        Returns: {
+          approved_by: string
+          created_at: string
+          current_limit: number
+          id: string
+          pa_id: string
+          reason: string
+          rejection_reason: string
+          requested_by: string
+          requested_limit: number
+          status: string
+          updated_at: string
+        }
+      }
       send_notification: {
         Args: {
           p_action_url?: string
@@ -13211,6 +13235,20 @@ export type Database = {
           p_role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      sicoob_pa_notification_settings_set: {
+        Args: {
+          p_pa_id: string
+          p_channel: string
+          p_webhook_url?: string | null
+          p_recipient_email?: string | null
+          p_is_active?: boolean | null
+        }
+        Returns: undefined
+      }
+      sicoob_pa_slack_webhook: {
+        Args: { p_pa_id: string }
+        Returns: string
       }
       snapshot_hardening_status: { Args: never; Returns: Json }
       submit_quote_response: {

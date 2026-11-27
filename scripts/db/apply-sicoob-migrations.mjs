@@ -245,8 +245,20 @@ const TARGETS = [
     sha256: "7b3994348fcf23f474975f2200cd0d5dff508a82e264704d2aeeb7c2c784da0d",
   },
   {
+    file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    sha256: "081df063b42f2cdf49123d5f702ad31347f09c0a8b7e3d4c5717cd21abfd00a5",
+  },
+  {
+    file: "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
+    sha256: "f367ecfc0f357f7f12acf59ce5fa5127d31c51a90d297ce2345b623753ac690a",
+  },
+  {
     file: "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
     sha256: "0f6f589019a0b25b06d7d7e2d2f2f3ae3af4061504e8c926591ab85959c81e2c",
+  },
+  {
+    file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    sha256: "6171a89841d8434fc241d2c849fd3c9dda1500de4e8f0555aa2f8b016e392ebe",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
