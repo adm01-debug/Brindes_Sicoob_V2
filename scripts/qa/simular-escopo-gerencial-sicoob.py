@@ -25,6 +25,11 @@ from postgres_ready import wait_for_postgres
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
 AUMENTO = ROOT / "supabase/migrations/20261126121000_limit_increase_decision.sql"
+# A 20261126160000 ja esta mesclada e nao pode ser editada; o ajuste de escopo
+# de limit_increase_requests vive numa migration publicada depois dela. O
+# cenario precisa aplicar as duas na ordem de publicacao, senao exercita uma
+# policy que nao existe mais em producao.
+ESCOPO_POR_PA = ROOT / "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
 CONTAINER = "sicoob-escopo-gerencial-" + uuid.uuid4().hex[:10]
 
 ADMIN = "11111111-1111-1111-1111-111111111111"
@@ -303,6 +308,8 @@ try:
     sql(secao("-- 1. Autoridade de decis", "-- 2. Decis", arquivo=AUMENTO))
     sql(secao("-- 2. Decis", "-- 3. RLS com os pap", arquivo=AUMENTO))
     sql(secao("-- 3. RLS com os pap", "-- 4. Contrato ACL", arquivo=AUMENTO))
+    # Ordem de publicacao: a policy por PA entra depois da decisao de aumento.
+    sql(ESCOPO_POR_PA.read_text(encoding="utf-8"))
     sql(SEED)
 
     # Sessao que so cumpriu o primeiro fator enxerga a tela, mas nao le o

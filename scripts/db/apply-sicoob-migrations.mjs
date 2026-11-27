@@ -270,7 +270,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
-    sha256: "253d4cc39dc1050ccbfcd2aa28eef5499258f6834fb6f09b67b7a72d94d4b895",
+    sha256: "705624daf4195c21391d63cb3aa02acb19782f8b3ec68adfb53e520509a1508b",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
