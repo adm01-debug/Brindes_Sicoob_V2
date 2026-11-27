@@ -2,6 +2,14 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 22:16 UTC
+
+- **cron jobs** adicionado (1): `39:connections-health-check`
+- **cron jobs** removido (1): `35:connections-health-check`
+- **functions** alterado (3): `public.cleanup_old_notifications()`, `public.dispatch_sicoob_connections_health_check()`, `public.get_connections_hub_operational_evidence()`
+- **lints** adicionado (2): `rpc_anon_executable:public.cleanup_old_notifications()`, `secdef_mutable_search_path:public.cleanup_old_notifications()`
+- **policies (RLS)** alterado (1): `storage.objects.proposals_quote_scope_delete`
+
 ## 2026-11-27 21:15 UTC
 
 - **colunas** adicionado (3): `public.sicoob_orders.sla_closed_at`, `public.sicoob_orders.sla_closed_outcome`, `public.sicoob_orders.sla_closed_status`

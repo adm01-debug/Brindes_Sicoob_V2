@@ -50486,15 +50486,6 @@
         },
         {
           "active": true,
-          "command": "SELECT public.dispatch_sicoob_connections_health_check();",
-          "database": "postgres",
-          "jobid": 35,
-          "jobname": "connections-health-check",
-          "schedule": "7,22,37,52 * * * *",
-          "username": "postgres"
-        },
-        {
-          "active": true,
           "command": "SELECT public.dispatch_scheduled_reports();",
           "database": "postgres",
           "jobid": 36,
@@ -50518,6 +50509,15 @@
           "jobid": 38,
           "jobname": "sicoob-refresh-order-sla",
           "schedule": "*/15 * * * *",
+          "username": "postgres"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.dispatch_sicoob_connections_health_check();",
+          "database": "postgres",
+          "jobid": 39,
+          "jobname": "connections-health-check",
+          "schedule": "7,22,37,52 * * * *",
           "username": "postgres"
         }
       ]
@@ -53662,20 +53662,18 @@
           "views": []
         },
         "comment": null,
-        "config": [
-          "search_path=public"
-        ],
+        "config": null,
         "definition": null,
-        "definition_sha": "8f5b2bd18e49cb3a",
-        "execute_api_roles": "service_role",
-        "execute_public": false,
+        "definition_sha": "7aa18571f964bf00",
+        "execute_api_roles": "anon, authenticated, service_role",
+        "execute_public": true,
         "is_trigger_fn": false,
         "kind": "function",
         "language": "plpgsql",
         "leakproof": false,
         "name": "cleanup_old_notifications",
         "owner": "postgres",
-        "returns": "void",
+        "returns": "integer",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -55106,7 +55104,7 @@
           ],
           "code_total_files": 1,
           "cron": [
-            "35:connections-health-check"
+            "39:connections-health-check"
           ],
           "db": [],
           "triggers": [],
@@ -56387,12 +56385,12 @@
           "triggers": [],
           "views": []
         },
-        "comment": null,
+        "comment": "Evidencia operacional (cron jobs + triggers) consumida por connections-hub-audit. Somente leitura, service_role.",
         "config": [
-          "search_path=pg_catalog, public, cron"
+          "search_path=public, cron, pg_catalog"
         ],
         "definition": null,
-        "definition_sha": "726777c6de29ac3b",
+        "definition_sha": "e6774377f444cf48",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": false,
@@ -56405,7 +56403,7 @@
         "schema": "public",
         "security_definer": true,
         "strict": false,
-        "volatility": "stable"
+        "volatility": "volatile"
       },
       {
         "args": "enum_name text",
@@ -80646,6 +80644,12 @@
       {
         "code": "secdef_mutable_search_path",
         "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
+        "object": "public.cleanup_old_notifications()",
+        "severity": "ALTA"
+      },
+      {
+        "code": "secdef_mutable_search_path",
+        "detail": "SECURITY DEFINER sem `SET search_path`: vulnerável a sequestro de search_path.",
         "object": "public.get_unread_count()",
         "severity": "ALTA"
       },
@@ -80953,6 +80957,12 @@
         "code": "realtime_replica_identity",
         "detail": "Publicada no Realtime sem REPLICA IDENTITY FULL: eventos de UPDATE/DELETE não trazem `old` completo.",
         "object": "public.search_analytics",
+        "severity": "INFO"
+      },
+      {
+        "code": "rpc_anon_executable",
+        "detail": "SECURITY DEFINER chamável via RPC por anon (sem login): roda com privilégios do owner. Confirme que é intencional (Supabase dá EXECUTE a anon por padrão; revogue se não for API pública).",
+        "object": "public.cleanup_old_notifications()",
         "severity": "INFO"
       },
       {
@@ -90331,7 +90341,7 @@
         ],
         "schema": "storage",
         "table": "objects",
-        "using": "((bucket_id = 'proposals'::text) AND ((storage.foldername(name))[1] = 'quotes'::text) AND (EXISTS ( SELECT 1\n   FROM quotes q\n  WHERE ((q.id =\n        CASE\n            WHEN ((storage.foldername(objects.name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text) THEN ((storage.foldername(objects.name))[2])::uuid\n            ELSE NULL::uuid\n        END) AND ((q.seller_id = ( SELECT auth.uid() AS uid)) OR can_manage_quote_scope(( SELECT auth.uid() AS uid), q.id))))))",
+        "using": "((bucket_id = 'proposals'::text) AND ((owner = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM quotes q\n  WHERE ((q.id =\n        CASE\n            WHEN (((storage.foldername(objects.name))[1] = 'quotes'::text) AND ((storage.foldername(objects.name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text)) THEN ((storage.foldername(objects.name))[2])::uuid\n            ELSE NULL::uuid\n        END) AND ((q.seller_id = ( SELECT auth.uid() AS uid)) OR can_manage_quote_scope(( SELECT auth.uid() AS uid), q.id)))))))",
         "with_check": null
       },
       {
