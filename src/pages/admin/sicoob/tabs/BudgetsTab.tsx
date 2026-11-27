@@ -31,6 +31,7 @@ import { Plus, Filter, AlertCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { cooperativaCeilingQueryKey } from "@/services/sicoob/cooperativaBudgetService";
 import type { TablesInsert } from "@/integrations/supabase/types";
 
 const getErrorMessage = (error: unknown) =>
@@ -76,16 +77,25 @@ export const BudgetsTab = () => {
 
   const createMutation = useMutation({
     mutationFn: async (newBudget: TablesInsert<"pa_budgets">) => {
-      const { data, error } = await supabase
-        .from("pa_budgets")
-        .insert([newBudget])
-        .select()
-        .single();
+      // Mesma RPC da tela de verbas: bloqueia o PA antes da verba para nao
+      // cruzar com a exclusao em cascata de um PA (deadlock 40P01).
+      const { data, error } = await supabase.rpc("salvar_verba_pa", {
+        p_pa_id: newBudget.pa_id,
+        p_ano: newBudget.ano ?? new Date().getFullYear(),
+        p_mes: newBudget.mes ?? new Date().getMonth() + 1,
+        p_verba_total: newBudget.verba_total ?? 0,
+        p_limite_alcada: newBudget.limite_alcada ?? null,
+        p_observacoes: newBudget.observacoes ?? null,
+      });
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pa_budgets"] });
+      // O teto da cooperativa e carregado em outra familia de cache e aparece na
+      // mesma tela (GestorBudgetsPage): sem esta invalidacao o "Disponivel"
+      // continua mostrando o saldo de antes da alocacao.
+      queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
       toast.success("Verba definida com sucesso");
       setIsCreateOpen(false);
     },

@@ -27,6 +27,12 @@
         "register_quote_price_attestation": "migration 20261117092000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
     "cost_centers": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
     "pa_budget_allocations": "migration 20261122120000_pa_budget_full_lifecycle.sql criada na PR #401 — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
-    "pa_budget_replace_allocations": "RPC criada na migration 20261122120000_pa_budget_full_lifecycle.sql (PR #401) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário"
+    "pa_budget_replace_allocations": "RPC criada na migration 20261122120000_pa_budget_full_lifecycle.sql (PR #401) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "salvar_verba_pa": "RPC reescrita na migration 20261126170000_cooperativa_budget_ceiling.sql (PR #473) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "cooperativa_verba_distribuida": "RPC criada na migration 20261126170000_cooperativa_budget_ceiling.sql (PR #473) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "can_decide_limit_increase": "RPC criada na migration 20261126121000_limit_increase_decision.sql (PR #458) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "decide_limit_increase_request": "RPC criada na migration 20261126121000_limit_increase_decision.sql (PR #458) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "sicoob_pa_notification_settings_set": "RPC criada na migration 20261126160000_sicoob_escopo_gerente_papeis_reais.sql (PR #466) — ainda não aplicada ao Supabase remoto (DDL em produção); retirar após aplicar e atualizar o inventário",
+    "sicoob_pa_slack_webhook": "idem sicoob_pa_notification_settings_set: mesma migration e mesma pendência de aplicação (PR #466)"
     }
 }

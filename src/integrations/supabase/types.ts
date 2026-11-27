@@ -10484,6 +10484,8 @@ export type Database = {
           pricing_formula_version: string
           requires_artwork: boolean
           shipping_amount: number
+          sla_closed_at: string | null
+          sla_closed_status: string | null
           sla_deadline: string | null
           sla_status: string | null
           source_quote_id: string | null
@@ -10519,6 +10521,8 @@ export type Database = {
           pricing_formula_version?: string
           requires_artwork?: boolean
           shipping_amount?: number
+          sla_closed_at?: string | null
+          sla_closed_status?: string | null
           sla_deadline?: string | null
           sla_status?: string | null
           source_quote_id?: string | null
@@ -10554,6 +10558,8 @@ export type Database = {
           pricing_formula_version?: string
           requires_artwork?: boolean
           shipping_amount?: number
+          sla_closed_at?: string | null
+          sla_closed_status?: string | null
           sla_deadline?: string | null
           sla_status?: string | null
           source_quote_id?: string | null
@@ -12113,6 +12119,10 @@ export type Database = {
           total_amount: number
         }[]
       }
+      cooperativa_verba_distribuida: {
+        Args: { p_ano: number; p_cooperativa_id: string; p_mes: number }
+        Returns: number
+      }
       copy_group_personalization_to_product: {
         Args: { p_membership_id: string }
         Returns: number
@@ -12992,6 +13002,18 @@ export type Database = {
         Args: { p_vault_secret_name: string }
         Returns: string
       }
+      salvar_verba_pa: {
+        Args: {
+          p_ano: number
+          p_budget_id?: string | null
+          p_limite_alcada?: number | null
+          p_mes: number
+          p_observacoes?: string | null
+          p_pa_id: string
+          p_verba_total: number
+        }
+        Returns: string
+      }
       save_quote_atomic: {
         Args: {
           p_expected_row_version?: number
@@ -13057,6 +13079,30 @@ export type Database = {
       }
       seed_discount_test_users: { Args: never; Returns: Json }
       seed_qa_scenario: { Args: { scenario_name: string }; Returns: Json }
+      can_decide_limit_increase: {
+        Args: { p_request_id: string }
+        Returns: boolean
+      }
+      decide_limit_increase_request: {
+        Args: {
+          p_approve: boolean
+          p_reason?: string
+          p_request_id: string
+        }
+        Returns: {
+          approved_by: string
+          created_at: string
+          current_limit: number
+          id: string
+          pa_id: string
+          reason: string
+          rejection_reason: string
+          requested_by: string
+          requested_limit: number
+          status: string
+          updated_at: string
+        }
+      }
       send_notification: {
         Args: {
           p_action_url?: string
@@ -13188,6 +13234,8 @@ export type Database = {
           pricing_formula_version: string
           requires_artwork: boolean
           shipping_amount: number
+          sla_closed_at: string | null
+          sla_closed_status: string | null
           sla_deadline: string | null
           sla_status: string | null
           source_quote_id: string | null
@@ -13211,6 +13259,20 @@ export type Database = {
           p_role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      sicoob_pa_notification_settings_set: {
+        Args: {
+          p_pa_id: string
+          p_channel: string
+          p_webhook_url?: string | null
+          p_recipient_email?: string | null
+          p_is_active?: boolean | null
+        }
+        Returns: undefined
+      }
+      sicoob_pa_slack_webhook: {
+        Args: { p_pa_id: string }
+        Returns: string
       }
       snapshot_hardening_status: { Args: never; Returns: Json }
       submit_quote_response: {

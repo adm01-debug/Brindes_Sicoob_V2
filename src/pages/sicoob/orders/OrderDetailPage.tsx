@@ -125,6 +125,24 @@ function rejectAction(context: ActionContext) {
   };
 }
 
+function slaClosedLabel(order: { sla_closed_status?: string; sla_closed_outcome?: string; sla_closed_at?: string; sla_deadline?: string }) {
+  const outcome = order.sla_closed_outcome ?? "approved";
+  const fechouEm = new Date(order.sla_closed_at ?? "").getTime();
+  if (!Number.isFinite(fechouEm)) return null;
+  const prazo = order.sla_deadline ? new Date(order.sla_deadline).getTime() : fechouEm;
+  const atrasoHoras = Math.max(1, Math.floor((fechouEm - prazo) / 3600000));
+
+  if (order.sla_closed_status !== "critical") {
+    if (outcome === "rejected") return "Recusado no limite do prazo";
+    if (outcome === "cancelled") return "Cancelado no limite do prazo";
+    if (outcome === "escalated") return "Escalado no limite do prazo";
+    return "Aprovado no limite do prazo";
+  }
+
+  const prefixo = outcome === "rejected" ? "Recusado com" : outcome === "cancelled" ? "Cancelado com" : outcome === "escalated" ? "Escalado com" : "Aprovado com";
+  return `${prefixo} ${atrasoHoras} h de atraso`;
+}
+
 function escalateAction(context: ActionContext) {
   return () => {
     if (!context.order || !context.orderId) return;
@@ -207,7 +225,7 @@ function ApprovalActions({ controller }: { controller: DetailController }) {
 function DetailHeader({ controller }: { controller: DetailController }) {
   const { order, orderId } = controller;
   if (!order) return null;
-  return <div className="flex items-center gap-4"><Button variant="ghost" size="icon" onClick={() => controller.navigate("/sicoob/pedidos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-sicoob-green-dark">Pedido #{order.order_number}</h1><OrderStatusBadge status={order.status} />{order.sla_status && <SLABadge status={order.sla_status} deadline={order.sla_deadline} startedAt={controller.slaCycleStartedAt} />}</div><p className="text-xs text-muted-foreground mt-1">ID: <span className="font-mono font-bold">#{order.id.slice(0, 8)}</span> • Criado em {new Date(order.created_at).toLocaleString("pt-BR")}</p></div><div className="ml-auto flex gap-2">{order.status === "completed" && <OneClickReorder orderId={orderId} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />}<div className="flex flex-col gap-1"><Button variant="outline" size="sm" className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" onClick={controller.actions.exportDossier}><FileText className="h-3.5 w-3.5" />Exportar dossiê do pedido</Button><div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">Relatório operacional</div></div><ApprovalActions controller={controller} /></div></div>;
+  return <div className="flex items-center gap-4"><Button variant="ghost" size="icon" onClick={() => controller.navigate("/sicoob/pedidos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-sicoob-green-dark">Pedido #{order.order_number}</h1><OrderStatusBadge status={order.status} />{order.sla_status && <SLABadge status={order.sla_status} deadline={order.sla_deadline} startedAt={controller.slaCycleStartedAt} />}{order.sla_closed_at && (order.sla_closed_status === "critical" || order.sla_closed_status === "warning") && <Badge variant="outline" className={cn("text-[10px] font-bold", order.sla_closed_status === "critical" ? "border-destructive/40 text-destructive" : "border-warning/30 text-warning-foreground dark:text-warning")} title={`Prazo encerrado em ${new Date(order.sla_closed_at).toLocaleString("pt-BR")}`}>{slaClosedLabel(order)}</Badge>}</div><p className="text-xs text-muted-foreground mt-1">ID: <span className="font-mono font-bold">#{order.id.slice(0, 8)}</span> • Criado em {new Date(order.created_at).toLocaleString("pt-BR")}</p></div><div className="ml-auto flex gap-2">{order.status === "completed" && <OneClickReorder orderId={orderId} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />}<div className="flex flex-col gap-1"><Button variant="outline" size="sm" className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" onClick={controller.actions.exportDossier}><FileText className="h-3.5 w-3.5" />Exportar dossiê do pedido</Button><div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">Relatório operacional</div></div><ApprovalActions controller={controller} /></div></div>;
 }
 
 function OrderItemRow({ item, controller }: { item: SicoobOrderItem; controller: DetailController }) {

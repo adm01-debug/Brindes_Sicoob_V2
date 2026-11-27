@@ -173,6 +173,46 @@ describe("sicoobOrderService.updateOrderStatus", () => {
   });
 });
 
+describe("sicoobOrderService.listOrders", () => {
+  /** Builder minimo do PostgREST: a cadeia termina no segundo `.order()`. */
+  function listBuilder(result: { data: unknown; error: unknown; count: number }) {
+    let orders = 0;
+    const chain: Record<string, ReturnType<typeof vi.fn>> = {};
+    for (const method of ["select", "eq", "in", "gte", "lte", "or", "range"]) {
+      chain[method] = vi.fn(() => chain);
+    }
+    chain.order = vi.fn(() => {
+      orders += 1;
+      return orders === 2 ? Promise.resolve(result) : chain;
+    });
+    return chain;
+  }
+
+  it("filtra SLA critico no servidor, antes de paginar", async () => {
+    const chain = listBuilder({ data: [], error: null, count: 0 });
+    mocks.from.mockImplementation(() => chain);
+
+    await sicoobOrderService.listOrders({ sla_status: "critical", page: 1, pageSize: 9 });
+
+    const eq = chain.eq as ReturnType<typeof vi.fn>;
+    const range = chain.range as ReturnType<typeof vi.fn>;
+    expect(mocks.from).toHaveBeenCalledWith("sicoob_orders");
+    expect(eq).toHaveBeenCalledWith("sla_status", "critical");
+    // O filtro tem de entrar no PostgREST antes do recorte da pagina: "Ver
+    // Urgencias" contava o pedido critico em `waiting_approval` e nao o exibia.
+    expect(eq.mock.invocationCallOrder[0]).toBeLessThan(range.mock.invocationCallOrder[0]);
+  });
+
+  it("nao envia filtro de SLA quando o recorte e todos", async () => {
+    const chain = listBuilder({ data: [], error: null, count: 0 });
+    mocks.from.mockImplementation(() => chain);
+
+    await sicoobOrderService.listOrders({ sla_status: "all" });
+
+    expect(chain.eq as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+  });
+});
+
 describe("sicoobOrderService.getItemLogs", () => {
   /** Builder minimo do PostgREST: resolve no terminador da cadeia. */
   function builder(result: { data: unknown; error: unknown }, terminator: string) {

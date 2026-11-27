@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { cooperativaCeilingQueryKey } from "@/services/sicoob/cooperativaBudgetService";
 import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { askConfirm } from '@/stores/useConfirmDialogStore';
@@ -62,6 +63,7 @@ function usageBarClass(percent: number, warning: number, critical: number): stri
 }
 
 export default function AdminVerbasPage() {
+  const queryClient = useQueryClient();
   const [budgets, setBudgets] = useState<BudgetRow[]>([]);
   const [pas, setPas] = useState<PaOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,21 +162,23 @@ export default function AdminVerbasPage() {
 
   const handleSave = async (formData: BudgetFormData) => {
     try {
-      if (editingBudget) {
-        const { error } = await supabase.from('pa_budgets').update({
-          verba_total: formData.verba_total,
-          limite_alcada: formData.limite_alcada,
-          observacoes: formData.observacoes,
-        }).eq('id', editingBudget.id);
-        if (error) throw error;
-        toast.success("Verba atualizada com sucesso");
-      } else {
-        const { error } = await supabase.from('pa_budgets').insert(formData);
-        if (error) throw error;
-        toast.success("Verba criada com sucesso");
-      }
+      // RPC transacional: bloqueia o PA antes da verba, a mesma ordem da
+      // exclusao de um PA (cascata da FK). O UPDATE direto travava a verba
+      // primeiro e podia dar deadlock com uma exclusao de PA em andamento.
+      const { error } = await supabase.rpc("salvar_verba_pa", {
+        p_pa_id: formData.pa_id,
+        p_ano: formData.ano ?? new Date().getFullYear(),
+        p_mes: formData.mes ?? new Date().getMonth() + 1,
+        p_verba_total: formData.verba_total ?? 0,
+        p_limite_alcada: formData.limite_alcada,
+        p_observacoes: formData.observacoes,
+        p_budget_id: editingBudget?.id ?? null,
+      });
+      if (error) throw error;
+      toast.success(editingBudget ? "Verba atualizada com sucesso" : "Verba criada com sucesso");
       setIsFormOpen(false);
       setEditingBudget(null);
+      await queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
       fetchData();
     } catch (error) {
       console.error("Error saving budget:", error);

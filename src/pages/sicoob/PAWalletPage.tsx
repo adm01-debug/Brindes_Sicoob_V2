@@ -102,6 +102,11 @@ function RequestHistoryRow({ request }: { request: LimitIncreaseRequest }) {
           <div className="max-w-[300px] truncate text-xs text-muted-foreground">
             {request.reason}
           </div>
+          {requestStatus === 'rejected' && request.rejection_reason ? (
+            <div className="max-w-[300px] truncate text-xs font-medium text-destructive">
+              Motivo da recusa: {request.rejection_reason}
+            </div>
+          ) : null}
           <div className="mt-1 text-[10px] font-medium uppercase text-muted-foreground">
             {createdLabel}
           </div>
@@ -307,7 +312,9 @@ export default function PAWalletPage() {
   const [requestReason, setRequestReason] = React.useState('');
 
   const { data: budget } = useQuery({
-    queryKey: ['pa-budget', user?.id],
+    // A chave carrega o usuario: em troca de conta na mesma aba o cache do
+    // posto anterior nao pode ser servido para a conta nova.
+    queryKey: ['pa-budget', paId, user?.id],
     queryFn: () => {
       if (!paId) return null;
       return sicoobBudgetService.getBudgetByPa(paId);
@@ -316,13 +323,15 @@ export default function PAWalletPage() {
   });
 
   const { data: requests } = useQuery({
-    queryKey: ['budget-requests', paId],
+    queryKey: ['budget-requests', paId, user?.id],
     queryFn: () => {
       if (!paId) return [];
       return sicoobApprovalService.listLimitIncreaseRequests(paId);
     },
     enabled: Boolean(paId),
   });
+
+  const amounts = readPaBudgetAmounts(budget);
 
   const createRequest = useMutation({
     mutationFn: () => {
@@ -331,6 +340,7 @@ export default function PAWalletPage() {
         paId,
         Number(requestedAmount),
         requestReason,
+        amounts.planejada,
       );
     },
     onSuccess: () => {
@@ -347,7 +357,6 @@ export default function PAWalletPage() {
     },
   });
 
-  const amounts = readPaBudgetAmounts(budget);
   const currentPeriod = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
 
   return (

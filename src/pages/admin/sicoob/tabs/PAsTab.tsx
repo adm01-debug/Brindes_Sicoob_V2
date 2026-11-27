@@ -30,6 +30,7 @@ import {
 import { Plus, Pencil, Trash2, Search, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { cooperativaCeilingQueryKey } from '@/services/sicoob/cooperativaBudgetService';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { askConfirm } from '@/stores/useConfirmDialogStore';
 
@@ -359,6 +360,8 @@ export const PAsTab = () => {
       // outra Singular sem descartar esta chave deixaria o editor carregando
       // os centros de custo da Singular anterior.
       queryClient.invalidateQueries({ queryKey: ['pa_cooperativa'] });
+      // Transferir o PA muda a que teto as verbas dele pertencem.
+      queryClient.invalidateQueries({ queryKey: cooperativaCeilingQueryKey() });
       toast.success('PA atualizado com sucesso');
       setEditingPA(null);
     },
