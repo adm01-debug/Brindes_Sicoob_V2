@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
+  "commit": "966da0e503c19c374a51760876cd4178340aa051",
   "branch": "main",
-  "data_commit": "2026-11-27T17:26:01-03:00",
+  "data_commit": "2026-11-27T20:42:22Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "966da0e",
+    "data": "2026-11-27",
+    "assunto": "feat: expoe a trilha bruta de admin_config_audit na tela de usuarios (#490)"
+   },
    {
     "sha": "6098796",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "ce42c9f",
     "data": "2026-11-25",
     "assunto": "fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)"
-   },
-   {
-    "sha": "d036bf1",
-    "data": "2026-11-25",
-    "assunto": "fix: envolve auth.*() das policies de public em subconsulta (destrava a guarda c44) (#455)"
    }
   ],
-  "arquivos_mudados_7d": 353,
+  "arquivos_mudados_7d": 355,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -145,19 +145,19 @@
    },
    {
     "pasta": "src/pages/admin",
-    "mudancas": 29
+    "mudancas": 30
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 26
    },
    {
-    "pasta": "src/pages/sicoob",
+    "pasta": "src/components/admin",
     "mudancas": 26
    },
    {
-    "pasta": "src/components/admin",
-    "mudancas": 25
+    "pasta": "src/pages/sicoob",
+    "mudancas": 26
    },
    {
     "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
@@ -218,12 +218,12 @@
     "mudancas": 17
    },
    {
-    "arquivo": ".github/workflows/ci.yml",
+    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
     "mudancas": 14
    },
    {
-    "arquivo": "docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv",
-    "mudancas": 14
+    "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 13
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
@@ -238,15 +238,11 @@
     "mudancas": 11
    },
    {
-    "arquivo": ".github/workflows/sicoob-ci.yml",
-    "mudancas": 10
-   },
-   {
     "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 10
    },
    {
-    "arquivo": ".github/workflows/codeql.yml",
+    "arquivo": ".github/workflows/sicoob-ci.yml",
     "mudancas": 9
    },
    {
@@ -262,7 +258,7 @@
     "mudancas": 9
    },
    {
-    "arquivo": ".github/workflows/e2e.yml",
+    "arquivo": ".github/workflows/codeql.yml",
     "mudancas": 8
    },
    {
@@ -290,18 +286,22 @@
     "mudancas": 8
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
+    "arquivo": ".github/workflows/e2e.yml",
     "mudancas": 7
    },
    {
     "arquivo": "scripts/qa/postgres_ready.py",
+    "mudancas": 7
+   },
+   {
+    "arquivo": "scripts/revisao/gerar-revisao-2026-09-12.py",
     "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 256
+    "commits": 257
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5393,
   "arquivos_codigo": 3268,
-  "linhas_codigo": 520284,
+  "linhas_codigo": 520524,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -784,7 +784,7 @@
   },
   "src/components": {
    "arquivos": 1144,
-   "linhas": 170232
+   "linhas": 170459
   },
   "src/constants": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52509
+   "linhas": 52522
   },
   "src/routes": {
    "arquivos": 9,
@@ -1159,7 +1159,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 17,
-  "arquivos_acima_500_linhas": 76
+  "arquivos_acima_500_linhas": 77
  },
  "todos": [
   {

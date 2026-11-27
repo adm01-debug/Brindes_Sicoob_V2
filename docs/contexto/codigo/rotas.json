@@ -2583,6 +2583,7 @@
    ],
    "tabelas": [
     "admin_audit_log",
+    "admin_config_audit",
     "avatars",
     "coupons",
     "discount_approval_requests",

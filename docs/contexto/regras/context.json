@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
+  "sha": "966da0e503c19c374a51760876cd4178340aa051",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 20:26 UTC",
+  "generated_at": "2026-11-27 20:42 UTC",
   "files_total": 5396,
   "code_files": 3954,
-  "code_lines": 586755
+  "code_lines": 586995
  },
  "version": "1.3.2",
- "facts_hash": "375521a9ef1df49d",
+ "facts_hash": "be8b47d4b219b6da",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -66366,9 +66366,10 @@
   {
    "module": "src/components",
    "files": 1144,
-   "lines": 170232,
+   "lines": 170459,
    "tables": [
     "admin_audit_log",
+    "admin_config_audit",
     "admin_settings",
     "art_file_attachments",
     "bot_detection_log",
@@ -67149,7 +67150,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52509,
+   "lines": 52522,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -68379,6 +68380,11 @@
     ],
     "ref": [
      "tests/p0/edge-functions-failing.test.ts"
+    ]
+   },
+   "admin_config_audit": {
+    "select": [
+     "src/components/admin/users/RoleAuditLogPanel.tsx"
     ]
    },
    "admin_settings": {
@@ -70779,6 +70785,15 @@
     "status",
     "user_agent",
     "user_id"
+   ],
+   "admin_config_audit": [
+    "action_type",
+    "changed_at",
+    "changed_by",
+    "id",
+    "new_data",
+    "old_data",
+    "table_name"
    ],
    "admin_settings": [
     "key",
@@ -74319,7 +74334,6 @@
    "admin_audit_log_y2027_m01",
    "admin_audit_log_y2027_m02",
    "admin_audit_log_y2027_m03",
-   "admin_config_audit",
    "analytics_events",
    "audit_trail",
    "blog_posts",
@@ -173071,6 +173085,7 @@
    "src/components/admin/connections/secretValidators.ts",
    "src/components/admin/connections/secretWhitelist.ts",
    "src/components/admin/security/DatabaseIntegrityCard.tsx",
+   "src/components/admin/users/RoleAuditLogPanel.tsx",
    "src/lib/sensitive-masking.ts",
    "src/pages/admin/AdminConexoesStatusPage.tsx",
    "src/pages/admin/OwnershipAuditAdminPage.tsx",
@@ -197707,13 +197722,22 @@
   },
   "src/components/admin/users/RoleAuditLogPanel.tsx": {
    "path": "src/components/admin/users/RoleAuditLogPanel.tsx",
-   "lines": 279,
+   "lines": 506,
    "exports": [
-    "function RoleAuditLogPanel"
+    "function RoleAuditLogPanel",
+    "function RawConfigAuditPanel"
    ],
    "tables": [
     {
      "table": "admin_audit_log",
+     "op": "select"
+    },
+    {
+     "table": "profiles",
+     "op": "select"
+    },
+    {
+     "table": "admin_config_audit",
      "op": "select"
     },
     {
@@ -197735,12 +197759,22 @@
      "email",
      "full_name",
      "user_id"
+    ],
+    "admin_config_audit": [
+     "action_type",
+     "changed_at",
+     "changed_by",
+     "id",
+     "new_data",
+     "old_data",
+     "table_name"
     ]
    },
    "doc": "Painel de Auditoria de Roles Lista cronologicamente todas as mudanças de papel registradas em `admin_audit_log` pelo trigger `audit_user_role_changes` e pela edge function `manage-users` (action `promote_role`). Origem dos eventos: - role.granted → trigger (INSERT em user_roles) - role.changed → tri …",
    "pagination": [
     "200"
-   ]
+   ],
+   "uses_service_role": true
   },
   "src/components/admin/users/RoleChangeDialog.tsx": {
    "path": "src/components/admin/users/RoleChangeDialog.tsx",
@@ -229652,7 +229686,7 @@
   },
   "src/pages/admin/AdminUsuariosPage.tsx": {
    "path": "src/pages/admin/AdminUsuariosPage.tsx",
-   "lines": 433,
+   "lines": 446,
    "exports": [
     "function AdminUsuariosPage"
    ],
@@ -265357,10 +265391,20 @@
   }
  },
  "git": {
-  "sha": "609879657c525e8ebbfe6b1e9fd0c660d30db3e6",
+  "sha": "966da0e503c19c374a51760876cd4178340aa051",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "966da0e",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: expoe a trilha bruta de admin_config_audit na tela de usuarios (#490)",
+    "files": [
+     "src/components/admin/users/RoleAuditLogPanel.tsx",
+     "src/pages/admin/AdminUsuariosPage.tsx"
+    ]
+   },
    {
     "sha": "6098796",
     "date": "2026-11-27",
@@ -265811,20 +265855,6 @@
      "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
      "tests/pages/ProductDetail.intelligence-errors.test.tsx"
     ]
-   },
-   {
-    "sha": "e42cc6a",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: exige tres empresas com historico para usar o setor como amostra (#449)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "src/components/bi/ClientSeasonalityHeatmap.tsx",
-     "src/hooks/bi/useClientSeasonality.ts",
-     "tests/components/bi/ClientSeasonalityHeatmap.industry-error.test.tsx",
-     "tests/hooks/bi/useClientSeasonality.test.tsx",
-     "tests/hooks/useClientSeasonality.real-data.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -265858,10 +265888,6 @@
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
-    3
-   ],
-   [
-    "docs/RECUPERACAO/anexo-testes-orfaos.md",
     3
    ],
    [
@@ -265906,6 +265932,10 @@
    ],
    [
     "tests/services/sicoobOrderService.test.ts",
+    2
+   ],
+   [
+    "src/components/layout/SidebarReorganized.tsx",
     2
    ]
   ]

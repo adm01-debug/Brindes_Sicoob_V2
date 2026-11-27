@@ -3980,14 +3980,18 @@
   {
    "arquivo": "src/components/admin/users/RoleAuditLogPanel.tsx",
    "exports": [
+    "RawConfigAuditPanel",
     "RoleAuditLogPanel"
    ],
    "export_default": null,
-   "linhas": 279,
+   "linhas": 506,
    "dominio": "components/admin",
-   "hooks_locais": [],
+   "hooks_locais": [
+    "useAuth"
+   ],
    "tabelas": [
     "admin_audit_log",
+    "admin_config_audit",
     "profiles"
    ],
    "edges": [],
@@ -16033,7 +16037,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 164,
+   "usado_por": 165,
    "orfao": false
   },
   {
@@ -16639,7 +16643,7 @@
     "AdminUsuariosPage"
    ],
    "export_default": "AdminUsuariosPage",
-   "linhas": 433,
+   "linhas": 446,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth",

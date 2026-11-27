@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: expoe a trilha bruta de admin_config_audit na tela de usuarios (#490)",
    "feat: envio real de web push pelo send-notification (#488)",
    "feat: inscreve o navegador no Web Push e persiste o endpoint (#486)",
    "feat: painel de tentativas de acesso indevido às chaves MCP (#487)",
-   "docs: veredito das tabelas sem referência no front (#485)",
-   "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)"
+   "docs: veredito das tabelas sem referência no front (#485)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

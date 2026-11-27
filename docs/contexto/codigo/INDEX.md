@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `609879657c525e8ebbfe6b1e9fd0c660d30db3e6` (2026-11-27T17:26:01-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `966da0e503c19c374a51760876cd4178340aa051` (2026-11-27T20:42:22Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 5393 |
 | arquivos_codigo | 3268 |
-| linhas_codigo | 520284 |
+| linhas_codigo | 520524 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -70,7 +70,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | módulo | itens de menu | telas/rotas | arquivos | hooks locais | edges | tabelas |
 |---|---|---|---|---|---|---|
 | components/a11y | 0 | 0 | 5 | 4 | 0 | 0 |
-| components/admin | 0 | 0 | 297 | 124 | 23 | 54 |
+| components/admin | 0 | 0 | 297 | 124 | 23 | 55 |
 | components/auth | 0 | 0 | 7 | 12 | 6 | 3 |
 | components/bi | 0 | 0 | 22 | 23 | 4 | 3 |
 | components/cart | 0 | 0 | 18 | 10 | 3 | 11 |
@@ -130,10 +130,10 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/telemetry | 0 | 0 | 8 | 0 | 0 | 0 |
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
 | pages | 33 | 78 | 68 | 385 | 33 | 98 |
-| pages/admin | 26 | 39 | 70 | 155 | 29 | 91 |
+| pages/admin | 26 | 39 | 70 | 155 | 29 | 92 |
 | pages/sicoob | 15 | 22 | 22 | 32 | 8 | 36 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
-| routes/config | 0 | 0 | 8 | 446 | 53 | 152 |
+| routes/config | 0 | 0 | 8 | 446 | 53 | 153 |
 | services | 0 | 0 | 7 | 5 | 4 | 15 |
 | services/sicoob | 0 | 0 | 15 | 0 | 2 | 18 |
 | stores | 0 | 0 | 6 | 0 | 0 | 0 |
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37676 nós · 62861 arestas · 2820 comunidades · grafo do commit `60987965`
-- comunidades maiores: ref_hooks (669), ref_integrations (525), ref_lib (351), react (274), lucide-react (272), ref_node_fs (235), ref_components (230), react-router-dom (226), framer-motion (200), ref_stores (177), date-fns (174), ai-usage.ts (173)
+- 37688 nós · 62882 arestas · 2779 comunidades · grafo do commit `966da0e5`
+- comunidades maiores: ref_lib (565), ref_integrations (389), ref_components (358), lucide-react (259), react (215), framer-motion (206), getCorsHeaders (205), sonner (195), ref_contexts (181), react-router-dom (178), date-fns (167), postgres_ready.py (145)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -488,16 +488,16 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - PENDENCIAS.md (21)
 - RELATORIO_CI.md (20)
 - package-lock.json (17)
-- .github/workflows/ci.yml (14)
 - docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv (14)
+- .github/workflows/ci.yml (13)
 - .github/workflows/deploy-sicoob-functions.yml (12)
 - scripts/automation.config.json (12)
 - src/integrations/supabase/types.ts (11)
-- .github/workflows/sicoob-ci.yml (10)
 - src/hooks/useQuoteBuilderState.ts (10)
-- .github/workflows/codeql.yml (9)
+- .github/workflows/sicoob-ci.yml (9)
 - src/hooks/quote/useQuoteInitialization.ts (9)
 - src/pages/KitBuilderPage.tsx (9)
+- src/pages/sicoob/orders/OrderDetailPage.tsx (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -701,6 +701,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `966da0e` feat: expoe a trilha bruta de admin_config_audit na tela de usuarios (#490)
 - 2026-11-27 `6098796` feat: envio real de web push pelo send-notification (#488)
 - 2026-11-27 `fcebed9` feat: inscreve o navegador no Web Push e persiste o endpoint (#486)
 - 2026-11-27 `978aef0` feat: painel de tentativas de acesso indevido às chaves MCP (#487)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-27 `870bfb1` docs: fecha a terceira rodada da re-auditoria (52 PRs fora do ledger, 13 merges colapsados, sonda de produção) (#476)
 - 2026-11-26 `da92e35` fix: tira os "insights" fictícios do painel executivo e o R$ 0 enganoso (#475)
 - 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
-- 2026-11-26 `ee56b7f` fix: verba e alçada usam a competência do pedido (SIC-028) (#469)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

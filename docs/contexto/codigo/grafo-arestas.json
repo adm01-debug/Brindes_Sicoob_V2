@@ -2424,6 +2424,7 @@
    "src/components/ui/select.tsx",
    "src/components/ui/table.tsx",
    "src/components/ui/tooltip.tsx",
+   "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts"
   ],
   "src/components/admin/users/RoleChangeDialog.tsx": [
