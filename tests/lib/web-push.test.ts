@@ -23,21 +23,36 @@ async function decifrarComoNavegador(corpo: Uint8Array, chavePrivadaUa: CryptoKe
   );
   const enc = new TextEncoder();
   const info = new Uint8Array([...enc.encode('WebPush: info\0'), ...publicaUa, ...publicaServidor]);
-  const prkK = await crypto.subtle.importKey('raw', auth, 'HKDF', false, ['deriveBits']);
-  const ikm = await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(ecdh), info }, prkK, 256);
+  // RFC 8291 §3.4: IKM e o segredo ECDH derivado do par do servidor; o
+  // auth_secret da inscricao e o salt do HKDF-Extract.
+  const chaveEcdh = await crypto.subtle.importKey('raw', new Uint8Array(ecdh), 'HKDF', false, ['deriveBits']);
+  const ikm = await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: auth, info }, chaveEcdh, 256);
 
+  // RFC 8188 §2.1: o `\0` de separacao vai no info; o WebCrypto acrescenta o
+  // `\0` final do RFC 5869 sozinho.
   const prk2 = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
   const chaveAes = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: new Uint8Array([...enc.encode('Content-Encoding: aes128gcm\0'), 1]) },
+    { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('Content-Encoding: aes128gcm') },
     prk2, 128,
   );
   const nonce = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: new Uint8Array([...enc.encode('Content-Encoding: nonce\0'), 1]) },
+    { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('Content-Encoding: nonce') },
     prk2, 96,
   );
   const chaveDec = await crypto.subtle.importKey('raw', chaveAes, { name: 'AES-GCM' }, false, ['decrypt']);
   const texto = new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce }, chaveDec, cifrado));
   return { texto, delimitador: texto.charCodeAt(texto.length - 1) };
+}
+
+function concat(...partes: Uint8Array[]): Uint8Array {
+  const total = partes.reduce((n, p) => n + p.length, 0);
+  const saida = new Uint8Array(total);
+  let o = 0;
+  for (const p of partes) {
+    saida.set(p, o);
+    o += p.length;
+  }
+  return saida;
 }
 
 async function parUa() {
@@ -100,6 +115,72 @@ describe('web-push', () => {
     // 0x02 marca o ultimo registro (RFC 8188).
     expect(delimitador).toBe(2);
     expect(JSON.parse(texto.slice(0, -1))).toEqual({ title: 'Alerta', body: 'Corpo', url: '/x', tag: 't' });
+  });
+
+  it('o navegador decifra mesmo sem saber que a chave veio do nosso codigo', async () => {
+    // Decifrador independente, escrito a partir do RFC 8291 §3.4 / RFC 8188
+    // §2.1 sem olhar a implementacao. Se o HKDF do emissor trocar salt e IKM,
+    // duplicar o \0 ou usar outro info, a decifra falha aqui.
+    const { inscricao, chavePrivada, publica, auth } = await parUa();
+    const corpo = await cifrarCarga(
+      { title: 'Alerta', body: 'Corpo', url: '/x', tag: 't' },
+      inscricao,
+    );
+
+    const salt = corpo.slice(0, 16);
+    const idLen = corpo[20];
+    const asPublica = corpo.slice(21, 21 + idLen);
+    const cifrado = corpo.slice(21 + idLen);
+
+    const ecdh = await crypto.subtle.deriveBits(
+      {
+        name: 'ECDH',
+        public: await crypto.subtle.importKey(
+          'raw', asPublica, { name: 'ECDH', namedCurve: 'P-256' }, false, [],
+        ),
+      },
+      chavePrivada,
+      256,
+    );
+
+    const enc = new TextEncoder();
+    // RFC 8291: HKDF-Extract(salt=auth_secret, IKM=ecdh_secret)
+    const ikmKey = await crypto.subtle.importKey('raw', new Uint8Array(ecdh), 'HKDF', false, ['deriveBits']);
+    const ikm = await crypto.subtle.deriveBits(
+      {
+        name: 'HKDF',
+        hash: 'SHA-256',
+        salt: auth,
+        info: concat(enc.encode('WebPush: info\0'), publica, asPublica),
+      },
+      ikmKey,
+      256,
+    );
+
+    const prk = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+    const cek = await crypto.subtle.deriveBits(
+      { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('Content-Encoding: aes128gcm') },
+      prk,
+      128,
+    );
+    const nonce = await crypto.subtle.deriveBits(
+      { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('Content-Encoding: nonce') },
+      prk,
+      96,
+    );
+
+    const chave = await crypto.subtle.importKey('raw', cek, { name: 'AES-GCM' }, false, ['decrypt']);
+    const claro = new Uint8Array(
+      await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(nonce) }, chave, cifrado),
+    );
+
+    // RFC 8188 §2: 0x02 = ultimo registro, seguido de padding.
+    const fim = claro.lastIndexOf(2);
+    expect(fim).toBeGreaterThanOrEqual(0);
+    expect(claro.slice(fim + 1).every((b) => b === 0)).toBe(true);
+    expect(JSON.parse(new TextDecoder().decode(claro.slice(0, fim)))).toEqual({
+      title: 'Alerta', body: 'Corpo', url: '/x', tag: 't',
+    });
   });
 
   it('rejeita chave VAPID publica com formato invalido', async () => {

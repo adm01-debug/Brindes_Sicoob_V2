@@ -176,7 +176,9 @@ async function enviarParaDispositivos(supabase: any, payload: any, notificationI
     .eq('is_active', true);
 
   if (erroInscricoes) {
-    return { status: 'failed', enviados: 0, removidos: 0, motivo: erroInscricoes.message, duracaoMs: duracao() };
+    // Detalhe interno do banco fica so no log; o retorno traz apenas o codigo.
+    console.error('[send-notification] falha ao listar push_subscriptions', erroInscricoes.message);
+    return { status: 'failed', enviados: 0, removidos: 0, motivo: 'falha_consulta_inscricoes', duracaoMs: duracao() };
   }
   if (!inscricoes?.length) {
     return { status: 'skipped', enviados: 0, removidos: 0, motivo: 'sem dispositivo inscrito', duracaoMs: duracao() };

@@ -151,25 +151,30 @@ export async function cifrarCarga(
 
   const salt = copiarBuffer(saltFixo ?? crypto.getRandomValues(new Uint8Array(16)));
 
-  // PRK = HKDF(auth_secret, ecdh_secret, "WebPush: info\0" || ua_public || as_public)
+  // RFC 8291 §3.4: PRK_key = HKDF-Extract(auth_secret, ecdh_secret).
+  // O ecdh_secret e o IKM e o auth_secret da inscricao e o salt — antes estavam
+  // trocados, entao o navegador derivava outra chave e descartava a mensagem.
   const info = concatenar(
     encoder.encode('WebPush: info\0'),
     publicaCliente,
     publicaServidor,
   );
-  const prk = await crypto.subtle.importKey('raw', authSecret, 'HKDF', false, ['deriveBits']);
+  const chaveEcdh = await crypto.subtle.importKey('raw', segredoEcdh, 'HKDF', false, ['deriveBits']);
   const ikm = new Uint8Array(
-    await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: segredoEcdh, info }, prk, 256),
+    await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: authSecret, info }, chaveEcdh, 256),
   );
 
+  // RFC 8188 §2.3: o `\0` de separacao vai no info; o salt fica sem ele. O
+  // WebCrypto ja acrescenta o `\0` final do RFC 5869 quando info nao e nulo,
+  // entao acrescentar aqui gerava `\0\0` e outra chave/nonce.
   const chavePrk = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
-  const aesInfo = concatenar(encoder.encode('Content-Encoding: aes128gcm\0'), new Uint8Array([1]));
+  const aesInfo = encoder.encode('Content-Encoding: aes128gcm');
   const chaveAes = await crypto.subtle.deriveBits(
     { name: 'HKDF', hash: 'SHA-256', salt, info: aesInfo },
     chavePrk,
     128,
   );
-  const nonceInfo = concatenar(encoder.encode('Content-Encoding: nonce\0'), new Uint8Array([1]));
+  const nonceInfo = encoder.encode('Content-Encoding: nonce');
   const nonce = await crypto.subtle.deriveBits(
     { name: 'HKDF', hash: 'SHA-256', salt, info: nonceInfo },
     chavePrk,
