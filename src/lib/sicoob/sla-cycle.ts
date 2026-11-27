@@ -2,6 +2,17 @@ type SlaHistoryEvent = { new_status: string; created_at: string };
 
 const SLA_CYCLE_STATUSES = new Set(["waiting_approval", "escalated_to_board"]);
 
+/**
+ * Etapas em que o SLA de aprovação governa o pedido. Fora delas o prazo já
+ * encerrou: o pedido não pode voltar a ser contado como urgente nem entrar no
+ * filtro de conformidade (que misturava pedidos nunca avaliados, sem prazo).
+ */
+const SLA_APPROVAL_STAGES = new Set(["pending", "waiting_approval", "escalated_to_board"]);
+
+export function isSlaApprovalStage(status: string | null | undefined): boolean {
+  return !!status && SLA_APPROVAL_STAGES.has(status);
+}
+
 /** Retorna o início do ciclo SLA atualmente ativo; não infere pela criação do pedido. */
 export function getSlaCycleStartedAt(
   status: string | null | undefined,

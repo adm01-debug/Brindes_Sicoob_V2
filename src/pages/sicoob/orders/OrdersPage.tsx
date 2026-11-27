@@ -68,6 +68,7 @@ import { isCommittedSicoobOrder, sumCommittedSicoobOrders } from "@/utils/sicoob
 import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { isSlaApprovalStage } from "@/lib/sicoob/sla-cycle";
 
 function escapeCsvCell(value: unknown): string {
   const normalized = value === null || value === undefined ? "" : String(value);
@@ -120,7 +121,7 @@ function calculateStats(orders: SicoobOrder[]): OrderStats {
   const committedOrders = orders.filter(isCommittedSicoobOrder);
   const totalRevenue = sumCommittedSicoobOrders(committedOrders);
   const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {});
-  return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === "critical").length, statusCounts };
+  return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === "critical" && isSlaApprovalStage(order.status)).length, statusCounts };
 }
 
 function listRequest(filters: FilterController) {
