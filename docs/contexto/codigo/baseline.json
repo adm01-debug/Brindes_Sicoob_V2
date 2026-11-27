@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
+  "commit": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
   "branch": "main",
-  "data_commit": "2026-11-27T04:26:44-03:00",
+  "data_commit": "2026-11-27T06:04:00-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "7f57d03",
+    "data": "2026-11-27",
+    "assunto": "infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)"
+   },
    {
     "sha": "7f80db7",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "4ec46e6",
     "data": "2026-11-25",
     "assunto": "fix: avisa quando o grafico de mercado mostra dado em cache apos falha (#450)"
-   },
-   {
-    "sha": "3f6b0e0",
-    "data": "2026-11-25",
-    "assunto": "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)"
    }
   ],
-  "arquivos_mudados_7d": 1005,
+  "arquivos_mudados_7d": 1006,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -145,15 +145,15 @@
    },
    {
     "pasta": "src/pages/admin",
+    "mudancas": 26
+   },
+   {
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 25
    },
    {
     "pasta": "src/pages/sicoob",
     "mudancas": 25
-   },
-   {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 24
    },
    {
     "pasta": "docs/execucao/lacunas-funcionalidades-2026-10-11",
@@ -199,7 +199,7 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 31
+    "mudancas": 32
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 247
+    "commits": 248
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5375,
+  "arquivos_total": 5376,
   "arquivos_codigo": 3252,
-  "linhas_codigo": 516638,
+  "linhas_codigo": 516700,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -326,7 +326,7 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 638,
+  "migrations": 639,
   "cron_jobs": 29,
   "testes": 973,
   "workflows": 17,
@@ -596,7 +596,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3515
+   "linhas": 3519
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -692,7 +692,7 @@
   },
   "scripts/qa": {
    "arquivos": 44,
-   "linhas": 11154
+   "linhas": 11206
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52424
+   "linhas": 52430
   },
   "src/routes": {
    "arquivos": 9,
@@ -1070,7 +1070,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1827
+   "linhas": 1831
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",

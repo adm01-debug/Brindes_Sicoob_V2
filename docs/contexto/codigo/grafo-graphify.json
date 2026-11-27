@@ -4,11 +4,11 @@
  "presente": true,
  "como_gerar": "uvx --from \"graphifyy[sql]\" graphify update .  (ou: bun run graph:update); saída em graphify-out/ — graph.json e graph.html NÃO são versionados (dezenas de MB); use `graphify query/path/explain` localmente",
  "relatorio": null,
- "commit_do_grafo": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
+ "commit_do_grafo": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
  "grafo_atual": true,
- "nos": 37517,
- "arestas": 62577,
- "comunidades_total": 2778,
+ "nos": 37518,
+ "arestas": 62578,
+ "comunidades_total": 2779,
  "relacoes": {
   "calls": 10770,
   "cites": 3,
@@ -18,7 +18,7 @@
   "extends": 3,
   "implements": 3,
   "imports": 3527,
-  "imports_from": 12033,
+  "imports_from": 12034,
   "indexes": 604,
   "indirect_call": 378,
   "inherits": 56,
@@ -30,7 +30,7 @@
   "triggers": 279
  },
  "origem": {
-  "EXTRACTED": 61081,
+  "EXTRACTED": 61082,
   "INFERRED": 1496
  },
  "comunidades": [
@@ -1395,7 +1395,7 @@
    "id": "ref_contexts",
    "rotulo": "ref_contexts",
    "arquivo": null,
-   "grau": 224,
+   "grau": 225,
    "comunidade": "ref_integrations"
   },
   {
@@ -6411,6 +6411,7 @@
   "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql": "20261126140000_grant_admin_write_sicoob_centrais.sql",
   "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql": "20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
   "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql": "20261126170000_cooperativa_budget_ceiling.sql",
+  "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql": "20261127120000_limit_increase_requests_escopo_por_pa.sql",
   "supabase/preflight/sicoob-reconciliation-contract.sql": "sicoob-reconciliation-contract.sql",
   "tailwind.config.ts": "package.json",
   "tests/StockFilterToolbar.test.tsx": "ref_types",

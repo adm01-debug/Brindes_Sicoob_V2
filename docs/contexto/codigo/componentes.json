@@ -15974,7 +15974,7 @@
    "edges": [
     "log-login-attempt"
    ],
-   "usado_por": 162,
+   "usado_por": 163,
    "orfao": false
   },
   {
@@ -17007,9 +17007,11 @@
     "NotificationSettingsTab"
    ],
    "export_default": null,
-   "linhas": 230,
+   "linhas": 236,
    "dominio": "pages/admin",
-   "hooks_locais": [],
+   "hooks_locais": [
+    "useAuth"
+   ],
    "tabelas": [
     "pa_notification_settings",
     "postos_atendimento"

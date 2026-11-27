@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f80db7d6d` · branch `main` · 2026-11-27 07:27 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f57d039a2` · branch `main` · 2026-11-27 09:04 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -122,7 +122,7 @@
 | `kit_share_tokens` | enabled | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() | authenticated: seller_id = auth.uid() |
 | `kit_templates` | enabled | authenticated: is_active = true OR public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') | authenticated: public.has_role(auth.uid(), 'admin') |
 | `kit_variants` | enabled | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) OR has_role(auth.uid(), 'admin') | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) | public: EXISTS (SELECT 1 FROM public.custom_kits k WHERE k.id = kit_master_id AND k.user_id = auth.uid()) |
-| `limit_increase_requests` | enabled | authenticated: public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((<br>authenticated: public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by =  | authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_<br>authenticated: public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND re | — | — |
+| `limit_increase_requests` | enabled | authenticated: public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((<br>authenticated: requested_by = (SELECT auth.uid()) OR public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente | authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_<br>authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_ | — | — |
 | `login_attempts` | enabled | public: auth.uid() = user_id OR has_role(auth.uid(), 'admin'::app_role)<br>authenticated: has_role(auth.uid(), 'admin'::app_role)<br>authenticated: user_id = (SELECT auth.uid()) | public: true<br>service_role: true | — | — |
 | `logistics_tracking` | enabled | authenticated: true | authenticated: public.has_role(auth.uid(), 'vendedor') OR public.has_role(auth.uid(), 'admin') | — | — |
 | `magic_up_brand_kits` | enabled | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id | authenticated: auth.uid() = user_id |

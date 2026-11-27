@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f80db7d6d` · branch `main` · 2026-11-27 07:27 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f57d039a2` · branch `main` · 2026-11-27 09:04 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -6582,4 +6582,4 @@ _nenhum item encontrado_
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
 | neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
-| … +364 linhas — lista completa em `context.json` | |
+| … +365 linhas — lista completa em `context.json` | |

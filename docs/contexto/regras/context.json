@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
+  "sha": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 07:27 UTC",
-  "files_total": 5379,
-  "code_files": 3937,
-  "code_lines": 583013
+  "generated_at": "2026-11-27 09:04 UTC",
+  "files_total": 5380,
+  "code_files": 3938,
+  "code_lines": 583171
  },
  "version": "1.3.2",
- "facts_hash": "238a8834063b9370",
+ "facts_hash": "e85c72d31c6e7163",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -357,7 +357,7 @@
   "languages": {
    ".ts": 1516,
    ".tsx": 1506,
-   ".sql": 703,
+   ".sql": 704,
    ".mjs": 146,
    ".py": 73,
    ".cjs": 7,
@@ -34643,26 +34643,6 @@
     "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
    },
    {
-    "name": "Users can view their own PA limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "SELECT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = (SELECT auth.uid()) )",
-    "check": "",
-    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
-   },
-   {
-    "name": "PA Managers can insert limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "INSERT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "",
-    "check": "public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND rejection_reason IS NULL",
-    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
-   },
-   {
     "name": "sicoob_pa_notification_settings_escopo_gerencial",
     "table": "pa_notification_settings",
     "cmd": "SELECT",
@@ -34681,6 +34661,26 @@
     "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
     "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
     "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Users can view their own PA limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "requested_by = (SELECT auth.uid()) OR public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) AND limit_increase_requests.pa_id = public.current_user_pa_id() ) OR ( ( public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) OR publ …",
+    "check": "",
+    "src": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
+   },
+   {
+    "name": "PA Managers can insert limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_requests.approved_by IS NULL AND limit_increase_requests.rejection_reason IS NULL AND ( public.is_admin((SELECT auth.uid())) OR limit_increase_requests.pa_id = public.current_ …",
+    "src": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
    }
   ],
   "triggers": [
@@ -48927,6 +48927,7 @@
    "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
    "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
    "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+   "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -66117,7 +66118,7 @@
   {
    "module": "scripts",
    "files": 175,
-   "lines": 42016,
+   "lines": 42072,
    "tables": [
     "a",
     "admin_audit_log",
@@ -67132,7 +67133,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52424,
+   "lines": 52430,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -68033,8 +68034,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 638,
-   "lines": 58352,
+   "files": 639,
+   "lines": 58448,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -83942,6 +83943,10 @@
    {
     "file": "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx",
     "text": "publicar sem olhar os valores mudaria a regra que estava em vigor."
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    "text": "usuario entra na chave porque trocar de conta na mesma aba nao pode servir"
    },
    {
     "file": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
@@ -155404,26 +155409,6 @@
     "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
    },
    {
-    "name": "Users can view their own PA limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "SELECT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = (SELECT auth.uid()) )",
-    "check": "",
-    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
-   },
-   {
-    "name": "PA Managers can insert limit requests",
-    "table": "limit_increase_requests",
-    "cmd": "INSERT",
-    "roles": "authenticated",
-    "mode": "permissive",
-    "using": "",
-    "check": "public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND rejection_reason IS NULL",
-    "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
-   },
-   {
     "name": "sicoob_pa_notification_settings_escopo_gerencial",
     "table": "pa_notification_settings",
     "cmd": "SELECT",
@@ -155442,6 +155427,26 @@
     "using": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
     "check": "public.is_admin((SELECT auth.uid())) AND (SELECT auth.jwt()) ->> 'aal' = 'aal2'",
     "src": "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql"
+   },
+   {
+    "name": "Users can view their own PA limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "SELECT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "requested_by = (SELECT auth.uid()) OR public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) AND limit_increase_requests.pa_id = public.current_user_pa_id() ) OR ( ( public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role) OR publ …",
+    "check": "",
+    "src": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
+   },
+   {
+    "name": "PA Managers can insert limit requests",
+    "table": "limit_increase_requests",
+    "cmd": "INSERT",
+    "roles": "authenticated",
+    "mode": "permissive",
+    "using": "",
+    "check": "limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_requests.approved_by IS NULL AND limit_increase_requests.rejection_reason IS NULL AND ( public.is_admin((SELECT auth.uid())) OR limit_increase_requests.pa_id = public.current_ …",
+    "src": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
    }
   ],
   "db_triggers": [
@@ -169467,11 +169472,11 @@
     "rls": "enabled",
     "SELECT": [
      "authenticated: public.is_admin((SELECT auth.uid())) OR ( limit_increase_requests.pa_id = public.current_user_pa_id() AND ( public.has_role((",
-     "authenticated: public.user_can_access_pa(pa_id) AND ( public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role) OR requested_by = "
+     "authenticated: requested_by = (SELECT auth.uid()) OR public.is_admin((SELECT auth.uid())) OR ( public.has_role((SELECT auth.uid()), 'gerente"
     ],
     "INSERT": [
      "authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_",
-     "authenticated: public.user_can_access_pa(pa_id) AND requested_by = (SELECT auth.uid()) AND status = 'pending' AND approved_by IS NULL AND re"
+     "authenticated: limit_increase_requests.requested_by = (SELECT auth.uid()) AND limit_increase_requests.status = 'pending' AND limit_increase_"
     ],
     "UPDATE": [],
     "DELETE": []
@@ -187784,7 +187789,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1827,
+   "lines": 1831,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -188801,7 +188806,7 @@
   },
   "scripts/qa/simular-escopo-gerencial-sicoob.py": {
    "path": "scripts/qa/simular-escopo-gerencial-sicoob.py",
-   "lines": 475,
+   "lines": 527,
    "exports": [
     "def command",
     "def sql",
@@ -188816,6 +188821,10 @@
     "dev",
     "manager",
     "supervisor"
+   ],
+   "rule_comments": [
+    "A 20261126160000 ja esta mesclada e nao pode ser editada; o ajuste de escopo",
+    "pedido de outro autor aqui e dele tambem — o que ele nao pode e abrir em nome"
    ],
    "doc": "!/usr/bin/env python3",
    "side_effects": [
@@ -229775,7 +229784,7 @@
   },
   "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
-   "lines": 230,
+   "lines": 236,
    "exports": [
     "const NotificationSettingsTab"
    ],
@@ -229808,6 +229817,9 @@
    ],
    "errors": [
     "Erro ao salvar: "
+   ],
+   "rule_comments": [
+    "usuario entra na chave porque trocar de conta na mesma aba nao pode servir"
    ],
    "side_effects": [
     "slack.com"
@@ -248916,6 +248928,10 @@
    ],
    "uses_service_role": true
   },
+  "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql": {
+   "path": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+   "lines": 96
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -264077,10 +264093,22 @@
   }
  },
  "git": {
-  "sha": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
+  "sha": "7f57d039a2d856bd290354acf0a4995aa2ad08d1",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "7f57d03",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)",
+    "files": [
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "scripts/qa/simular-escopo-gerencial-sicoob.py",
+     "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+     "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql"
+    ]
+   },
    {
     "sha": "7f80db7",
     "date": "2026-11-27",
@@ -264515,17 +264543,6 @@
      "tests/hooks/useCategoryRanking.errors.test.tsx",
      "tests/hooks/useClientBI.real-data.test.tsx"
     ]
-   },
-   {
-    "sha": "8747cf2",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: aponta qual cláusula da guarda de contrato derrubou o lote (#442)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "tests/scenarios/contract-guard-postgres.scenario.mjs",
-     "tests/scenarios/supabase-sql-client.scenario.mjs"
-    ]
    }
   ],
   "hot_files": [
@@ -264546,12 +264563,20 @@
     5
    ],
    [
+    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+    3
+   ],
+   [
     "src/services/sicoob/orderService.ts",
     3
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
     3
+   ],
+   [
+    "scripts/qa/simular-escopo-gerencial-sicoob.py",
+    2
    ],
    [
     "src/pages/sicoob/orders/OrdersPage.tsx",
@@ -264563,10 +264588,6 @@
    ],
    [
     "src/components/layout/SidebarReorganized.tsx",
-    2
-   ],
-   [
-    "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
     2
    ],
    [
@@ -264602,11 +264623,7 @@
     2
    ],
    [
-    "src/lib/sicoob/sla-cycle.ts",
-    1
-   ],
-   [
-    "tests/lib/sicoob/sla-cycle.test.ts",
+    "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
     1
    ]
   ]

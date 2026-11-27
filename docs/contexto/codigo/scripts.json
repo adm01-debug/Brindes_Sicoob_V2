@@ -433,7 +433,7 @@
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
    "descricao": "* Aplica somente migrations explicitamente autorizadas no banco de construção.",
-   "linhas": 1827,
+   "linhas": 1831,
    "env": [
     "GITHUB_ACTIONS",
     "GITHUB_REF",

@@ -1280,7 +1280,7 @@
   {
    "arquivo": "scripts/qa/simular-escopo-gerencial-sicoob.py",
    "tipo": "qa",
-   "linhas": 475,
+   "linhas": 527,
    "testa": [],
    "casos": 0
   },
