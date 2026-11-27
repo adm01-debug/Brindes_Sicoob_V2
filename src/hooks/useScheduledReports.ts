@@ -194,22 +194,35 @@ export function calculateNextRun(frequency: ReportFrequency, now: Date = new Dat
     case 'monthly': {
       // `setMonth(+1)` em 31/01 cai em 03/03 e pula fevereiro; ancorar no dia
       // 1 e limitar ao último dia do mês destino mantém o agendamento mensal.
-      const next = new Date(now);
       // Dia no calendário de Brasília, não no do navegador: a âncora do
       // agendamento é recalculada no servidor por `getAnchorDay` (UTC-3). Com
       // o dia local um relatório criado às 22h30 em UTC-3 nascia com âncora
       // 28 e passava a rodar dia 27 nas entregas seguintes.
       const brasilia = new Date(now.getTime() - BRASILIA_OFFSET_MS);
       const day = brasilia.getUTCDate();
-      // Mês e ano também no calendário de Brasília: o servidor monta a próxima
-      // execução a partir da âncora no mês seguinte ao de `created_at` em
-      // Brasília. Com o mês local, em Fernando de Noronha um relatório criado
-      // em 15/07 às 00h30 (14/07 em Brasília) estreava em agosto e depois
-      // passava a rodar dia 14.
+      // Mês e ano também no calendário de Brasília: o servidor ancora em
+      // `brasiliaDay(created_at)`. Com o mês local, em Fernando de Noronha um
+      // relatório criado em 15/07 às 00h30 (14/07 em Brasília) estreava em
+      // agosto e depois passava a rodar dia 14.
       const monthIndex = brasilia.getUTCFullYear() * 12 + brasilia.getUTCMonth() + 1;
-      const lastDay = new Date(Date.UTC(Math.floor(monthIndex / 12), monthIndex % 12 + 1, 0)).getUTCDate();
-      next.setUTCFullYear(Math.floor(monthIndex / 12), monthIndex % 12, Math.min(day, lastDay));
-      next.setUTCHours(now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+      const ano = Math.floor(monthIndex / 12);
+      const mes = monthIndex % 12;
+      const lastDay = new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate();
+      // Instante montado em UTC com a hora de Brasília e o offset somado de
+      // volta: 10/03 21h de Brasília continua sendo 10/03 21h, e não 21h UTC
+      // (18h de Brasília), que faria o worker liberar o envio 3h antes.
+      // Monta no calendario de Brasilia e so entao converte para o instante UTC
+      // somando o offset. Somar a hora dentro de `Date.UTC` rolava o dia.
+      const local = Date.UTC(
+        ano,
+        mes,
+        Math.min(day, lastDay),
+        brasilia.getUTCHours(),
+        brasilia.getUTCMinutes(),
+        brasilia.getUTCSeconds(),
+        brasilia.getUTCMilliseconds(),
+      );
+      const next = new Date(local + BRASILIA_OFFSET_MS);
       return next;
     }
   }

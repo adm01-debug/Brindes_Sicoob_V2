@@ -420,6 +420,17 @@ async function salesSection(
       registeredAt: String(inv.created_at ?? inv.issued_at ?? ""),
     });
   }
+  // A nota do faturamento herda o valor de qualquer anexo dela: o anexo do ciclo
+  // pode estar em branco e o valor estar no anexo atrasado (ou no PDF e nao no
+  // XML). Sem isso a nota aparecia por R$ 0,00 no relatorio e, como o anexo
+  // atrasado nao entra em ajustes de nota faturada, o valor sumia de vez.
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const existing = invoices.get(key);
+    if (!existing || existing.amount !== null) continue;
+    if (inv.amount === null || inv.amount === undefined) continue;
+    existing.amount = Number(inv.amount);
+  }
   const invoiceRows = [...invoices.values()]
     .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
   const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);

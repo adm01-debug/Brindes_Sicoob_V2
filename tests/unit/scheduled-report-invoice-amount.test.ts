@@ -81,7 +81,24 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(ajustes).toContain('1 \u2014');
   });
 
-  it('nao soma a mesma nota duas vezes quando os dois anexos trazem valor', async () => {
+  it('nao soma em ajustes o anexo atrasado de nota que ja esta no faturamento', async () => {
+    // PDF da nota 12345 emitido em 09/03 (entra no faturamento) e o XML da
+    // MESMA nota, emitido em 05/01 e registrado no ciclo. Sem deduplicar, o
+    // relatorio mostrava R$ 250 no faturamento e mais R$ 250 nos ajustes.
+    const html = await relatorio(
+      [notaCom(250, '2026-03-09T10:00:00.000Z')],
+      [
+        { ...notaCom(250, '2026-03-09T10:00:00.000Z'), issued_at: '2026-03-09' },
+        { ...notaCom(250, '2026-03-05T10:00:00.000Z'), issued_at: '2020-01-05' },
+      ],
+    );
+
+    const faturamento = html.slice(0, html.indexOf('Ajustes de faturamento'));
+    expect(faturamento).toContain('250,00');
+    expect(html).not.toContain('Ajustes de faturamento');
+  });
+
+  it('nao soma a mesma nota duas vezes nos ajustes quando os dois anexos trazem valor', async () => {
     const html = await relatorio(
       [],
       [notaCom(250, '2026-03-09T10:00:00.000Z'), notaCom(250, '2026-03-05T10:00:00.000Z')],
@@ -91,6 +108,23 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(ajustes).toContain('250,00');
     expect(ajustes).not.toContain('500,00');
     expect(ajustes).toContain('1 \u2014');
+  });
+
+  it('nota do faturamento com anexo em branco usa o valor do anexo atrasado', async () => {
+    // O anexo do ciclo esta sem valor e o valor esta no anexo atrasado da mesma
+    // nota. A nota aparecia por R$ 0,00 no faturamento e o valor sumia, porque
+    // anexo atrasado de nota faturada nao entra em ajustes.
+    const html = await relatorio(
+      [notaCom(null, '2026-03-09T10:00:00.000Z')],
+      [
+        { ...notaCom(null, '2026-03-09T10:00:00.000Z'), issued_at: '2026-03-09' },
+        { ...notaCom(180, '2026-03-05T10:00:00.000Z'), issued_at: '2020-01-05' },
+      ],
+    );
+
+    expect(html).toContain('180,00');
+    expect(html).not.toContain('R$ 0,00');
+    expect(html).not.toContain('Ajustes de faturamento');
   });
 
   it('nao trata como ajuste a nota registrada no periodo, mesmo com as datas de emissao divergentes entre PDF e XML', async () => {
