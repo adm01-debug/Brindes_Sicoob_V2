@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `966da0e503` · branch `main` · 2026-11-27 20:42 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c89d884e50` · branch `main` · 2026-11-27 22:36 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5800,7 +5800,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7659 testes em 789 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7662 testes em 790 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -6104,7 +6104,7 @@ _nenhum item encontrado_
 | `tests/scripts/tscheck-files.test.ts` | 8 | tscheck-files · caminho absoluto também casa com a saída relativa do tsc · não confunde prefixo: pedir src/bad não acusa src/bad.ts · arquivo sem erro passa (exit 0) … |
 | `tests/security/search-analytics-legacy-insert.spec.ts` | 8 | search_analytics — compatibilidade de insert legado · normalizador sobrescreve user_id e seller_id com auth.uid() · normalizador não preserva autoria enviada pelo cliente · normalizador roda como SECURITY INVOKER com search_path fixado … |
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
-| … +489 linhas — lista completa em `context.json` | | |
+| … +490 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

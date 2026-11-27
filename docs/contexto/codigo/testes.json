@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 983,
+ "total": 984,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 745
+  "unit": 746
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 725
+   "arquivos": 726
   },
   {
    "padrao": "e2e/",
@@ -5322,6 +5322,16 @@
    "casos": 3
   },
   {
+   "arquivo": "tests/hooks/useProductIntelligenceBadges.test.ts",
+   "tipo": "unit",
+   "linhas": 55,
+   "testa": [
+    "src/hooks/useProductIntelligenceBadges.ts",
+    "src/hooks/useStockHistory.ts"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/hooks/useProductMatch-gaps.test.ts",
    "tipo": "unit",
    "linhas": 140,
@@ -8913,7 +8923,7 @@
   "src/hooks/usePrintAreas.ts": 1,
   "src/hooks/useProductAnalytics.ts": 1,
   "src/hooks/useProductCustomizationOptions.ts": 1,
-  "src/hooks/useProductIntelligenceBadges.ts": 4,
+  "src/hooks/useProductIntelligenceBadges.ts": 5,
   "src/hooks/useProductMatch.ts": 1,
   "src/hooks/useProducts.ts": 7,
   "src/hooks/useProductsByCategory.ts": 1,
@@ -8944,7 +8954,7 @@
   "src/hooks/useSmartNavigation.ts": 2,
   "src/hooks/useSparklineSales.tsx": 1,
   "src/hooks/useSpeechRecognition.ts": 1,
-  "src/hooks/useStockHistory.ts": 2,
+  "src/hooks/useStockHistory.ts": 3,
   "src/hooks/useSupplierComparison.ts": 2,
   "src/hooks/useTechniquePricing.ts": 1,
   "src/hooks/useTemplateSnapshot.ts": 1,

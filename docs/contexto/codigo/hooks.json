@@ -7113,7 +7113,7 @@
     "src/components/common/IntelligenceBadges.tsx",
     "src/pages/ProductDetail.tsx"
    ],
-   "coberto_por_testes": 4
+   "coberto_por_testes": 5
   },
   {
    "arquivo": "src/hooks/useProductMatch.ts",
@@ -8754,7 +8754,7 @@
     "src/hooks/useProductIntelligenceBadges.ts",
     "src/lib/stock-chart-utils.ts"
    ],
-   "coberto_por_testes": 2
+   "coberto_por_testes": 3
   },
   {
    "arquivo": "src/hooks/useSupplierComparison.ts",

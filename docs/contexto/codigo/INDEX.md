@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `966da0e503c19c374a51760876cd4178340aa051` (2026-11-27T20:42:22Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `c89d884e505518e789cf5d29a39b574be0933112` (2026-11-27T22:36:03Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (3040), Markdown (975), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
+- linguagens: TypeScript (3041), Markdown (975), SQL (705), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,9 +34,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5393 |
-| arquivos_codigo | 3268 |
-| linhas_codigo | 520524 |
+| arquivos_total | 5395 |
+| arquivos_codigo | 3269 |
+| linhas_codigo | 520579 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -46,9 +46,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
-| migrations | 639 |
+| migrations | 640 |
 | cron_jobs | 29 |
-| testes | 983 |
+| testes | 984 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 975 |
@@ -58,7 +58,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - componentes: src/components (1012), src/pages (163), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (171), src/utils (37), src/services (26)
-- testes: tests/ (725), e2e/ (150), outro (58)
+- testes: tests/ (726), e2e/ (150), outro (58)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37688 nós · 62882 arestas · 2779 comunidades · grafo do commit `966da0e5`
-- comunidades maiores: ref_lib (565), ref_integrations (389), ref_components (358), lucide-react (259), react (215), framer-motion (206), getCorsHeaders (205), sonner (195), ref_contexts (181), react-router-dom (178), date-fns (167), postgres_ready.py (145)
+- 37692 nós · 62886 arestas · 2776 comunidades · grafo do commit `c89d884e`
+- comunidades maiores: ref_components (654), lucide-react (261), @tanstack/react-query (257), ref_hooks (237), getCorsHeaders (223), sonner (219), framer-motion (217), ref_node_path (203), react (200), ref_integrations (195), ref_contexts (188), react-router-dom (181)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -701,6 +701,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `c89d884` fix: recupera 7 migrations e 1 teste de PRs fechadas sem merge (#491)
 - 2026-11-27 `966da0e` feat: expoe a trilha bruta de admin_config_audit na tela de usuarios (#490)
 - 2026-11-27 `6098796` feat: envio real de web push pelo send-notification (#488)
 - 2026-11-27 `fcebed9` feat: inscreve o navegador no Web Push e persiste o endpoint (#486)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-27 `1883301` feat: teto da cooperativa passa a valer no banco e ganha tela (DB-19) (#473)
 - 2026-11-27 `870bfb1` docs: fecha a terceira rodada da re-auditoria (52 PRs fora do ledger, 13 merges colapsados, sonda de produção) (#476)
 - 2026-11-26 `da92e35` fix: tira os "insights" fictícios do painel executivo e o R$ 0 enganoso (#475)
-- 2026-11-26 `63352e5` fix: proposta completa do orçamento volta a ter caminho na interface (DOC-01) (#474)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

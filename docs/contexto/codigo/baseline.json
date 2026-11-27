@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "966da0e503c19c374a51760876cd4178340aa051",
+  "commit": "c89d884e505518e789cf5d29a39b574be0933112",
   "branch": "main",
-  "data_commit": "2026-11-27T20:42:22Z",
+  "data_commit": "2026-11-27T22:36:03Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "c89d884",
+    "data": "2026-11-27",
+    "assunto": "fix: recupera 7 migrations e 1 teste de PRs fechadas sem merge (#491)"
+   },
    {
     "sha": "966da0e",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "6f109c4",
     "data": "2026-11-26",
     "assunto": "feat: tela de gestão das políticas de aprovação por Singular (#461)"
-   },
-   {
-    "sha": "ce42c9f",
-    "data": "2026-11-25",
-    "assunto": "fix: restaura initplan na politica de push_subscriptions (drift que travava o lote) (#443)"
    }
   ],
-  "arquivos_mudados_7d": 355,
+  "arquivos_mudados_7d": 353,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -282,10 +282,6 @@
     "mudancas": 8
    },
    {
-    "arquivo": "src/services/sicoob/orderService.ts",
-    "mudancas": 8
-   },
-   {
     "arquivo": ".github/workflows/e2e.yml",
     "mudancas": 7
    },
@@ -296,12 +292,16 @@
    {
     "arquivo": "scripts/revisao/gerar-revisao-2026-09-12.py",
     "mudancas": 7
+   },
+   {
+    "arquivo": "src/components/layout/SidebarReorganized.tsx",
+    "mudancas": 7
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 257
+    "commits": 258
    },
    {
     "autor": "dependabot[bot]",
@@ -314,9 +314,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5393,
-  "arquivos_codigo": 3268,
-  "linhas_codigo": 520524,
+  "arquivos_total": 5395,
+  "arquivos_codigo": 3269,
+  "linhas_codigo": 520579,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -326,9 +326,9 @@
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
-  "migrations": 639,
+  "migrations": 640,
   "cron_jobs": 29,
-  "testes": 983,
+  "testes": 984,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 975
@@ -923,8 +923,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 162,
-   "linhas": 18787
+   "arquivos": 163,
+   "linhas": 18842
   },
   "tests/integration": {
    "arquivos": 4,

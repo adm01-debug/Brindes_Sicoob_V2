@@ -1,6 +1,6 @@
 # 10 · ACESSO E SEGURANÇA — quem pode o quê
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `966da0e503` · branch `main` · 2026-11-27 20:42 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `c89d884e50` · branch `main` · 2026-11-27 22:36 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Perfis / roles identificados
@@ -314,7 +314,7 @@
 
 > `—` com RLS ligado = ninguém além de service_role. `sem RLS` = qualquer chave anon lê/escreve tudo.
 
-## Onde o RLS é IGNORADO (service_role) — 318 arquivo(s)
+## Onde o RLS é IGNORADO (service_role) — 319 arquivo(s)
 
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simulacoes_auditoria.py`
 - `docs/execucao/auditoria-planejamento-2026-10-13/reproducao/sicoob_simular_rls_20261013.py`
@@ -466,7 +466,7 @@
 - `supabase/functions/validate-access/index.ts`
 - `supabase/functions/webhook-dispatcher/index.ts`
 - `supabase/functions/webhook-inbound/index.ts`
-- … +168 (lista completa em `context.json`)
+- … +169 (lista completa em `context.json`)
 
 ## Funções SQL `SECURITY DEFINER` (rodam com privilégio do dono, ignoram RLS)
 
@@ -883,14 +883,14 @@ Middleware matcher (Next.js): nenhum
 | grant | authenticated, service_role | select, insert, update, delete | `personalization_simulations` |
 | grant | postgres, service_role | execute | `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `auto_revoke_orphan_full_keys`, `cleanup_webhook_logs`, `retry_failed_webhook_deliveries` |
 | grant | service_role | all | `telemetry_events`, `telemetry_logs`, `test_suites_runs`, `notification_preferences`, `search_analytics`, `search_analytics`, `limit_increase_requests` |
-| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +66 |
+| grant | service_role | execute | `cleanup_old_notifications`, `record_public_token_failure`, `check_sicoob_access_matrix`, `cleanup_test_auth_orphans`, `qa_preflight_check`, `public`, `check_tables_rls`, `refresh_mv_benchmark_setorial`, `reorder_sicoob_order_as_quote`, `create_sicoob_order_artwork_version`, `create_sicoob_kit_quote`, `get_sicoob_reorder_idempotency`, `reorder_sicoob_order_as_quote`, `get_sicoob_kit_quote_idempotency`, `create_sicoob_kit_quote` … +67 |
 | grant | service_role | insert | `access_blocked_log` |
 | grant | service_role | select | `quote_approval_evidence_keys`, `sicoob_approval_delivery_archive` |
 | grant | service_role | select, insert, update, delete | `sicoob_approval_deliveries` |
 | grant | service_role | select,insert,update,delete | `sicoob_approval_worker_dispatches` |
 | grant | service_role, authenticated | execute | `record_mcp_access_violation` |
 | grant | supabase_auth_admin, service_role | execute | `create_default_notification_preferences` |
-| revoke | PUBLIC | all | `cleanup_old_notifications`, `get_web_vitals_summary`, `get_web_vitals_regression`, `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `set_connections_auto_test_interval`, `set_connection_failure_window_minutes`, `get_auto_test_job_status`, `check_telemetry_regression`, `log_full_scope_grant`, `log_access_denied`, `record_dev_route_telemetry`, `auto_revoke_orphan_full_keys`, `log_rls_denial`, `audit_ownership_orphans` … +84 |
+| revoke | PUBLIC | all | `cleanup_old_notifications`, `get_web_vitals_summary`, `get_web_vitals_regression`, `retry_failed_webhook_deliveries`, `cleanup_webhook_logs`, `set_connections_auto_test_interval`, `set_connection_failure_window_minutes`, `get_auto_test_job_status`, `check_telemetry_regression`, `log_full_scope_grant`, `log_access_denied`, `record_dev_route_telemetry`, `auto_revoke_orphan_full_keys`, `log_rls_denial`, `audit_ownership_orphans` … +85 |
 | revoke | PUBLIC | execute | `check_sicoob_access_matrix`, `public`, `can_manage`, `can_view_all_sales`, `get_user_org_ids`, `has_role`, `is_admin`, `is_dev`, `is_kit_collaborator`, `is_kit_owner`, `is_supervisor_or_above`, `can_manage`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +11 |
 | revoke | PUBLIC, anon | all | `check_hardening_status`, `record_mcp_access_violation`, `assert_database_auditor`, `v_full_scope_grants`, `copy_group_personalization_to_product`, `create_quote_version_atomic`, `personalization_simulations`, `convert_quote_to_sicoob_order`, `mutate_sicoob_order_item`, `consolidate_sicoob_quotes`, `upsert_sicoob_order_shipment`, `ensure_default_favorite_list`, `retry_own_sicoob_export_job`, `bulk_update_quote_status_atomic`, `request_discount_approval_atomic` … +82 |
 | revoke | PUBLIC, anon | execute | `is_order_owner_or_admin`, `consume_step_up_token`, `log_full_scope_grant`, `log_rls_denial`, `audit_security_definer_acl`, `audit_security_definer_acl`, `can_manage`, `get_user_pa_id`, `get_user_cooperative_id`, `get_user_singular_id`, `is_kit_owner`, `is_kit_collaborator`, `can_view_all_sales`, `current_user_cooperativa_id`, `current_user_pa_id` … +8 |
@@ -901,7 +901,7 @@ Middleware matcher (Next.js): nenhum
 | revoke | anon | all | `get_webhook_delivery_summary`, `get_app_health_summary`, `lookup_request_id`, `sales_goals`, `notification_preferences`, `pa_budgets`, `cooperativa_budgets`, `catalog_marketing_terms`, `catalog_product_marketing`, `catalog_marketing_term_usage`, `sicoob_rls_audit_logs`, `search_analytics`, `search_analytics`, `normalize_search_analytics_insert`, `normalize_search_analytics_insert` … +2 |
 | revoke | anon | execute | `check_sicoob_access_matrix`, `public`, `sync_external_connections_from_credentials`, `sync_external_connections_from_credentials`, `seed_qa_scenario`, `send_notification`, `ensure_default_favorite_list`, `acquire_ai_quota`, `create_organization_with_owner`, `generate_sicoob_performance_report` |
 | revoke | anon, authenticated | all | `sicoob_approval_delegations` |
-| revoke | anon, authenticated | execute | `cleanup_old_notifications`, `inspect_query_plan`, `cleanup_test_auth_orphans`, `archive_old_admin_audit_logs`, `audit_all_rls_compliance`, `audit_sicoob_rls_policies`, `auto_block_extreme_offenders`, `auto_revoke_orphan_full_keys`, `cleanup_discount_test_data`, `cleanup_expired_collection_trash`, `cleanup_expired_favorite_trash`, `cleanup_expired_public_comparisons`, `cleanup_expired_step_up`, `cleanup_old_notifications`, `cleanup_rate_limits` … +17 |
+| revoke | anon, authenticated | execute | `cleanup_old_notifications`, `inspect_query_plan`, `cleanup_test_auth_orphans`, `archive_old_admin_audit_logs`, `audit_all_rls_compliance`, `audit_sicoob_rls_policies`, `auto_block_extreme_offenders`, `auto_revoke_orphan_full_keys`, `cleanup_discount_test_data`, `cleanup_expired_collection_trash`, `cleanup_expired_favorite_trash`, `cleanup_expired_public_comparisons`, `cleanup_expired_step_up`, `cleanup_old_notifications`, `cleanup_rate_limits` … +18 |
 | revoke | anon, authenticated | insert | `favorite_item_reactions` |
 | revoke | anon, authenticated | insert, update, delete | `discount_approval_requests`, `quote_history` |
 | revoke | anon, authenticated | truncate | `password_reset_requests`, `audit_log` |

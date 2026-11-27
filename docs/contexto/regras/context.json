@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "966da0e503c19c374a51760876cd4178340aa051",
+  "sha": "c89d884e505518e789cf5d29a39b574be0933112",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 20:42 UTC",
-  "files_total": 5396,
-  "code_files": 3954,
-  "code_lines": 586995
+  "generated_at": "2026-11-27 22:36 UTC",
+  "files_total": 5398,
+  "code_files": 3956,
+  "code_lines": 587094
  },
  "version": "1.3.2",
- "facts_hash": "be8b47d4b219b6da",
+ "facts_hash": "f13c0c2b4d489eb7",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,9 +355,9 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1528,
+   ".ts": 1529,
    ".tsx": 1510,
-   ".sql": 704,
+   ".sql": 705,
    ".mjs": 146,
    ".py": 73,
    ".cjs": 7,
@@ -48935,6 +48935,7 @@
    "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
    "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
    "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+   "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "src/integrations/supabase/types.ts"
   ],
@@ -55899,6 +55900,30 @@
     "objkind": "function",
     "roles": "authenticated, service_role",
     "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "PUBLIC",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "anon, authenticated",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
    }
   ],
   "raises": [
@@ -68052,8 +68077,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 639,
-   "lines": 58448,
+   "files": 640,
+   "lines": 58492,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -68157,8 +68182,8 @@
   },
   {
    "module": "tests",
-   "files": 749,
-   "lines": 100590,
+   "files": 750,
+   "lines": 100645,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -133012,6 +133037,18 @@
     "name": "inteligência presente mantém o aviso de dado já medido mesmo com falha"
    },
    {
+    "file": "tests/hooks/useProductIntelligenceBadges.test.ts",
+    "name": "buildBadgeResult"
+   },
+   {
+    "file": "tests/hooks/useProductIntelligenceBadges.test.ts",
+    "name": "não inventa classificação quando a visão de inteligência está vazia"
+   },
+   {
+    "file": "tests/hooks/useProductIntelligenceBadges.test.ts",
+    "name": "exibe classificação apenas quando ela vem da visão de inteligência"
+   },
+   {
     "file": "tests/hooks/useProductMatch-gaps.test.ts",
     "name": "FIX 1: useSupplierComparison — price zero guard"
    },
@@ -173301,6 +173338,7 @@
    "supabase/migrations/20261126121000_limit_increase_decision.sql",
    "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
    "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+   "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql",
    "supabase/preflight/sicoob-reconciliation-contract.sql",
    "tests/components/admin/connections/connectionStatus.test.ts",
    "tests/e2e/cleanup-name-filter-guard.test.ts",
@@ -180406,6 +180444,30 @@
     "objkind": "function",
     "roles": "authenticated, service_role",
     "src": "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "PUBLIC",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "anon, authenticated",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "cleanup_old_notifications",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql"
    }
   ],
   "guards": [
@@ -250029,6 +250091,11 @@
    "path": "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
    "lines": 96
   },
+  "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql": {
+   "path": "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql",
+   "lines": 44,
+   "uses_service_role": true
+  },
   "supabase/preflight/sicoob-reconciliation-contract.sql": {
    "path": "supabase/preflight/sicoob-reconciliation-contract.sql",
    "lines": 141,
@@ -257738,6 +257805,19 @@
     "inteligência presente mantém o aviso de dado já medido mesmo com falha"
    ]
   },
+  "tests/hooks/useProductIntelligenceBadges.test.ts": {
+   "path": "tests/hooks/useProductIntelligenceBadges.test.ts",
+   "lines": 55,
+   "is_test": true,
+   "rule_comments": [
+    "* A regra que ela trava: sem a visão de inteligência (`mv_product_intelligence`), o"
+   ],
+   "tests": [
+    "buildBadgeResult",
+    "não inventa classificação quando a visão de inteligência está vazia",
+    "exibe classificação apenas quando ela vem da visão de inteligência"
+   ]
+  },
   "tests/hooks/useProductMatch-gaps.test.ts": {
    "path": "tests/hooks/useProductMatch-gaps.test.ts",
    "lines": 140,
@@ -265391,10 +265471,20 @@
   }
  },
  "git": {
-  "sha": "966da0e503c19c374a51760876cd4178340aa051",
+  "sha": "c89d884e505518e789cf5d29a39b574be0933112",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "c89d884",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "fix: recupera 7 migrations e 1 teste de PRs fechadas sem merge (#491)",
+    "files": [
+     "supabase/migrations/20261127223000_cleanup_old_notifications_drop_before_create.sql",
+     "tests/hooks/useProductIntelligenceBadges.test.ts"
+    ]
+   },
    {
     "sha": "966da0e",
     "date": "2026-11-27",
@@ -265839,21 +265929,6 @@
      "tests/pages/OrdersPage.content.test.tsx",
      "tests/pages/OrdersPage.page.test.tsx",
      "tests/pages/OrdersPage.retry-names.test.tsx"
-    ]
-   },
-   {
-    "sha": "2701a09",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: erro e vazio nos selos de inteligencia do produto (#448)",
-    "files": [
-     "docs/RECUPERACAO/anexo-testes-orfaos.md",
-     "src/components/common/IntelligenceBadges.tsx",
-     "src/hooks/useProductIntelligenceBadges.ts",
-     "src/pages/ProductDetail.tsx",
-     "tests/components/common/IntelligenceBadges.errors.test.tsx",
-     "tests/hooks/useProductIntelligenceBadges.market-data.test.tsx",
-     "tests/pages/ProductDetail.intelligence-errors.test.tsx"
     ]
    }
   ],
