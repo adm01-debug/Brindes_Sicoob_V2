@@ -116,7 +116,10 @@ CREATE POLICY "Users can view their own PA limit requests"
 ON public.limit_increase_requests FOR SELECT TO authenticated
 USING (
   public.user_can_access_pa(pa_id)
-  OR requested_by = (SELECT auth.uid())
+  AND (
+    public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role)
+    OR requested_by = (SELECT auth.uid())
+  )
 );
 
 DROP POLICY IF EXISTS "PA Managers can insert limit requests" ON public.limit_increase_requests;
