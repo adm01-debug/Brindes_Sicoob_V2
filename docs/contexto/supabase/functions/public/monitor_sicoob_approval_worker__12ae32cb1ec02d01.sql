@@ -11,7 +11,8 @@ BEGIN
       d.id AS dispatch_id, r.status_code, r.error_msg, r.content, r.timed_out, r.created
     FROM net._http_response r
     JOIN public.sicoob_approval_worker_dispatches d
-      ON d.request_id=r.id AND d.state='queued' AND r.created>=d.requested_at
+      ON d.request_id=r.id AND d.state='queued'
+        AND r.created >= d.requested_at - interval '5 seconds'
     ORDER BY r.id, d.requested_at DESC, r.created ASC, d.id DESC,
       r.status_code NULLS FIRST, r.error_msg NULLS FIRST, r.content NULLS FIRST
   )

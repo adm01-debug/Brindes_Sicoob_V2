@@ -60155,7 +60155,7 @@
           "search_path=pg_catalog, public, net"
         ],
         "definition": null,
-        "definition_sha": "6cbb4636dd305fee",
+        "definition_sha": "22bf4e88b097afb6",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": false,
