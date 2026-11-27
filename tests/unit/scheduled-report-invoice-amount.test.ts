@@ -149,21 +149,14 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     expect(html).not.toContain('Ajustes de faturamento');
   });
 
-  it('ajuste nao fica em R$ 0,00 quando o valor esta no anexo ja faturado', async () => {
-    // PDF antigo (sem valor) abre o ajuste; o XML da mesma nota, que ja esta no
-    // faturamento e por isso nao abre ajuste, e o unico anexo com valor. Antes
-    // o anexo faturado era descartado e a nota atrasada entrava como R$ 0,00.
-    // O XML aparece PRIMEIRO na consulta de registro (ordem do banco).
+  it('ajuste herda o valor do anexo anterior quando o que comprova atraso vem em branco', async () => {
+    // Dois anexos da mesma nota, ambos registrados no ciclo e nenhum no
+    // faturamento: o antigo (emitido em 01/02) comprova o atraso mas veio sem
+    // valor; o do periodo (09/03) tem o valor. O ajuste usa o valor do anexo
+    // com valor em vez de sair em R$ 0,00. O anexo do periodo aparece PRIMEIRO
+    // na consulta de registro (ordem do banco).
     const html = await relatorio(
-      [
-        {
-          order_id: 'ped-5',
-          invoice_number: '4321',
-          amount: 300,
-          issued_at: '2026-03-09',
-          sicoob_orders: { created_by: SELLER },
-        },
-      ],
+      [],
       [
         { order_id: 'ped-5', invoice_number: '4321', amount: 300, issued_at: '2026-03-09', created_at: '2026-03-09T10:00:00.000Z' },
         { order_id: 'ped-5', invoice_number: '4321', amount: null, issued_at: '2026-02-01', created_at: '2026-03-04T10:00:00.000Z' },
@@ -171,8 +164,49 @@ describe('faturamento por nota fiscal no relatorio agendado', () => {
     );
 
     const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    expect(ajustes).toContain('4321');
     expect(ajustes).toContain('300,00');
     expect(ajustes).not.toContain('R$ 0,00');
+  });
+
+  it('ajuste herda o valor tambem quando o anexo em branco vem primeiro', async () => {
+    // A consulta de registro nao garante ordem entre os anexos da nota; o
+    // valor precisa ser herdado em qualquer ordem.
+    const html = await relatorio(
+      [],
+      [
+        { order_id: 'ped-5', invoice_number: '4321', amount: null, issued_at: '2026-02-01', created_at: '2026-03-04T10:00:00.000Z' },
+        { order_id: 'ped-5', invoice_number: '4321', amount: 300, issued_at: '2026-03-09', created_at: '2026-03-09T10:00:00.000Z' },
+      ],
+    );
+
+    const ajustes = html.slice(html.indexOf('Ajustes de faturamento'));
+    expect(ajustes).toContain('4321');
+    expect(ajustes).toContain('300,00');
+  });
+
+  it('nao soma em ajustes a nota cujo anexo do ciclo entrou no faturamento', async () => {
+    // PDF emitido em 20/02 e XML da mesma nota emitido em 09/03, ambos
+    // registrados no ciclo de 08/03. O faturamento ja reporta a nota; o anexo
+    // antigo nao pode reabrir o valor no subtotal de ajustes.
+    const html = await relatorio(
+      [
+        {
+          order_id: 'ped-6',
+          invoice_number: '555',
+          amount: 250,
+          issued_at: '2026-03-09',
+          sicoob_orders: { created_by: SELLER },
+        },
+      ],
+      [
+        { order_id: 'ped-6', invoice_number: '555', amount: 250, issued_at: '2026-03-09', created_at: '2026-03-09T10:00:00.000Z' },
+        { order_id: 'ped-6', invoice_number: '555', amount: 250, issued_at: '2026-02-20', created_at: '2026-03-05T10:00:00.000Z' },
+      ],
+    );
+
+    expect(html).toContain('250,00');
+    expect(html).not.toContain('Ajustes de faturamento');
   });
 
   it('anexo antigo sem data de emissao nao entra nos ajustes', async () => {

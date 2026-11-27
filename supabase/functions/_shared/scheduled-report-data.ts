@@ -458,57 +458,52 @@ async function salesSection(
   // ordem, entao o ajuste pode abrir DEPOIS de o anexo faturado passar.
   // E por LINHA, nao por nota: o anexo do ciclo atual e o anexo antigo da mesma
   // nota compartilham a chave, e so o primeiro esta no faturamento.
-  const faturadaComValor = new Map<string, number | null>();
-  const lateAdjustments = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
+  const valorDaNota = new Map<string, number | null>();
+  const ajustesCandidatos = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
+  // Duas passadas: o valor de reserva da nota precisa estar completo antes de
+  // decidir quem abre o ajuste, porque a consulta nao garante ordem e o anexo
+  // que comprova o atraso pode vir em branco.
+  for (const inv of lateInvoicesRes.data ?? []) {
+    const key = `${inv.order_id}\u0000${inv.invoice_number}`;
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    // Valor informado em qualquer anexo da nota serve de reserva para o anexo
+    // que abrir o ajuste.
+    if (amount !== null && valorDaNota.get(key) === undefined) valorDaNota.set(key, amount);
+  }
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
     const issuedAtDoAnexo = String(inv.issued_at ?? "").slice(0, 10);
     const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
-    // "Esta no faturamento" e sobre ESTA linha: o anexo do periodo tem emissao
-    // dentro da janela, o anexo antigo da mesma nota nao. Usar a chave da nota
-    // marcava o anexo antigo como faturado e o descartava — a nota atrasada
-    // sumia dos ajustes.
-    const faturada = invoices.has(key) && !!issuedAtDoAnexo && issuedAtDoAnexo >= sinceDate;
-    if (faturada && amount !== null && faturadaComValor.get(key) === undefined) {
-      faturadaComValor.set(key, amount);
-    }
-    // Nota emitida DENTRO da janela já está no faturamento do período, foi
-    // anexada no período dela: contar como ajuste somaria o mesmo valor duas
-    // vezes em relatórios diferentes (ou no mesmo, se o anexo tiver data
-    // divergente entre PDF e XML). Só é ajuste o que foi emitido ANTES.
-    // Anexo antigo sem data de emissao (a coluna nasceu opcional e so passou a
-    // ser exigida na tela na PR #403) nao tem como provar atraso: comparar
-    // string vazia com a janela classificava a nota como emitida antes do
-    // periodo e inflava a contagem de ajustes sem evidencia.
-    if (!issuedAtDoAnexo) continue;
-    if (issuedAtDoAnexo >= sinceDate) continue;
-    const existing = lateAdjustments.get(key);
+    // A nota esta no faturamento do ciclo se QUALQUER anexo dela foi emitido
+    // dentro da janela. E por nota (chave), nao por linha: somar o anexo antigo
+    // de uma nota ja faturada repetiria o valor no subtotal de ajustes.
+    if (invoices.has(key)) continue;
+    // Quem comprova atraso e ESTA linha: anexo emitido antes da janela e
+    // registrado dentro dela. Anexo do periodo nao serve, e anexo sem data de
+    // emissao (a coluna nasceu opcional e so passou a ser exigida na tela na
+    // PR #403) nao tem como provar atraso: comparar string vazia com a janela
+    // classificava a nota como emitida antes do periodo e inflava a contagem.
+    if (!issuedAtDoAnexo || issuedAtDoAnexo >= sinceDate) continue;
     const registeredAt = String(inv.created_at ?? "");
     // A comparacao usa o REGISTRO (quando a nota entrou no sistema), nao a
     // emissao: anexo registrado fora da janela em que foi emitido e o que
     // caracteriza ajuste de ciclo.
     if (!registeredAt || registeredAt.slice(0, 10) < sinceDate) continue;
-    if (faturada) {
-      // Ja faturada: so contribui com VALOR para um ajuste aberto por outro
-      // anexo da mesma nota. Abrir ajuste sozinha repetiria o faturamento.
-      if (existing && existing.amount === null && amount !== null) existing.amount = amount;
-      continue;
-    }
+    const existing = ajustesCandidatos.get(key);
     if (existing) {
       if (existing.amount === null && amount !== null) existing.amount = amount;
       continue;
     }
-    const issuedAt = String(inv.issued_at ?? "");
-    // O anexo que abre o ajuste pode vir sem valor; nesse caso herda o valor
-    // ja informado pelo anexo faturado da mesma nota.
-    const valorFaturado = faturadaComValor.get(key);
-    lateAdjustments.set(key, {
+    ajustesCandidatos.set(key, {
       number: String(inv.invoice_number ?? ""),
-      amount: amount ?? valorFaturado ?? null,
-      issuedAt,
+      // O anexo que abre o ajuste pode vir sem valor; nesse caso herda o valor
+      // ja informado por outro anexo da mesma nota.
+      amount: amount ?? valorDaNota.get(key) ?? null,
+      issuedAt: String(inv.issued_at ?? ""),
       registeredAt,
     });
   }
+  const lateAdjustments = ajustesCandidatos;
   const lateRows = [...lateAdjustments.values()]
     .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
   const lateTotal = lateRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
