@@ -161,8 +161,11 @@ BEGIN
     ELSE
       -- Sem verba cadastrada para a competência corrente: a aprovação cria a
       -- verba do mês com o teto aprovado (antes o efeito ia para outro mês).
-      INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_planejada)
-      VALUES (v_request.pa_id, v_ano, v_mes, v_request.requested_limit, v_request.requested_limit);
+      -- `limite_alcada` recebe o mesmo valor: sem alçada, todo pedido do PA
+      -- exigiria aprovação e o aumento aprovado não destravava nada para quem
+      -- solicitou.
+      INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_planejada, limite_alcada)
+      VALUES (v_request.pa_id, v_ano, v_mes, v_request.requested_limit, v_request.requested_limit, v_request.requested_limit);
     END IF;
   END IF;
 
