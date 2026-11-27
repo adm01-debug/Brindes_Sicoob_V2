@@ -90,10 +90,23 @@ for (const worker of [
     // O worker de envio delega a decisão para um módulo puro: o motivo precisa
     // continuar existindo em algum ponto do caminho percorrido pelo worker.
     const decisionModule = `${worker.replace(/index\.ts$/, '')}report-eligibility.ts`;
-    const reasonSource = existsSync(decisionModule)
-      ? source + readFileSync(decisionModule, 'utf8')
-      : source;
-    assert.match(reasonSource, /acesso_revogado/);
+    if (existsSync(decisionModule)) {
+      // Juntar os dois arquivos provava só o texto: sem importar e chamar o
+      // módulo, o motivo existe mas não chega ao fluxo real do worker.
+      assert.match(
+        source,
+        /from "\.\/report-eligibility\.ts"/,
+        `${worker}: precisa importar o módulo de decisão`,
+      );
+      assert.match(
+        source,
+        /decideScheduledReportEligibility\(/,
+        `${worker}: precisa chamar a decisão de elegibilidade`,
+      );
+      assert.match(readFileSync(decisionModule, 'utf8'), /acesso_revogado/);
+    } else {
+      assert.match(source, /acesso_revogado/);
+    }
   });
 }
 

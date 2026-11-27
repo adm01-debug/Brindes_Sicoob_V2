@@ -401,50 +401,64 @@ async function salesSection(
   if (publicApprovalsRes.error) throw publicApprovalsRes.error;
   if (lateInvoicesRes.error) throw lateInvoicesRes.error;
 
-  const invoices = new Map<string, { number: string; amount: number; issuedAt: string }>();
+  const invoices = new Map<string, { number: string; amount: number | null; issuedAt: string }>();
   for (const inv of invoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
-    if (invoices.has(key)) continue;
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    const existing = invoices.get(key);
+    // O valor do anexo é opcional (a tela aceita em branco) e PDF/XML da mesma
+    // nota são linhas distintas: o valor fica `null` até o fim da deduplicação
+    // para que o anexo sem valor, lido primeiro, não zere a nota do relatório.
+    if (existing) {
+      if (existing.amount === null && amount !== null) existing.amount = amount;
+      continue;
+    }
     invoices.set(key, {
       number: String(inv.invoice_number ?? ""),
-      amount: Number(inv.amount ?? 0),
+      amount,
       issuedAt: String(inv.issued_at ?? ""),
     });
   }
   const invoiceRows = [...invoices.values()]
     .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
-  const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + inv.amount, 0);
+  const invoicedTotal = invoiceRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
   const invoiceBodies = invoiceRows.map((inv) => [
     escapeHtml(inv.number),
     escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "—"),
-    escapeHtml(money(inv.amount)),
+    escapeHtml(money(inv.amount ?? 0)),
   ]);
 
   // Ajustes: nota registrada na janela cuja emissao e anterior a ela. Sem a
   // deduplicacao por (pedido, numero) a mesma nota entrara duas vezes quando o
   // pdf e o xml forem anexados em ciclos diferentes.
   const sinceDate = since.slice(0, 10);
-  const lateAdjustments = new Map<string, { number: string; amount: number; issuedAt: string; registeredAt: string }>();
+  const lateAdjustments = new Map<string, { number: string; amount: number | null; issuedAt: string; registeredAt: string }>();
   for (const inv of lateInvoicesRes.data ?? []) {
     const key = `${inv.order_id}\u0000${inv.invoice_number}`;
-    if (invoices.has(key) || lateAdjustments.has(key)) continue;
+    const amount = inv.amount === null || inv.amount === undefined ? null : Number(inv.amount);
+    if (invoices.has(key)) continue;
+    const existing = lateAdjustments.get(key);
+    if (existing) {
+      if (existing.amount === null && amount !== null) existing.amount = amount;
+      continue;
+    }
     const issuedAt = String(inv.issued_at ?? "");
     if (issuedAt && issuedAt >= sinceDate) continue;
     lateAdjustments.set(key, {
       number: String(inv.invoice_number ?? ""),
-      amount: Number(inv.amount ?? 0),
+      amount,
       issuedAt,
       registeredAt: String(inv.created_at ?? ""),
     });
   }
   const lateRows = [...lateAdjustments.values()]
     .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
-  const lateTotal = lateRows.reduce((sum, inv) => sum + inv.amount, 0);
+  const lateTotal = lateRows.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
   const lateBodies = lateRows.map((inv) => [
     escapeHtml(inv.number),
     escapeHtml(inv.issuedAt ? new Date(inv.issuedAt).toLocaleDateString("pt-BR") : "\u2014"),
     escapeHtml(inv.registeredAt ? new Date(inv.registeredAt).toLocaleDateString("pt-BR") : "\u2014"),
-    escapeHtml(money(inv.amount)),
+    escapeHtml(money(inv.amount ?? 0)),
   ]);
   const lateSection = lateBodies.length === 0 ? "" : "<h3>Ajustes de faturamento</h3>"
     + `<p><strong>Notas anexadas no per\u00edodo com emiss\u00e3o anterior:</strong> ${lateRows.length} \u2014 `
