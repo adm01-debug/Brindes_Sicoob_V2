@@ -87,16 +87,13 @@ function batchErrorMessage(data: unknown, invokeError?: { message?: string } | n
 }
 
 /**
- * Executa múltiplas queries SELECT no CRM em uma única invocação.
- */
-/**
- * Soft-degrade do batch quando o CRM ainda n?o foi configurado (placeholders
- * EXTERNAL_CRM_URL/keys). `invokeCrmDb` j? fazia isso; sem isso a tela de status
- * pintava as 9 tabelas de vermelho como se n?o existissem.
+ * Soft-degrade do batch quando o CRM ainda nao foi configurado (placeholders
+ * EXTERNAL_CRM_URL/keys). `invokeCrmDb` ja fazia isso; sem isso a tela de status
+ * pintava as 9 tabelas de vermelho como se nao existissem.
  *
  * O bridge responde HTTP 500 com o corpo {"error":"CRM connection is not
- * configured correctly"} (crm-db-bridge/index.ts:1185) ? nesse caso a mensagem
- * chega em `error`, n?o no envelope de sucesso, ent?o o corpo precisa ser lido.
+ * configured correctly"} (crm-db-bridge/index.ts:1185) — nesse caso a mensagem
+ * chega em `error`, nao no envelope de sucesso, entao o corpo precisa ser lido.
  */
 async function degradedBatchResult(
   queries: CrmBatchQuery[],
@@ -108,13 +105,10 @@ async function degradedBatchResult(
     ? await extractCrmErrorMessage(error)
     : payload.success ? null : (payload.error || null);
   if (!message || !isUnconfiguredMessage(message)) return null;
-  logger.warn(`[CRM-DB] CRM not configured ? batch degradado [req_id=${requestId}]`);
+  logger.warn(`[CRM-DB] CRM not configured - batch degradado [req_id=${requestId}]`);
   return queries.map(() => ({ success: false, error: message }));
 }
 
-/**
- * Executa m?ltiplas queries SELECT no CRM em uma ?nica invoca??o.
- */
 export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]> {
   const startedAt = performance.now();
   const body = { operation: "batch", queries };
