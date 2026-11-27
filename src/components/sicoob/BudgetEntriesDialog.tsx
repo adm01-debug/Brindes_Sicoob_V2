@@ -298,6 +298,18 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
           if (!gatilhoAtual) return;
           evento.preventDefault();
           gatilhoAtual.focus();
+          // preventDefault tira a limpeza de rolagem do DialogContent; refaz aqui.
+          requestAnimationFrame(() => {
+            for (const el of [document.documentElement, document.body]) {
+              el.removeAttribute("data-scroll-locked");
+              el.style.overflow = "";
+              el.style.overflowY = "";
+              el.style.paddingRight = "";
+              el.style.marginRight = "";
+              el.style.position = "";
+              el.style.pointerEvents = "";
+            }
+          });
         }}
       >
         <DialogHeader>
