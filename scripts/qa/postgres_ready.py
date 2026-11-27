@@ -116,7 +116,9 @@ def _vale_retentar(erro: str) -> bool:
     return any(trecho in minusculo for trecho in _RETRYABLE)
 
 
-def start_supabase_postgres(command, container: str, *, images=None, backoff=None, sleep=time.sleep) -> str:
+def start_supabase_postgres(
+    command, container: str, *, images=None, backoff=None, sleep=time.sleep, postgres_args=()
+) -> str:
     """Sobe o Postgres descartável da Supabase e devolve a imagem que funcionou."""
     imagens = tuple(images) if images else _images_from_env()
     esperas = tuple(backoff) if backoff is not None else PULL_BACKOFF_SECONDS
@@ -127,7 +129,7 @@ def start_supabase_postgres(command, container: str, *, images=None, backoff=Non
                 [
                     "docker", "run", "--rm", "-d", "--name", container,
                     "--network", "none", "-e", "POSTGRES_HOST_AUTH_METHOD=trust",
-                    imagem, "postgres", "-D", "/var/lib/postgresql/data",
+                    imagem, "postgres", "-D", "/var/lib/postgresql/data", *postgres_args,
                 ],
                 check=False,
             )

@@ -42,6 +42,31 @@ BEFORE INSERT OR UPDATE OF status ON public.sicoob_orders
 FOR EACH ROW
 EXECUTE FUNCTION public.set_sicoob_order_sla_deadline();
 
+-- O limiar de 'warning' era de 2 h restantes, ou seja ~96% de um ciclo de 48 h.
+-- A regra documentada (docs/execucao/lacunas-funcionalidades-2026-10-11/
+-- 09-fluxos-sicoob.md) é avisar a 80% do prazo consumido, o que equivale a 20%
+-- de 48 h restantes = 9 h 36 min. `check_order_sla` (usado em toda escrita) e a
+-- rotina de recálculo precisam do mesmo limiar, senão a próxima alteração do
+-- pedido rebaixa para 'normal' o que o recálculo marcou como 'warning'.
+CREATE OR REPLACE FUNCTION public.check_order_sla()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.sla_deadline IS NOT NULL THEN
+    IF NEW.sla_deadline < now() THEN
+      NEW.sla_status := 'critical';
+    ELSIF NEW.sla_deadline < now() + interval '9 hours 36 minutes' THEN
+      NEW.sla_status := 'warning';
+    ELSE
+      NEW.sla_status := 'normal';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
 -- `sla_status` só era recalculado quando alguém escrevia no pedido: um pedido
 -- parado continuava 'normal' até a próxima alteração. A rotina abaixo recalcula
 -- o estado real dos pedidos em fluxo para o painel de alertas.
@@ -58,7 +83,7 @@ BEGIN
     SELECT id,
            CASE
              WHEN sla_deadline < now() THEN 'critical'
-             WHEN sla_deadline < now() + interval '2 hours' THEN 'warning'
+             WHEN sla_deadline < now() + interval '9 hours 36 minutes' THEN 'warning'
              ELSE 'normal'
            END AS novo_status
       FROM public.sicoob_orders
@@ -82,8 +107,16 @@ GRANT EXECUTE ON FUNCTION public.refresh_sicoob_order_sla_status() TO service_ro
 -- Pedidos que já estão em fluxo não têm prazo nenhum no banco; o prazo mais
 -- antigo possível é a criação do pedido, então quem está parado aparece como
 -- vencido de verdade em vez de seguir apresentado como "em conformidade".
+--
+-- `sla_status` entra na lista de SET mesmo já sendo recalculado por
+-- `check_order_sla`: o gatilho canônico de eventos
+-- (`tr_record_sicoob_order_status_event`, AFTER UPDATE OF status, sla_status em
+-- 20260912110000_sicoob_order_status_events.sql) só dispara quando a coluna
+-- consta no UPDATE. Sem isso o pedido vira crítico em silêncio e o solicitante
+-- nunca recebe o aviso de SLA.
 UPDATE public.sicoob_orders
-   SET sla_deadline = created_at + interval '48 hours'
+   SET sla_deadline = created_at + interval '48 hours',
+       sla_status = sla_status
  WHERE sla_deadline IS NULL
    AND status IN ('waiting_approval', 'escalated_to_board');
 
