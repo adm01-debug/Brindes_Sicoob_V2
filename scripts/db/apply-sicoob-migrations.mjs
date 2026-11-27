@@ -262,11 +262,15 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
-    sha256: "46ee6fae50ce26c237ebb3363a033f8cd0b920e6e2dc83473aeb3435d6613551",
+    sha256: "e112b7134112a6426d65e4a7cd1a76c9e4608b0032af98bb1ef58d05545e715a",
   },
   {
     file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
     sha256: "5a4caca1573641739212a8024eeb3f40ecd898b81c07e6b249ade2cf5066b0af",
+  },
+  {
+    file: "supabase/migrations/20261127120000_limit_increase_requests_escopo_por_pa.sql",
+    sha256: "253d4cc39dc1050ccbfcd2aa28eef5499258f6834fb6f09b67b7a72d94d4b895",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
