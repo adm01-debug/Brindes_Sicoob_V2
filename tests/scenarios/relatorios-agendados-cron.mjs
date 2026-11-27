@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 const MIGRATION = 'supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql';
@@ -87,7 +87,13 @@ for (const worker of [
       /is_active: false/,
       'sem desativar, o relatório vencido volta a ocupar vaga do lote',
     );
-    assert.match(source, /acesso_revogado/);
+    // O worker de envio delega a decisão para um módulo puro: o motivo precisa
+    // continuar existindo em algum ponto do caminho percorrido pelo worker.
+    const decisionModule = `${worker.replace(/index\.ts$/, '')}report-eligibility.ts`;
+    const reasonSource = existsSync(decisionModule)
+      ? source + readFileSync(decisionModule, 'utf8')
+      : source;
+    assert.match(reasonSource, /acesso_revogado/);
   });
 }
 
