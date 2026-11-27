@@ -19,6 +19,7 @@ interface ApprovalTransitionInput {
 interface OrderListFilters {
   search?: string;
   status?: string;
+  sla_status?: string;
   statuses?: string[];
   pa_id?: string;
   cooperative_id?: string;
@@ -39,6 +40,11 @@ type SicoobOrderQuery = ReturnType<typeof createSicoobOrderQuery>;
 function applyStatusFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
   if (filters?.statuses?.length) return query.in("status", filters.statuses);
   if (filters?.status && filters.status !== "all") return query.eq("status", filters.status);
+  return query;
+}
+
+function applySlaFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+  if (filters?.sla_status && filters.sla_status !== "all") return query.eq("sla_status", filters.sla_status);
   return query;
 }
 
@@ -141,6 +147,7 @@ export const sicoobOrderService = {
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     let query = applyStatusFilter(createSicoobOrderQuery(), filters);
+    query = applySlaFilter(query, filters);
     query = applyOrganizationFilters(query, filters);
     query = applyPeriodAndSearch(query, filters);
     query = applyPagination(query, filters);

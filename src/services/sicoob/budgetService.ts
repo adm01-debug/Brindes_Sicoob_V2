@@ -9,9 +9,9 @@ async function getPaIdsByCooperative(cooperativeId: string) {
   return (data ?? []).map((pa) => pa.id);
 }
 
-type BudgetPeriod = { year: number; month: number };
+export type BudgetPeriod = { year: number; month: number };
 
-function currentBudgetPeriod(): BudgetPeriod {
+export function currentBudgetPeriod(): BudgetPeriod {
   const now = new Date();
   return { year: now.getFullYear(), month: now.getMonth() + 1 };
 }
@@ -49,5 +49,51 @@ export const sicoobBudgetService = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Conciliação de verba da competência: compara o consumo registrado em
+   * `pa_budgets.verba_consumida` com a soma dos pedidos confirmados no mês.
+   * A view `sicoob_budget_audit` é `security_invoker`, então a RLS de
+   * `pa_budgets` continua valendo por papel.
+   */
+  async listBudgetAudit(period: BudgetPeriod = currentBudgetPeriod()) {
+    const { data, error } = await supabase
+      .from("sicoob_budget_audit")
+      .select(
+        "pa_id, pa_nome, ano, mes, verba_total, verba_registrada, verba_calculada_pedidos, discrepancia",
+      )
+      .eq("ano", period.year)
+      .eq("mes", period.month)
+      .order("pa_nome", { ascending: true });
+
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  /** Competência mais recente que possui verba registrada, para abrir a tela com dado real. */
+  async getLatestBudgetAuditPeriod(): Promise<BudgetPeriod | null> {
+    const { data: latestAno, error: anoError } = await supabase
+      .from("sicoob_budget_audit")
+      .select("ano")
+      .order("ano", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (anoError) throw anoError;
+    if (!latestAno?.ano) return null;
+
+    const { data: latestMes, error: mesError } = await supabase
+      .from("sicoob_budget_audit")
+      .select("mes")
+      .eq("ano", latestAno.ano)
+      .order("mes", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (mesError) throw mesError;
+    if (!latestMes?.mes) return null;
+
+    return { year: latestAno.ano, month: latestMes.mes };
   },
 };

@@ -75,6 +75,7 @@ function escapeCsvCell(value: unknown): string {
 }
 
 const ALL_FILTER = "all";
+const SLA_FILTER_LABELS: Record<string, string> = { critical: "SLA crítico", warning: "SLA em alerta", normal: "SLA em conformidade" };
 const ORDERS_QUERY_KEY = "sicoob_orders_list";
 const EXPORT_ERROR_PREFIX = "Erro na exportação: ";
 const EXPORT_DATE_FORMAT = "yyyy-MM-dd";
@@ -92,6 +93,7 @@ function useOrderFilters(searchParams: URLSearchParams, setSearchParams: ReturnT
   const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || ALL_FILTER);
   const [paFilter, setPaFilter] = useState(searchParams.get("pa") || ALL_FILTER);
   const [singularFilter, setSingularFilter] = useState(searchParams.get("singular") || ALL_FILTER);
+  const [slaFilter, setSlaFilter] = useState(searchParams.get("sla") || ALL_FILTER);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialRange(searchParams));
   const [page, setPage] = useState(1);
   useEffect(() => {
@@ -100,14 +102,15 @@ function useOrderFilters(searchParams: URLSearchParams, setSearchParams: ReturnT
     if (statusFilter !== ALL_FILTER) params.set("status", statusFilter);
     if (paFilter !== ALL_FILTER) params.set("pa", paFilter);
     if (singularFilter !== ALL_FILTER) params.set("singular", singularFilter);
+    if (slaFilter !== ALL_FILTER) params.set("sla", slaFilter);
     if (dateRange?.from) params.set("from", dateRange.from.toISOString());
     if (dateRange?.to) params.set("to", dateRange.to.toISOString());
     setSearchParams(params, { replace: true });
     setPage(1);
-  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange, setSearchParams]);
-  const clear = () => { setStatusFilter(ALL_FILTER); setPaFilter(ALL_FILTER); setSingularFilter(ALL_FILTER); setDateRange(undefined); };
-  const activeCount = Number(statusFilter !== ALL_FILTER) + Number(paFilter !== ALL_FILTER) + Number(singularFilter !== ALL_FILTER) + Number(Boolean(dateRange?.from));
-  return { searchTerm, setSearchTerm, statusFilter, setStatusFilter, paFilter, setPaFilter, singularFilter, setSingularFilter, dateRange, setDateRange, page, setPage, clear, activeCount };
+  }, [searchTerm, statusFilter, paFilter, singularFilter, slaFilter, dateRange, setSearchParams]);
+  const clear = () => { setStatusFilter(ALL_FILTER); setPaFilter(ALL_FILTER); setSingularFilter(ALL_FILTER); setSlaFilter(ALL_FILTER); setDateRange(undefined); };
+  const activeCount = Number(statusFilter !== ALL_FILTER) + Number(paFilter !== ALL_FILTER) + Number(singularFilter !== ALL_FILTER) + Number(slaFilter !== ALL_FILTER) + Number(Boolean(dateRange?.from));
+  return { searchTerm, setSearchTerm, statusFilter, setStatusFilter, paFilter, setPaFilter, singularFilter, setSingularFilter, slaFilter, setSlaFilter, dateRange, setDateRange, page, setPage, clear, activeCount };
 }
 
 type FilterController = ReturnType<typeof useOrderFilters>;
@@ -121,7 +124,7 @@ function calculateStats(orders: SicoobOrder[]): OrderStats {
 }
 
 function listRequest(filters: FilterController) {
-  return { search: filters.searchTerm, status: filters.statusFilter, pa_id: filters.paFilter, cooperative_id: filters.singularFilter, from: filters.dateRange?.from?.toISOString(), to: filters.dateRange?.to?.toISOString(), page: filters.page, pageSize: PAGE_SIZE };
+  return { search: filters.searchTerm, status: filters.statusFilter, sla_status: filters.slaFilter, pa_id: filters.paFilter, cooperative_id: filters.singularFilter, from: filters.dateRange?.from?.toISOString(), to: filters.dateRange?.to?.toISOString(), page: filters.page, pageSize: PAGE_SIZE };
 }
 
 function normalizeOrderPage(data: { orders: SicoobOrder[]; total: number } | undefined) {
@@ -132,7 +135,7 @@ function normalizeOrderPage(data: { orders: SicoobOrder[]; total: number } | und
 function useOrdersData(filters: FilterController) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
-    queryKey: [ORDERS_QUERY_KEY, filters.searchTerm, filters.statusFilter, filters.paFilter, filters.singularFilter, filters.dateRange?.from, filters.dateRange?.to, filters.page],
+    queryKey: [ORDERS_QUERY_KEY, filters.searchTerm, filters.statusFilter, filters.slaFilter, filters.paFilter, filters.singularFilter, filters.dateRange?.from, filters.dateRange?.to, filters.page],
     queryFn: () => sicoobOrderService.listOrders(listRequest(filters)),
   });
   useEffect(() => sicoobCommonService.subscribeToOrders(() => {
@@ -266,7 +269,7 @@ function DateRangeButton({ range }: { range: DateRange | undefined }) {
 }
 
 function FilterPopover({ filters, data }: { filters: FilterController; data: OrdersData }) {
-  return <Popover><PopoverTrigger asChild><Button variant="outline" className="justify-start"><Filter className="h-4 w-4 mr-2" />Filtros{filters.activeCount > 0 && <Badge variant="secondary" className="ml-2 h-5 px-1.5">{filters.activeCount}</Badge>}</Button></PopoverTrigger><PopoverContent align="end" className="w-[340px] p-4 space-y-4"><div className="flex items-center justify-between"><h4 className="font-medium text-sm">Filtros avançados</h4>{filters.activeCount > 0 && <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={filters.clear}><X className="h-3 w-3 mr-1" />Limpar</Button>}</div><Separator /><FilterSelect label="Status do funil" value={filters.statusFilter} onChange={filters.setStatusFilter} options={ORDER_STATUS_OPTIONS.map(status => ({ id: status, name: status }))} /><FilterSelect label="PA" value={filters.paFilter} onChange={filters.setPaFilter} options={data.pas.map(pa => ({ id: pa.id, name: pa.nome }))} /><FilterSelect label="Singular" value={filters.singularFilter} onChange={filters.setSingularFilter} options={data.cooperatives.map(cooperative => ({ id: cooperative.id, name: cooperative.nome }))} allLabel="Todas" /><div className="space-y-2"><Label className="text-xs">Período</Label><Popover><PopoverTrigger asChild><Button variant="outline" className={cn("w-full justify-start text-left font-normal", !filters.dateRange?.from && MUTED_TEXT_CLASS)}><CalendarIcon className="mr-2 h-4 w-4" /><DateRangeButton range={filters.dateRange} /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="range" selected={filters.dateRange} onSelect={filters.setDateRange} numberOfMonths={1} locale={ptBR} initialFocus className="p-3 pointer-events-auto" /></PopoverContent></Popover></div></PopoverContent></Popover>;
+  return <Popover><PopoverTrigger asChild><Button variant="outline" className="justify-start"><Filter className="h-4 w-4 mr-2" />Filtros{filters.activeCount > 0 && <Badge variant="secondary" className="ml-2 h-5 px-1.5">{filters.activeCount}</Badge>}</Button></PopoverTrigger><PopoverContent align="end" className="w-[340px] p-4 space-y-4"><div className="flex items-center justify-between"><h4 className="font-medium text-sm">Filtros avançados</h4>{filters.activeCount > 0 && <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={filters.clear}><X className="h-3 w-3 mr-1" />Limpar</Button>}</div><Separator /><FilterSelect label="Status do funil" value={filters.statusFilter} onChange={filters.setStatusFilter} options={ORDER_STATUS_OPTIONS.map(status => ({ id: status, name: status }))} /><FilterSelect label="SLA" value={filters.slaFilter} onChange={filters.setSlaFilter} options={(["critical", "warning", "normal"] as const).map(sla => ({ id: sla, name: SLA_FILTER_LABELS[sla] ?? sla }))} allLabel="Todos" /><FilterSelect label="PA" value={filters.paFilter} onChange={filters.setPaFilter} options={data.pas.map(pa => ({ id: pa.id, name: pa.nome }))} /><FilterSelect label="Singular" value={filters.singularFilter} onChange={filters.setSingularFilter} options={data.cooperatives.map(cooperative => ({ id: cooperative.id, name: cooperative.nome }))} allLabel="Todas" /><div className="space-y-2"><Label className="text-xs">Período</Label><Popover><PopoverTrigger asChild><Button variant="outline" className={cn("w-full justify-start text-left font-normal", !filters.dateRange?.from && MUTED_TEXT_CLASS)}><CalendarIcon className="mr-2 h-4 w-4" /><DateRangeButton range={filters.dateRange} /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="range" selected={filters.dateRange} onSelect={filters.setDateRange} numberOfMonths={1} locale={ptBR} initialFocus className="p-3 pointer-events-auto" /></PopoverContent></Popover></div></PopoverContent></Popover>;
 }
 
 function FilterSelect({ label, value, onChange, options, allLabel = "Todos" }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ id: string; name: string }>; allLabel?: string }) {
@@ -279,7 +282,7 @@ function ActiveFilter({ children, onRemove, label }: { children: ReactNode; onRe
 
 function ActiveFilters({ filters }: { filters: FilterController }) {
   if (!filters.activeCount) return null;
-  return <div className="flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">Filtros ativos:</span>{filters.statusFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setStatusFilter(ALL_FILTER)} label="Remover filtro de status"><OrderStatusBadge status={filters.statusFilter as OrderStatus} /></ActiveFilter>}{filters.paFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setPaFilter(ALL_FILTER)} label="Remover filtro de PA">{filters.paFilter}</ActiveFilter>}{filters.singularFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setSingularFilter(ALL_FILTER)} label="Remover filtro de Singular">{filters.singularFilter}</ActiveFilter>}{filters.dateRange?.from && <ActiveFilter onRemove={() => filters.setDateRange(undefined)} label="Remover filtro de período"><DateRangeButton range={filters.dateRange} /></ActiveFilter>}</div>;
+  return <div className="flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">Filtros ativos:</span>{filters.statusFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setStatusFilter(ALL_FILTER)} label="Remover filtro de status"><OrderStatusBadge status={filters.statusFilter as OrderStatus} /></ActiveFilter>}{filters.paFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setPaFilter(ALL_FILTER)} label="Remover filtro de PA">{filters.paFilter}</ActiveFilter>}{filters.singularFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setSingularFilter(ALL_FILTER)} label="Remover filtro de Singular">{filters.singularFilter}</ActiveFilter>}{filters.slaFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setSlaFilter(ALL_FILTER)} label="Remover filtro de SLA">{SLA_FILTER_LABELS[filters.slaFilter] ?? filters.slaFilter}</ActiveFilter>}{filters.dateRange?.from && <ActiveFilter onRemove={() => filters.setDateRange(undefined)} label="Remover filtro de período"><DateRangeButton range={filters.dateRange} /></ActiveFilter>}</div>;
 }
 
 function FiltersBar({ filters, data }: { filters: FilterController; data: OrdersData }) {
@@ -308,6 +311,6 @@ function Pagination({ filters, totalPages }: { filters: FilterController; totalP
 
 export default function OrdersPage() {
   const controller = useOrdersController();
-  const filterCritical = () => { controller.filters.setStatusFilter("pending"); toast.info("Filtrando por pedidos com SLA Crítico"); };
+  const filterCritical = () => { controller.filters.setStatusFilter(ALL_FILTER); controller.filters.setSlaFilter("critical"); controller.filters.setPage(1); toast.info("Filtrando por pedidos com SLA Crítico"); };
   return <><PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex /><div className="space-y-6 max-w-[1920px] mx-auto w-full"><StatsGrid stats={controller.data.stats} onCriticalFilter={filterCritical} /><PageHeader controller={controller} /><BulkActions selection={controller.selection} /><FiltersBar filters={controller.filters} data={controller.data} /><OrdersGrid controller={controller} /><Pagination filters={controller.filters} totalPages={controller.data.totalPages} /><div className="mt-12 pt-6 border-t border-border/40 text-center"><p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center justify-center gap-2"><ShieldCheck className="h-3 w-3 text-sicoob-green" />Ambiente Seguro • Ecossistema Promo Gifts & Sicoob • Meta 10/10 Concluída</p></div></div></>;
 }

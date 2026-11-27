@@ -1,6 +1,7 @@
 {
   "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
   "migracao": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+  "migracao_conciliacao": "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
   "producao_verificada": false,
   "idempotencia": {
     "apos_confirmar_e_avancar": "100.00",
@@ -25,6 +26,12 @@
     "dentro_da_alcada": "confirmed|00000000-0000-4000-8000-000000000020",
     "estado_desatualizado": "bloqueado",
     "acima_da_alcada": "bloqueado"
+  },
+  "conciliacao": {
+    "verba_registrada": "850.00",
+    "verba_calculada_pedidos": "850.00",
+    "discrepancia": "0.00",
+    "estados_debitados_sem_divergencia": "in_production, in_separation, in_transit, delivered"
   },
   "resultado": "aprovado"
 }
