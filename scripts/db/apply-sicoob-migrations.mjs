@@ -252,6 +252,30 @@ const TARGETS = [
     file: "supabase/migrations/20261122210000_allow_worker_deactivate_revoked_report.sql",
     sha256: "f674e21c89f7647e66e8073ed3fa28a4e4c4d3e6a7c77beea407ecc304f8bdfa",
   },
+  {
+    file: "supabase/migrations/20261126120000_sicoob_order_sla_lifecycle.sql",
+    sha256: "d48040d53c46f75173f88991167a3efb92c5c802763cd87bb60a55fa733ac474",
+  },
+  {
+    file: "supabase/migrations/20261126121000_limit_increase_decision.sql",
+    sha256: "081df063b42f2cdf49123d5f702ad31347f09c0a8b7e3d4c5717cd21abfd00a5",
+  },
+  {
+    file: "supabase/migrations/20261126130000_fix_sicoob_budget_audit_consuming_statuses.sql",
+    sha256: "f367ecfc0f357f7f12acf59ce5fa5127d31c51a90d297ce2345b623753ac690a",
+  },
+  {
+    file: "supabase/migrations/20261126140000_grant_admin_write_sicoob_centrais.sql",
+    sha256: "0f6f589019a0b25b06d7d7e2d2f2f3ae3af4061504e8c926591ab85959c81e2c",
+  },
+  {
+    file: "supabase/migrations/20261126160000_sicoob_escopo_gerente_papeis_reais.sql",
+    sha256: "6171a89841d8434fc241d2c849fd3c9dda1500de4e8f0555aa2f8b016e392ebe",
+  },
+  {
+    file: "supabase/migrations/20261126170000_cooperativa_budget_ceiling.sql",
+    sha256: "5ca3e51c8d597796b4695ec49d81a2540a086f981854a5681913462631ebf5ca",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (

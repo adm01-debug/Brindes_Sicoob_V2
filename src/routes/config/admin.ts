@@ -27,6 +27,10 @@ export const adminRoutes = [
     component: lazyWithRetry(() => import('@/pages/admin/AdminCategoriesPage')),
   }),
   defineRoute({
+    path: '/admin/centrais',
+    component: lazyWithRetry(() => import('@/pages/admin/AdminCentraisPage')),
+  }),
+  defineRoute({
     path: '/admin/singulares',
     component: lazyWithRetry(() => import('@/pages/admin/AdminSingularesPage')),
   }),

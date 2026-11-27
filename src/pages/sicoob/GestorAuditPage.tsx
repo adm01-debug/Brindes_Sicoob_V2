@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { History, Search, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BudgetAuditCard } from '@/components/sicoob/BudgetAuditCard';
 
 async function fetchAuditLogs() {
   const { data, error } = await supabase
@@ -198,6 +199,8 @@ export default function GestorAuditPage() {
             <AuditContent isLoading={isLoading} logs={filteredLogs} />
           </CardContent>
         </Card>
+
+        <BudgetAuditCard />
       </div>
     </>
   );

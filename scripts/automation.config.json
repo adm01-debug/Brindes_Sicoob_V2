@@ -684,6 +684,14 @@
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml, .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
+      "id": "legacy-742fe63e5ddebfdb",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-cadastro-centrais.py"],
+      "manual": ["python3", "scripts/qa/simular-cadastro-centrais.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: docs/execucao/lacunas-funcionalidades-2026-10-11/indice-lacunas.csv. O dispatcher não executa esta operação."
+    },
+    {
       "id": "legacy-f263fc839c44d6ae",
       "kind": "legacy",
       "files": ["scripts/qa/simular-agendamento-outbox.py"],
@@ -875,6 +883,14 @@
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
+{
+      "id": "legacy-5d528ea2650f81f0",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-escopo-gerencial-sicoob.py"],
+      "manual": ["python3", "scripts/qa/simular-escopo-gerencial-sicoob.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
+    },
     {
       "id": "legacy-c4f512c6a76c3773",
       "kind": "legacy",
@@ -962,6 +978,14 @@
       "manual": ["python3", "scripts/qa/simular-relatorios-agendados-cron.py"],
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml. O dispatcher não executa esta operação."
+    },
+    {
+      "id": "legacy-55a0e86471df24f3",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-sla-pedido-sicoob.py"],
+      "manual": ["python3", "scripts/qa/simular-sla-pedido-sicoob.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml, .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
       "id": "legacy-34b25c83ca91c1e5",

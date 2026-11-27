@@ -1,4 +1,5 @@
 import { BudgetsTab } from '@/pages/admin/sicoob/tabs/BudgetsTab';
+import { CooperativaCeilingCard } from '@/components/sicoob/CooperativaCeilingCard';
 import { MfaGate } from '@/components/layout/MfaGate';
 import { PageSEO } from '@/components/seo/PageSEO';
 
@@ -18,7 +19,10 @@ export default function GestorBudgetsPage() {
         </p>
       </div>
       <MfaGate>
-        <BudgetsTab />
+        <div className="space-y-6">
+          <CooperativaCeilingCard />
+          <BudgetsTab />
+        </div>
       </MfaGate>
     </div>
   );

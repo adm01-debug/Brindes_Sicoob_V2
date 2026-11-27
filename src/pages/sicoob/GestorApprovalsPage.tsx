@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { LimitIncreaseApprovalsCard } from '@/components/sicoob/LimitIncreaseApprovalsCard';
 
 const usesDelegatedAuthority = (approval: {
   approve: { source: string };
@@ -196,6 +197,8 @@ export default function GestorApprovalsPage() {
             )}
           </CardContent>
         </Card>
+
+        <LimitIncreaseApprovalsCard />
       </div>
     </>
   );

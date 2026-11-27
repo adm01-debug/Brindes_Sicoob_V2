@@ -43,6 +43,7 @@ import {
   Bell,
   ClipboardCheck,
   Building,
+  Globe,
   Megaphone,
   Mail,
   Wallet,
@@ -60,7 +61,7 @@ import { SidebarFooterHealth } from './sidebar/SidebarFooterHealth';
 import { RestrictedRouteNotice } from './sidebar/RestrictedRouteNotice';
 
 import { isDevOnlyPath, isAdminOnlyPath } from '@/lib/navigation/restricted-routes';
-import { canAccessSicoobPath } from '@/lib/access/role-policy';
+import { canAccessSicoobPath, hasRequiredRole } from '@/lib/access/role-policy';
 import { isNavItemActive } from '@/lib/navigation/active-match';
 import type { AppRole } from '@/types/users';
 
@@ -275,6 +276,7 @@ export const navGroups: NavGroup[] = [
         href: '',
         adminOnly: true,
         children: [
+          { icon: Globe, label: 'Centrais', href: '/admin/centrais' },
           { icon: Landmark, label: 'Singulares', href: '/admin/singulares' },
           { icon: Building, label: 'Postos de Atendimento', href: '/admin/pas' },
           { icon: Users, label: 'Parceiros', href: '/admin/cooperativas' },
@@ -317,25 +319,23 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-function hasDeclaredAccess(
+export function hasDeclaredAccess(
   item: NavGroup['items'][number],
   isDev: boolean,
-  isSupervisor: boolean,
   roles: AppRole[],
 ): boolean {
   if (item.devOnly && !isDev) return false;
-  if (item.adminOnly && !isSupervisor) return false;
+  if (item.adminOnly && !hasRequiredRole(roles, 'supervisor')) return false;
   return !item.allowedRoles || roles.some((role) => item.allowedRoles?.includes(role));
 }
 
-function hasRouteAccess(
+export function hasRouteAccess(
   href: string,
   isDev: boolean,
-  isSupervisor: boolean,
   roles: AppRole[],
 ): boolean {
   if (href && isDevOnlyPath(href) && !isDev) return false;
-  if (href && isAdminOnlyPath(href) && !isSupervisor) return false;
+  if (href && isAdminOnlyPath(href) && !hasRequiredRole(roles, 'supervisor')) return false;
   return !href || canAccessSicoobPath(href, roles);
 }
 
@@ -631,9 +631,9 @@ function useVisibleSidebarGroups() {
   );
   const isVisible = useCallback(
     (item: NavGroup['items'][number]) =>
-      hasDeclaredAccess(item, auth.isDev, auth.isSupervisorOrAbove, auth.roles) &&
-      hasRouteAccess(item.href ?? '', auth.isDev, auth.isSupervisorOrAbove, auth.roles),
-    [auth.isDev, auth.isSupervisorOrAbove, auth.roles],
+      hasDeclaredAccess(item, auth.isDev, auth.roles) &&
+      hasRouteAccess(item.href ?? '', auth.isDev, auth.roles),
+    [auth.isDev, auth.roles],
   );
   return useMemo(
     () =>
