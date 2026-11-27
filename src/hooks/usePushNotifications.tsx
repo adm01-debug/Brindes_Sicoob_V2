@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
+import { inscreverPush, desinscreverPush } from "@/lib/push-subscription";
 
 interface NotificationPermissionState {
   permission: NotificationPermission;
@@ -40,16 +41,21 @@ export function usePushNotifications() {
         permission,
         isEnabled: permission === 'granted',
       }));
-      
-      if (permission === 'granted') {
-        return true;
-      } 
-        return false;
-      
+
+      // Permissão só libera notificação local. Para receber com o app fechado é
+      // preciso inscrever o navegador e persistir o endpoint.
+      if (permission === 'granted' && user) {
+        const resultado = await inscreverPush(user.id);
+        if (!resultado.ok) {
+          logger.warn(`[push] inscrição não concluída: ${resultado.motivo}`, resultado.detalhe);
+        }
+      }
+
+      return permission === 'granted';
     } catch {
       return false;
     }
-  }, [state.isSupported]);
+  }, [state.isSupported, user]);
 
   const showNotification = useCallback((title: string, options?: NotificationOptions) => {
     if (!state.isEnabled) {
@@ -174,10 +180,16 @@ export function usePushNotifications() {
     };
   }, [user, state.isEnabled, showSecurityAlert]);
 
+  const removerInscricao = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+    return desinscreverPush(user.id);
+  }, [user]);
+
   return {
     ...state,
     requestPermission,
     showNotification,
     showSecurityAlert,
+    removerInscricao,
   };
 }

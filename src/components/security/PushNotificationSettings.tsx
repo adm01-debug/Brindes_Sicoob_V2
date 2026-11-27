@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 
 import { useNotifications } from '@/hooks/useNotifications';
+import { inscricaoAtiva } from '@/lib/push-subscription';
 import { useToast } from '@/hooks/use-toast';
 import {
   Bell,
@@ -38,16 +39,44 @@ export function PushNotificationSettings() {
 
 function usePushNotificationSettings() {
   const {
-    push: { isSupported, isEnabled, permission, requestPermission, showSecurityAlert },
+    push: { isSupported, isEnabled, permission, requestPermission, showSecurityAlert, removerInscricao },
   } = useNotifications();
   const { toast } = useToast();
   const [isRequesting, setIsRequesting] = useState(false);
+  const [inscrito, setInscrito] = useState(false);
+
+  const sincronizarInscricao = useCallback(() => {
+    void inscricaoAtiva().then(setInscrito);
+  }, []);
+
+  useEffect(() => {
+    if (permission === 'granted') sincronizarInscricao();
+    else setInscrito(false);
+  }, [permission, sincronizarInscricao]);
+
+  const handleDisableNotifications = async () => {
+    setIsRequesting(true);
+    try {
+      const ok = await removerInscricao();
+      setInscrito(false);
+      toast({
+        title: ok ? 'Inscrição removida' : 'Não foi possível remover',
+        description: ok
+          ? 'Este dispositivo deixou de receber notificações com o app fechado.'
+          : 'Tente novamente ou revise as permissões do navegador.',
+        variant: ok ? 'default' : 'destructive',
+      });
+    } finally {
+      setIsRequesting(false);
+    }
+  };
 
   const handleEnableNotifications = async () => {
     setIsRequesting(true);
     try {
       const granted = await requestPermission();
       if (granted) {
+        sincronizarInscricao();
         toast({
           title: 'Notificações ativadas',
           description: 'Você receberá alertas de segurança em tempo real.',
@@ -80,7 +109,9 @@ function usePushNotificationSettings() {
     isEnabled,
     permission,
     isRequesting,
+    inscrito,
     handleEnableNotifications,
+    handleDisableNotifications,
     handleTestNotification,
   };
 }
@@ -128,13 +159,57 @@ function PushHeader({ enabled }: { enabled: boolean }) {
   );
 }
 
+type AcaoStatus = {
+  isEnabled: boolean;
+  inscrito: boolean;
+  isRequesting: boolean;
+  onEnable: () => void;
+  onDisable: () => void;
+};
+
+function descricaoStatus(isEnabled: boolean, inscrito: boolean): string {
+  if (!isEnabled) return 'Ative para receber alertas importantes';
+  if (inscrito) return 'Este dispositivo recebe alertas mesmo com o app fechado';
+  return 'Permissão concedida, mas o dispositivo ainda não está inscrito';
+}
+
+function PushStatusAction({
+  isEnabled,
+  inscrito,
+  isRequesting,
+  onEnable,
+  onDisable,
+}: AcaoStatus) {
+  if (!isEnabled) {
+    return (
+      <Button onClick={onEnable} disabled={isRequesting}>
+        {isRequesting ? 'Ativando...' : 'Ativar'}
+      </Button>
+    );
+  }
+  if (!inscrito) {
+    return (
+      <Button onClick={onEnable} disabled={isRequesting}>
+        {isRequesting ? 'Inscrevendo...' : 'Inscrever dispositivo'}
+      </Button>
+    );
+  }
+  return (
+    <Button variant="outline" onClick={onDisable} disabled={isRequesting}>
+      Desativar neste dispositivo
+    </Button>
+  );
+}
+
 function PushStatus({
   isEnabled,
   isRequesting,
+  inscrito,
   handleEnableNotifications,
+  handleDisableNotifications,
 }: Pick<
   ReturnType<typeof usePushNotificationSettings>,
-  'isEnabled' | 'isRequesting' | 'handleEnableNotifications'
+  'isEnabled' | 'isRequesting' | 'inscrito' | 'handleEnableNotifications' | 'handleDisableNotifications'
 >) {
   return (
     <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
@@ -151,17 +226,17 @@ function PushStatus({
             {isEnabled ? 'Notificações ativas' : 'Notificações desativadas'}
           </p>
           <p className="text-sm text-muted-foreground">
-            {isEnabled
-              ? 'Você receberá alertas de segurança em tempo real'
-              : 'Ative para receber alertas importantes'}
+            {descricaoStatus(isEnabled, inscrito)}
           </p>
         </div>
       </div>
-      {!isEnabled && (
-        <Button onClick={handleEnableNotifications} disabled={isRequesting}>
-          {isRequesting ? 'Ativando...' : 'Ativar'}
-        </Button>
-      )}
+      <PushStatusAction
+        isEnabled={isEnabled}
+        inscrito={inscrito}
+        isRequesting={isRequesting}
+        onEnable={handleEnableNotifications}
+        onDisable={handleDisableNotifications}
+      />
     </div>
   );
 }
