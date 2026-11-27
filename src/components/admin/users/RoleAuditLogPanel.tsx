@@ -16,9 +16,10 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2, History, ArrowRight, RefreshCw } from "lucide-react";
+import { Loader2, History, ArrowRight, RefreshCw, Database } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -271,6 +272,232 @@ export function RoleAuditLogPanel() {
 
         <p className="text-[11px] text-muted-foreground">
           Mostrando até 200 registros mais recentes. Apenas DEV pode visualizar este log.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Trilha bruta de `admin_config_audit`: o trigger `fn_audit_config_change`
+ * grava o estado completo (old_data/new_data) de cada mudança em `user_roles`,
+ * inclusive as que chegam por service_role e não têm ator no JWT — casos em
+ * que `admin_audit_log` registra o próprio alvo como ator. Serve como fonte
+ * de verdade para auditoria: mostra o que foi alterado, não o que o código
+ * decidiu reportar.
+ */
+interface ConfigAuditEntry {
+  id: string;
+  action_type: "INSERT" | "UPDATE" | "DELETE";
+  table_name: string;
+  old_data: { user_id?: string; role?: string } | null;
+  new_data: { user_id?: string; role?: string } | null;
+  changed_by: string | null;
+  changed_at: string | null;
+}
+
+const CONFIG_ACTION_LABEL: Record<ConfigAuditEntry["action_type"], { label: string; variant: "default" | "secondary" | "destructive" }> = {
+  INSERT: { label: "Criado", variant: "default" },
+  UPDATE: { label: "Alterado", variant: "secondary" },
+  DELETE: { label: "Excluído", variant: "destructive" },
+};
+
+function configActionLabel(action: ConfigAuditEntry["action_type"]) {
+  return CONFIG_ACTION_LABEL[action] ?? { label: action, variant: "secondary" as const };
+}
+
+// `RoleBadge` colapsa admin/manager no rótulo "Supervisor" (alias legado em
+// src/lib/roles.ts:109-122). Na trilha isso apaga qual papel foi realmente
+// trocado — uma migração `admin` -> `supervisor` pareceria excluir e recriar o
+// mesmo papel. Aqui o valor bruto gravado pelo trigger manda.
+const CONFIG_ROLE_LABEL: Record<string, string> = {
+  admin: "Administrador (admin)",
+  manager: "Gestor (manager)",
+  dev: "Dev",
+  supervisor: "Supervisor",
+  vendedor: "Vendedor",
+  gestor_compras: "Gestor de compras",
+  comprador_singular: "Comprador singular",
+  gerente_pa: "Gerente PA",
+  comprador_pac: "Comprador PAC",
+  agente: "Agente",
+};
+
+function RawRoleChange({ oldRole, newRole }: { oldRole: string | null; newRole: string | null }) {
+  const rotulo = (role: string | null) =>
+    role ? (CONFIG_ROLE_LABEL[role] ?? role) : "—";
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap text-xs">
+      <span className={oldRole ? "font-medium" : "text-muted-foreground"}>{rotulo(oldRole)}</span>
+      <ArrowRight className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+      <span className={newRole ? "font-medium" : "text-muted-foreground"}>{rotulo(newRole)}</span>
+    </div>
+  );
+}
+
+function relativeDate(value: string | null) {
+  return value
+    ? formatDistanceToNow(new Date(value), { addSuffix: true, locale: ptBR })
+    : "—";
+}
+
+function ConfigAuditRow({ entry, profiles }: { entry: ConfigAuditEntry; profiles: Map<string, ProfileLite> }) {
+  const meta = configActionLabel(entry.action_type);
+  const anterior = entry.old_data?.role ?? null;
+  const posterior = entry.new_data?.role ?? null;
+  const alvo = entry.new_data?.user_id ?? entry.old_data?.user_id ?? null;
+  return (
+    <TableRow>
+      <TableCell>
+        <span className="text-xs text-muted-foreground">{relativeDate(entry.changed_at)}</span>
+      </TableCell>
+      <TableCell><Badge variant={meta.variant}>{meta.label}</Badge></TableCell>
+      <TableCell><UserDetails userId={alvo} profiles={profiles} /></TableCell>
+      <TableCell><RawRoleChange oldRole={anterior} newRole={posterior} /></TableCell>
+      <TableCell>
+        {entry.changed_by ? (
+          <UserDetails userId={entry.changed_by} profiles={profiles} />
+        ) : (
+          <span className="text-[11px] text-muted-foreground">sem ator (serviço/trigger)</span>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function ConfigAuditTable({ entries, profiles, isLoading, isError }: {
+  entries: ConfigAuditEntry[];
+  profiles: Map<string, ProfileLite>;
+  isLoading: boolean;
+  isError: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div className="text-center py-8 text-sm text-destructive">
+        Não foi possível carregar a trilha bruta. A tabela é visível apenas para admin/gestor.
+      </div>
+    );
+  }
+  if (entries.length === 0) {
+    return (
+      <div className="text-center py-8 text-sm text-muted-foreground">
+        Nenhum registro na trilha bruta ainda.
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-md border border-border overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[180px]">Quando</TableHead>
+            <TableHead>Operação</TableHead>
+            <TableHead>Usuário-alvo</TableHead>
+            <TableHead>Papel</TableHead>
+            <TableHead>Executado por</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry) => (
+            <ConfigAuditRow key={entry.id} entry={entry} profiles={profiles} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+interface ConfigAuditData {
+  entries: ConfigAuditEntry[];
+  profilesMap: Map<string, ProfileLite>;
+}
+
+/**
+ * Busca a trilha bruta e, quando existem atores ou alvos, os perfis em uma
+ * segunda consulta sequencial. As duas passam pela mesma policy de admin/gestor.
+ */
+async function fetchConfigAudit(): Promise<ConfigAuditData> {
+  const { data: entries, error } = await supabase
+    .from("admin_config_audit")
+    .select("id, action_type, table_name, old_data, new_data, changed_by, changed_at")
+    .eq("table_name", "user_roles")
+    .order("changed_at", { ascending: false, nullsFirst: false })
+    .limit(200);
+  if (error) throw error;
+
+  const ids = new Set<string>();
+  (entries ?? []).forEach((e) => {
+    if (e.changed_by) ids.add(e.changed_by);
+    const alvo = (e.new_data as { user_id?: string } | null)?.user_id
+      ?? (e.old_data as { user_id?: string } | null)?.user_id;
+    if (alvo) ids.add(alvo);
+  });
+
+  const profilesMap = new Map<string, ProfileLite>();
+  if (ids.size > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", Array.from(ids));
+    (profiles ?? []).forEach((p) => profilesMap.set(p.user_id, p));
+  }
+  return { entries: (entries ?? []) as unknown as ConfigAuditEntry[], profilesMap };
+}
+
+function ConfigAuditHeader({ isFetching, onRefresh }: { isFetching: boolean; onRefresh: () => void }) {
+  return (
+    <CardHeader className="flex flex-row items-start justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Database className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <CardTitle>Trilha bruta (admin_config_audit)</CardTitle>
+          <CardDescription>
+            Estado linha a linha gravado pelo trigger direto na tabela: inclui mudanças feitas por serviços, sem ator no JWT.
+          </CardDescription>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={onRefresh} disabled={isFetching} className="gap-2">
+        <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+        Atualizar
+      </Button>
+    </CardHeader>
+  );
+}
+
+export function RawConfigAuditPanel() {
+  // A chave de cache inclui o usuário da sessão: sem isso, trocar de conta na
+  // mesma aba reaproveitava por 15 s os eventos (nomes e e-mails) carregados
+  // pela conta anterior, mesmo quando o banco j? barrava a nova leitura.
+  const { user } = useAuth();
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ["admin-config-audit", "user_roles", user?.id ?? "anon"],
+    queryFn: fetchConfigAudit,
+    staleTime: 15_000,
+    refetchInterval: 60_000,
+    enabled: !!user?.id,
+  });
+
+  return (
+    <Card className="border-border/50">
+      <ConfigAuditHeader isFetching={isFetching} onRefresh={() => refetch()} />
+      <CardContent>
+        <ConfigAuditTable
+          entries={data?.entries ?? []}
+          profiles={data?.profilesMap ?? EMPTY_PROFILES}
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <p className="text-[11px] text-muted-foreground mt-3">
+          Mostrando até 200 registros mais recentes de <code>user_roles</code>.
         </p>
       </CardContent>
     </Card>

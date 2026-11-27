@@ -21,6 +21,7 @@ import {
   Lock,
   Network,
   Settings,
+  Database,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,7 @@ import { EditUserDialog } from '@/components/admin/users/EditUserDialog';
 import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
 import { DeleteUserDialog } from '@/components/admin/users/DeleteUserDialog';
 import { PromotionDialog } from '@/components/admin/users/PromotionDialog';
-import { RoleAuditLogPanel } from '@/components/admin/users/RoleAuditLogPanel';
+import { RawConfigAuditPanel, RoleAuditLogPanel } from '@/components/admin/users/RoleAuditLogPanel';
 import { DevAccessAuditAlert } from '@/components/admin/DevAccessAuditAlert';
 import { type UserWithRole } from '@/components/admin/users/types';
 
@@ -52,6 +53,7 @@ const VALID_TABS = [
   'coupons',
   'access',
   'audit',
+  'config-audit',
   'sicoob-hierarchy',
   'system-config',
 ] as const;
@@ -118,6 +120,12 @@ function AdminTabsList({
           Auditoria de Roles
         </TabsTrigger>
       )}
+      {isAdmin && (
+        <TabsTrigger value="config-audit" className="gap-2">
+          <Database className="h-4 w-4" />
+          Trilha de Configurações
+        </TabsTrigger>
+      )}
       <TabsTrigger value="sicoob-hierarchy" className="gap-2">
         <Network className="h-4 w-4" />
         Hierarquia SICOOB
@@ -178,7 +186,7 @@ function UsersTableState({
   );
 }
 
-function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean }) {
+function AdminFeatureTabs({ isAdmin }: { isAdmin: boolean }) {
   return (
     <>
       <TabsContent value="password-reset">
@@ -207,9 +215,14 @@ function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean
           <AccessManagement />
         </TabsContent>
       )}
-      {isDev && (
+      {isAdmin && (
         <TabsContent value="audit">
           <RoleAuditLogPanel />
+        </TabsContent>
+      )}
+      {isAdmin && (
+        <TabsContent value="config-audit">
+          <RawConfigAuditPanel />
         </TabsContent>
       )}
       <TabsContent value="sicoob-hierarchy">
@@ -389,7 +402,7 @@ export default function AdminUsuariosPage() {
             </Card>
           </TabsContent>
 
-          <AdminFeatureTabs isAdmin={isAdmin} isDev={isDev} />
+          <AdminFeatureTabs isAdmin={isAdmin} />
         </Tabs>
 
         {/* Dialogs */}
