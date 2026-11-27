@@ -19,6 +19,7 @@ import { ptBR } from "date-fns/locale";
 import { Loader2, History, ArrowRight, RefreshCw, Database } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -305,6 +306,35 @@ function configActionLabel(action: ConfigAuditEntry["action_type"]) {
   return CONFIG_ACTION_LABEL[action] ?? { label: action, variant: "secondary" as const };
 }
 
+// `RoleBadge` colapsa admin/manager no rótulo "Supervisor" (alias legado em
+// src/lib/roles.ts:109-122). Na trilha isso apaga qual papel foi realmente
+// trocado — uma migração `admin` -> `supervisor` pareceria excluir e recriar o
+// mesmo papel. Aqui o valor bruto gravado pelo trigger manda.
+const CONFIG_ROLE_LABEL: Record<string, string> = {
+  admin: "Administrador (admin)",
+  manager: "Gestor (manager)",
+  dev: "Dev",
+  supervisor: "Supervisor",
+  vendedor: "Vendedor",
+  gestor_compras: "Gestor de compras",
+  comprador_singular: "Comprador singular",
+  gerente_pa: "Gerente PA",
+  comprador_pac: "Comprador PAC",
+  agente: "Agente",
+};
+
+function RawRoleChange({ oldRole, newRole }: { oldRole: string | null; newRole: string | null }) {
+  const rotulo = (role: string | null) =>
+    role ? (CONFIG_ROLE_LABEL[role] ?? role) : "—";
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap text-xs">
+      <span className={oldRole ? "font-medium" : "text-muted-foreground"}>{rotulo(oldRole)}</span>
+      <ArrowRight className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+      <span className={newRole ? "font-medium" : "text-muted-foreground"}>{rotulo(newRole)}</span>
+    </div>
+  );
+}
+
 function relativeDate(value: string | null) {
   return value
     ? formatDistanceToNow(new Date(value), { addSuffix: true, locale: ptBR })
@@ -323,7 +353,7 @@ function ConfigAuditRow({ entry, profiles }: { entry: ConfigAuditEntry; profiles
       </TableCell>
       <TableCell><Badge variant={meta.variant}>{meta.label}</Badge></TableCell>
       <TableCell><UserDetails userId={alvo} profiles={profiles} /></TableCell>
-      <TableCell><RoleChange oldRole={anterior} newRole={posterior} /></TableCell>
+      <TableCell><RawRoleChange oldRole={anterior} newRole={posterior} /></TableCell>
       <TableCell>
         {entry.changed_by ? (
           <UserDetails userId={entry.changed_by} profiles={profiles} />
@@ -385,8 +415,12 @@ function ConfigAuditTable({ entries, profiles, isLoading, isError }: {
 }
 
 export function RawConfigAuditPanel() {
+  // A chave de cache inclui o usuário da sessão: sem isso, trocar de conta na
+  // mesma aba reaproveitava por 15 s os eventos (nomes e e-mails) carregados
+  // pela conta anterior, mesmo quando o banco já barrava a nova leitura.
+  const { user } = useAuth();
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["admin-config-audit", "user_roles"],
+    queryKey: ["admin-config-audit", "user_roles", user?.id ?? "anon"],
     queryFn: async () => {
       const { data: entries, error } = await supabase
         .from("admin_config_audit")
@@ -416,6 +450,7 @@ export function RawConfigAuditPanel() {
     },
     staleTime: 15_000,
     refetchInterval: 60_000,
+    enabled: !!user?.id,
   });
 
   const profilesMap = data?.profilesMap ?? EMPTY_PROFILES;

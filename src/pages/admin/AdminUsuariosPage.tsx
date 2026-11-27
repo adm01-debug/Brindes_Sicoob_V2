@@ -21,6 +21,7 @@ import {
   Lock,
   Network,
   Settings,
+  Database,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -118,6 +119,12 @@ function AdminTabsList({
           Auditoria de Roles
         </TabsTrigger>
       )}
+      {isAdmin && (
+        <TabsTrigger value="config-audit" className="gap-2">
+          <Database className="h-4 w-4" />
+          Trilha de Configurações
+        </TabsTrigger>
+      )}
       <TabsTrigger value="sicoob-hierarchy" className="gap-2">
         <Network className="h-4 w-4" />
         Hierarquia SICOOB
@@ -178,7 +185,7 @@ function UsersTableState({
   );
 }
 
-function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean }) {
+function AdminFeatureTabs({ isAdmin }: { isAdmin: boolean }) {
   return (
     <>
       <TabsContent value="password-reset">
@@ -207,9 +214,13 @@ function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean
           <AccessManagement />
         </TabsContent>
       )}
-      {isDev && (
+      {isAdmin && (
         <TabsContent value="audit">
           <RoleAuditLogPanel />
+        </TabsContent>
+      )}
+      {isAdmin && (
+        <TabsContent value="config-audit">
           <RawConfigAuditPanel />
         </TabsContent>
       )}
@@ -390,7 +401,7 @@ export default function AdminUsuariosPage() {
             </Card>
           </TabsContent>
 
-          <AdminFeatureTabs isAdmin={isAdmin} isDev={isDev} />
+          <AdminFeatureTabs isAdmin={isAdmin} />
         </Tabs>
 
         {/* Dialogs */}
