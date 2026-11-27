@@ -9,6 +9,7 @@ import { generateScheduledReportHtml } from "../_shared/scheduled-report-data.ts
 import { calculateNextRun, getAnchorDay } from "./report-types.ts";
 import {
   decideScheduledReportEligibility,
+  runScheduledReportBatch,
 } from "./report-eligibility.ts";
 
 const corsHeaders = {
@@ -56,10 +57,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const results: Array<{ id: string; status: string; error?: string }> = [];
-
-    for (const report of dueReports) {
-      try {
+    const results = await runScheduledReportBatch(dueReports, {
+      decide: async (report) => {
         // Agendamento de usuário revogado, conta inativada ou e-mail desatualizado
         // ficaria vencido encabeçando o lote para sempre. A decisão é binária:
         // entregar ou desativar. "Pular" devolveria o mesmo registro em toda rodada
@@ -83,67 +82,70 @@ Deno.serve(async (req: Request) => {
           .maybeSingle();
         if (profileError) throw profileError;
 
-        const eligibility = decideScheduledReportEligibility({
+        return decideScheduledReportEligibility({
           hasRole: Array.isArray(roles) && roles.length > 0,
           profileActive: profile?.is_active ?? null,
           profileEmail: profile?.email ?? null,
           emailTo: report.email_to,
         });
-        if (eligibility.action === "deactivate") {
-          const { error: deactivateError } = await supabase
-            .from("scheduled_reports")
-            .update({ is_active: false, updated_at: nowIso })
-            .eq("id", report.id);
-          if (deactivateError) throw deactivateError;
-          results.push({ id: report.id, status: "deactivated", error: eligibility.reason });
-          continue;
-        }
-
+      },
+      // O motivo vai para `filters.deactivated_reason`: sem ele o agendamento
+      // some da fila e o usuário não tem como saber por que o envio parou. A
+      // coluna JSONB já existe, então registrar a causa não exige DDL.
+      deactivate: async (report, reason) => {
+        const { error: deactivateError } = await supabase
+          .from("scheduled_reports")
+          .update({
+            is_active: false,
+            filters: { ...((report.filters as Record<string, unknown> | null) ?? {}), deactivated_reason: reason },
+            updated_at: nowIso,
+          })
+          .eq("id", report.id);
+        if (deactivateError) throw deactivateError;
+      },
+      deliver: async (report) => {
         const previousRun = report.last_sent_at ? new Date(report.last_sent_at) : null;
-        const emailProvider = resendKey
-          ? async (html: string) => {
-            await sendScheduledReportEmail({
-              apiKey: resendKey,
-              to: report.email_to,
-              subject: `Relatório — ${report.report_name}`,
-              html,
-              idempotencyKey: buildScheduledReportIdempotencyKey(
-                `scheduled-report:${report.id}:${report.next_run_at}`,
-              ),
-            }, () => Promise.resolve());
+      const emailProvider = resendKey
+        ? async (html: string) => {
+          await sendScheduledReportEmail({
+            apiKey: resendKey,
+            to: report.email_to,
+            subject: `Relatório — ${report.report_name}`,
+            html,
+            idempotencyKey: buildScheduledReportIdempotencyKey(
+              `scheduled-report:${report.id}:${report.next_run_at}`,
+            ),
+          }, () => Promise.resolve());
+        }
+        : null;
+      const result = await deliverScheduledReport(report, emailProvider, {
+        generateData: () =>
+          generateScheduledReportHtml(supabase, report, now, previousRun),
+        persistSent: async () => {
+          const nextRun = calculateNextRun(
+            report.frequency,
+            now,
+            getAnchorDay(report.next_run_at, report.created_at),
+          );
+          const { data: updatedReport, error } = await supabase
+            .from("scheduled_reports")
+            .update({
+              last_sent_at: nowIso,
+              next_run_at: nextRun.toISOString(),
+              updated_at: nowIso,
+            })
+            .eq("id", report.id)
+            .select("id")
+            .maybeSingle();
+          if (error) throw error;
+          if (!updatedReport) {
+            throw new Error("Agendamento nao encontrado para confirmar o envio.");
           }
-          : null;
-        const result = await deliverScheduledReport(report, emailProvider, {
-          generateData: () =>
-            generateScheduledReportHtml(supabase, report, now, previousRun),
-          persistSent: async () => {
-            const nextRun = calculateNextRun(
-              report.frequency,
-              now,
-              getAnchorDay(report.next_run_at, report.created_at),
-            );
-            const { data: updatedReport, error } = await supabase
-              .from("scheduled_reports")
-              .update({
-                last_sent_at: nowIso,
-                next_run_at: nextRun.toISOString(),
-                updated_at: nowIso,
-              })
-              .eq("id", report.id)
-              .select("id")
-              .maybeSingle();
-            if (error) throw error;
-            if (!updatedReport) {
-              throw new Error("Agendamento nao encontrado para confirmar o envio.");
-            }
-          },
-        });
-        results.push(result);
-      } catch (err) {
-        console.error("send-scheduled-reports report error:", err);
-        results.push({ id: report.id, status: "error", error: "erro_interno" });
-      }
-    }
+        },
+      });
+        return result;
+      },
+    });
 
     const blocked = results.filter((result) => result.status === "blocked").length;
     return new Response(
