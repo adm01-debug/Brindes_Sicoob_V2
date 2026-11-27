@@ -170,7 +170,8 @@ GRANT EXECUTE ON FUNCTION public.refresh_sicoob_order_sla_status() TO service_ro
 -- consta no UPDATE. Sem isso o pedido vira crítico em silêncio e o solicitante
 -- nunca recebe o aviso de SLA.
 UPDATE public.sicoob_orders
-   SET sla_deadline = created_at + interval '48 hours'
+   SET sla_deadline = created_at + interval '48 hours',
+       sla_status = sla_status
  WHERE sla_deadline IS NULL
    AND status IN ('waiting_approval', 'escalated_to_board');
 
