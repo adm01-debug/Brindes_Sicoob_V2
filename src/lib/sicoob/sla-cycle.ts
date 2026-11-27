@@ -4,13 +4,15 @@ const SLA_CYCLE_STATUSES = new Set(["waiting_approval", "escalated_to_board"]);
 
 /**
  * Etapas em que o SLA de aprovação governa o pedido. Fora delas o prazo já
- * encerrou: o pedido não pode voltar a ser contado como urgente nem entrar no
- * filtro de conformidade (que misturava pedidos nunca avaliados, sem prazo).
+ * encerrou: aprovar, entregar ou cancelar não zeram `sla_status` na hora (quem
+ * normaliza é o recálculo periódico), então o valor gravado continua `critical`
+ * por alguns minutos. Contar esse resíduo fazia o pedido reaparecer como
+ * urgente depois de decidido.
  */
-const SLA_APPROVAL_STAGES = new Set(["pending", "waiting_approval", "escalated_to_board"]);
+export const SLA_APPROVAL_STAGES = ["pending", "waiting_approval", "escalated_to_board"] as const;
 
 export function isSlaApprovalStage(status: string | null | undefined): boolean {
-  return !!status && SLA_APPROVAL_STAGES.has(status);
+  return !!status && (SLA_APPROVAL_STAGES as readonly string[]).includes(status);
 }
 
 /** Retorna o início do ciclo SLA atualmente ativo; não infere pela criação do pedido. */
