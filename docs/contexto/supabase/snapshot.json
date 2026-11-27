@@ -50436,6 +50436,15 @@
           "jobname": "connections-health-check",
           "schedule": "7,22,37,52 * * * *",
           "username": "postgres"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.dispatch_scheduled_reports();",
+          "database": "postgres",
+          "jobid": 36,
+          "jobname": "scheduled-reports-worker",
+          "schedule": "*/10 * * * *",
+          "username": "postgres"
         }
       ]
     },
@@ -54561,6 +54570,47 @@
         "name": "dispatch_quote_webhook_event",
         "owner": "postgres",
         "returns": "trigger",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-relatorios-agendados-cron.py",
+              "hits": 14
+            },
+            {
+              "file": "supabase/migrations/20261122180000_schedule_scheduled_reports_worker.sql",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [
+            "36:scheduled-reports-worker"
+          ],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": "Despacha os relatórios agendados vencidos para a Edge Function send-scheduled-reports; lê URL e segredo do Vault a cada execução.",
+        "config": [
+          "search_path=pg_catalog, public, vault, net"
+        ],
+        "definition": null,
+        "definition_sha": "43ca44ae6437ba07",
+        "execute_api_roles": "service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "dispatch_scheduled_reports",
+        "owner": "postgres",
+        "returns": "bigint",
         "schema": "public",
         "security_definer": true,
         "strict": false,
@@ -59267,7 +59317,9 @@
           "db": [
             "public.can_manage_connections",
             "public.can_view_connections",
-            "public.can_view_telemetry"
+            "public.can_view_telemetry",
+            "public.sicoob_pa_notification_settings_set",
+            "public.sicoob_pa_slack_webhook"
           ],
           "triggers": [],
           "views": []
@@ -64955,6 +65007,84 @@
         "volatility": "stable"
       },
       {
+        "args": "p_pa_id uuid, p_channel text, p_webhook_url text, p_recipient_email text, p_is_active boolean",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 5
+            },
+            {
+              "file": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "definition": null,
+        "definition_sha": "74336b3f09a40c12",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "sicoob_pa_notification_settings_set",
+        "owner": "postgres",
+        "returns": "void",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "volatile"
+      },
+      {
+        "args": "p_pa_id uuid",
+        "callers": {
+          "code": [
+            {
+              "file": "scripts/qa/simular-escopo-gerencial-sicoob.py",
+              "hits": 3
+            },
+            {
+              "file": "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 2,
+          "cron": [],
+          "db": [],
+          "triggers": [],
+          "views": []
+        },
+        "comment": null,
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "definition": null,
+        "definition_sha": "b12122261142ebb2",
+        "execute_api_roles": "authenticated, service_role",
+        "execute_public": false,
+        "is_trigger_fn": false,
+        "kind": "function",
+        "language": "plpgsql",
+        "leakproof": false,
+        "name": "sicoob_pa_slack_webhook",
+        "owner": "postgres",
+        "returns": "text",
+        "schema": "public",
+        "security_definer": true,
+        "strict": false,
+        "volatility": "stable"
+      },
+      {
         "args": "",
         "callers": {
           "code": [
@@ -66408,7 +66538,7 @@
           "search_path=public"
         ],
         "definition": null,
-        "definition_sha": "413e4f8a3d692fdd",
+        "definition_sha": "23bcce99ec2fff8f",
         "execute_api_roles": "service_role",
         "execute_public": false,
         "is_trigger_fn": true,
@@ -83730,23 +83860,23 @@
         "name": "PA Managers can insert limit requests",
         "permissive": "PERMISSIVE",
         "roles": [
-          "public"
+          "authenticated"
         ],
         "schema": "public",
         "table": "limit_increase_requests",
         "using": null,
-        "with_check": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = 'gestor_pa'::text) AND (limit_increase_requests.pa_id = p.pa_id))))"
+        "with_check": "((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (pa_id = current_user_pa_id()) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))"
       },
       {
         "cmd": "SELECT",
         "name": "Users can view their own PA limit requests",
         "permissive": "PERMISSIVE",
         "roles": [
-          "public"
+          "authenticated"
         ],
         "schema": "public",
         "table": "limit_increase_requests",
-        "using": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND ((p.role = ANY (ARRAY['admin'::text, 'supervisor'::text])) OR ((p.role = 'gestor_pa'::text) AND (limit_increase_requests.pa_id = p.pa_id)) OR ((p.role = 'gestor_singular'::text) AND (EXISTS ( SELECT 1\n           FROM postos_atendimento pa\n          WHERE ((pa.id = limit_increase_requests.pa_id) AND (pa.cooperativa_id = p.cooperativa_id)))))))))",
+        "using": "((requested_by = ( SELECT auth.uid() AS uid)) OR is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1\n   FROM postos_atendimento service_point\n  WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))",
         "with_check": null
       },
       {
@@ -84583,6 +84713,18 @@
         "with_check": null
       },
       {
+        "cmd": "SELECT",
+        "name": "sicoob_order_audit_events_escopo_gerencial",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "order_audit_events",
+        "using": "((EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.id = order_audit_events.order_id) AND ((o.seller_id = ( SELECT auth.uid() AS uid)) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))))) OR (EXISTS ( SELECT 1\n   FROM sicoob_orders so\n  WHERE ((so.id = order_audit_events.order_id) AND ((so.created_by = ( SELECT auth.uid() AS uid)) OR (is_gerente_pa() AND (so.pa_id = current_user_pa_id())) OR (is_gestor_compras() AND (so.cooperative_id = current_user_cooperativa_id())) OR has_role(( SELECT auth.uid() AS uid), 'supervisor'::app_role))))))",
+        "with_check": null
+      },
+      {
         "cmd": "DELETE",
         "name": "comments_delete_self_or_admin",
         "permissive": "PERMISSIVE",
@@ -84639,7 +84781,7 @@
         ],
         "schema": "public",
         "table": "order_comments",
-        "using": "(has_role(( SELECT auth.uid() AS uid), 'admin'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'dev'::app_role) OR (EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.id = order_comments.order_id) AND ((o.seller_id = ( SELECT auth.uid() AS uid)) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))))) OR (EXISTS ( SELECT 1\n   FROM (sicoob_orders so\n     LEFT JOIN profiles p ON ((p.id = ( SELECT auth.uid() AS uid))))\n  WHERE ((so.id = order_comments.order_id) AND ((so.created_by = ( SELECT auth.uid() AS uid)) OR ((p.role = 'gestor_pa'::text) AND (so.pa_id = p.pa_id)) OR ((p.role = 'gestor_singular'::text) AND (so.cooperative_id = p.cooperativa_id)) OR (p.role = ANY (ARRAY['supervisor'::text, 'logistics'::text])))))))",
+        "using": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.id = order_comments.order_id) AND (can_view_all_sales() OR (has_role(( SELECT auth.uid() AS uid), 'supervisor'::app_role) AND ((o.organization_id IS NULL) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))) OR (o.seller_id = ( SELECT auth.uid() AS uid))))))",
         "with_check": null
       },
       {
@@ -85567,6 +85709,18 @@
         "with_check": "(pg_has_role(CURRENT_USER, 'authenticated'::name, 'member'::text) AND is_admin(( SELECT auth.uid() AS uid)))"
       },
       {
+        "cmd": "ALL",
+        "name": "Admins can manage notification settings",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_notification_settings",
+        "using": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))",
+        "with_check": "(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))"
+      },
+      {
         "cmd": "INSERT",
         "name": "sicoob_merged_71fae1b1eedcc5b5_insert",
         "permissive": "PERMISSIVE",
@@ -85616,6 +85770,18 @@
         "schema": "public",
         "table": "pa_notification_settings",
         "using": "((true AND has_role(( SELECT auth.uid() AS uid), 'admin'::app_role)) OR (true AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.pa_id = pa_notification_settings.pa_id) AND (profiles.role = ANY (ARRAY['gestor_pa'::text, 'gestor_singular'::text])))))))",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "name": "sicoob_pa_notification_settings_escopo_gerencial",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "authenticated"
+        ],
+        "schema": "public",
+        "table": "pa_notification_settings",
+        "using": "(is_supervisor_or_above(( SELECT auth.uid() AS uid)) OR (is_gerente_pa() AND (pa_id = current_user_pa_id())) OR (is_gestor_compras() AND (EXISTS ( SELECT 1\n   FROM postos_atendimento pa\n  WHERE ((pa.id = pa_notification_settings.pa_id) AND (pa.cooperativa_id = current_user_cooperativa_id()))))))",
         "with_check": null
       },
       {

@@ -57,9 +57,9 @@
 |---|---|
 | comando | INSERT |
 | tipo | PERMISSIVE |
-| roles | public |
+| roles | authenticated |
 | USING |  |
-| WITH CHECK | `(EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = 'gestor_pa'::text) AND (limit_increase_requests.pa_id = p.pa_id))))` |
+| WITH CHECK | `((requested_by = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (approved_by IS NULL) AND (rejection_reason IS NULL) AND (is_admin(( SELECT auth.uid() AS uid)) OR (pa_id = current_user_pa_id()) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id())))))))` |
 
 ### `Users can view their own PA limit requests`
 
@@ -67,8 +67,8 @@
 |---|---|
 | comando | SELECT |
 | tipo | PERMISSIVE |
-| roles | public |
-| USING | `(EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND ((p.role = ANY (ARRAY['admin'::text, 'supervisor'::text])) OR ((p.role = 'gestor_pa'::text) AND (limit_increase_requests.pa_id = p.pa_id)) OR ((p.role = 'gestor_singular'::text) AND (EXISTS ( SELECT 1            FROM postos_atendimento pa           WHERE ((pa.id = limit_increase_requests.pa_id) AND (pa.cooperativa_id = p.cooperativa_id)))))))))` |
+| roles | authenticated |
+| USING | `((requested_by = ( SELECT auth.uid() AS uid)) OR is_admin(( SELECT auth.uid() AS uid)) OR (has_role(( SELECT auth.uid() AS uid), 'gerente_pa'::app_role) AND (pa_id = current_user_pa_id())) OR ((has_role(( SELECT auth.uid() AS uid), 'gestor_compras'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'comprador_singular'::app_role)) AND (EXISTS ( SELECT 1    FROM postos_atendimento service_point   WHERE ((service_point.id = limit_increase_requests.pa_id) AND (service_point.is_active IS TRUE) AND (service_point.cooperativa_id = current_user_cooperativa_id()))))))` |
 | WITH CHECK |  |
 
 

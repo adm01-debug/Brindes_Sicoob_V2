@@ -118,7 +118,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.optimization_queue](tables/public/optimization_queue.md) | table | sim | 1 | 14 | não |  |
 | [public.optimization_queue_runs](tables/public/optimization_queue_runs.md) | table | sim | 1 | 8 | não |  |
 | [public.order_approval_history](tables/public/order_approval_history.md) | table | sim | 2 | 8 | não |  |
-| [public.order_audit_events](tables/public/order_audit_events.md) | table | sim | 4 | 13 | não |  |
+| [public.order_audit_events](tables/public/order_audit_events.md) | table | sim | 5 | 13 | não |  |
 | [public.order_comments](tables/public/order_comments.md) | table | sim | 5 | 12 | não |  |
 | [public.order_consolidation_orders](tables/public/order_consolidation_orders.md) | table | sim | 1 | 4 | não |  |
 | [public.order_consolidations](tables/public/order_consolidations.md) | table | sim | 1 | 11 | não |  |
@@ -141,7 +141,7 @@ Um arquivo por tabela em `tables/<schema>/<tabela>.md` (colunas, constraints, í
 | [public.pa_budget_entries](tables/public/pa_budget_entries.md) | table | sim | 2 | 13 | não |  |
 | [public.pa_budgets](tables/public/pa_budgets.md) | table | sim | 10 | 16 | não |  |
 | [public.pa_category_thresholds](tables/public/pa_category_thresholds.md) | table | sim | 4 | 5 | não |  |
-| [public.pa_notification_settings](tables/public/pa_notification_settings.md) | table | sim | 4 | 7 | não |  |
+| [public.pa_notification_settings](tables/public/pa_notification_settings.md) | table | sim | 6 | 7 | não |  |
 | [public.pa_singularidades](tables/public/pa_singularidades.md) | table | sim | 4 | 7 | não |  |
 | [public.password_reset_requests](tables/public/password_reset_requests.md) | table | sim | 4 | 8 | não |  |
 | [public.permissions](tables/public/permissions.md) | table | sim | 4 | 7 | não |  |

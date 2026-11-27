@@ -7,6 +7,10 @@ AS $function$
 DECLARE
   user_email TEXT;
 BEGIN
+  IF TG_OP = 'UPDATE' AND NEW.email_to IS NOT DISTINCT FROM OLD.email_to THEN
+    RETURN NEW;
+  END IF;
+
   SELECT email INTO user_email
   FROM public.profiles
   WHERE user_id = NEW.user_id;

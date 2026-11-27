@@ -108,7 +108,7 @@
 | comando | SELECT |
 | tipo | PERMISSIVE |
 | roles | authenticated |
-| USING | `(has_role(( SELECT auth.uid() AS uid), 'admin'::app_role) OR has_role(( SELECT auth.uid() AS uid), 'dev'::app_role) OR (EXISTS ( SELECT 1    FROM orders o   WHERE ((o.id = order_comments.order_id) AND ((o.seller_id = ( SELECT auth.uid() AS uid)) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))))) OR (EXISTS ( SELECT 1    FROM (sicoob_orders so      LEFT JOIN profiles p ON ((p.id = ( SELECT auth.uid() AS uid))))   WHERE ((so.id = order_comments.order_id) AND ((so.created_by = ( SELECT auth.uid() AS uid)) OR ((p.role = 'gestor_pa'::text) AND (so.pa_id = p.pa_id)) OR ((p.role = 'gestor_singular'::text) AND (so.cooperative_id = p.cooperativa_id)) OR (p.role = ANY (ARRAY['supervisor'::text, 'logistics'::text])))))))` |
+| USING | `(EXISTS ( SELECT 1    FROM orders o   WHERE ((o.id = order_comments.order_id) AND (can_view_all_sales() OR (has_role(( SELECT auth.uid() AS uid), 'supervisor'::app_role) AND ((o.organization_id IS NULL) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))) OR (o.seller_id = ( SELECT auth.uid() AS uid))))))` |
 | WITH CHECK |  |
 
 

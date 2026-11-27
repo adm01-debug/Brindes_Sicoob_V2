@@ -6,7 +6,7 @@
 | owner | postgres |
 | RLS habilitado | sim |
 | RLS forçado (owner) | não |
-| policies | 4 |
+| policies | 5 |
 | realtime (publication) | não |
 | replica identity | default |
 | vem de extensão | não |
@@ -91,6 +91,16 @@
 | tipo | PERMISSIVE |
 | roles | public |
 | USING | `((true AND false) OR (pg_has_role(CURRENT_USER, 'anon'::name, 'member'::text) AND false))` |
+| WITH CHECK |  |
+
+### `sicoob_order_audit_events_escopo_gerencial`
+
+| campo | valor |
+|---|---|
+| comando | SELECT |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `((EXISTS ( SELECT 1    FROM orders o   WHERE ((o.id = order_audit_events.order_id) AND ((o.seller_id = ( SELECT auth.uid() AS uid)) OR (o.organization_id IN ( SELECT get_user_org_ids(( SELECT auth.uid() AS uid)) AS get_user_org_ids)))))) OR (EXISTS ( SELECT 1    FROM sicoob_orders so   WHERE ((so.id = order_audit_events.order_id) AND ((so.created_by = ( SELECT auth.uid() AS uid)) OR (is_gerente_pa() AND (so.pa_id = current_user_pa_id())) OR (is_gestor_compras() AND (so.cooperative_id = current_user_cooperativa_id())) OR has_role(( SELECT auth.uid() AS uid), 'supervisor'::app_role))))))` |
 | WITH CHECK |  |
 
 

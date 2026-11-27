@@ -6,7 +6,7 @@
 | owner | postgres |
 | RLS habilitado | sim |
 | RLS forçado (owner) | não |
-| policies | 4 |
+| policies | 6 |
 | realtime (publication) | não |
 | replica identity | default |
 | vem de extensão | não |
@@ -52,6 +52,16 @@
 
 ## Policies (RLS)
 
+### `Admins can manage notification settings`
+
+| campo | valor |
+|---|---|
+| comando | ALL |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
+| WITH CHECK | `(is_admin(( SELECT auth.uid() AS uid)) AND ((( SELECT auth.jwt() AS jwt) ->> 'aal'::text) = 'aal2'::text))` |
+
 ### `sicoob_merged_71fae1b1eedcc5b5_insert`
 
 | campo | valor |
@@ -90,6 +100,16 @@
 | tipo | PERMISSIVE |
 | roles | authenticated, service_role |
 | USING | `((true AND has_role(( SELECT auth.uid() AS uid), 'admin'::app_role)) OR (true AND (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.pa_id = pa_notification_settings.pa_id) AND (profiles.role = ANY (ARRAY['gestor_pa'::text, 'gestor_singular'::text])))))))` |
+| WITH CHECK |  |
+
+### `sicoob_pa_notification_settings_escopo_gerencial`
+
+| campo | valor |
+|---|---|
+| comando | SELECT |
+| tipo | PERMISSIVE |
+| roles | authenticated |
+| USING | `(is_supervisor_or_above(( SELECT auth.uid() AS uid)) OR (is_gerente_pa() AND (pa_id = current_user_pa_id())) OR (is_gestor_compras() AND (EXISTS ( SELECT 1    FROM postos_atendimento pa   WHERE ((pa.id = pa_notification_settings.pa_id) AND (pa.cooperativa_id = current_user_cooperativa_id()))))))` |
 | WITH CHECK |  |
 
 

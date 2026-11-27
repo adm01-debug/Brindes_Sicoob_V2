@@ -22,3 +22,4 @@ Horários em UTC. Execuções recentes em `cron-runs.md`.
 | 26 | external-db-bridge-keepalive | `*/4 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_sicoob_external_db_keepalive();` |
 | 27 | connections-auto-test | `*/15 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_sicoob_connections_auto_test();` |
 | 35 | connections-health-check | `7,22,37,52 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_sicoob_connections_health_check();` |
+| 36 | scheduled-reports-worker | `*/10 * * * *` | sim | postgres | postgres | `SELECT public.dispatch_scheduled_reports();` |
