@@ -47,6 +47,14 @@ interface TotaisDaVerba {
 }
 
 /**
+ * Residuo de centavo: com reservas e consumo somando o alocado, o saldo pode
+ * sair como -0,005 e o formatador imprimir "-R$ 0,00".
+ */
+function normalizarResiduo(valor: number) {
+  return Math.abs(valor) < 0.005 ? 0 : valor;
+}
+
+/**
  * Saldo livre = planejado - reservado - comprometido - consumido.
  * Reservado e comprometido nao sao gastos, mas ja estao presos a pedidos:
  * ignora-los liberaria a mesma verba duas vezes para novas alocacoes.
@@ -67,7 +75,7 @@ export function calcularTotais(b: {
     reservado,
     comprometido,
     consumido,
-    saldo: alocado - reservado - comprometido - consumido,
+    saldo: normalizarResiduo(alocado - reservado - comprometido - consumido),
     percentual: alocado > 0 ? ((consumido + reservado + comprometido) / alocado) * 100 : 0,
   };
 }

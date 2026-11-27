@@ -131,7 +131,7 @@ function BudgetAuditTable({
   onDetalhar,
 }: {
   rows: BudgetAuditRow[];
-  onDetalhar: (row: BudgetAuditRow) => void;
+  onDetalhar: (row: BudgetAuditRow, gatilho: HTMLElement | null) => void;
 }) {
   return (
     <Table>
@@ -163,7 +163,7 @@ function BudgetAuditTable({
                 variant="ghost"
                 size="sm"
                 className="h-7 px-2"
-                onClick={() => onDetalhar(row)}
+                onClick={(evento) => onDetalhar(row, evento.currentTarget)}
                 aria-label={`Ver os lançamentos que compõem o saldo de ${row.pa_nome ?? "PA sem nome"} em ${formatCompetencia(row.ano, row.mes)}`}
               >
                 <Search className="h-3.5 w-3.5" />
@@ -226,11 +226,20 @@ function DivergenciaAlert({ count }: { count: number }) {
   );
 }
 
-function DetalheDaVerba({ linha, aoFechar }: { linha: BudgetAuditRow | null; aoFechar: () => void }) {
+function DetalheDaVerba({
+  linha,
+  gatilhoAtual,
+  aoFechar,
+}: {
+  linha: BudgetAuditRow | null;
+  gatilhoAtual: HTMLElement | null;
+  aoFechar: () => void;
+}) {
   if (!linha?.pa_id) return null;
   return (
     <BudgetEntriesDialog
       aberto
+      gatilhoAtual={gatilhoAtual}
       aoMudarAbertura={(aberto) => {
         if (!aberto) aoFechar();
       }}
@@ -245,6 +254,7 @@ function DetalheDaVerba({ linha, aoFechar }: { linha: BudgetAuditRow | null; aoF
 export function BudgetAuditCard() {
   const { rows, error, isLoading, period, setPeriod } = useBudgetAuditData();
   const [detalhe, setDetalhe] = React.useState<BudgetAuditRow | null>(null);
+  const [gatilhoDoDetalhe, setGatilhoDoDetalhe] = React.useState<HTMLElement | null>(null);
   const divergentes = countDivergencias(rows);
   const temLinhas = Boolean(rows && rows.length > 0);
 
@@ -266,10 +276,20 @@ export function BudgetAuditCard() {
         <BudgetAuditStatus isLoading={isLoading} error={error} rows={rows} />
         {temLinhas && divergentes > 0 && <DivergenciaAlert count={divergentes} />}
         {temLinhas && !isLoading && !error && (
-          <BudgetAuditTable rows={rows ?? []} onDetalhar={setDetalhe} />
+          <BudgetAuditTable
+            rows={rows ?? []}
+            onDetalhar={(row, gatilho) => {
+              setGatilhoDoDetalhe(gatilho);
+              setDetalhe(row);
+            }}
+          />
         )}
       </CardContent>
-      <DetalheDaVerba linha={detalhe} aoFechar={() => setDetalhe(null)} />
+      <DetalheDaVerba
+        linha={detalhe}
+        gatilhoAtual={gatilhoDoDetalhe}
+        aoFechar={() => setDetalhe(null)}
+      />
     </Card>
   );
 }

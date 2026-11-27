@@ -184,10 +184,12 @@ function ResumoDosTotais({
           <div className="font-semibold">{formatCurrency(totalDoLivro(lancamentos, "reservado"))}</div>
         </div>
       </div>
-      {totalSemPedido > 0 && existeDivergencia && (
+      {totalSemPedido > 0 && (
         <p className="text-xs text-muted-foreground">
-          {formatCurrency(totalSemPedido)} de consumo não vem de nenhum pedido — é o que explica a maior parte
-          da discrepância na coluna “Calculado nos pedidos”.
+          {formatCurrency(totalSemPedido)} de consumo não vem de nenhum pedido.{" "}
+          {existeDivergencia
+            ? "É o que explica a maior parte da discrepância na coluna “Calculado nos pedidos”."
+            : "O livro e o agregado conferem, mas esse valor justifica a diferença na coluna “Calculado nos pedidos”."}
         </p>
       )}
     </div>
@@ -201,6 +203,8 @@ export interface PropsDoDetalhe {
   paNome: string | null;
   ano: number;
   mes: number;
+  /** Botão que abriu o detalhe; recebe o foco de volta quando o diálogo fecha. */
+  gatilhoAtual?: HTMLElement | null;
 }
 
 function AvisosDeFalha({
@@ -246,7 +250,7 @@ function ConteudoDoLivro({
   );
 }
 
-export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano, mes }: PropsDoDetalhe) {
+export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano, mes, gatilhoAtual }: PropsDoDetalhe) {
   const lancamentosQuery = useQuery({
     queryKey: ["pa_budget_entries", paId, ano, mes],
     enabled: aberto && !!paId,
@@ -288,7 +292,14 @@ export function BudgetEntriesDialog({ aberto, aoMudarAbertura, paId, paNome, ano
 
   return (
     <Dialog open={aberto} onOpenChange={aoMudarAbertura}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent
+        className="max-w-4xl"
+        onCloseAutoFocus={(evento) => {
+          if (!gatilhoAtual) return;
+          evento.preventDefault();
+          gatilhoAtual.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Lançamentos da verba — {paNome || "PA"}</DialogTitle>
           <DialogDescription>

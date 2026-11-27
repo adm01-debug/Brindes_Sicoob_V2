@@ -40,4 +40,14 @@ describe("calcularTotais da verba do PA", () => {
     expect(t.saldo).toBe(1000);
     expect(Number.isNaN(t.percentual)).toBe(false);
   });
+
+  it("nao deixa residuo negativo quando a soma fecha o alocado", () => {
+    const t = calcularTotais({
+      verba_planejada: 1000,
+      verba_reservada: 999.7,
+      verba_consumida: 0.3,
+    });
+    expect(Object.is(t.saldo, -0)).toBe(false);
+    expect(t.saldo).toBe(0);
+  });
 });
