@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "18833012e744a6aafadaa92c318887240c29b9a7",
+  "sha": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 06:24 UTC",
+  "generated_at": "2026-11-27 07:27 UTC",
   "files_total": 5379,
   "code_files": 3937,
-  "code_lines": 582917
+  "code_lines": 583013
  },
  "version": "1.3.2",
- "facts_hash": "2b8a3dd151b84c39",
+ "facts_hash": "238a8834063b9370",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -57299,7 +57299,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 145
+    "deps_count": 146
    },
    {
     "path": "",
@@ -58059,7 +58059,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 170
+    "deps_count": 171
    },
    {
     "path": "",
@@ -58203,7 +58203,7 @@
      "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 165
+    "deps_count": 166
    },
    {
     "path": "",
@@ -66964,7 +66964,7 @@
   {
    "module": "src/lib",
    "files": 170,
-   "lines": 23116,
+   "lines": 23129,
    "tables": [
     "admin_audit_log",
     "quotes",
@@ -67132,7 +67132,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52423,
+   "lines": 52424,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -67401,7 +67401,7 @@
   {
    "module": "src/services",
    "files": 26,
-   "lines": 4087,
+   "lines": 4094,
    "tables": [
     "cooperativa_budgets",
     "cooperativas",
@@ -68139,7 +68139,7 @@
   {
    "module": "tests",
    "files": 740,
-   "lines": 99152,
+   "lines": 99227,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -76116,6 +76116,11 @@
     "values": "loading | unavailable | unconfigured | configured"
    },
    {
+    "file": "src/lib/sicoob/sla-cycle.ts",
+    "name": "SLA_APPROVAL_STAGES",
+    "values": "\"pending\", \"waiting_approval\", \"escalated_to_board\""
+   },
+   {
     "file": "src/lib/telemetry/bridgeAlertThresholds.ts",
     "name": "AlertSeverity",
     "values": "warn | crit"
@@ -83756,6 +83761,10 @@
    },
    {
     "file": "src/lib/sicoob/sla-cycle.ts",
+    "text": "* Etapas em que o SLA de aprovação governa o pedido. Fora delas o prazo já"
+   },
+   {
+    "file": "src/lib/sicoob/sla-cycle.ts",
     "text": "`find` devolveria o primeiro da ordem recebida: o ciclo certo viria apenas"
    },
    {
@@ -84089,6 +84098,10 @@
    {
     "file": "src/services/sicoob/costCenterService.ts",
     "text": "A validacao, o delete e o insert rodam na mesma transacao na RPC"
+   },
+   {
+    "file": "src/services/sicoob/orderService.ts",
+    "text": "pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui"
    },
    {
     "file": "src/services/sicoob/orderService.ts",
@@ -106728,6 +106741,12 @@
    },
    {
     "file": "src/services/sicoob/orderService.ts",
+    "field": "sla_status",
+    "value": "critical",
+    "kind": "compara"
+   },
+   {
+    "file": "src/services/sicoob/orderService.ts",
     "field": "status",
     "value": "rejected",
     "kind": "compara"
@@ -112888,7 +112907,7 @@
     "file": "src/pages/sicoob/orders/OrdersPage.tsx",
     "name": "calculateStats",
     "params": "orders: SicoobOrder[]",
-    "body": "const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === \"critical\").length, statusCounts };"
+    "body": "const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === \"critical\" && isSlaApprovalStage(order …"
    },
    {
     "file": "src/services/OrderService.ts",
@@ -112930,7 +112949,7 @@
     "file": "src/services/sicoob/orderService.ts",
     "name": "applySlaFilter",
     "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
-    "body": "if (filters?.sla_status && filters.sla_status !== \"all\") return query.eq(\"sla_status\", filters.sla_status); return query;"
+    "body": "if (!filters?.sla_status || filters.sla_status === \"all\") return query; const filtered = query.eq(\"sla_status\", filters.sla_status); // \"Urgências\" é o drill-down do cartão de SLA crítico, e o cartão só conta // pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui // o pedido que já foi aprovado e cujo valor gravado ainda não foi recalculado // — o cartão mostrava zero e a lista mostrava o pedido. if (filters.sla_status === \"critical\") return filtered.in(\"status\", [...SLA_ …"
    },
    {
     "file": "src/services/sicoob/orderService.ts",
@@ -139515,6 +139534,22 @@
     "name": "não estima o ciclo para status sem transição registrada"
    },
    {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "isSlaApprovalStage"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "conta o SLA apenas nas etapas em que a aprovação ainda governa o pedido"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "não conta pedido já decidido, entregue ou cancelado como urgente"
+   },
+   {
+    "file": "tests/lib/sicoob/sla-cycle.test.ts",
+    "name": "trata status ausente como fora do fluxo de aprovação"
+   },
+   {
     "file": "tests/lib/validations/goalSchema.test.ts",
     "name": "salesGoalSchema"
    },
@@ -143357,6 +143392,18 @@
    {
     "file": "tests/services/sicoobOrderService.test.ts",
     "name": "nao consulta profiles quando nenhum log tem autor"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "sicoobOrderService.listOrders — filtro de urgências"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "“Ver Urgências” só lista pedidos em etapa de aprovação"
+   },
+   {
+    "file": "tests/services/sicoobOrderService.test.ts",
+    "name": "o filtro %s continua sem recorte de etapa"
    },
    {
     "file": "tests/services/sicoobStatsCompetence.test.ts",
@@ -167769,6 +167816,7 @@
       "compara:src/components/sicoob/orders/OrderAuditTimeline.tsx",
       "compara:src/pages/sicoob/orders/OrdersKanbanPage.tsx",
       "compara:src/pages/sicoob/orders/OrdersPage.tsx",
+      "compara:src/services/sicoob/orderService.ts",
       "compara:supabase/migrations/20260504161835_585add0d-394c-4f4d-b587-589750c70f37.sql"
      ],
      "all": [
@@ -225816,11 +225864,20 @@
   },
   "src/lib/sicoob/sla-cycle.ts": {
    "path": "src/lib/sicoob/sla-cycle.ts",
-   "lines": 22,
+   "lines": 35,
    "exports": [
+    "const SLA_APPROVAL_STAGES",
+    "function isSlaApprovalStage",
     "function getSlaCycleStartedAt"
    ],
+   "enums": [
+    {
+     "name": "SLA_APPROVAL_STAGES",
+     "values": "\"pending\", \"waiting_approval\", \"escalated_to_board\""
+    }
+   ],
    "rule_comments": [
+    "* Etapas em que o SLA de aprovação governa o pedido. Fora delas o prazo já",
     "`find` devolveria o primeiro da ordem recebida: o ciclo certo viria apenas"
    ]
   },
@@ -231738,7 +231795,7 @@
   },
   "src/pages/sicoob/orders/OrdersPage.tsx": {
    "path": "src/pages/sicoob/orders/OrdersPage.tsx",
-   "lines": 317,
+   "lines": 318,
    "exports": [
     "function OrdersPage"
    ],
@@ -231802,7 +231859,7 @@
     {
      "name": "calculateStats",
      "params": "orders: SicoobOrder[]",
-     "body": "const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === \"critical\").length, statusCounts };"
+     "body": "const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === \"critical\" && isSlaApprovalStage(order …"
     }
    ]
   },
@@ -233972,7 +234029,7 @@
   },
   "src/services/sicoob/orderService.ts": {
    "path": "src/services/sicoob/orderService.ts",
-   "lines": 323,
+   "lines": 330,
    "exports": [
     "const sicoobOrderService"
    ],
@@ -234059,6 +234116,11 @@
      "kind": "compara"
     },
     {
+     "field": "sla_status",
+     "value": "critical",
+     "kind": "compara"
+    },
+    {
      "field": "status",
      "value": "rejected",
      "kind": "compara"
@@ -234070,6 +234132,7 @@
     }
    ],
    "rule_comments": [
+    "pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui",
     "Busca original continha apenas pontuação removida — retornar zero resultados"
    ],
    "calc_fns": [
@@ -234081,7 +234144,7 @@
     {
      "name": "applySlaFilter",
      "params": "query: SicoobOrderQuery, filters?: OrderListFilters",
-     "body": "if (filters?.sla_status && filters.sla_status !== \"all\") return query.eq(\"sla_status\", filters.sla_status); return query;"
+     "body": "if (!filters?.sla_status || filters.sla_status === \"all\") return query; const filtered = query.eq(\"sla_status\", filters.sla_status); // \"Urgências\" é o drill-down do cartão de SLA crítico, e o cartão só conta // pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui // o pedido que já foi aprovado e cujo valor gravado ainda não foi recalculado // — o cartão mostrava zero e a lista mostrava o pedido. if (filters.sla_status === \"critical\") return filtered.in(\"status\", [...SLA_ …"
     },
     {
      "name": "applyOrganizationFilters",
@@ -259849,10 +259912,11 @@
   },
   "tests/lib/sicoob/sla-cycle.test.ts": {
    "path": "tests/lib/sicoob/sla-cycle.test.ts",
-   "lines": 52,
+   "lines": 76,
    "is_test": true,
    "rule_comments": [
-    "mudar, o SLA não pode passar a medir o ciclo anterior em silêncio."
+    "mudar, o SLA não pode passar a medir o ciclo anterior em silêncio.",
+    "entregue, cujo prazo de aprovação já encerrou: número inflado na tela."
    ],
    "tests": [
     "getSlaCycleStartedAt",
@@ -259860,7 +259924,11 @@
     "usa a transição mais recente para aprovação pendente",
     "com o status repetido, usa a transição mais recente — não a primeira da lista",
     "a escolha não depende da ordem em que o histórico chega",
-    "não estima o ciclo para status sem transição registrada"
+    "não estima o ciclo para status sem transição registrada",
+    "isSlaApprovalStage",
+    "conta o SLA apenas nas etapas em que a aprovação ainda governa o pedido",
+    "não conta pedido já decidido, entregue ou cancelado como urgente",
+    "trata status ausente como fora do fluxo de aprovação"
    ]
   },
   "tests/lib/validations/goalSchema.test.ts": {
@@ -262912,11 +262980,12 @@
   },
   "tests/services/sicoobOrderService.test.ts": {
    "path": "tests/services/sicoobOrderService.test.ts",
-   "lines": 272,
+   "lines": 323,
    "is_test": true,
    "rule_comments": [
     "* Builder minimo do PostgREST: a cadeia termina no segundo `.order()`. */",
-    "* Builder minimo do PostgREST: resolve no terminador da cadeia. */"
+    "* Builder minimo do PostgREST: resolve no terminador da cadeia. */",
+    "O cartão de SLA crítico conta apenas etapas de aprovação: sem o mesmo"
    ],
    "tests": [
     "sicoobOrderService.reorderOrder",
@@ -262938,7 +263007,10 @@
     "nao envia filtro de SLA quando o recorte e todos",
     "sicoobOrderService.getItemLogs",
     "resolve o autor por profiles.user_id sem embed irresolvivel",
-    "nao consulta profiles quando nenhum log tem autor"
+    "nao consulta profiles quando nenhum log tem autor",
+    "sicoobOrderService.listOrders — filtro de urgências",
+    "“Ver Urgências” só lista pedidos em etapa de aprovação",
+    "o filtro %s continua sem recorte de etapa"
    ]
   },
   "tests/services/sicoobStatsCompetence.test.ts": {
@@ -264005,10 +264077,23 @@
   }
  },
  "git": {
-  "sha": "18833012e744a6aafadaa92c318887240c29b9a7",
+  "sha": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "7f80db7",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "fix: cartão de SLA crítico ignora pedido fora da etapa de aprovação (#478)",
+    "files": [
+     "src/lib/sicoob/sla-cycle.ts",
+     "src/pages/sicoob/orders/OrdersPage.tsx",
+     "src/services/sicoob/orderService.ts",
+     "tests/lib/sicoob/sla-cycle.test.ts",
+     "tests/services/sicoobOrderService.test.ts"
+    ]
+   },
    {
     "sha": "1883301",
     "date": "2026-11-27",
@@ -264441,17 +264526,6 @@
      "tests/scenarios/contract-guard-postgres.scenario.mjs",
      "tests/scenarios/supabase-sql-client.scenario.mjs"
     ]
-   },
-   {
-    "sha": "8f7aeeb",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "chore: autoriza a aplicacao da migration do contrato de notificacoes (#439)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "tests/scenarios/notification-guard-postgres.scenario.mjs",
-     "tests/scenarios/supabase-sql-client.scenario.mjs"
-    ]
    }
   ],
   "hot_files": [
@@ -264469,11 +264543,23 @@
    ],
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    6
+    5
+   ],
+   [
+    "src/services/sicoob/orderService.ts",
+    3
    ],
    [
     "docs/execucao/lacunas-funcionalidades-2026-10-11.md",
     3
+   ],
+   [
+    "src/pages/sicoob/orders/OrdersPage.tsx",
+    2
+   ],
+   [
+    "tests/services/sicoobOrderService.test.ts",
+    2
    ],
    [
     "src/components/layout/SidebarReorganized.tsx",
@@ -264493,10 +264579,6 @@
    ],
    [
     "src/services/sicoob/approvalService.ts",
-    2
-   ],
-   [
-    "src/services/sicoob/orderService.ts",
     2
    ],
    [
@@ -264520,19 +264602,11 @@
     2
    ],
    [
-    "tests/scenarios/supabase-sql-client.scenario.mjs",
-    2
-   ],
-   [
-    ".github/workflows/ci.yml",
+    "src/lib/sicoob/sla-cycle.ts",
     1
    ],
    [
-    ".github/workflows/sicoob-ci.yml",
-    1
-   ],
-   [
-    ".impeccable/hook.cache.json",
+    "tests/lib/sicoob/sla-cycle.test.ts",
     1
    ]
   ]

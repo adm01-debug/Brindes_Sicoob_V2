@@ -6529,11 +6529,11 @@
   {
    "arquivo": "tests/lib/sicoob/sla-cycle.test.ts",
    "tipo": "unit",
-   "linhas": 52,
+   "linhas": 76,
    "testa": [
     "src/lib/sicoob/sla-cycle.ts"
    ],
-   "casos": 5
+   "casos": 8
   },
   {
    "arquivo": "tests/lib/sso-errors.test.ts",
@@ -7949,11 +7949,11 @@
   {
    "arquivo": "tests/services/sicoobOrderService.test.ts",
    "tipo": "unit",
-   "linhas": 272,
+   "linhas": 323,
    "testa": [
     "src/services/sicoob/orderService.ts"
    ],
-   "casos": 16
+   "casos": 18
   },
   {
    "arquivo": "tests/services/sicoobStatsCompetence.test.ts",

@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "18833012e744a6aafadaa92c318887240c29b9a7",
+  "commit": "7f80db7d6dcb8266392465a40d7ac64a20cadc1d",
   "branch": "main",
-  "data_commit": "2026-11-27T03:23:55-03:00",
+  "data_commit": "2026-11-27T04:26:44-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "7f80db7",
+    "data": "2026-11-27",
+    "assunto": "fix: cartão de SLA crítico ignora pedido fora da etapa de aprovação (#478)"
+   },
    {
     "sha": "1883301",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "3f6b0e0",
     "data": "2026-11-25",
     "assunto": "fix: lista publica de favoritos herda a politica de retry do QueryClient (#451)"
-   },
-   {
-    "sha": "950c2f5",
-    "data": "2026-11-25",
-    "assunto": "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)"
    }
   ],
-  "arquivos_mudados_7d": 1003,
+  "arquivos_mudados_7d": 1005,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -148,11 +148,11 @@
     "mudancas": 25
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 24
+    "pasta": "src/pages/sicoob",
+    "mudancas": 25
    },
    {
-    "pasta": "src/pages/sicoob",
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 24
    },
    {
@@ -177,7 +177,7 @@
    },
    {
     "pasta": "src/services/sicoob",
-    "mudancas": 18
+    "mudancas": 19
    },
    {
     "pasta": "tests/components/bi",
@@ -262,15 +262,15 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/services/sicoob/orderService.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": "src/pages/KitBuilderPage.tsx",
     "mudancas": 9
    },
    {
     "arquivo": "src/pages/QuoteBuilderPage.tsx",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "src/services/sicoob/orderService.ts",
     "mudancas": 9
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 246
+    "commits": 247
    },
    {
     "autor": "dependabot[bot]",
@@ -316,7 +316,7 @@
  "contagens": {
   "arquivos_total": 5375,
   "arquivos_codigo": 3252,
-  "linhas_codigo": 516542,
+  "linhas_codigo": 516638,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -808,7 +808,7 @@
   },
   "src/lib": {
    "arquivos": 170,
-   "linhas": 23116
+   "linhas": 23129
   },
   "src/main.tsx": {
    "arquivos": 1,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52423
+   "linhas": 52424
   },
   "src/routes": {
    "arquivos": 9,
@@ -824,7 +824,7 @@
   },
   "src/services": {
    "arquivos": 26,
-   "linhas": 4087
+   "linhas": 4094
   },
   "src/stores": {
    "arquivos": 6,
@@ -932,7 +932,7 @@
   },
   "tests/lib": {
    "arquivos": 83,
-   "linhas": 9697
+   "linhas": 9721
   },
   "tests/load": {
    "arquivos": 1,
@@ -984,7 +984,7 @@
   },
   "tests/services": {
    "arquivos": 18,
-   "linhas": 2121
+   "linhas": 2172
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,
@@ -1154,7 +1154,7 @@
   }
  ],
  "qualidade": {
-  "any": 523,
+  "any": 524,
   "console_log": 488,
   "ts_ignore": 6,
   "eslint_disable": 4,

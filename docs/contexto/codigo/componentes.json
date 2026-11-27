@@ -18564,7 +18564,7 @@
     "OrdersPage"
    ],
    "export_default": "OrdersPage",
-   "linhas": 317,
+   "linhas": 318,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth"

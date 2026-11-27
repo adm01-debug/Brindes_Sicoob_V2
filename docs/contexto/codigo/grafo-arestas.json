@@ -12012,6 +12012,7 @@
    "src/components/ui/select.tsx",
    "src/components/ui/separator.tsx",
    "src/contexts/AuthContext.tsx",
+   "src/lib/sicoob/sla-cycle.ts",
    "src/lib/utils.ts",
    "src/services/sicoob/commonService.ts",
    "src/services/sicoob/orderService.ts",
@@ -12318,6 +12319,7 @@
   ],
   "src/services/sicoob/orderService.ts": [
    "src/integrations/supabase/client.ts",
+   "src/lib/sicoob/sla-cycle.ts",
    "src/services/sicoob/reorderIdempotency.ts",
    "src/types/sicoob/orders.ts"
   ],

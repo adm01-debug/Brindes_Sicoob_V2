@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `18833012e7` · branch `main` · 2026-11-27 06:24 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7f80db7d6d` · branch `main` · 2026-11-27 07:27 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1534,6 +1534,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | RlsOperation | SELECT \| INSERT \| UPDATE \| DELETE | `src/lib/security/rls-denial-logger.ts` |
 | InvitationField | email \| cooperative \| role \| pa \| expiry | `src/lib/sicoob/invitationForm.ts` |
 | PaBudgetState | loading \| unavailable \| unconfigured \| configured | `src/lib/sicoob/paBudgetState.ts` |
+| SLA_APPROVAL_STAGES | "pending", "waiting_approval", "escalated_to_board" | `src/lib/sicoob/sla-cycle.ts` |
 | AlertSeverity | warn \| crit | `src/lib/telemetry/bridgeAlertThresholds.ts` |
 | AlertMetric | p95 \| avgResp | `src/lib/telemetry/bridgeAlertThresholds.ts` |
 | BridgeName | external-db-bridge \| crm-db-bridge | `src/lib/telemetry/bridgeCallMetrics.ts` |
@@ -4145,7 +4146,7 @@ _nenhum item encontrado_
   ```
 - **calculateStats(orders: SicoobOrder[])** — `src/pages/sicoob/orders/OrdersPage.tsx`
   ```
-  const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === "critical").length, statusCounts };
+  const committedOrders = orders.filter(isCommittedSicoobOrder); const totalRevenue = sumCommittedSicoobOrders(committedOrders); const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {}); return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === "critical" && isSlaApprovalStage(order …
   ```
 - **applyOrderScope(query: OrderListQuery, sellerId: string, scope: string)** — `src/services/OrderService.ts`
   ```
@@ -4173,7 +4174,7 @@ _nenhum item encontrado_
   ```
 - **applySlaFilter(query: SicoobOrderQuery, filters?: OrderListFilters)** — `src/services/sicoob/orderService.ts`
   ```
-  if (filters?.sla_status && filters.sla_status !== "all") return query.eq("sla_status", filters.sla_status); return query;
+  if (!filters?.sla_status || filters.sla_status === "all") return query; const filtered = query.eq("sla_status", filters.sla_status); // "Urgências" é o drill-down do cartão de SLA crítico, e o cartão só conta // pedidos em etapa de aprovação. Filtrar apenas por `sla_status` listava aqui // o pedido que já foi aprovado e cujo valor gravado ainda não foi recalculado // — o cartão mostrava zero e a lista mostrava o pedido. if (filters.sla_status === "critical") return filtered.in("status", [...SLA_ …
   ```
 - **applyOrganizationFilters(query: SicoobOrderQuery, filters?: OrderListFilters)** — `src/services/sicoob/orderService.ts`
   ```
@@ -5787,7 +5788,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7536 testes em 779 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7543 testes em 779 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5850,6 +5851,7 @@ _nenhum item encontrado_
 | `tests/components/PriceFreshnessBadge.catalog-visibility.test.tsx` | 23 | PriceFreshnessBadge — visibilidade nos componentes do catálogo · ProductCard / EnhancedProductCard / ProductTableView (variant= · NÃO renderiza quando fresh (preço atualizado dentro de 50% do threshold) · NÃO renderiza quando o status é unknown (data ausente) … |
 | `tests/scripts/e2e-summaries.test.ts` | 23 | lib/playwright-report · status efetivo respeita test.fail() e flaky · runErrors lê a primeira linha de cada erro do run · normaliza o caminho relativo ao testDir com o prefixo e2e/ … |
 | `tests/scripts/rules-rls-estatico.test.ts` | 23 | rules/rls-estatico · tabela criada sem RLS aparece como rls=false · ENABLE em migration posterior liga; DISABLE desliga (último vence) · conta policies e ignora SQL comentado … |
+| `tests/services/sicoobOrderService.test.ts` | 23 | sicoobOrderService.reorderOrder · delega a revalidação de catálogo à Edge Function autenticada · reutiliza a chave gerenciada quando a primeira resposta é perdida · preserva a chave em memória quando o sessionStorage recusa escrita … |
 | `tests/utils/masks-extended.test.ts` | 23 | maskCnpj · should format full CNPJ · should handle partial input · should strip non-digits … |
 | `tests/utils/price-calculator.test.ts` | 23 | calculateBoxPrice · returns 0 for null box · multiplies box price by quantity · defaults quantity to 1 … |
 | `tests/components/PriceFreshnessBadge.colorMatrix.test.tsx` | 22 | PriceFreshnessBadge — matriz cromática + conteúdo pt-BR (status × variant) · variant=inline (PDP / Quick View) · fresh: emerald-700 +  · aging: amber-700 + ainda usa label  … |
@@ -5876,7 +5878,6 @@ _nenhum item encontrado_
 | `tests/lib/rbac-permissions.test.ts` | 20 | RBAC Permission Matrix · admin · has access to everything · manager … |
 | `tests/pages/QuoteBuilder.test.ts` | 20 | QuoteBuilder — Item Calculations · calculates single item total · calculates quote subtotal · handles empty items list … |
 | `tests/scripts/db-scripts-hardening.test.ts` | 20 | drift do ledger — nomes de arquivo · .sql fora do padrão vira pendência em vez de sumir · arquivo no padrão e alinhado ao ledger continua sem pendência · classificador do backlog de migrations — operações destrutivas … |
-| `tests/services/sicoobOrderService.test.ts` | 20 | sicoobOrderService.reorderOrder · delega a revalidação de catálogo à Edge Function autenticada · reutiliza a chave gerenciada quando a primeira resposta é perdida · preserva a chave em memória quando o sessionStorage recusa escrita … |
 | `tests/services/sicoob/userService.syncUserRole.test.ts` | 20 | syncUserRole — o papel da tela chega em user_roles · traduz  · traduz  · não regrava o papel técnico dev, que é preservado na limpeza … |
 | `tests/types/quote-types.test.ts` | 20 | QuoteHistoryEntry shape · has all required fields · allows nullable fields · metadata defaults to empty object … |
 | `tests/components/ReplenishmentToolbar.test.tsx` | 19 | ReplenishmentToolbar · renders title and count badge · shows loading state when isLoading with zero total · shows filtered/total when hasActiveFilters … |
@@ -6002,6 +6003,7 @@ _nenhum item encontrado_
 | `tests/lib/supplier-colors.test.ts` | 10 | getSupplierColors · returns XBZ colors for xbz supplier · returns Spot colors for SPOT supplier · returns Spot colors for Stricker supplier … |
 | `tests/lib/auth/apply-seller-scope.test.ts` | 10 | applySellerScope · aplica .eq( · permite trocar a coluna do filtro (ex.: user_id) · NÃO aplica filtro quando escopo é all (admin/dev) … |
 | `tests/lib/personalization/rpc-contracts.test.ts` | 10 | PRICE_CONTRACT · aceita payload PT canônico · resolve aliases EN · detecta campo obrigatório faltando … |
+| `tests/lib/sicoob/sla-cycle.test.ts` | 10 | getSlaCycleStartedAt · usa o início da escalada atual, sem reaproveitar o ciclo anterior · usa a transição mais recente para aprovação pendente · com o status repetido, usa a transição mais recente — não a primeira da lista … |
 | `tests/p0/edge-functions-failing.test.ts` | 10 | P0 — Edge Functions críticas · full-op-diagnostics: autentica e produz exatamente os quatro checks declarados · crm-db-bridge: converte ausência do módulo opcional em leitura vazia estável · crm-db-bridge: impede escrita quando o módulo opcional não está disponível … |
 | `tests/scripts/verifier-arguments.test.ts` | 10 | check-price-freshness-coverage — tolerância · COVERAGE_TOLERANCE_PP=%j é recusado (exit 2) · valor válido passa da validação (falha depois, por falta do coverage-summary) · check-edge-functions-health — --timeout … |
 | `tests/scripts/verify-supabase-functions-published.test.ts` | 10 | verifyPublishedFunctions · aceita função inalterada quando o deploy informa que não havia mudanças · aceita função recém-publicada com versão maior · rejeita função ausente na lista atual … |
@@ -6090,7 +6092,6 @@ _nenhum item encontrado_
 | `e2e/order-status-rbac.spec.ts` | 7 | Pedidos Sicoob — RBAC canônico · vendedor consulta a lista de pedidos · vendedor acompanha pedidos pelo kanban · gestor acessa pedidos e o módulo de gestão de compras … |
 | `e2e/flows/01-auth.spec.ts` | 7 | Fluxo: Auth · renderiza form de login com elementos essenciais · rejeita credenciais inválidas e permanece em /login · valida email malformado … |
 | `e2e/flows/22-header-sticky.spec.ts` | 7 | @header-sticky Header sticky — rotas autenticadas (app + quotes) [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} · @header-sticky Header sticky — rotas admin [${vp.name} ${vp.width}×${vp.height}] · header permanece fixo ao rolar em ${route.path} … |
-| `e2e/flows/p0/08-password-recovery.spec.ts` | 7 | P0 — Password recovery · positivo: /reset-password com token válido aceita senha forte e habilita submit · negativo: acesso a /reset-password SEM token → mensagem ou redirect, nunca habilita reset · negativo: senha fraca dispara validação inline (não chama auth) … |
 | … +479 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
@@ -6581,4 +6582,4 @@ _nenhum item encontrado_
 | 3. Coalesce reloads dentro de 30s (no máximo 2 tentativas) usando | `src/lib/chunk-recovery.ts` |
 | * Retorna `true` se acionou um reload (o caller deve exibir um placeholder | `src/lib/chunk-recovery.ts` |
 | neutro enquanto aguarda a navegação) ou `false` se o limite de tentativas | `src/lib/chunk-recovery.ts` |
-| … +362 linhas — lista completa em `context.json` | |
+| … +364 linhas — lista completa em `context.json` | |

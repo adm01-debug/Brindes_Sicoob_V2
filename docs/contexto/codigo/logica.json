@@ -4887,10 +4887,12 @@
    "arquivo": "src/lib/sicoob/sla-cycle.ts",
    "camada": "lib",
    "exports": [
-    "getSlaCycleStartedAt"
+    "SLA_APPROVAL_STAGES",
+    "getSlaCycleStartedAt",
+    "isSlaApprovalStage"
    ],
    "export_default": null,
-   "linhas": 22,
+   "linhas": 35,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -4899,9 +4901,10 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 1,
+   "usado_por": 3,
    "usado_por_modulos": [
-    "pages/sicoob"
+    "pages/sicoob",
+    "services/sicoob"
    ],
    "coberto_por_testes": 1,
    "orfao": false
@@ -6552,7 +6555,7 @@
     "sicoobOrderService"
    ],
    "export_default": null,
-   "linhas": 323,
+   "linhas": 330,
    "tabelas": [
     "profiles",
     "sicoob_order_item_logs",
