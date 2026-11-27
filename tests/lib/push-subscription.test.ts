@@ -10,11 +10,6 @@ const mockFrom = vi.fn(() => ({
   update: (...args: unknown[]) => mockUpdate(...args),
 }));
 
-/** Deixa as microtasks pendentes rodarem até o update ser disparado. */
-async function flushMicrotasks(): Promise<void> {
-  for (let i = 0; i < 10; i += 1) await Promise.resolve();
-}
-
 /** Encadeamento do PostgREST: eq(...).eq(...)…maybeSingle() devolve `resultado`. */
 function encadeamento(resultado: unknown) {
   const no: Record<string, unknown> = {};
@@ -200,8 +195,11 @@ describe('pushSubscriptions', () => {
     // antes de esperar o banco, 'navegador' apareceria primeiro.
     let liberarBanco: () => void = () => {};
     const respostaPendente = new Promise<void>((r) => { liberarBanco = r; });
+    let marcarInicio: () => void = () => {};
+    const updateIniciado = new Promise<void>((r) => { marcarInicio = r; });
     mockUpdate.mockImplementation(() => {
       ordem.push('banco');
+      marcarInicio();
       const enc = encadeamento({ error: null }) as Record<string, unknown> & {
         then: (res: (v: unknown) => unknown) => Promise<unknown>;
       };
@@ -215,7 +213,7 @@ describe('pushSubscriptions', () => {
     });
 
     const desinscricao = mod.desinscreverPush('user-1');
-    await flushMicrotasks();
+    await updateIniciado;
     expect(ordem).toEqual(['banco']);
 
     liberarBanco();
