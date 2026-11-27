@@ -89,6 +89,32 @@ function batchErrorMessage(data: unknown, invokeError?: { message?: string } | n
 /**
  * Executa múltiplas queries SELECT no CRM em uma única invocação.
  */
+/**
+ * Soft-degrade do batch quando o CRM ainda n?o foi configurado (placeholders
+ * EXTERNAL_CRM_URL/keys). `invokeCrmDb` j? fazia isso; sem isso a tela de status
+ * pintava as 9 tabelas de vermelho como se n?o existissem.
+ *
+ * O bridge responde HTTP 500 com o corpo {"error":"CRM connection is not
+ * configured correctly"} (crm-db-bridge/index.ts:1185) ? nesse caso a mensagem
+ * chega em `error`, n?o no envelope de sucesso, ent?o o corpo precisa ser lido.
+ */
+async function degradedBatchResult(
+  queries: CrmBatchQuery[],
+  error: unknown,
+  payload: CrmBridgePayload,
+  requestId: string,
+): Promise<CrmBatchResult[] | null> {
+  const message = error
+    ? await extractCrmErrorMessage(error)
+    : payload.success ? null : (payload.error || null);
+  if (!message || !isUnconfiguredMessage(message)) return null;
+  logger.warn(`[CRM-DB] CRM not configured ? batch degradado [req_id=${requestId}]`);
+  return queries.map(() => ({ success: false, error: message }));
+}
+
+/**
+ * Executa m?ltiplas queries SELECT no CRM em uma ?nica invoca??o.
+ */
 export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]> {
   const startedAt = performance.now();
   const body = { operation: "batch", queries };
@@ -118,24 +144,10 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
     serverRequestId: responseRequestId,
   });
 
-  if (error) {
-    console.error(`[CRM-DB] Batch error [req_id=${requestId}]:`, error);
-    throw new Error(`CRM batch error: ${error.message}`);
-  }
-
-  if (!payload.success) {
-    const message = payload.error || "CRM batch unknown error";
-    // Mesma degrada??o suave de invokeCrmDb: com a conex?o do CRM ainda pendente
-    // (placeholder EXTERNAL_CRM_URL/keys) o batch devolvia throw e a tela de
-    // status pintava as 9 tabelas de vermelho como se n?o existissem. Devolve
-    // erro por tabela para a UI distinguir "n?o configurado" de "tabela ausente".
-    if (isUnconfiguredMessage(message)) {
-      logger.warn(`[CRM-DB] CRM not configured ? batch degradado [req_id=${requestId}]`);
-      return queries.map(() => ({ success: false, error: message }));
-    }
-    throw new Error(message);
-  }
-
+  const degraded = await degradedBatchResult(queries, error, payload, requestId);
+  if (degraded) return degraded;
+  if (error) throw new Error(`CRM batch error: ${error.message}`);
+  if (!payload.success) throw new Error(payload.error || "CRM batch unknown error");
   return payload.results || [];
 }
 
@@ -192,11 +204,6 @@ function isReadOperation(query: CrmQuery): boolean {
 
 export function isUnconfiguredMessage(message: string): boolean {
   return /CRM connection is not configured correctly|Invalid URL|PLACEHOLDER_VALUE_TO_BE_REPLACED/i.test(message);
-}
-
-/** Query lida no CRM que pode degradar para vazio quando a conex?o est? pendente. */
-export function isCrmReadQuery(query: CrmQuery): boolean {
-  return isReadOperation(query);
 }
 
 async function invokeCrmAttempt(query: CrmQuery, requestId: string) {
