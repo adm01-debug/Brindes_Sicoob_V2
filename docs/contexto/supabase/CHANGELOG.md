@@ -2,6 +2,10 @@
 
 Diff semântico gerado a cada coleta em que algo mudou.
 
+## 2026-11-27 13:17 UTC
+
+- **functions** alterado (2): `public.audit_security_definer_acl()`, `public.check_security_health()`
+
 ## 2026-11-27 09:18 UTC
 
 - **functions** alterado (5): `public.current_user_cooperativa_id()`, `public.current_user_pa_id()`, `public.has_role(_user_id uuid, _role app_role)`, `public.is_admin(_user_id uuid)`, `public.user_can_access_pa(p_pa_id uuid)`

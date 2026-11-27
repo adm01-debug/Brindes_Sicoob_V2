@@ -51558,6 +51558,10 @@
               "hits": 1
             },
             {
+              "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+              "hits": 1
+            },
+            {
               "file": "supabase/migrations/20260922200000_public_quote_approval_contract.sql",
               "hits": 1
             },
@@ -51582,7 +51586,7 @@
               "hits": 1
             }
           ],
-          "code_total_files": 8,
+          "code_total_files": 9,
           "cron": [],
           "db": [],
           "triggers": [],
@@ -52898,8 +52902,13 @@
       {
         "args": "",
         "callers": {
-          "code": [],
-          "code_total_files": 0,
+          "code": [
+            {
+              "file": "src/components/admin/security/DatabaseIntegrityCard.tsx",
+              "hits": 1
+            }
+          ],
+          "code_total_files": 1,
           "cron": [],
           "db": [],
           "triggers": [],
