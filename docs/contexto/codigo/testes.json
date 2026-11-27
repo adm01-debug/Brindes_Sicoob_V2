@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 978,
+ "total": 980,
  "por_tipo": {
   "contrato": 12,
   "e2e": 176,
   "pytest": 2,
   "qa": 48,
-  "unit": 740
+  "unit": 742
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 720
+   "arquivos": 722
   },
   {
    "padrao": "e2e/",
@@ -8216,6 +8216,24 @@
    "casos": 15
   },
   {
+   "arquivo": "tests/unit/budget-entries-dialog.test.ts",
+   "tipo": "unit",
+   "linhas": 103,
+   "testa": [
+    "src/components/sicoob/BudgetEntriesDialog.tsx"
+   ],
+   "casos": 10
+  },
+  {
+   "arquivo": "tests/unit/budgets-tab-totais.test.ts",
+   "tipo": "unit",
+   "linhas": 53,
+   "testa": [
+    "src/pages/admin/sicoob/tabs/BudgetsTab.tsx"
+   ],
+   "casos": 6
+  },
+  {
    "arquivo": "tests/unit/database-integrity-card.test.ts",
    "tipo": "unit",
    "linhas": 134,
@@ -8736,6 +8754,7 @@
   "src/components/security/SecurityDashboard.tsx": 1,
   "src/components/seo/PageSEO.tsx": 3,
   "src/components/sicoob/BudgetAuditCard.tsx": 1,
+  "src/components/sicoob/BudgetEntriesDialog.tsx": 1,
   "src/components/sicoob/CooperativaCeilingCard.tsx": 1,
   "src/components/sicoob/GestorComprasMetrics.tsx": 1,
   "src/components/sicoob/LimitIncreaseApprovalsCard.tsx": 1,
@@ -9022,6 +9041,7 @@
   "src/pages/admin/ai-usage/AiQuotaManager.tsx": 1,
   "src/pages/admin/sicoob/tabs/ApprovalDelegationsTab.tsx": 1,
   "src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx": 1,
+  "src/pages/admin/sicoob/tabs/BudgetsTab.tsx": 1,
   "src/pages/filters/filters-page-helpers.ts": 1,
   "src/pages/kit-builder/kitQuoteRequest.ts": 1,
   "src/pages/kit-builder/useKitBuilderQuote.ts": 1,

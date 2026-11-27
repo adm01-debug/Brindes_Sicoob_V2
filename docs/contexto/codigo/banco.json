@@ -21960,7 +21960,7 @@
     "so_na_migration": [],
     "so_no_types": []
    },
-   "usada_no_front": 0,
+   "usada_no_front": 1,
    "usada_em_edges": [],
    "triggers": [
     "trg_pa_budget_entries_competencia",
@@ -21968,7 +21968,7 @@
     "trg_recalc_pa_budget_states"
    ],
    "sem_rls": false,
-   "nao_usada": true
+   "nao_usada": false
   },
   "pa_budgets": {
    "colunas": {
@@ -41577,6 +41577,11 @@
   },
   {
    "nome": "mutate_sicoob_order_item",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "pa_budget_reconcile",
    "definida": true,
    "usada_em": 1
   },

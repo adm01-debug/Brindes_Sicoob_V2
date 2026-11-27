@@ -8285,9 +8285,10 @@
     "useEffect"
    ],
    "canais_realtime": [],
-   "usado_por": 1,
+   "usado_por": 2,
    "usado_por_arquivos": [
-    "src/components/layout/MainLayout.tsx"
+    "src/components/layout/MainLayout.tsx",
+    "src/components/sicoob/BudgetEntriesDialog.tsx"
    ],
    "coberto_por_testes": 0
   },

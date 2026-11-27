@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "81c7ae34653363cf898b20c95a4b6462de435fd0",
+  "commit": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
   "branch": "main",
-  "data_commit": "2026-11-27T09:39:07-03:00",
+  "data_commit": "2026-11-27T11:33:04-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "d4ee2a4",
+    "data": "2026-11-27",
+    "assunto": "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)"
+   },
    {
     "sha": "81c7ae3",
     "data": "2026-11-27",
@@ -126,14 +131,9 @@
     "sha": "2701a09",
     "data": "2026-11-25",
     "assunto": "fix: erro e vazio nos selos de inteligencia do produto (#448)"
-   },
-   {
-    "sha": "e42cc6a",
-    "data": "2026-11-25",
-    "assunto": "fix: exige tres empresas com historico para usar o setor como amostra (#449)"
    }
   ],
-  "arquivos_mudados_7d": 1015,
+  "arquivos_mudados_7d": 1020,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "docs/execucao/auditoria-planejamento-2026-10-13",
@@ -145,7 +145,7 @@
    },
    {
     "pasta": "src/pages/admin",
-    "mudancas": 28
+    "mudancas": 29
    },
    {
     "pasta": "scripts/db/apply-sicoob-migrations.mjs",
@@ -168,12 +168,12 @@
     "mudancas": 23
    },
    {
-    "pasta": "src/hooks/bi",
-    "mudancas": 20
+    "pasta": "src/components/sicoob",
+    "mudancas": 21
    },
    {
-    "pasta": "src/components/sicoob",
-    "mudancas": 19
+    "pasta": "src/hooks/bi",
+    "mudancas": 20
    },
    {
     "pasta": "src/services/sicoob",
@@ -250,15 +250,15 @@
     "mudancas": 10
    },
    {
+    "arquivo": "src/integrations/supabase/types.ts",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 9
    },
    {
     "arquivo": "src/hooks/quote/useQuoteInitialization.ts",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "src/integrations/supabase/types.ts",
     "mudancas": 9
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 251
+    "commits": 252
    },
    {
     "autor": "dependabot[bot]",
@@ -314,21 +314,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 5383,
-  "arquivos_codigo": 3259,
-  "linhas_codigo": 518215,
+  "arquivos_total": 5386,
+  "arquivos_codigo": 3262,
+  "linhas_codigo": 518826,
   "rotas": 143,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 88,
   "modulos": 146,
-  "componentes": 1185,
+  "componentes": 1186,
   "hooks": 395,
   "edge_functions": 107,
   "tabelas": 295,
   "migrations": 639,
   "cron_jobs": 29,
-  "testes": 978,
+  "testes": 980,
   "workflows": 17,
   "scripts": 121,
   "docs_md": 974
@@ -783,8 +783,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1142,
-   "linhas": 169620
+   "arquivos": 1143,
+   "linhas": 170015
   },
   "src/constants": {
    "arquivos": 3,
@@ -804,7 +804,7 @@
   },
   "src/integrations": {
    "arquivos": 3,
-   "linhas": 13709
+   "linhas": 13723
   },
   "src/lib": {
    "arquivos": 170,
@@ -816,7 +816,7 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 52463
+   "linhas": 52509
   },
   "src/routes": {
    "arquivos": 9,
@@ -1031,8 +1031,8 @@
    "linhas": 160
   },
   "tests/unit": {
-   "arquivos": 15,
-   "linhas": 1369
+   "arquivos": 17,
+   "linhas": 1525
   },
   "tests/utils": {
    "arquivos": 20,
@@ -1054,7 +1054,7 @@
  "maiores_arquivos": [
   {
    "arquivo": "src/integrations/supabase/types.ts",
-   "linhas": 13598
+   "linhas": 13612
   },
   {
    "arquivo": "scripts/regras_negocio/generate.py",

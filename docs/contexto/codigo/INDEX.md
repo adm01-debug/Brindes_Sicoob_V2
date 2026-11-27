@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `81c7ae34653363cf898b20c95a4b6462de435fd0` (2026-11-27T09:39:07-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `d4ee2a4c477e843c4c726f9fd021ff2c5b147221` (2026-11-27T11:33:04-03:00).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -14,7 +14,7 @@ Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR
 Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua tarefa; não carregue tudo.
 
 ## Stack
-- linguagens: TypeScript (3031), Markdown (974), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
+- linguagens: TypeScript (3034), Markdown (974), SQL (704), JSON (296), JavaScript (158), Python (73), YAML (24), CSS (7)
 - linguagem_principal: TypeScript
 - framework: React
 - backend_http: n/d
@@ -34,31 +34,31 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 ## Números
 | item | qtd |
 |---|---|
-| arquivos_total | 5383 |
-| arquivos_codigo | 3259 |
-| linhas_codigo | 518215 |
+| arquivos_total | 5386 |
+| arquivos_codigo | 3262 |
+| linhas_codigo | 518826 |
 | rotas | 143 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
 | itens_menu | 88 |
 | modulos | 146 |
-| componentes | 1185 |
+| componentes | 1186 |
 | hooks | 395 |
 | edge_functions | 107 |
 | tabelas | 295 |
 | migrations | 639 |
 | cron_jobs | 29 |
-| testes | 978 |
+| testes | 980 |
 | workflows | 17 |
 | scripts | 121 |
 | docs_md | 974 |
 
 ## Onde ficam as coisas
 - telas: src/pages (120)
-- componentes: src/components (1010), src/pages (163), src/contexts (9)
+- componentes: src/components (1011), src/pages (163), src/contexts (9)
 - hooks: src/hooks (288), src/components (66), src/pages (22)
 - servicos_logica: src/lib (170), src/utils (37), src/services (26)
-- testes: tests/ (720), e2e/ (150), outro (58)
+- testes: tests/ (722), e2e/ (150), outro (58)
 - edge_functions: supabase/functions
 - migrations: supabase/migrations
 - scripts: scripts/revisao (14), scripts/rules (10), scripts/db (9)
@@ -103,7 +103,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | components/search | 0 | 0 | 26 | 55 | 7 | 4 |
 | components/security | 0 | 0 | 11 | 13 | 4 | 10 |
 | components/settings | 0 | 0 | 6 | 2 | 0 | 4 |
-| components/sicoob | 0 | 0 | 25 | 25 | 6 | 27 |
+| components/sicoob | 0 | 0 | 26 | 26 | 6 | 28 |
 | components/simulator | 0 | 0 | 23 | 23 | 4 | 4 |
 | components/ui | 0 | 0 | 59 | 6 | 0 | 0 |
 | contexts | 0 | 0 | 10 | 23 | 4 | 10 |
@@ -131,9 +131,9 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 | lib/validations | 0 | 0 | 5 | 0 | 0 | 0 |
 | pages | 33 | 78 | 68 | 385 | 33 | 97 |
 | pages/admin | 26 | 39 | 70 | 155 | 29 | 89 |
-| pages/sicoob | 15 | 22 | 22 | 31 | 8 | 35 |
+| pages/sicoob | 15 | 22 | 22 | 32 | 8 | 36 |
 | pages/trends | 0 | 0 | 7 | 1 | 0 | 2 |
-| routes/config | 0 | 0 | 8 | 445 | 53 | 149 |
+| routes/config | 0 | 0 | 8 | 446 | 53 | 150 |
 | services | 0 | 0 | 7 | 5 | 4 | 15 |
 | services/sicoob | 0 | 0 | 15 | 0 | 2 | 18 |
 | stores | 0 | 0 | 6 | 0 | 0 | 0 |
@@ -477,8 +477,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 37578 nós · 62686 arestas · 2816 comunidades · grafo do commit `81c7ae34`
-- comunidades maiores: ref_components (434), ref_lib (338), ref_integrations (306), @tanstack/react-query (303), lucide-react (286), ref_hooks (274), react (267), ref_node_fs (243), sonner (233), getCorsHeaders (208), framer-motion (197), expert-chat/index.ts (170)
+- 37601 nós · 62735 arestas · 2777 comunidades · grafo do commit `d4ee2a4c`
+- comunidades maiores: ref_lib (669), ref_integrations (480), lucide-react (281), react (272), ref_components (248), getCorsHeaders (218), react-router-dom (217), framer-motion (210), ref_contexts (201), ref_pages (195), ref_node_fs (176), ref_utils (156)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
@@ -496,8 +496,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/sicoob-ci.yml (11)
 - src/hooks/useQuoteBuilderState.ts (11)
 - .github/workflows/e2e.yml (10)
+- src/integrations/supabase/types.ts (10)
 - .github/workflows/lighthouse.yml (9)
-- src/hooks/quote/useQuoteInitialization.ts (9)
 
 ## Workflows
 - `apply-sicoob-migrations.yml` — Aplicar migrations Sicoob (workflow_dispatch)
@@ -701,6 +701,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-27 `d4ee2a4` feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)
 - 2026-11-27 `81c7ae3` feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)
 - 2026-11-27 `c5128f4` fix: devolve a main ao verde no gate de complexidade do ESLint (#481)
 - 2026-11-27 `00689b5` fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)
@@ -715,7 +716,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-26 `6f282a4` chore: SIC-040 e SIC-060 já estão corrigidos no repositório (vereditos) (#471)
 - 2026-11-26 `269e7af` feat: telas de verbas e alertas para o gestor da Singular (SIC-017) (#468)
 - 2026-11-26 `3dbc153` fix: link do aviso de alcada abre a fila de aprovacoes (#467)
-- 2026-11-26 `b5b924a` fix: escopo gerencial usa o papel real e o vinculo de PA (SIC-011) (#465)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

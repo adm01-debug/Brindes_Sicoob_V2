@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `81c7ae3465` · branch `main` · 2026-11-27 12:39 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d4ee2a4c47` · branch `main` · 2026-11-27 14:33 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -1411,7 +1411,7 @@ Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banc
 | `status` | `unauthorized` | escreve | `supabase/functions/e2e-cleanup/index.ts` |
 | `status` | `unconfigured` | compara | `src/components/admin/connections/DataSourceDebugTab.tsx` |
 | `status` | `underindex` | compara | `src/components/bi/ClientCategoryRadar.tsx` |
-| … +106 linhas — lista completa em `context.json` | | | |
+| … +107 linhas — lista completa em `context.json` | | | |
 
 ### E.4 Enums e listas de valores
 
@@ -2984,6 +2984,10 @@ _nenhum item encontrado_
   ```
   const failedAttempts = snapshot.attempts.filter(attempt => !attempt.success).length; let score = 40; if (mfaAvailable && mfaEnabled) score += 30; if (allowedIpCount > 0) score += 20; if (snapshot.devicesCount > 0) score += 10; if (failedAttempts > 5) score -= 10; return { score: Math.min(100, Math.max(0, score)), mfaEnabled, ipRestrictionsActive: allowedIpCount > 0, knownDevicesCount: snapshot.devicesCount, recentLoginAttempts: snapshot.attempts.length, failedLoginAttempts: failedAttempts, secur …
   ```
+- **totalDoLivro(lancamentos: LancamentoDeVerba[], estado: string)** — `src/components/sicoob/BudgetEntriesDialog.tsx`
+  ```
+  return lancamentos .filter((l) => l.estado === estado) .reduce((soma, l) => soma + numeroOuZero(l.valor), 0);
+  ```
 - **totalOf(rows: Row[])** — `src/components/sicoob/orders/OrderCostCenterAllocation.tsx`
   ```
   rows.reduce((sum, row) => sum + (Number(row.valor) || 0), 0);
@@ -4015,6 +4019,10 @@ _nenhum item encontrado_
 - **invalidate()** — `src/pages/admin/sicoob/tabs/ApprovalPolicyTab.tsx`
   ```
   queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });
+  ```
+- **calcularTotais(b: { verba_planejada?: number | null; verba_total?: number | null; verba_reservada?: number | null; verba_comprometida?:)** — `src/pages/admin/sicoob/tabs/BudgetsTab.tsx`
+  ```
+  const alocado = b.verba_planejada || b.verba_total || 0; const reservado = b.verba_reservada || 0; const comprometido = b.verba_comprometida || 0; const consumido = b.verba_consumida || 0; return { alocado, reservado, comprometido, consumido, saldo: normalizarResiduo(alocado - reservado - comprometido - consumido), percentual: alocado > 0 ? ((consumido + reservado + comprometido) / alocado) * 100 : 0, };
   ```
 - **formatCurrency(value: number)** — `src/pages/admin/sicoob/tabs/BudgetsTab.tsx`
   ```
@@ -5789,7 +5797,7 @@ _nenhum item encontrado_
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `admin` | `tests/scenarios/sql/sicoob-centrais-cadastro-fixture.sql` |
 
-## K. Testes como especificação (7610 testes em 784 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (7632 testes em 786 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5918,6 +5926,7 @@ _nenhum item encontrado_
 | `tests/lib/format-extended.test.ts` | 15 | formatCurrency · formats zero · formats integer · formats cents … |
 | `tests/lib/purchasing-sla.test.ts` | 15 | métricas canônicas da gestão de compras · calcula pendências, SLA e totais a partir dos pedidos visíveis · fila recém-criada e nenhuma aprovação não viram 100% · não apresenta agregado parcial quando a consulta trunca … |
 | `tests/scripts/check-critical-test-skip-budget.test.ts` | 15 | findSkips — formas de desligar um teste · x %s · evaluate — orçamento por arquivo · aceita exatamente o orçamento … |
+| `tests/unit/budget-entries-dialog.test.ts` | 15 | totalDoLivro · soma so o estado pedido · livro vazio soma zero em vez de quebrar · lancamentosSemPedido … |
 | `tests/utils/colorSorting-extended.test.ts` | 15 | sortByColorGroup · should return empty array for empty input · should sort Preto before Branco before Azul · should sort dark variants before light within same group … |
 | `tests/utils/price-freshness.default-threshold.test.ts` | 15 | getPriceFreshness — default 60d quando threshold não existe · garante que a constante default vale 60 dias (contrato público) · usa default 60d quando threshold é null (cenário real do BD externo) · usa default 60d quando threshold é undefined (campo ausente do payload) … |
 | `tests/components/BulkSelectionBar.test.tsx` | 14 | BulkSelectionBar · renders when isActive is true · does not render when isActive is false · shows selected count badge … |
@@ -6092,8 +6101,7 @@ _nenhum item encontrado_
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
 | `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
 | `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
-| `tests/unit/sla-closed-label.test.ts` | 8 | slaClosedLabel · descreve o fechamento de cada desfecho dentro do prazo · descreve o fechamento critico com as horas de atraso · trata desfecho ausente ou desconhecido como aprovado … |
-| … +484 linhas — lista completa em `context.json` | | |
+| … +486 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

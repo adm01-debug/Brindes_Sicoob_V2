@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1185,
+ "total": 1186,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -14218,12 +14218,33 @@
     "BudgetAuditCard"
    ],
    "export_default": "BudgetAuditCard",
-   "linhas": 240,
+   "linhas": 298,
    "dominio": "components/sicoob",
    "hooks_locais": [
     "useAuth"
    ],
    "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/components/sicoob/BudgetEntriesDialog.tsx",
+   "exports": [
+    "BudgetEntriesDialog",
+    "LancamentoDeVerba",
+    "PropsDoDetalhe",
+    "ReconciliacaoDeVerba"
+   ],
+   "export_default": null,
+   "linhas": 337,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useScrollLockFix"
+   ],
+   "tabelas": [
+    "pa_budget_entries"
+   ],
    "edges": [],
    "usado_por": 1,
    "orfao": false
@@ -15040,7 +15061,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 515,
+   "usado_por": 516,
    "orfao": false
   },
   {
@@ -15075,7 +15096,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 640,
+   "usado_por": 641,
    "orfao": false
   },
   {
@@ -15222,7 +15243,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 140,
+   "usado_por": 141,
    "orfao": false
   },
   {
@@ -15798,7 +15819,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 81,
+   "usado_por": 82,
    "orfao": false
   },
   {
@@ -16989,7 +17010,7 @@
     "BudgetsTab"
    ],
    "export_default": null,
-   "linhas": 344,
+   "linhas": 390,
    "dominio": "pages/admin",
    "hooks_locais": [
     "useAuth"

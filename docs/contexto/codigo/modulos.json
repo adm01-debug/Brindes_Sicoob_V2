@@ -6481,13 +6481,13 @@
   },
   {
    "modulo": "components/sicoob",
-   "arquivos": 25,
+   "arquivos": 26,
    "testes": 0,
-   "linhas": 3808,
+   "linhas": 4203,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
-   "componentes": 24,
+   "componentes": 25,
    "hooks_locais": [
     "useAIOrderPredictor",
     "useAuth",
@@ -6508,6 +6508,7 @@
     "useProducts",
     "usePurchasingMetrics",
     "useRelatedProducts",
+    "useScrollLockFix",
     "useSicoobBudget",
     "useSicoobShipment",
     "useToast",
@@ -6539,6 +6540,7 @@
     "order_templates",
     "orders",
     "pa_budget_allocations",
+    "pa_budget_entries",
     "pa_budgets",
     "postos_atendimento",
     "profiles",
@@ -6564,6 +6566,7 @@
     "duplicate_order_atomic",
     "get_sicoob_access_state",
     "log_order_audit_event",
+    "pa_budget_reconcile",
     "pa_budget_replace_allocations",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment",
@@ -6589,6 +6592,7 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "button",
     "dialog",
     "manager",
@@ -6598,9 +6602,12 @@
    "diretos": {
     "edges": [],
     "tabelas": [
+     "pa_budget_entries",
      "v_sicoob_hierarchy"
     ],
-    "rpcs": []
+    "rpcs": [
+     "pa_budget_reconcile"
+    ]
    },
    "importado_por_outros_modulos": [
     "pages",
@@ -10206,7 +10213,7 @@
    "modulo": "integrations/supabase",
    "arquivos": 2,
    "testes": 0,
-   "linhas": 13670,
+   "linhas": 13684,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -12717,7 +12724,7 @@
    "modulo": "pages/admin",
    "arquivos": 70,
    "testes": 3,
-   "linhas": 18040,
+   "linhas": 18086,
    "itens_menu": [
     "Acesso & Bots",
     "Aprovações de desconto",
@@ -14583,6 +14590,7 @@
     "useProductPrintAreasV2",
     "useProducts",
     "useRelatedProducts",
+    "useScrollLockFix",
     "useSellerDashboardStats",
     "useSicoobOrder",
     "useSicoobOrderDetails",
@@ -14624,6 +14632,7 @@
     "order_templates",
     "orders",
     "pa_budget_allocations",
+    "pa_budget_entries",
     "pa_budgets",
     "pa_category_thresholds",
     "pa_notification_settings",
@@ -14666,6 +14675,7 @@
     "list_sicoob_approval_delegate_candidates",
     "log_order_audit_event",
     "mutate_sicoob_order_item",
+    "pa_budget_reconcile",
     "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "record_sicoob_delivery_receipt",
@@ -14705,6 +14715,7 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
     "button",
     "dialog",
     "img",
@@ -15229,6 +15240,7 @@
     "useSalesHistoryMacro",
     "useSalesScope",
     "useScreenDirtyState",
+    "useScrollLockFix",
     "useSearch",
     "useSearchAsYouType",
     "useSeasonalPeakNotifications",
@@ -15465,6 +15477,7 @@
     "outbound_webhooks",
     "ownership_audit_reports",
     "pa_budget_allocations",
+    "pa_budget_entries",
     "pa_budgets",
     "pa_category_thresholds",
     "pa_notification_settings",
@@ -15595,6 +15608,7 @@
     "log_rls_denial",
     "lookup_request_id",
     "mutate_sicoob_order_item",
+    "pa_budget_reconcile",
     "pa_budget_replace_allocations",
     "prepare_sicoob_order_confirmation",
     "record_sicoob_delivery_receipt",

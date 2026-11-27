@@ -6,7 +6,7 @@
    "src/pages (120)"
   ],
   "componentes": [
-   "src/components (1010)",
+   "src/components (1011)",
    "src/pages (163)",
    "src/contexts (9)"
   ],
@@ -21,7 +21,7 @@
    "src/services (26)"
   ],
   "testes": [
-   "tests/ (720)",
+   "tests/ (722)",
    "e2e/ (150)",
    "outro (58)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1185)"
+  ".tsx (1186)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)",
    "feat: expõe a integridade do banco na tela de Segurança e Acesso (#482)",
    "fix: devolve a main ao verde no gate de complexidade do ESLint (#481)",
    "fix: relatorio agendado que nunca pode ser entregue sai da fila (#479)",
-   "infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)",
-   "fix: cartão de SLA crítico ignora pedido fora da etapa de aprovação (#478)"
+   "infra: corrige as policies de escopo gerencial no banco (SIC-011) (#466)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

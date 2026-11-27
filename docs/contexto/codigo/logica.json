@@ -672,7 +672,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 406,
+   "usado_por": 407,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -753,7 +753,7 @@
     "TablesUpdate"
    ],
    "export_default": null,
-   "linhas": 13598,
+   "linhas": 13612,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -2615,7 +2615,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 47,
+   "usado_por": 48,
    "usado_por_modulos": [
     "components/bi",
     "components/collections",

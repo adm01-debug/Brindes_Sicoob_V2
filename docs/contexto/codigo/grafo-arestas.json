@@ -7321,8 +7321,10 @@
    "src/components/ui/button.tsx"
   ],
   "src/components/sicoob/BudgetAuditCard.tsx": [
+   "src/components/sicoob/BudgetEntriesDialog.tsx",
    "src/components/ui/alert.tsx",
    "src/components/ui/badge.tsx",
+   "src/components/ui/button.tsx",
    "src/components/ui/card.tsx",
    "src/components/ui/input.tsx",
    "src/components/ui/skeleton.tsx",
@@ -7330,6 +7332,14 @@
    "src/contexts/AuthContext.tsx",
    "src/lib/format.ts",
    "src/services/sicoob/budgetService.ts"
+  ],
+  "src/components/sicoob/BudgetEntriesDialog.tsx": [
+   "src/components/ui/badge.tsx",
+   "src/components/ui/dialog.tsx",
+   "src/components/ui/table.tsx",
+   "src/hooks/useScrollLockFix.ts",
+   "src/integrations/supabase/client.ts",
+   "src/lib/format.ts"
   ],
   "src/components/sicoob/BudgetExceededBanner.tsx": [
    "src/components/ui/alert.tsx",

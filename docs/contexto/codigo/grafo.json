@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2281,
- "arestas": 9301,
+ "nos": 2282,
+ "arestas": 9309,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 644
+   "importado_por": 645
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -14,11 +14,11 @@
   },
   {
    "arquivo": "src/components/ui/badge.tsx",
-   "importado_por": 517
+   "importado_por": 518
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 424
+   "importado_por": 425
   },
   {
    "arquivo": "src/components/ui/card.tsx",
@@ -50,7 +50,7 @@
   },
   {
    "arquivo": "src/components/ui/dialog.tsx",
-   "importado_por": 142
+   "importado_por": 143
   },
   {
    "arquivo": "src/components/seo/PageSEO.tsx",
@@ -70,7 +70,7 @@
   },
   {
    "arquivo": "src/components/ui/table.tsx",
-   "importado_por": 81
+   "importado_por": 82
   },
   {
    "arquivo": "src/lib/logger.ts",
@@ -102,7 +102,7 @@
   },
   {
    "arquivo": "src/lib/format.ts",
-   "importado_por": 50
+   "importado_por": 51
   },
   {
    "arquivo": "src/components/ui/popover.tsx",

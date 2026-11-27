@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "81c7ae34653363cf898b20c95a4b6462de435fd0",
+  "sha": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-27 12:39 UTC",
-  "files_total": 5386,
-  "code_files": 3945,
-  "code_lines": 584686
+  "generated_at": "2026-11-27 14:33 UTC",
+  "files_total": 5389,
+  "code_files": 3948,
+  "code_lines": 585297
  },
  "version": "1.3.2",
- "facts_hash": "0b506151a8608df0",
+ "facts_hash": "57b9f26e57d1d8fb",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -355,8 +355,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1522,
-   ".tsx": 1507,
+   ".ts": 1524,
+   ".tsx": 1508,
    ".sql": 704,
    ".mjs": 146,
    ".py": 73,
@@ -63522,7 +63522,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1321,
+  "components_count": 1322,
   "hooks": [
    {
     "name": "useCopilotQuote",
@@ -66353,8 +66353,8 @@
   },
   {
    "module": "src/components",
-   "files": 1142,
-   "lines": 169620,
+   "files": 1143,
+   "lines": 170015,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -66383,6 +66383,7 @@
     "notifications",
     "orders",
     "outbound_webhooks",
+    "pa_budget_entries",
     "permissions",
     "price_history",
     "product_categories",
@@ -66941,7 +66942,7 @@
   {
    "module": "src/integrations",
    "files": 3,
-   "lines": 13709,
+   "lines": 13723,
    "tables": [],
    "exports": [
     "index.ts: lovable",
@@ -67134,7 +67135,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 52463,
+   "lines": 52509,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -68140,8 +68141,8 @@
   },
   {
    "module": "tests",
-   "files": 744,
-   "lines": 99857,
+   "files": 746,
+   "lines": 100013,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -69556,6 +69557,11 @@
    "pa_budget_allocations": {
     "select": [
      "src/services/sicoob/costCenterService.ts"
+    ]
+   },
+   "pa_budget_entries": {
+    "select": [
+     "src/components/sicoob/BudgetEntriesDialog.tsx"
     ]
    },
    "pa_budgets": {
@@ -71391,6 +71397,18 @@
     "id",
     "order_id",
     "percentual",
+    "valor"
+   ],
+   "pa_budget_entries": [
+    "competencia_ano",
+    "competencia_mes",
+    "created_at",
+    "estado",
+    "id",
+    "motivo",
+    "order_id",
+    "pa_id",
+    "tipo",
     "valor"
    ],
    "pa_budgets": [
@@ -73360,6 +73378,9 @@
     "scripts/db/check-runtime-refs.mjs",
     "scripts/supabase_snapshot/snapshot.py"
    ],
+   "pa_budget_reconcile": [
+    "src/components/sicoob/BudgetEntriesDialog.tsx"
+   ],
    "pa_budget_replace_allocations": [
     "src/services/sicoob/costCenterService.ts"
    ],
@@ -74272,7 +74293,6 @@
    "order_logistics_tracking",
    "order_payments",
    "order_template_items",
-   "pa_budget_entries",
    "pa_singularidades",
    "password_reset_requests",
    "personalization_locations",
@@ -102137,6 +102157,18 @@
     "kind": "escreve"
    },
    {
+    "file": "src/components/sicoob/BudgetEntriesDialog.tsx",
+    "field": "estado",
+    "value": "consumido",
+    "kind": "compara"
+   },
+   {
+    "file": "src/components/sicoob/BudgetEntriesDialog.tsx",
+    "field": "estado",
+    "value": "consumido",
+    "kind": "compara"
+   },
+   {
     "file": "src/components/sicoob/orders/LogisticsCommandCenter.tsx",
     "field": "status",
     "value": "logistic",
@@ -111229,6 +111261,12 @@
     "body": "const failedAttempts = snapshot.attempts.filter(attempt => !attempt.success).length; let score = 40; if (mfaAvailable && mfaEnabled) score += 30; if (allowedIpCount > 0) score += 20; if (snapshot.devicesCount > 0) score += 10; if (failedAttempts > 5) score -= 10; return { score: Math.min(100, Math.max(0, score)), mfaEnabled, ipRestrictionsActive: allowedIpCount > 0, knownDevicesCount: snapshot.devicesCount, recentLoginAttempts: snapshot.attempts.length, failedLoginAttempts: failedAttempts, secur …"
    },
    {
+    "file": "src/components/sicoob/BudgetEntriesDialog.tsx",
+    "name": "totalDoLivro",
+    "params": "lancamentos: LancamentoDeVerba[], estado: string",
+    "body": "return lancamentos .filter((l) => l.estado === estado) .reduce((soma, l) => soma + numeroOuZero(l.valor), 0);"
+   },
+   {
     "file": "src/components/sicoob/orders/OrderCostCenterAllocation.tsx",
     "name": "totalOf",
     "params": "rows: Row[]",
@@ -112775,6 +112813,12 @@
     "name": "invalidate",
     "params": "",
     "body": "queryClient.invalidateQueries({ queryKey: [POLICIES_QUERY_KEY] });"
+   },
+   {
+    "file": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
+    "name": "calcularTotais",
+    "params": "b: { verba_planejada?: number | null; verba_total?: number | null; verba_reservada?: number | null; verba_comprometida?:",
+    "body": "const alocado = b.verba_planejada || b.verba_total || 0; const reservado = b.verba_reservada || 0; const comprometido = b.verba_comprometida || 0; const consumido = b.verba_consumida || 0; return { alocado, reservado, comprometido, consumido, saldo: normalizarResiduo(alocado - reservado - comprometido - consumido), percentual: alocado > 0 ? ((consumido + reservado + comprometido) / alocado) * 100 : 0, };"
    },
    {
     "file": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
@@ -144115,6 +144159,94 @@
     "name": "returns Portuguese labels"
    },
    {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "totalDoLivro"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "soma so o estado pedido"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "livro vazio soma zero em vez de quebrar"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "lancamentosSemPedido"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "separa o consumo que nenhum pedido explica"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "origemDoLancamento"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "distingue lancamento de pedido de ajuste sem pedido"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "competenciaDoLancamento"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "preenche o mes com zero a esquerda"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "normalizarReconciliacao"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "le a primeira linha devolvida pela RPC"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "marca divergencia quando agregado e livro diferem"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "trata nulos e ausentes como zero em vez de NaN"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "devolve null quando a RPC nao retornou linha"
+   },
+   {
+    "file": "tests/unit/budget-entries-dialog.test.ts",
+    "name": "nao aceita divergente verdadeiro vindo como texto"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "calcularTotais da verba do PA"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "desconta reservado e comprometido do saldo livre"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "nao libera saldo quando so ha valor reservado"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "usa verba_total quando verba_planejada nao existe"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "devolve percentual zero quando nao ha verba alocada"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "trata nulos como zero sem produzir NaN"
+   },
+   {
+    "file": "tests/unit/budgets-tab-totais.test.ts",
+    "name": "nao deixa residuo negativo quando a soma fecha o alocado"
+   },
+   {
     "file": "tests/unit/database-integrity-card.test.ts",
     "name": "resumoRls"
    },
@@ -168159,6 +168291,14 @@
       "escreve:supabase/functions/_shared/connection-test-runner.ts"
      ]
     },
+    "estado": {
+     "consumido": [
+      "compara:src/components/sicoob/BudgetEntriesDialog.tsx"
+     ],
+     "SP": [
+      "escreve:src/lib/bi/demoClient.ts"
+     ]
+    },
     "sla_status": {
      "critical": [
       "compara:src/components/sicoob/orders/OrderAuditTimeline.tsx",
@@ -168215,11 +168355,6 @@
       "compara:src/hooks/useTransactionalEmail.ts",
       "escreve:supabase/functions/send-transactional-email/index.ts",
       "escreve:supabase/functions/step-up-verify/index.ts"
-     ]
-    },
-    "estado": {
-     "SP": [
-      "escreve:src/lib/bi/demoClient.ts"
      ]
     },
     "cloudflare_status": {
@@ -209209,7 +209344,7 @@
   },
   "src/components/sicoob/BudgetAuditCard.tsx": {
    "path": "src/components/sicoob/BudgetAuditCard.tsx",
-   "lines": 240,
+   "lines": 298,
    "exports": [
     "const BUDGET_AUDIT_QUERY_KEY",
     "function BudgetAuditCard"
@@ -209221,6 +209356,63 @@
     {
      "name": "CENTAVO",
      "value": "0.005"
+    }
+   ]
+  },
+  "src/components/sicoob/BudgetEntriesDialog.tsx": {
+   "path": "src/components/sicoob/BudgetEntriesDialog.tsx",
+   "lines": 337,
+   "exports": [
+    "interface LancamentoDeVerba",
+    "interface ReconciliacaoDeVerba",
+    "function normalizarReconciliacao",
+    "function totalDoLivro",
+    "function origemDoLancamento",
+    "function lancamentosSemPedido",
+    "function competenciaDoLancamento",
+    "interface PropsDoDetalhe",
+    "function BudgetEntriesDialog"
+   ],
+   "tables": [
+    {
+     "table": "pa_budget_entries",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "pa_budget_entries": [
+     "competencia_ano",
+     "competencia_mes",
+     "created_at",
+     "estado",
+     "id",
+     "motivo",
+     "order_id",
+     "pa_id",
+     "tipo",
+     "valor"
+    ]
+   },
+   "rpc": [
+    "pa_budget_reconcile"
+   ],
+   "status_values": [
+    {
+     "field": "estado",
+     "value": "consumido",
+     "kind": "compara"
+    },
+    {
+     "field": "estado",
+     "value": "consumido",
+     "kind": "compara"
+    }
+   ],
+   "calc_fns": [
+    {
+     "name": "totalDoLivro",
+     "params": "lancamentos: LancamentoDeVerba[], estado: string",
+     "body": "return lancamentos .filter((l) => l.estado === estado) .reduce((soma, l) => soma + numeroOuZero(l.valor), 0);"
     }
    ]
   },
@@ -221794,7 +221986,7 @@
   },
   "src/integrations/supabase/types.ts": {
    "path": "src/integrations/supabase/types.ts",
-   "lines": 13598,
+   "lines": 13612,
    "exports": [
     "type Json",
     "type Database",
@@ -230049,8 +230241,9 @@
   },
   "src/pages/admin/sicoob/tabs/BudgetsTab.tsx": {
    "path": "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
-   "lines": 344,
+   "lines": 390,
    "exports": [
+    "function calcularTotais",
     "const BudgetsTab"
    ],
    "tables": [
@@ -230089,6 +230282,11 @@
     }
    ],
    "calc_fns": [
+    {
+     "name": "calcularTotais",
+     "params": "b: { verba_planejada?: number | null; verba_total?: number | null; verba_reservada?: number | null; verba_comprometida?:",
+     "body": "const alocado = b.verba_planejada || b.verba_total || 0; const reservado = b.verba_reservada || 0; const comprometido = b.verba_comprometida || 0; const consumido = b.verba_consumida || 0; return { alocado, reservado, comprometido, consumido, saldo: normalizarResiduo(alocado - reservado - comprometido - consumido), percentual: alocado > 0 ? ((consumido + reservado + comprometido) / alocado) * 100 : 0, };"
+    },
     {
      "name": "formatCurrency",
      "params": "value: number",
@@ -263832,6 +264030,42 @@
     "returns Portuguese labels"
    ]
   },
+  "tests/unit/budget-entries-dialog.test.ts": {
+   "path": "tests/unit/budget-entries-dialog.test.ts",
+   "lines": 103,
+   "is_test": true,
+   "tests": [
+    "totalDoLivro",
+    "soma so o estado pedido",
+    "livro vazio soma zero em vez de quebrar",
+    "lancamentosSemPedido",
+    "separa o consumo que nenhum pedido explica",
+    "origemDoLancamento",
+    "distingue lancamento de pedido de ajuste sem pedido",
+    "competenciaDoLancamento",
+    "preenche o mes com zero a esquerda",
+    "normalizarReconciliacao",
+    "le a primeira linha devolvida pela RPC",
+    "marca divergencia quando agregado e livro diferem",
+    "trata nulos e ausentes como zero em vez de NaN",
+    "devolve null quando a RPC nao retornou linha",
+    "nao aceita divergente verdadeiro vindo como texto"
+   ]
+  },
+  "tests/unit/budgets-tab-totais.test.ts": {
+   "path": "tests/unit/budgets-tab-totais.test.ts",
+   "lines": 53,
+   "is_test": true,
+   "tests": [
+    "calcularTotais da verba do PA",
+    "desconta reservado e comprometido do saldo livre",
+    "nao libera saldo quando so ha valor reservado",
+    "usa verba_total quando verba_planejada nao existe",
+    "devolve percentual zero quando nao ha verba alocada",
+    "trata nulos como zero sem produzir NaN",
+    "nao deixa residuo negativo quando a soma fecha o alocado"
+   ]
+  },
   "tests/unit/database-integrity-card.test.ts": {
    "path": "tests/unit/database-integrity-card.test.ts",
    "lines": 134,
@@ -264652,10 +264886,26 @@
   }
  },
  "git": {
-  "sha": "81c7ae34653363cf898b20c95a4b6462de435fd0",
+  "sha": "d4ee2a4c477e843c4c726f9fd021ff2c5b147221",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "d4ee2a4",
+    "date": "2026-11-27",
+    "author": "adm01-debug",
+    "subject": "feat: detalhar lançamentos que compõem o saldo de verba do PA (#483)",
+    "files": [
+     "docs/agentes/regras-dominio.md",
+     "scripts/db/.inventory-cache.json",
+     "src/components/sicoob/BudgetAuditCard.tsx",
+     "src/components/sicoob/BudgetEntriesDialog.tsx",
+     "src/integrations/supabase/types.ts",
+     "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
+     "tests/unit/budget-entries-dialog.test.ts",
+     "tests/unit/budgets-tab-totais.test.ts"
+    ]
+   },
    {
     "sha": "81c7ae3",
     "date": "2026-11-27",
@@ -265103,18 +265353,6 @@
      "src/pages/PublicFavoriteListPage.tsx",
      "tests/pages/PublicFavoriteListPage.test.tsx"
     ]
-   },
-   {
-    "sha": "950c2f5",
-    "date": "2026-11-25",
-    "author": "adm01-debug",
-    "subject": "fix: tendencia do setor exige amostra minima e nao inventa variacao (#446)",
-    "files": [
-     "src/components/bi/IndustryTrendingProducts.tsx",
-     "src/hooks/bi/useBIDossierExport.ts",
-     "src/hooks/bi/useIndustryTrends.ts",
-     "tests/hooks/bi/useIndustryTrends.test.tsx"
-    ]
    }
   ],
   "hot_files": [
@@ -265151,6 +265389,18 @@
     3
    ],
    [
+    "src/components/sicoob/BudgetAuditCard.tsx",
+    2
+   ],
+   [
+    "src/integrations/supabase/types.ts",
+    2
+   ],
+   [
+    "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
+    2
+   ],
+   [
     ".impeccable/hook.cache.json",
     2
    ],
@@ -265184,18 +265434,6 @@
    ],
    [
     "tests/services/sicoobApprovalService.test.ts",
-    2
-   ],
-   [
-    "src/components/layout/MfaGate.tsx",
-    2
-   ],
-   [
-    "tests/components/MfaGate.test.tsx",
-    2
-   ],
-   [
-    "src/services/sicoob/userService.ts",
     2
    ]
   ]

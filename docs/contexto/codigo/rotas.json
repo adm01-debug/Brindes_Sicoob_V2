@@ -5500,6 +5500,7 @@
     "useMemo",
     "useQuery",
     "useRef",
+    "useScrollLockFix",
     "useState",
     "useUserProfile",
     "useUserRoles"
@@ -5507,10 +5508,12 @@
    "hooks_locais": [
     "useAuth",
     "useAuthAAL",
+    "useScrollLockFix",
     "useUserProfile",
     "useUserRoles"
    ],
    "tabelas": [
+    "pa_budget_entries",
     "pa_budgets",
     "postos_atendimento",
     "profiles",
@@ -5520,7 +5523,8 @@
     "user_roles"
    ],
    "rpcs": [
-    "get_sicoob_access_state"
+    "get_sicoob_access_state",
+    "pa_budget_reconcile"
    ],
    "edges": [
     "crm-db-bridge",
@@ -5532,9 +5536,11 @@
    "papeis": [
     "admin",
     "alert",
+    "alertdialog",
+    "dialog",
     "manager"
    ],
-   "arquivos_puxados": 39
+   "arquivos_puxados": 44
   },
   {
    "protegida": true,
